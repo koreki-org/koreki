@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { STANDARD_PROFILES } from '../ai/standard-profiles';
 import { isLocalInstance } from '../env-context';
 
@@ -11,24 +12,38 @@ import { isLocalInstance } from '../env-context';
  */
 
 const getStoragePath = (userId?: string) => {
+    let baseDir: string;
+    
     // 1. Desktop Mode (Tauri/Windows)
     if (process.env.APPDATA) {
-        const dir = path.join(process.env.APPDATA, 'koreki');
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-        const filename = userId ? `profiles_${userId}.json` : 'profiles.json';
-        return path.join(dir, filename);
+        baseDir = path.join(process.env.APPDATA, 'koreki');
+    } else {
+        // 2. Community Mode (Docker/Linux)
+        baseDir = path.join(process.cwd(), 'data', 'prompts');
     }
-    
-    // 2. Community Mode (Docker/Linux)
-    // We store it in a dedicated data directory to ensure volume persistence.
-    const dir = path.join(process.cwd(), 'data', 'prompts');
+
     try {
-        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
     } catch (e) {
-        console.error('[LocalProfileService] Critical: Could not create prompts directory:', e);
+        console.error('[LocalProfileService] Critical: Could not create directory:', e);
     }
-    const filename = userId ? `profiles_${userId}.json` : 'profiles.json';
-    return path.join(dir, filename);
+
+    // Industrial Hashing: Completely decouple input from filesystem path
+    const filename = userId 
+        ? `profiles_${crypto.createHash('sha256').update(userId).digest('hex')}.json` 
+        : 'profiles.json';
+        
+    const targetPath = path.join(baseDir, filename);
+
+    // Defense in Depth: Verify that the resolved path still resides in the base directory
+    const resolvedBase = path.resolve(baseDir);
+    const resolvedTarget = path.resolve(targetPath);
+
+    if (!resolvedTarget.startsWith(resolvedBase)) {
+        throw new Error('SECURITY ALERT: Path Traversal attempt detected and blocked.');
+    }
+
+    return targetPath;
 };
 
 export const LocalProfileService = {
