@@ -1,0 +1,26 @@
+KOREKI - AUFTRAGSVERARBEITUNGSVERTRAG (AVV) - MUSTER
+=====================================================
+
+Dies ist das offizielle AVV-Muster fuer die Koreki-Plattform.
+
+1. GEGENSTAND UND DAUER
+Der Auftragnehmer (Andreas Heid) erbringt fuer den Auftraggeber Leistungen im Bereich der KI-gestuetzten 
+Analyse von Lehr- und Lernmaterialien.
+
+2. TECHNISCH-ORGANISATORISCHE MASSNAHMEN (TOM)
+- RAM-only Transit: Keine permanente Speicherung von Dokumenteninhalten.
+- TLS-Verschluesselung fuer alle Uebertragungswege.
+- Mandantentrennung auf Datenbankebene.
+
+3. UNTERAUFTRAGNEHMER
+- Mistral AI (KI-Modelle)
+- Hetzner Online (Hosting)
+- Stripe (Billing)
+
+Der vollstaendige, rechtlich gepruefte Entwurf befindet sich in der Projektdokumentation 
+unter docs/compliance/AVV_Draft.md.
+
+Stand: 31.03.2026
+Status: INDUSTRIELL GEHAERTET - BEREIT ZUR RECHTLICHEN PRUEFUNG
+_____________________________________________________
+Koreki. Industrial Grade AI Correction.

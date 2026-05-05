@@ -1,0 +1,51 @@
+node_modules
+.next
+out
+internal/
+.env
+.env.local
+.env.production
+# Local SQLite and Backups
+dev.db
+*.bak
+dev.db-journal
+dev.db-wal
+
+# Build artifacts & logs
+*.log
+*.tsbuildinfo
+.tsbuildinfo
+# Project specific debug/diagnostic scripts
+scratch/
+check_*.js
+check_*.sql
+prisma_test.js
+test_logic.js
+verify_math.js
+
+# Assets
+*.xlsx
+*.zip
+public/download/
+*.webp
+# *.png removed to allow brand assets (e.g. logos)
+
+/lib/generated/prisma
+
+# Testing
+tests/reports
+tests/auth/user.json
+coverage/
+test-results/
+playwright-report/
+blob-report/
+playwright/.auth/
+
+# Tauri / Rust
+src-tauri/target
+src-tauri/gen/schemas
+src-tauri/build_error.log
+src-tauri/build_error.txt
+
+# Internal Documentation (Architect Only)
+docs/internal/

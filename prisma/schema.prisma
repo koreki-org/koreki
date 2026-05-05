@@ -1,0 +1,122 @@
+generator client {
+  provider      = "prisma-client-js"
+  engineType    = "library"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "linux-musl", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id               String   @id @default(cuid())
+  logtoId          String?  @unique
+  username         String?  @unique
+  hasProAccess     Boolean  @default(false)
+  ocrCreditsUsed        Int      @default(0)
+  correctionCreditsUsed Int      @default(0)
+  ocrInputTokens           Int      @default(0)
+  ocrOutputTokens          Int      @default(0)
+  correctionInputTokens    Int      @default(0)
+  correctionOutputTokens   Int      @default(0)
+  stripeCustomerId      String?
+  totalCreditsPurchased Int @default(0)
+  role                  String   @default("USER")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  appMode               String   @default("UNSET")
+  activeWorkspaceId      String?
+  activePromptProfileId   String?
+  privacyLogs           PrivacyLog[]
+  memberships           Membership[]
+  promptProfiles        PromptProfile[]
+}
+
+model Workspace {
+  id               String   @id @default(cuid())
+  name             String?
+  type             String   @default("PERSONAL") // PERSONAL | ORGANIZATION
+  credits          Int      @default(20)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  avvAccepted      Boolean  @default(false)
+  avvFileUrl       String?
+  inviteCode       String?   @unique
+  memberships      Membership[]
+  privacyLogs      PrivacyLog[]
+}
+
+model Membership {
+  id          String    @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        String    @default("MEMBER") // ADMIN | MEMBER
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+}
+
+model SystemSettings {
+  id                    String   @id @default("singleton")
+  
+  // Legacy Combined Usage (for transition)
+  ocrMonthlyUsage       Int      @default(0)
+  correctionMonthlyUsage Int      @default(0)
+  
+  // New Split Usage (Industrial Precision)
+  ocrInputMonthlyUsage       Int      @default(0)
+  ocrOutputMonthlyUsage      Int      @default(0)
+  correctionInputMonthlyUsage Int     @default(0)
+  correctionOutputMonthlyUsage Int    @default(0)
+  
+  lastResetMonth        Int      @default(1)
+  lastResetYear         Int      @default(2024)
+  
+  // Legacy Prices
+  ocrPricePerMillion     Float    @default(0)
+  correctionPricePerMillion Float  @default(0)
+  
+  // New Split Prices (Industrial Precision)
+  ocrInputPricePerMillion       Float    @default(0)
+  ocrOutputPricePerMillion      Float    @default(0)
+  correctionInputPricePerMillion Float    @default(0)
+  correctionOutputPricePerMillion Float   @default(0)
+
+  ocrBudget             Float    @default(100)
+  correctionBudget      Float    @default(100)
+  correctionPrompt      String?  @db.Text
+  updatedAt             DateTime @updatedAt
+}
+
+model PrivacyLog {
+  id          String    @id @default(cuid())
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspaceId String?
+  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  action      String
+  confirmedText String
+  avvVersion  String?
+  avvHash     String?
+  ip          String?
+  createdAt   DateTime  @default(now())
+}
+
+model PromptProfile {
+  id               String   @id @default(cuid())
+  name             String
+  correctionPrompt String   @db.Text
+  isSystem         Boolean  @default(false)
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+
+  @@unique([name, userId])
+}
+
+model ProcessedStripeSession {
+  sessionId String   @id
+  processedAt DateTime @default(now())
+}

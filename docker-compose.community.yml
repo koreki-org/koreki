@@ -1,0 +1,26 @@
+# Koreki Community Edition - Docker Compose
+# 🏮 "Zero-Ops" Stateless Stack (No Database)
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_KOREKI_MODE=community
+        - NEXT_PUBLIC_SINGLE_USER_MODE=false
+    restart: always
+    environment:
+      # --- COMMUNITY MODE CONFIG ---
+      NEXT_PUBLIC_KOREKI_MODE: community
+      NEXT_PUBLIC_SINGLE_USER_MODE: "false"
+      
+      # Optional: Mistral API Key (if not using local Ollama)
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      
+      # Disable SaaS features
+      NEXT_PUBLIC_ENABLE_PAID_MODES: "false"
+    ports:
+      - "3000:3000"
+
+# Note: No volumes needed since we are stateless!
