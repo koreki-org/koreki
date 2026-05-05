@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d70bba72b1f3d24380d0999519c5c246f6e52296 # v3.10.0
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
@@ -33,7 +33,7 @@ jobs:
 
       - name: Extract Metadata (tags, labels)
         id: meta
-        uses: docker/metadata-action@902fa8ca7d62214341b4699b3115cf49d87747b6 # v5.5.1
+        uses: docker/metadata-action@8e5442c4ef853526543b593450942b0805166b26 # v5.5.1
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
@@ -41,7 +41,7 @@ jobs:
             type=raw,value=latest
 
       - name: Build and Push Community Edition
-        uses: docker/build-push-action@2cdde22f2285e1761563aab1bfe7463f8c85fa71 # v5.1.0
+        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0
         with:
           context: .
           push: true
