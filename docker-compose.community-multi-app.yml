@@ -1,0 +1,34 @@
+# Koreki Community Edition - Multi-User APP ONLY Stack
+# 🚀 Use this if you have an external Keycloak and Proxy
+
+services:
+  koreki:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_KOREKI_MODE=community
+        - NEXT_PUBLIC_SINGLE_USER_MODE=false
+        - NEXT_PUBLIC_AUTH_TYPE=KEYCLOAK
+        # Override these during build if needed
+        - NEXT_PUBLIC_OIDC_ISSUER=${EXTERNAL_OIDC_ISSUER:-https://sso.example.com/realms/koreki}
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_KOREKI_MODE: community
+      NEXT_PUBLIC_SINGLE_USER_MODE: "false"
+      NEXT_PUBLIC_AUTH_TYPE: "KEYCLOAK"
+      
+      # External OIDC Configuration
+      NEXT_PUBLIC_OIDC_ISSUER: ${EXTERNAL_OIDC_ISSUER:-https://sso.example.com/realms/koreki}
+      NEXT_PUBLIC_OIDC_CLIENT_ID: ${EXTERNAL_OIDC_CLIENT_ID:-koreki-app}
+      
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      NEXT_PUBLIC_ENABLE_PAID_MODES: "false"
+      DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+    ports:
+      - "3000:3000"
+    volumes:
+      - koreki_data:/app/data
+
+volumes:
+  koreki_data:

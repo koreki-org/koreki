@@ -1,0 +1,59 @@
+{
+  "realm": "koreki",
+  "enabled": true,
+  "loginTheme": "koreki",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "loginWithEmailAllowed": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "koreki-admin",
+        "description": "Koreki Administrator"
+      },
+      {
+        "name": "koreki-user",
+        "description": "Koreki Standard User"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "koreki",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "koreki@koreki.local",
+      "firstName": "Koreki",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "koreki",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "koreki-admin",
+        "koreki-user"
+      ]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "koreki-app",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": [
+        "https://koreki.example.com/*"
+      ],
+      "webOrigins": [
+        "https://koreki.example.com"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      }
+    }
+  ]
+}

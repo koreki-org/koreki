@@ -1,0 +1,223 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=Outfit:wght@400;500;700;900&display=swap');
+
+:root {
+  /* Premium Koreki Brand Palette (HSL) */
+  --background: 220 33% 98%;
+  --foreground: 224 71% 4%;
+
+  --primary: 239 84% 67%;
+  /* Vibrant Koreki Indigo */
+  --primary-foreground: 210 40% 98%;
+
+  --secondary: 220 14% 96%;
+  --secondary-foreground: 224 71% 4%;
+
+  --muted: 220 14% 96%;
+  --muted-foreground: 220 9% 46%;
+
+  --accent: 220 14% 96%;
+  --accent-foreground: 224 71% 4%;
+
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+
+  --border: 220 13% 91%;
+  --input: 220 13% 91%;
+  --ring: 239 84% 67%;
+
+  --radius: 0.85rem;
+
+  /* Legacy Bridge (Minimal) */
+  --card-bg: #ffffff;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Base scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+.result-diff {
+  line-height: 1.6;
+  white-space: pre-wrap;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid hsl(var(--border));
+}
+
+.added {
+  background-color: #dcfce7;
+  color: #166534;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.removed {
+  background-color: #fecaca;
+  color: #991b1b;
+  text-decoration: line-through;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+/* Animations */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes floatGlow {
+  0% {
+    opacity: 0.5;
+    transform: translate(-50%, -48%) scale(0.98);
+  }
+
+  100% {
+    opacity: 0.8;
+    transform: translate(-50%, -52%) scale(1.02);
+  }
+}
+
+@keyframes scan {
+  0% {
+    top: 10%;
+  }
+
+  100% {
+    top: 90%;
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+
+.animate-fade-up {
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-down {
+  animation: fadeDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-out forwards;
+}
+
+.animate-float-glow {
+  animation: floatGlow 8s ease-in-out infinite alternate;
+}
+
+.animate-scan {
+  animation: scan 3s linear infinite;
+}
+
+/* Custom Utilities */
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+
+
+.scrollbar-hide::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar {
+  display: none !important;
+}
+
+.scrollbar-hide,
+.no-scrollbar {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Industrial Utility: Hide numeric input spinners */
+.no-spinners::-webkit-outer-spin-button,
+.no-spinners::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinners {
+  -moz-appearance: textfield;
+}

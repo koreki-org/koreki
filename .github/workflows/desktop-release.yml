@@ -1,0 +1,59 @@
+name: Koreki Desktop Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish:
+    permissions:
+      contents: write
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'windows-latest'
+            args: ''
+          - platform: 'ubuntu-latest' # For Linux (Debian/Ubuntu)
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install Rust Stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Install Linux Dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: Install Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build Frontend & Desktop App
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Force Desktop Mode for static export
+          NEXT_PUBLIC_KOREKI_MODE: desktop
+          NEXT_PUBLIC_KOREKI_DESKTOP: "true"
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'Koreki Desktop ${{ github.ref_name }}'
+          releaseBody: 'Professional AI-Assisted Grading for Educators. Download the installer for your OS below.'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}

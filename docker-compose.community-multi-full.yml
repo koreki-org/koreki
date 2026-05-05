@@ -1,0 +1,102 @@
+# Koreki Community Edition - Multi-User FULL Stack (Unified Gateway)
+# 🛡️🗝️📂 Industrial School Deployment (All-in-One)
+
+services:
+  gateway:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "${PUBLIC_PORT:-8080}:80"
+    volumes:
+      - ./infra/community/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      keycloak:
+        condition: service_healthy
+      koreki:
+        condition: service_started
+
+  koreki:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_KOREKI_MODE=community
+        - NEXT_PUBLIC_SINGLE_USER_MODE=false
+        - NEXT_PUBLIC_AUTH_TYPE=KEYCLOAK
+        - NEXT_PUBLIC_OIDC_ISSUER=${APP_URL}/auth/realms/koreki
+        - NEXT_PUBLIC_OIDC_CLIENT_ID=koreki-app
+        - NEXT_PUBLIC_BASE_URL=${APP_URL}
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_KOREKI_MODE: community
+      NEXT_PUBLIC_SINGLE_USER_MODE: "false"
+      NEXT_PUBLIC_AUTH_TYPE: "KEYCLOAK"
+      NEXT_PUBLIC_BASE_URL: "${APP_URL}"
+      
+      # Unified URL via Nginx Gateway
+      NEXT_PUBLIC_OIDC_ISSUER: "${APP_URL}/auth/realms/koreki"
+      NEXT_PUBLIC_OIDC_CLIENT_ID: "koreki-app"
+      
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      NEXT_PUBLIC_ENABLE_PAID_MODES: "false"
+      DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+    # No public ports, accessible only via gateway
+    volumes:
+      - koreki_data:/app/data
+    depends_on:
+      keycloak:
+        condition: service_healthy
+ 
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.0
+    command: start-dev --http-relative-path /auth --import-realm --health-enabled=true
+    restart: unless-stopped
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD:-password123}
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD:-admin}
+      
+      # Proxy settings for Nginx (Dynamic Header-based)
+      KC_PROXY: edge
+      KC_HOSTNAME: ${APP_HOSTNAME:-localhost}
+      KC_HOSTNAME_PORT: ${PUBLIC_PORT:-8080}
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_HTTP_RELATIVE_PATH: "/auth"
+      APP_URL: ${APP_URL}
+    volumes:
+      - ./keycloak/koreki-realm.${ENVIRONMENT:-dev}.json:/opt/keycloak/data/import/koreki-realm.json
+      - ./keycloak/themes:/opt/keycloak/themes
+    # No public ports, accessible only via gateway
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e \"GET /auth/health/live HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n\" >&3 && cat <&3 | grep -q \"200 OK\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+
+  keycloak-db:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD:-password123}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+
+volumes:
+  koreki_data:
+  keycloak_db_data:

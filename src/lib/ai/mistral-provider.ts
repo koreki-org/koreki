@@ -1,0 +1,262 @@
+import { 
+    MISTRAL_CORE_MODEL, 
+    MISTRAL_UTILS_MODEL, 
+    MISTRAL_CHATS_MODEL, 
+    MISTRAL_OCR_MODEL,
+    fetchWithRetry 
+} from './constants';
+import { 
+    buildCorrectionPrompt, 
+    buildCleanAndAnalyzePrompt, 
+    buildCleanAndMapPrompt, 
+    buildVisionPrompt,
+    StructuredPrompt 
+} from './prompt-builder';
+import { isDesktopTarget } from '@/lib/env-context';
+
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr';
+
+export interface AIRequestOptions {
+    temperature?: number;
+    maxTokens?: number;
+    isScan?: boolean;
+    customPrompt?: string;
+    model?: string;
+}
+
+/**
+ * The Isomorphic Mistral Bridge
+ * 
+ * This is the SINGLE SOURCE OF TRUTH for all AI interactions in Koreki.
+ * It is designed to run both in the Browser (PURE mode) and on the Server (STANDARD mode).
+ */
+export async function executeMistralRequest(
+    action: AIAction,
+    payload: any,
+    apiKey: string,
+    options: AIRequestOptions = {}
+): Promise<any> {
+    // 1. Model Mapping (Industrial Consensus)
+    let model = options.model || MISTRAL_CORE_MODEL; // Respect model override
+    
+    // INDUSTRIAL SAFETY: Override for specific capabilities
+    // The Provider must be immune to wrong models passed from UI state for specialized tasks.
+    if (action === 'vision') {
+        model = MISTRAL_CHATS_MODEL; // Force Vision-capable model (Pixtral / Large)
+    } else if (action === 'ocr') {
+        model = MISTRAL_OCR_MODEL; // Force specialized OCR model
+    } else if (!options.model) {
+        // Fallback for text actions if no model is provided
+        if (action === 'clean-and-analyze' || action === 'clean-and-map') {
+            // Upgrade to Large for complex scans (verbatim integrity), otherwise stay on Small
+            model = options.isScan ? MISTRAL_CHATS_MODEL : MISTRAL_UTILS_MODEL; 
+        }
+    }
+
+    // 2. Prompt Building & Parameter Extraction
+    let messages: any[] = [];
+    let responseFormat: any = undefined; // Default to raw text for vision/ocr
+    let promptObj: StructuredPrompt;
+
+    if (action === 'ocr') {
+        // OCR uses the /v1/ocr endpoint, not chat/completions
+        return await handleOCRRequest(payload, apiKey, options.isScan);
+    }
+
+    // Industrial Single-Pass: Build prompt once and extract options
+    if (action === 'vision') {
+        promptObj = buildVisionPrompt();
+        messages = [
+            { role: 'system', content: promptObj.system },
+            {
+                role: 'user',
+                content: [
+                    { type: 'text', text: promptObj.user },
+                    {
+                        type: 'image_url',
+                        image_url: { url: `data:${payload.mimeType || 'image/jpeg'};base64,${payload.buffer}` }
+                    }
+                ]
+            }
+        ];
+    } else {
+        if (action === 'correction') {
+            promptObj = buildCorrectionPrompt(payload.modelSolution, payload.studentText, payload.tasksLayout, options.customPrompt, model);
+        } else if (action === 'clean-and-analyze') {
+            promptObj = buildCleanAndAnalyzePrompt(payload.modelSolution, model);
+        } else if (action === 'clean-and-map') {
+            promptObj = buildCleanAndMapPrompt(payload.text || payload.studentText, payload.tasksLayout, model);
+        } else {
+            throw new Error(`Unsupported text action: ${action}`);
+        }
+        
+        messages = [
+            { role: 'system', content: promptObj.system },
+            { role: 'user', content: promptObj.user }
+        ];
+        responseFormat = { type: 'json_object' };
+    }
+
+    // 3. API Execution (VRE Parameter Hardening)
+    // Rule: temp: 0 already implies top_p: 1.0 (greedy). 
+    // Mistral rejects requests where both are manipulated in a way that conflicts.
+    const targetTemp = options.temperature ?? promptObj.options?.temperature ?? 0;
+    const targetTopP = promptObj.options?.topP ?? 1.0;
+
+    const url = 'https://api.mistral.ai/v1/chat/completions';
+    const body = {
+        model,
+        messages,
+        response_format: responseFormat,
+        temperature: targetTemp,
+        top_p: targetTemp === 0 ? 1.0 : targetTopP, // Safety: use 1.0 if greedy to avoid 422
+        max_tokens: options.maxTokens ?? 4000
+    };
+
+    let responseData: any;
+
+    if (isDesktopTarget()) {
+        try {
+            const { invoke } = await import('@tauri-apps/api/core');
+            const res = await invoke<string>('execute_ai_proxy_command', {
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(body)
+            });
+            responseData = JSON.parse(res);
+        } catch (e) {
+            throw new Error(`Desktop Proxy Fehler: ${e}`);
+        }
+    } else {
+        const response = await fetchWithRetry(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            let errorMessage = `Mistral API Error: ${response.status}`;
+            try {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const errorData = await response.json();
+                    errorMessage = errorData.error?.message || errorMessage;
+                } else {
+                    const errorText = await response.text();
+                    if (errorText.toLowerCase().includes('bad gateway')) {
+                        errorMessage = "Der KI-Server ist aktuell nicht erreichbar (Bad Gateway). Bitte versuchen Sie es in Kürze erneut.";
+                    } else if (response.status === 504) {
+                        errorMessage = "Zeitüberschreitung bei der KI-Anfrage (Gateway Timeout). Die Musterlösung ist eventuell zu komplex.";
+                    } else {
+                        errorMessage = `Server-Fehler (${response.status}). Bitte versuchen Sie es erneut.`;
+                    }
+                }
+            } catch (e) {
+                errorMessage = `Kritischer API-Fehler (${response.status}).`;
+            }
+            throw new Error(errorMessage);
+        }
+        responseData = await response.json();
+    }
+
+    const data = responseData;
+    const content = data.choices[0].message.content;
+
+    // 4. Robust JSON Parsing (Standard Pattern)
+    if (responseFormat?.type === 'json_object') {
+        try {
+            // Regex-Protection: Find the first { and the last } to ignore markdown fences
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            const cleanJson = jsonMatch ? jsonMatch[0] : content;
+            return {
+                ...JSON.parse(cleanJson),
+                usage: data.usage // Pass usage data for billing
+            };
+        } catch (e) {
+            throw new Error("KI-Antwort konnte nicht als JSON verarbeitet werden.");
+        }
+    }
+
+    return { 
+        text: content,
+        usage: data.usage 
+    };
+}
+
+/**
+ * Specialized handler for Mistral OCR Endpoint
+ */
+async function handleOCRRequest(payload: any, apiKey: string, isScan: boolean = false): Promise<any> {
+    const url = 'https://api.mistral.ai/v1/ocr';
+    const body = {
+        model: MISTRAL_OCR_MODEL,
+        document: {
+            type: "document_url",
+            document_url: `data:${payload.mimeType};base64,${payload.buffer}`
+        }
+    };
+
+    let responseData: any;
+
+    if (isDesktopTarget()) {
+        try {
+            const { invoke } = await import('@tauri-apps/api/core');
+            const res = await invoke<string>('execute_ai_proxy_command', {
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(body)
+            });
+            responseData = JSON.parse(res);
+        } catch (e) {
+            throw new Error(`Desktop OCR Proxy Fehler: ${e}`);
+        }
+    } else {
+        const response = await fetchWithRetry(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            let errorMessage = `Mistral OCR API Error: ${response.status}`;
+            try {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    const err = await response.json();
+                    errorMessage = err.error?.message || errorMessage;
+                } else {
+                    const text = await response.text();
+                    if (text.toLowerCase().includes('bad gateway')) {
+                        errorMessage = "Der OCR-Server ist aktuell nicht erreichbar (Bad Gateway).";
+                    } else {
+                        errorMessage = `OCR-Server-Fehler (${response.status}).`;
+                    }
+                }
+            } catch (e) {
+                errorMessage = `Kritischer OCR-Fehler (${response.status}).`;
+            }
+            throw new Error(errorMessage);
+        }
+        responseData = await response.json();
+    }
+
+    const data = responseData;
+    return {
+        text: (data.pages || []).map((p: any) => p.markdown).join('\n\n'),
+        usage: data.usage
+    };
+}
