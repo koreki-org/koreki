@@ -1,6 +1,7 @@
 name: Koreki Community Release (Docker)
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*'
