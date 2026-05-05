@@ -1,0 +1,5 @@
+# Ignore generated files and metadata from language statistics
+package-lock.json linguist-generated=true
+*.tsbuildinfo linguist-generated=true
+prisma/schema.prisma linguist-language=TypeScript
+keycloak/*.json linguist-generated=true
