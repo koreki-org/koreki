@@ -14,10 +14,10 @@ jobs:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@39630291074ebf8943cca931b26c518aa06067b1 # v4.2.0
         with:
           node-version: '24'
           cache: 'npm'
