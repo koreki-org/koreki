@@ -37,8 +37,8 @@ graph TD
 
 ### Dateisystem-Persistenz (The Vault)
 Anstatt den flüchtigen `localStorage` des Browsers zu nutzen, sendet die Community Edition Experten-Prompts an eine dedizierte Server-API. Der `LocalProfileService` speichert diese als isolierte JSON-Dateien:
-* **Pfad**: `/data/prompts/profiles_[USER_ID].json`
-* **Isolierung**: Die Dateinamen basieren auf der OIDC-Sub (UserID), was eine strikte Datentrennung zwischen Lehrern garantiert.
+* **Pfad**: `/data/prompts/profiles_[SHA256_HASH_OF_USER_ID].json`
+* **Isolierung**: Die Dateinamen basieren auf dem SHA-256 Hash der OIDC-Sub (UserID). Dies verhindert jegliche Path-Traversal-Angriffe und garantiert eine strikte Datentrennung zwischen Lehrern, da keine ungefilterten Nutzereingaben direkt im Dateisystem verwendet werden.
 
 ---
 
@@ -69,6 +69,7 @@ Die API `/api/user/prompt-profiles` erkennt den Community-Modus und leitet Anfra
 
 * **Authentifizierung:** Erfolgt über Keycloak. Koreki speichert keine Passwörter.
 * **Autorisierung:** Ein Zugriff auf Prompts ist nur mit einem gültigen Keycloak-Token möglich, das zur jeweiligen Datei-ID passt.
+* **Path-Traversal-Schutz (Defense-in-Depth):** Der `LocalProfileService` verarbeitet niemals direkte Nutzereingaben als Pfadsegmente (dank des SHA-256 Hashes). Als zusätzliche Rückfallebene löst der Service alle Pfade absolut auf (`path.resolve`) und stellt über eine `startsWith`-Validierung sicher, dass kein Dateizugriff außerhalb des designierten Stammverzeichnisses stattfinden kann. Bei Unstimmigkeiten wird der Request mit einem Sicherheitsalarm blockiert.
 * **SaaS Isolation:** Der Keycloak-Code ist durch einen **Hard Domain Lock** auf `koreki.org` blockiert. Es besteht kein Risiko für den SaaS-Login.
 
 ---
