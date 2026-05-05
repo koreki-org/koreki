@@ -82,11 +82,17 @@ In diesem Setup wird GitHub so konfiguriert, dass der **Webhook zu Coolify nur a
 
 ## X. Security & Compliance (Mandatory for Industrial Grade)
 > [!IMPORTANT]
-> Keine Komponente ohne Security-Betrachtung. (TBD)
+> **Pillar 3 Compliance (CI/CD Security Guard):** Alle in unseren Workflows verwendeten GitHub Actions von Drittanbietern **müssen** zwingend über ihren vollständigen 40-Zeichen-Commit-SHA gepinnt werden, anstatt veränderliche Tags (wie `@v4` oder `@v0`) zu nutzen. Dies schützt unsere CI/CD-Pipeline vor Supply-Chain-Angriffen, falls ein Drittanbieter-Repository kompromittiert wird.
 
-* **Datenverarbeitung:** TBD
-* **Authentifizierung/Autorisierung:** TBD
-* **Audit-Logs:** TBD
+### 🛡️ Richtlinien für GitHub Actions Pinning:
+1. **Verwendung von Commit-SHAs:** Jede externe Action muss über `@<commit-sha>` referenziert werden.
+2. **Maintenance Comments:** Um die Lesbarkeit und automatische Paket-Updates (z. B. durch Dependabot) zu ermöglichen, muss direkt hinter dem Commit-SHA ein Kommentar mit dem originalen Versions-Tag stehen.
+   * *Beispiel:* `uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2`
+3. **Automatische Updates:** Dependabot ist so konfiguriert, dass es Workflows liest, die Versionen in den Kommentaren erkennt und automatisierte Pull Requests mit den aktualisierten SHAs erstellt.
+
+* **Datenverarbeitung:** In der Build-Phase der Pipelines werden Secrets ausschließlich über geschützte GitHub Repository Secrets injiziert und niemals im Code oder in Build-Logs im Klartext exponiert.
+* **Authentifizierung/Autorisierung:** GitHub-Token in den Pipelines haben strikt lesenden Zugriff (`contents: read`), außer für Release-Workflows, die explizit Schreibrechte für Releases (`contents: write`) oder Pakete (`packages: write`) benötigen.
+* **Audit-Logs:** Alle Workflow-Runs werden über GitHub Actions Audit Logs versioniert und archiviert, um Änderungen an Builds lückenlos nachzuvollziehen.
 
 ---
 
@@ -94,6 +100,6 @@ In diesem Setup wird GitHub so konfiguriert, dass der **Webhook zu Coolify nur a
 > [!WARNING]
 > Verlinke hier zwingend auf zugehörige GitHub PRs, Tasks oder Architektur-Entscheidungen (ADR).
 
-* **Verwandte Dokumente:** [release-process.md](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/docs/operations/release-process.md)
-* **Test-Coverage:** TBD
-* **Externe Referenzen:** TBD
+* **Verwandte Dokumente:** [release-process.md](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/docs/operations/release-process.md), [security-pillars.md](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/docs/technical/security-pillars.md)
+* **Test-Coverage:** 100% Validierung der CI/CD Workflows vor jedem Push in `main`.
+* **Externe Referenzen:** [GitHub Security Hardening Guide for Actions](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)
