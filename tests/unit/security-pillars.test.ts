@@ -89,9 +89,9 @@ describe('Security Hub: RBAC & Pillar Verification', () => {
             spy.mockRestore();
         });
 
-        it('should mask sensitive API keys (Mistral style)', () => {
-            logger.error('Failed with api-key: sk-1234567890abcdef');
-            expect(spy).toHaveBeenCalledWith(expect.stringContaining('api-key: sk-1**********'));
+        it('should mask sensitive API keys (Industrial standard)', () => {
+            logger.error('Failed with api-key: industrial-1234567890abcdef');
+            expect(spy).toHaveBeenCalledWith(expect.stringContaining('api-key: indu**********'));
         });
 
         it('should mask Logto IDs (sub claims)', () => {
