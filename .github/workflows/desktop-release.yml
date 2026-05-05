@@ -1,6 +1,7 @@
 name: Koreki Desktop Release
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*'
