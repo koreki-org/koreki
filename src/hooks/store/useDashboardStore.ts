@@ -55,6 +55,9 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
             if (next.ollamaUrl) localStorage.setItem('koreki_ollama_url', next.ollamaUrl);
             if (next.ollamaModel) localStorage.setItem('koreki_ollama_model', next.ollamaModel);
             if (next.customOllamaModel) localStorage.setItem('koreki_ollama_custom_model', next.customOllamaModel);
+            if (next.openaiUrl) localStorage.setItem('koreki_openai_url', next.openaiUrl);
+            if (next.openaiModel) localStorage.setItem('koreki_openai_model', next.openaiModel);
+            if (next.enableThinking !== undefined) localStorage.setItem('koreki_openai_thinking', String(next.enableThinking));
         }
         
         return { aiSettings: next };
@@ -71,17 +74,19 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                 // SECURITY: Load sensitive keys from Vault, not localStorage
                 const mistralKey = await vaultService.getSecret('koreki-mistral-key');
                 const openaiKey = await vaultService.getSecret('koreki-openai-key');
-
+ 
                 let url = localStorage.getItem('koreki_ollama_url') || undefined;
-                // ... (rest of the logic remains same)
                 if (url && url.includes('http') && url.lastIndexOf('http') > 0) {
                     url = url.substring(0, url.indexOf('http', 1)).trim();
                     localStorage.setItem('koreki_ollama_url', url);
                 }
-
+ 
                 let model = localStorage.getItem('koreki_ollama_model') || undefined;
                 let customModel = localStorage.getItem('koreki_ollama_custom_model') || undefined;
-
+                const openaiUrl = localStorage.getItem('koreki_openai_url') || undefined;
+                const openaiModel = localStorage.getItem('koreki_openai_model') || undefined;
+                const enableThinking = localStorage.getItem('koreki_openai_thinking') === 'true';
+ 
                 const garbage = (val: string | undefined) => val && (val.includes('cutest') || val.length > 50);
                 if (garbage(model)) {
                     model = undefined;
@@ -101,7 +106,10 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                         openaiKey: openaiKey,
                         ollamaUrl: url,
                         ollamaModel: model,
-                        customOllamaModel: customModel
+                        customOllamaModel: customModel,
+                        openaiUrl: openaiUrl,
+                        openaiModel: openaiModel,
+                        enableThinking: enableThinking
                     }
                 }));
             } else {

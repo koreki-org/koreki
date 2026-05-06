@@ -21,16 +21,16 @@ const AiSetupModal: React.FC<AiSetupModalProps> = ({
     initialSettings = {} 
 }) => {
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-            <div className="relative w-full max-w-lg bg-white p-8 rounded-[2rem] shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300">
+            <div className="relative w-full max-w-lg bg-white rounded-[32px] shadow-glass border border-border max-h-[90vh] md:max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 text-foreground">
                 <button 
                     onClick={onClose}
-                    className="absolute right-6 top-6 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors"
+                    className="absolute right-6 top-6 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors z-10"
                 >
                     <X size={20} />
                 </button>
 
-                <div className="text-center space-y-3 mb-8">
+                <div className="text-center space-y-3 mb-6 shrink-0 pt-8 px-8">
                     <div className="inline-flex p-3 bg-primary/10 rounded-2xl text-primary mb-2">
                         <Sparkles size={28} />
                     </div>
@@ -40,14 +40,16 @@ const AiSetupModal: React.FC<AiSetupModalProps> = ({
                     </p>
                 </div>
 
-                <AiConfigurationContent 
-                    initialSettings={initialSettings}
-                    onSaveOllama={onSaveOllama}
-                    onSaveMistral={onSaveMistral}
-                    onSaveCustom={onSaveCustom}
-                />
+                <div className="flex-1 overflow-y-auto px-8 pb-6 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent custom-scrollbar">
+                    <AiConfigurationContent 
+                        initialSettings={initialSettings}
+                        onSaveOllama={onSaveOllama}
+                        onSaveMistral={onSaveMistral}
+                        onSaveCustom={onSaveCustom}
+                    />
+                </div>
 
-                <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-center gap-2 text-slate-400">
+                <div className="mt-auto py-4 px-8 border-t border-slate-100 flex items-center justify-center gap-2 text-slate-400 shrink-0 bg-white">
                     <ShieldCheck size={14} />
                     <p className="text-xs font-bold italic">
                         {isDesktopTarget()
