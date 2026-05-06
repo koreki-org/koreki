@@ -80,9 +80,23 @@ GitHub Actions baut native Installer für Windows (`.msi`) und macOS (`.dmg` fü
 *   **Ablage:** Die Dateien werden an einen neuen **Draft Release** auf GitHub angehängt.
 *   **Aktion erforderlich:** Der Draft Release muss manuell im GitHub UI geprüft und auf "Published" gesetzt werden.
 
-## 🔐 Security & Compliance
-*   **Signierung:** Desktop-Releases sollten in Zukunft über einen Apple/Microsoft Developer Account signiert werden (aktuell unsignierte Installer für Beta).
-*   **Abhängigkeiten:** Vor jedem Release wird automatisch ein `security-check` (npm audit) durchgeführt.
+## 🛡️ Permanent Release-Audit Guardrails (Checkliste vor jedem Release)
+
+Um ein unaufgeräumtes Repository zu vermeiden, wird für einzelne Releases **keine separate Audit-Datei** mehr erstellt. Stattdessen führt der **Principal Architect** vor jedem `git push --tags` diese standardisierte Checkliste durch und dokumentiert die Freigabe direkt in der **GitHub Pull Request Beschreibung** oder im **Release-Changelog**.
+
+### 1. 🔐 Geheimnis- & Security-Check
+- [ ] **Secret Search:** Keine produktiven API-Keys, SMTP-Passwörter, Stripe-Keys oder NextAuth-Secrets im aktuellen Code oder der Git-Historie.
+- [ ] **Umgebungsvariablen:** Die Datei `.env` ist ignoriert. `.env.example` ist auf dem neuesten Stand für die neue Version und enthält ausschließlich sichere Dummy-Werte.
+- [ ] **Vulnerability Audit:** Ein lokaler Lauf von `npm run security-check` verläuft fehlerfrei.
+
+### 2. 🏗️ Technische Integrität
+- [ ] **Versions-Synchronität:** Die Versionsnummer in `package.json` und `src-tauri/tauri.conf.json` ist absolut identisch.
+- [ ] **Tag-Format:** Die Versionsnummer ist rein numerisch (z.B. `0.9.57`). Suffixe wie `-beta` sind ausgeschlossen (Tauri-Windows-Kompatibilität).
+- [ ] **Relative Pfade:** Alle Verlinkungen im `README.md` und der Hauptdokumentation zeigen auf existierende, korrekte Pfade im Repository.
+
+### 3. ⚖️ Lizenz- & Markenkonformität
+- [ ] **Dual-Licensing:** Das `README.md` verweist korrekt auf die freie pädagogische Nutzung (Polyform Non-Commercial) und den kommerziellen White-Label-Hostingkontakt für Dienstleister.
+- [ ] **Mitwirkende (CLA):** Die `CONTRIBUTING.md` enthält den rechtlichen Rahmen für Beiträge.
 
 ---
-*Status: Industrial Grade Release Process Active*
+*Status: Industrial Grade Release Process Active & Zero-Clutter Audit Governance Enabled* 🚀🛡️

@@ -84,5 +84,10 @@ Koreki folgt einem "KI-First" Paradigma, bei dem die Präzision durch Instruktio
 - **Strict Validation**: Der Orchestrator agiert als strikter Validator (Equality Check `===`). Abweichungen führen zum "Confidence Brake" (Confidence auf 0), um einen manuellen Review zu erzwingen.
 - **Unified Logic Paths**: Vermeide Code-Resundanz bei der Daten-Transformation durch zentrale interne Facades (z.B. `internalProcessMapping`).
 
+## 14. Release-Audit Governance (Zero-Clutter Policy)
+Um eine unübersichtliche Ordnerstruktur zu vermeiden, dürfen für einzelne Patches/Releases **keine separaten Audit-Dateien** im Repository angelegt werden.
+- **Proaktive Verifizierung**: Bei der Begleitung von Releases MUSS der Architect die im Dokument `docs/operations/release-process.md` verankerte Checkliste (Geheimnisse, Versionen, Lizenzen) aktiv und eigenständig prüfen.
+- **Verteilte Dokumentation**: Die Freigabe des Audits wird ausschließlich in Git-Commits, Pull-Request-Beschreibungen oder den GitHub-Release-Notes dokumentiert. Die Codebasis selbst bleibt frei von Release-spezifischen Audit-Dateien.
+
 ---
-*Status: ARCHITECT APPROVED (V8 - KI-FIRST INTEGRITY)* 🏛️🛡️✅
+*Status: ARCHITECT APPROVED (V9 - ZERO-CLUTTER AUDIT GOVERNANCE)* 🏛️🛡️✅
