@@ -37,10 +37,26 @@ export const useAiGovernance = (
                     const res = await apiClient.get('/api/user/ai-profiles');
                     if (res.ok) {
                         const data = await res.json();
-                        const activeId = settings.activeAiProfileId;
-                        if (activeId) {
-                            const found = data.find((p: any) => p.id === activeId);
-                            if (found) activeProfile = found;
+                        
+                        // If local database bypass signal is active
+                        if (data && typeof data === 'object' && data.local) {
+                            const stored = localStorage.getItem('koreki_local_ai_profiles');
+                            if (stored) {
+                                try {
+                                    const customProfiles = JSON.parse(stored);
+                                    const activeId = settings.activeAiProfileId;
+                                    if (activeId) {
+                                        const found = customProfiles.find((p: any) => p.id === activeId);
+                                        if (found) activeProfile = found;
+                                    }
+                                } catch (e) {}
+                            }
+                        } else if (Array.isArray(data)) {
+                            const activeId = settings.activeAiProfileId;
+                            if (activeId) {
+                                const found = data.find((p: any) => p.id === activeId);
+                                if (found) activeProfile = found;
+                            }
                         }
                     }
                 } catch (err) {

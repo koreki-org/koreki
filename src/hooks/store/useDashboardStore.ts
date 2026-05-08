@@ -66,6 +66,14 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
             if (next.visionTopP !== undefined) localStorage.setItem('koreki_openai_vision_topp', String(next.visionTopP));
             if (next.visionMaxTokens !== undefined) localStorage.setItem('koreki_openai_vision_maxtokens', String(next.visionMaxTokens));
             if (next.visionPresencePenalty !== undefined) localStorage.setItem('koreki_openai_vision_presencepenalty', String(next.visionPresencePenalty));
+            
+            if (next.activeAiProfileId !== undefined) {
+                if (next.activeAiProfileId) {
+                    localStorage.setItem('koreki_active_ai_profile_id', next.activeAiProfileId);
+                } else {
+                    localStorage.removeItem('koreki_active_ai_profile_id');
+                }
+            }
         }
         
         return { aiSettings: next };
@@ -104,6 +112,7 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                 const visionTopP = localStorage.getItem('koreki_openai_vision_topp') ? Number(localStorage.getItem('koreki_openai_vision_topp')) : undefined;
                 const visionMaxTokens = localStorage.getItem('koreki_openai_vision_maxtokens') ? Number(localStorage.getItem('koreki_openai_vision_maxtokens')) : undefined;
                 const visionPresencePenalty = localStorage.getItem('koreki_openai_vision_presencepenalty') ? Number(localStorage.getItem('koreki_openai_vision_presencepenalty')) : undefined;
+                const activeAiProfileId = localStorage.getItem('koreki_active_ai_profile_id') || undefined;
  
                 const garbage = (val: string | undefined) => val && (val.includes('cutest') || val.length > 50);
                 if (garbage(model)) {
@@ -135,7 +144,8 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                         visionTemperature: visionTemperature,
                         visionTopP: visionTopP,
                         visionMaxTokens: visionMaxTokens,
-                        visionPresencePenalty: visionPresencePenalty
+                        visionPresencePenalty: visionPresencePenalty,
+                        activeAiProfileId: activeAiProfileId
                     }
                 }));
             } else {
