@@ -11,6 +11,7 @@ import { DashboardModals } from '@/components/dashboard/DashboardModals';
 import { useAuth } from '@/hooks/useAuth';
 import { useFileProcessor } from '@/hooks/useFileProcessor';
 import { usePromptGovernance } from '@/hooks/usePromptGovernance';
+import { useAiGovernance } from '@/hooks/useAiGovernance';
 import { useDashboardActions } from '@/hooks/useDashboardActions';
 import { useDashboardOrchestrator } from '@/hooks/useDashboardOrchestrator';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
@@ -36,6 +37,7 @@ export default function Home() {
 
     // Governance & Actions
     const { profiles, sessionProfileName, setSessionProfileName } = usePromptGovernance(userData, setAiSettings);
+    const { sessionAiProfileName, setSessionAiProfileName } = useAiGovernance(userData, aiSettings, setAiSettings);
 
     const fileProcessor = useFileProcessor(
         userData, 
@@ -166,6 +168,8 @@ export default function Home() {
                         handleModeSelect={handleModeSelect}
                         sessionProfileName={sessionProfileName}
                         setSessionProfileName={setSessionProfileName}
+                        sessionAiProfileName={sessionAiProfileName}
+                        setSessionAiProfileName={setSessionAiProfileName}
                         profiles={profiles}
                         pureApiKey={data.pureApiKey}
                         setPureApiKey={data.setPureApiKey}

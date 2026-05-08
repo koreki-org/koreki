@@ -30,6 +30,7 @@ model User {
   privacyLogs           PrivacyLog[]
   memberships           Membership[]
   promptProfiles        PromptProfile[]
+  aiProfiles            AiProfile[]
 }
 
 model Workspace {
@@ -112,6 +113,28 @@ model PromptProfile {
   userId           String?
   user             User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt        DateTime @default(now())
+
+  @@unique([name, userId])
+}
+
+model AiProfile {
+  id                    String   @id @default(cuid())
+  name                  String
+  temperature           Float    @default(0.7)
+  topP                  Float    @default(0.8)
+  maxTokens             Int      @default(32768)
+  presencePenalty       Float    @default(0.0)
+  enableThinking        Boolean  @default(false)
+  
+  // --- Vision/OCR-Parameter ---
+  visionTemperature     Float    @default(0.2)
+  visionTopP            Float    @default(0.8)
+  visionMaxTokens       Int      @default(4000)
+  visionPresencePenalty Float    @default(0.0)
+  
+  userId                String?
+  user                  User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt             DateTime @default(now())
 
   @@unique([name, userId])
 }

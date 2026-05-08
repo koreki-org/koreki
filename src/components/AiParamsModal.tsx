@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
-import { X, SlidersHorizontal, Info, RotateCcw, Brain, Eye, Settings2 } from 'lucide-react';
+import { X, SlidersHorizontal, Info, RotateCcw, Brain, Eye, Plus, Trash2, Save } from 'lucide-react';
 import { Button } from './ui/Button';
 import { AppSettings } from '../types';
 import { cn } from '@/lib/utils';
+import { useAiProfiles } from '@/hooks/useAiProfiles';
 
 interface AiParamsModalProps {
     isOpen: boolean;
     onClose: () => void;
     settings: AppSettings;
-    onSave: (updatedSettings: AppSettings) => void;
+    onSave: (updatedSettings: AppSettings, profileName?: string, profileId?: string) => void;
+    sessionAiProfileName: string;
+    setSessionAiProfileName: (n: string) => void;
 }
 
 export const AiParamsModal: React.FC<AiParamsModalProps> = ({
@@ -16,21 +19,41 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
     onClose,
     settings,
     onSave,
+    sessionAiProfileName,
+    setSessionAiProfileName,
 }) => {
     const [activeTab, setActiveTab] = useState<'correction' | 'vision'>('correction');
 
-    // --- State values for Correction Phase ---
-    const [enableThinking, setEnableThinking] = useState(settings.enableThinking ?? false);
-    const [temperature, setTemperature] = useState(settings.temperature ?? (settings.enableThinking ? 0.6 : 0.7));
-    const [topP, setTopP] = useState(settings.topP ?? (settings.enableThinking ? 0.95 : 0.8));
-    const [maxTokens, setMaxTokens] = useState(settings.maxTokens ?? 32768);
-    const [presencePenalty, setPresencePenalty] = useState(settings.presencePenalty ?? 0.0);
+    // --- State & CRUD via our custom hook ---
+    const {
+        profiles,
+        selectedProfileId,
+        selectedProfileData,
+        isSystemSelected,
+        isCreatingNew,
+        setIsCreatingNew,
+        newProfileName,
+        setNewProfileName,
+        saving,
+        isDirty,
+        
+        temperature, setTemperature,
+        topP, setTopP,
+        maxTokens, setMaxTokens,
+        presencePenalty, setPresencePenalty,
+        enableThinking, setEnableThinking,
+        
+        visionTemperature, setVisionTemperature,
+        visionTopP, setVisionTopP,
+        visionMaxTokens, setVisionMaxTokens,
+        visionPresencePenalty, setVisionPresencePenalty,
 
-    // --- State values for Vision (OCR) Phase ---
-    const [visionTemperature, setVisionTemperature] = useState(settings.visionTemperature ?? 0.2);
-    const [visionTopP, setVisionTopP] = useState(settings.visionTopP ?? 0.8);
-    const [visionMaxTokens, setVisionMaxTokens] = useState(settings.visionMaxTokens ?? 4000);
-    const [visionPresencePenalty, setVisionPresencePenalty] = useState(settings.visionPresencePenalty ?? 0.0);
+        handleSelectProfile,
+        handleStartNew,
+        handleSaveProfile,
+        handleDeleteProfile,
+        handleApplyToSession
+    } = useAiProfiles(settings, onSave, onClose, settings.activeAiProfileId || 'system-standard');
 
     if (!isOpen) return null;
 
@@ -48,24 +71,6 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
             setVisionMaxTokens(4000);
             setVisionPresencePenalty(0.0);
         }
-    };
-
-    // --- Save and close ---
-    const handleSave = () => {
-        const updated: AppSettings = {
-            ...settings,
-            enableThinking,
-            temperature,
-            topP,
-            maxTokens,
-            presencePenalty,
-            visionTemperature,
-            visionTopP,
-            visionMaxTokens,
-            visionPresencePenalty,
-        };
-        onSave(updated);
-        onClose();
     };
 
     // --- Helper for temperature description ---
@@ -90,13 +95,13 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
             onClick={onClose}
         >
             <div
-                className="relative w-full max-w-[620px] bg-white rounded-[24px] shadow-2xl border border-slate-100 flex flex-col overflow-hidden max-h-[90vh] animate-in slide-in-from-bottom-4 duration-300"
+                className="relative w-full max-w-[620px] bg-white rounded-[24px] shadow-2xl border border-slate-100 flex flex-col overflow-hidden max-h-[95vh] animate-in slide-in-from-bottom-4 duration-300"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header Block */}
                 <div className="p-6 pb-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <div className="flex items-center gap-2.5">
-                        <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+                        <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl animate-pulse">
                             <SlidersHorizontal size={20} />
                         </div>
                         <div>
@@ -115,8 +120,93 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                     </Button>
                 </div>
 
+                {/* Profile Management Section */}
+                <div className="mx-6 mt-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl flex flex-col gap-3 shadow-sm">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-black uppercase tracking-wider text-slate-500">Inferenz-Profil</span>
+                        
+                        {!isCreatingNew && (
+                            <button
+                                onClick={handleStartNew}
+                                className="text-[10px] font-black text-indigo-600 hover:text-indigo-800 flex items-center gap-1 transition-colors uppercase tracking-wider"
+                            >
+                                <Plus size={12} /> Neu erstellen
+                            </button>
+                        )}
+                    </div>
+
+                    {isCreatingNew ? (
+                        <div className="flex gap-2 items-center">
+                            <input
+                                type="text"
+                                placeholder="Profilname (z.B. Kalt & Präzise)"
+                                value={newProfileName}
+                                onChange={(e) => setNewProfileName(e.target.value)}
+                                className="flex-1 px-3 py-1.5 text-xs border border-slate-200 rounded-xl focus:outline-none focus:border-indigo-500 font-semibold"
+                            />
+                            <Button
+                                size="sm"
+                                variant="default"
+                                onClick={handleSaveProfile}
+                                disabled={saving}
+                                className="h-8 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-xs px-3 font-bold uppercase tracking-wider shadow-sm"
+                            >
+                                Speichern
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => setIsCreatingNew(false)}
+                                className="h-8 rounded-lg text-xs px-2.5 text-slate-500 hover:text-slate-700 font-bold uppercase tracking-wider"
+                            >
+                                Abbrechen
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="flex gap-2 items-center">
+                            <select
+                                value={selectedProfileId}
+                                onChange={(e) => {
+                                    const prof = profiles.find(p => p.id === e.target.value);
+                                    if (prof) handleSelectProfile(prof);
+                                }}
+                                className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-500 cursor-pointer shadow-sm"
+                            >
+                                {profiles.map(p => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.name} {p.isSystem ? ' (System)' : ''}
+                                    </option>
+                                ))}
+                            </select>
+
+                            {/* Save changes if dirty */}
+                            {isDirty && !isSystemSelected && (
+                                <button
+                                    onClick={handleSaveProfile}
+                                    disabled={saving}
+                                    title="Änderungen im ausgewählten Profil speichern"
+                                    className="p-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-xl transition-all border border-indigo-100 shadow-sm"
+                                >
+                                    <Save size={14} />
+                                </button>
+                            )}
+
+                            {/* Delete custom profile */}
+                            {!isSystemSelected && (
+                                <button
+                                    onClick={() => handleDeleteProfile(selectedProfileId)}
+                                    title="Dieses Profil unwiderruflich löschen"
+                                    className="p-2 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl transition-all border border-rose-100 shadow-sm"
+                                >
+                                    <Trash2 size={14} />
+                                </button>
+                            )}
+                        </div>
+                    )}
+                </div>
+
                 {/* Tabs Navigation */}
-                <div className="flex bg-slate-100 p-1 mx-6 mt-5 rounded-xl border border-slate-200/50">
+                <div className="flex bg-slate-100 p-1 mx-6 mt-4 rounded-xl border border-slate-200/50">
                     <button
                         onClick={() => setActiveTab('correction')}
                         className={cn(
@@ -144,7 +234,7 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                 </div>
 
                 {/* Parameters Form Content */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-5 max-h-[50vh]">
+                <div className="flex-1 overflow-y-auto p-6 space-y-5 max-h-[42vh] border-b border-slate-100">
                     {activeTab === 'correction' ? (
                         <>
                             {/* Toggle for Deep Reasoning */}
@@ -203,7 +293,7 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                                     step="0.1"
                                     value={temperature}
                                     onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                                    className="w-full accent-primary bg-slate-100 h-1.5 rounded-lg cursor-pointer"
+                                    className="w-full accent-primary bg-slate-100 h-1.5 rounded-lg cursor-pointer animate-pulse"
                                 />
                                 <div className="flex justify-between items-center text-[10px] text-slate-500 font-semibold leading-relaxed">
                                     <span>{getTempDescription(temperature, 'correction')}</span>
@@ -364,10 +454,10 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                 </div>
 
                 {/* Info Disclaimer Footer Banner */}
-                <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-start gap-2.5">
-                    <Info size={14} className="text-slate-500 mt-0.5 shrink-0" />
-                    <p className="text-[10px] text-slate-500 font-medium leading-snug">
-                        Diese feinkörnigen Einstellungen überschreiben die modellabhängigen Standardwerte der KI-Inferenz. Sie werden sicher lokal gespeichert und gelten für alle darauffolgenden Analysen in dieser Sitzung.
+                <div className="px-6 py-2.5 bg-slate-50 border-t border-slate-100 flex items-start gap-2">
+                    <Info size={13} className="text-slate-500 mt-0.5 shrink-0" />
+                    <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                        Diese feinkörnigen Einstellungen überschreiben die standardmäßigen Inferenzparameter. Sie können als Inferenz-Profile persistent gespeichert und flexibel wiederverwendet werden.
                     </p>
                 </div>
 
@@ -380,24 +470,25 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                         className="h-9 gap-1.5 text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 rounded-xl font-bold uppercase transition-all"
                     >
                         <RotateCcw size={12} />
-                        Defaults laden
+                        Reset Slider
                     </Button>
                     <div className="flex-1" />
                     <Button
                         type="button"
                         variant="outline"
                         onClick={onClose}
-                        className="h-9 px-4 rounded-xl text-xs font-bold"
+                        className="h-9 px-4 rounded-xl text-xs font-bold uppercase tracking-wider"
                     >
                         Abbrechen
                     </Button>
                     <Button
                         type="button"
                         variant="default"
-                        onClick={handleSave}
-                        className="h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-100 border-none rounded-xl text-xs font-black uppercase tracking-wider transition-all"
+                        onClick={handleApplyToSession}
+                        disabled={saving}
+                        className="h-9 px-5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-100 border-none rounded-xl text-xs font-black uppercase tracking-wider transition-all"
                     >
-                        Parameter speichern
+                        Übernehmen
                     </Button>
                 </div>
             </div>

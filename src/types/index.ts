@@ -88,6 +88,7 @@ export interface AppSettings {
     ocrBudget?: number;
     correctionBudget?: number;
     correctionPrompt?: string;
+    activeAiProfileId?: string;
 }
 
 export interface BatchFile {
@@ -129,3 +130,22 @@ export interface KorekiExport {
 }
 
 export type { Task, Analysis };
+
+export interface AiProfile {
+    id: string;
+    name: string;
+    temperature: number;
+    topP: number;
+    maxTokens: number;
+    presencePenalty: number;
+    enableThinking: boolean;
+
+    // --- Vision/OCR-Parameter ---
+    visionTemperature: number;
+    visionTopP: number;
+    visionMaxTokens: number;
+    visionPresencePenalty: number;
+
+    userId?: string | null;
+    createdAt?: string;
+}

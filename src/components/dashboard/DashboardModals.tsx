@@ -49,6 +49,8 @@ interface DashboardModalsProps {
     handleModeSelect: (m: any) => void;
     sessionProfileName: string;
     setSessionProfileName: (n: string) => void;
+    sessionAiProfileName: string;
+    setSessionAiProfileName: (n: string) => void;
     profiles: any[];
     
     // File/Task State
@@ -87,7 +89,9 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
     showQuickStart, setShowQuickStart,
     showModelTypeModal, setShowModelTypeModal,
     saveSettings, handleModeSelect,
-    sessionProfileName, setSessionProfileName, profiles,
+    sessionProfileName, setSessionProfileName,
+    sessionAiProfileName, setSessionAiProfileName,
+    profiles,
     pureApiKey, setPureApiKey,
     pendingModelFile, setPendingModelFile, handleModelUpload,
     splitIdx, setSplitIdx, executeSplit,
@@ -268,9 +272,12 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                     isOpen={showAiParamsSettings}
                     onClose={() => setShowAiParamsSettings(false)}
                     settings={settings}
-                    onSave={(newSettings) => {
+                    sessionAiProfileName={sessionAiProfileName}
+                    setSessionAiProfileName={setSessionAiProfileName}
+                    onSave={(newSettings, profileName) => {
                         setSettings(newSettings);
                         saveSettings(newSettings);
+                        if (profileName) setSessionAiProfileName(profileName);
                     }}
                 />
             )}
