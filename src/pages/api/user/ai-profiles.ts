@@ -82,6 +82,22 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             return res.status(200).json(profile);
         }
 
+        if (req.method === 'PATCH') {
+            const { id, newName } = req.body;
+            if (!id || !newName) return res.status(400).json({ message: 'ID und Name erforderlich' });
+
+            const existing = await prisma.aiProfile.findUnique({ where: { id } });
+            if (!existing || existing.userId !== dbUserId) {
+                return res.status(403).json({ message: 'Nicht autorisiert' });
+            }
+
+            const updated = await prisma.aiProfile.update({
+                where: { id },
+                data: { name: newName }
+            });
+            return res.status(200).json(updated);
+        }
+
         if (req.method === 'DELETE') {
             const profileId = req.query.id as string;
             if (!profileId) return res.status(400).json({ message: 'ID erforderlich' });

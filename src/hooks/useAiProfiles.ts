@@ -24,6 +24,7 @@ export const STANDARD_AI_PROFILE: AiProfile & { isSystem: boolean } = {
 /**
  * Unified state hook for saving and loading custom AI parameters.
  * Seamlessly manages LocalStorage for Desktop/Offline and Postgres SQL DB for SaaS/Community modes.
+ * Ported to mirror the identical robust state and interaction model of usePromptProfiles.
  */
 export const useAiProfiles = (
     settings: AppSettings,
@@ -32,10 +33,14 @@ export const useAiProfiles = (
     currentProfileId: string = 'system-standard'
 ) => {
     const [profiles, setProfiles] = useState<any[]>([]);
-    const [selectedProfileId, setSelectedProfileId] = useState<string>(currentProfileId);
+    const [selectedProfile, setSelectedProfile] = useState<string>('Koreki Standard');
     const [isCreatingNew, setIsCreatingNew] = useState(false);
     const [newProfileName, setNewProfileName] = useState('');
     const [saving, setSaving] = useState(false);
+
+    const [showEditorMobile, setShowEditorMobile] = useState(false);
+    const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
+    const [editingName, setEditingName] = useState('');
 
     // Active tuning slider properties
     const [temperature, setTemperature] = useState(settings.temperature ?? 0.7);
@@ -49,8 +54,8 @@ export const useAiProfiles = (
     const [visionMaxTokens, setVisionMaxTokens] = useState(settings.visionMaxTokens ?? 4000);
     const [visionPresencePenalty, setVisionPresencePenalty] = useState(settings.visionPresencePenalty ?? 0.0);
 
-    const selectedProfileData = profiles.find(p => p.id === selectedProfileId);
-    const isSystemSelected = selectedProfileId === 'system-standard' || selectedProfileData?.isSystem;
+    const selectedProfileData = profiles.find(p => p.name === selectedProfile);
+    const isSystemSelected = selectedProfile === 'Koreki Standard' || selectedProfileData?.isSystem;
 
     // Compare current state parameters to loaded baseline to detect unsaved changes
     const isDirty = (() => {
@@ -95,9 +100,29 @@ export const useAiProfiles = (
         fetchProfiles();
     }, [fetchProfiles]);
 
+    // Initial Hydration matching settings.activeAiProfileId
+    useEffect(() => {
+        if (profiles.length > 0) {
+            const activeId = settings.activeAiProfileId || currentProfileId;
+            const found = profiles.find(p => p.id === activeId || p.name === activeId);
+            if (found) {
+                setSelectedProfile(found.name);
+                setTemperature(found.temperature);
+                setTopP(found.topP);
+                setMaxTokens(found.maxTokens);
+                setPresencePenalty(found.presencePenalty);
+                setEnableThinking(found.enableThinking);
+                setVisionTemperature(found.visionTemperature);
+                setVisionTopP(found.visionTopP);
+                setVisionMaxTokens(found.visionMaxTokens);
+                setVisionPresencePenalty(found.visionPresencePenalty);
+            }
+        }
+    }, [profiles, settings.activeAiProfileId]);
+
     const handleSelectProfile = (profile: any) => {
         setIsCreatingNew(false);
-        setSelectedProfileId(profile.id);
+        setSelectedProfile(profile.name);
         
         setTemperature(profile.temperature);
         setTopP(profile.topP);
@@ -109,11 +134,12 @@ export const useAiProfiles = (
         setVisionTopP(profile.visionTopP);
         setVisionMaxTokens(profile.visionMaxTokens);
         setVisionPresencePenalty(profile.visionPresencePenalty);
+        setShowEditorMobile(true);
     };
 
     const handleStartNew = () => {
         setIsCreatingNew(true);
-        setSelectedProfileId('');
+        setSelectedProfile('');
         setNewProfileName('');
         
         // Reset settings to default values for a clean start
@@ -127,10 +153,11 @@ export const useAiProfiles = (
         setVisionTopP(0.8);
         setVisionMaxTokens(4000);
         setVisionPresencePenalty(0.0);
+        setShowEditorMobile(true);
     };
 
     const handleSaveProfile = async () => {
-        const nameToSave = isCreatingNew ? newProfileName.trim() : selectedProfileData?.name;
+        const nameToSave = isCreatingNew ? newProfileName.trim() : selectedProfile;
         if (!nameToSave) {
             alert("Bitte gib einen Namen für das KI-Profil ein.");
             return;
@@ -139,7 +166,7 @@ export const useAiProfiles = (
         setSaving(true);
 
         const payload = {
-            id: isCreatingNew ? undefined : selectedProfileId,
+            id: isCreatingNew ? undefined : selectedProfileData?.id,
             name: nameToSave,
             temperature,
             topP,
@@ -168,11 +195,11 @@ export const useAiProfiles = (
                 });
                 localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));
                 await fetchProfiles();
-                setSelectedProfileId(newId);
+                setSelectedProfile(nameToSave);
                 setIsCreatingNew(false);
                 setNewProfileName('');
             } else {
-                const existingIdx = customProfiles.findIndex(p => p.id === selectedProfileId);
+                const existingIdx = customProfiles.findIndex(p => p.name === selectedProfile);
                 if (existingIdx >= 0) {
                     customProfiles[existingIdx] = {
                         ...customProfiles[existingIdx],
@@ -193,7 +220,7 @@ export const useAiProfiles = (
 
             if (res.ok) {
                 await fetchProfiles();
-                setSelectedProfileId(data.id);
+                setSelectedProfile(data.name);
                 setIsCreatingNew(false);
                 setNewProfileName('');
                 alert("KI-Profil erfolgreich gespeichert!");
@@ -208,7 +235,8 @@ export const useAiProfiles = (
         }
     };
 
-    const handleDeleteProfile = async (id: string) => {
+    const handleDeleteProfile = async (id: string, e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
         if (id === 'system-standard') return;
         if (!window.confirm("Dieses KI-Profil wirklich dauerhaft löschen?")) return;
 
@@ -219,7 +247,7 @@ export const useAiProfiles = (
                 customProfiles = customProfiles.filter((p: any) => p.id !== id);
                 localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));
                 await fetchProfiles();
-                if (selectedProfileId === id) {
+                if (selectedProfileData?.id === id) {
                     handleSelectProfile(STANDARD_AI_PROFILE);
                 }
             }
@@ -230,7 +258,7 @@ export const useAiProfiles = (
             const res = await apiClient.fetch(`/api/user/ai-profiles?id=${id}`, { method: 'DELETE' });
             if (res.ok) {
                 await fetchProfiles();
-                if (selectedProfileId === id) {
+                if (selectedProfileData?.id === id) {
                     handleSelectProfile(STANDARD_AI_PROFILE);
                 }
             }
@@ -239,7 +267,55 @@ export const useAiProfiles = (
         }
     };
 
+    const handleConfirmRename = async () => {
+        if (!editingName.trim() || !editingProfileId) {
+            setEditingProfileId(null);
+            return;
+        }
+
+        if (isDesktopTarget()) {
+            const stored = localStorage.getItem('koreki_local_ai_profiles');
+            if (stored) {
+                let customProfiles = JSON.parse(stored);
+                customProfiles = customProfiles.map((p: any) => 
+                    p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
+                );
+                localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));
+                const oldName = profiles.find(p => p.id === editingProfileId)?.name;
+                await fetchProfiles();
+                if (selectedProfile === oldName) {
+                    setSelectedProfile(editingName.trim());
+                }
+                setEditingProfileId(null);
+            }
+            return;
+        }
+
+        try {
+            const res = await apiClient.fetch('/api/user/ai-profiles', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: editingProfileId, newName: editingName.trim() })
+            });
+
+            if (res.ok) {
+                const oldName = profiles.find(p => p.id === editingProfileId)?.name;
+                await fetchProfiles();
+                if (selectedProfile === oldName) {
+                    setSelectedProfile(editingName.trim());
+                }
+                setEditingProfileId(null);
+            } else {
+                const data = await res.json();
+                alert(data.message || "Fehler beim Umbenennen");
+            }
+        } catch (err) {
+            alert("Netzwerkfehler beim Umbenennen.");
+        }
+    };
+
     const handleApplyToSession = () => {
+        const profile = profiles.find(p => p.name === selectedProfile);
         onSave({
             ...settings,
             temperature,
@@ -251,14 +327,15 @@ export const useAiProfiles = (
             visionTopP,
             visionMaxTokens,
             visionPresencePenalty,
-            activeAiProfileId: selectedProfileId === 'system-standard' ? undefined : selectedProfileId
-        }, selectedProfileData?.name || 'Koreki Standard', selectedProfileId);
+            activeAiProfileId: !profile || profile.id === 'system-standard' ? undefined : profile.id
+        }, selectedProfile, profile?.id || 'system-standard');
         onClose();
     };
 
     return {
         profiles,
-        selectedProfileId,
+        selectedProfile,
+        setSelectedProfile,
         selectedProfileData,
         isSystemSelected,
         isCreatingNew,
@@ -268,6 +345,13 @@ export const useAiProfiles = (
         saving,
         isDirty,
         
+        showEditorMobile,
+        setShowEditorMobile,
+        editingProfileId,
+        setEditingProfileId,
+        editingName,
+        setEditingName,
+
         temperature, setTemperature,
         topP, setTopP,
         maxTokens, setMaxTokens,
@@ -283,6 +367,7 @@ export const useAiProfiles = (
         handleStartNew,
         handleSaveProfile,
         handleDeleteProfile,
+        handleConfirmRename,
         handleApplyToSession
     };
 };
