@@ -3,7 +3,7 @@ title: "AI Pedagogy Framework (V13/VRE)"
 description: "Framework für faire, präzise und pädagogisch sinnvolle KI-Korrekturen via VRE Parameter-Steuerung"
 author: "@principal_architect"
 date: "2026-04-06"
-last_updated: "2026-04-16"
+last_updated: "2026-05-09"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -64,6 +64,17 @@ Um "mentale Reparaturen" der KI zu verhindern, nutzen wir folgende Guards:
 
 *   **Datenminimierung**: Der `clean-text`-Schritt entfernt Namen und Noise vor der Korrektur.
 *   **Prompt-Injection Protection**: Durch das Hard-Coding der System-Leitplanken im Server-seitigen Template ist das Risiko minimal, dass Nutzer-Input das System-Verhalten (z.B. Crediting) manipuliert.
+
+---
+
+## 5. Chain-of-Thought Scratchpad (Internal Evaluation Buffer)
+
+Koreki implementiert das **Scratchpad-Verfahren (Chain-of-Thought)** zur drastischen Steigerung der Bewertungskompetenz und arithmetischen Präzision der KI:
+
+*   **Der "correctionNotes"-Puffer**: Vor der finalen numerischen Festlegung der Punkte (`pointsObtained`) wird die KI über das JSON-Schema gezwungen, ein internes Feld `"correctionNotes"` zu befüllen.
+*   **Warum dieser Ablauf entscheidend ist:** Da Large Language Models sequentiell (Wort für Wort von links nach rechts) generieren, neigen sie zu Berechnungsfehlern oder voreiligen Schlüssen, wenn sie sofort eine Zahl (`pointsObtained`) ausgeben müssen. 
+*   **Kognitiver Schmierzettel:** Durch das Vorschalten des Textfeldes `"correctionNotes"` führt die KI den logischen Abgleich (Fakten, Syntax oder schrittweise Berechnungen) explizit durch, *bevor* die Bewertung deterministisch festgelegt wird.
+*   **Backend-Robustheit:** Unser isomorpher JSON-Parser in `ai-orchestrator.ts` ist so konzipiert, dass er die zusätzliche `"correctionNotes"`-Eigenschaft beim Mapping auf das Koreki-Datenmodell verwirft. Dadurch bleibt das System zu 100 % abwärtskompatibel, und es entstehen keinerlei Parsing-Fehler oder Performance-Overheads im Backend.
 
 ---
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, PenLine, Brain } from 'lucide-react';
 import { CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { cn } from '@/lib/utils';
@@ -18,6 +18,7 @@ interface BatchHeaderProps {
     ocrStrategy?: 'standard' | 'handwriting';
     setOcrStrategy?: (val: 'standard' | 'handwriting') => void;
     settings?: AppSettings;
+    onUpdateSettings?: (val: AppSettings | ((prev: AppSettings) => AppSettings)) => void;
     isStrategyLocked?: boolean;
     hasScans?: boolean;
     hasFinishedFiles?: boolean;
@@ -35,6 +36,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
     ocrStrategy = 'standard',
     setOcrStrategy,
     settings,
+    onUpdateSettings,
     isStrategyLocked,
     hasScans = true,
     hasFinishedFiles = false,
@@ -52,52 +54,51 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                 </CardTitle>
             </div>
             
-            <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
                 {/* OCR Strategy Toggle (Mistral-Only) */}
                 {settings?.provider === 'mistral' && setOcrStrategy && hasScans && (
-                    <div className="flex items-center gap-2 w-full md:w-auto relative">
-                        <div className={cn(
-                            "flex bg-slate-100/80 p-1 rounded-xl border border-slate-200 shadow-inner transition-opacity duration-300 w-full md:w-auto",
-                            lockStrategy && "opacity-50 pointer-events-none"
-                        )}>
-                            <button
-                                onClick={() => !lockStrategy && setOcrStrategy('standard')}
-                                disabled={lockStrategy}
-                                className={cn(
-                                    "flex-1 md:flex-none px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 whitespace-nowrap",
-                                    ocrStrategy === 'standard' 
-                                        ? "bg-white text-slate-900 shadow-sm" 
-                                        : "text-slate-400 hover:text-slate-600"
-                                )}
-                            >
-                                Standard-Erkennung
-                            </button>
-                            <button
-                                onClick={() => !lockStrategy && setOcrStrategy('handwriting')}
-                                disabled={lockStrategy}
-                                className={cn(
-                                    "flex-1 md:flex-none px-4 py-1.5 text-xs font-bold rounded-lg transition-all duration-300 whitespace-nowrap",
-                                    ocrStrategy === 'handwriting' 
-                                        ? "bg-white text-slate-900 shadow-sm" 
-                                        : "text-slate-400 hover:text-slate-600"
-                                )}
-                            >
-                                Interpretation Handschrift
-                            </button>
+                    <div className={cn(
+                        "flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 border border-slate-200/60 rounded-xl shadow-xs transition-all duration-300",
+                        lockStrategy && "opacity-50 pointer-events-none"
+                    )}>
+                        <div className="flex items-center gap-1.5">
+                            <PenLine size={14} className={cn(
+                                "transition-colors duration-300",
+                                ocrStrategy === 'handwriting' ? "text-primary animate-pulse" : "text-slate-400"
+                            )} />
+                            <span className="text-xs font-bold text-slate-600 select-none">Handschrift</span>
                         </div>
+                        <button
+                            type="button"
+                            role="switch"
+                            aria-checked={ocrStrategy === 'handwriting'}
+                            onClick={() => !lockStrategy && setOcrStrategy(ocrStrategy === 'standard' ? 'handwriting' : 'standard')}
+                            disabled={lockStrategy}
+                            className={cn(
+                                "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
+                                ocrStrategy === 'handwriting' ? "bg-primary" : "bg-slate-200"
+                            )}
+                        >
+                            <span
+                                className={cn(
+                                    "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition duration-200 ease-in-out",
+                                    ocrStrategy === 'handwriting' ? "translate-x-4" : "translate-x-0"
+                                )}
+                            />
+                        </button>
                         
                         <KorekiTooltip 
-                            title="Erkennungs-Strategien"
+                            title="Erkennungs-Strategie"
                             content={(
-                                <div className="space-y-4">
+                                <div className="space-y-3">
                                     <div>
-                                        <p className="text-xs font-bold text-slate-900 mb-1">Standard-Erkennung</p>
+                                        <p className="text-xs font-bold text-slate-900 mb-1">Standard-Erkennung (Aus)</p>
                                         <p className="text-[0.7rem] text-slate-500 leading-relaxed">
                                             Fokussiert auf strukturelle Präzision. Ideal für digitale Dokumente, getippten Text und saubere Scans. Vermeidet Interpretationen.
                                         </p>
                                     </div>
-                                    <div className="pt-3 border-t border-slate-100">
-                                        <p className="text-xs font-bold text-slate-900 mb-1">Interpretation Handschrift</p>
+                                    <div className="pt-2 border-t border-slate-100">
+                                        <p className="text-xs font-bold text-slate-900 mb-1">Interpretation Handschrift (An)</p>
                                         <p className="text-[0.7rem] text-slate-500 leading-relaxed">
                                             Nutzt kognitive KI-Analyse für schwer lesbare Handschriften und Korrekturen.
                                         </p>
@@ -110,11 +111,12 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                 </div>
                             )}
                             position="bottom"
-                            iconSize={16}
+                            iconSize={14}
                             className="shrink-0"
                         />
                     </div>
                 )}
+
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">

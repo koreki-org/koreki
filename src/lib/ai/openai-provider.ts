@@ -12,6 +12,8 @@ export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'v
 
 export interface OpenAIRequestOptions {
     temperature?: number;
+    topP?: number;
+    presencePenalty?: number;
     maxTokens?: number;
     customPrompt?: string;
     model?: string;
@@ -77,10 +79,10 @@ export async function executeOpenAIRequest(
     // If Thinking: temp 1.0 (general) or 0.6 (coding)
     // If Non-Thinking: temp 0.7
     let targetTemp = options.temperature ?? (isThinking ? 1.0 : 0.7);
-    if (action === 'correction' && isThinking) targetTemp = 0.6; // Precise coding/reasoning recommendation
+    if (action === 'correction' && isThinking && options.temperature === undefined) targetTemp = 0.6; // Precise coding/reasoning recommendation
 
-    const targetTopP = isThinking ? 0.95 : 0.8;
-    const presencePenalty = isThinking ? 1.5 : 1.5; // Both recommend 1.5 for general tasks
+    const targetTopP = options.topP ?? (isThinking ? 0.95 : 0.8);
+    const presencePenalty = options.presencePenalty ?? (isThinking ? 1.5 : 1.5); // Both recommend 1.5 for general tasks
 
     // 3. API Execution
     const url = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
@@ -96,7 +98,7 @@ export async function executeOpenAIRequest(
         messages,
         temperature: targetTemp,
         top_p: targetTopP,
-        presence_penalty: structuralActions.includes(action) ? 0.0 : presencePenalty,
+        presence_penalty: options.presencePenalty ?? (structuralActions.includes(action) ? 0.0 : presencePenalty),
         max_tokens: options.maxTokens ?? (isThinking ? 32768 : defaultLimit),
         response_format: action === 'vision' ? undefined : { type: 'json_object' }
     };

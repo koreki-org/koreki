@@ -61,7 +61,12 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
             mode,
             provider,
             model,
-            isPure: isPureMode
+            isPure: isPureMode,
+            temperature: settings?.temperature,
+            topP: settings?.topP,
+            maxTokens: settings?.maxTokens,
+            presencePenalty: settings?.presencePenalty,
+            enableThinking: settings?.enableThinking
         });
     };
 

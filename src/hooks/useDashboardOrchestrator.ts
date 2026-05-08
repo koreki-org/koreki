@@ -65,6 +65,7 @@ export const useDashboardOrchestrator = (
     const [showPromptSettings, setShowPromptSettings] = useState(false);
     const [showModelTypeModal, setShowModelTypeModal] = useState(false);
     const [showAiSetup, setShowAiSetup] = useState(false);
+    const [showAiParamsSettings, setShowAiParamsSettings] = useState(false);
 
     // --- Compliance & Modal Triage (Auto-Gating) ---
     useEffect(() => {
@@ -131,7 +132,8 @@ export const useDashboardOrchestrator = (
             showQuickStart, setShowQuickStart,
             showPromptSettings, setShowPromptSettings,
             showModelTypeModal, setShowModelTypeModal,
-            showAiSetup, setShowAiSetup
+            showAiSetup, setShowAiSetup,
+            showAiParamsSettings, setShowAiParamsSettings
         },
         // Data States
         data: {

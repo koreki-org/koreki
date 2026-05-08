@@ -1,4 +1,4 @@
-import { Crown, Building2, Shield, Sparkles, FileText, Loader2, ShieldCheck } from 'lucide-react';
+import { Crown, Building2, Shield, Sparkles, FileText, Loader2, ShieldCheck, SlidersHorizontal } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { isLocalInstance } from '@/lib/env-context';
 import { useRouter } from 'next/router';
@@ -9,6 +9,7 @@ interface HeaderBadgesProps {
     onUpgrade: () => void;
     onUnlockExpert?: () => void;
     onShowPrompts?: () => void;
+    onShowAiParams?: () => void;
 }
 
 /**
@@ -21,7 +22,8 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
     upgrading,
     onUpgrade,
     onUnlockExpert,
-    onShowPrompts
+    onShowPrompts,
+    onShowAiParams
 }) => {
     const router = useRouter();
     // Role Label Logic (Industrial Grade)
@@ -137,6 +139,20 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                     >
                         <FileText size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
                         <span className="font-bold tracking-tight text-xs">Prompts</span>
+                    </Button>
+                )}
+
+                {/* AI Parameters Button (Stage 10 Stateless) ⚙️🎛️ */}
+                {(isLocalInstance() || userData?.canEditPrompts) && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onShowAiParams}
+                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-3 transition-all flex items-center gap-2 group animate-in fade-in duration-300"
+                        title="KI-Parameter konfigurieren (Feintuning)"
+                    >
+                        <SlidersHorizontal size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
+                        <span className="font-bold tracking-tight text-xs">KI-Parameter</span>
                     </Button>
                 )}
             </div>

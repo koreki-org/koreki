@@ -20,6 +20,7 @@ interface HeaderProps {
     onUpgrade: () => void;
     onShowSettings: () => void;
     onShowPrompts?: () => void;
+    onShowAiParams?: () => void;
     onLogout: () => void;
     onLoadDemo: () => void;
     onShowHelp: () => void;
@@ -38,6 +39,7 @@ const Header: React.FC<HeaderProps> = ({
     onUpgrade,
     onShowSettings,
     onShowPrompts,
+    onShowAiParams,
     onLogout,
     onLoadDemo,
     onShowHelp,
@@ -63,6 +65,7 @@ const Header: React.FC<HeaderProps> = ({
                     onUpgrade={onUpgrade}
                     onUnlockExpert={onUnlockExpert}
                     onShowPrompts={onShowPrompts}
+                    onShowAiParams={onShowAiParams}
                 />
 
                 {/* 2. Utility Navigation (Standard UI Layout) */}

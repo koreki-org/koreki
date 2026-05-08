@@ -7,6 +7,11 @@ export interface PerformanceMetadata {
     provider: string;
     model: string;
     isPure: boolean;
+    temperature?: number;
+    topP?: number;
+    maxTokens?: number;
+    presencePenalty?: number;
+    enableThinking?: boolean;
 }
 
 /**
@@ -45,6 +50,11 @@ export const exportPerformanceExcel = async (
         ['Deployment-Modus:', deploymentLabel],
         ['KI-Quelle:', sourceLabel],
         ['Verwendetes Modell:', modelLabel],
+        ['Temperatur (Korrektur):', metadata?.temperature !== undefined ? metadata.temperature : 'Standard (0.7)'],
+        ['Top P (Korrektur):', metadata?.topP !== undefined ? metadata.topP : 'Standard (0.8)'],
+        ['Max Tokens (Korrektur):', metadata?.maxTokens !== undefined ? metadata.maxTokens : 'Standard (2048)'],
+        ['Presence Penalty (Korrektur):', metadata?.presencePenalty !== undefined ? metadata.presencePenalty : 'Standard (0.0)'],
+        ['Deep Reasoning:', metadata?.enableThinking ? 'Aktiviert (Thinking Mode)' : 'Deaktiviert'],
         ['Export-Datum:', new Date().toLocaleString('de-DE')],
         [''],
         ['GESAMT-STATISTIK (OVERALL)'],

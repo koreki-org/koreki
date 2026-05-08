@@ -48,6 +48,7 @@ Antworte AUSSCHLIESSLICH im folgenden JSON-Format:
     {
       "name": "Name der Aufgabe (MUSS exakt einem Namen aus der Struktur unten entsprechen)",
       "maxPoints": (Soll-Punkte, Zahl),
+      "correctionNotes": "Zwingend! Dein interner Schmierzettel. Führe hier den logischen Abgleich (Fakten, Syntax oder das schrittweise Nachrechnen) durch, BEVOR du die Punkte festlegst.",
       "pointsObtained": (Ist-Punkte, Zahl),
       "feedback": "Kurzer pädagogischer Kommentar",
       "confidence": (Zahl 0-100. Nutze folgende STRIKTE Rubrik: 

@@ -133,6 +133,7 @@ export default function Home() {
                         isImportedSession={fileProcessor.isImportedSession}
                         hasMissingFiles={fileProcessor.batchFiles.length > 0 && fileProcessor.batchFiles.some(f => !f.files || f.files.length === 0)}
                         onShowHelp={() => modals.setShowHelp(true)}
+                        onShowAiParams={() => modals.setShowAiParamsSettings(true)}
                     />
 
                     <DashboardModals 
@@ -149,6 +150,8 @@ export default function Home() {
                         setShowHelp={modals.setShowHelp}
                         showAiSetup={modals.showAiSetup}
                         setShowAiSetup={modals.setShowAiSetup}
+                        showAiParamsSettings={modals.showAiParamsSettings}
+                        setShowAiParamsSettings={modals.setShowAiParamsSettings}
                         showOnboarding={modals.showOnboarding}
                         setShowOnboarding={modals.setShowOnboarding}
                         showAVVUpload={modals.showAVVUpload}
@@ -257,6 +260,7 @@ export default function Home() {
                                 isPureMode={userData?.appMode === 'PURE'}
                                 avvAccepted={userData?.avvAccepted || userData?.role === 'ADMIN' || userData?.appMode === 'TRIAL' || userData?.appMode === 'PURE'}
                                 settings={aiSettings}
+                                onUpdateSettings={setAiSettings}
                             />
                         );
                     })()}

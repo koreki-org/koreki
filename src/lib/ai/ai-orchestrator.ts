@@ -151,6 +151,16 @@ export async function performAIRequest(
                 let ocrData;
                 if (settings?.provider === 'ollama') {
                     ocrData = await executeOllamaRequest('vision', { ...payload, buffer: b64 }, settings);
+                } else if (settings?.provider === 'openai-compatible') {
+                    const baseUrl = settings.openaiUrl || '';
+                    const apiKey = settings.openaiKey || '';
+                    ocrData = await executeOpenAIRequest('vision', { ...payload, buffer: b64 }, baseUrl, apiKey, {
+                        model: settings.openaiModel,
+                        temperature: settings.visionTemperature,
+                        topP: settings.visionTopP,
+                        maxTokens: settings.visionMaxTokens,
+                        presencePenalty: settings.visionPresencePenalty
+                    });
                 } else {
                     ocrData = await executeMistralRequest('vision', { ...payload, buffer: b64 }, mistralKey);
                 }
@@ -167,6 +177,10 @@ export async function performAIRequest(
                 result = await executeOpenAIRequest(action, payload, baseUrl, apiKey, {
                     model: settings.openaiModel,
                     enableThinking: settings.enableThinking,
+                    temperature: settings.temperature,
+                    topP: settings.topP,
+                    maxTokens: settings.maxTokens,
+                    presencePenalty: settings.presencePenalty,
                     customPrompt: settings?.correctionPrompt
                 });
             } else {

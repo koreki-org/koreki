@@ -70,6 +70,14 @@ export interface AppSettings {
     openaiKey?: string;
     openaiModel?: string;
     enableThinking?: boolean;
+    temperature?: number;
+    topP?: number;
+    maxTokens?: number;
+    presencePenalty?: number;
+    visionTemperature?: number;
+    visionTopP?: number;
+    visionMaxTokens?: number;
+    visionPresencePenalty?: number;
     model?: string;
     ocrCostPerMillion?: number;
     ocrInputCostPerMillion?: number;

@@ -31,6 +31,7 @@ Antworte EXAKT im folgenden JSON-Format:
     {
       "name": "Name der Aufgabe (EXAKT)",
       "maxPoints": (Zahl),
+      "correctionNotes": "Zwingend! Dein interner Schmierzettel. Führe hier den logischen Abgleich (Fakten, Syntax oder das schrittweise Nachrechnen) durch, BEVOR du die Punkte festlegst.",
       "pointsObtained": (Zahl),
       "feedback": "Pädagogischer Kommentar",
       "confidence": (Zahl 0-100)

@@ -58,6 +58,14 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
             if (next.openaiUrl) localStorage.setItem('koreki_openai_url', next.openaiUrl);
             if (next.openaiModel) localStorage.setItem('koreki_openai_model', next.openaiModel);
             if (next.enableThinking !== undefined) localStorage.setItem('koreki_openai_thinking', String(next.enableThinking));
+            if (next.temperature !== undefined) localStorage.setItem('koreki_openai_temperature', String(next.temperature));
+            if (next.topP !== undefined) localStorage.setItem('koreki_openai_topp', String(next.topP));
+            if (next.maxTokens !== undefined) localStorage.setItem('koreki_openai_maxtokens', String(next.maxTokens));
+            if (next.presencePenalty !== undefined) localStorage.setItem('koreki_openai_presencepenalty', String(next.presencePenalty));
+            if (next.visionTemperature !== undefined) localStorage.setItem('koreki_openai_vision_temperature', String(next.visionTemperature));
+            if (next.visionTopP !== undefined) localStorage.setItem('koreki_openai_vision_topp', String(next.visionTopP));
+            if (next.visionMaxTokens !== undefined) localStorage.setItem('koreki_openai_vision_maxtokens', String(next.visionMaxTokens));
+            if (next.visionPresencePenalty !== undefined) localStorage.setItem('koreki_openai_vision_presencepenalty', String(next.visionPresencePenalty));
         }
         
         return { aiSettings: next };
@@ -86,6 +94,16 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                 const openaiUrl = localStorage.getItem('koreki_openai_url') || undefined;
                 const openaiModel = localStorage.getItem('koreki_openai_model') || undefined;
                 const enableThinking = localStorage.getItem('koreki_openai_thinking') === 'true';
+                
+                const temperature = localStorage.getItem('koreki_openai_temperature') ? Number(localStorage.getItem('koreki_openai_temperature')) : undefined;
+                const topP = localStorage.getItem('koreki_openai_topp') ? Number(localStorage.getItem('koreki_openai_topp')) : undefined;
+                const maxTokens = localStorage.getItem('koreki_openai_maxtokens') ? Number(localStorage.getItem('koreki_openai_maxtokens')) : undefined;
+                const presencePenalty = localStorage.getItem('koreki_openai_presencepenalty') ? Number(localStorage.getItem('koreki_openai_presencepenalty')) : undefined;
+                
+                const visionTemperature = localStorage.getItem('koreki_openai_vision_temperature') ? Number(localStorage.getItem('koreki_openai_vision_temperature')) : undefined;
+                const visionTopP = localStorage.getItem('koreki_openai_vision_topp') ? Number(localStorage.getItem('koreki_openai_vision_topp')) : undefined;
+                const visionMaxTokens = localStorage.getItem('koreki_openai_vision_maxtokens') ? Number(localStorage.getItem('koreki_openai_vision_maxtokens')) : undefined;
+                const visionPresencePenalty = localStorage.getItem('koreki_openai_vision_presencepenalty') ? Number(localStorage.getItem('koreki_openai_vision_presencepenalty')) : undefined;
  
                 const garbage = (val: string | undefined) => val && (val.includes('cutest') || val.length > 50);
                 if (garbage(model)) {
@@ -109,7 +127,15 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                         customOllamaModel: customModel,
                         openaiUrl: openaiUrl,
                         openaiModel: openaiModel,
-                        enableThinking: enableThinking
+                        enableThinking: enableThinking,
+                        temperature: temperature,
+                        topP: topP,
+                        maxTokens: maxTokens,
+                        presencePenalty: presencePenalty,
+                        visionTemperature: visionTemperature,
+                        visionTopP: visionTopP,
+                        visionMaxTokens: visionMaxTokens,
+                        visionPresencePenalty: visionPresencePenalty
                     }
                 }));
             } else {

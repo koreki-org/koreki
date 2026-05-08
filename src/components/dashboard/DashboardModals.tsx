@@ -12,6 +12,7 @@ import AVVUploadModal from '../AVVUploadModal';
 import PureKeyModal from '../PureKeyModal';
 import ModelTypeModal from '../ModelTypeModal';
 import AiSetupModal from '../AiSetupModal';
+import { AiParamsModal } from '../AiParamsModal';
 import { AppSettings, Task, BatchFile } from '../../types';
 
 interface DashboardModalsProps {
@@ -40,6 +41,8 @@ interface DashboardModalsProps {
     setShowModelTypeModal: (v: boolean) => void;
     showAiSetup: boolean;
     setShowAiSetup: (v: boolean) => void;
+    showAiParamsSettings: boolean;
+    setShowAiParamsSettings: (v: boolean) => void;
     
     // Action Handlers
     saveSettings: (s: AppSettings) => void;
@@ -91,6 +94,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
     redactIdx, setRedactIdx, batchFiles, setBatchFiles,
     pdfTypeQueue, handlePDFTypeSelect,
     showAiSetup, setShowAiSetup,
+    showAiParamsSettings, setShowAiParamsSettings,
     handleAiOllamaSave, handleAiMistralSave, handleAiCustomSave
 }) => {
     return (
@@ -256,6 +260,18 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                     isOrganization={userData?.activeWorkspaceType === 'ORGANIZATION'}
                     workspaceId={userData.activeWorkspaceId}
                     organizationName={userData.activeWorkspaceName}
+                />
+            )}
+
+            {showAiParamsSettings && (
+                <AiParamsModal
+                    isOpen={showAiParamsSettings}
+                    onClose={() => setShowAiParamsSettings(false)}
+                    settings={settings}
+                    onSave={(newSettings) => {
+                        setSettings(newSettings);
+                        saveSettings(newSettings);
+                    }}
                 />
             )}
         </>

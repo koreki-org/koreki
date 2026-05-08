@@ -40,6 +40,7 @@ interface BatchProcessorProps {
     tasksLayout?: Task[];
     avvAccepted: boolean;
     settings?: AppSettings;
+    onUpdateSettings?: (val: AppSettings | ((prev: AppSettings) => AppSettings)) => void;
 }
 
 const BatchProcessor: React.FC<BatchProcessorProps> = ({
@@ -64,7 +65,8 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     isPureMode,
     tasksLayout = [],
     avvAccepted,
-    settings
+    settings,
+    onUpdateSettings
 }) => {
     // --- STAGE 11: INDUSTRIAL BATCH STATUS ENGINE ---
     const { state, metrics, logic, handlers } = useBatchStatus(
@@ -131,6 +133,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                     ocrStrategy={ocrStrategy}
                     setOcrStrategy={setOcrStrategy}
                     settings={settings}
+                    onUpdateSettings={onUpdateSettings}
                     isStrategyLocked={ocrCreditsRequired === 0 || batchFiles.some(f => f.documentType === 'scanned' && f.ocrDone)}
                     hasScans={batchFiles.some(f => f.documentType === 'scanned')}
                     hasFinishedFiles={hasFinishedFiles}
