@@ -90,6 +90,7 @@
     "effect": "^3.21.0",
     "postcss": "^8.5.14",
     "@hono/node-server": "^1.19.13",
-    "dompurify": "^3.2.4"
+    "dompurify": "^3.2.4",
+    "fast-uri": "^3.1.2"
   }
 }

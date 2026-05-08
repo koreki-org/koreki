@@ -62,6 +62,7 @@ COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 # The app itself uses the client bundled in standalone.
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder /app/node_modules/effect ./node_modules/effect
 
 # Fix permissions and pre-create storage
 RUN chmod +x ./start.sh && \
