@@ -63,6 +63,9 @@ COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=builder /app/node_modules/effect ./node_modules/effect
+COPY --from=builder /app/node_modules/fast-check ./node_modules/fast-check
+COPY --from=builder /app/node_modules/pure-rand ./node_modules/pure-rand
+COPY --from=builder /app/node_modules/@standard-schema ./node_modules/@standard-schema
 
 # Fix permissions and pre-create storage
 RUN chmod +x ./start.sh && \
