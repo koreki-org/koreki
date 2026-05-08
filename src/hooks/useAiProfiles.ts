@@ -23,8 +23,8 @@ export const STANDARD_AI_PROFILE: AiProfile & { isSystem: boolean } = {
 
 /**
  * Unified state hook for saving and loading custom AI parameters.
- * Seamlessly manages LocalStorage for Desktop/Offline and Postgres SQL DB for SaaS/Community modes.
- * Ported to mirror the identical robust state and interaction model of usePromptProfiles.
+ * Seamlessly manages LocalStorage for Desktop/Offline/Local-Dev and Postgres SQL DB for SaaS modes.
+ * Detects local instance status dynamically from api-controller data structures.
  */
 export const useAiProfiles = (
     settings: AppSettings,
@@ -37,6 +37,9 @@ export const useAiProfiles = (
     const [isCreatingNew, setIsCreatingNew] = useState(false);
     const [newProfileName, setNewProfileName] = useState('');
     const [saving, setSaving] = useState(false);
+    
+    // Dynamic runtime mode tracking: default to isDesktopTarget, upgrade to true if server signals local instance
+    const [isLocalMode, setIsLocalMode] = useState(isDesktopTarget());
 
     const [showEditorMobile, setShowEditorMobile] = useState(false);
     const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
@@ -57,6 +60,8 @@ export const useAiProfiles = (
     const selectedProfileData = profiles.find(p => p.name === selectedProfile);
     const isSystemSelected = selectedProfile === 'Koreki Standard' || selectedProfileData?.isSystem;
 
+    const isLocal = isDesktopTarget() || isLocalMode;
+
     // Compare current state parameters to loaded baseline to detect unsaved changes
     const isDirty = (() => {
         const base = selectedProfileData || STANDARD_AI_PROFILE;
@@ -74,7 +79,7 @@ export const useAiProfiles = (
     })();
 
     const fetchProfiles = useCallback(async () => {
-        if (isDesktopTarget()) {
+        if (isLocal) {
             const stored = localStorage.getItem('koreki_local_ai_profiles');
             let customProfiles = [];
             if (stored) {
@@ -89,12 +94,26 @@ export const useAiProfiles = (
             const res = await apiClient.get('/api/user/ai-profiles');
             if (res.ok) {
                 const data = await res.json();
-                setProfiles([STANDARD_AI_PROFILE, ...data]);
+                
+                // If API returns local configuration bypass signal
+                if (data && typeof data === 'object' && data.local) {
+                    setIsLocalMode(true);
+                    const stored = localStorage.getItem('koreki_local_ai_profiles');
+                    let customProfiles = [];
+                    if (stored) {
+                        try { customProfiles = JSON.parse(stored); } catch(e) {}
+                    }
+                    setProfiles([STANDARD_AI_PROFILE, ...customProfiles]);
+                } else if (Array.isArray(data)) {
+                    setProfiles([STANDARD_AI_PROFILE, ...data]);
+                } else {
+                    setProfiles([STANDARD_AI_PROFILE]);
+                }
             }
         } catch (err) {
             console.error("Fehler beim Laden der KI-Profile", err);
         }
-    }, []);
+    }, [isLocal]);
 
     useEffect(() => {
         fetchProfiles();
@@ -179,7 +198,7 @@ export const useAiProfiles = (
             visionPresencePenalty
         };
 
-        if (isDesktopTarget()) {
+        if (isLocal) {
             const stored = localStorage.getItem('koreki_local_ai_profiles');
             let customProfiles: any[] = [];
             if (stored) {
@@ -194,10 +213,10 @@ export const useAiProfiles = (
                     isSystem: false
                 });
                 localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));
-                await fetchProfiles();
-                setSelectedProfile(nameToSave);
                 setIsCreatingNew(false);
                 setNewProfileName('');
+                await fetchProfiles();
+                setSelectedProfile(nameToSave);
             } else {
                 const existingIdx = customProfiles.findIndex(p => p.name === selectedProfile);
                 if (existingIdx >= 0) {
@@ -240,7 +259,7 @@ export const useAiProfiles = (
         if (id === 'system-standard') return;
         if (!window.confirm("Dieses KI-Profil wirklich dauerhaft löschen?")) return;
 
-        if (isDesktopTarget()) {
+        if (isLocal) {
             const stored = localStorage.getItem('koreki_local_ai_profiles');
             if (stored) {
                 let customProfiles = JSON.parse(stored);
@@ -273,7 +292,7 @@ export const useAiProfiles = (
             return;
         }
 
-        if (isDesktopTarget()) {
+        if (isLocal) {
             const stored = localStorage.getItem('koreki_local_ai_profiles');
             if (stored) {
                 let customProfiles = JSON.parse(stored);
