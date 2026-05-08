@@ -9,6 +9,12 @@ COPY package.json package-lock.json ./
 COPY prisma ./prisma/
 RUN npm install --legacy-peer-deps
 
+# Stage 1.5: Production Dependencies (pruned)
+FROM node:24-bookworm-slim AS prod-deps
+WORKDIR /app
+COPY --from=deps /app ./
+RUN npm prune --omit=dev
+
 # Stage 2: Builder
 FROM node:24-bookworm-slim AS builder
 WORKDIR /app
@@ -58,14 +64,10 @@ COPY --from=builder /app/prisma ./prisma/
 COPY --from=builder /app/scripts/start.sh ./start.sh
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 
-# CRITICAL: We only copy the prisma binary/engines needed for migrations
-# The app itself uses the client bundled in standalone.
-COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder /app/node_modules/@prisma ./node_modules/@prisma
-COPY --from=builder /app/node_modules/effect ./node_modules/effect
-COPY --from=builder /app/node_modules/fast-check ./node_modules/fast-check
-COPY --from=builder /app/node_modules/pure-rand ./node_modules/pure-rand
-COPY --from=builder /app/node_modules/@standard-schema ./node_modules/@standard-schema
+# CRITICAL: We copy the production-pruned node_modules
+# This guarantees that the prisma CLI has all of its transitive dependencies (effect, pathe, fast-check, etc.)
+# without bloating the image with devDependencies (eslint, typescript, playwright, jest, etc.).
+COPY --from=prod-deps /app/node_modules ./node_modules
 
 # Fix permissions and pre-create storage
 RUN chmod +x ./start.sh && \
