@@ -128,6 +128,7 @@ export default function Home() {
                         onShowPrompts={() => modals.setShowPromptSettings(true)}
                         onUnlockExpert={handleUnlockExpert}
                         activeProfileName={sessionProfileName}
+                        activeAiProfileName={sessionAiProfileName}
                         onLoadDemo={loadDemoData}
                         onReset={handleStartNew}
                         onImportSession={fileProcessor.handleKorekiImport}

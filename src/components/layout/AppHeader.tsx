@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, LogOut, Loader2, HelpCircle, Sparkles, FileText, FileUp, Camera, PlusCircle } from 'lucide-react';
+import { Settings, LogOut, Loader2, HelpCircle, Sparkles, FileText, FileUp, Camera, PlusCircle, SlidersHorizontal } from 'lucide-react';
 import Logo from '../Logo';
 import { Button } from '../ui/Button';
 import { HeaderBadges } from './HeaderBadges';
@@ -31,6 +31,7 @@ interface HeaderProps {
     isImportedSession?: boolean;
     hasMissingFiles?: boolean;
     activeProfileName?: string;
+    activeAiProfileName?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -49,7 +50,8 @@ const Header: React.FC<HeaderProps> = ({
     onRelinkFiles,
     isImportedSession,
     hasMissingFiles,
-    activeProfileName
+    activeProfileName,
+    activeAiProfileName
 }) => {
     // --- STAGE 9: INDUSTRIAL GLOBAL STATUS ---
     const { refs, logic, actions } = useGlobalStatus(userData, onImportSession, onRelinkFiles);
@@ -77,6 +79,14 @@ const Header: React.FC<HeaderProps> = ({
                                     <Sparkles size={12} className="mr-1.5 opacity-80" />
                                     <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
                                         Profil: {activeProfileName}
+                                    </span>
+                                </div>
+                            )}
+                            {activeAiProfileName && (
+                                <div className="flex items-center px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg border border-indigo-100 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300">
+                                    <SlidersHorizontal size={12} className="mr-1.5 opacity-80" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+                                        KI: {activeAiProfileName}
                                     </span>
                                 </div>
                             )}
