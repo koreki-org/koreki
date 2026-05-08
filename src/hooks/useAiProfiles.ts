@@ -38,9 +38,6 @@ export const useAiProfiles = (
     const [newProfileName, setNewProfileName] = useState('');
     const [saving, setSaving] = useState(false);
     
-    // Dynamic runtime mode tracking: default to isDesktopTarget, upgrade to true if server signals local instance
-    const [isLocalMode, setIsLocalMode] = useState(isDesktopTarget());
-
     const [showEditorMobile, setShowEditorMobile] = useState(false);
     const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState('');
@@ -60,7 +57,7 @@ export const useAiProfiles = (
     const selectedProfileData = profiles.find(p => p.name === selectedProfile);
     const isSystemSelected = selectedProfile === 'Koreki Standard' || selectedProfileData?.isSystem;
 
-    const isLocal = isDesktopTarget() || isLocalMode;
+    const isLocal = isDesktopTarget();
 
     // Compare current state parameters to loaded baseline to detect unsaved changes
     const isDirty = (() => {
@@ -95,16 +92,7 @@ export const useAiProfiles = (
             if (res.ok) {
                 const data = await res.json();
                 
-                // If API returns local configuration bypass signal
-                if (data && typeof data === 'object' && data.local) {
-                    setIsLocalMode(true);
-                    const stored = localStorage.getItem('koreki_local_ai_profiles');
-                    let customProfiles = [];
-                    if (stored) {
-                        try { customProfiles = JSON.parse(stored); } catch(e) {}
-                    }
-                    setProfiles([STANDARD_AI_PROFILE, ...customProfiles]);
-                } else if (Array.isArray(data)) {
+                if (Array.isArray(data)) {
                     setProfiles([STANDARD_AI_PROFILE, ...data]);
                 } else {
                     setProfiles([STANDARD_AI_PROFILE]);

@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
+import { LocalAiProfileService } from '../../../lib/services/local-profile-service';
 
 /**
  * AI Profiles API Controller (Stage 18)
@@ -25,9 +26,44 @@ const aiProfileSchema = z.object({
 });
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
-    // --- LOCAL INSTANCE BYPASS (Desktop & Community Single-User use Browser LocalStorage) ---
+    // --- LOCAL INSTANCE BYPASS (Desktop & Community Single-User use file-based LocalAiProfileService) ---
     if (isLocalInstance()) {
-        return res.status(200).json({ local: true });
+        const { claims } = req.user;
+        const userId = claims?.sub;
+
+        try {
+            if (req.method === 'GET') {
+                const profiles = await LocalAiProfileService.getAvailableProfiles(userId);
+                return res.status(200).json(profiles);
+            }
+            if (req.method === 'POST') {
+                const validation = aiProfileSchema.safeParse(req.body);
+                if (!validation.success) {
+                    return res.status(400).json({ 
+                        message: validation.error.issues[0]?.message || 'Ungültige Daten' 
+                    });
+                }
+                const profile = await LocalAiProfileService.upsertProfile(validation.data, userId);
+                return res.status(200).json(profile);
+            }
+            if (req.method === 'PATCH') {
+                const { id, newName } = req.body;
+                if (!id || !newName) return res.status(400).json({ message: 'ID und Name erforderlich' });
+                
+                await LocalAiProfileService.renameProfile(id, newName, userId);
+                return res.status(200).json({ success: true });
+            }
+            if (req.method === 'DELETE') {
+                const profileId = req.query.id as string;
+                if (!profileId) return res.status(400).json({ message: 'ID erforderlich' });
+                
+                await LocalAiProfileService.deleteProfile(profileId, userId);
+                return res.status(200).json({ success: true });
+            }
+            return res.status(405).json({ message: 'Method not allowed' });
+        } catch (err) {
+            return res.status(500).json({ message: 'Lokaler Fehler beim Verarbeiten der Profile' });
+        }
     }
 
     const { claims } = req.user;
