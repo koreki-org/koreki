@@ -13,7 +13,7 @@ RUN npm install --legacy-peer-deps
 FROM node:24-bookworm-slim AS prod-deps
 WORKDIR /app
 COPY --from=deps /app ./
-RUN npm prune --omit=dev
+RUN npm prune --omit=dev --legacy-peer-deps
 
 # Stage 2: Builder
 FROM node:24-bookworm-slim AS builder
