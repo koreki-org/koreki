@@ -9,15 +9,15 @@ export const useBatchActions = (
     state: any,
     userData: any,
     settings: AppSettings,
-    startExtraction: (items: BatchFile[]) => Promise<void>
+    startExtraction: (items: BatchFile[]) => Promise<void>,
+    setModelSolution?: React.Dispatch<React.SetStateAction<string>>,
+    setTasksLayout?: React.Dispatch<React.SetStateAction<Task[]>>
 ) => {
     const {
         batchFiles, setBatchFiles,
         setPdfTypeQueue,
         setIsImportedSession,
-        setIsLoadingModel,
-        setTasksLayout,
-        setModelSolution
+        setIsLoadingModel
     } = state;
 
     const removeFile = useCallback((index: number) => {

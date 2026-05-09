@@ -48,7 +48,9 @@ export const useFileProcessor = (
         state, 
         userData, 
         settings, 
-        startExtraction
+        startExtraction,
+        setModelSolution,
+        setTasksLayout
     );
     const {
         handleStudentUpload,

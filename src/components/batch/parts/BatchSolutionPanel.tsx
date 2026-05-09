@@ -60,10 +60,19 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
                     </div>
                     {(activeGroupName && groupedTasks[activeGroupName] ? groupedTasks[activeGroupName] : (item.result?.tasks || [])).map((task) => {
                         const sIdx = tasksLayout.findIndex(t => t.name === task.name);
-                        let sectionText = sIdx !== -1 ? (studentSections[sIdx] || '') : '';
-                        if (!sectionText && item.result) {
+                        let sectionText = '';
+                        
+                        // Priority 1: Edited text stored in the AI Result (item.result.tasks)
+                        if (item.status === 'done' && item.result) {
                             const aiTask = item.result.tasks.find(t => t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
-                            sectionText = aiTask?.content || '';
+                            if (aiTask && aiTask.content) {
+                                sectionText = aiTask.content;
+                            }
+                        }
+                        
+                        // Priority 2: Original OCR split from studentSections
+                        if (!sectionText) {
+                            sectionText = sIdx !== -1 ? (studentSections[sIdx] || '') : '';
                         }
                         return (
                             <div key={task.id || task.name || task.idx}>
