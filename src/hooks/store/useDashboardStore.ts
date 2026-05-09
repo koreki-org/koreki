@@ -101,7 +101,7 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                 let customModel = localStorage.getItem('koreki_ollama_custom_model') || undefined;
                 const openaiUrl = localStorage.getItem('koreki_openai_url') || undefined;
                 const openaiModel = localStorage.getItem('koreki_openai_model') || undefined;
-                const enableThinking = localStorage.getItem('koreki_openai_thinking') === 'true';
+                const enableThinking = localStorage.getItem('koreki_openai_thinking') !== 'false';
                 
                 const temperature = localStorage.getItem('koreki_openai_temperature') ? Number(localStorage.getItem('koreki_openai_temperature')) : undefined;
                 const topP = localStorage.getItem('koreki_openai_topp') ? Number(localStorage.getItem('koreki_openai_topp')) : undefined;

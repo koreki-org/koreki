@@ -204,11 +204,11 @@ export const LocalAiProfileService = {
         const profileData = {
             id: data.id || `local-ai-${Date.now()}`,
             name: data.name,
-            temperature: Number(data.temperature ?? 0.7),
+            temperature: Number(data.temperature ?? 0.2),
             topP: Number(data.topP ?? 0.8),
             maxTokens: Number(data.maxTokens ?? 32768),
             presencePenalty: Number(data.presencePenalty ?? 0.0),
-            enableThinking: Boolean(data.enableThinking),
+            enableThinking: data.enableThinking !== undefined ? Boolean(data.enableThinking) : true,
             visionTemperature: Number(data.visionTemperature ?? 0.2),
             visionTopP: Number(data.visionTopP ?? 0.8),
             visionMaxTokens: Number(data.visionMaxTokens ?? 4000),

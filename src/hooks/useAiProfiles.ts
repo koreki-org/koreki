@@ -8,14 +8,29 @@ import { apiClient } from '@/lib/api-client';
  */
 export const STANDARD_AI_PROFILE: AiProfile & { isSystem: boolean } = {
     id: 'system-standard',
-    name: 'Koreki Standard',
-    temperature: 0.7,
+    name: 'Standard',
+    temperature: 0.2,
     topP: 0.8,
     maxTokens: 32768,
     presencePenalty: 0.0,
-    enableThinking: false,
+    enableThinking: true,
     visionTemperature: 0.2,
     visionTopP: 0.8,
+    visionMaxTokens: 4000,
+    visionPresencePenalty: 0.0,
+    isSystem: true
+};
+
+export const MATH_AI_PROFILE: AiProfile & { isSystem: boolean } = {
+    id: 'system-math',
+    name: 'Logik & Mathe',
+    temperature: 0.0,
+    topP: 0.1,
+    maxTokens: 32768,
+    presencePenalty: 0.0,
+    enableThinking: true,
+    visionTemperature: 0.1,
+    visionTopP: 0.5,
     visionMaxTokens: 4000,
     visionPresencePenalty: 0.0,
     isSystem: true
@@ -33,7 +48,7 @@ export const useAiProfiles = (
     currentProfileId: string = 'system-standard'
 ) => {
     const [profiles, setProfiles] = useState<any[]>([]);
-    const [selectedProfile, setSelectedProfile] = useState<string>('Koreki Standard');
+    const [selectedProfile, setSelectedProfile] = useState<string>('Standard');
     const [isCreatingNew, setIsCreatingNew] = useState(false);
     const [newProfileName, setNewProfileName] = useState('');
     const [saving, setSaving] = useState(false);
@@ -43,11 +58,11 @@ export const useAiProfiles = (
     const [editingName, setEditingName] = useState('');
 
     // Active tuning slider properties
-    const [temperature, setTemperature] = useState(settings.temperature ?? 0.7);
+    const [temperature, setTemperature] = useState(settings.temperature ?? 0.2);
     const [topP, setTopP] = useState(settings.topP ?? 0.8);
     const [maxTokens, setMaxTokens] = useState(settings.maxTokens ?? 32768);
     const [presencePenalty, setPresencePenalty] = useState(settings.presencePenalty ?? 0.0);
-    const [enableThinking, setEnableThinking] = useState(settings.enableThinking ?? false);
+    const [enableThinking, setEnableThinking] = useState(settings.enableThinking ?? true);
 
     const [visionTemperature, setVisionTemperature] = useState(settings.visionTemperature ?? 0.2);
     const [visionTopP, setVisionTopP] = useState(settings.visionTopP ?? 0.8);
@@ -55,7 +70,7 @@ export const useAiProfiles = (
     const [visionPresencePenalty, setVisionPresencePenalty] = useState(settings.visionPresencePenalty ?? 0.0);
 
     const selectedProfileData = profiles.find(p => p.name === selectedProfile);
-    const isSystemSelected = selectedProfile === 'Koreki Standard' || selectedProfileData?.isSystem;
+    const isSystemSelected = selectedProfile === 'Standard' || selectedProfileData?.isSystem;
 
     const isLocal = isDesktopTarget();
 
@@ -82,7 +97,7 @@ export const useAiProfiles = (
             if (stored) {
                 try { customProfiles = JSON.parse(stored); } catch(e) {}
             }
-            const allProfiles = [STANDARD_AI_PROFILE, ...customProfiles];
+            const allProfiles = [STANDARD_AI_PROFILE, MATH_AI_PROFILE, ...customProfiles];
             setProfiles(allProfiles);
             return;
         }
@@ -93,9 +108,9 @@ export const useAiProfiles = (
                 const data = await res.json();
                 
                 if (Array.isArray(data)) {
-                    setProfiles([STANDARD_AI_PROFILE, ...data]);
+                    setProfiles([STANDARD_AI_PROFILE, MATH_AI_PROFILE, ...data]);
                 } else {
-                    setProfiles([STANDARD_AI_PROFILE]);
+                    setProfiles([STANDARD_AI_PROFILE, MATH_AI_PROFILE]);
                 }
             }
         } catch (err) {
@@ -150,11 +165,11 @@ export const useAiProfiles = (
         setNewProfileName('');
         
         // Reset settings to default values for a clean start
-        setTemperature(0.7);
+        setTemperature(0.2);
         setTopP(0.8);
         setMaxTokens(32768);
         setPresencePenalty(0.0);
-        setEnableThinking(false);
+        setEnableThinking(true);
 
         setVisionTemperature(0.2);
         setVisionTopP(0.8);
@@ -244,7 +259,8 @@ export const useAiProfiles = (
 
     const handleDeleteProfile = async (id: string, e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
-        if (id === 'system-standard') return;
+        const profile = profiles.find(p => p.id === id);
+        if (profile?.isSystem) return;
         if (!window.confirm("Dieses KI-Profil wirklich dauerhaft löschen?")) return;
 
         if (isLocal) {

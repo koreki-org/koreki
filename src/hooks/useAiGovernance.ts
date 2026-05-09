@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
-import { STANDARD_AI_PROFILE } from './useAiProfiles';
+import { STANDARD_AI_PROFILE, MATH_AI_PROFILE } from './useAiProfiles';
 import { isDesktopTarget } from '@/lib/env-context';
 
 /**
@@ -14,18 +14,22 @@ export const useAiGovernance = (
     settings: AppSettings,
     setSettings: (val: AppSettings | ((prev: AppSettings) => AppSettings)) => void
 ) => {
-    const [sessionAiProfileName, setSessionAiProfileName] = useState<string>('Koreki Standard');
+    const [sessionAiProfileName, setSessionAiProfileName] = useState<string>('Standard');
 
     useEffect(() => {
         const fetchAiProfileOnStart = async () => {
             let activeProfile = STANDARD_AI_PROFILE;
+            const activeId = settings.activeAiProfileId;
 
-            if (isDesktopTarget()) {
+            if (activeId === 'system-math') {
+                activeProfile = MATH_AI_PROFILE;
+            } else if (activeId === 'system-standard') {
+                activeProfile = STANDARD_AI_PROFILE;
+            } else if (isDesktopTarget()) {
                 const stored = localStorage.getItem('koreki_local_ai_profiles');
                 if (stored) {
                     try {
                         const customProfiles = JSON.parse(stored);
-                        const activeId = settings.activeAiProfileId;
                         if (activeId) {
                             const found = customProfiles.find((p: any) => p.id === activeId);
                             if (found) activeProfile = found;

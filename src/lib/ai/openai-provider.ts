@@ -73,13 +73,15 @@ export async function executeOpenAIRequest(
     }
 
     // 2. Parameter Hardening (Qwen 3.6 Recommendations)
-    const isThinking = options.enableThinking ?? false;
+    const isThinking = options.enableThinking ?? true;
     
     // Industrial Default Mapping:
     // If Thinking: temp 1.0 (general) or 0.6 (coding)
-    // If Non-Thinking: temp 0.7
-    let targetTemp = options.temperature ?? (isThinking ? 1.0 : 0.7);
-    if (action === 'correction' && isThinking && options.temperature === undefined) targetTemp = 0.6; // Precise coding/reasoning recommendation
+    // If Non-Thinking: temp 0.2 (Koreki default precision)
+    let targetTemp = options.temperature ?? (isThinking ? 1.0 : 0.2);
+    if (action === 'correction' && options.temperature === undefined) {
+        targetTemp = isThinking ? 0.6 : 0.2;
+    }
 
     const targetTopP = options.topP ?? (isThinking ? 0.95 : 0.8);
     const presencePenalty = options.presencePenalty ?? (isThinking ? 1.5 : 1.5); // Both recommend 1.5 for general tasks

@@ -36,11 +36,11 @@ In SaaS- und Multi-User-Umgebungen (Community) wird eine neue Tabelle `AiProfile
 model AiProfile {
   id                    String   @id @default(cuid())
   name                  String
-  temperature           Float    @default(0.7)
+  temperature           Float    @default(0.2)
   topP                  Float    @default(0.8)
   maxTokens             Int      @default(32768)
   presencePenalty       Float    @default(0.0)
-  enableThinking        Boolean  @default(false)
+  enableThinking        Boolean  @default(true)
   
   // --- Vision/OCR-Parameter ---
   visionTemperature     Float    @default(0.2)

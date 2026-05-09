@@ -14,11 +14,11 @@ import { LocalAiProfileService } from '../../../lib/services/local-profile-servi
 const aiProfileSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, 'Name ist erforderlich'),
-    temperature: z.number().default(0.7),
+    temperature: z.number().default(0.2),
     topP: z.number().default(0.8),
     maxTokens: z.number().default(32768),
     presencePenalty: z.number().default(0.0),
-    enableThinking: z.boolean().default(false),
+    enableThinking: z.boolean().default(true),
     visionTemperature: z.number().default(0.2),
     visionTopP: z.number().default(0.8),
     visionMaxTokens: z.number().default(4000),

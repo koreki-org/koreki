@@ -66,7 +66,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                             provider: 'openai-compatible', 
                             openaiModel: 'Qwen3.6-35B-A3B-FP8',
                             openaiUrl: 'https://llm.aihosting.mittwald.de/v1',
-                            enableThinking: false
+                            enableThinking: true
                         })}
                         className={`group relative p-5 rounded-3xl border-2 transition-all duration-300 text-left ${
                             settings.provider === 'openai-compatible' ? 'border-indigo-500 bg-indigo-50/30 ring-4 ring-indigo-500/10' : 'border-slate-100 bg-white'

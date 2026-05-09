@@ -93,7 +93,7 @@ export function buildCorrectionPrompt(
     return { 
         system, 
         user,
-        options: { temperature: 0.7, topP: 1.0 } // Pedagogical Flexibility
+        options: { temperature: 0.2, topP: 1.0 } // Pedagogical Flexibility
     };
 }
 

@@ -19,7 +19,7 @@ describe('Prompt Builder Specialized Routing', () => {
             const prompt = buildCorrectionPrompt('Muster', 'Schüler', null, '', qwenModel);
             expect(prompt.user).toContain('Muster');
             expect(prompt.user).toContain('Schüler');
-            expect(prompt.options?.temperature).toBe(0.7);
+            expect(prompt.options?.temperature).toBe(0.2);
         });
 
         it('should use Qwen specialized clean-and-map prompt', () => {
