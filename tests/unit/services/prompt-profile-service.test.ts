@@ -24,9 +24,9 @@ describe('PromptProfileService 🧪🏮🛡️', () => {
     });
 
     describe('getSystemDefaults', () => {
-        it('should return exactly 6 subject-specific profiles', () => {
+        it('should return exactly 7 subject-specific profiles', () => {
             const defaults = PromptProfileService.getSystemDefaults();
-            expect(defaults.length).toBe(6);
+            expect(defaults.length).toBe(7);
             expect(defaults.map(p => p.name)).toContain('Informatik');
             expect(defaults.every(p => p.isSystem)).toBe(true);
         });
@@ -39,7 +39,7 @@ describe('PromptProfileService 🧪🏮🛡️', () => {
 
             const results = await PromptProfileService.syncSystemProfiles();
             expect(prisma.promptProfile.update).toHaveBeenCalled();
-            expect(results.length).toBe(6);
+            expect(results.length).toBe(7);
         });
 
         it('should create missing system profiles', async () => {
@@ -48,7 +48,7 @@ describe('PromptProfileService 🧪🏮🛡️', () => {
 
             const results = await PromptProfileService.syncSystemProfiles();
             expect(prisma.promptProfile.create).toHaveBeenCalled();
-            expect(results.length).toBe(6);
+            expect(results.length).toBe(7);
         });
     });
 

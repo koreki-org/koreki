@@ -57,8 +57,8 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
             </div>
             
             <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
-                {/* OCR Strategy Toggle (Mistral -> Qwen Override for High Accuracy) */}
-                {settings?.provider === 'mistral' && setOcrStrategy && hasScans && (
+                {/* OCR Strategy Toggle (Mistral -> Qwen Override for High Accuracy / Slower Correction) */}
+                {settings?.provider === 'mistral' && setOcrStrategy && (
                     <div className={cn(
                         "flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 border border-slate-200/60 rounded-xl shadow-xs transition-all duration-300",
                         lockStrategy && "opacity-50 pointer-events-none"
@@ -68,7 +68,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                 "transition-colors duration-300",
                                 ocrStrategy === 'handwriting' ? "text-primary animate-pulse" : "text-slate-400"
                             )} />
-                            <span className="text-xs font-bold text-slate-600 select-none">Hohe Genauigkeit</span>
+                            <span className="text-xs font-bold text-slate-600 select-none">Hohe Genauigkeit (langsamer)</span>
                         </div>
                         <button
                             type="button"
@@ -90,21 +90,21 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                         </button>
                         
                         <KorekiTooltip 
-                            title="Erkennungs-Strategie"
+                            title="Korrektur-Genauigkeit"
                             content={(
                                 <div className="space-y-3">
                                     <div>
-                                        <p className="text-xs font-bold text-slate-900 mb-1">Schnelle Erkennung (Aus)</p>
+                                        <p className="text-xs font-bold text-slate-900 mb-1">Normale Korrektur (Aus)</p>
                                         <p className="text-[0.7rem] text-slate-500 leading-relaxed">
-                                            Fokussiert auf strukturelle Präzision mit Mistral. Ideal für digitale Dokumente, getippten Text und saubere Scans. Gilt für Erkennung und Korrektur.
+                                            Nutzt standardmäßig Mistral für eine schnelle, ressourcenschonende Erkennung und Korrektur. Ideal für digitale Texte und saubere Dokumente.
                                         </p>
                                     </div>
                                     <div className="pt-2 border-t border-slate-100">
                                         <p className="text-xs font-bold text-slate-900 mb-1">Hohe Genauigkeit (An)</p>
                                         <p className="text-[0.7rem] text-slate-500 leading-relaxed">
                                             {isPureMode 
-                                                ? 'Nutzt die kognitive Vision-Erweiterung für schwer lesbare Dokumente und Handschriften.' 
-                                                : 'Nutzt Qwen3.6 für maximale Präzision bei schwer lesbaren Dokumenten und für die finale Korrektur.'
+                                                ? 'Aktiviert eine tiefere Analyse und kognitive Vision-Erweiterung für komplexe Handschriften.' 
+                                                : 'Nutzt das leistungsstärkere Modell Qwen3.6 für maximale logische Präzision bei der Korrektur. Die Ausführung dauert dafür etwas länger.'
                                             }
                                         </p>
                                     </div>

@@ -11,6 +11,11 @@ export const STANDARD_PROFILES = [
         correctionPrompt: 'Bewerte die inhaltliche Substanz fair und ausgewogen. Achte dabei besonders auf eine klare Strukturierung der Argumentation und die fachliche Nachvollziehbarkeit der Gedankengänge.' 
     },
     { 
+        name: 'Mathe & Logik', 
+        isSystem: true, 
+        correctionPrompt: 'Bewerte mit höchster mathematischer und logischer Präzision. Achte akribisch auf die formale Korrektheit von Rechenwegen, Formeln und logischen Beweisketten. Identifiziere logische Fehlschlüsse oder Rechenfehler präzise, aber bewerte unvollständige oder fehlerbehaftete Lösungsansätze anhand von Folgefehlern fair.' 
+    },
+    { 
         name: 'Informatik', 
         isSystem: true, 
         correctionPrompt: 'Lege besonderen Wert auf das logische Verständnis von informationstechnischen Zusammenhängen und Strukturen. Bewerte funktionale Korrektheit und Problemlösungskompetenz höher als rein syntaktische Perfektion.' 
