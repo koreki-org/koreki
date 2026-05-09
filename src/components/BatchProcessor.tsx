@@ -138,6 +138,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                     hasScans={batchFiles.some(f => f.documentType === 'scanned')}
                     hasFinishedFiles={hasFinishedFiles}
                     totalPossibleCredits={totalPossibleCredits}
+                    isPureMode={isPureMode}
                 />
 
                 <CardContent>

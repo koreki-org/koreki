@@ -235,7 +235,8 @@ export const useProcessingPipeline = (
                     pageCount: currentFile.pageCount || 1,
                     isCorrection: true,
                     requestId: i, // Scoped streaming
-                    expertProfileName
+                    expertProfileName,
+                    isComplex: ocrStrategy === 'handwriting'
                 }, userData?.appMode, settings);
                 const duration = performance.now() - startTime;
 

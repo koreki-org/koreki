@@ -219,7 +219,7 @@ export async function performAIRequest(
             ...payload, 
             studentText: payload.studentText || payload.text, 
             settings, 
-            isComplex: action === 'vision' 
+            isComplex: payload.isComplex ?? (action === 'vision') 
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'KI Anfrage fehlgeschlagen');

@@ -24,4 +24,5 @@ export const CorrectionSchema = z.object({
     documentType: z.string().optional(),
     pageCount: z.number().min(1).optional(),
     expertProfileName: z.string().optional(),
+    isComplex: z.boolean().optional(),
 });

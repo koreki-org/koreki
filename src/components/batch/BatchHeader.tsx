@@ -23,6 +23,7 @@ interface BatchHeaderProps {
     hasScans?: boolean;
     hasFinishedFiles?: boolean;
     totalPossibleCredits?: number;
+    isPureMode?: boolean;
 }
 
 export const BatchHeader: React.FC<BatchHeaderProps> = ({
@@ -40,7 +41,8 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
     isStrategyLocked,
     hasScans = true,
     hasFinishedFiles = false,
-    totalPossibleCredits = 0
+    totalPossibleCredits = 0,
+    isPureMode = false
 }) => {
     const lockStrategy = loading || isStrategyLocked;
     const isReCorrectionMode = pendingCount === 0 && hasFinishedFiles;
@@ -55,18 +57,18 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
             </div>
             
             <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
-                {/* OCR Strategy Toggle (Mistral-Only) */}
+                {/* OCR Strategy Toggle (Mistral -> Qwen Override for High Accuracy) */}
                 {settings?.provider === 'mistral' && setOcrStrategy && hasScans && (
                     <div className={cn(
                         "flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 border border-slate-200/60 rounded-xl shadow-xs transition-all duration-300",
                         lockStrategy && "opacity-50 pointer-events-none"
                     )}>
                         <div className="flex items-center gap-1.5">
-                            <PenLine size={14} className={cn(
+                            <Brain size={14} className={cn(
                                 "transition-colors duration-300",
                                 ocrStrategy === 'handwriting' ? "text-primary animate-pulse" : "text-slate-400"
                             )} />
-                            <span className="text-xs font-bold text-slate-600 select-none">Handschrift</span>
+                            <span className="text-xs font-bold text-slate-600 select-none">Hohe Genauigkeit</span>
                         </div>
                         <button
                             type="button"
@@ -92,21 +94,19 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                             content={(
                                 <div className="space-y-3">
                                     <div>
-                                        <p className="text-xs font-bold text-slate-900 mb-1">Standard-Erkennung (Aus)</p>
+                                        <p className="text-xs font-bold text-slate-900 mb-1">Schnelle Erkennung (Aus)</p>
                                         <p className="text-[0.7rem] text-slate-500 leading-relaxed">
-                                            Fokussiert auf strukturelle Präzision. Ideal für digitale Dokumente, getippten Text und saubere Scans. Vermeidet Interpretationen.
+                                            Fokussiert auf strukturelle Präzision mit Mistral. Ideal für digitale Dokumente, getippten Text und saubere Scans. Gilt für Erkennung und Korrektur.
                                         </p>
                                     </div>
                                     <div className="pt-2 border-t border-slate-100">
-                                        <p className="text-xs font-bold text-slate-900 mb-1">Interpretation Handschrift (An)</p>
+                                        <p className="text-xs font-bold text-slate-900 mb-1">Hohe Genauigkeit (An)</p>
                                         <p className="text-[0.7rem] text-slate-500 leading-relaxed">
-                                            Nutzt kognitive KI-Analyse für schwer lesbare Handschriften und Korrekturen.
+                                            {isPureMode 
+                                                ? 'Nutzt die kognitive Vision-Erweiterung für schwer lesbare Dokumente und Handschriften.' 
+                                                : 'Nutzt Qwen3.6 für maximale Präzision bei schwer lesbaren Dokumenten und für die finale Korrektur.'
+                                            }
                                         </p>
-                                        <div className="mt-2 bg-amber-50/50 p-2 rounded-lg border border-amber-100/50">
-                                            <p className="text-[0.65rem] text-amber-700 italic leading-snug">
-                                                Achtung: Kann in seltenen Fällen semantische Deutungen vornehmen.
-                                            </p>
-                                        </div>
                                     </div>
                                 </div>
                             )}

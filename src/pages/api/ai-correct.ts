@@ -49,7 +49,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         let analysis: any;
 
-        if (settings.provider === 'mistral') {
+        const isComplex = validation.data.isComplex === true;
+        const useOpenAI = settings.provider === 'openai-compatible' || isComplex;
+
+        if (!useOpenAI) {
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
             if (!apiKey) throw new Error('Mistral API-Key fehlt.');
 
@@ -59,7 +62,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 apiKey,
                 { customPrompt: settings.correctionPrompt }
             );
-        } else if (settings.provider === 'openai-compatible') {
+        } else {
             const baseUrl = settings.openaiUrl || 'https://llm.aihosting.mittwald.de/v1';
             const apiKey = settings.openaiKey || process.env.MITTWALD_API_KEY;
             const model = settings.openaiModel || 'Qwen3.6-35B-A3B-FP8';
@@ -77,8 +80,6 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     customPrompt: settings.correctionPrompt 
                 }
             );
-        } else {
-            throw new Error(`Unbekannter Provider: ${settings.provider}`);
         }
 
         // --- ATOMIC BILLING & TRACKING ---

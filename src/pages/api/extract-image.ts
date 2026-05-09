@@ -63,7 +63,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             if (!apiKey) throw new Error('Mistral API-Key fehlt.');
 
             const pageResults = await promisePool(buffers, 1, async (b) => {
-                const action = (isComplex && mimeType?.startsWith('image/')) ? 'vision' : 'ocr';
+                // TODO: DEPRECATED - Mistral Vision / Handwriting is temporarily disabled in favor of Qwen3.6
+                // const action = (isComplex && mimeType?.startsWith('image/')) ? 'vision' : 'ocr';
+                const action = 'ocr';
                 const result = await executeMistralRequest(
                     action,
                     { buffer: b.toString('base64'), mimeType },
@@ -123,7 +125,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             };
         };
 
-        const resultData = settings?.provider === 'openai-compatible' 
+        // Route to OpenAI (Mittwald Qwen3.6) if settings say so, OR if "Hohe Genauigkeit" (isComplex) is toggled
+        const useOpenAI = settings?.provider === 'openai-compatible' || isComplex;
+
+        const resultData = useOpenAI 
             ? await tryOpenAI(dataBuffer) 
             : await tryMistral(dataBuffer);
         
