@@ -134,7 +134,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                     setOcrStrategy={setOcrStrategy}
                     settings={settings}
                     onUpdateSettings={onUpdateSettings}
-                    isStrategyLocked={ocrCreditsRequired === 0 || batchFiles.some(f => f.documentType === 'scanned' && f.ocrDone)}
+                    isStrategyLocked={false}
                     hasScans={batchFiles.some(f => f.documentType === 'scanned')}
                     hasFinishedFiles={hasFinishedFiles}
                     totalPossibleCredits={totalPossibleCredits}
