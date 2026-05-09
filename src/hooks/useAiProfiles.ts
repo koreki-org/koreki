@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppSettings, AiProfile } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
@@ -14,7 +14,7 @@ export const STANDARD_AI_PROFILE: AiProfile & { isSystem: boolean } = {
     maxTokens: 32768,
     presencePenalty: 0.0,
     enableThinking: true,
-    visionTemperature: 0.2,
+    visionTemperature: 0.0,
     visionTopP: 0.8,
     visionMaxTokens: 4000,
     visionPresencePenalty: 0.0,
@@ -29,7 +29,7 @@ export const MATH_AI_PROFILE: AiProfile & { isSystem: boolean } = {
     maxTokens: 32768,
     presencePenalty: 0.0,
     enableThinking: true,
-    visionTemperature: 0.1,
+    visionTemperature: 0.0,
     visionTopP: 0.5,
     visionMaxTokens: 4000,
     visionPresencePenalty: 0.0,
@@ -64,7 +64,7 @@ export const useAiProfiles = (
     const [presencePenalty, setPresencePenalty] = useState(settings.presencePenalty ?? 0.0);
     const [enableThinking, setEnableThinking] = useState(settings.enableThinking ?? true);
 
-    const [visionTemperature, setVisionTemperature] = useState(settings.visionTemperature ?? 0.2);
+    const [visionTemperature, setVisionTemperature] = useState(settings.visionTemperature ?? 0.0);
     const [visionTopP, setVisionTopP] = useState(settings.visionTopP ?? 0.8);
     const [visionMaxTokens, setVisionMaxTokens] = useState(settings.visionMaxTokens ?? 4000);
     const [visionPresencePenalty, setVisionPresencePenalty] = useState(settings.visionPresencePenalty ?? 0.0);
@@ -122,9 +122,11 @@ export const useAiProfiles = (
         fetchProfiles();
     }, [fetchProfiles]);
 
+    const hasHydratedRef = useRef(false);
+
     // Initial Hydration matching settings.activeAiProfileId
     useEffect(() => {
-        if (profiles.length > 0) {
+        if (profiles.length > 0 && !hasHydratedRef.current) {
             const activeId = settings.activeAiProfileId || currentProfileId;
             const found = profiles.find(p => p.id === activeId || p.name === activeId);
             if (found) {
@@ -139,8 +141,9 @@ export const useAiProfiles = (
                 setVisionMaxTokens(found.visionMaxTokens);
                 setVisionPresencePenalty(found.visionPresencePenalty);
             }
+            hasHydratedRef.current = true;
         }
-    }, [profiles, settings.activeAiProfileId]);
+    }, [profiles, settings.activeAiProfileId, currentProfileId]);
 
     const handleSelectProfile = (profile: any) => {
         setIsCreatingNew(false);
@@ -171,7 +174,7 @@ export const useAiProfiles = (
         setPresencePenalty(0.0);
         setEnableThinking(true);
 
-        setVisionTemperature(0.2);
+        setVisionTemperature(0.0);
         setVisionTopP(0.8);
         setVisionMaxTokens(4000);
         setVisionPresencePenalty(0.0);

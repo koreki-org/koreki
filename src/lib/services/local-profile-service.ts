@@ -209,7 +209,7 @@ export const LocalAiProfileService = {
             maxTokens: Number(data.maxTokens ?? 32768),
             presencePenalty: Number(data.presencePenalty ?? 0.0),
             enableThinking: data.enableThinking !== undefined ? Boolean(data.enableThinking) : true,
-            visionTemperature: Number(data.visionTemperature ?? 0.2),
+            visionTemperature: Number(data.visionTemperature ?? 0.0),
             visionTopP: Number(data.visionTopP ?? 0.8),
             visionMaxTokens: Number(data.visionMaxTokens ?? 4000),
             visionPresencePenalty: Number(data.visionPresencePenalty ?? 0.0)

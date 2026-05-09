@@ -127,7 +127,7 @@ model AiProfile {
   enableThinking        Boolean  @default(true)
   
   // --- Vision/OCR-Parameter ---
-  visionTemperature     Float    @default(0.2)
+  visionTemperature     Float    @default(0.0)
   visionTopP            Float    @default(0.8)
   visionMaxTokens       Int      @default(4000)
   visionPresencePenalty Float    @default(0.0)

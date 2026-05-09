@@ -267,7 +267,7 @@ export const useProcessingPipeline = (
             setIsLoadingBatch(false);
             setCurrentProcessingIndex(-1);
         }
-    }, [state.batchFiles, modelSolution, tasksLayout, userData, settings, setUserData, setBatchFiles, setCurrentProcessingIndex, setIsLoadingBatch]);
+    }, [state.batchFiles, modelSolution, tasksLayout, userData, settings, setUserData, setBatchFiles, setCurrentProcessingIndex, setIsLoadingBatch, ocrStrategy, expertProfileName]);
 
     const cleanAndExtractLayout = useCallback(async (solution: string, currentSettings: AppSettings, pageCount: number = 1, isScan: boolean = false) => {
         if (!solution) return null;
