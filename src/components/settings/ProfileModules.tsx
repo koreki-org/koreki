@@ -1,9 +1,10 @@
 import React from 'react';
-import { FileText, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Save, MessageSquare } from 'lucide-react';
+import { FileText, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Save, MessageSquare, Download } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/Badge';
+import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
 
 interface SidebarProps {
     profiles: any[];
@@ -12,6 +13,7 @@ interface SidebarProps {
     editingProfileId: string | null;
     editingName: string;
     onStartNew: () => void;
+    onImportParsedProfile: (parsed: any) => void;
     onSelectProfile: (p: any) => void;
     onStartRename: (e: React.MouseEvent, p: any) => void;
     onDeleteProfile: (id: string, e: React.MouseEvent) => void;
@@ -27,18 +29,83 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
     editingProfileId, 
     editingName,
     onStartNew, 
+    onImportParsedProfile,
     onSelectProfile, 
     onStartRename, 
     onDeleteProfile, 
     onConfirmRename, 
     setEditingName, 
     setEditingProfileId
-}) => (
-    <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="p-4 border-b border-slate-100">
+}) => {
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [isDragging, setIsDragging] = React.useState(false);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const text = await file.text();
+        const parsed = parseMarkdownProfile(text);
+        onImportParsedProfile(parsed);
+        // Reset input so the same file can be uploaded again if needed
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    const handleDrop = async (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        const file = e.dataTransfer.files?.[0];
+        if (!file) return;
+
+        const text = await file.text();
+        const parsed = parseMarkdownProfile(text);
+        onImportParsedProfile(parsed);
+    };
+
+    return (
+    <div 
+        className={`flex-1 flex flex-col overflow-hidden relative transition-all duration-200 ${isDragging ? 'bg-indigo-50/80 ring-2 ring-inset ring-indigo-500' : ''}`}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+    >
+        {isDragging && (
+            <div className="absolute inset-0 z-50 flex items-center justify-center bg-indigo-50/80 backdrop-blur-sm border-2 border-dashed border-indigo-500 rounded-2xl m-2 pointer-events-none">
+                <div className="flex flex-col items-center text-indigo-600 font-bold gap-2">
+                    <RefreshCcw size={32} className="animate-spin-slow" />
+                    <p>Profil hier loslassen!</p>
+                </div>
+            </div>
+        )}
+        <div className="p-4 border-b border-slate-100 space-y-2 relative z-10">
             <Button onClick={onStartNew} className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md gap-2">
                 <PlusCircle size={18} /> Neues Profil
             </Button>
+            <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full h-10 border-dashed border-indigo-200 text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 gap-2">
+                <RefreshCcw size={16} /> .md Profil Importieren
+            </Button>
+            <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                accept=".md,.json" 
+                className="hidden" 
+            />
         </div>
         <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-6 pt-4">
             {/* User Profiles */}
@@ -103,7 +170,8 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
             </div>
         </div>
     </div>
-);
+  );
+};
 
 interface EditorProps {
     isCreatingNew: boolean;
@@ -113,6 +181,9 @@ interface EditorProps {
     saving: boolean;
     newProfileName: string;
     correctionPrompt: string;
+    importedAiParams?: any;
+    createAiProfile?: boolean;
+    setCreateAiProfile?: (v: boolean) => void;
     setNewProfileName: (v: string) => void;
     setCorrectionPrompt: (v: string) => void;
     onSaveToDB: () => void;
@@ -121,9 +192,31 @@ interface EditorProps {
 
 export const ProfileEditor: React.FC<EditorProps> = ({
     isCreatingNew, selectedProfile, isSystemSelected, isDirty, saving, 
-    newProfileName, correctionPrompt, setNewProfileName, setCorrectionPrompt, 
+    newProfileName, correctionPrompt, importedAiParams, createAiProfile, setCreateAiProfile,
+    setNewProfileName, setCorrectionPrompt, 
     onSaveToDB, onStartNew
-}) => (
+}) => {
+    const handleExport = () => {
+        const safeName = isCreatingNew ? newProfileName : selectedProfile;
+        const markdown = `---
+name: "${safeName}"
+description: "Exportiertes Koreki Experten-Profil"
+version: "1.0.0"
+---
+
+${correctionPrompt}`;
+        const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${safeName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    return (
     <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 overflow-y-auto p-4 sm:p-8">
         <div className="flex justify-between items-end gap-6">
             <div className="flex-1 space-y-2">
@@ -150,12 +243,40 @@ export const ProfileEditor: React.FC<EditorProps> = ({
             )}
         </div>
 
+        {isCreatingNew && importedAiParams && (
+            <div className="p-4 rounded-2xl border-2 border-indigo-100 bg-indigo-50/50 flex items-start gap-4 animate-fade-in shrink-0">
+                <input 
+                    type="checkbox" 
+                    id="createAiProfile"
+                    checked={createAiProfile}
+                    onChange={(e) => setCreateAiProfile?.(e.target.checked)}
+                    className="mt-1 w-5 h-5 text-indigo-600 rounded-md border-indigo-300 focus:ring-indigo-600 focus:ring-offset-indigo-50 cursor-pointer transition-all"
+                />
+                <div className="flex-1">
+                    <label htmlFor="createAiProfile" className="text-sm font-black text-slate-800 cursor-pointer block">
+                        Mitgelieferte KI-Parameter speichern
+                    </label>
+                    <p className="text-xs text-slate-500 mt-1 font-medium leading-relaxed">
+                        Diese Datei enthält empfohlene Experteneinstellungen 
+                        (z.B. Temp: <strong className="text-indigo-600">{importedAiParams.temperature}</strong>, 
+                        Thinking: <strong className="text-indigo-600">{importedAiParams.enableThinking ? 'Aktiv' : 'Inaktiv'}</strong>). 
+                        Möchtest du diese direkt als KI-Profil mit demselben Namen abspeichern?
+                    </p>
+                </div>
+            </div>
+        )}
+
         <div className="flex-1 flex flex-col space-y-4">
             <div className="flex justify-between items-center">
                 <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
                     <MessageSquare size={18} className="text-indigo-600" /> Pädagogische Expertise
                 </label>
                 <div className="flex gap-2">
+                    {!isCreatingNew && (
+                        <Button variant="outline" size="sm" onClick={handleExport} className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border-indigo-100 text-indigo-600 gap-2 px-3 sm:px-4 hover:bg-indigo-50">
+                            <Download size={14} /> Export
+                        </Button>
+                    )}
                     {!isSystemSelected && (
                         <Button variant="outline" size="sm" disabled={!isDirty || saving} onClick={onSaveToDB} className={`h-8 sm:h-9 rounded-full text-[10px] font-black uppercase gap-2 px-3 sm:px-4 ${isDirty ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse' : 'border-slate-100 text-slate-300'}`}>
                             <Save size={14} /> Speichern
@@ -175,4 +296,5 @@ export const ProfileEditor: React.FC<EditorProps> = ({
             />
         </div>
     </div>
-);
+    );
+};

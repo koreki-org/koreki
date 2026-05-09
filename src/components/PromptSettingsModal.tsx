@@ -41,8 +41,12 @@ const PromptSettingsModal: React.FC<PromptSettingsModalProps> = ({
         setEditingName,
         isDirty,
         isSystemSelected,
+        importedAiParams,
+        createAiProfile,
+        setCreateAiProfile,
         handleSelectProfile,
         handleStartNew,
+        handleImportParsedProfile,
         handleSaveToDB,
         handleApplyToSession,
         handleDeleteProfile,
@@ -89,6 +93,7 @@ const PromptSettingsModal: React.FC<PromptSettingsModalProps> = ({
                             editingProfileId={editingProfileId}
                             editingName={editingName}
                             onStartNew={handleStartNew}
+                            onImportParsedProfile={handleImportParsedProfile}
                             onSelectProfile={handleSelectProfile}
                             onStartRename={(e, p) => {
                                 e.stopPropagation();
@@ -111,6 +116,9 @@ const PromptSettingsModal: React.FC<PromptSettingsModalProps> = ({
                             saving={saving}
                             newProfileName={newProfileName}
                             correctionPrompt={correctionPrompt}
+                            importedAiParams={importedAiParams}
+                            createAiProfile={createAiProfile}
+                            setCreateAiProfile={setCreateAiProfile}
                             setNewProfileName={setNewProfileName}
                             setCorrectionPrompt={setCorrectionPrompt}
                             onSaveToDB={handleSaveToDB}

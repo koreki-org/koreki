@@ -30,6 +30,10 @@ export const usePromptProfiles = (
     const [showEditorMobile, setShowEditorMobile] = useState(false);
     const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState('');
+    
+    // --- KEP-MD-1 AI Profile Import State ---
+    const [importedAiParams, setImportedAiParams] = useState<any>(null);
+    const [createAiProfile, setCreateAiProfile] = useState(true);
 
     const isDirty = correctionPrompt !== lastSavedPrompt;
     const selectedProfileData = profiles.find(p => p.name === selectedProfile);
@@ -95,6 +99,34 @@ export const usePromptProfiles = (
         setShowEditorMobile(true);
     };
 
+    const handleImportParsedProfile = (parsed: { metadata: any, correctionPrompt: string }) => {
+        setIsCreatingNew(true);
+        setSelectedProfile('');
+        setCorrectionPrompt(parsed.correctionPrompt);
+        setLastSavedPrompt("");
+        setNewProfileName(parsed.metadata.name || "Importierter Prompt");
+        setShowEditorMobile(true);
+
+        // KEP-MD-1: AI Parameter Extraction
+        const aiParams: any = {};
+        const validKeys = ['temperature', 'topP', 'maxTokens', 'presencePenalty', 'enableThinking', 'visionTemperature', 'visionTopP', 'visionMaxTokens', 'visionPresencePenalty'];
+        let hasParams = false;
+        validKeys.forEach(k => {
+            if (parsed.metadata[k] !== undefined) {
+                aiParams[k] = parsed.metadata[k];
+                hasParams = true;
+            }
+        });
+
+        if (hasParams) {
+            setImportedAiParams(aiParams);
+            setCreateAiProfile(true);
+        } else {
+            setImportedAiParams(null);
+            setCreateAiProfile(false);
+        }
+    };
+
     const handleSaveToDB = async () => {
         const nameToSave = isCreatingNew ? newProfileName.trim() : selectedProfile;
         if (!nameToSave) {
@@ -126,11 +158,22 @@ export const usePromptProfiles = (
                 });
             }
             localStorage.setItem('koreki_local_profiles', JSON.stringify(customProfiles));
+            
+            // Handle AI Profile Save
+            if (createAiProfile && importedAiParams) {
+                const storedAi = localStorage.getItem('koreki_local_ai_profiles');
+                let customAiProfiles: any[] = [];
+                if (storedAi) { try { customAiProfiles = JSON.parse(storedAi); } catch(e) {} }
+                customAiProfiles.push({ id: `local-ai-${Date.now()}`, name: nameToSave, ...importedAiParams, isSystem: false });
+                localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customAiProfiles));
+            }
+            
             await fetchProfiles();
             setSelectedProfile(nameToSave);
             setLastSavedPrompt(correctionPrompt);
             setIsCreatingNew(false);
             setNewProfileName('');
+            setImportedAiParams(null);
             alert("Profil erfolgreich lokal gespeichert!");
             setSaving(false);
             return;
@@ -145,11 +188,24 @@ export const usePromptProfiles = (
             const data = await res.json();
 
             if (res.ok) {
+                // Handle AI Profile Save for SaaS / Server
+                if (createAiProfile && importedAiParams) {
+                    try {
+                        await apiClient.post('/api/user/ai-profiles', {
+                            name: nameToSave,
+                            ...importedAiParams
+                        });
+                    } catch (e) {
+                        console.error("AI Profile konnte nicht gespeichert werden", e);
+                    }
+                }
+
                 await fetchProfiles();
                 setSelectedProfile(data.name);
                 setLastSavedPrompt(data.correctionPrompt);
                 setIsCreatingNew(false);
                 setNewProfileName('');
+                setImportedAiParams(null);
                 alert("Profil erfolgreich gespeichert!");
             } else {
                 alert(`Fehler: ${data.message || 'Speichern fehlgeschlagen'}`);
@@ -279,8 +335,12 @@ export const usePromptProfiles = (
         isDirty,
         isSystemSelected,
         selectedProfileData,
+        importedAiParams,
+        createAiProfile,
+        setCreateAiProfile,
         handleSelectProfile,
         handleStartNew,
+        handleImportParsedProfile,
         handleSaveToDB,
         handleApplyToSession,
         handleDeleteProfile,
