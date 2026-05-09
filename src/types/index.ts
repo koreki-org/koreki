@@ -38,6 +38,7 @@ export interface DbUser {
     memberships: { workspace: Workspace, role: string }[];
     activeWorkspaceId?: string;
     activePromptProfileId?: string;
+    activeAiProfileId?: string;
 }
 
 export interface User {
@@ -51,6 +52,7 @@ export interface User {
     hasProAccess?: boolean;
     activeWorkspaceId?: string;
     activePromptProfileId?: string;
+    activeAiProfileId?: string;
     activeWorkspaceName?: string;
     activeWorkspaceType?: 'PERSONAL' | 'ORGANIZATION';
     activeMembershipRole?: 'OWNER' | 'ADMIN' | 'MEMBER';

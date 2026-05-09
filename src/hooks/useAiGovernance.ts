@@ -19,7 +19,10 @@ export const useAiGovernance = (
     useEffect(() => {
         const fetchAiProfileOnStart = async () => {
             let activeProfile = STANDARD_AI_PROFILE;
-            const activeId = settings.activeAiProfileId;
+            // Hybrid Sync (Arch §2): localStorage (Desktop/Community) → DB field (SaaS)
+            const activeId = settings.activeAiProfileId
+                || userData?.activeAiProfileId
+                || (typeof window !== 'undefined' ? localStorage.getItem('koreki_active_ai_profile_id') : null);
 
             if (activeId === 'system-math') {
                 activeProfile = MATH_AI_PROFILE;
@@ -48,7 +51,6 @@ export const useAiGovernance = (
                             if (stored) {
                                 try {
                                     const customProfiles = JSON.parse(stored);
-                                    const activeId = settings.activeAiProfileId;
                                     if (activeId) {
                                         const found = customProfiles.find((p: any) => p.id === activeId);
                                         if (found) activeProfile = found;
@@ -56,7 +58,6 @@ export const useAiGovernance = (
                                 } catch (e) {}
                             }
                         } else if (Array.isArray(data)) {
-                            const activeId = settings.activeAiProfileId;
                             if (activeId) {
                                 const found = data.find((p: any) => p.id === activeId);
                                 if (found) activeProfile = found;
@@ -85,7 +86,7 @@ export const useAiGovernance = (
         };
 
         fetchAiProfileOnStart();
-    }, [userData?.logtoId, settings.activeAiProfileId]);
+    }, [userData?.id, userData?.activeAiProfileId, settings.activeAiProfileId]);
 
     return {
         sessionAiProfileName,

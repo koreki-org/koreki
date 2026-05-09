@@ -14,6 +14,7 @@ import ModelTypeModal from '../ModelTypeModal';
 import AiSetupModal from '../AiSetupModal';
 import { AiParamsModal } from '../AiParamsModal';
 import { AppSettings, Task, BatchFile } from '../../types';
+import { isLocalInstance } from '../../lib/env-context';
 
 interface DashboardModalsProps {
     userData: any;
@@ -127,11 +128,16 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         if (profileName) setSessionProfileName(profileName);
                         setShowPromptSettings(false);
                         if (profileId) {
-                            await fetch('/api/user/update-profile', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ profileId })
-                            });
+                            // Hybrid Sync (Arch §2): Local → localStorage, SaaS → DB
+                            if (isLocalInstance()) {
+                                localStorage.setItem('koreki_active_prompt_profile_id', profileId);
+                            } else {
+                                await fetch('/api/user/update-profile', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ profileId })
+                                });
+                            }
                         }
                     }}
                     onClose={() => setShowPromptSettings(false)}
@@ -278,6 +284,14 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         setSettings(newSettings);
                         saveSettings(newSettings);
                         if (profileName) setSessionAiProfileName(profileName);
+                        // Hybrid Sync (Arch §2): SaaS → DB persist for AI profile selection
+                        if (newSettings.activeAiProfileId !== undefined && !isLocalInstance()) {
+                            fetch('/api/user/update-ai-profile', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ profileId: newSettings.activeAiProfileId || null })
+                            }).catch(err => console.error('AI Profile persist failed', err));
+                        }
                     }}
                 />
             )}

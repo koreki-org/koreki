@@ -27,6 +27,7 @@ model User {
   appMode               String   @default("UNSET")
   activeWorkspaceId      String?
   activePromptProfileId   String?
+  activeAiProfileId       String?
   privacyLogs           PrivacyLog[]
   memberships           Membership[]
   promptProfiles        PromptProfile[]

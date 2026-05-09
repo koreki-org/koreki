@@ -108,6 +108,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     avvAccepted: activeWorkspace?.avvAccepted || false,
                     activeWorkspaceId: user.activeWorkspaceId,
                     activePromptProfileId: user.activePromptProfileId,
+                    activeAiProfileId: user.activeAiProfileId,
                     logtoId: user.logtoId,
                     activeWorkspaceName: activeWorkspace?.name,
                     activeWorkspaceType: activeWorkspace?.type,

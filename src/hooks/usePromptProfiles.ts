@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AppSettings } from '@/types';
-import { isDesktopTarget } from '@/lib/env-context';
+import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { STANDARD_PROFILES } from '@/lib/ai/standard-profiles';
 
@@ -220,10 +220,15 @@ export const usePromptProfiles = (
 
     const handleApplyToSession = () => {
         const profile = profiles.find(p => p.name === selectedProfile);
+        const profileId = profile?.id || profile?.name;
         onSave({
             ...settings,
             correctionPrompt
-        }, selectedProfile, profile?.id || profile?.name);
+        }, selectedProfile, profileId);
+        // Hybrid Sync (Arch §2): Local persist via localStorage (Desktop + Community)
+        if (isLocalInstance() && profileId) {
+            localStorage.setItem('koreki_active_prompt_profile_id', profileId);
+        }
         onClose();
     };
 
