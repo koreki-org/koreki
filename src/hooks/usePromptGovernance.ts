@@ -16,6 +16,7 @@ import { STANDARD_PROFILES } from '@/lib/ai/standard-profiles';
  */
 export const usePromptGovernance = (
     userData: any,
+    settings: AppSettings,
     setSettings: React.Dispatch<React.SetStateAction<AppSettings>>
 ) => {
     const [sessionProfileName, setSessionProfileName] = useState<string>('Standard');
@@ -43,7 +44,8 @@ export const usePromptGovernance = (
                         setSessionProfileName(profile.name);
                         setSettings(prev => ({
                             ...prev,
-                            correctionPrompt: profile.correctionPrompt
+                            correctionPrompt: profile.correctionPrompt,
+                            activePromptProfileId: activePromptId
                         }));
                         return;
                     }
@@ -55,13 +57,36 @@ export const usePromptGovernance = (
                     setSessionProfileName('Standard');
                     setSettings(prev => ({
                         ...prev,
-                        correctionPrompt: standard.correctionPrompt
+                        correctionPrompt: standard.correctionPrompt,
+                        activePromptProfileId: 'system-standard'
                     }));
                 }
                 return;
             }
 
             // --- SERVER PATH (Community Multi-User / SaaS) ---
+            // Fast Sync: If it is a static standard profile, hydrate instantly without waiting for network request
+            const activePromptId = settings.activePromptProfileId
+                || userData?.activePromptProfileId
+                || (typeof window !== 'undefined' ? localStorage.getItem('koreki_active_prompt_profile_id') : null);
+
+            if (activePromptId) {
+                const standardProfile = STANDARD_PROFILES.find(
+                    (p: any) => p.id === activePromptId || p.name === activePromptId
+                );
+                if (standardProfile) {
+                    setSessionProfileName(standardProfile.name);
+                    setSettings(prev => {
+                        if (prev.correctionPrompt === standardProfile.correctionPrompt && prev.activePromptProfileId === activePromptId) return prev;
+                        return {
+                            ...prev,
+                            correctionPrompt: standardProfile.correctionPrompt,
+                            activePromptProfileId: activePromptId
+                        };
+                    });
+                }
+            }
+
             try {
                 const res = await apiClient.get('/api/user/prompt-profiles');
                 if (res.ok) {
@@ -69,20 +94,21 @@ export const usePromptGovernance = (
                     setProfiles(data);
 
                     // --- INDUSTRIAL CONTEXT HYDRATION ---
-                    // Priority: DB field (SaaS) → localStorage fallback (Community)
-                    const activePromptId = userData?.activePromptProfileId
-                        || localStorage.getItem('koreki_active_prompt_profile_id')
-                        || null;
+                    // Priority: settings state → DB field (SaaS) → localStorage fallback (Community)
+                    const currentActiveId = settings.activePromptProfileId
+                        || userData?.activePromptProfileId
+                        || (typeof window !== 'undefined' ? localStorage.getItem('koreki_active_prompt_profile_id') : null);
                     
-                    if (activePromptId) {
+                    if (currentActiveId) {
                         const profile = data.find(
-                            (p: any) => p.id === activePromptId || p.name === activePromptId
+                            (p: any) => p.id === currentActiveId || p.name === currentActiveId
                         );
                         if (profile) {
                             setSessionProfileName(profile.name);
                             setSettings(prev => ({
                                 ...prev,
-                                correctionPrompt: profile.correctionPrompt
+                                correctionPrompt: profile.correctionPrompt,
+                                activePromptProfileId: currentActiveId
                             }));
                             return;
                         }
@@ -94,7 +120,8 @@ export const usePromptGovernance = (
                         setSessionProfileName('Standard');
                         setSettings(prev => ({
                             ...prev,
-                            correctionPrompt: standard.correctionPrompt
+                            correctionPrompt: standard.correctionPrompt,
+                            activePromptProfileId: 'system-standard'
                         }));
                     }
                 }
@@ -104,7 +131,7 @@ export const usePromptGovernance = (
         };
 
         if (userData) hydratePromptProfile();
-    }, [userData?.id, setSettings]);
+    }, [userData?.id, userData?.activePromptProfileId, settings.activePromptProfileId, setSettings]);
 
     return {
         profiles,

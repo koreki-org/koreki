@@ -74,6 +74,14 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                     localStorage.removeItem('koreki_active_ai_profile_id');
                 }
             }
+
+            if (next.activePromptProfileId !== undefined) {
+                if (next.activePromptProfileId) {
+                    localStorage.setItem('koreki_active_prompt_profile_id', next.activePromptProfileId);
+                } else {
+                    localStorage.removeItem('koreki_active_prompt_profile_id');
+                }
+            }
         }
         
         return { aiSettings: next };
@@ -113,6 +121,7 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
             const visionMaxTokens = localStorage.getItem('koreki_openai_vision_maxtokens') ? Number(localStorage.getItem('koreki_openai_vision_maxtokens')) : undefined;
             const visionPresencePenalty = localStorage.getItem('koreki_openai_vision_presencepenalty') ? Number(localStorage.getItem('koreki_openai_vision_presencepenalty')) : undefined;
             const activeAiProfileId = localStorage.getItem('koreki_active_ai_profile_id') || undefined;
+            const activePromptProfileId = localStorage.getItem('koreki_active_prompt_profile_id') || undefined;
 
             const garbage = (val: string | undefined) => val && (val.includes('cutest') || val.length > 50);
             if (garbage(model)) {
@@ -145,7 +154,8 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                     visionTopP: visionTopP,
                     visionMaxTokens: visionMaxTokens,
                     visionPresencePenalty: visionPresencePenalty,
-                    activeAiProfileId: activeAiProfileId
+                    activeAiProfileId: activeAiProfileId,
+                    activePromptProfileId: activePromptProfileId
                 }
             }));
         } else {

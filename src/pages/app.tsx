@@ -36,7 +36,7 @@ export default function Home() {
     const { aiSettings, setAiSettings, hydrateAiSettings } = useDashboardStore();
 
     // Governance & Actions
-    const { profiles, sessionProfileName, setSessionProfileName } = usePromptGovernance(userData, setAiSettings);
+    const { profiles, sessionProfileName, setSessionProfileName } = usePromptGovernance(userData, aiSettings, setAiSettings);
     const { sessionAiProfileName, setSessionAiProfileName } = useAiGovernance(userData, aiSettings, setAiSettings);
 
     const fileProcessor = useFileProcessor(

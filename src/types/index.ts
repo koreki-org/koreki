@@ -91,6 +91,7 @@ export interface AppSettings {
     correctionBudget?: number;
     correctionPrompt?: string;
     activeAiProfileId?: string;
+    activePromptProfileId?: string;
 }
 
 export interface BatchFile {

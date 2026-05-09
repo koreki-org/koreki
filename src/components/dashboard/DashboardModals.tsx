@@ -1,4 +1,5 @@
 import React from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import SettingsModal from '../SettingsModal';
 import PromptSettingsModal from '../PromptSettingsModal';
 import CreditsModal from '../CreditsModal';
@@ -102,6 +103,8 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
     showAiParamsSettings, setShowAiParamsSettings,
     handleAiOllamaSave, handleAiMistralSave, handleAiCustomSave
 }) => {
+    const queryClient = useQueryClient();
+
     return (
         <>
             {showSettings && (
@@ -128,10 +131,23 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         if (profileName) setSessionProfileName(profileName);
                         setShowPromptSettings(false);
                         if (profileId) {
-                            // Hybrid Sync (Arch §2): Local → localStorage, SaaS → DB
-                            if (isLocalInstance()) {
-                                localStorage.setItem('koreki_active_prompt_profile_id', profileId);
-                            } else {
+                            // Unconditional local fallback
+                            localStorage.setItem('koreki_active_prompt_profile_id', profileId);
+                            
+                            // Optimistically update query data cache
+                            queryClient.setQueryData(['user'], (prev: any) => {
+                                if (!prev || !prev.user) return prev;
+                                return {
+                                    ...prev,
+                                    user: {
+                                        ...prev.user,
+                                        activePromptProfileId: profileId
+                                    }
+                                };
+                            });
+
+                            // Hybrid Sync (Arch §2): SaaS → DB
+                            if (!isLocalInstance()) {
                                 await fetch('/api/user/update-profile', {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
@@ -284,6 +300,24 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         setSettings(newSettings);
                         saveSettings(newSettings);
                         if (profileName) setSessionAiProfileName(profileName);
+                        
+                        if (newSettings.activeAiProfileId) {
+                            // Unconditional local fallback
+                            localStorage.setItem('koreki_active_ai_profile_id', newSettings.activeAiProfileId);
+                            
+                            // Optimistically update query data cache
+                            queryClient.setQueryData(['user'], (prev: any) => {
+                                if (!prev || !prev.user) return prev;
+                                return {
+                                    ...prev,
+                                    user: {
+                                        ...prev.user,
+                                        activeAiProfileId: newSettings.activeAiProfileId
+                                    }
+                                };
+                            });
+                        }
+
                         // Hybrid Sync (Arch §2): SaaS → DB persist for AI profile selection
                         if (newSettings.activeAiProfileId !== undefined && !isLocalInstance()) {
                             fetch('/api/user/update-ai-profile', {

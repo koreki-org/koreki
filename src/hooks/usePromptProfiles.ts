@@ -223,10 +223,11 @@ export const usePromptProfiles = (
         const profileId = profile?.id || profile?.name;
         onSave({
             ...settings,
-            correctionPrompt
+            correctionPrompt,
+            activePromptProfileId: profileId
         }, selectedProfile, profileId);
-        // Hybrid Sync (Arch §2): Local persist via localStorage (Desktop + Community)
-        if (isLocalInstance() && profileId) {
+        // Hybrid Sync (Arch §2): Zero-latency unconditional local fallback
+        if (profileId) {
             localStorage.setItem('koreki_active_prompt_profile_id', profileId);
         }
         onClose();
