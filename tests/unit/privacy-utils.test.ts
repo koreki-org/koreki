@@ -83,3 +83,103 @@ describe('Privacy Utils (Layer 1 Security Proof)', () => {
         expect(result).toBeNull();
     });
 });
+
+describe('applyRedactionsToPreviews (Layer 1 Security Proof)', () => {
+    let mockDrawImage: jest.Mock;
+    let mockFillRect: jest.Mock;
+    let originalCreateElement: typeof document.createElement;
+
+    beforeEach(() => {
+        mockDrawImage = jest.fn();
+        mockFillRect = jest.fn();
+
+        // Mock canvas context
+        const mockContext = {
+            drawImage: mockDrawImage,
+            fillRect: mockFillRect,
+            fillStyle: ''
+        };
+
+        const mockCanvas = {
+            width: 800,
+            height: 600,
+            getContext: jest.fn(() => mockContext),
+            toDataURL: jest.fn(() => 'data:image/jpeg;base64,MOCKED_REDACTED_IMAGE')
+        };
+
+        originalCreateElement = document.createElement.bind(document);
+        document.createElement = jest.fn((tagName: string) => {
+            if (tagName === 'canvas') return mockCanvas as any;
+            return originalCreateElement(tagName);
+        });
+
+        // Mock Image to invoke onload immediately
+        Object.defineProperty(global, 'Image', {
+            writable: true,
+            value: class {
+                onload: () => void = () => {};
+                src: string = '';
+                width = 800;
+                height = 600;
+                set srcSet(val: string) {}
+                // Trigger onload immediately when src is set
+                set srcStr(val: string) {
+                    this.src = val;
+                    setTimeout(() => this.onload(), 0);
+                }
+            }
+        });
+        
+        // Proper way to trigger onload synchronously for the test
+        const NativeImage = global.Image;
+        global.Image = class extends NativeImage {
+            constructor() {
+                super();
+                setTimeout(() => {
+                    if (this.onload) this.onload();
+                }, 10);
+            }
+        } as any;
+    });
+
+    afterEach(() => {
+        document.createElement = originalCreateElement;
+        jest.clearAllMocks();
+    });
+
+    it('should pass through images if no redaction rects exist for that page', async () => {
+        const { applyRedactionsToPreviews } = require('../../src/lib/privacy-utils');
+        
+        const previewUrls = ['data:image/jpeg;base64,PREVIEW_1'];
+        const rects = {}; // Empty
+
+        const result = await applyRedactionsToPreviews(previewUrls, rects);
+
+        expect(result).toHaveLength(1);
+        expect(result[0]).toBe('data:image/jpeg;base64,PREVIEW_1');
+        expect(mockDrawImage).not.toHaveBeenCalled();
+    });
+
+    it('should apply redaction rects onto a canvas and return the new base64 image', async () => {
+        const { applyRedactionsToPreviews } = require('../../src/lib/privacy-utils');
+        
+        const previewUrls = ['data:image/jpeg;base64,PREVIEW_1'];
+        const rects = {
+            0: [
+                { x: 10, y: 20, w: 100, h: 50 },
+                { x: 200, y: 300, w: 150, h: 60 }
+            ]
+        };
+
+        const result = await applyRedactionsToPreviews(previewUrls, rects);
+
+        expect(result).toHaveLength(1);
+        expect(result[0]).toBe('data:image/jpeg;base64,MOCKED_REDACTED_IMAGE');
+        expect(mockDrawImage).toHaveBeenCalledTimes(1);
+        expect(mockFillRect).toHaveBeenCalledTimes(2);
+        
+        // Check coordinates
+        expect(mockFillRect).toHaveBeenNthCalledWith(1, 10, 20, 100, 50);
+        expect(mockFillRect).toHaveBeenNthCalledWith(2, 200, 300, 150, 60);
+    });
+});

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { BatchFile, Task, AppSettings } from '../../types';
 import { performAIRequest } from '../../lib/ai-logic';
-import { resolveOCRSource } from '../../lib/privacy-utils';
+import { resolveOCRSource, applyRedactionsToPreviews } from '../../lib/privacy-utils';
 import { calculateGrade } from '../../lib/logic';
 import { promisePool } from '../../lib/ai/promise-pool';
 import { runExtractionStrategy } from '../../lib/ai/extraction-logic';
@@ -103,11 +103,21 @@ export const useProcessingPipeline = (
                         previewDataUrls = res.previewDataUrls;
                     }
 
+                    let redactedDataUrls = items[i].redactedDataUrls;
+                    
+                    if (items[i].isRedacted && items[i].redactionRects && previewDataUrls && previewDataUrls.length > 0) {
+                        try {
+                            redactedDataUrls = await applyRedactionsToPreviews(previewDataUrls, items[i].redactionRects);
+                        } catch (err) {
+                            console.error("Failed to re-apply redactions", err);
+                        }
+                    }
+
                     if (documentType === 'scanned' || isScan) {
                         // For scans, we only update metadata and wait for manual OCR
                         setBatchFiles((prev: BatchFile[]) => {
                             const next = [...prev];
-                            next[i] = { ...next[i], pageCount, previewDataUrls, ocrDone: false };
+                            next[i] = { ...next[i], pageCount, previewDataUrls, redactedDataUrls, ocrDone: false };
                             return next;
                         });
                     } else {
@@ -119,13 +129,13 @@ export const useProcessingPipeline = (
                                 text, 
                                 pageCount, 
                                 1, // Multiplier for digital
-                                { pageCount, previewDataUrls }
+                                { pageCount, previewDataUrls, redactedDataUrls }
                             );
                         } else {
                             // Just update metadata if text was already there
                             setBatchFiles((prev: BatchFile[]) => {
                                 const next = [...prev];
-                                next[i] = { ...next[i], pageCount, previewDataUrls, ocrDone: true };
+                                next[i] = { ...next[i], pageCount, previewDataUrls, redactedDataUrls, ocrDone: true };
                                 return next;
                             });
                         }

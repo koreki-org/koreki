@@ -40,3 +40,51 @@ export function resolveOCRSource(item: BatchFile): OCRSource | null {
     // This maintains separation of concerns.
     return null;
 }
+
+/**
+ * Re-applies redaction rectangles to preview images.
+ * Used when restoring physical PDFs from a .koreki export where only coordinates are saved.
+ */
+export async function applyRedactionsToPreviews(
+    previewUrls: string[],
+    redactionRects: Record<number, { x: number, y: number, w: number, h: number }[]>
+): Promise<string[]> {
+    const results: string[] = [];
+    
+    for (let i = 0; i < previewUrls.length; i++) {
+        const url = previewUrls[i];
+        const rects = redactionRects[i] || [];
+        
+        if (rects.length === 0) {
+            results.push(url);
+            continue;
+        }
+
+        const img = new Image();
+        await new Promise((resolve, reject) => {
+            img.onload = resolve;
+            img.onerror = reject;
+            img.src = url;
+        });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        
+        if (!ctx) {
+            results.push(url);
+            continue;
+        }
+
+        ctx.drawImage(img, 0, 0);
+        ctx.fillStyle = '#0f172a'; // Slate-900 / Black
+        rects.forEach(r => {
+            ctx.fillRect(r.x, r.y, r.w, r.h);
+        });
+
+        results.push(canvas.toDataURL('image/jpeg', 0.9));
+    }
+    
+    return results;
+}

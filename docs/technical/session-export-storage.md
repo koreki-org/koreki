@@ -42,7 +42,7 @@ Das Kernkonzept basiert darauf, dass es keine persistente serverseitige Speicher
 
 ## 3. Implementierung & Nutzung
 
-### Die "Relink" Mechanik (Nachladen von PDFs)
+### Die "Relink" Mechanik (Nachladen von PDFs & Schwärzungen)
 Wird eine `.koreki` Sitzung importiert, stehen alle Texte sofort zur Verfügung. Physische Scans müssen jedoch über die Funktion `handleRelinkFiles` "nachgeladen" werden.
 Das System sucht im lokalen Ordner zwingend nach dem `originalName`:
 
@@ -50,6 +50,10 @@ Das System sucht im lokalen Ordner zwingend nach dem `originalName`:
 const searchStr = item.originalName || item.splitInfo?.sourceFileName || item.splitInfo?.originalName;
 const match = newFiles.find(f => f.name.includes(searchStr));
 ```
+
+**Automatischer Rebuild der Schwärzungen:**
+Da wir aus Performance-Gründen (Out-of-Memory Schutz) die extrem großen Base64-Strings der geschwärzten Bilder (`redactedDataUrls`) nicht in das JSON exportieren, speichert das System beim Schwärzen lediglich die mathematischen Koordinaten (`redactionRects`).
+Wird das PDF nun nachgeladen, greift die `applyRedactionsToPreviews` (in `privacy-utils.ts`) Brücke ein: Sie generiert lokale Vorschaubilder über `pdf.js` und zeichnet vollautomatisch die schwarzen Balken in einem unsichtbaren HTML-Canvas erneut über die Namen, noch bevor die Bilder in der UI landen oder zur KI geschickt werden.
 
 ### Export Router & Filename Collisions
 Beim Erstellen von ZIP-Archiven (`JSZip`) bei zusammenhängenden Scans (die in der UI gesplittet wurden), erben alle Split-Items denselben `originalName`. Dies führte in der Vergangenheit zu Konflikten.

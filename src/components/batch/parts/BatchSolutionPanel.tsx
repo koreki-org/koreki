@@ -71,7 +71,8 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
                                     value={sectionText}
                                     onChange={(newText) => {
                                         if (onUpdateText) {
-                                            const updatedTasks = [...(item.tasks || [])];
+                                            const baseTasks = (item.status === 'done' && item.result) ? item.result.tasks : (item.tasks || []);
+                                            const updatedTasks = [...baseTasks];
                                             const taskIdxInItem = updatedTasks.findIndex(t => t.name === task.name);
                                             if (taskIdxInItem !== -1) {
                                                 updatedTasks[taskIdxInItem] = { ...updatedTasks[taskIdxInItem], content: newText };

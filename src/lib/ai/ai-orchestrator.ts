@@ -39,7 +39,8 @@ export function parseCorrectionResult(analysis: any, tasksLayout?: Task[] | null
                     maxPoints: layoutTask.maxPoints,
                     pointsObtained: obtained,
                     feedback: aiTask.feedback || '',
-                    confidence: confidence
+                    confidence: confidence,
+                    content: aiTask.content || ''
                 };
             } else {
                 const nearMiss = (analysis.tasks || []).find((t: any) => 
@@ -56,7 +57,8 @@ export function parseCorrectionResult(analysis: any, tasksLayout?: Task[] | null
                         maxPoints: layoutTask.maxPoints,
                         pointsObtained: obtained,
                         feedback: `[KI-FEHLER?] Name nicht exakt ("${nearMiss.name}" statt "${layoutTask.name}")\n\n${nearMiss.feedback || ''}`,
-                        confidence: Number(nearMiss.confidence || 0)
+                        confidence: Number(nearMiss.confidence || 0),
+                        content: nearMiss.content || ''
                     };
                 } else {
                     // HARD ERROR: Task completely missing in AI response
@@ -66,7 +68,8 @@ export function parseCorrectionResult(analysis: any, tasksLayout?: Task[] | null
                         maxPoints: layoutTask.maxPoints,
                         pointsObtained: 0,
                         feedback: 'Vom System nicht erkannt oder von der KI übersprungen.',
-                        confidence: 0
+                        confidence: 0,
+                        content: ''
                     };
                 }
             }
