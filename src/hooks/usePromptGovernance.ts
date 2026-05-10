@@ -99,7 +99,16 @@ export const usePromptGovernance = (
             }
 
             try {
-                const res = await apiClient.get('/api/user/prompt-profiles');
+                let res = await apiClient.get('/api/user/prompt-profiles');
+
+                // 🛡️ Cookie Write Race-Condition Guard (SaaS Only)
+                // Prevents 401 Unauthorized errors on F5 refresh caused by asynchronous browser cookie-write delays.
+                if (res.status === 401 && !isLocalInstance()) {
+                    console.warn('[Prompt Governance] Got 401 on start. Retrying in 250ms to bypass browser cookie-write race...');
+                    await new Promise(resolve => setTimeout(resolve, 250));
+                    res = await apiClient.get('/api/user/prompt-profiles');
+                }
+
                 if (res.ok) {
                     const data = await res.json();
                     setProfiles(data);

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
 import { STANDARD_AI_PROFILE, MATH_AI_PROFILE } from './useAiProfiles';
-import { isDesktopTarget } from '@/lib/env-context';
+import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 
 /**
@@ -46,7 +46,16 @@ export const useAiGovernance = (
                 }
             } else if (userData) {
                 try {
-                    const res = await apiClient.get('/api/user/ai-profiles');
+                    let res = await apiClient.get('/api/user/ai-profiles');
+
+                    // 🛡️ Cookie Write Race-Condition Guard (SaaS Only)
+                    // Prevents 401 Unauthorized errors on F5 refresh caused by asynchronous browser cookie-write delays.
+                    if (res.status === 401 && !isLocalInstance()) {
+                        console.warn('[AI Governance] Got 401 on start. Retrying in 250ms to bypass browser cookie-write race...');
+                        await new Promise(resolve => setTimeout(resolve, 250));
+                        res = await apiClient.get('/api/user/ai-profiles');
+                    }
+
                     if (res.ok) {
                         const data = await res.json();
                         
