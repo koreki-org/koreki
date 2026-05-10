@@ -113,11 +113,10 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
                 <div className="space-y-2">
                     <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">Eigene Profile</label>
                     {profiles.filter(p => !p.isSystem).map(p => (
-                        <Button
+                        <div
                             key={p.id}
-                            variant="ghost"
                             onClick={() => onSelectProfile(p)}
-                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
+                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
                         >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                                 <FileText size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
@@ -147,7 +146,7 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
                                     </>
                                 )}
                             </div>
-                        </Button>
+                        </div>
                     ))}
                 </div>
             )}
@@ -155,17 +154,16 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
             <div className="space-y-2">
                 <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">System-Vorlagen</label>
                 {profiles.filter(p => p.isSystem).map(p => (
-                    <Button
+                    <div
                         key={p.name}
-                        variant="ghost"
                         onClick={() => onSelectProfile(p)}
-                        className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
+                        className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
                     >
                         <div className="flex items-center gap-3">
                             <FileText size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
                             <span className={`text-xs md:text-sm font-bold ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}>{p.name}</span>
                         </div>
-                    </Button>
+                    </div>
                 ))}
             </div>
         </div>

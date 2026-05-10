@@ -3,6 +3,7 @@ import { AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
 import { STANDARD_AI_PROFILE, MATH_AI_PROFILE } from './useAiProfiles';
 import { isDesktopTarget } from '@/lib/env-context';
+import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 
 /**
  * AI Parameter Governance Hook (Stage 18)
@@ -15,10 +16,11 @@ export const useAiGovernance = (
     settings: AppSettings,
     setSettings: (val: AppSettings | ((prev: AppSettings) => AppSettings)) => void
 ) => {
+    const { isHydrated } = useDashboardStore();
     const [sessionAiProfileName, setSessionAiProfileName] = useState<string>('Standard');
 
     useEffect(() => {
-        if (authLoading || !userData?.id) return;
+        if (authLoading || !isHydrated || !userData?.id) return;
 
         const fetchAiProfileOnStart = async () => {
             let activeProfile = STANDARD_AI_PROFILE;
@@ -63,12 +65,26 @@ export const useAiGovernance = (
                         } else if (Array.isArray(data)) {
                             if (activeId) {
                                 const found = data.find((p: any) => p.id === activeId);
-                                if (found) activeProfile = found;
+                                if (found) {
+                                    activeProfile = found;
+                                } else if (activeId !== 'system-standard' && activeId !== 'system-math') {
+                                    // Custom ID specified but not found in returned profiles array (yet).
+                                    // Do NOT reset to standard — preserve selection to prevent wiping local storage.
+                                    console.warn(`[AI Governance] Custom AI profile ID "${activeId}" not found in fetched profiles.`);
+                                    return;
+                                }
                             }
                         }
+                    } else if (activeId && activeId !== 'system-standard' && activeId !== 'system-math') {
+                        // API request failed. Preserve current selection.
+                        console.warn(`[AI Governance] API failed. Preserving current custom profile ID "${activeId}".`);
+                        return;
                     }
                 } catch (err) {
                     console.error("Fehler beim Laden der KI-Profile", err);
+                    if (activeId && activeId !== 'system-standard' && activeId !== 'system-math') {
+                        return;
+                    }
                 }
             }
 
@@ -107,7 +123,7 @@ export const useAiGovernance = (
         };
 
         fetchAiProfileOnStart();
-    }, [userData?.id, userData?.activeAiProfileId, settings.activeAiProfileId, authLoading]);
+    }, [userData?.id, userData?.activeAiProfileId, settings.activeAiProfileId, authLoading, isHydrated, setSettings]);
 
     return {
         sessionAiProfileName,
