@@ -75,18 +75,20 @@ const Header: React.FC<HeaderProps> = ({
                     {userData?.canEditPrompts && (
                         <div className="flex items-center gap-2">
                             {activeProfileName && (
-                                <div className="flex items-center px-3 py-1 bg-indigo-600 text-white rounded-lg border border-indigo-500 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300">
-                                    <Sparkles size={12} className="mr-1.5 opacity-80" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
-                                        Profil: {activeProfileName}
+                                <div className="flex items-center px-2.5 py-1 bg-indigo-600 text-white rounded-lg border border-indigo-500 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Profil: ${activeProfileName}`}>
+                                    <Sparkles size={12} className="mr-1 sm:mr-1.5 opacity-80 shrink-0" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
+                                        <span className="hidden sm:inline">Profil:&nbsp;</span>
+                                        <span className="truncate max-w-[60px] sm:max-w-[120px] md:max-w-[200px] inline-block">{activeProfileName}</span>
                                     </span>
                                 </div>
                             )}
                             {activeAiProfileName && (
-                                <div className="flex items-center px-3 py-1 bg-indigo-600 text-white rounded-lg border border-indigo-500 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300">
-                                    <SlidersHorizontal size={12} className="mr-1.5 opacity-80" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
-                                        KI: {activeAiProfileName}
+                                <div className="flex items-center px-2.5 py-1 bg-indigo-600 text-white rounded-lg border border-indigo-500 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`KI: ${activeAiProfileName}`}>
+                                    <SlidersHorizontal size={12} className="mr-1 sm:mr-1.5 opacity-80 shrink-0" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
+                                        <span className="hidden sm:inline">KI:&nbsp;</span>
+                                        <span className="truncate max-w-[60px] sm:max-w-[120px] md:max-w-[200px] inline-block">{activeAiProfileName}</span>
                                     </span>
                                 </div>
                             )}
