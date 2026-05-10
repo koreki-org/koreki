@@ -124,11 +124,7 @@ export const usePromptGovernance = (
                                     activePromptProfileId: currentActiveId
                                 };
                             });
-                                ...prev,
-                                correctionPrompt: standard.correctionPrompt,
-                                activePromptProfileId: 'system-standard'
-                            };
-                        });
+                        }
                     }
                 }
             } catch (err) {

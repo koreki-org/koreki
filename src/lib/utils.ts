@@ -27,7 +27,7 @@ export async function exportSessionToJson(
 
     const data = JSON.stringify(exportData, (key, value) => {
         // Exclude large binary data/previews to keep the file small
-        if (key === 'previewDataUrls' || key === 'redactedDataUrls' || key === 'file' || key === 'files') {
+        if (key === 'previewDataUrls' || key === 'redactedDataUrls' || key === 'redactedDataUrl' || key === 'file' || key === 'files') {
             return undefined;
         }
         return value;
