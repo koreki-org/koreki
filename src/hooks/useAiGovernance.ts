@@ -48,7 +48,7 @@ export const useAiGovernance = (
                 // 🛡️ Preemptive Cookie Settling Delay (SaaS Only)
                 // Ensures the browser has fully committed the rotated session cookie before we fire.
                 if (!isLocalInstance()) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
+                    await new Promise(resolve => setTimeout(resolve, 250));
                 }
 
                 try {
