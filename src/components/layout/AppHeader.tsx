@@ -138,7 +138,7 @@ const Header: React.FC<HeaderProps> = ({
                             onClick={onLoadDemo}
                             className="flex-1 rounded-full px-4 bg-white/50 backdrop-blur-sm border-slate-200 text-slate-600 hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-sm text-[11px] sm:text-xs"
                         >
-                            <Sparkles size={14} className="mr-1.5 hidden xs:inline" /> Demo
+                            <Sparkles size={14} className="mr-1.5 hidden sm:inline" /> Demo
                         </Button>
 
                         <Button
@@ -147,7 +147,7 @@ const Header: React.FC<HeaderProps> = ({
                             onClick={actions.triggerImport}
                             className="flex-1 rounded-full px-4 bg-white/50 backdrop-blur-sm border-slate-200 text-slate-600 hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-sm text-[11px] sm:text-xs"
                         >
-                            <FileUp size={14} className="mr-1.5 hidden xs:inline" /> Importieren
+                            <FileUp size={14} className="mr-1.5 hidden sm:inline" /> Importieren
                         </Button>
                     </div>
                 </div>

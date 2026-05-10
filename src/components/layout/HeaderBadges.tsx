@@ -60,7 +60,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                 <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 bg-blue-50/80 rounded-xl border border-blue-100/50 text-blue-700 shadow-inner">
                     <Crown size={14} className="text-blue-500 sm:w-[16px] sm:h-[16px]" />
                     <span className="font-bold text-xs sm:text-sm">{userData?.credits || 0}</span> 
-                    <span className="hidden xs:inline text-[10px] sm:text-xs font-semibold opacity-80 uppercase tracking-wide">Credits</span>
+                    <span className="hidden sm:inline text-[10px] sm:text-xs font-semibold opacity-80 uppercase tracking-wide">Credits</span>
                 </div>
             )}
 
@@ -73,7 +73,14 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                     disabled={upgrading}
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-500/20 border-0 rounded-xl px-3 sm:px-4 h-8 sm:h-9 transition-all hover:-translate-y-0.5"
                 >
-                    {upgrading ? <Loader2 size={16} className="animate-spin" /> : <span className="font-bold tracking-wide text-[10px] sm:text-xs">+ Aufladen</span>}
+                    {upgrading ? (
+                        <Loader2 size={16} className="animate-spin" />
+                    ) : (
+                        <span className="font-bold tracking-wide text-[10px] sm:text-xs">
+                            <span className="sm:hidden">+</span>
+                            <span className="hidden sm:inline">+ Aufladen</span>
+                        </span>
+                    )}
                 </Button>
             )}
 
@@ -134,11 +141,11 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={onShowPrompts}
-                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-3 transition-all flex items-center gap-2 group"
+                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group"
                         title="Expert Center: Fachprofile & Prompts verwalten"
                     >
                         <FileText size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
-                        <span className="font-bold tracking-tight text-xs">Prompts</span>
+                        <span className="hidden sm:inline font-bold tracking-tight text-xs">Prompts</span>
                     </Button>
                 )}
 
@@ -148,11 +155,11 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={onShowAiParams}
-                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-3 transition-all flex items-center gap-2 group animate-in fade-in duration-300"
+                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300"
                         title="KI-Parameter konfigurieren (Feintuning)"
                     >
                         <SlidersHorizontal size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
-                        <span className="font-bold tracking-tight text-xs">KI-Parameter</span>
+                        <span className="hidden sm:inline font-bold tracking-tight text-xs">KI-Parameter</span>
                     </Button>
                 )}
             </div>
