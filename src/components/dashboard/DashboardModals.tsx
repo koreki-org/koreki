@@ -130,30 +130,34 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         setSettings(newSettings);
                         if (profileName) setSessionProfileName(profileName);
                         setShowPromptSettings(false);
-                        if (profileId) {
-                            // Unconditional local fallback
-                            localStorage.setItem('koreki_active_prompt_profile_id', profileId);
-                            
-                            // Optimistically update query data cache
-                            queryClient.setQueryData(['user'], (prev: any) => {
-                                if (!prev || !prev.user) return prev;
-                                return {
-                                    ...prev,
-                                    user: {
-                                        ...prev.user,
-                                        activePromptProfileId: profileId
-                                    }
-                                };
-                            });
+                        
+                        const targetProfileId = profileId && profileId !== 'system-standard' ? profileId : null;
+                        
+                        if (targetProfileId) {
+                            localStorage.setItem('koreki_active_prompt_profile_id', targetProfileId);
+                        } else {
+                            localStorage.removeItem('koreki_active_prompt_profile_id');
+                        }
+                        
+                        // Optimistically update query data cache
+                        queryClient.setQueryData(['user'], (prev: any) => {
+                            if (!prev || !prev.user) return prev;
+                            return {
+                                ...prev,
+                                user: {
+                                    ...prev.user,
+                                    activePromptProfileId: targetProfileId
+                                }
+                            };
+                        });
 
-                            // Hybrid Sync (Arch §2): SaaS → DB
-                            if (!isLocalInstance()) {
-                                await fetch('/api/user/update-profile', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ profileId })
-                                });
-                            }
+                        // Hybrid Sync (Arch §2): SaaS → DB
+                        if (!isLocalInstance()) {
+                            await fetch('/api/user/update-profile', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ profileId: targetProfileId })
+                            }).catch(err => console.error('Prompt profile reset failed', err));
                         }
                     }}
                     onClose={() => setShowPromptSettings(false)}
@@ -301,29 +305,32 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         saveSettings(newSettings);
                         if (profileName) setSessionAiProfileName(profileName);
                         
-                        if (newSettings.activeAiProfileId) {
-                            // Unconditional local fallback
-                            localStorage.setItem('koreki_active_ai_profile_id', newSettings.activeAiProfileId);
-                            
-                            // Optimistically update query data cache
-                            queryClient.setQueryData(['user'], (prev: any) => {
-                                if (!prev || !prev.user) return prev;
-                                return {
-                                    ...prev,
-                                    user: {
-                                        ...prev.user,
-                                        activeAiProfileId: newSettings.activeAiProfileId
-                                    }
-                                };
-                            });
+                        const targetAiProfileId = newSettings.activeAiProfileId && newSettings.activeAiProfileId !== 'system-standard' ? newSettings.activeAiProfileId : null;
+
+                        if (targetAiProfileId) {
+                            localStorage.setItem('koreki_active_ai_profile_id', targetAiProfileId);
+                        } else {
+                            localStorage.removeItem('koreki_active_ai_profile_id');
                         }
 
+                        // Optimistically update query data cache
+                        queryClient.setQueryData(['user'], (prev: any) => {
+                            if (!prev || !prev.user) return prev;
+                            return {
+                                ...prev,
+                                user: {
+                                    ...prev.user,
+                                    activeAiProfileId: targetAiProfileId
+                                }
+                            };
+                        });
+
                         // Hybrid Sync (Arch §2): SaaS → DB persist for AI profile selection
-                        if (newSettings.activeAiProfileId !== undefined && !isLocalInstance()) {
+                        if (!isLocalInstance()) {
                             fetch('/api/user/update-ai-profile', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ profileId: newSettings.activeAiProfileId || null })
+                                body: JSON.stringify({ profileId: targetAiProfileId })
                             }).catch(err => console.error('AI Profile persist failed', err));
                         }
                     }}
