@@ -18,7 +18,7 @@ export const useAiGovernance = (
     const [sessionAiProfileName, setSessionAiProfileName] = useState<string>('Standard');
 
     useEffect(() => {
-        if (authLoading) return;
+        if (authLoading || !userData?.id) return;
 
         const fetchAiProfileOnStart = async () => {
             let activeProfile = STANDARD_AI_PROFILE;

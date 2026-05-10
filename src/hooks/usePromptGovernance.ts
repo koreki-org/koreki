@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
 import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
@@ -20,11 +21,12 @@ export const usePromptGovernance = (
     settings: AppSettings,
     setSettings: React.Dispatch<React.SetStateAction<AppSettings>>
 ) => {
+    const { isHydrated } = useDashboardStore();
     const [sessionProfileName, setSessionProfileName] = useState<string>('Standard');
     const [profiles, setProfiles] = useState<any[]>([]);
 
     useEffect(() => {
-        if (authLoading) return;
+        if (authLoading || !isHydrated || !userData?.id) return;
 
         const hydratePromptProfile = async () => {
             // --- DESKTOP PATH (Static Export — No Backend) ---
@@ -107,7 +109,7 @@ export const usePromptGovernance = (
                     const currentActiveId = settings.activePromptProfileId
                         || userData?.activePromptProfileId
                         || (typeof window !== 'undefined' ? localStorage.getItem('koreki_active_prompt_profile_id') : null);
-                    
+
                     if (currentActiveId) {
                         const profile = data.find(
                             (p: any) => p.id === currentActiveId || p.name === currentActiveId
@@ -122,17 +124,6 @@ export const usePromptGovernance = (
                                     activePromptProfileId: currentActiveId
                                 };
                             });
-                            return;
-                        }
-                    }
-
-                    // Fallback to Standard
-                    const standard = data.find((p: any) => p.name === 'Standard');
-                    if (standard) {
-                        setSessionProfileName('Standard');
-                        setSettings(prev => {
-                            if (prev.correctionPrompt === standard.correctionPrompt && prev.activePromptProfileId === 'system-standard') return prev;
-                            return {
                                 ...prev,
                                 correctionPrompt: standard.correctionPrompt,
                                 activePromptProfileId: 'system-standard'
@@ -146,7 +137,7 @@ export const usePromptGovernance = (
         };
 
         hydratePromptProfile();
-    }, [userData?.id, userData?.activePromptProfileId, settings.activePromptProfileId, authLoading, setSettings]);
+    }, [userData?.id, userData?.activePromptProfileId, settings.activePromptProfileId, authLoading, isHydrated, setSettings]);
 
     return {
         profiles,
