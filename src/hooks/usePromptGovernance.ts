@@ -16,6 +16,7 @@ import { STANDARD_PROFILES } from '@/lib/ai/standard-profiles';
  */
 export const usePromptGovernance = (
     userData: any,
+    authLoading: boolean,
     settings: AppSettings,
     setSettings: React.Dispatch<React.SetStateAction<AppSettings>>
 ) => {
@@ -23,6 +24,8 @@ export const usePromptGovernance = (
     const [profiles, setProfiles] = useState<any[]>([]);
 
     useEffect(() => {
+        if (authLoading) return;
+
         const hydratePromptProfile = async () => {
             // --- DESKTOP PATH (Static Export — No Backend) ---
             // Profiles live exclusively in localStorage (§2 File-Sync/Hybrid).
@@ -142,8 +145,8 @@ export const usePromptGovernance = (
             }
         };
 
-        if (userData) hydratePromptProfile();
-    }, [userData?.id, userData?.activePromptProfileId, settings.activePromptProfileId, setSettings]);
+        hydratePromptProfile();
+    }, [userData?.id, userData?.activePromptProfileId, settings.activePromptProfileId, authLoading, setSettings]);
 
     return {
         profiles,

@@ -11,12 +11,15 @@ import { isDesktopTarget } from '@/lib/env-context';
  */
 export const useAiGovernance = (
     userData: any,
+    authLoading: boolean,
     settings: AppSettings,
     setSettings: (val: AppSettings | ((prev: AppSettings) => AppSettings)) => void
 ) => {
     const [sessionAiProfileName, setSessionAiProfileName] = useState<string>('Standard');
 
     useEffect(() => {
+        if (authLoading) return;
+
         const fetchAiProfileOnStart = async () => {
             let activeProfile = STANDARD_AI_PROFILE;
             // Hybrid Sync (Arch §2): localStorage (Desktop/Community) → DB field (SaaS)
@@ -104,7 +107,7 @@ export const useAiGovernance = (
         };
 
         fetchAiProfileOnStart();
-    }, [userData?.id, userData?.activeAiProfileId, settings.activeAiProfileId]);
+    }, [userData?.id, userData?.activeAiProfileId, settings.activeAiProfileId, authLoading]);
 
     return {
         sessionAiProfileName,
