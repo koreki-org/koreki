@@ -1,6 +1,6 @@
 {
   "name": "koreki",
-  "version": "0.9.59",
+  "version": "0.9.60",
   "private": true,
   "scripts": {
     "dev": "prisma generate && next dev",
