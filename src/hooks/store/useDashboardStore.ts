@@ -159,7 +159,18 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                 }
             }));
         } else {
-            set({ isHydrated: true });
+            // SaaS / Community Multi-User: Synchronously load active selection fallbacks on start 
+            // to prevent hydration race conditions and duplicate API requests.
+            const activeAiProfileId = localStorage.getItem('koreki_active_ai_profile_id') || undefined;
+            const activePromptProfileId = localStorage.getItem('koreki_active_prompt_profile_id') || undefined;
+            set((state) => ({
+                isHydrated: true,
+                aiSettings: {
+                    ...state.aiSettings,
+                    activeAiProfileId,
+                    activePromptProfileId
+                }
+            }));
         }
     },
     

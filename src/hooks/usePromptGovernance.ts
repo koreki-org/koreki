@@ -42,11 +42,14 @@ export const usePromptGovernance = (
                     );
                     if (profile) {
                         setSessionProfileName(profile.name);
-                        setSettings(prev => ({
-                            ...prev,
-                            correctionPrompt: profile.correctionPrompt,
-                            activePromptProfileId: activePromptId
-                        }));
+                        setSettings(prev => {
+                            if (prev.correctionPrompt === profile.correctionPrompt && prev.activePromptProfileId === activePromptId) return prev;
+                            return {
+                                ...prev,
+                                correctionPrompt: profile.correctionPrompt,
+                                activePromptProfileId: activePromptId
+                            };
+                        });
                         return;
                     }
                 }
@@ -55,11 +58,14 @@ export const usePromptGovernance = (
                 const standard = allProfiles.find((p: any) => p.name === 'Standard');
                 if (standard) {
                     setSessionProfileName('Standard');
-                    setSettings(prev => ({
-                        ...prev,
-                        correctionPrompt: standard.correctionPrompt,
-                        activePromptProfileId: 'system-standard'
-                    }));
+                    setSettings(prev => {
+                        if (prev.correctionPrompt === standard.correctionPrompt && prev.activePromptProfileId === 'system-standard') return prev;
+                        return {
+                            ...prev,
+                            correctionPrompt: standard.correctionPrompt,
+                            activePromptProfileId: 'system-standard'
+                        };
+                    });
                 }
                 return;
             }
@@ -105,11 +111,14 @@ export const usePromptGovernance = (
                         );
                         if (profile) {
                             setSessionProfileName(profile.name);
-                            setSettings(prev => ({
-                                ...prev,
-                                correctionPrompt: profile.correctionPrompt,
-                                activePromptProfileId: currentActiveId
-                            }));
+                            setSettings(prev => {
+                                if (prev.correctionPrompt === profile.correctionPrompt && prev.activePromptProfileId === currentActiveId) return prev;
+                                return {
+                                    ...prev,
+                                    correctionPrompt: profile.correctionPrompt,
+                                    activePromptProfileId: currentActiveId
+                                };
+                            });
                             return;
                         }
                     }
@@ -118,11 +127,14 @@ export const usePromptGovernance = (
                     const standard = data.find((p: any) => p.name === 'Standard');
                     if (standard) {
                         setSessionProfileName('Standard');
-                        setSettings(prev => ({
-                            ...prev,
-                            correctionPrompt: standard.correctionPrompt,
-                            activePromptProfileId: 'system-standard'
-                        }));
+                        setSettings(prev => {
+                            if (prev.correctionPrompt === standard.correctionPrompt && prev.activePromptProfileId === 'system-standard') return prev;
+                            return {
+                                ...prev,
+                                correctionPrompt: standard.correctionPrompt,
+                                activePromptProfileId: 'system-standard'
+                            };
+                        });
                     }
                 }
             } catch (err) {

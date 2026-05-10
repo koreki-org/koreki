@@ -70,19 +70,37 @@ export const useAiGovernance = (
             }
 
             setSessionAiProfileName(activeProfile.name);
-            setSettings(prev => ({
-                ...prev,
-                temperature: activeProfile.temperature,
-                topP: activeProfile.topP,
-                maxTokens: activeProfile.maxTokens,
-                presencePenalty: activeProfile.presencePenalty,
-                enableThinking: activeProfile.enableThinking,
-                visionTemperature: activeProfile.visionTemperature,
-                visionTopP: activeProfile.visionTopP,
-                visionMaxTokens: activeProfile.visionMaxTokens,
-                visionPresencePenalty: activeProfile.visionPresencePenalty,
-                activeAiProfileId: activeProfile.id === 'system-standard' ? undefined : activeProfile.id
-            }));
+            setSettings(prev => {
+                const targetActiveAiProfileId = activeProfile.id === 'system-standard' ? undefined : activeProfile.id;
+                // Prevent redundant state updates & subsequent hook re-triggers
+                if (
+                    prev.temperature === activeProfile.temperature &&
+                    prev.topP === activeProfile.topP &&
+                    prev.maxTokens === activeProfile.maxTokens &&
+                    prev.presencePenalty === activeProfile.presencePenalty &&
+                    prev.enableThinking === activeProfile.enableThinking &&
+                    prev.visionTemperature === activeProfile.visionTemperature &&
+                    prev.visionTopP === activeProfile.visionTopP &&
+                    prev.visionMaxTokens === activeProfile.visionMaxTokens &&
+                    prev.visionPresencePenalty === activeProfile.visionPresencePenalty &&
+                    prev.activeAiProfileId === targetActiveAiProfileId
+                ) {
+                    return prev;
+                }
+                return {
+                    ...prev,
+                    temperature: activeProfile.temperature,
+                    topP: activeProfile.topP,
+                    maxTokens: activeProfile.maxTokens,
+                    presencePenalty: activeProfile.presencePenalty,
+                    enableThinking: activeProfile.enableThinking,
+                    visionTemperature: activeProfile.visionTemperature,
+                    visionTopP: activeProfile.visionTopP,
+                    visionMaxTokens: activeProfile.visionMaxTokens,
+                    visionPresencePenalty: activeProfile.visionPresencePenalty,
+                    activeAiProfileId: targetActiveAiProfileId
+                };
+            });
         };
 
         fetchAiProfileOnStart();
