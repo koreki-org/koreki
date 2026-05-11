@@ -22,6 +22,7 @@ export interface AIRequestOptions {
     isScan?: boolean;
     customPrompt?: string;
     model?: string;
+    enableThinking?: boolean;
 }
 
 /**
@@ -104,7 +105,7 @@ export async function executeMistralRequest(
     const targetTopP = promptObj.options?.topP ?? 1.0;
 
     const url = 'https://api.mistral.ai/v1/chat/completions';
-    const body = {
+    const body: any = {
         model,
         messages,
         response_format: responseFormat,
@@ -112,6 +113,13 @@ export async function executeMistralRequest(
         top_p: targetTemp === 0 ? 1.0 : targetTopP, // Safety: use 1.0 if greedy to avoid 422
         max_tokens: options.maxTokens ?? 4000
     };
+
+    // Support native reasoning for Mistral Medium 3.5 if enabled via options (e.g., from the AI Profile Modal)
+    const isThinking = options.enableThinking ?? false;
+    if (isThinking && model.toLowerCase().includes('medium')) {
+        body.reasoning_effort = 'high';
+        body.max_tokens = options.maxTokens ?? 32768; // Elevate max tokens to allow room for the reasoning chain
+    }
 
     let responseData: any;
 

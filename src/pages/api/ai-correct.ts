@@ -6,6 +6,7 @@ import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { CorrectionSchema } from '@/lib/validation';
 import { performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
 import { logger } from '@/lib/logger';
+import { isLocalInstance } from '@/lib/env-context';
 
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 
@@ -50,17 +51,32 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         let analysis: any;
 
         const isComplex = validation.data.isComplex === true;
-        const useOpenAI = settings.provider === 'openai-compatible' || isComplex;
+        
+        // In local instances (Desktop/Community), the "High Accuracy" toggle (isComplex)
+        // should stay on Mistral (if Mistral is selected) but switch to the 'mistral-medium-latest' model.
+        // In SaaS mode (where we manage centralized billing/scaling), we keep the default behavior of routing isComplex to OpenAI/Qwen.
+        const useOpenAI = settings.provider === 'openai-compatible' || (isComplex && !isLocalInstance() && settings.provider !== 'mistral');
 
         if (!useOpenAI) {
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
             if (!apiKey) throw new Error('Mistral API-Key fehlt.');
 
+            // Upgrade to Mistral Medium 3.5 with native reasoning if "High Accuracy" is toggled on a local instance
+            const mistralModel = (isComplex && settings.provider === 'mistral') 
+                ? 'mistral-medium-latest' 
+                : undefined;
+
             analysis = await executeMistralRequest(
                 'correction',
                 { modelSolution, studentText, tasksLayout, expertProfileName },
                 apiKey,
-                { customPrompt: settings.correctionPrompt }
+                { 
+                    customPrompt: settings.correctionPrompt,
+                    model: mistralModel,
+                    enableThinking: settings.enableThinking,
+                    temperature: settings.temperature,
+                    maxTokens: settings.maxTokens
+                }
             );
         } else {
             const baseUrl = settings.openaiUrl || 'https://llm.aihosting.mittwald.de/v1';
