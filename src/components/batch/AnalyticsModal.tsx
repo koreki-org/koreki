@@ -55,7 +55,9 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
         const provider = settings?.provider || 'unknown';
         const model = provider === 'ollama' ? 
             (settings?.customOllamaModel || settings?.ollamaModel || 'Local Model') : 
-            (provider === 'openai-compatible' ? (settings?.openaiModel || 'Qwen 3.6 (Pro)') : (settings?.model || 'Mistral Standard'));
+            (provider === 'openai-compatible' ? 
+                (settings?.openaiModel || 'Qwen 3.6 (Pro)') : 
+                ((settings?.enableThinking && provider === 'mistral') ? 'Mistral Medium 3.5 (Reasoning)' : (settings?.model || 'Mistral Standard')));
 
         await exportPerformanceExcel(batchFiles, {
             mode,
