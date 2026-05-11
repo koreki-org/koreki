@@ -181,12 +181,12 @@ export const useBatchActions = (
     }, [setBatchFiles]);
 
     /**
-     * INDUSTRIAL RE-CORRECTION: Resets all 'done' files to 'pending' to allow re-run with new prompts.
+     * INDUSTRIAL RE-CORRECTION: Resets all 'done' and 'error' files to 'pending' to allow re-run with new prompts.
      */
     const onResetResults = useCallback(() => {
         setBatchFiles((prev: BatchFile[]) => {
             const next = prev.map(f => {
-                if (f.status === 'done') {
+                if (f.status === 'done' || f.status === 'error') {
                     return { ...f, status: 'pending', result: null, grade: undefined, error: null };
                 }
                 return f;
