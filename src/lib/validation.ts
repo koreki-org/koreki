@@ -19,6 +19,8 @@ export const CorrectionSchema = z.object({
         openaiKey: z.string().optional(),
         openaiModel: z.string().optional(),
         enableThinking: z.boolean().optional(),
+        temperature: z.number().optional(),
+        maxTokens: z.number().optional(),
     }),
     tasksLayout: z.any().optional(),
     documentType: z.string().optional(),
