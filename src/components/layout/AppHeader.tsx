@@ -83,7 +83,7 @@ const Header: React.FC<HeaderProps> = ({
                                 <div className="flex items-center px-2.5 py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Profil: ${activeProfileName}`}>
                                     <Sparkles size={12} className="mr-1.5 opacity-90 shrink-0" />
                                     <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
-                                        <span className="truncate max-w-[80px] sm:max-w-[100px] md:max-w-[150px] inline-block">{activeProfileName}</span>
+                                        <span className="truncate max-w-[50px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeProfileName}</span>
                                     </span>
                                 </div>
                             )}
@@ -91,14 +91,14 @@ const Header: React.FC<HeaderProps> = ({
                                 <div className="flex items-center px-2.5 py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`KI: ${activeAiProfileName}`}>
                                     <SlidersHorizontal size={12} className="mr-1.5 opacity-90 shrink-0" />
                                     <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
-                                        <span className="truncate max-w-[80px] sm:max-w-[100px] md:max-w-[150px] inline-block">{activeAiProfileName}</span>
+                                        <span className="truncate max-w-[50px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeAiProfileName}</span>
                                     </span>
                                 </div>
                             )}
                             <div className="flex items-center px-2.5 py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Erfahrungsschatz: ${activeGradingMemoryName || 'Inaktiv (Standard-Korrektur)'}`}>
                                 <BookOpen size={12} className="mr-1.5 opacity-90 shrink-0" />
                                 <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
-                                    <span className="truncate max-w-[80px] sm:max-w-[120px] md:max-w-[160px] inline-block">{activeGradingMemoryName || '-'}</span>
+                                    <span className="truncate max-w-[50px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeGradingMemoryName || '-'}</span>
                                 </span>
                             </div>
                             <div className="hidden sm:flex items-center px-3 py-1 bg-indigo-50/50 rounded-lg border border-indigo-100/50">
