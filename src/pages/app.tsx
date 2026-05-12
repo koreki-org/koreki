@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useFileProcessor } from '@/hooks/useFileProcessor';
 import { usePromptGovernance } from '@/hooks/usePromptGovernance';
 import { useAiGovernance } from '@/hooks/useAiGovernance';
+import { useGradingMemories } from '@/hooks/useGradingMemories';
 import { useDashboardActions } from '@/hooks/useDashboardActions';
 import { useDashboardOrchestrator } from '@/hooks/useDashboardOrchestrator';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
@@ -29,6 +30,9 @@ export default function Home() {
     const { userData, setUserData, aiStatus, authLoading, checkAuth, fetchAiStatus } = useAuth();
     const [showGradingMemory, setShowGradingMemory] = React.useState(false);
     const [activeGradingMemoryName, setActiveGradingMemoryName] = React.useState<string | undefined>(undefined);
+    
+    // Instantiate selectMemory hook for on-import restore
+    const { selectMemory } = useGradingMemories(userData);
     
     // --- STAGE 7: INDUSTRIAL DASHBOARD ORCHESTRATION ---
     // Extracting 15+ states and compliance gating into a specialized orchestrator.
@@ -135,7 +139,51 @@ export default function Home() {
                         activeGradingMemoryName={activeGradingMemoryName}
                         onLoadDemo={loadDemoData}
                         onReset={handleStartNew}
-                        onImportSession={fileProcessor.handleKorekiImport}
+                        onImportSession={async (file) => {
+                            const imported = await fileProcessor.handleKorekiImport(file);
+                            if (imported && imported.metadata) {
+                                const {
+                                    activeProfileId,
+                                    activeProfileName,
+                                    activeAiProfileId,
+                                    activeAiProfileName,
+                                    activeGradingMemoryId,
+                                    activeGradingMemoryName: targetMemoryName
+                                } = imported.metadata;
+
+                                if (activeProfileName) {
+                                    setSessionProfileName(activeProfileName);
+                                    if (activeProfileId) {
+                                        setAiSettings(prev => ({ ...prev, activePromptProfileId: activeProfileId }));
+                                    } else {
+                                        const found = profiles.find(p => p.name === activeProfileName);
+                                        if (found) {
+                                            setAiSettings(prev => ({ ...prev, activePromptProfileId: found.id }));
+                                        }
+                                    }
+                                }
+
+                                if (activeAiProfileName) {
+                                    setSessionAiProfileName(activeAiProfileName);
+                                    if (activeAiProfileId) {
+                                        setAiSettings(prev => ({ ...prev, activeAiProfileId: activeAiProfileId }));
+                                    } else {
+                                        if (activeAiProfileName === 'Standard' || activeAiProfileName === 'system-standard') {
+                                            setAiSettings(prev => ({ ...prev, activeAiProfileId: undefined }));
+                                        } else if (activeAiProfileName === 'Mathematik' || activeAiProfileName === 'system-math') {
+                                            setAiSettings(prev => ({ ...prev, activeAiProfileId: 'system-math' }));
+                                        }
+                                    }
+                                }
+
+                                if (targetMemoryName) {
+                                    setActiveGradingMemoryName(targetMemoryName);
+                                    if (activeGradingMemoryId) {
+                                        selectMemory(activeGradingMemoryId);
+                                    }
+                                }
+                            }
+                        }}
                         onRelinkFiles={fileProcessor.handleRelinkFiles}
                         isImportedSession={fileProcessor.isImportedSession}
                         hasMissingFiles={fileProcessor.batchFiles.length > 0 && fileProcessor.batchFiles.some(f => !f.files || f.files.length === 0)}
@@ -264,11 +312,30 @@ export default function Home() {
                                 currentProcessingIndex={fileProcessor.currentProcessingIndex}
                                 onProcess={() => fileProcessor.processBatch(aiStatus)}
                                 onExtractOCR={() => fileProcessor.handleExtractOCR(fileProcessor.batchFiles)}
-                                onExportTeacher={() => exportTeacherList(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(f => ({ studentName: getExportName(f), analysis: f.result!, grade: f.grade })))}
+                                onExportTeacher={() => exportTeacherList(
+                                    fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(f => ({ studentName: getExportName(f), analysis: f.result!, grade: f.grade })),
+                                    {
+                                        expertise: sessionProfileName,
+                                        gradingMemory: activeGradingMemoryName || 'Inaktiv / Keine',
+                                        aiModel: sessionAiProfileName
+                                    }
+                                )}
                                 onExportStudents={() => exportStudentSummaries(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(f => ({ studentName: getExportName(f), analysis: f.result!, grade: f.grade })))}
                                 onExportIndividual={() => exportIndividualFeedbacks(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(f => ({ studentName: getExportName(f), analysis: f.result!, grade: f.grade })))}
                                 onExportPDFs={() => exportIndividualPDFs(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(f => ({ studentName: getExportName(f), analysis: f.result!, grade: f.grade })))}
-                                onExportKoreki={() => exportSessionToJson(fileProcessor.batchFiles, data.modelSolution, data.tasksLayout)}
+                                onExportKoreki={() => exportSessionToJson(
+                                    fileProcessor.batchFiles, 
+                                    data.modelSolution, 
+                                    data.tasksLayout,
+                                    {
+                                        activeProfileId: aiSettings.activePromptProfileId,
+                                        activeProfileName: sessionProfileName,
+                                        activeAiProfileId: aiSettings.activeAiProfileId,
+                                        activeAiProfileName: sessionAiProfileName,
+                                        activeGradingMemoryId: localStorage.getItem('koreki_active_grading_memory_id') || undefined,
+                                        activeGradingMemoryName: activeGradingMemoryName
+                                    }
+                                )}
                                 onToggleSelect={fileProcessor.onToggleSelect}
                                 onToggleType={fileProcessor.onToggleType}
                                 onUpdateText={fileProcessor.onUpdateText}

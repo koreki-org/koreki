@@ -15,14 +15,23 @@ export function cn(...inputs: ClassValue[]) {
 export async function exportSessionToJson(
     batchFiles: BatchFile[],
     modelSolution: string,
-    tasksLayout: any[]
+    tasksLayout: any[],
+    metadata?: {
+        activeProfileId?: string;
+        activeProfileName?: string;
+        activeAiProfileId?: string;
+        activeAiProfileName?: string;
+        activeGradingMemoryId?: string;
+        activeGradingMemoryName?: string;
+    }
 ) {
     const exportData: any = {
         version: '2.0',
         modelSolution,
         tasksLayout,
         batchFiles,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        metadata: metadata || {}
     };
 
     const data = JSON.stringify(exportData, (key, value) => {

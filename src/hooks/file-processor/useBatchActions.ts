@@ -42,8 +42,10 @@ export const useBatchActions = (
 
             setBatchFiles(importedFiles);
             setIsImportedSession(true);
+            return data;
         } catch (err: any) {
             alert("Import fehlgeschlagen: " + err.message);
+            return null;
         }
     }, [setBatchFiles, setIsImportedSession, setModelSolution, setTasksLayout]);
 

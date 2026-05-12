@@ -42,7 +42,14 @@ export const generateStudentWorkbook = (r: StudentResult): XLSX.WorkBook => {
 /**
  * Generates an Excel file for the teacher (Grade List).
  */
-export const exportTeacherList = (results: StudentResult[]): void => {
+export const exportTeacherList = (
+    results: StudentResult[],
+    metadata?: {
+        expertise?: string;
+        gradingMemory?: string;
+        aiModel?: string;
+    }
+): void => {
     if (!results || results.length === 0) return;
 
     const getParentName = (name: string) => name.match(/^(.*?\d+)/)?.[0]?.trim() || name;
@@ -98,7 +105,22 @@ export const exportTeacherList = (results: StudentResult[]): void => {
         return row;
     });
 
-    const ws = XLSX.utils.json_to_sheet(data);
+    let ws: XLSX.WorkSheet;
+    if (metadata) {
+        ws = XLSX.utils.aoa_to_sheet([
+            ['Koreki - KI-Korrektur-Übersicht (Einschätzungsliste)'],
+            [],
+            ['Angewandtes Fachprofil (Expertise):', metadata.expertise || 'Standard'],
+            ['Angewandter Erfahrungsschatz (Memory):', metadata.gradingMemory || 'Standard'],
+            ['Eingesetzte KI-Intelligenz (Modell):', metadata.aiModel || 'Standard'],
+            ['Export-Datum:', new Date().toLocaleDateString('de-DE')],
+            []
+        ]);
+        XLSX.utils.sheet_add_json(ws, data, { origin: 'A8' });
+    } else {
+        ws = XLSX.utils.json_to_sheet(data);
+    }
+
     const cols = [{ wch: 25 }, { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 15 }];
     parentTaskOrder.forEach(() => cols.push({ wch: 18 }));
     ws['!cols'] = cols;
