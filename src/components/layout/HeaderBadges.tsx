@@ -172,10 +172,10 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         size="sm"
                         onClick={onShowAiParams}
                         className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300"
-                        title="KI-Parameter konfigurieren (Feintuning)"
+                        title="Intelligenz: Denkweise & Leistungskraft der KI steuern"
                     >
                         <SlidersHorizontal size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
-                        <span className="hidden sm:inline font-bold tracking-tight text-xs">KI-Parameter</span>
+                        <span className="hidden sm:inline font-bold tracking-tight text-xs">Intelligenz</span>
                     </Button>
                 )}
             </div>
