@@ -90,7 +90,6 @@ export const exportTeacherList = (
 
         const row: any = {
             'Schülername': r.studentName || 'Unbekannt',
-            'KI-Expertise': analysis.expertProfile || 'Standard',
             [`Erreichte Punkte (von ${totalExamMaxPoints} P)`]: totalStudentPoints,
             'Gesamt (%)': analysis.overallMatchPercentage ? Math.round(analysis.overallMatchPercentage) : 0,
             'Einschätzung': r.grade || '-'
@@ -121,7 +120,7 @@ export const exportTeacherList = (
         ws = XLSX.utils.json_to_sheet(data);
     }
 
-    const cols = [{ wch: 25 }, { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 15 }];
+    const cols = [{ wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 15 }];
     parentTaskOrder.forEach(() => cols.push({ wch: 18 }));
     ws['!cols'] = cols;
 
