@@ -12,6 +12,7 @@ import { GradingMemoryModal } from '@/components/batch/GradingMemoryModal';
 import { useAuth } from '@/hooks/useAuth';
 import { useFileProcessor } from '@/hooks/useFileProcessor';
 import { usePromptGovernance } from '@/hooks/usePromptGovernance';
+import { useSkillGovernance } from '@/hooks/useSkillGovernance';
 import { useAiGovernance } from '@/hooks/useAiGovernance';
 import { useGradingMemories } from '@/hooks/useGradingMemories';
 import { useDashboardActions } from '@/hooks/useDashboardActions';
@@ -44,6 +45,7 @@ export default function Home() {
 
     // Governance & Actions
     const { profiles, sessionProfileName, setSessionProfileName } = usePromptGovernance(userData, authLoading, aiSettings, setAiSettings);
+    const { sessionSkillsProfileName, setSessionSkillsProfileName } = useSkillGovernance(userData, authLoading, aiSettings, setAiSettings);
     const { sessionAiProfileName, setSessionAiProfileName } = useAiGovernance(userData, authLoading, aiSettings, setAiSettings);
 
     const fileProcessor = useFileProcessor(
@@ -133,8 +135,10 @@ export default function Home() {
                         onLogout={actions.handleLogout}
                         onShowSettings={() => modals.setShowSettings(true)}
                         onShowPrompts={() => modals.setShowPromptSettings(true)}
+                        onShowSkills={() => modals.setShowSkillsSettings(true)}
                         onUnlockExpert={handleUnlockExpert}
                         activeProfileName={sessionProfileName}
+                        activeSkillsProfileName={sessionSkillsProfileName}
                         activeAiProfileName={sessionAiProfileName}
                         activeGradingMemoryName={activeGradingMemoryName}
                         onLoadDemo={loadDemoData}
@@ -200,6 +204,8 @@ export default function Home() {
                         setShowSettings={modals.setShowSettings}
                         showPromptSettings={modals.showPromptSettings}
                         setShowPromptSettings={modals.setShowPromptSettings}
+                        showSkillsSettings={modals.showSkillsSettings}
+                        setShowSkillsSettings={modals.setShowSkillsSettings}
                         showCredits={modals.showCredits}
                         setShowCredits={modals.setShowCredits}
                         showHelp={modals.showHelp}
@@ -222,6 +228,8 @@ export default function Home() {
                         handleModeSelect={handleModeSelect}
                         sessionProfileName={sessionProfileName}
                         setSessionProfileName={setSessionProfileName}
+                        sessionSkillsProfileName={sessionSkillsProfileName}
+                        setSessionSkillsProfileName={setSessionSkillsProfileName}
                         sessionAiProfileName={sessionAiProfileName}
                         setSessionAiProfileName={setSessionAiProfileName}
                         profiles={profiles}

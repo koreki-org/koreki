@@ -63,6 +63,7 @@ export const useDashboardOrchestrator = (
     const [showPureKeyModal, setShowPureKeyModal] = useState(false);
     const [showQuickStart, setShowQuickStart] = useState(false);
     const [showPromptSettings, setShowPromptSettings] = useState(false);
+    const [showSkillsSettings, setShowSkillsSettings] = useState(false);
     const [showModelTypeModal, setShowModelTypeModal] = useState(false);
     const [showAiSetup, setShowAiSetup] = useState(false);
     const [showAiParamsSettings, setShowAiParamsSettings] = useState(false);
@@ -131,6 +132,7 @@ export const useDashboardOrchestrator = (
             showPureKeyModal, setShowPureKeyModal,
             showQuickStart, setShowQuickStart,
             showPromptSettings, setShowPromptSettings,
+            showSkillsSettings, setShowSkillsSettings,
             showModelTypeModal, setShowModelTypeModal,
             showAiSetup, setShowAiSetup,
             showAiParamsSettings, setShowAiParamsSettings

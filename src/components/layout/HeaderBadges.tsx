@@ -1,4 +1,5 @@
-import { Crown, Building2, Shield, Sparkles, FileText, Loader2, ShieldCheck, SlidersHorizontal, BookOpen, Brain, GraduationCap } from 'lucide-react';
+import React from 'react';
+import { Crown, Building2, Shield, Sparkles, Loader2, ShieldCheck, BookOpen, Brain, GraduationCap, Wrench } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { isLocalInstance } from '@/lib/env-context';
 import { useRouter } from 'next/router';
@@ -9,6 +10,7 @@ interface HeaderBadgesProps {
     onUpgrade: () => void;
     onUnlockExpert?: () => void;
     onShowPrompts?: () => void;
+    onShowSkills?: () => void;
     onShowAiParams?: () => void;
     onShowGradingMemory?: () => void;
 }
@@ -24,6 +26,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
     onUpgrade,
     onUnlockExpert,
     onShowPrompts,
+    onShowSkills,
     onShowAiParams,
     onShowGradingMemory
 }) => {
@@ -151,6 +154,20 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                     </Button>
                 )}
 
+                {/* AI Skills Button ⚙️🎯 */}
+                {(isLocalInstance() || userData?.canEditPrompts) && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onShowSkills}
+                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300"
+                        title="Skills Center: Modulare AI-Bewertungskompetenzen aktivieren"
+                    >
+                        <Wrench size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
+                        <span className="hidden sm:inline font-bold tracking-tight text-xs font-black">Skills</span>
+                    </Button>
+                )}
+
                 {/* GradingMemory Button (Stage 10 Stateless) 🎓🎯 */}
                 {(isLocalInstance() || userData?.canEditPrompts) && (
                     <Button
@@ -161,7 +178,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         title="GradingMemory™: Korrektur-Erfahrungsschatz kalibrieren"
                     >
                         <BookOpen size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
-                        <span className="hidden sm:inline font-bold tracking-tight text-xs">Erfahrungsschatz</span>
+                        <span className="hidden sm:inline font-bold tracking-tight text-xs">Erfahrung</span>
                     </Button>
                 )}
 

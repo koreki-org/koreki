@@ -26,6 +26,8 @@ export interface AIRequestOptions {
     model?: string;
     enableThinking?: boolean;
     gradingMemory?: any[] | null;
+    activeSkillIds?: string[];
+    customSkills?: Record<string, any>;
 }
 
 /**
@@ -85,7 +87,7 @@ export async function executeMistralRequest(
         ];
     } else {
         if (action === 'correction') {
-            promptObj = buildCorrectionPrompt(payload.modelSolution, payload.studentText, payload.tasksLayout, options.customPrompt, model, options.gradingMemory);
+            promptObj = buildCorrectionPrompt(payload.modelSolution, payload.studentText, payload.tasksLayout, options.customPrompt, model, options.gradingMemory, options.activeSkillIds, options.customSkills);
         } else if (action === 'clean-and-analyze') {
             promptObj = buildCleanAndAnalyzePrompt(payload.modelSolution, model);
         } else if (action === 'clean-and-map') {

@@ -81,7 +81,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     temperature: settings.temperature,
                     topP: settings.topP,
                     maxTokens: settings.maxTokens,
-                    gradingMemory
+                    gradingMemory,
+                    activeSkillIds: settings.activeSkillIds,
+                    customSkills: settings.customSkills
                 }
             );
         } else {
@@ -90,7 +92,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const model = settings.openaiModel || 'Qwen3.6-35B-A3B-FP8';
             
             if (!apiKey) throw new Error('Mittwald/OpenAI API-Key fehlt.');
-
+ 
             analysis = await executeOpenAIRequest(
                 'correction',
                 { modelSolution, studentText, tasksLayout, expertProfileName },
@@ -100,7 +102,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     model,
                     enableThinking: settings.enableThinking,
                     customPrompt: settings.correctionPrompt,
-                    gradingMemory
+                    gradingMemory,
+                    activeSkillIds: settings.activeSkillIds,
+                    customSkills: settings.customSkills
                 }
             );
         }

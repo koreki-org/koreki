@@ -185,7 +185,9 @@ export async function performAIRequest(
                     maxTokens: settings.maxTokens,
                     presencePenalty: settings.presencePenalty,
                     customPrompt: settings?.correctionPrompt,
-                    gradingMemory: payload.gradingMemory
+                    gradingMemory: payload.gradingMemory,
+                    activeSkillIds: settings?.activeSkillIds,
+                    customSkills: settings?.customSkills
                 });
             } else {
                 result = await executeMistralRequest(action, payload, mistralKey, {
@@ -195,7 +197,9 @@ export async function performAIRequest(
                     enableThinking: settings?.enableThinking,
                     temperature: settings?.temperature,
                     topP: settings?.topP,
-                    maxTokens: settings?.maxTokens
+                    maxTokens: settings?.maxTokens,
+                    activeSkillIds: settings?.activeSkillIds,
+                    customSkills: settings?.customSkills
                 });
             }
 

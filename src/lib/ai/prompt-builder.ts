@@ -1,4 +1,5 @@
 import { Task, GradingMemoryCase } from '../../types';
+import { STANDARD_SKILLS, GradingSkill } from './standard-skills';
 
 // Centralized Default Templates
 import correctionSystemDefault from '../../prompts/default/correction/system.md';
@@ -60,7 +61,9 @@ export function buildCorrectionPrompt(
     tasksLayout?: Task[] | null, 
     customPrompt?: string, 
     model?: string,
-    gradingMemory?: GradingMemoryCase[] | null
+    gradingMemory?: GradingMemoryCase[] | null,
+    activeSkillIds?: string[], // Symmetrisches Grading Skills Center
+    customSkills?: Record<string, GradingSkill> // Custom user-defined skills mapping
 ): StructuredPrompt {
     let system = correctionSystemDefault;
     let user = correctionUserDefault;
@@ -84,6 +87,26 @@ export function buildCorrectionPrompt(
 
     const expertText = cleanCustom ? `\n\nPÄDAGOGISCHE SPEZIALISIERUNG DES LEHRERS (ERGÄNZUNG):\n${cleanCustom}\n\n` : '';
     system = system.replace('{{expertInstructions}}', expertText);
+
+    // Dynamic compilation and injection of active modular skills
+    let skillsSection = '';
+    if (activeSkillIds && activeSkillIds.length > 0) {
+        skillsSection = '\n\n### AKTIVIERTE BEWERTUNGS-SKILLS (STRIKT BEFOLGEN):\n';
+        activeSkillIds.forEach(id => {
+            const skill = STANDARD_SKILLS[id] || (customSkills && customSkills[id]);
+            if (skill) {
+                skillsSection += `\n--- [KORREKTUR-SKILL: ${skill.name}] ---\n${skill.promptSnippet.trim()}\n`;
+            }
+        });
+        skillsSection += '\n--------------------------------------------\n';
+    }
+
+    if (system.includes('{{activeSkills}}')) {
+        system = system.replace('{{activeSkills}}', skillsSection);
+    } else {
+        // Fallback: If template does not explicitly contain placeholder, append to system instructions safely
+        system += skillsSection;
+    }
 
     if (tasksLayout && Array.isArray(tasksLayout) && tasksLayout.length > 0) {
         const layoutText = tasksLayout.map(t => `- ${t.name} (Max: ${t.maxPoints} P)`).join('\n');

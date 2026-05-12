@@ -14,7 +14,7 @@ interface SidebarProps {
     isCreatingNew: boolean;
     editingProfileId: string | null;
     editingName: string;
-    onStartNew: () => void;
+    onStartNew: (initialPrompt?: string, initialName?: string) => void;
     onImportParsedProfile: (parsed: any) => void;
     onSelectProfile: (p: any) => void;
     onStartRename: (e: React.MouseEvent, p: any) => void;
@@ -95,7 +95,7 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
             </div>
         )}
         <div className="p-4 border-b border-slate-100 space-y-2 relative z-10">
-            <Button onClick={onStartNew} className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md gap-2">
+            <Button onClick={() => onStartNew()} className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md gap-2">
                 <PlusCircle size={18} /> Neues Profil
             </Button>
             <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full h-10 border-dashed border-indigo-200 text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 gap-2">
@@ -139,6 +139,9 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
                                     </Button>
                                 ) : (
                                     <>
+                                        <Button variant="ghost" size="icon" title="Profil kopieren" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-indigo-600 transition-opacity" onClick={(e) => { e.stopPropagation(); onStartNew(p.correctionPrompt || p.prompt, `Kopie von ${p.name}`); }}>
+                                            <PlusCircle size={14} />
+                                        </Button>
                                         <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-indigo-600 transition-opacity" onClick={(e) => onStartRename(e, p)}>
                                             <Pencil size={14} />
                                         </Button>
@@ -161,9 +164,23 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
                         onClick={() => onSelectProfile(p)}
                         className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
                     >
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
                             <FileText size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
-                            <span className={`text-xs md:text-sm font-bold ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}>{p.name}</span>
+                            <span className={`text-xs md:text-sm font-bold truncate ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}>{p.name}</span>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                title="Profil kopieren"
+                                className="h-8 w-8 text-slate-400 hover:text-indigo-600 rounded-lg" 
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onStartNew(p.correctionPrompt || p.prompt, `Kopie von ${p.name}`);
+                                }}
+                            >
+                                <PlusCircle size={14} />
+                            </Button>
                         </div>
                     </div>
                 ))}

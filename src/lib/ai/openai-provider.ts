@@ -20,6 +20,8 @@ export interface OpenAIRequestOptions {
     model?: string;
     enableThinking?: boolean;
     gradingMemory?: any[] | null;
+    activeSkillIds?: string[];
+    customSkills?: Record<string, any>;
 }
 
 /**
@@ -59,7 +61,7 @@ export async function executeOpenAIRequest(
         ];
     } else {
         if (action === 'correction') {
-            promptObj = buildCorrectionPrompt(payload.modelSolution, payload.studentText, payload.tasksLayout, options.customPrompt, targetModel, options.gradingMemory);
+            promptObj = buildCorrectionPrompt(payload.modelSolution, payload.studentText, payload.tasksLayout, options.customPrompt, targetModel, options.gradingMemory, options.activeSkillIds, options.customSkills);
         } else if (action === 'clean-and-analyze') {
             promptObj = buildCleanAndAnalyzePrompt(payload.modelSolution, targetModel);
         } else if (action === 'clean-and-map') {

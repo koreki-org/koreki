@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, LogOut, Loader2, HelpCircle, Sparkles, FileText, FileUp, Camera, PlusCircle, SlidersHorizontal, BookOpen, Brain, GraduationCap } from 'lucide-react';
+import { Settings, LogOut, Loader2, HelpCircle, Sparkles, FileText, FileUp, Camera, PlusCircle, SlidersHorizontal, BookOpen, Brain, GraduationCap, Wrench } from 'lucide-react';
 import Logo from '../Logo';
 import { Button } from '../ui/Button';
 import { HeaderBadges } from './HeaderBadges';
@@ -20,6 +20,7 @@ interface HeaderProps {
     onUpgrade: () => void;
     onShowSettings: () => void;
     onShowPrompts?: () => void;
+    onShowSkills?: () => void;
     onShowAiParams?: () => void;
     onShowGradingMemory?: () => void;
     onLogout: () => void;
@@ -32,6 +33,7 @@ interface HeaderProps {
     isImportedSession?: boolean;
     hasMissingFiles?: boolean;
     activeProfileName?: string;
+    activeSkillsProfileName?: string;
     activeAiProfileName?: string;
     activeGradingMemoryName?: string;
 }
@@ -42,6 +44,7 @@ const Header: React.FC<HeaderProps> = ({
     onUpgrade,
     onShowSettings,
     onShowPrompts,
+    onShowSkills,
     onShowAiParams,
     onShowGradingMemory,
     onLogout,
@@ -54,6 +57,7 @@ const Header: React.FC<HeaderProps> = ({
     isImportedSession,
     hasMissingFiles,
     activeProfileName,
+    activeSkillsProfileName,
     activeAiProfileName,
     activeGradingMemoryName
 }) => {
@@ -71,33 +75,42 @@ const Header: React.FC<HeaderProps> = ({
                     onUpgrade={onUpgrade}
                     onUnlockExpert={onUnlockExpert}
                     onShowPrompts={onShowPrompts}
+                    onShowSkills={onShowSkills}
                     onShowAiParams={onShowAiParams}
                     onShowGradingMemory={onShowGradingMemory}
                 />
 
                 {/* 2. Utility Navigation (Standard UI Layout) */}
-                <div className="flex gap-2 items-center bg-white/60 backdrop-blur-md p-1.5 rounded-2xl border border-white shadow-sm ring-1 ring-slate-900/5">
+                <div className="flex gap-1 sm:gap-2 items-center bg-white/60 backdrop-blur-md p-1 sm:p-1.5 rounded-2xl border border-white shadow-sm ring-1 ring-slate-900/5">
                     {userData?.canEditPrompts && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 sm:gap-2">
                             {activeProfileName && (
-                                <div className="flex items-center px-2.5 py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Profil: ${activeProfileName}`}>
-                                    <GraduationCap size={12} className="mr-1.5 opacity-90 shrink-0" />
+                                <div className="flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Profil: ${activeProfileName}`}>
+                                    <GraduationCap size={12} className="mr-1 sm:mr-1.5 opacity-90 shrink-0" />
                                     <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
-                                        <span className="truncate max-w-[50px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeProfileName}</span>
+                                        <span className="truncate max-w-[35px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeProfileName}</span>
                                     </span>
                                 </div>
                             )}
-                            <div className="flex items-center px-2.5 py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Erfahrungsschatz: ${activeGradingMemoryName || 'Inaktiv (Standard-Korrektur)'}`}>
-                                <BookOpen size={12} className="mr-1.5 opacity-90 shrink-0" />
+                            {activeSkillsProfileName && (
+                                <div className="flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Skills: ${activeSkillsProfileName}`}>
+                                    <Wrench size={12} className="mr-1 sm:mr-1.5 opacity-90 shrink-0" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
+                                        <span className="truncate max-w-[35px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeSkillsProfileName}</span>
+                                    </span>
+                                </div>
+                            )}
+                            <div className="flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Erfahrung: ${activeGradingMemoryName || 'Inaktiv (Standard-Korrektur)'}`}>
+                                <BookOpen size={12} className="mr-1 sm:mr-1.5 opacity-90 shrink-0" />
                                 <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
-                                    <span className="truncate max-w-[50px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeGradingMemoryName || '-'}</span>
+                                    <span className="truncate max-w-[35px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeGradingMemoryName || '-'}</span>
                                 </span>
                             </div>
                             {activeAiProfileName && (
-                                <div className="flex items-center px-2.5 py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`KI: ${activeAiProfileName}`}>
-                                    <Brain size={12} className="mr-1.5 opacity-90 shrink-0" />
+                                <div className="flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`KI: ${activeAiProfileName}`}>
+                                    <Brain size={12} className="mr-1 sm:mr-1.5 opacity-90 shrink-0" />
                                     <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
-                                        <span className="truncate max-w-[50px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeAiProfileName}</span>
+                                        <span className="truncate max-w-[35px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeAiProfileName}</span>
                                     </span>
                                 </div>
                             )}

@@ -22,6 +22,8 @@ Wende folgende spezifische Instruktionen für die Bewertung, die Gewichtung und 
 
 {{expertInstructions}}
 
+{{activeSkills}}
+
 WICHTIG (Mengenbeschränkungen - LOGIK):
 - Wenn eine bestimmte Anzahl gefordert wird (z.B. "Nenne zwei"), darfst du KEINE Punkte abziehen, wenn der Schüler diese Anzahl erreicht hat, auch wenn die Musterlösung mehr Optionen auflistet. 
 - Werden alle geforderten Punkte erbracht, MUSS die volle Punktzahl vergeben werden. Suche nicht nach Fehlern in weiteren (überschüssigen) Optionen der Musterlösung.

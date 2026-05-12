@@ -2,6 +2,7 @@ import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import SettingsModal from '../SettingsModal';
 import PromptSettingsModal from '../PromptSettingsModal';
+import SkillsSettingsModal from '../SkillsSettingsModal';
 import CreditsModal from '../CreditsModal';
 
 import PDFSplitModal from '../PDFSplitModal';
@@ -27,6 +28,8 @@ interface DashboardModalsProps {
     setShowSettings: (v: boolean) => void;
     showPromptSettings: boolean;
     setShowPromptSettings: (v: boolean) => void;
+    showSkillsSettings: boolean;
+    setShowSkillsSettings: (v: boolean) => void;
     showCredits: boolean;
     setShowCredits: (v: boolean) => void;
     showHelp: boolean;
@@ -51,6 +54,8 @@ interface DashboardModalsProps {
     handleModeSelect: (m: any) => void;
     sessionProfileName: string;
     setSessionProfileName: (n: string) => void;
+    sessionSkillsProfileName: string;
+    setSessionSkillsProfileName: (n: string) => void;
     sessionAiProfileName: string;
     setSessionAiProfileName: (n: string) => void;
     profiles: any[];
@@ -83,6 +88,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
     userData, settings, setSettings,
     showSettings, setShowSettings,
     showPromptSettings, setShowPromptSettings,
+    showSkillsSettings, setShowSkillsSettings,
     showCredits, setShowCredits,
     showHelp, setShowHelp,
     showOnboarding, setShowOnboarding,
@@ -92,6 +98,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
     showModelTypeModal, setShowModelTypeModal,
     saveSettings, handleModeSelect,
     sessionProfileName, setSessionProfileName,
+    sessionSkillsProfileName, setSessionSkillsProfileName,
     sessionAiProfileName, setSessionAiProfileName,
     profiles,
     pureApiKey, setPureApiKey,
@@ -150,7 +157,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                                 }
                             };
                         });
-
+ 
                         // Hybrid Sync (Arch §2): SaaS → DB
                         if (!isLocalInstance()) {
                             await fetch('/api/user/update-profile', {
@@ -161,6 +168,48 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         }
                     }}
                     onClose={() => setShowPromptSettings(false)}
+                />
+            )}
+
+            {showSkillsSettings && (
+                <SkillsSettingsModal
+                    settings={settings}
+                    currentProfileName={sessionSkillsProfileName}
+                    onSave={async (newSettings, profileName, profileId) => {
+                        setSettings(newSettings);
+                        if (profileName) setSessionSkillsProfileName(profileName);
+                        setShowSkillsSettings(false);
+                        
+                        const targetProfileId = profileId && profileId !== 'system-standard' ? profileId : null;
+                        
+                        if (targetProfileId) {
+                            localStorage.setItem('koreki_active_skill_profile_id', targetProfileId);
+                        } else {
+                            localStorage.removeItem('koreki_active_skill_profile_id');
+                        }
+                        
+                        // Optimistically update query data cache
+                        queryClient.setQueryData(['user'], (prev: any) => {
+                            if (!prev || !prev.user) return prev;
+                            return {
+                                ...prev,
+                                user: {
+                                    ...prev.user,
+                                    activeSkillProfileId: targetProfileId
+                                }
+                            };
+                        });
+
+                        // Hybrid Sync (Arch §2): SaaS → DB
+                        if (!isLocalInstance()) {
+                            await fetch('/api/user/update-skill-profile', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ profileId: targetProfileId })
+                            }).catch(err => console.error('Skill profile reset failed', err));
+                        }
+                    }}
+                    onClose={() => setShowSkillsSettings(false)}
                 />
             )}
 

@@ -27,6 +27,7 @@ model User {
   appMode               String   @default("UNSET")
   activeWorkspaceId      String?
   activePromptProfileId   String?
+  activeSkillProfileId    String?
   activeAiProfileId       String?
   activeGradingMemoryId   String?
   privacyLogs           PrivacyLog[]
@@ -34,6 +35,7 @@ model User {
   promptProfiles        PromptProfile[]
   aiProfiles            AiProfile[]
   gradingMemories       GradingMemory[]
+  skillProfiles         SkillProfile[]
 }
 
 model Workspace {
@@ -156,4 +158,17 @@ model GradingMemory {
   createdAt DateTime @default(now())
 
   @@unique([name, userId])
+}
+
+model SkillProfile {
+  id             String   @id @default(cuid())
+  name           String
+  activeSkillIds Json     @default("[]") // Plattformübergreifendes JSON-Array
+  isSystem       Boolean  @default(false)
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+
+  @@unique([name, userId])
+  @@index([userId])
 }

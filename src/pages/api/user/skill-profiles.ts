@@ -1,0 +1,130 @@
+import type { NextApiResponse } from 'next';
+import prisma from '../../../lib/prisma';
+import { z } from 'zod';
+import { SkillProfileService } from '../../../lib/services/skill-profile-service';
+import { LocalSkillProfileService } from '../../../lib/services/local-profile-service';
+import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
+import { logger } from '../../../lib/logger';
+import { isLocalInstance } from '../../../lib/env-context';
+
+/**
+ * Skill Profiles API Controller
+ * 🏮🛡️🏛️
+ * Symmetrical to prompt-profiles.ts. Respects single-user local bypass
+ * and full RBAC / Tenant isolation in VPS SaaS mode.
+ */
+
+const skillProfileSchema = z.object({
+    name: z.string().min(1, 'Name ist erforderlich'),
+    activeSkillIds: z.array(z.string()).default([]),
+});
+
+const deleteSchema = z.object({
+    id: z.string().min(1, 'ID ist erforderlich'),
+});
+
+export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
+    // --- INDUSTRIAL LOCAL BYPASS ---
+    if (isLocalInstance()) {
+        const { claims } = req.user;
+        const userId = claims?.sub;
+
+        try {
+            if (req.method === 'GET') {
+                const profiles = await LocalSkillProfileService.getAvailableProfiles(userId);
+                return res.status(200).json(profiles);
+            }
+            if (req.method === 'POST') {
+                const validation = skillProfileSchema.safeParse(req.body);
+                if (!validation.success) {
+                    return res.status(400).json({ 
+                        message: validation.error.issues[0]?.message || 'Ungültige Daten' 
+                    });
+                }
+                const profile = await LocalSkillProfileService.upsertProfile(validation.data, userId);
+                return res.status(200).json(profile);
+            }
+            if (req.method === 'PATCH') {
+                const renameSchema = z.object({
+                    id: z.string().min(1),
+                    newName: z.string().min(1),
+                });
+                const validation = renameSchema.safeParse(req.body);
+                if (!validation.success) return res.status(400).json({ message: 'Daten fehlen' });
+                
+                await LocalSkillProfileService.renameProfile(validation.data.id, validation.data.newName, userId);
+                return res.status(200).json({ success: true });
+            }
+            if (req.method === 'DELETE') {
+                await LocalSkillProfileService.deleteProfile(req.query.id as string, userId);
+                return res.status(200).json({ success: true });
+            }
+        } catch (err) {
+            return res.status(500).json({ message: 'Lokaler Fehler beim Verarbeiten der Skill-Profile' });
+        }
+    }
+
+    const { claims } = req.user;
+    const logtoId = claims?.sub;
+
+    // Fetch local user to verify role and get internal ID
+    const user = logtoId ? await prisma.user.findUnique({ where: { logtoId } }) : null;
+    
+    if (!user) {
+        if (req.method === 'GET') return res.status(200).json([]);
+        return res.status(403).json({ message: 'Benutzerprofil nicht gefunden' });
+    }
+
+    const dbUserId = user.id;
+    const userRole = user.role;
+
+    try {
+        if (req.method === 'GET') {
+            // First, sync defaults (Industrial Grade: Auto-provisioning subjects)
+            await SkillProfileService.syncSystemProfiles();
+            
+            // Then, fetch all accessible profiles
+            const profiles = await SkillProfileService.getAvailableProfiles(dbUserId);
+            return res.status(200).json(profiles);
+        }
+
+        if (req.method === 'POST') {
+            const validation = skillProfileSchema.safeParse(req.body);
+            if (!validation.success) {
+                return res.status(400).json({ 
+                    message: validation.error.issues[0]?.message || 'Ungültige Daten' 
+                });
+            }
+
+            const profile = await SkillProfileService.upsertProfile(dbUserId, validation.data, userRole);
+            return res.status(200).json(profile);
+        }
+
+        if (req.method === 'PATCH') {
+            const renameSchema = z.object({
+                id: z.string().min(1, 'ID erforderlich'),
+                newName: z.string().min(1, 'Name erforderlich'),
+            });
+            const validation = renameSchema.safeParse(req.body);
+            if (!validation.success) return res.status(400).json({ message: 'Daten fehlen' });
+
+            await SkillProfileService.renameProfile(dbUserId, validation.data.id, validation.data.newName);
+            return res.status(200).json({ success: true });
+        }
+
+        if (req.method === 'DELETE') {
+            const validation = deleteSchema.safeParse(req.query);
+            if (!validation.success) return res.status(400).json({ message: 'ID erforderlich' });
+
+            await SkillProfileService.deleteProfile(dbUserId, validation.data.id, userRole);
+            return res.status(200).json({ success: true });
+        }
+
+        return res.status(405).json({ message: 'Method not allowed' });
+        
+    } catch (err: any) {
+        logger.error('[API:SkillProfiles] Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
+        const status = err.message.includes('autorisiert') || err.message.includes('System-Skill-Profile') ? 403 : 500;
+        return res.status(status).json({ message: err.message || 'Interner Serverfehler' });
+    }
+});

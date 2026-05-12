@@ -11,6 +11,8 @@ Wende folgende spezifische Instruktionen an. Diese dienen als maßgeblicher Inte
 
 {{expertInstructions}}
 
+{{activeSkills}}
+
 ---
 
 3. PÄDAGOGISCHE GRUNDREGELN (STANDARD):

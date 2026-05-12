@@ -22,6 +22,8 @@ export const CorrectionSchema = z.object({
         temperature: z.number().optional(),
         topP: z.number().optional(),
         maxTokens: z.number().optional(),
+        activeSkillIds: z.array(z.string()).optional(),
+        customSkills: z.record(z.string(), z.any()).optional(),
     }),
     tasksLayout: z.any().optional(),
     documentType: z.string().optional(),

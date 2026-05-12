@@ -89,13 +89,13 @@ export const usePromptProfiles = (
         setShowEditorMobile(true);
     };
 
-    const handleStartNew = (initialPrompt?: string | any) => {
+    const handleStartNew = (initialPrompt?: string | any, initialName?: string) => {
         setIsCreatingNew(true);
         setSelectedProfile('');
         const promptString = typeof initialPrompt === 'string' ? initialPrompt : "Achte bei der Korrektur besonders auf...";
         setCorrectionPrompt(promptString);
         setLastSavedPrompt("");
-        setNewProfileName("");
+        setNewProfileName(initialName || "");
         setShowEditorMobile(true);
     };
 

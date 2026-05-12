@@ -31,7 +31,16 @@ export async function executeOllamaRequest(
         promptObj = buildVisionPrompt(model);
         images = [payload.buffer]; // Base64 buffer
     } else if (action === 'correction') {
-        promptObj = buildCorrectionPrompt(payload.modelSolution, payload.studentText, payload.tasksLayout, settings.correctionPrompt, model);
+        promptObj = buildCorrectionPrompt(
+            payload.modelSolution, 
+            payload.studentText, 
+            payload.tasksLayout, 
+            settings.correctionPrompt, 
+            model,
+            payload.gradingMemory,
+            settings.activeSkillIds,
+            settings.customSkills
+        );
     } else if (action === 'clean-and-analyze') {
         promptObj = buildCleanAndAnalyzePrompt(payload.modelSolution, model);
     } else if (action === 'clean-and-map') {

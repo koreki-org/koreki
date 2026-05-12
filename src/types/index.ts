@@ -40,6 +40,9 @@ export interface DbUser {
     activePromptProfileId?: string;
     activeAiProfileId?: string;
     activeGradingMemoryId?: string;
+    activeSkillProfileId?: string;
+    activeSkillIds?: string[];
+    customSkills?: Record<string, any>;
 }
 
 export interface User {
@@ -55,6 +58,9 @@ export interface User {
     activePromptProfileId?: string;
     activeAiProfileId?: string;
     activeGradingMemoryId?: string;
+    activeSkillProfileId?: string;
+    activeSkillIds?: string[];
+    customSkills?: Record<string, any>;
     activeWorkspaceName?: string;
     activeWorkspaceType?: 'PERSONAL' | 'ORGANIZATION';
     activeMembershipRole?: 'OWNER' | 'ADMIN' | 'MEMBER';
@@ -95,6 +101,9 @@ export interface AppSettings {
     activeAiProfileId?: string;
     activePromptProfileId?: string;
     activeGradingMemoryId?: string;
+    activeSkillProfileId?: string;
+    activeSkillIds?: string[];
+    customSkills?: Record<string, any>;
 }
 
 export interface BatchFile {
