@@ -50,8 +50,12 @@ Nach dem Login landest du im Dashboard. Hier siehst du deine letzten Sitzungen, 
 
 ---
 
-### 4a. Fachprofile im Expert Center
-Bevor du korrigierst, lege im **Expert Center** deine "Fachprofile" an. Hier definierst du deine pädagogischen Leitplanken (z.B. Fokus auf Fachsprache, Strenge der Bewertung), die die KI bei jeder Korrektur berücksichtigen soll.
+### 4a. Das Expert Center: Expertise, Erfahrungsschatz & Intelligenz
+Im **Expert Center** (oben rechts in der Menüleiste) stellst du die drei tragenden Säulen deiner KI-Korrektur ein:
+
+1. **Expertise (Fachprofile):** Hier definierst du deine fachlichen und pädagogischen Leitplanken (z. B. Fokus auf Fachsprache, Strenge der Bewertung), die die KI bei jeder Korrektur berücksichtigen soll.
+2. **Erfahrungsschatz (GradingMemory™):** Hier kalibrierst du das fallbasierte Gedächtnis deiner KI. Hinterlege reale oder beispielhafte Korrekturfälle, damit die KI aus deinen früheren Bewertungen lernt und Folgefehler oder mathematische Äquivalenzen absolut konsistent nach deinen eigenen Maßstäben bewertet.
+3. **Intelligenz (KI-Parameter):** Steuere die Leistungskraft und Denkweise der KI. Aktiviere hier das **Deep Thinking (Hohe Genauigkeit)** für komplexe mathematische oder logische Prüfungen, oder passe Parameter wie die *Kreativität (Temperature)* an.
 
 ---
 

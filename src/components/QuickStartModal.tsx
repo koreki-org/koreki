@@ -95,9 +95,9 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                                 <Zap size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-[12px]">5. Analyse</h3>
+                                <h3 className="font-bold text-slate-900 text-[12px]">5. Analyse & Intelligenz</h3>
                                 <p className="text-[10px] text-muted-foreground leading-snug">
-                                    KI-Korrektur & Bewertung auf Knopfdruck starten.
+                                    KI-Korrektur starten. Kalibriere über die obere Leiste deine **Expertise**, deinen **Erfahrungsschatz** oder die **Intelligenz** (Denktiefe).
                                 </p>
                             </div>
                         </div>
