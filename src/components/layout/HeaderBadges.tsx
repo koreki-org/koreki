@@ -147,7 +147,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         title="Expert Center: Fachprofile & Prompts verwalten"
                     >
                         <FileText size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
-                        <span className="hidden sm:inline font-bold tracking-tight text-xs">Prompts</span>
+                        <span className="hidden sm:inline font-bold tracking-tight text-xs">Expertise</span>
                     </Button>
                 )}
 
