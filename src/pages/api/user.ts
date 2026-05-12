@@ -81,8 +81,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const isOrgWorkspace = activeWorkspace?.type === 'ORGANIZATION';
             const isOrgAdmin = activeMembership?.role === 'ADMIN' || activeMembership?.role === 'OWNER';
 
-            // Expert Button visibility: 🏢 Auto-Expert for all org members
-            const canEditPrompts = isSystemAdmin || isExpert || hasOrgMembership;
+            // Expert Button visibility: 🏢 Auto-Expert for all org members or trial mode users
+            const canEditPrompts = isSystemAdmin || isExpert || hasOrgMembership || user.appMode === 'TRIAL';
             const canBuyCredits = isSystemAdmin || !isOrgWorkspace || isOrgAdmin;
 
             // 5. LOGIN LOGGING (Eingabekontrolle) 📝🛡️
