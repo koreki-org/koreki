@@ -3,6 +3,7 @@ import path from 'path';
 import crypto from 'crypto';
 import { STANDARD_PROFILES } from '../ai/standard-profiles';
 import { isLocalInstance } from '../env-context';
+import { GradingMemoryCase, GradingMemory } from '../../types';
 
 /**
  * Industrial Local Profile Service (Stage 10)
@@ -253,3 +254,120 @@ export const LocalAiProfileService = {
         }
     }
 };
+
+const getGradingMemoryStoragePath = (userId?: string) => {
+    let baseDir: string;
+    
+    // 1. Desktop Mode (Tauri/Windows)
+    if (process.env.APPDATA) {
+        baseDir = path.join(process.env.APPDATA, 'koreki');
+    } else {
+        // 2. Community Mode (Docker/Linux)
+        baseDir = path.join(process.cwd(), 'data', 'prompts');
+    }
+
+    try {
+        if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
+    } catch (e) {
+        console.error('[LocalGradingMemoryService] Critical: Could not create directory:', e);
+    }
+
+    // Industrial Hashing: Completely decouple input from filesystem path
+    const filename = userId 
+        ? `grading_memories_${crypto.createHash('sha256').update(userId).digest('hex')}.json` 
+        : 'grading_memories.json';
+        
+    const targetPath = path.join(baseDir, filename);
+
+    // Defense in Depth: Verify that the resolved path still resides in the base directory
+    const resolvedBase = path.resolve(baseDir);
+    const resolvedTarget = path.resolve(targetPath);
+
+    if (!resolvedTarget.startsWith(resolvedBase)) {
+        throw new Error('SECURITY ALERT: Path Traversal attempt detected and blocked.');
+    }
+
+    return targetPath;
+};
+
+export const LocalGradingMemoryService = {
+    async getAvailableProfiles(userId?: string): Promise<GradingMemory[]> {
+        try {
+            const storagePath = getGradingMemoryStoragePath(userId);
+            if (fs.existsSync(storagePath)) {
+                const customRaw = fs.readFileSync(storagePath, 'utf-8');
+                const customProfiles = JSON.parse(customRaw);
+                
+                if (Array.isArray(customProfiles)) {
+                    // Industrial Cleaning: Filter out malformed entries
+                    return customProfiles.filter(p => p && typeof p === 'object' && typeof p.name === 'string') as GradingMemory[];
+                }
+            }
+        } catch (err) {
+            console.error('[LocalGradingMemoryService] Error reading profiles:', err);
+        }
+        
+        return [];
+    },
+
+    async upsertProfile(data: Partial<GradingMemory> & { name: string, cases: GradingMemoryCase[] }, userId?: string): Promise<GradingMemory> {
+        const storagePath = getGradingMemoryStoragePath(userId);
+        let customProfiles: GradingMemory[] = [];
+        
+        if (fs.existsSync(storagePath)) {
+            try {
+                customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
+            } catch (e) {
+                customProfiles = [];
+            }
+        }
+
+        const existingIdx = customProfiles.findIndex(p => p.id === data.id || p.name === data.name);
+        
+        const profileData: GradingMemory = {
+            id: data.id || `local-grading-memory-${Date.now()}`,
+            name: data.name,
+            cases: data.cases || [],
+            userId: userId || null,
+            createdAt: data.createdAt || new Date().toISOString()
+        };
+
+        if (existingIdx >= 0) {
+            customProfiles[existingIdx] = profileData;
+        } else {
+            customProfiles.push(profileData);
+        }
+
+        fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+        return profileData;
+    },
+
+    async deleteProfile(id: string, userId?: string): Promise<void> {
+        const storagePath = getGradingMemoryStoragePath(userId);
+        if (!fs.existsSync(storagePath)) return;
+
+        try {
+            let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
+            customProfiles = customProfiles.filter((p: any) => p.id !== id);
+            fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+        } catch (err) {
+            console.error('[LocalGradingMemoryService] Error deleting profile:', err);
+        }
+    },
+
+    async renameProfile(id: string, newName: string, userId?: string): Promise<void> {
+        const storagePath = getGradingMemoryStoragePath(userId);
+        if (!fs.existsSync(storagePath)) return;
+
+        try {
+            let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
+            customProfiles = customProfiles.map((p: any) => 
+                p.id === id ? { ...p, name: newName } : p
+            );
+            fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+        } catch (err) {
+            console.error('[LocalGradingMemoryService] Error renaming profile:', err);
+        }
+    }
+};
+

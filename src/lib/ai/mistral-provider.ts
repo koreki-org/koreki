@@ -10,19 +10,22 @@ import {
     buildCleanAndAnalyzePrompt, 
     buildCleanAndMapPrompt, 
     buildVisionPrompt,
+    buildStudentSimulatorPrompt,
     StructuredPrompt 
 } from './prompt-builder';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator';
 
 export interface AIRequestOptions {
     temperature?: number;
+    topP?: number;
     maxTokens?: number;
     isScan?: boolean;
     customPrompt?: string;
     model?: string;
     enableThinking?: boolean;
+    gradingMemory?: any[] | null;
 }
 
 /**
@@ -82,11 +85,13 @@ export async function executeMistralRequest(
         ];
     } else {
         if (action === 'correction') {
-            promptObj = buildCorrectionPrompt(payload.modelSolution, payload.studentText, payload.tasksLayout, options.customPrompt, model);
+            promptObj = buildCorrectionPrompt(payload.modelSolution, payload.studentText, payload.tasksLayout, options.customPrompt, model, options.gradingMemory);
         } else if (action === 'clean-and-analyze') {
             promptObj = buildCleanAndAnalyzePrompt(payload.modelSolution, model);
         } else if (action === 'clean-and-map') {
             promptObj = buildCleanAndMapPrompt(payload.text || payload.studentText, payload.tasksLayout, model);
+        } else if (action === 'student-simulator') {
+            promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout);
         } else {
             throw new Error(`Unsupported text action: ${action}`);
         }
@@ -102,7 +107,7 @@ export async function executeMistralRequest(
     // Rule: temp: 0 already implies top_p: 1.0 (greedy). 
     // Mistral rejects requests where both are manipulated in a way that conflicts.
     const targetTemp = options.temperature ?? promptObj.options?.temperature ?? 0;
-    const targetTopP = promptObj.options?.topP ?? 1.0;
+    const targetTopP = options.topP ?? promptObj.options?.topP ?? 1.0;
 
     const url = 'https://api.mistral.ai/v1/chat/completions';
     const body: any = {
@@ -114,11 +119,16 @@ export async function executeMistralRequest(
         max_tokens: options.maxTokens ?? 4000
     };
 
-    // Support native reasoning for Mistral Medium 3.5 if enabled via options (e.g., from the AI Profile Modal)
+    // Elevate max tokens if thinking is enabled to allow room for the reasoning chain
     const isThinking = options.enableThinking ?? false;
-    if (isThinking && model.toLowerCase().includes('medium')) {
-        body.reasoning_effort = 'high';
-        body.max_tokens = options.maxTokens ?? 32768; // Elevate max tokens to allow room for the reasoning chain
+    if (isThinking) {
+        body.max_tokens = options.maxTokens ?? 8192; // Max output tokens supported by modern Mistral models
+        
+        // Pass adjustable reasoning parameters for Mistral Medium 3.5 (mistral-medium-2604)
+        if (model.toLowerCase().includes('medium')) {
+            body.reasoning_effort = 'high';
+            body.max_tokens = options.maxTokens ?? 32768; // Elevate max tokens to allow room for the full reasoning chain
+        }
     }
 
     let responseData: any;
@@ -175,7 +185,13 @@ export async function executeMistralRequest(
     }
 
     const data = responseData;
-    const content = data.choices[0].message.content;
+    let content = data.choices[0].message.content;
+
+    // Handle structured content block arrays returned by Mistral's reasoning models (e.g., mistral-medium-2604)
+    if (Array.isArray(content)) {
+        const textBlock = content.find((block: any) => block.type === 'text');
+        content = textBlock ? textBlock.text : '';
+    }
 
     // 4. Robust JSON Parsing (Standard Pattern)
     if (responseFormat?.type === 'json_object') {

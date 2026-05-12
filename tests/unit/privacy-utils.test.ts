@@ -136,7 +136,7 @@ describe('applyRedactionsToPreviews (Layer 1 Security Proof)', () => {
             constructor() {
                 super();
                 setTimeout(() => {
-                    if (this.onload) this.onload();
+                    if (this.onload) (this.onload as any)();
                 }, 10);
             }
         } as any;

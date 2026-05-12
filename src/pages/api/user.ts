@@ -109,6 +109,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     activeWorkspaceId: user.activeWorkspaceId,
                     activePromptProfileId: user.activePromptProfileId,
                     activeAiProfileId: user.activeAiProfileId,
+                    activeGradingMemoryId: (user as any).activeGradingMemoryId,
                     logtoId: user.logtoId,
                     activeWorkspaceName: activeWorkspace?.name,
                     activeWorkspaceType: activeWorkspace?.type,

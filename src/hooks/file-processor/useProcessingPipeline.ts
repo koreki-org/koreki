@@ -237,6 +237,14 @@ export const useProcessingPipeline = (
                 }
 
                 const startTime = performance.now();
+                let gradingMemoryCases = undefined;
+                try {
+                    const storedCases = localStorage.getItem('koreki_active_grading_memory_cases');
+                    if (storedCases) {
+                        gradingMemoryCases = JSON.parse(storedCases);
+                    }
+                } catch (e) {}
+
                 const data = await performAIRequest('correction', {
                     modelSolution,
                     studentText: finalStudentText,
@@ -246,7 +254,8 @@ export const useProcessingPipeline = (
                     isCorrection: true,
                     requestId: i, // Scoped streaming
                     expertProfileName,
-                    isComplex: ocrStrategy === 'handwriting'
+                    isComplex: ocrStrategy === 'handwriting',
+                    gradingMemory: gradingMemoryCases
                 }, userData?.appMode, settings);
                 const duration = performance.now() - startTime;
 

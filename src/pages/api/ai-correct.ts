@@ -23,7 +23,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             settings, 
             tasksLayout, 
             pageCount, 
-            expertProfileName 
+            expertProfileName,
+            gradingMemory
         } = validation.data;
 
         const { claims } = req.user;
@@ -40,11 +41,13 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         }
 
         // --- AI Cost Brake Check ---
-        const systemSettings = await prisma.systemSettings.findUnique({ where: { id: 'singleton' } });
-        if (systemSettings) {
-            const correctionCost = (systemSettings.correctionMonthlyUsage / 1_000_000) * systemSettings.correctionPricePerMillion;
-            if (correctionCost >= systemSettings.correctionBudget) {
-                return res.status(429).json({ error: "Aktuell zu hohe Auslastung, bitte versuchen Sie es später erneut." });
+        if (!isLocalInstance()) {
+            const systemSettings = await prisma.systemSettings.findUnique({ where: { id: 'singleton' } });
+            if (systemSettings) {
+                const correctionCost = (systemSettings.correctionMonthlyUsage / 1_000_000) * systemSettings.correctionPricePerMillion;
+                if (correctionCost >= systemSettings.correctionBudget) {
+                    return res.status(429).json({ error: "Aktuell zu hohe Auslastung, bitte versuchen Sie es später erneut." });
+                }
             }
         }
 
@@ -61,10 +64,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
             if (!apiKey) throw new Error('Mistral API-Key fehlt.');
 
-            // Upgrade to Mistral Medium 3.5 with native reasoning if "High Accuracy" is toggled on a local instance
+            // Use the new, math-optimized 'mistral-medium-2604' when "High Accuracy" is toggled.
+            // Otherwise, respect the user's selected model from their profile settings (settings.model).
             const mistralModel = (isComplex && settings.provider === 'mistral') 
-                ? 'mistral-medium-latest' 
-                : undefined;
+                ? 'mistral-medium-2604' 
+                : settings.model;
 
             analysis = await executeMistralRequest(
                 'correction',
@@ -75,7 +79,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     model: mistralModel,
                     enableThinking: settings.enableThinking,
                     temperature: settings.temperature,
-                    maxTokens: settings.maxTokens
+                    topP: settings.topP,
+                    maxTokens: settings.maxTokens,
+                    gradingMemory
                 }
             );
         } else {
@@ -93,7 +99,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 { 
                     model,
                     enableThinking: settings.enableThinking,
-                    customPrompt: settings.correctionPrompt 
+                    customPrompt: settings.correctionPrompt,
+                    gradingMemory
                 }
             );
         }

@@ -4,11 +4,12 @@ import {
     buildCleanAndAnalyzePrompt, 
     buildCleanAndMapPrompt, 
     buildVisionPrompt,
+    buildStudentSimulatorPrompt,
     StructuredPrompt 
 } from './prompt-builder';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator';
 
 export interface OpenAIRequestOptions {
     temperature?: number;
@@ -18,6 +19,7 @@ export interface OpenAIRequestOptions {
     customPrompt?: string;
     model?: string;
     enableThinking?: boolean;
+    gradingMemory?: any[] | null;
 }
 
 /**
@@ -57,11 +59,13 @@ export async function executeOpenAIRequest(
         ];
     } else {
         if (action === 'correction') {
-            promptObj = buildCorrectionPrompt(payload.modelSolution, payload.studentText, payload.tasksLayout, options.customPrompt, targetModel);
+            promptObj = buildCorrectionPrompt(payload.modelSolution, payload.studentText, payload.tasksLayout, options.customPrompt, targetModel, options.gradingMemory);
         } else if (action === 'clean-and-analyze') {
             promptObj = buildCleanAndAnalyzePrompt(payload.modelSolution, targetModel);
         } else if (action === 'clean-and-map') {
             promptObj = buildCleanAndMapPrompt(payload.text || payload.studentText, payload.tasksLayout, targetModel);
+        } else if (action === 'student-simulator') {
+            promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout);
         } else {
             throw new Error(`Unsupported action: ${action}`);
         }

@@ -10,6 +10,7 @@ interface HeaderBadgesProps {
     onUnlockExpert?: () => void;
     onShowPrompts?: () => void;
     onShowAiParams?: () => void;
+    onShowGradingMemory?: () => void;
 }
 
 /**
@@ -23,7 +24,8 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
     onUpgrade,
     onUnlockExpert,
     onShowPrompts,
-    onShowAiParams
+    onShowAiParams,
+    onShowGradingMemory
 }) => {
     const router = useRouter();
     // Role Label Logic (Industrial Grade)
@@ -58,9 +60,9 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                 </div>
             ) : (
                 <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 bg-blue-50/80 rounded-xl border border-blue-100/50 text-blue-700 shadow-inner">
-                    <Crown size={14} className="text-blue-500 sm:w-[16px] sm:h-[16px]" />
-                    <span className="font-bold text-xs sm:text-sm">{userData?.credits || 0}</span> 
-                    <span className="hidden sm:inline text-[10px] sm:text-xs font-semibold opacity-80 uppercase tracking-wide">Credits</span>
+                     <Crown size={14} className="text-blue-500 sm:w-[16px] sm:h-[16px]" />
+                     <span className="font-bold text-xs sm:text-sm">{userData?.credits || 0}</span> 
+                     <span className="hidden sm:inline text-[10px] sm:text-xs font-semibold opacity-80 uppercase tracking-wide">Credits</span>
                 </div>
             )}
 
@@ -146,6 +148,20 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                     >
                         <FileText size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
                         <span className="hidden sm:inline font-bold tracking-tight text-xs">Prompts</span>
+                    </Button>
+                )}
+
+                {/* GradingMemory Button (Stage 10 Stateless) 🎓🎯 */}
+                {(isLocalInstance() || userData?.canEditPrompts) && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onShowGradingMemory}
+                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300"
+                        title="GradingMemory™: Korrektur-Erfahrungsschatz kalibrieren"
+                    >
+                        <SlidersHorizontal size={14} className="text-indigo-500 group-hover:text-white transition-colors rotate-90" />
+                        <span className="hidden sm:inline font-bold tracking-tight text-xs">Erfahrungsschatz</span>
                     </Button>
                 )}
 

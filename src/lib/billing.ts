@@ -9,6 +9,16 @@ export type BillingModule = 'ocr' | 'correction';
  * 2. Fallback: Use the PERSONAL workspace.
  */
 export async function resolveActiveWorkspace(logtoId: string) {
+    if (isLocalInstance()) {
+        return {
+            id: 'local-workspace-id',
+            name: 'Local Workspace',
+            type: 'PERSONAL',
+            credits: 999999,
+            avvAccepted: true
+        } as any;
+    }
+
     const user = await prisma.user.findUnique({
         where: { logtoId },
         include: { memberships: { include: { workspace: true } } }

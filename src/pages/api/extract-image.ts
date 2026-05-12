@@ -5,6 +5,7 @@ import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
 import { logger } from '@/lib/logger';
 import { promisePool } from '../../lib/ai/promise-pool';
+import { isLocalInstance } from '@/lib/env-context';
 
 export const config = {
     api: {
@@ -50,11 +51,13 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const OCR_CREDIT_COST = effectivePageCount * (isScan ? 1 : 0);
 
         // --- AI Cost Brake Check ---
-        const systemSettings = await prisma.systemSettings.findUnique({ where: { id: 'singleton' } });
-        if (systemSettings) {
-            const ocrCost = (systemSettings.ocrMonthlyUsage / 1_000_000) * systemSettings.ocrPricePerMillion;
-            if (ocrCost >= systemSettings.ocrBudget) {
-                return res.status(429).json({ error: "Aktuell zu hohe Auslastung, bitte versuchen Sie es später erneut." });
+        if (!isLocalInstance()) {
+            const systemSettings = await prisma.systemSettings.findUnique({ where: { id: 'singleton' } });
+            if (systemSettings) {
+                const ocrCost = (systemSettings.ocrMonthlyUsage / 1_000_000) * systemSettings.ocrPricePerMillion;
+                if (ocrCost >= systemSettings.ocrBudget) {
+                    return res.status(429).json({ error: "Aktuell zu hohe Auslastung, bitte versuchen Sie es später erneut." });
+                }
             }
         }
 

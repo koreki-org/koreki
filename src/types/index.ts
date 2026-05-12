@@ -39,6 +39,7 @@ export interface DbUser {
     activeWorkspaceId?: string;
     activePromptProfileId?: string;
     activeAiProfileId?: string;
+    activeGradingMemoryId?: string;
 }
 
 export interface User {
@@ -53,6 +54,7 @@ export interface User {
     activeWorkspaceId?: string;
     activePromptProfileId?: string;
     activeAiProfileId?: string;
+    activeGradingMemoryId?: string;
     activeWorkspaceName?: string;
     activeWorkspaceType?: 'PERSONAL' | 'ORGANIZATION';
     activeMembershipRole?: 'OWNER' | 'ADMIN' | 'MEMBER';
@@ -92,6 +94,7 @@ export interface AppSettings {
     correctionPrompt?: string;
     activeAiProfileId?: string;
     activePromptProfileId?: string;
+    activeGradingMemoryId?: string;
 }
 
 export interface BatchFile {
@@ -152,3 +155,23 @@ export interface AiProfile {
     userId?: string | null;
     createdAt?: string;
 }
+
+export interface GradingMemoryCase {
+    id: string;
+    studentText: string;
+    expectedCorrection: {
+        pointsObtained: number;
+        correctionNotes: string;
+        feedback?: string;
+    };
+}
+
+export interface GradingMemory {
+    id: string;
+    name: string;
+    cases: GradingMemoryCase[];
+    userId?: string | null;
+    createdAt?: string;
+}
+
+

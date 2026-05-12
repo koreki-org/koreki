@@ -28,10 +28,12 @@ model User {
   activeWorkspaceId      String?
   activePromptProfileId   String?
   activeAiProfileId       String?
+  activeGradingMemoryId   String?
   privacyLogs           PrivacyLog[]
   memberships           Membership[]
   promptProfiles        PromptProfile[]
   aiProfiles            AiProfile[]
+  gradingMemories       GradingMemory[]
 }
 
 model Workspace {
@@ -143,4 +145,15 @@ model AiProfile {
 model ProcessedStripeSession {
   sessionId String   @id
   processedAt DateTime @default(now())
+}
+
+model GradingMemory {
+  id        String   @id @default(cuid())
+  name      String
+  cases     Json     // Stores the array of cases: [{ id, studentText, expectedCorrection }]
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([name, userId])
 }

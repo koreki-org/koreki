@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/Badge';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
+import { downloadFile } from '@/lib/file-utils';
+
 
 interface SidebarProps {
     profiles: any[];
@@ -194,7 +196,7 @@ export const ProfileEditor: React.FC<EditorProps> = ({
     setNewProfileName, setCorrectionPrompt, 
     onSaveToDB, onStartNew
 }) => {
-    const handleExport = () => {
+    const handleExport = async () => {
         const safeName = isCreatingNew ? newProfileName : selectedProfile;
         const markdown = `---
 name: "${safeName}"
@@ -203,15 +205,13 @@ version: "1.0.0"
 ---
 
 ${correctionPrompt}`;
-        const blob = new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${safeName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const filename = `${safeName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.md`;
+        try {
+            await downloadFile(markdown, filename, 'text/markdown;charset=utf-8');
+        } catch (error) {
+            console.error('Fehler beim Exportieren des Profils:', error);
+            alert('Export fehlgeschlagen.');
+        }
     };
 
     return (

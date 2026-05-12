@@ -6,6 +6,7 @@ import AppLayout from '@/layouts/AppLayout';
 import UploadGrid from '@/components/UploadGrid';
 import BatchProcessor from '@/components/BatchProcessor';
 import { DashboardModals } from '@/components/dashboard/DashboardModals';
+import { GradingMemoryModal } from '@/components/batch/GradingMemoryModal';
 
 // Hooks
 import { useAuth } from '@/hooks/useAuth';
@@ -26,6 +27,8 @@ import AuthGuard from '@/components/guards/AuthGuard';
 export default function Home() {
     // Core Auth & Logic Hooks
     const { userData, setUserData, aiStatus, authLoading, checkAuth, fetchAiStatus } = useAuth();
+    const [showGradingMemory, setShowGradingMemory] = React.useState(false);
+    const [activeGradingMemoryName, setActiveGradingMemoryName] = React.useState<string | undefined>(undefined);
     
     // --- STAGE 7: INDUSTRIAL DASHBOARD ORCHESTRATION ---
     // Extracting 15+ states and compliance gating into a specialized orchestrator.
@@ -129,6 +132,7 @@ export default function Home() {
                         onUnlockExpert={handleUnlockExpert}
                         activeProfileName={sessionProfileName}
                         activeAiProfileName={sessionAiProfileName}
+                        activeGradingMemoryName={activeGradingMemoryName}
                         onLoadDemo={loadDemoData}
                         onReset={handleStartNew}
                         onImportSession={fileProcessor.handleKorekiImport}
@@ -137,6 +141,7 @@ export default function Home() {
                         hasMissingFiles={fileProcessor.batchFiles.length > 0 && fileProcessor.batchFiles.some(f => !f.files || f.files.length === 0)}
                         onShowHelp={() => modals.setShowHelp(true)}
                         onShowAiParams={() => modals.setShowAiParamsSettings(true)}
+                        onShowGradingMemory={() => setShowGradingMemory(true)}
                     />
 
                     <DashboardModals 
@@ -189,6 +194,17 @@ export default function Home() {
                         handleAiOllamaSave={actions.handleAiOllamaSave}
                         handleAiMistralSave={actions.handleAiMistralSave}
                         handleAiCustomSave={actions.handleAiCustomSave}
+                    />
+
+                    <GradingMemoryModal 
+                        isOpen={showGradingMemory}
+                        onClose={() => setShowGradingMemory(false)}
+                        modelSolution={data.modelSolution}
+                        tasksLayout={data.tasksLayout}
+                        settings={aiSettings}
+                        userData={userData}
+                        setUserData={setUserData}
+                        onActiveMemoryChange={setActiveGradingMemoryName}
                     />
 
                     {(aiStatus?.ocrBrakeActive || aiStatus?.correctionBrakeActive) && (

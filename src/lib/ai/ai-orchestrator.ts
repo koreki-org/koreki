@@ -184,11 +184,18 @@ export async function performAIRequest(
                     topP: settings.topP,
                     maxTokens: settings.maxTokens,
                     presencePenalty: settings.presencePenalty,
-                    customPrompt: settings?.correctionPrompt
+                    customPrompt: settings?.correctionPrompt,
+                    gradingMemory: payload.gradingMemory
                 });
             } else {
                 result = await executeMistralRequest(action, payload, mistralKey, {
-                    customPrompt: settings?.correctionPrompt
+                    customPrompt: settings?.correctionPrompt,
+                    gradingMemory: payload.gradingMemory,
+                    model: settings?.model,
+                    enableThinking: settings?.enableThinking,
+                    temperature: settings?.temperature,
+                    topP: settings?.topP,
+                    maxTokens: settings?.maxTokens
                 });
             }
 

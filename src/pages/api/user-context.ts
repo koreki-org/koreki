@@ -12,6 +12,28 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     const { claims } = req.user;
     const logtoId = claims.sub;
 
+    const { isLocalInstance } = require('@/lib/env-context');
+    if (isLocalInstance()) {
+        return res.status(200).json({
+            workspaces: [
+                {
+                    id: 'local-workspace-id',
+                    name: 'Local Workspace',
+                    type: 'PERSONAL',
+                    credits: 999999,
+                    role: 'OWNER'
+                }
+            ],
+            activeWorkspace: {
+                id: 'local-workspace-id',
+                name: 'Local Workspace',
+                type: 'PERSONAL',
+                credits: 999999,
+                role: 'OWNER'
+            }
+        });
+    }
+
     try {
         const user = await prisma.user.findUnique({
             where: { logtoId },

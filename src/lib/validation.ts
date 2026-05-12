@@ -20,6 +20,7 @@ export const CorrectionSchema = z.object({
         openaiModel: z.string().optional(),
         enableThinking: z.boolean().optional(),
         temperature: z.number().optional(),
+        topP: z.number().optional(),
         maxTokens: z.number().optional(),
     }),
     tasksLayout: z.any().optional(),
@@ -27,4 +28,13 @@ export const CorrectionSchema = z.object({
     pageCount: z.number().min(1).optional(),
     expertProfileName: z.string().optional(),
     isComplex: z.boolean().optional(),
+    gradingMemory: z.array(z.object({
+        id: z.string(),
+        studentText: z.string(),
+        expectedCorrection: z.object({
+            pointsObtained: z.number(),
+            correctionNotes: z.string(),
+            feedback: z.string().optional()
+        })
+    })).optional(),
 });

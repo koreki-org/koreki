@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings, LogOut, Loader2, HelpCircle, Sparkles, FileText, FileUp, Camera, PlusCircle, SlidersHorizontal } from 'lucide-react';
+import { Settings, LogOut, Loader2, HelpCircle, Sparkles, FileText, FileUp, Camera, PlusCircle, SlidersHorizontal, BookOpen } from 'lucide-react';
 import Logo from '../Logo';
 import { Button } from '../ui/Button';
 import { HeaderBadges } from './HeaderBadges';
@@ -21,6 +21,7 @@ interface HeaderProps {
     onShowSettings: () => void;
     onShowPrompts?: () => void;
     onShowAiParams?: () => void;
+    onShowGradingMemory?: () => void;
     onLogout: () => void;
     onLoadDemo: () => void;
     onShowHelp: () => void;
@@ -32,6 +33,7 @@ interface HeaderProps {
     hasMissingFiles?: boolean;
     activeProfileName?: string;
     activeAiProfileName?: string;
+    activeGradingMemoryName?: string;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -41,6 +43,7 @@ const Header: React.FC<HeaderProps> = ({
     onShowSettings,
     onShowPrompts,
     onShowAiParams,
+    onShowGradingMemory,
     onLogout,
     onLoadDemo,
     onShowHelp,
@@ -51,7 +54,8 @@ const Header: React.FC<HeaderProps> = ({
     isImportedSession,
     hasMissingFiles,
     activeProfileName,
-    activeAiProfileName
+    activeAiProfileName,
+    activeGradingMemoryName
 }) => {
     // --- STAGE 9: INDUSTRIAL GLOBAL STATUS ---
     const { refs, logic, actions } = useGlobalStatus(userData, onImportSession, onRelinkFiles);
@@ -68,6 +72,7 @@ const Header: React.FC<HeaderProps> = ({
                     onUnlockExpert={onUnlockExpert}
                     onShowPrompts={onShowPrompts}
                     onShowAiParams={onShowAiParams}
+                    onShowGradingMemory={onShowGradingMemory}
                 />
 
                 {/* 2. Utility Navigation (Standard UI Layout) */}
@@ -75,23 +80,27 @@ const Header: React.FC<HeaderProps> = ({
                     {userData?.canEditPrompts && (
                         <div className="flex items-center gap-2">
                             {activeProfileName && (
-                                <div className="flex items-center px-2.5 py-1 bg-indigo-600 text-white rounded-lg border border-indigo-500 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Profil: ${activeProfileName}`}>
-                                    <Sparkles size={12} className="mr-1 sm:mr-1.5 opacity-80 shrink-0" />
+                                <div className="flex items-center px-2.5 py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Profil: ${activeProfileName}`}>
+                                    <Sparkles size={12} className="mr-1.5 opacity-90 shrink-0" />
                                     <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
-                                        <span className="hidden sm:inline">Profil:&nbsp;</span>
-                                        <span className="truncate max-w-[60px] sm:max-w-[120px] md:max-w-[200px] inline-block">{activeProfileName}</span>
+                                        <span className="truncate max-w-[80px] sm:max-w-[100px] md:max-w-[150px] inline-block">{activeProfileName}</span>
                                     </span>
                                 </div>
                             )}
                             {activeAiProfileName && (
-                                <div className="flex items-center px-2.5 py-1 bg-indigo-600 text-white rounded-lg border border-indigo-500 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`KI: ${activeAiProfileName}`}>
-                                    <SlidersHorizontal size={12} className="mr-1 sm:mr-1.5 opacity-80 shrink-0" />
+                                <div className="flex items-center px-2.5 py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`KI: ${activeAiProfileName}`}>
+                                    <SlidersHorizontal size={12} className="mr-1.5 opacity-90 shrink-0" />
                                     <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
-                                        <span className="hidden sm:inline">KI:&nbsp;</span>
-                                        <span className="truncate max-w-[60px] sm:max-w-[120px] md:max-w-[200px] inline-block">{activeAiProfileName}</span>
+                                        <span className="truncate max-w-[80px] sm:max-w-[100px] md:max-w-[150px] inline-block">{activeAiProfileName}</span>
                                     </span>
                                 </div>
                             )}
+                            <div className="flex items-center px-2.5 py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Erfahrungsschatz: ${activeGradingMemoryName || 'Inaktiv (Standard-Korrektur)'}`}>
+                                <BookOpen size={12} className="mr-1.5 opacity-90 shrink-0" />
+                                <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
+                                    <span className="truncate max-w-[80px] sm:max-w-[120px] md:max-w-[160px] inline-block">{activeGradingMemoryName || '-'}</span>
+                                </span>
+                            </div>
                             <div className="hidden sm:flex items-center px-3 py-1 bg-indigo-50/50 rounded-lg border border-indigo-100/50">
                                 <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest whitespace-nowrap">
                                     {logic.getRoleLabel()}

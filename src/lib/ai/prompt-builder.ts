@@ -1,8 +1,10 @@
-import { Task } from '../../types';
+import { Task, GradingMemoryCase } from '../../types';
 
 // Centralized Default Templates
 import correctionSystemDefault from '../../prompts/default/correction/system.md';
 import correctionUserDefault from '../../prompts/default/correction/user.md';
+import studentSimulatorSystemDefault from '../../prompts/default/student-simulator/system.md';
+import studentSimulatorUserDefault from '../../prompts/default/student-simulator/user.md';
 
 import analyzeCleanSystemDefault from '../../prompts/default/analyze-and-clean/system.md';
 import analyzeCleanUserDefault from '../../prompts/default/analyze-and-clean/user.md';
@@ -57,7 +59,8 @@ export function buildCorrectionPrompt(
     studentText: string, 
     tasksLayout?: Task[] | null, 
     customPrompt?: string, 
-    model?: string
+    model?: string,
+    gradingMemory?: GradingMemoryCase[] | null
 ): StructuredPrompt {
     let system = correctionSystemDefault;
     let user = correctionUserDefault;
@@ -88,6 +91,32 @@ export function buildCorrectionPrompt(
     }
 
     user = user.replace('{{modelSolution}}', modelSolution);
+ 
+    let examplesText = '';
+    if (gradingMemory && Array.isArray(gradingMemory) && gradingMemory.length > 0) {
+        examplesText = '\n\n### WICHTIGER PÄDAGOGISCHER ERFAHRUNGSSCHATZ (BENOTUNGS-REFERENZ):\n';
+        examplesText += 'Diese Beispiele zeigen dir, wie der Lehrer in der Vergangenheit bestimmte Typen von Fehlern bewertet hat. Sie dienen als qualitative Orientierung für deinen Bewertungsmaßstab (z. B. wie kulant oder streng du bei bestimmten Abweichungen sein sollst).\n\n';
+        examplesText += 'ACHTUNG (Sicherheit vor Memory-Bleed - UNANTASTBAR):\n';
+        examplesText += '- Kopiere NIEMALS blind die spezifischen Fehlerbeschreibungen, IP-Adressen, Ports, Zahlenwerte oder das Feedback aus den Beispielen für die aktuelle Schülerabgabe, es sei denn, die aktuelle Abgabe enthält exakt denselben Fehler mit exakt denselben Werten.\n';
+        examplesText += '- Analysiere die aktuelle Schülerabgabe stets eigenständig und mathematisch präzise auf Basis der Musterlösung. Die Fallbeispiele sind reine Richtlinien zur Bewertungsmethodik (Kulanz-Niveau) und keine Schablonen zum Abschreiben.\n\n';
+        
+        gradingMemory.forEach((item, index) => {
+            examplesText += `BEISPIEL ${index + 1}:\n`;
+            examplesText += `[Schülerantwort]\n"${item.studentText}"\n\n`;
+            examplesText += `[Erwartete Bewertung]\n`;
+            examplesText += `- Vergebene Punkte: ${item.expectedCorrection.pointsObtained}\n`;
+            examplesText += `- Begründung (correctionNotes): "${item.expectedCorrection.correctionNotes}"\n`;
+            if (item.expectedCorrection.feedback) {
+                examplesText += `- Feedback: "${item.expectedCorrection.feedback}"\n`;
+            }
+            examplesText += '\n-------------------\n\n';
+        });
+    }
+
+    if (examplesText) {
+        user = user.replace('SCHÜLERABGABE (ZU BEWERTEN):', `${examplesText}\n### JETZT AKTUELL ZU BEWERTENDE SCHÜLERABGABE (DIESE STRENG UND EIGENSTÄNDIG BEWERTEN):\n`);
+    }
+
     user = user.replace('{{studentText}}', studentText);
 
     return { 
@@ -174,3 +203,26 @@ export function buildVisionPrompt(model?: string): StructuredPrompt {
         options: { temperature: 0.0, topP: 1.0 } // Absolute Strictness / Greedy Mode
     };
 }
+
+/**
+ * Builds the prompt for the synthetic student simulator.
+ */
+export function buildStudentSimulatorPrompt(modelSolution: string, tasksLayout?: Task[]): StructuredPrompt {
+    let system = studentSimulatorSystemDefault;
+    let user = studentSimulatorUserDefault;
+
+    user = user.replace('{{modelSolution}}', modelSolution);
+
+    const layoutString = tasksLayout && Array.isArray(tasksLayout)
+        ? tasksLayout.map(t => `- ${t.name} (Max: ${t.maxPoints} P)`).join('\n')
+        : 'Keine explizite Struktur vorhanden. Nimm Standardaufgaben an.';
+    
+    user = user.replace('{{tasksLayout}}', layoutString);
+
+    return {
+        system,
+        user,
+        options: { temperature: 0.7, topP: 0.9 } // High creativity for diverse answers
+    };
+}
+
