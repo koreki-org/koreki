@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, FileText, FolderOpen, Zap, ChevronRight, Highlighter, Sparkles, ShieldCheck, Languages } from 'lucide-react';
+import { X, FileText, FolderOpen, Zap, ChevronRight, Highlighter, Sparkles, ShieldCheck, Languages, Wrench } from 'lucide-react';
 import Logo from './Logo';
 import { Button } from './ui/Button';
 
@@ -49,55 +49,55 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                             <div className="space-y-0">
                                 <h3 className="font-bold text-slate-900 text-[12px]">1. Vorbereitung</h3>
                                 <p className="text-[10px] text-muted-foreground leading-snug">
-                                    Musterlösung laden. KI erkennt Aufgaben & Punkte.
+                                    Musterlösung laden. Die KI erkennt Aufgaben, Punkte und Lösungsvorschläge vollautomatisch.
                                 </p>
                             </div>
                         </div>
 
                         <div className="group flex items-center gap-4 p-3 bg-slate-50/50 border border-slate-100 rounded-xl hover:bg-white hover:border-indigo-200 transition-all duration-300">
                             <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center shrink-0">
-                                <FolderOpen size={18} />
+                                <Wrench size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-[12px]">2. Import & Moodle</h3>
+                                <h3 className="font-bold text-slate-900 text-[12px]">2. Didaktik & KI-Kalibrierung</h3>
                                 <p className="text-[10px] text-muted-foreground leading-snug">
-                                    Schülerarbeiten laden. Moodle XLSX-Exporte werden unterstützt.
+                                    Konfiguriere im Header deine **Expertise** (Fach-Prompts), aktiviere modulare **Skills** (z. B. mathematische Äquivalenz), trainiere den **Erfahrungsschatz** (Präzedenzfälle) oder wähle die passende **Intelligenz** (Denktiefe der KI).
                                 </p>
                             </div>
                         </div>
 
                         <div className="group flex items-center gap-4 p-3 bg-slate-50/50 border border-slate-100 rounded-xl hover:bg-white hover:border-emerald-200 transition-all duration-300">
                             <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center shrink-0">
-                                <ShieldCheck size={18} />
+                                <FolderOpen size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-[12px]">3. Anonymisierung</h3>
+                                <h3 className="font-bold text-slate-900 text-[12px]">3. Import & Moodle</h3>
                                 <p className="text-[10px] text-muted-foreground leading-snug">
-                                    Namen schützen. Handschriften ggf. manuell schwärzen.
+                                    Schülerarbeiten als PDF oder Scans hochladen. Moodle XLSX-Exporte werden voll unterstützt.
                                 </p>
                             </div>
                         </div>
 
                         <div className="group flex items-center gap-4 p-3 bg-slate-50/50 border border-slate-100 rounded-xl hover:bg-white hover:border-blue-200 transition-all duration-300">
                             <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
-                                <Languages size={18} />
+                                <ShieldCheck size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-[12px]">4. Texterkennung (OCR)</h3>
+                                <h3 className="font-bold text-slate-900 text-[12px]">4. Anonymisierung</h3>
                                 <p className="text-[10px] text-muted-foreground leading-snug">
-                                    Handschriften digitalisieren. Texte aus Scans erkennen.
+                                    Namen schützen. Handschriften, Namen und personenbezogene Daten bei Bedarf direkt im Scan schwärzen.
                                 </p>
                             </div>
                         </div>
 
                         <div className="group flex items-center gap-4 p-3 bg-slate-50/50 border border-slate-100 rounded-xl hover:bg-white hover:border-orange-200 transition-all duration-300">
                             <div className="w-10 h-10 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center shrink-0">
-                                <Zap size={18} />
+                                <Languages size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-[12px]">5. Analyse & Intelligenz</h3>
+                                <h3 className="font-bold text-slate-900 text-[12px]">5. Texterkennung (OCR)</h3>
                                 <p className="text-[10px] text-muted-foreground leading-snug">
-                                    KI-Korrektur konfigurieren. Kalibriere deine **Expertise** (Fachdidaktik) oder wähle die passende **Intelligenz** (Denktiefe) aus. Nutze den **Erfahrungsschatz (GradingMemory)**, um interaktiv fiktive Schülerfehler vorab zu benoten. Die KI merkt sich diese Korrekturfälle als exakte Richtlinien!
+                                    Handschriften digitalisieren. Die KI liest gedruckte und geschriebene Schülertexte zuverlässig aus.
                                 </p>
                             </div>
                         </div>
@@ -109,7 +109,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                             <div className="space-y-0">
                                 <h3 className="font-bold text-slate-900 text-[12px]">6. Auswertung & Export</h3>
                                 <p className="text-[10px] text-muted-foreground leading-snug">
-                                    Einschätzungsliste, Schüler-Feedback & Statistiken exportieren.
+                                    Korrekturen und automatische Korrekturzeichen prüfen, Schüler-Feedback ansehen und Statistiken exportieren.
                                 </p>
                             </div>
                         </div>
