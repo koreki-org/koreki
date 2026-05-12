@@ -701,7 +701,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                                                      className="w-full py-3 h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 group text-xs md:text-sm shrink-0 border-0 transition-all"
                                                  >
                                                      <Bot size={18} className="group-hover:scale-115 transition-transform" />
-                                                     Virtuelle Schülerabgaben generieren
+                                                     Virtuelle Schülerabgaben generieren (1 Credit)
                                                      <ArrowRight size={14} />
                                                  </Button>
                                              </div>
