@@ -62,7 +62,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                     </span>
                 </div>
             ) : (
-                <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 bg-blue-50/80 rounded-xl border border-blue-100/50 text-blue-700 shadow-inner">
+                <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 bg-blue-50/80 rounded-xl border border-blue-100/50 text-blue-700 shadow-inner shrink-0 whitespace-nowrap">
                      <Crown size={14} className="text-blue-500 sm:w-[16px] sm:h-[16px]" />
                      <span className="font-bold text-xs sm:text-sm">{userData?.credits || 0}</span> 
                      <span className="hidden sm:inline text-[10px] sm:text-xs font-semibold opacity-80 uppercase tracking-wide">Credits</span>
@@ -76,12 +76,12 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                     size="sm"
                     onClick={onUpgrade}
                     disabled={upgrading}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-500/20 border-0 rounded-xl px-3 sm:px-4 h-8 sm:h-9 transition-all hover:-translate-y-0.5"
+                    className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-500/20 border-0 rounded-xl px-3 sm:px-4 h-8 sm:h-9 transition-all hover:-translate-y-0.5 shrink-0 whitespace-nowrap flex items-center justify-center"
                 >
                     {upgrading ? (
-                        <Loader2 size={16} className="animate-spin" />
+                        <Loader2 size={16} className="animate-spin shrink-0" />
                     ) : (
-                        <span className="font-bold tracking-wide text-[10px] sm:text-xs">
+                        <span className="font-bold tracking-wide text-[10px] sm:text-xs whitespace-nowrap flex items-center justify-center">
                             <span className="sm:hidden">+</span>
                             <span className="hidden sm:inline">+ Aufladen</span>
                         </span>
@@ -146,7 +146,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={onShowPrompts}
-                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group"
+                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group whitespace-nowrap shrink-0"
                         title="Expert Center: Fachprofile & Prompts verwalten"
                     >
                         <GraduationCap size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
@@ -160,7 +160,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={onShowSkills}
-                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300"
+                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300 whitespace-nowrap shrink-0"
                         title="Skills Center: Modulare AI-Bewertungskompetenzen aktivieren"
                     >
                         <Wrench size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
@@ -174,7 +174,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={onShowGradingMemory}
-                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300"
+                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300 whitespace-nowrap shrink-0"
                         title="GradingMemory™: Korrektur-Erfahrungsschatz kalibrieren"
                     >
                         <BookOpen size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
@@ -188,7 +188,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={onShowAiParams}
-                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300"
+                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300 whitespace-nowrap shrink-0"
                         title="Intelligenz: Denkweise & Leistungskraft der KI steuern"
                     >
                         <Brain size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
