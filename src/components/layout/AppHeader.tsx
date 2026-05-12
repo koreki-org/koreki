@@ -66,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({
 
     return (
         <header className="mb-4 md:mb-5 flex flex-col gap-2 md:gap-3">
-            <div className="justify-between items-center gap-4 flex-wrap flex">
+            <div className="flex flex-col xl:flex-row justify-between items-center gap-3.5 w-full">
                 
                 {/* 1. Status & Badges Layer (Modular) */}
                 <HeaderBadges
@@ -88,7 +88,7 @@ const Header: React.FC<HeaderProps> = ({
                                 <div className="flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Profil: ${activeProfileName}`}>
                                     <GraduationCap size={12} className="mr-1 sm:mr-1.5 opacity-90 shrink-0" />
                                     <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
-                                        <span className="truncate max-w-[35px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeProfileName}</span>
+                                        <span className="truncate max-w-[35px] sm:max-w-[65px] md:max-w-[80px] inline-block">{activeProfileName}</span>
                                     </span>
                                 </div>
                             )}
@@ -96,21 +96,21 @@ const Header: React.FC<HeaderProps> = ({
                                 <div className="flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Skills: ${activeSkillsProfileName}`}>
                                     <Wrench size={12} className="mr-1 sm:mr-1.5 opacity-90 shrink-0" />
                                     <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
-                                        <span className="truncate max-w-[35px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeSkillsProfileName}</span>
+                                        <span className="truncate max-w-[35px] sm:max-w-[65px] md:max-w-[80px] inline-block">{activeSkillsProfileName}</span>
                                     </span>
                                 </div>
                             )}
                             <div className="flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`Erfahrung: ${activeGradingMemoryName || 'Inaktiv (Standard-Korrektur)'}`}>
                                 <BookOpen size={12} className="mr-1 sm:mr-1.5 opacity-90 shrink-0" />
                                 <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
-                                    <span className="truncate max-w-[35px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeGradingMemoryName || '-'}</span>
+                                    <span className="truncate max-w-[35px] sm:max-w-[65px] md:max-w-[80px] inline-block">{activeGradingMemoryName || '-'}</span>
                                 </span>
                             </div>
                             {activeAiProfileName && (
                                 <div className="flex items-center px-1.5 py-0.5 sm:px-2.5 sm:py-1 bg-indigo-50/50 text-indigo-600 rounded-lg border border-indigo-100/50 shadow-sm animate-in fade-in slide-in-from-right-2 duration-300" title={`KI: ${activeAiProfileName}`}>
                                     <Brain size={12} className="mr-1 sm:mr-1.5 opacity-90 shrink-0" />
                                     <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap flex items-center">
-                                        <span className="truncate max-w-[35px] sm:max-w-[70px] md:max-w-[95px] inline-block">{activeAiProfileName}</span>
+                                        <span className="truncate max-w-[35px] sm:max-w-[65px] md:max-w-[80px] inline-block">{activeAiProfileName}</span>
                                     </span>
                                 </div>
                             )}
