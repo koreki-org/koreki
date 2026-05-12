@@ -91,7 +91,7 @@ export async function executeMistralRequest(
         } else if (action === 'clean-and-map') {
             promptObj = buildCleanAndMapPrompt(payload.text || payload.studentText, payload.tasksLayout, model);
         } else if (action === 'student-simulator') {
-            promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout);
+            promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout, payload.selectedTasks);
         } else {
             throw new Error(`Unsupported text action: ${action}`);
         }

@@ -1,4 +1,4 @@
-import { Crown, Building2, Shield, Sparkles, FileText, Loader2, ShieldCheck, SlidersHorizontal } from 'lucide-react';
+import { Crown, Building2, Shield, Sparkles, FileText, Loader2, ShieldCheck, SlidersHorizontal, BookOpen, Brain, GraduationCap } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { isLocalInstance } from '@/lib/env-context';
 import { useRouter } from 'next/router';
@@ -30,7 +30,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
     const router = useRouter();
     // Role Label Logic (Industrial Grade)
     const getRoleLabel = () => {
-        if (userData?.role === 'ADMIN') return 'Administrator';
+        if (userData?.role === 'ADMIN' && !isLocalInstance()) return 'Administrator';
         if (userData?.activeWorkspaceType === 'ORGANIZATION') return 'Lehrkraft';
         return 'Experte';
     };
@@ -146,7 +146,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group"
                         title="Expert Center: Fachprofile & Prompts verwalten"
                     >
-                        <FileText size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
+                        <GraduationCap size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
                         <span className="hidden sm:inline font-bold tracking-tight text-xs">Expertise</span>
                     </Button>
                 )}
@@ -160,7 +160,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300"
                         title="GradingMemory™: Korrektur-Erfahrungsschatz kalibrieren"
                     >
-                        <SlidersHorizontal size={14} className="text-indigo-500 group-hover:text-white transition-colors rotate-90" />
+                        <BookOpen size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
                         <span className="hidden sm:inline font-bold tracking-tight text-xs">Erfahrungsschatz</span>
                     </Button>
                 )}
@@ -174,7 +174,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300"
                         title="Intelligenz: Denkweise & Leistungskraft der KI steuern"
                     >
-                        <SlidersHorizontal size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
+                        <Brain size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
                         <span className="hidden sm:inline font-bold tracking-tight text-xs">Intelligenz</span>
                     </Button>
                 )}

@@ -33,8 +33,9 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
     const [mounted, setMounted] = useState(false);
     const [step, setStep] = useState<'start' | 'generating' | 'calibrate' | 'saved'>('start');
     const [profileName, setProfileName] = useState('');
-    const [syntheticAnswers, setSyntheticAnswers] = useState<{ character: string; text: string; }[]>([]);
-    const [activeAvatar, setActiveAvatar] = useState<'TYPO' | 'MATH_STEP_MISSING' | 'SEMANTIC_LENIENT'>('TYPO');
+    const [syntheticAnswers, setSyntheticAnswers] = useState<{ character: string; text: string; taskName?: string; pointsObtained?: number; maxPoints?: number; recommendedNotes?: string; recommendedFeedback?: string; }[]>([]);
+    const [activeCaseIndex, setActiveCaseIndex] = useState<number>(0);
+    const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
     
     // Each calibration links to a real task, score, notes, and student feedback
     const [calibrations, setCalibrations] = useState<Record<string, { 
@@ -87,18 +88,26 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
             const dateStr = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
             setProfileName(`Erfahrungsschatz (${dateStr})`);
             refreshMemories();
+            
+            // Default select all tasks from tasksLayout
+            if (tasksLayout && Array.isArray(tasksLayout)) {
+                setSelectedTasks(tasksLayout.map(t => t.name).filter(Boolean));
+            } else {
+                setSelectedTasks([]);
+            }
         } else {
             document.body.style.overflow = 'unset';
             setStep('start');
             setSyntheticAnswers([]);
             setCalibrations({});
-            setActiveAvatar('TYPO');
+            setActiveCaseIndex(0);
+            setSelectedTasks([]);
             setError(null);
         }
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isOpen, refreshMemories]);
+    }, [isOpen, refreshMemories, tasksLayout]);
 
     const handleImportClick = () => {
         fileInputRef.current?.click();
@@ -259,28 +268,47 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
             return;
         }
 
+        if (selectedTasks.length === 0) {
+            setError('Bitte wähle mindestens eine Aufgabe für die Simulation aus.');
+            return;
+        }
+
         setIsGenerating(true);
         setStep('generating');
         setError(null);
         try {
-            const response = await apiClient.post('/api/user/grading-memories/generate', {
-                modelSolution,
-                tasksLayout,
-                settings: settings || { provider: 'mistral' }
-            });
+            let data: any;
 
-            if (!response.ok) {
-                const err = await response.json();
-                throw new Error(err.error || 'Die KI konnte die fiktiven Schülerabgaben nicht generieren.');
+            if (settings?.provider === 'ollama') {
+                const { executeOllamaRequest } = await import('../../lib/ai/ollama-logic');
+                data = await executeOllamaRequest(
+                    'student-simulator',
+                    { modelSolution, tasksLayout, selectedTasks },
+                    settings
+                );
+            } else {
+                const response = await apiClient.post('/api/user/grading-memories/generate', {
+                    modelSolution,
+                    tasksLayout,
+                    selectedTasks,
+                    settings: settings || { provider: 'mistral' }
+                });
+
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.error || 'Die KI konnte die fiktiven Schülerabgaben nicht generieren.');
+                }
+
+                data = await response.json();
             }
 
-            const data = await response.json();
             if (data.studentAnswers && Array.isArray(data.studentAnswers)) {
                 setSyntheticAnswers(data.studentAnswers);
                 
                 const initialCalibs: Record<string, any> = {};
-                data.studentAnswers.forEach((ans: any) => {
-                    // Snap the simulated task to a real task in our tasksLayout if possible
+                data.studentAnswers.forEach((ans: any, idx: number) => {
+                    const key = ans.taskName || `case-${idx}`;
+                    
                     let matchedTask = tasksLayout?.find(t => t.name?.toLowerCase() === ans.taskName?.toLowerCase())
                                    || tasksLayout?.find(t => t.name?.toLowerCase().includes(ans.taskName?.toLowerCase() || ''))
                                    || tasksLayout?.[0];
@@ -291,7 +319,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                         ? Math.min(actualMaxPoints, ans.pointsObtained) 
                         : Math.round(actualMaxPoints * 0.6);
 
-                    initialCalibs[ans.character] = {
+                    initialCalibs[key] = {
                         taskName: actualTaskName,
                         pointsObtained: actualPointsObtained,
                         maxPoints: actualMaxPoints,
@@ -301,11 +329,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                 });
                 
                 setCalibrations(initialCalibs);
-                
-                // Select first character for tabs
-                if (data.studentAnswers.length > 0) {
-                    setActiveAvatar(data.studentAnswers[0].character as any);
-                }
+                setActiveCaseIndex(0);
                 setStep('calibrate');
             } else {
                 throw new Error('Ungültiges Antwortformat der KI erhalten.');
@@ -327,10 +351,11 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
         setIsSaving(true);
         setError(null);
         try {
-            const cases: GradingMemoryCase[] = syntheticAnswers.map(ans => {
-                const cal = calibrations[ans.character];
+            const cases: GradingMemoryCase[] = syntheticAnswers.map((ans, idx) => {
+                const key = ans.taskName || `case-${idx}`;
+                const cal = calibrations[key];
                 return {
-                    id: `case-${ans.character}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                    id: `case-${key}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
                     studentText: ans.text,
                     expectedCorrection: {
                         pointsObtained: cal?.pointsObtained || 0,
@@ -410,8 +435,6 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
     };
 
     if (!isOpen || !mounted) return null;
-
-    const cal = calibrations[activeAvatar];
 
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in" onClick={onClose}>
@@ -695,6 +718,36 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                                                          className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs md:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold shadow-sm"
                                                      />
                                                  </div>
+
+                                                  {tasksLayout && tasksLayout.length > 0 && (
+                                                      <div>
+                                                          <label className="block text-[10px] font-bold uppercase tracking-wider text-indigo-600 mb-1.5">
+                                                              Zu simulierende Aufgaben auswählen:
+                                                          </label>
+                                                          <div className="bg-white border border-slate-200 rounded-xl p-3.5 max-h-36 overflow-y-auto space-y-2.5 shadow-sm">
+                                                              {tasksLayout.map((task) => {
+                                                                  const isChecked = selectedTasks.includes(task.name);
+                                                                  return (
+                                                                      <label key={task.name} className="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer hover:text-indigo-600 transition-colors">
+                                                                          <input 
+                                                                              type="checkbox"
+                                                                              checked={isChecked}
+                                                                              onChange={() => {
+                                                                                  if (isChecked) {
+                                                                                      setSelectedTasks(prev => prev.filter(name => name !== task.name));
+                                                                                  } else {
+                                                                                      setSelectedTasks(prev => [...prev, task.name]);
+                                                                                  }
+                                                                              }}
+                                                                              className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 transition-all"
+                                                                          />
+                                                                          <span>{task.name} <span className="text-[10px] text-slate-400 font-bold">({task.maxPoints} P)</span></span>
+                                                                      </label>
+                                                                  );
+                                                              })}
+                                                          </div>
+                                                      </div>
+                                                  )}
  
                                                  <Button 
                                                      onClick={handleGenerate}
@@ -731,206 +784,241 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                     )}
 
                     {/* STEP 3: ACTIVE CALIBRATION (REDESIGNED EXTRA-LARGE COCKPIT) */}
-                    {step === 'calibrate' && cal && (
-                        <div className="flex-1 flex flex-col gap-5 min-h-0">
-                            
-                            {/* Avatar Tab Selector */}
-                            <div className="flex flex-wrap gap-2 p-1.5 bg-slate-50 rounded-2xl border border-slate-150 shrink-0">
-                                {syntheticAnswers.map((ans) => {
-                                    const isSelected = activeAvatar === ans.character;
-                                    return (
-                                        <button
-                                            key={ans.character}
-                                            onClick={() => setActiveAvatar(ans.character as any)}
-                                            className={`flex-1 min-w-[180px] flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl text-xs font-extrabold transition-all border ${isSelected ? 'bg-white text-indigo-700 shadow-md border-indigo-200' : 'bg-transparent text-slate-500 border-transparent hover:bg-white/50'}`}
-                                        >
-                                            <span className={`w-2 h-2 rounded-full ${isSelected ? 'bg-indigo-600' : 'bg-slate-300'}`} />
-                                            {getCharacterTitle(ans.character)}
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                    {step === 'calibrate' && syntheticAnswers.length > 0 && (() => {
+                        const activeCase = syntheticAnswers[activeCaseIndex];
+                        const activeKey = activeCase ? (activeCase.taskName || `case-${activeCaseIndex}`) : '';
+                        const cal = calibrations[activeKey];
+                        if (!activeCase || !cal) return null;
 
-                            {/* Fullscreen 2-Spalten-Layout */}
-                            <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-hidden">
+                        return (
+                            <div className="flex-1 flex flex-col gap-5 min-h-0">
                                 
-                                {/* Left Column: Spacious Student Answer Text */}
-                                <div className="w-full lg:w-1/2 flex flex-col bg-slate-50/50 border border-slate-150 rounded-2xl p-5 md:p-6 min-h-[220px] lg:h-full overflow-hidden">
-                                    <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 shrink-0">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`text-xs font-black uppercase px-2.5 py-0.5 rounded-full ${getCharacterBadgeStyle(activeAvatar)}`}>
-                                                {activeAvatar}
-                                            </span>
-                                            <h4 className="text-sm font-extrabold text-slate-800 font-outfit">
-                                                Simulierter Text
+                                {/* Wizard Progress Indicator */}
+                                <div className="bg-slate-50 border border-slate-150 rounded-2xl p-4 shrink-0 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-xs">
+                                            {activeCaseIndex + 1}
+                                        </div>
+                                        <div>
+                                            <h4 className="text-sm font-black text-slate-800 font-outfit">
+                                                Kalibrierung: Fall {activeCaseIndex + 1} von {syntheticAnswers.length}
                                             </h4>
+                                            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">
+                                                Zugeordnete Aufgabe: <span className="text-indigo-600 font-extrabold">{activeCase.taskName || 'Allgemein'}</span>
+                                            </p>
                                         </div>
-                                        <span className="text-[10px] text-slate-400 font-bold uppercase">Abgabe-Vorschau</span>
                                     </div>
-
-                                    <div className="flex-1 bg-white border border-slate-150 rounded-xl p-4 md:p-5 font-mono text-xs md:text-sm text-slate-700 leading-relaxed overflow-y-auto whitespace-pre-wrap select-all custom-scrollbar">
-                                        "{syntheticAnswers.find(ans => ans.character === activeAvatar)?.text || ''}"
+                                    <div className="flex items-center gap-1.5">
+                                        {syntheticAnswers.map((_, idx) => {
+                                            const isCompleted = idx < activeCaseIndex;
+                                            const isActive = idx === activeCaseIndex;
+                                            return (
+                                                <div 
+                                                    key={idx}
+                                                    className={`h-2.5 rounded-full transition-all duration-300 ${isActive ? 'w-10 bg-indigo-600' : isCompleted ? 'w-4 bg-emerald-500' : 'w-4 bg-slate-200'}`}
+                                                />
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
-                                {/* Right Column: Calibration Form Cockpit */}
-                                <div className="w-full lg:w-1/2 flex flex-col bg-white border border-slate-150 rounded-2xl p-5 md:p-6 lg:h-full overflow-y-auto custom-scrollbar gap-5">
-                                    <div className="border-b border-slate-100 pb-3 shrink-0 flex items-center justify-between">
-                                        <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2 font-outfit">
-                                            <BookOpen size={16} className="text-indigo-500" />
-                                            Bewertungs-Cockpit
-                                        </h4>
-                                        <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100">
-                                            KI-Vorschlag geladen
-                                        </span>
-                                    </div>
-
-                                    {/* 1. Task Association Dropdown */}
-                                    <div className="space-y-2">
-                                        <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
-                                            Zugeordnete Aufgabe aus der Musterlösung:
-                                        </label>
-                                        {tasksLayout && tasksLayout.length > 0 ? (
-                                            <select 
-                                                value={cal.taskName}
-                                                onChange={(e) => {
-                                                    const selectedName = e.target.value;
-                                                    const matched = tasksLayout.find(t => t.name === selectedName);
-                                                    if (matched) {
-                                                        const maxP = Number(matched.maxPoints || 5);
-                                                        handleUpdateCalibration(activeAvatar, {
-                                                            taskName: selectedName,
-                                                            maxPoints: maxP,
-                                                            pointsObtained: Math.min(cal.pointsObtained, maxP)
-                                                        });
-                                                    }
-                                                }}
-                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold shadow-sm"
-                                            >
-                                                {tasksLayout.map(t => (
-                                                    <option key={t.name} value={t.name}>
-                                                        {t.name} (max. {t.maxPoints} Punkte)
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            <div className="flex gap-2">
-                                                <input 
-                                                    type="text" 
-                                                    value={cal.taskName} 
-                                                    onChange={e => handleUpdateCalibration(activeAvatar, { taskName: e.target.value })}
-                                                    placeholder="z.B. Aufgabe 1a"
-                                                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold shadow-sm"
-                                                />
-                                                <input 
-                                                    type="number" 
-                                                    min="1"
-                                                    value={cal.maxPoints} 
-                                                    onChange={e => {
-                                                        const maxP = Math.max(1, parseInt(e.target.value) || 5);
-                                                        handleUpdateCalibration(activeAvatar, { 
-                                                            maxPoints: maxP,
-                                                            pointsObtained: Math.min(cal.pointsObtained, maxP)
-                                                        });
-                                                    }}
-                                                    placeholder="Max"
-                                                    className="w-20 bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-800 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold shadow-sm"
-                                                />
+                                {/* Fullscreen 2-Spalten-Layout */}
+                                <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-hidden">
+                                    
+                                    {/* Left Column: Spacious Student Answer Text */}
+                                    <div className="w-full lg:w-1/2 flex flex-col bg-slate-50/50 border border-slate-150 rounded-2xl p-5 md:p-6 min-h-[220px] lg:h-full overflow-hidden">
+                                        <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 shrink-0">
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-xs font-black uppercase px-2.5 py-0.5 rounded-full ${getCharacterBadgeStyle(activeCase.character)}`}>
+                                                    {getCharacterTitle(activeCase.character)}
+                                                </span>
+                                                <h4 className="text-sm font-extrabold text-slate-800 font-outfit">
+                                                    Simulierter Text
+                                                </h4>
                                             </div>
-                                        )}
+                                            <span className="text-[10px] text-slate-400 font-bold uppercase">Abgabe-Vorschau</span>
+                                        </div>
+
+                                        <div className="flex-1 bg-white border border-slate-150 rounded-xl p-4 md:p-5 font-mono text-xs md:text-sm text-slate-700 leading-relaxed overflow-y-auto whitespace-pre-wrap select-all custom-scrollbar">
+                                            "{activeCase.text || ''}"
+                                        </div>
                                     </div>
 
-                                    {/* 2. Interactive Points Slider */}
-                                    <div className="space-y-3 pt-3 border-t border-slate-100">
-                                        <div className="flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-400">
-                                            <span>Menschliche Wertung (Slider):</span>
-                                            <span className="text-indigo-600 font-extrabold text-sm md:text-base bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-100 shadow-sm font-mono">
-                                                {cal.pointsObtained} von {cal.maxPoints} Punkten
+                                    {/* Right Column: Calibration Form Cockpit */}
+                                    <div className="w-full lg:w-1/2 flex flex-col bg-white border border-slate-150 rounded-2xl p-5 md:p-6 lg:h-full overflow-y-auto custom-scrollbar gap-5">
+                                        <div className="border-b border-slate-100 pb-3 shrink-0 flex items-center justify-between">
+                                            <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2 font-outfit">
+                                                <BookOpen size={16} className="text-indigo-500" />
+                                                Bewertungs-Cockpit
+                                            </h4>
+                                            <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100">
+                                                KI-Vorschlag geladen
                                             </span>
                                         </div>
-                                        <input 
-                                            type="range" 
-                                            min="0" 
-                                            max={cal.maxPoints} 
-                                            step="1"
-                                            value={cal.pointsObtained}
-                                            onChange={e => handleUpdateCalibration(activeAvatar, { pointsObtained: parseInt(e.target.value) })}
-                                            className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                                        />
-                                        <div className="flex justify-between text-[10px] text-slate-400 font-bold px-1">
-                                            <span>0 Punkte (Deduction)</span>
-                                            <span>{Math.round(cal.maxPoints / 2)} P (Hälfte)</span>
-                                            <span>{cal.maxPoints} P (Full Score)</span>
+
+                                        {/* 1. Task Association Dropdown */}
+                                        <div className="space-y-2">
+                                            <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
+                                                Zugeordnete Aufgabe aus der Musterlösung:
+                                            </label>
+                                            {tasksLayout && tasksLayout.length > 0 ? (
+                                                <select 
+                                                    value={cal.taskName}
+                                                    onChange={(e) => {
+                                                        const selectedName = e.target.value;
+                                                        const matched = tasksLayout.find(t => t.name === selectedName);
+                                                        if (matched) {
+                                                            const maxP = Number(matched.maxPoints || 5);
+                                                            handleUpdateCalibration(activeKey, {
+                                                                taskName: selectedName,
+                                                                maxPoints: maxP,
+                                                                pointsObtained: Math.min(cal.pointsObtained, maxP)
+                                                            });
+                                                        }
+                                                    }}
+                                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold shadow-sm"
+                                                >
+                                                    {tasksLayout.map(t => (
+                                                        <option key={t.name} value={t.name}>
+                                                            {t.name} (max. {t.maxPoints} Punkte)
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <div className="flex gap-2">
+                                                    <input 
+                                                        type="text" 
+                                                        value={cal.taskName} 
+                                                        onChange={e => handleUpdateCalibration(activeKey, { taskName: e.target.value })}
+                                                        placeholder="z.B. Aufgabe 1a"
+                                                        className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold shadow-sm"
+                                                    />
+                                                    <input 
+                                                        type="number" 
+                                                        min="1"
+                                                        value={cal.maxPoints} 
+                                                        onChange={e => {
+                                                            const maxP = Math.max(1, parseInt(e.target.value) || 5);
+                                                            handleUpdateCalibration(activeKey, { 
+                                                                maxPoints: maxP,
+                                                                pointsObtained: Math.min(cal.pointsObtained, maxP)
+                                                            });
+                                                        }}
+                                                        placeholder="Max"
+                                                        className="w-20 bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-800 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold shadow-sm"
+                                                    />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* 2. Interactive Points Slider */}
+                                        <div className="space-y-3 pt-3 border-t border-slate-100">
+                                            <div className="flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-400">
+                                                <span>Menschliche Wertung (Slider):</span>
+                                                <span className="text-indigo-600 font-extrabold text-sm md:text-base bg-indigo-50 px-3 py-1 rounded-lg border border-indigo-100 shadow-sm font-mono">
+                                                    {cal.pointsObtained} von {cal.maxPoints} Punkten
+                                                </span>
+                                            </div>
+                                            <input 
+                                                type="range" 
+                                                min="0" 
+                                                max={cal.maxPoints} 
+                                                step="1"
+                                                value={cal.pointsObtained}
+                                                onChange={e => handleUpdateCalibration(activeKey, { pointsObtained: parseInt(e.target.value) })}
+                                                className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                                            />
+                                            <div className="flex justify-between text-[10px] text-slate-400 font-bold px-1">
+                                                <span>0 Punkte (Deduction)</span>
+                                                <span>{Math.round(cal.maxPoints / 2)} P (Hälfte)</span>
+                                                <span>{cal.maxPoints} P (Full Score)</span>
+                                            </div>
+                                        </div>
+
+                                        {/* 3. Pedagogical Correction Notes */}
+                                        <div className="space-y-2 pt-3 border-t border-slate-100 flex-1 flex flex-col min-h-[140px]">
+                                            <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
+                                                Korrekturbegründung (correctionNotes):
+                                            </label>
+                                            <textarea 
+                                                rows={4}
+                                                value={cal.correctionNotes}
+                                                onChange={e => handleUpdateCalibration(activeKey, { correctionNotes: e.target.value })}
+                                                placeholder="Ausformulierte Begründung für den Punktabzug..."
+                                                className="w-full flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 resize-none font-medium leading-relaxed shadow-sm"
+                                            />
+                                        </div>
+
+                                        {/* 4. Student Feedback Input */}
+                                        <div className="space-y-2">
+                                            <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
+                                                Feedback an Schüler (Optional):
+                                            </label>
+                                            <input 
+                                                type="text"
+                                                value={cal.feedback}
+                                                onChange={e => handleUpdateCalibration(activeKey, { feedback: e.target.value })}
+                                                placeholder="Pädagogischer Ratschlag zur Fehlervermeidung..."
+                                                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium shadow-sm"
+                                            />
                                         </div>
                                     </div>
-
-                                    {/* 3. Pedagogical Correction Notes */}
-                                    <div className="space-y-2 pt-3 border-t border-slate-100 flex-1 flex flex-col min-h-[140px]">
-                                        <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
-                                            Korrekturbegründung (correctionNotes):
-                                        </label>
-                                        <textarea 
-                                            rows={4}
-                                            value={cal.correctionNotes}
-                                            onChange={e => handleUpdateCalibration(activeAvatar, { correctionNotes: e.target.value })}
-                                            placeholder="Ausformulierte Begründung für den Punktabzug..."
-                                            className="w-full flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 resize-none font-medium leading-relaxed shadow-sm"
-                                        />
-                                    </div>
-
-                                    {/* 4. Student Feedback Input */}
-                                    <div className="space-y-2">
-                                        <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
-                                            Feedback an Schüler (Optional):
-                                        </label>
-                                        <input 
-                                            type="text"
-                                            value={cal.feedback}
-                                            onChange={e => handleUpdateCalibration(activeAvatar, { feedback: e.target.value })}
-                                            placeholder="Pädagogischer Ratschlag zur Fehlervermeidung..."
-                                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 font-medium shadow-sm"
-                                        />
-                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Calibration Controls Footer */}
-                            <div className="flex items-center justify-between pt-4 mt-2 border-t border-slate-100 shrink-0">
-                                <Button 
-                                    variant="ghost" 
-                                    onClick={() => setStep('start')}
-                                    className="text-xs text-slate-400 hover:text-slate-600 font-bold"
-                                >
-                                    Zurück zur Übersicht
-                                </Button>
-                                
-                                <div className="flex items-center gap-4">
-                                    <div className="hidden sm:block text-right">
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase block">Erfahrungsschatz-Name:</span>
-                                        <input 
-                                            type="text" 
-                                            value={profileName} 
-                                            onChange={e => setProfileName(e.target.value)}
-                                            className="bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 text-xs font-bold text-slate-800 text-right focus:outline-none transition-all w-48 py-0.5"
-                                        />
-                                    </div>
-                                    
+                                {/* Calibration Controls Footer */}
+                                <div className="flex items-center justify-between pt-4 mt-2 border-t border-slate-100 shrink-0">
                                     <Button 
-                                        onClick={handleSave}
-                                        disabled={isSaving}
-                                        className="px-6 py-3 h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-100/50 text-xs md:text-sm border-0 transition-all"
+                                        variant="ghost" 
+                                        onClick={() => {
+                                            if (activeCaseIndex > 0) {
+                                                setActiveCaseIndex(prev => prev - 1);
+                                            } else {
+                                                setStep('start');
+                                            }
+                                        }}
+                                        className="text-xs text-slate-500 hover:text-slate-700 font-bold flex items-center gap-1.5"
                                     >
-                                        {isSaving ? (
-                                            <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
-                                        ) : (
-                                            <Save size={16} />
-                                        )}
-                                        Kalibrierungs-Erfahrungsschatz sichern
+                                        Zurück
                                     </Button>
+                                    
+                                    <div className="flex items-center gap-4">
+                                        <div className="hidden sm:block text-right">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase block">Erfahrungsschatz-Name:</span>
+                                            <input 
+                                                type="text" 
+                                                value={profileName} 
+                                                onChange={e => setProfileName(e.target.value)}
+                                                className="bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 text-xs font-bold text-slate-800 text-right focus:outline-none transition-all w-48 py-0.5"
+                                            />
+                                        </div>
+                                        
+                                        {activeCaseIndex < syntheticAnswers.length - 1 ? (
+                                            <Button 
+                                                onClick={() => setActiveCaseIndex(prev => prev + 1)}
+                                                className="px-6 py-3 h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-100/50 text-xs md:text-sm border-0 transition-all"
+                                            >
+                                                Nächster Fall
+                                                <ArrowRight size={14} />
+                                            </Button>
+                                        ) : (
+                                            <Button 
+                                                onClick={handleSave}
+                                                disabled={isSaving}
+                                                className="px-6 py-3 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-100/50 text-xs md:text-sm border-0 transition-all animate-pulse"
+                                            >
+                                                {isSaving ? (
+                                                    <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
+                                                ) : (
+                                                    <Save size={16} />
+                                                )}
+                                                Erfahrungsschatz sichern
+                                            </Button>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        );
+                    })()}
 
                     {/* STEP 4: SUCCESS / SAVED */}
                     {step === 'saved' && (

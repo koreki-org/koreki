@@ -17,6 +17,7 @@ import { isLocalInstance } from '../../../../lib/env-context';
 const generateSchema = z.object({
     modelSolution: z.string().min(1, 'Musterlösung ist erforderlich'),
     tasksLayout: z.array(z.any()).optional(),
+    selectedTasks: z.array(z.string()).optional(),
     settings: z.object({
         provider: z.enum(['mistral', 'ollama', 'openai-compatible']),
         mistralKey: z.string().optional(),
@@ -38,7 +39,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             return res.status(400).json({ error: validation.error.issues[0].message });
         }
 
-        const { modelSolution, tasksLayout, settings } = validation.data;
+        const { modelSolution, tasksLayout, selectedTasks, settings } = validation.data;
 
         const { claims } = req.user;
         const userId = claims?.sub;
@@ -49,19 +50,15 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         }
 
         let result: any;
-        const useOpenAI = settings.provider === 'openai-compatible';
 
-        if (!useOpenAI) {
-            const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
-            if (!apiKey) throw new Error('Mistral API-Key fehlt.');
-
-            result = await executeMistralRequest(
+        if (settings.provider === 'ollama') {
+            const { executeOllamaRequest } = require('../../../../lib/ai/ollama-logic');
+            result = await executeOllamaRequest(
                 'student-simulator',
-                { modelSolution, tasksLayout },
-                apiKey,
-                { model: settings.model }
+                { modelSolution, tasksLayout, selectedTasks },
+                settings
             );
-        } else {
+        } else if (settings.provider === 'openai-compatible') {
             const baseUrl = settings.openaiUrl || 'https://llm.aihosting.mittwald.de/v1';
             const apiKey = settings.openaiKey || process.env.MITTWALD_API_KEY;
             const model = settings.openaiModel || 'Qwen3.6-35B-A3B-FP8';
@@ -70,10 +67,20 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
             result = await executeOpenAIRequest(
                 'student-simulator',
-                { modelSolution, tasksLayout },
+                { modelSolution, tasksLayout, selectedTasks },
                 baseUrl,
                 apiKey,
                 { model }
+            );
+        } else {
+            const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
+            if (!apiKey) throw new Error('Mistral API-Key fehlt.');
+
+            result = await executeMistralRequest(
+                'student-simulator',
+                { modelSolution, tasksLayout, selectedTasks },
+                apiKey,
+                { model: settings.model }
             );
         }
 

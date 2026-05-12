@@ -3,12 +3,13 @@ import {
     buildCleanAndAnalyzePrompt, 
     buildCleanAndMapPrompt, 
     buildVisionPrompt,
+    buildStudentSimulatorPrompt,
     StructuredPrompt
 } from './prompt-builder';
 import { AppSettings } from '../../types';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator';
 
 /**
  * Specifically optimized for Gemma 4 E4B (multimodal).
@@ -35,6 +36,8 @@ export async function executeOllamaRequest(
         promptObj = buildCleanAndAnalyzePrompt(payload.modelSolution, model);
     } else if (action === 'clean-and-map') {
         promptObj = buildCleanAndMapPrompt(payload.text || payload.studentText, payload.tasksLayout, model);
+    } else if (action === 'student-simulator') {
+        promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout, payload.selectedTasks);
     } else {
         throw new Error(`Unsupported action: ${action}`);
     }

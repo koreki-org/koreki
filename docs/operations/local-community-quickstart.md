@@ -90,3 +90,24 @@ MISTRAL_API_KEY=your_key
   # Test gegen laufende Instanz
   npx playwright test
   ```
+
+---
+
+## 6. Erweiterte Korrektursteuerung (GradingMemory & Intelligenz)
+
+Koreki bietet hochgradig anpassbare Steuerungsmechanismen, um die Korrekturpräzision an fachdidaktische Kriterien anzupassen:
+
+* **Intelligenz (Denktiefe):** 
+  Über das Dropdown-Menü in der oberen App-Headerleiste lässt sich die Denktiefe der KI regulieren. 
+  * **Standard (Schnell):** Bestens geeignet für direkte Textprüfungen und Standardaufgaben.
+  * **Tiefgründig (Deep Reasoning):** Erhöht die logische Abstraktion und eignet sich hervorragend für komplexe mathematische Induktionsbeweise, logische Kausalketten oder IT-Netzwerkanalysen.
+
+* **Erfahrungsschatz (GradingMemory Wizard):**
+  Löst das Problem unvorhersehbarer Freitexteingaben über interaktives Few-Shot-Lernen. Statt komplexe System-Prompts zu modifizieren, trainierst du die KI direkt anhand fiktiver Grenzfälle:
+  1. Klicke im Header auf **"Erfahrungsschatz"** -> **"Neu kalibrieren"**.
+  2. Gib dem Profil einen sprechenden Namen (z. B. *IT-Systeme USV & Logfiles*).
+  3. **Aufgabenspezifische Checkliste:** Wähle gezielt aus, für welche Aufgaben der Musterlösung fiktive Schülerantworten simuliert werden sollen.
+  4. Starte die Generierung (kostet 1 Credit im SaaS; lokal kostenlos). Es wird exakt pro ausgewählter Aufgabe eine rotierende Schülerantwort (Tippfehler, lückenhafte Rechenschritte oder schwammige Fachsprache) erzeugt.
+  5. **Schritt-für-Schritt Wizard:** Kalibriere den Profil-Erfahrungsschatz interaktiv, indem du jeden simulierten Fall einzeln bewertest, Punkte vergibst und die Begründung anpasst.
+  6. Klicke am Ende auf **"Erfahrungsschatz sichern"**. Die kalibrierten Richtlinien werden bei zukünftigen Korrekturen exakt injiziert.
+

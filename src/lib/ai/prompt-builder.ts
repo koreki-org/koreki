@@ -207,7 +207,7 @@ export function buildVisionPrompt(model?: string): StructuredPrompt {
 /**
  * Builds the prompt for the synthetic student simulator.
  */
-export function buildStudentSimulatorPrompt(modelSolution: string, tasksLayout?: Task[]): StructuredPrompt {
+export function buildStudentSimulatorPrompt(modelSolution: string, tasksLayout?: Task[], selectedTasks?: string[]): StructuredPrompt {
     let system = studentSimulatorSystemDefault;
     let user = studentSimulatorUserDefault;
 
@@ -218,6 +218,17 @@ export function buildStudentSimulatorPrompt(modelSolution: string, tasksLayout?:
         : 'Keine explizite Struktur vorhanden. Nimm Standardaufgaben an.';
     
     user = user.replace('{{tasksLayout}}', layoutString);
+
+    if (selectedTasks && selectedTasks.length > 0) {
+        const selectedList = selectedTasks.map((t, idx) => {
+            const types = ['TYPO', 'MATH_STEP_MISSING', 'SEMANTIC_LENIENT'];
+            const assignedType = types[idx % types.length];
+            return `- Aufgabe: "${t}" -> Simuliere Schülertyp: "${assignedType}"`;
+        }).join('\n');
+
+        user += `\n\n### AUSGEWÄHLTE AUFGABEN FÜR DIE SIMULATION:\n${selectedList}\n\n`;
+        user += `WICHTIG: Generiere genau ${selectedTasks.length} Schülerantwort(en). Für JEDE der oben aufgelisteten ausgewählten Aufgaben genau eine Schülerantwort im exakten Schülertyp. Halte dich exakt an diese Liste.`;
+    }
 
     return {
         system,

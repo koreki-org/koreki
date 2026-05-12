@@ -65,7 +65,7 @@ export async function executeOpenAIRequest(
         } else if (action === 'clean-and-map') {
             promptObj = buildCleanAndMapPrompt(payload.text || payload.studentText, payload.tasksLayout, targetModel);
         } else if (action === 'student-simulator') {
-            promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout);
+            promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout, payload.selectedTasks);
         } else {
             throw new Error(`Unsupported action: ${action}`);
         }
