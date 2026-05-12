@@ -109,6 +109,15 @@ if (gradingMemory && Array.isArray(gradingMemory) && gradingMemory.length > 0) {
 }
 ```
 
+### On-The-Fly Kalibrierung (Loop-Closing Feedback Channel)
+Ab Version 12 wurde eine direkte Feedbackschleife aus der laufenden Korrekturoberfläche (`BatchTaskAnalysisCard.tsx`) integriert:
+1. **Zweck:** Weicht die Einschätzung der KI von der gewünschten pädagogischen Bewertung ab, kann die Lehrkraft die Punkte und das Feedback editieren und diesen Fall mit nur einem Klick (**„In Erfahrungsschatz übernehmen“**) direkt als neues Few-Shot-Beispiel anlernen.
+2. **Automatisches PII-Scrubbing:** Der Schülertext wird vor dem Speichern trim-bereinigt. Er enthält standardmäßig keine Schüler-Klarnamen oder sonstige PII-sensiblen Daten.
+3. **Plattform-Weichenstellung (Drei-Wege-Persistenz):**
+   - **SaaS Cloud:** Sichert den Fall sicher in der PostgreSQL-Datenbank über den Next.js-Endpunkt `/api/user/grading-memories/append`. Der Zugriff ist über Logto-Session-Claims (RBAC) gegen unbefugten Fremdzugriff geschützt.
+   - **Community (Docker):** Erkennt über `isLocalInstance()` die self-hosted Umgebung und nutzt den `LocalGradingMemoryService`, um den Fall direkt in die Datei `grading_memories.json` im Docker-Volume zu schreiben.
+   - **Desktop (Tauri):** Fängt über `isDesktopTarget()` den API-Call ab und schreibt den Fall direkt clientseitig in den `localStorage` der App unter `koreki_local_grading_memories` und triggert einen UI-Refresh.
+
 ### Import & Export Format (KEP-GM-1 Markdown)
 Um Lehrkräften das Teilen von Erfahrungsschätzen zu ermöglichen, wurde ein Markdown-basierter Standard (**KEP-GM-1**) implementiert. Dies erlaubt den Im- und Export per einfacher Textdatei:
 

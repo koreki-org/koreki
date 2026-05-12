@@ -77,6 +77,14 @@ Das System nutzt ab Version 2.0 eine zentrale `downloadFile` Abstraktion in `fil
 * **Im Browser:** Erzeugt einen Blob und triggert einen simulierten Klick auf ein temporär im DOM eingehängtes `<a>` Element.
 * **Im Desktop (Tauri):** Nutzt einen nativen Rust-Invoke (`save_file_native`), um den OS-Speicherdialog anzuzeigen und die Datei direkt zu schreiben.
 
+### Active Profile Metadata Serialization & Restoration
+Um ein Höchstmaß an Sitzungskonsistenz (Fidelity) zu garantieren, speichert das System beim Exportieren einer `.koreki`-Datei das aktive Setup in einem kompakten `"metadata"`-Block:
+* **Gesicherte Profile:**
+  * Fach-Expertise/Prompt-Profil (`activeProfileId` & `activeProfileName`)
+  * KI-Modell/Parameter-Profil (`activeAiProfileId` & `activeAiProfileName`)
+  * Erfahrungsschatz (`activeGradingMemoryId` & `activeGradingMemoryName`)
+* **Automatisierter Restore-Lifecycle beim Import:**
+  Beim Laden der `.koreki`-Sitzungsdatei liest der Import-Handler in `app.tsx` diesen Block aus und stellt alle drei Profile vollautomatisch im System wieder ein (unter Nutzung der `selectMemory`-Persistenz). Existieren die benutzerdefinierten Profile auf dem importierenden System nicht (z.B. bei der Nutzung durch Kollegen), verbleibt das System auf den sicheren Werkseinstellungen (Sicherheits-Fallback).
 
 ---
 
