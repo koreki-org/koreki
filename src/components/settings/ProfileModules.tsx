@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/Badge';
+import { FloatingActions } from '@/components/ui/FloatingActions';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
 import { downloadFile } from '@/lib/file-utils';
 
@@ -120,7 +121,7 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
                             onClick={() => onSelectProfile(p)}
                             className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
                         >
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="flex items-center gap-3 flex-1 min-w-0 relative pr-2">
                                 <FileText size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
                                 {editingProfileId === p.id ? (
                                     <Input 
@@ -129,27 +130,47 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
                                         onBlur={onConfirmRename} onKeyDown={(e) => e.key === 'Enter' && onConfirmRename()}
                                     />
                                 ) : (
-                                    <span className={`text-xs md:text-sm font-bold truncate ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}>{p.name}</span>
+                                    <span 
+                                        className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'} group-hover:pr-[110px]`}
+                                        title={p.name}
+                                    >
+                                        {p.name}
+                                    </span>
                                 )}
-                            </div>
-                            <div className="flex items-center gap-1 shrink-0">
-                                {editingProfileId === p.id ? (
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
-                                        <Check size={14} />
-                                    </Button>
-                                ) : (
-                                    <>
-                                        <Button variant="ghost" size="icon" title="Profil kopieren" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-indigo-600 transition-opacity" onClick={(e) => { e.stopPropagation(); onStartNew(p.correctionPrompt || p.prompt, `Kopie von ${p.name}`); }}>
-                                            <PlusCircle size={14} />
+
+                                {/* Unified Floating Actions - Custom Profiles */}
+                                <FloatingActions className="-top-2 -right-2">
+                                    {editingProfileId === p.id ? (
+                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-indigo-600" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
+                                            <Check size={14} />
                                         </Button>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-indigo-600 transition-opacity" onClick={(e) => onStartRename(e, p)}>
-                                            <Pencil size={14} />
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity" onClick={(e) => onDeleteProfile(p.id, e)}>
-                                            <Trash2 size={14} />
-                                        </Button>
-                                    </>
-                                )}
+                                    ) : (
+                                        <>
+                                            <Button variant="ghost" size="icon" title="Profil kopieren" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onStartNew(p.correctionPrompt || p.prompt, `Kopie von ${p.name}`); }}>
+                                                <PlusCircle size={14} />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" title="Profil exportieren" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" onClick={(e) => { 
+                                                e.stopPropagation(); 
+                                                const markdown = `---
+name: "${p.name}"
+description: "Exportiertes Koreki Experten-Profil"
+version: "1.0.0"
+---
+
+${p.correctionPrompt || p.prompt}`;
+                                                downloadFile(markdown, `${p.name.toLowerCase().replace(/\s+/g, '_')}.md`, 'text/markdown');
+                                            }}>
+                                                <Download size={14} />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" title="Umbenennen" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" onClick={(e) => onStartRename(e, p)}>
+                                                <Pencil size={14} />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-400 hover:text-red-500 transition-colors" onClick={(e) => onDeleteProfile(p.id, e)}>
+                                                <Trash2 size={14} />
+                                            </Button>
+                                        </>
+                                    )}
+                                </FloatingActions>
                             </div>
                         </div>
                     ))}
@@ -164,23 +185,46 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
                         onClick={() => onSelectProfile(p)}
                         className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
                     >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex items-center gap-3 flex-1 min-w-0 relative pr-2">
                             <FileText size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
-                            <span className={`text-xs md:text-sm font-bold truncate ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}>{p.name}</span>
-                        </div>
-                        <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                title="Profil kopieren"
-                                className="h-8 w-8 text-slate-400 hover:text-indigo-600 rounded-lg" 
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onStartNew(p.correctionPrompt || p.prompt, `Kopie von ${p.name}`);
-                                }}
+                            <span 
+                                className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'} group-hover:pr-[60px]`}
+                                title={p.name}
                             >
-                                <PlusCircle size={14} />
-                            </Button>
+                                {p.name}
+                            </span>
+
+                            {/* Unified Floating Actions - System Templates */}
+                            <FloatingActions className="-top-2 -right-2">
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    title="Profil kopieren"
+                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" 
+                                    onClick={(e) => { e.stopPropagation(); onStartNew(p.correctionPrompt || p.prompt, `Kopie von ${p.name}`); }}
+                                >
+                                    <PlusCircle size={14} />
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    title="Profil exportieren"
+                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" 
+                                    onClick={(e) => { 
+                                        e.stopPropagation(); 
+                                        const markdown = `---
+name: "${p.name}"
+description: "System-Vorlage"
+version: "1.0.0"
+---
+
+${p.correctionPrompt || p.prompt}`;
+                                        downloadFile(markdown, `${p.name.toLowerCase().replace(/\s+/g, '_')}.md`, 'text/markdown');
+                                    }}
+                                >
+                                    <Download size={14} />
+                                </Button>
+                            </FloatingActions>
                         </div>
                     </div>
                 ))}
@@ -287,19 +331,15 @@ ${correctionPrompt}`;
                     <MessageSquare size={18} className="text-indigo-600" /> Pädagogische Expertise
                 </label>
                 <div className="flex gap-2">
-                    {!isCreatingNew && (
-                        <Button variant="outline" size="sm" onClick={handleExport} className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border-indigo-100 text-indigo-600 gap-2 px-3 sm:px-4 hover:bg-indigo-50">
-                            <Download size={14} /> Export
-                        </Button>
-                    )}
                     {!isSystemSelected && (
-                        <Button variant="outline" size="sm" disabled={!isDirty || saving} onClick={onSaveToDB} className={`h-8 sm:h-9 rounded-full text-[10px] font-black uppercase gap-2 px-3 sm:px-4 ${isDirty ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse' : 'border-slate-100 text-slate-300'}`}>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            disabled={!isDirty || saving} 
+                            onClick={onSaveToDB} 
+                            className={`h-9 rounded-full text-[10px] font-black uppercase gap-2 px-4 shadow-sm transition-all ${isDirty ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse' : 'border-slate-100 text-slate-300'}`}
+                        >
                             <Save size={14} /> Speichern
-                        </Button>
-                    )}
-                    {!isCreatingNew && (
-                        <Button variant="outline" size="sm" onClick={() => onStartNew(correctionPrompt)} className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border-indigo-100 text-indigo-600 gap-2 px-3 sm:px-4">
-                            <PlusCircle size={14} /> Kopieren
                         </Button>
                     )}
                 </div>
