@@ -401,7 +401,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                         onClick={handleCreateSkillClick}
                         className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-2 px-3 sm:px-4 transition-all"
                     >
-                        <PlusCircle size={14} /> Eigener Skill
+                        <PlusCircle size={14} /> Skill hinzufügen
                     </Button>
                     {!isCreatingNew && (
                         <>
