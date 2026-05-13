@@ -138,7 +138,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                     )}
 
                                     {/* Action Overlay on Hover - Koreki Premium Style */}
-                                    <div className={`absolute right-0 top-0 bottom-0 items-center gap-0.5 px-1 bg-gradient-to-l ${selectedProfile === p.name ? 'from-white via-white/95' : 'from-slate-50 via-slate-50/95'} to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex`}>
+                                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 p-1 bg-white shadow-xl border border-slate-100 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100 z-10" onClick={(e) => e.stopPropagation()}>
                                         {editingProfileId === p.id ? (
                                             <Button variant="ghost" size="icon" className="h-7 w-7 text-indigo-600" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
                                                 <Check size={14} />
@@ -185,7 +185,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                 </span>
 
                                 {/* System Action Overlay */}
-                                <div className={`absolute right-0 top-0 bottom-0 items-center gap-1 px-1 bg-gradient-to-l ${selectedProfile === p.name ? 'from-white via-white/95' : 'from-slate-50 via-slate-50/95'} to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex`}>
+                                <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1 p-1 bg-white shadow-xl border border-slate-100 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100 z-10" onClick={(e) => e.stopPropagation()}>
                                     <Button 
                                         variant="ghost" 
                                         size="icon" 
@@ -508,6 +508,15 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                 <Button 
                                                     variant="ghost" 
                                                     size="icon" 
+                                                    title="Skill kopieren"
+                                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100/80" 
+                                                    onClick={() => onStartNew([skill.id])}
+                                                >
+                                                    <PlusCircle size={12} />
+                                                </Button>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
                                                     title="Skill als .md exportieren"
                                                     className="h-7 w-7 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100/80" 
                                                     onClick={() => {
@@ -519,32 +528,11 @@ type: "skill"
 version: "1.0.0"
 ---
 
-${skill.promptSnippet || ''}
-`;
-                                                        const filename = `${skill.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_skill.md`;
-                                                        downloadFile(markdown, filename, 'text/markdown;charset=utf-8').catch(() => alert('Export fehlgeschlagen.'));
+${skill.prompt || ''}`;
+                                                        downloadFile(markdown, `${skill.name.toLowerCase().replace(/\s+/g, '_')}.md`, 'text/markdown');
                                                     }}
                                                 >
                                                     <Download size={12} />
-                                                </Button>
-
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
-                                                    title="Skill kopieren"
-                                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100/80" 
-                                                    onClick={() => {
-                                                        setEditingSkillData({
-                                                            name: `Kopie von ${skill.name}`,
-                                                            category: skill.category,
-                                                            description: skill.description,
-                                                            promptSnippet: skill.promptSnippet,
-                                                            isCustom: true
-                                                        });
-                                                        setIsEditingSkill(true);
-                                                    }}
-                                                >
-                                                    <PlusCircle size={12} />
                                                 </Button>
 
                                                 {skill.isCustom && (
