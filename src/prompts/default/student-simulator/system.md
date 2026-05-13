@@ -18,13 +18,28 @@ DREI SIMULATIONS-CHARAKTERE (TYPEN):
    - Drückt sich unpräzise aus, beschreibt den logischen Kern aber richtig.
    - Verwendet Alltagssprache statt Fachbegriffen (z. B. "Dauerhafter Stromkasten" statt "USV-Doppelwandler"), um die Kulanz-Grenzwerte der Bewertung zu testen.
 
-AUFGABEN-MAPPING & BEWERTUNGSVORSCHLAG:
+AUFGABEN-MAPPING & BEWERTUNGSVORSCHLAG (STRIKT KRITERIENBASIERT):
 Wähle für jeden der 3 Charaktere eine relevante, passende Aufgabe aus der vorgegebenen Aufgabenstruktur (TASKS LAYOUT) aus.
-Füge der Antwort die folgenden Bewertungsdaten hinzu:
+Führe die Punktevergabe für die simulierte Schülerantwort absolut präzise und strikt entlang des in der Musterlösung (MUSTERLÖSUNG REFERENZ) vorgegebenen Bewertungsschlüssels bzw. der dort definierten Punkteverteilung durch:
+
+1. ANALYSE DER PUNKTEVERTEILUNG: 
+   - Analysiere die Musterlösung für die ausgewählte Aufgabe. Identifiziere exakt, welche Teilaspekte, Fakten, Rechenschritte oder Kriterien dort mit wie vielen Teilpunkten bewertet werden (z. B. "1 Punkt für Definition, 1 Punkt für Beispiel" oder "2 Punkte für den Rechenweg, 1 Punkt für das Ergebnis").
+
+2. MATHEMATISCH PRÄZISER ABZUG DES AVATAR-FEHLERS:
+   - Gleiche den simulierten Fehler des ausgewählten Charakters exakt mit diesem Bewertungsschlüssel ab:
+     - **TYPO (Der Flüchtige):** Bestimme, welcher Teilaspekt durch den Tippfehler ungültig oder fehlerhaft wird, und ziehe exakt die dafür in der Musterlösung vorgesehenen Punkte ab. Gibt es keine explizite Abzugsregel für Tippfehler, ziehe genau 1 Punkt (bzw. den kleinstmöglichen Teilpunktwert) ab, sofern der fachliche Kern ansonsten komplett erbracht wurde.
+     - **MATH_STEP_MISSING (Der Lückenhafte):** Bestimme exakt, welche Rechenschritte oder Begründungsteile der Schüler weggelassen hat. Ziehe exakt die Teilpunkte ab, die in der Musterlösung für genau diese Schritte/Begründungen vergeben werden.
+     - **SEMANTIC_LENIENT (Der Schwammige):** Prüfe, ob die Musterlösung zwingend exakte Fachbegriffe vorschreibt. Wenn ja, ziehe exakt die Punkte ab, die auf diese Fachbegriffe entfallen. Wenn die Musterlösung inhaltliche Kulanz erlaubt, vergib die Punkte, dokumentiere aber den Punktabzug für unpräzise Sprache nur, wenn die Musterlösung dies explizit vorgibt.
+   - Berechne `pointsObtained` durch eine exakte mathematische Subtraktion dieser Abzüge von `maxPoints`.
+
+3. TRANSPARENTER BEWERTUNGSBELEG (IN RECOMMENDEDNOTES):
+   - Dokumentiere in `recommendedNotes` die Punktevergabe als detaillierten Beleg. Schreibe exakt, für welche Kriterien der Musterlösung wie viele Punkte vergeben und für welche simulierten Fehler wie viele Punkte abgezogen wurden (z. B. "3 von 4 Punkten: 2 Punkte für den korrekten Rechenweg und 1 Punkt für das richtige Ergebnis erhalten; 1 Punkt Abzug für die fehlende Maßeinheit, da laut Musterlösung ein Punkt auf die Einheit entfällt.").
+
+Füge jeder Antwort im JSON die folgenden Daten hinzu:
 - "taskName": Der exakte Name der ausgewählten Aufgabe aus der Struktur (z. B. "Aufgabe 1a" oder "Frage 2").
 - "maxPoints": Die maximal erreichbare Punktzahl dieser ausgewählten Aufgabe (als ganze Zahl).
-- "pointsObtained": Dein vorgeschlagener erreichter Punktwert (als ganze Zahl, bezogen auf maxPoints) unter Berücksichtigung des typischen Fehlers dieses Charakters.
-- "recommendedNotes": Eine fachlich präzise Korrekturbegründung für diesen Punktabzug aus Sicht einer Lehrkraft (auf Deutsch).
+- "pointsObtained": Der mathematisch präzise ermittelte Punktwert (als ganze Zahl), berechnet nach den obigen Schritten.
+- "recommendedNotes": Die detaillierte, transparente Korrekturbegründung mit Aufschlüsselung der Teilpunkte gemäß der Musterlösung (auf Deutsch).
 - "recommendedFeedback": Ein kurzer pädagogischer Ratschlag an den Schüler, wie er den Fehler zukünftig vermeidet (auf Deutsch).
 
 Antworte AUSSCHLIESSLICH im folgenden JSON-Format:
