@@ -1,6 +1,7 @@
 import React from 'react';
 import { X, RefreshCcw } from 'lucide-react';
 import { AppSettings } from '../types';
+import { downloadFile } from '@/lib/file-utils';
 import { Button } from './ui/Button';
 
 // Sub-Components
@@ -52,6 +53,20 @@ const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
         handleConfirmRename
     } = useSkillProfiles(settings, onSave, onClose, currentProfileName);
 
+  // Export a whole skill profile (including its active skill IDs) as a markdown file
+  const handleExportProfile = async (profile: any) => {
+    const safeName = profile.name || 'skillset';
+    const skillsArray = JSON.stringify(profile.activeSkillIds || []);
+    const markdown = `---\nname: "${safeName}"\ndescription: "Exportiertes Koreki Skill-Profil"\nversion: "1.0.0"\nskills: ${skillsArray}\n---\n`;
+    const filename = `${safeName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_profile.md`;
+    try {
+      await downloadFile(markdown, filename, 'text/markdown;charset=utf-8');
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Export failed.');
+    }
+  };
+
     return (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
             <div className="relative w-full md:max-w-[1000px] h-full md:h-[85vh] bg-white rounded-none md:rounded-[2.5rem] shadow-2xl border-none md:border md:border-white flex flex-col overflow-hidden animate-fade-in text-foreground">
@@ -94,15 +109,12 @@ const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
                             onStartNew={() => handleStartNew([])}
                             onImportParsedProfile={handleImportParsedProfile}
                             onSelectProfile={handleSelectProfile}
-                            onStartRename={(e, p) => {
-                                e.stopPropagation();
-                                setEditingProfileId(p.id);
-                                setEditingName(p.name);
-                            }}
+                            onStartRename={(e, p) => { e.stopPropagation(); setEditingProfileId(p.id); setEditingName(p.name); }}
                             onDeleteProfile={handleDeleteProfile}
                             onConfirmRename={handleConfirmRename}
                             setEditingName={setEditingName}
                             setEditingProfileId={setEditingProfileId}
+                            onExportProfile={handleExportProfile}
                         />
                     </div>
 
@@ -122,6 +134,7 @@ const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
                             onSaveCustomSkill={handleSaveCustomSkill}
                             onDeleteCustomSkill={handleDeleteCustomSkill}
                             onStartNew={handleStartNew}
+                            onImportParsedProfile={handleImportParsedProfile}
                         />
 
                         {/* Footer Action Bar */}

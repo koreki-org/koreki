@@ -21,6 +21,7 @@ interface SkillsSidebarProps {
     onConfirmRename: () => void;
     setEditingName: (v: string) => void;
     setEditingProfileId: (v: string | null) => void;
+    onExportProfile: (profile: any) => void;
 }
 
 export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
@@ -35,6 +36,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
     onStartRename, 
     onDeleteProfile, 
     onConfirmRename, 
+    onExportProfile,
     setEditingName, 
     setEditingProfileId
 }) => {
@@ -140,6 +142,9 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                             <Button variant="ghost" size="icon" title="Skill-Set kopieren" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-indigo-600 transition-opacity" onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}>
                                                 <PlusCircle size={14} />
                                             </Button>
+                                            <Button variant="ghost" size="icon" title="Skill-Set exportieren" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-indigo-600 transition-opacity" onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}>
+                                                <Download size={14} />
+                                            </Button>
                                             <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-indigo-600 transition-opacity" onClick={(e) => onStartRename(e, p)}>
                                                 <Pencil size={14} />
                                             </Button>
@@ -179,6 +184,15 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                     }}
                                 >
                                     <PlusCircle size={14} />
+                                </Button>
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    title="Skill-Set exportieren"
+                                    className="h-8 w-8 text-slate-400 hover:text-indigo-600 rounded-lg"
+                                    onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}
+                                >
+                                    <Download size={14} />
                                 </Button>
                             </div>
                         </div>
@@ -403,16 +417,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                     >
                         <PlusCircle size={14} /> Skill hinzufügen
                     </Button>
-                    {!isCreatingNew && (
-                        <>
-                            <Button variant="outline" size="sm" onClick={() => onStartNew(activeSkillIds)} className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border-indigo-100 text-indigo-600 gap-2 px-3 sm:px-4 hover:bg-indigo-50 transition-all">
-                                <PlusCircle size={14} /> Kopieren
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={handleExport} className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border-indigo-100 text-indigo-600 gap-2 px-3 sm:px-4 hover:bg-indigo-50 transition-all">
-                                <Download size={14} /> Export
-                            </Button>
-                        </>
-                    )}
+
                     {!isSystemSelected && (
                         <Button variant="outline" size="sm" disabled={!isDirty || saving} onClick={onSaveToDB} className={`h-8 sm:h-9 rounded-full text-[10px] font-black uppercase gap-2 px-3 sm:px-4 transition-all ${isDirty ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse font-bold' : 'border-slate-100 text-slate-300'}`}>
                             <Check size={14} /> Speichern
