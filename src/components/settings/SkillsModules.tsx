@@ -120,7 +120,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                 onClick={() => onSelectProfile(p)}
                                 className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
                             >
-                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <div className="flex items-center gap-3 flex-1 min-w-0 relative pr-2">
                                     <Wrench size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
                                     {editingProfileId === p.id ? (
                                         <Input 
@@ -129,30 +129,37 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                             onBlur={onConfirmRename} onKeyDown={(e) => e.key === 'Enter' && onConfirmRename()}
                                         />
                                     ) : (
-                                        <span className={`text-xs md:text-sm font-bold truncate ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}>{p.name}</span>
+                                        <span 
+                                            className={`text-xs md:text-sm font-bold truncate pr-8 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}
+                                            title={p.name}
+                                        >
+                                            {p.name}
+                                        </span>
                                     )}
-                                </div>
-                                <div className="flex items-center gap-1 shrink-0">
-                                    {editingProfileId === p.id ? (
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
-                                            <Check size={14} />
-                                        </Button>
-                                    ) : (
-                                        <>
-                                            <Button variant="ghost" size="icon" title="Skill-Set kopieren" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-indigo-600 transition-opacity" onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}>
-                                                <PlusCircle size={14} />
+
+                                    {/* Action Overlay on Hover - Koreki Premium Style */}
+                                    <div className={`absolute right-0 top-0 bottom-0 items-center gap-0.5 px-2 bg-gradient-to-l ${selectedProfile === p.name ? 'from-white via-white' : 'from-slate-50 via-slate-50'} to-transparent opacity-0 group-hover:opacity-100 transition-all duration-200 flex`}>
+                                        {editingProfileId === p.id ? (
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-indigo-600" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
+                                                <Check size={14} />
                                             </Button>
-                                            <Button variant="ghost" size="icon" title="Skill-Set exportieren" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-indigo-600 transition-opacity" onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}>
-                                                <Download size={14} />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-indigo-600 transition-opacity" onClick={(e) => onStartRename(e, p)}>
-                                                <Pencil size={14} />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity" onClick={(e) => onDeleteProfile(p.id, e)}>
-                                                <Trash2 size={14} />
-                                            </Button>
-                                        </>
-                                    )}
+                                        ) : (
+                                            <>
+                                                <Button variant="ghost" size="icon" title="Skill-Set kopieren" className="h-7 w-7 hover:text-indigo-600" onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}>
+                                                    <PlusCircle size={14} />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" title="Skill-Set exportieren" className="h-7 w-7 hover:text-indigo-600" onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}>
+                                                    <Download size={14} />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 hover:text-indigo-600" onClick={(e) => onStartRename(e, p)}>
+                                                    <Pencil size={14} />
+                                                </Button>
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 hover:text-red-500" onClick={(e) => onDeleteProfile(p.id, e)}>
+                                                    <Trash2 size={14} />
+                                                </Button>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         ))}
@@ -168,32 +175,36 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                             onClick={() => onSelectProfile(p)}
                             className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
                         >
-                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className="flex items-center gap-3 flex-1 min-w-0 relative pr-2">
                                 <Wrench size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
-                                <span className={`text-xs md:text-sm font-bold truncate ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}>{p.name}</span>
-                            </div>
-                            <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    title="Skill-Set kopieren"
-                                    className="h-8 w-8 text-slate-400 hover:text-indigo-600 rounded-lg" 
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`);
-                                    }}
+                                <span 
+                                    className={`text-xs md:text-sm font-bold truncate pr-8 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}
+                                    title={p.name}
                                 >
-                                    <PlusCircle size={14} />
-                                </Button>
-                                <Button 
-                                    variant="ghost" 
-                                    size="icon" 
-                                    title="Skill-Set exportieren"
-                                    className="h-8 w-8 text-slate-400 hover:text-indigo-600 rounded-lg"
-                                    onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}
-                                >
-                                    <Download size={14} />
-                                </Button>
+                                    {p.name}
+                                </span>
+
+                                {/* System Action Overlay */}
+                                <div className={`absolute right-0 top-0 bottom-0 items-center gap-1 px-2 bg-gradient-to-l ${selectedProfile === p.name ? 'from-white via-white' : 'from-slate-50 via-slate-50'} to-transparent opacity-0 group-hover:opacity-100 transition-all duration-200 flex`}>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        title="Skill-Set kopieren"
+                                        className="h-7 w-7 text-slate-400 hover:text-indigo-600" 
+                                        onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}
+                                    >
+                                        <PlusCircle size={14} />
+                                    </Button>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        title="Skill-Set exportieren"
+                                        className="h-7 w-7 text-slate-400 hover:text-indigo-600"
+                                        onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}
+                                    >
+                                        <Download size={14} />
+                                    </Button>
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -418,11 +429,16 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                         <PlusCircle size={14} /> Skill hinzufügen
                     </Button>
 
-                    {!isSystemSelected && (
-                        <Button variant="outline" size="sm" disabled={!isDirty || saving} onClick={onSaveToDB} className={`h-8 sm:h-9 rounded-full text-[10px] font-black uppercase gap-2 px-3 sm:px-4 transition-all ${isDirty ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse font-bold' : 'border-slate-100 text-slate-300'}`}>
-                            <Check size={14} /> Speichern
-                        </Button>
-                    )}
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
+                        disabled={saving || (isSystemSelected && !isDirty)} 
+                        onClick={onSaveToDB} 
+                        title={isSystemSelected ? "System-Vorlagen können nicht direkt bearbeitet werden. Erstelle eine Kopie." : ""}
+                        className={`h-8 sm:h-9 rounded-full text-[10px] font-black uppercase gap-2 px-3 sm:px-4 transition-all ${isDirty && !isSystemSelected ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse font-bold' : 'border-slate-100 text-slate-300'}`}
+                    >
+                        <Check size={14} /> Speichern
+                    </Button>
                 </div>
             </div>
 
