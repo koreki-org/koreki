@@ -130,7 +130,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                         />
                                     ) : (
                                         <span 
-                                            className={`text-xs md:text-sm font-bold truncate pr-8 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}
+                                            className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'} group-hover:pr-[110px]`}
                                             title={p.name}
                                         >
                                             {p.name}
@@ -138,7 +138,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                     )}
 
                                     {/* Action Overlay on Hover - Koreki Premium Style */}
-                                    <div className={`absolute right-0 top-0 bottom-0 items-center gap-0.5 px-2 bg-gradient-to-l ${selectedProfile === p.name ? 'from-white via-white' : 'from-slate-50 via-slate-50'} to-transparent opacity-0 group-hover:opacity-100 transition-all duration-200 flex`}>
+                                    <div className={`absolute right-0 top-0 bottom-0 items-center gap-0.5 px-1 bg-gradient-to-l ${selectedProfile === p.name ? 'from-white via-white/95' : 'from-slate-50 via-slate-50/95'} to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex`}>
                                         {editingProfileId === p.id ? (
                                             <Button variant="ghost" size="icon" className="h-7 w-7 text-indigo-600" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
                                                 <Check size={14} />
@@ -178,14 +178,14 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                             <div className="flex items-center gap-3 flex-1 min-w-0 relative pr-2">
                                 <Wrench size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
                                 <span 
-                                    className={`text-xs md:text-sm font-bold truncate pr-8 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}
+                                    className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'} group-hover:pr-[60px]`}
                                     title={p.name}
                                 >
                                     {p.name}
                                 </span>
 
                                 {/* System Action Overlay */}
-                                <div className={`absolute right-0 top-0 bottom-0 items-center gap-1 px-2 bg-gradient-to-l ${selectedProfile === p.name ? 'from-white via-white' : 'from-slate-50 via-slate-50'} to-transparent opacity-0 group-hover:opacity-100 transition-all duration-200 flex`}>
+                                <div className={`absolute right-0 top-0 bottom-0 items-center gap-1 px-1 bg-gradient-to-l ${selectedProfile === p.name ? 'from-white via-white/95' : 'from-slate-50 via-slate-50/95'} to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex`}>
                                     <Button 
                                         variant="ghost" 
                                         size="icon" 
