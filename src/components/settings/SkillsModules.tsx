@@ -477,7 +477,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                     className={`w-5 h-5 text-indigo-600 rounded-md border-slate-300 focus:ring-indigo-500 focus:ring-offset-slate-50 cursor-pointer transition-all ${isDisabled ? 'cursor-not-allowed' : ''}`}
                                                 />
                                             </div>
-                                            <div className="flex-1 space-y-1 pr-2 transition-all duration-300 group-hover:pr-[110px]">
+                                            <div className="flex-1 space-y-1 min-w-0">
                                                 <div className="flex items-center gap-2">
                                                     <h4 className={`text-sm font-black tracking-tight leading-tight ${isChecked ? 'text-indigo-950' : 'text-slate-800'}`}>
                                                         {skill.name}
@@ -504,7 +504,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                 )}
                                             </div>
 
-                                            <div className="absolute top-3 right-3 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-300 px-1 bg-gradient-to-l from-white via-white/90 to-transparent rounded-r-3xl" onClick={(e) => e.stopPropagation()}>
+                                            <div className="absolute -top-2 -right-2 flex items-center gap-0.5 p-1.5 bg-white shadow-2xl shadow-indigo-200/50 border border-slate-100 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100 z-10" onClick={(e) => e.stopPropagation()}>
                                                 <Button 
                                                     variant="ghost" 
                                                     size="icon" 
