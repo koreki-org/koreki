@@ -36,7 +36,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
     const [mounted, setMounted] = useState(false);
     const [step, setStep] = useState<'start' | 'generating' | 'calibrate' | 'saved'>('start');
     const [profileName, setProfileName] = useState('');
-    const [syntheticAnswers, setSyntheticAnswers] = useState<{ character: string; text: string; taskName?: string; pointsObtained?: number; maxPoints?: number; recommendedNotes?: string; recommendedFeedback?: string; }[]>([]);
+    const [syntheticAnswers, setSyntheticAnswers] = useState<{ uid: string; character: string; text: string; taskName?: string; pointsObtained?: number; maxPoints?: number; recommendedNotes?: string; recommendedFeedback?: string; }[]>([]);
     const [activeCaseIndex, setActiveCaseIndex] = useState<number>(0);
     const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
     
