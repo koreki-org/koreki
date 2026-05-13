@@ -97,7 +97,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                     <PlusCircle size={18} /> Neues Skill-Set
                 </Button>
                 <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full h-10 border-dashed border-indigo-200 text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 gap-2 transition-all">
-                    <RefreshCcw size={16} /> .md Skills Importieren
+                    <RefreshCcw size={16} /> .md Skill-Set Importieren
                 </Button>
                 <input 
                     type="file" 
@@ -204,6 +204,7 @@ interface SkillsEditorProps {
     onSaveCustomSkill: (skill: any) => void;
     onDeleteCustomSkill: (id: string) => void;
     onStartNew: (initialSkills?: string[]) => void;
+    onImportParsedProfile: (parsed: any, isSingleSkill?: boolean) => void;
 }
 
 export const SkillsEditor: React.FC<SkillsEditorProps> = ({
@@ -211,7 +212,7 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     newProfileName, activeSkillIds, setActiveSkillIds,
     onSaveToDB, setNewProfileName,
     customSkills, onSaveCustomSkill, onDeleteCustomSkill,
-    onStartNew
+    onStartNew, onImportParsedProfile
 }) => {
     
     // Custom Skill Modal/Inline Editor State
@@ -376,6 +377,27 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                     <Button 
                         variant="outline" 
                         size="sm" 
+                        onClick={() => {
+                            const input = document.createElement('input');
+                            input.type = 'file';
+                            input.accept = '.md';
+                            input.onchange = async (e: any) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const text = await file.text();
+                                const parsed = parseMarkdownProfile(text);
+                                onImportParsedProfile(parsed, true);
+                            };
+                            input.click();
+                        }}
+                        className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-1.5 px-3 sm:px-4 transition-all"
+                        title="Einzelnen Skill importieren (.md)"
+                    >
+                        <RefreshCcw size={14} /> Skill Import
+                    </Button>
+                    <Button 
+                        variant="outline" 
+                        size="sm" 
                         onClick={handleCreateSkillClick}
                         className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-2 px-3 sm:px-4 transition-all"
                     >
@@ -504,7 +526,7 @@ ${skill.promptSnippet || ''}
                                                     <PlusCircle size={12} />
                                                 </Button>
 
-                                                {skill.isCustom && !isDisabled && (
+                                                {skill.isCustom && (
                                                     <>
                                                         <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100/80" onClick={() => handleEditSkillClick(skill)}>
                                                             <Pencil size={12} />

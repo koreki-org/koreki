@@ -138,15 +138,16 @@ export const useSkillProfiles = (
         setShowEditorMobile(true);
     };
 
-    const handleImportParsedProfile = (parsed: { metadata: any; content?: string }) => {
+    const handleImportParsedProfile = (parsed: { metadata: any; content?: string; correctionPrompt?: string }, isSingleSkill?: boolean) => {
         // Check if this is an individual skill import rather than a profile layout
-        if (parsed.metadata?.type === 'skill' || parsed.metadata?.promptSnippet || parsed.metadata?.prompt) {
+        if (isSingleSkill || parsed.metadata?.type === 'skill' || parsed.metadata?.promptSnippet || parsed.metadata?.prompt) {
+            const promptText = parsed.metadata?.promptSnippet || parsed.metadata?.prompt || parsed.correctionPrompt || parsed.content || "";
             const newSkill = {
-                id: parsed.metadata.id || `custom-skill-${Date.now()}`,
-                name: parsed.metadata.name || "Importierter Skill",
-                category: parsed.metadata.category || "feedback",
-                description: parsed.metadata.description || "Über KEP-MD-1 importiert.",
-                promptSnippet: parsed.metadata.promptSnippet || parsed.metadata.prompt || parsed.content || "",
+                id: parsed.metadata?.id || `custom-skill-${Date.now()}`,
+                name: parsed.metadata?.name || "Importierter Skill",
+                category: parsed.metadata?.category || "feedback",
+                description: parsed.metadata?.description || "Über KEP-MD-1 importiert.",
+                promptSnippet: promptText,
                 isCustom: true
             };
             handleSaveCustomSkill(newSkill);
@@ -159,18 +160,19 @@ export const useSkillProfiles = (
             return;
         }
 
-        setIsCreatingNew(true);
-        setSelectedProfile('');
-        
-        // Extract skills array from frontmatter (yaml parsing)
-        const importedSkills = Array.isArray(parsed.metadata?.skills) 
-            ? parsed.metadata.skills 
-            : [];
+        if (parsed.metadata?.skills) {
+            setIsCreatingNew(true);
+            setSelectedProfile('');
             
-        setActiveSkillIds(importedSkills);
-        setLastSavedSkillIds([]);
-        setNewProfileName(parsed.metadata?.name || "Importiertes Skill-Profil");
-        setShowEditorMobile(true);
+            const importedSkills = Array.isArray(parsed.metadata.skills) ? parsed.metadata.skills : [];
+            setActiveSkillIds(importedSkills);
+            setLastSavedSkillIds([]);
+            setNewProfileName(parsed.metadata.name || "Importiertes Skill-Profil");
+            setShowEditorMobile(true);
+            return;
+        }
+
+        alert("Warnung: Die importierte Datei enthält kein gültiges Skill-Set. Bitte nutze die Upload-Area für Skills rechts, wenn du einen einzelnen Skill importieren möchtest.");
     };
 
     const handleSaveToDB = async () => {
