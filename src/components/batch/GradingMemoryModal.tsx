@@ -203,7 +203,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
         }
     };
 
-    const handleUpdateCaseField = (caseId: string, field: 'pointsObtained' | 'correctionNotes' | 'feedback', value: any) => {
+    const handleUpdateCaseField = (caseId: string, field: 'pointsObtained' | 'correctionNotes' | 'feedback' | 'studentText', value: any) => {
         if (!activeMemoryId) return;
 
         setMemories(prev => prev.map(m => {
@@ -212,6 +212,9 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                 ...m,
                 cases: m.cases.map(c => {
                     if (c.id !== caseId) return c;
+                    if (field === 'studentText') {
+                        return { ...c, studentText: value };
+                    }
                     return {
                         ...c,
                         expectedCorrection: {
@@ -622,10 +625,14 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                                                              </div>
  
                                                              <div className="space-y-1">
-                                                                 <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Schülerantwort (Simuliert):</span>
-                                                                 <div className="p-2.5 bg-white border border-slate-150 rounded-lg text-xs font-mono text-slate-600 max-h-24 overflow-y-auto whitespace-pre-wrap select-all">
-                                                                     "{c.studentText}"
-                                                                 </div>
+                                                                 <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Schülerantwort (Simuliert / Editierbar):</span>
+                                                                 <textarea 
+                                                                     rows={3}
+                                                                     value={c.studentText}
+                                                                     onChange={e => handleUpdateCaseField(c.id, 'studentText', e.target.value)}
+                                                                     className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-sm resize-y"
+                                                                     placeholder="Simulierter Schülertext..."
+                                                                 />
                                                              </div>
  
                                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -836,12 +843,18 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                                                     Simulierter Text
                                                 </h4>
                                             </div>
-                                            <span className="text-[10px] text-slate-400 font-bold uppercase">Abgabe-Vorschau</span>
+                                            <span className="text-[10px] text-slate-400 font-bold uppercase">Abgabe editieren</span>
                                         </div>
 
-                                        <div className="flex-1 bg-white border border-slate-150 rounded-xl p-4 md:p-5 font-mono text-xs md:text-sm text-slate-700 leading-relaxed overflow-y-auto whitespace-pre-wrap select-all custom-scrollbar">
-                                            "{activeCase.text || ''}"
-                                        </div>
+                                        <textarea 
+                                            value={activeCase.text || ''}
+                                            onChange={(e) => {
+                                                const newText = e.target.value;
+                                                setSyntheticAnswers(prev => prev.map((ans, idx) => idx === activeCaseIndex ? { ...ans, text: newText } : ans));
+                                            }}
+                                            placeholder="Simulierter Schülertext..."
+                                            className="flex-1 bg-white border border-slate-200 rounded-xl p-4 md:p-5 font-mono text-xs md:text-sm text-slate-700 leading-relaxed overflow-y-auto custom-scrollbar resize-none focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-sm transition-all"
+                                        />
                                     </div>
 
                                     {/* Right Column: Calibration Form Cockpit */}
