@@ -33,6 +33,7 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
         profiles,
         selectedProfile,
         isCreatingNew,
+        setIsCreatingNew,
         newProfileName,
         setNewProfileName,
         saving,

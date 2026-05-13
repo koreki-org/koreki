@@ -311,11 +311,16 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
             }
 
             if (data.studentAnswers && Array.isArray(data.studentAnswers)) {
-                setSyntheticAnswers(data.studentAnswers);
+                const ansItems = data.studentAnswers.map((ans: any, idx: number) => ({
+                    ...ans,
+                    uid: `case-uid-${Date.now()}-${idx}-${Math.random().toString(36).substr(2, 9)}`
+                }));
+
+                setSyntheticAnswers(ansItems);
                 
                 const initialCalibs: Record<string, any> = {};
-                data.studentAnswers.forEach((ans: any, idx: number) => {
-                    const key = ans.taskName || `case-${idx}`;
+                ansItems.forEach((ans: any) => {
+                    const key = ans.uid;
                     
                     let matchedTask = tasksLayout?.find(t => t.name?.toLowerCase() === ans.taskName?.toLowerCase())
                                    || tasksLayout?.find(t => t.name?.toLowerCase().includes(ans.taskName?.toLowerCase() || ''))
@@ -350,20 +355,45 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
         }
     };
 
+    const handleSkip = () => {
+        if (!syntheticAnswers || syntheticAnswers.length === 0) return;
+        
+        const newAnswers = [...syntheticAnswers];
+        newAnswers.splice(activeCaseIndex, 1);
+        setSyntheticAnswers(newAnswers);
+        
+        if (newAnswers.length === 0) {
+            setStep('start');
+            setError('Alle Fälle wurden übersprungen. Es wurde kein Erfahrungsschatz erstellt.');
+        } else if (activeCaseIndex >= newAnswers.length) {
+            setActiveCaseIndex(newAnswers.length - 1);
+        }
+        // Bleibt auf dem gleichen Index, zeigt aber den nächsten (nachgerückten) Fall
+    };
+
     const handleSave = async () => {
         if (!profileName.trim()) {
             setError('Bitte gib dem Erfahrungsschatz einen aussagekräftigen Namen.');
             return;
         }
 
+        const existing = memories.find(m => m.name.toLowerCase() === profileName.trim().toLowerCase());
+        if (existing) {
+            const proceed = window.confirm(`Ein Erfahrungsschatz mit dem Namen "${profileName}" existiert bereits. Möchtest du ihn wirklich überschreiben oder einen neuen Eintrag mit dem gleichen Namen erstellen?`);
+            if (!proceed) {
+                setIsSaving(false);
+                return;
+            }
+        }
+
         setIsSaving(true);
         setError(null);
         try {
-            const cases: GradingMemoryCase[] = syntheticAnswers.map((ans, idx) => {
-                const key = ans.taskName || `case-${idx}`;
+            const cases: GradingMemoryCase[] = syntheticAnswers.map((ans) => {
+                const key = ans.uid;
                 const cal = calibrations[key];
                 return {
-                    id: `case-${key}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                    id: `case-${key}-${Date.now()}`,
                     studentText: ans.text,
                     expectedCorrection: {
                         pointsObtained: cal?.pointsObtained || 0,
@@ -841,7 +871,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                     {/* STEP 3: ACTIVE CALIBRATION (REDESIGNED EXTRA-LARGE COCKPIT) */}
                     {step === 'calibrate' && syntheticAnswers.length > 0 && (() => {
                         const activeCase = syntheticAnswers[activeCaseIndex];
-                        const activeKey = activeCase ? (activeCase.taskName || `case-${activeCaseIndex}`) : '';
+                        const activeKey = activeCase ? activeCase.uid : '';
                         const cal = calibrations[activeKey];
                         if (!activeCase || !cal) return null;
 
@@ -1042,16 +1072,14 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                                         Zurück
                                     </Button>
                                     
-                                    <div className="flex items-center gap-4">
-                                        <div className="hidden sm:block text-right">
-                                            <span className="text-[10px] font-bold text-slate-400 uppercase block">Erfahrungsschatz-Name:</span>
-                                            <input 
-                                                type="text" 
-                                                value={profileName} 
-                                                onChange={e => setProfileName(e.target.value)}
-                                                className="bg-transparent border-b border-transparent hover:border-slate-300 focus:border-indigo-500 text-xs font-bold text-slate-800 text-right focus:outline-none transition-all w-48 py-0.5"
-                                            />
-                                        </div>
+                                    <div className="flex items-center gap-2 sm:gap-4">
+                                        <Button 
+                                            variant="ghost" 
+                                            onClick={handleSkip}
+                                            className="text-xs text-rose-500 hover:text-rose-700 hover:bg-rose-50 font-bold px-4 h-11 rounded-xl transition-all"
+                                        >
+                                            Fall überspringen
+                                        </Button>
                                         
                                         {activeCaseIndex < syntheticAnswers.length - 1 ? (
                                             <Button 
@@ -1065,7 +1093,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                                             <Button 
                                                 onClick={handleSave}
                                                 disabled={isSaving}
-                                                className="px-6 py-3 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-100/50 text-xs md:text-sm border-0 transition-all animate-pulse"
+                                                className="px-6 py-3 h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-100/50 text-xs md:text-sm border-0 transition-all"
                                             >
                                                 {isSaving ? (
                                                     <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
