@@ -14,7 +14,7 @@ export const FloatingActions: React.FC<FloatingActionsProps> = ({
     className = "" 
 }) => {
     return (
-        <div className={`absolute flex items-center gap-0.5 p-1.5 bg-white shadow-2xl shadow-indigo-200/40 border border-slate-100 rounded-[1.25rem] opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100 z-20 ${className}`}>
+        <div className={`absolute flex items-center gap-0.5 p-1.5 bg-white/95 backdrop-blur-sm shadow-xl shadow-indigo-100/50 border border-indigo-50 rounded-2xl opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 scale-90 group-hover:scale-100 z-30 ${className}`}>
             {children}
         </div>
     );

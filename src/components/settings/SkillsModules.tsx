@@ -146,16 +146,16 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                             </Button>
                                         ) : (
                                             <>
-                                                <Button variant="ghost" size="icon" title="Skill-Set kopieren" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}>
+                                                <Button variant="ghost" size="icon" title="Skill-Set kopieren" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}>
                                                     <PlusCircle size={14} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" title="Skill-Set exportieren" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}>
+                                                <Button variant="ghost" size="icon" title="Skill-Set exportieren" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}>
                                                     <Download size={14} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" title="Umbenennen" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" onClick={(e) => onStartRename(e, p)}>
+                                                <Button variant="ghost" size="icon" title="Umbenennen" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => onStartRename(e, p)}>
                                                     <Pencil size={14} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-400 hover:text-red-500 transition-colors" onClick={(e) => onDeleteProfile(p.id, e)}>
+                                                <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-600 hover:text-red-500 transition-colors" onClick={(e) => onDeleteProfile(p.id, e)}>
                                                     <Trash2 size={14} />
                                                 </Button>
                                             </>
@@ -191,7 +191,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                         variant="ghost" 
                                         size="icon" 
                                         title="Skill-Set kopieren"
-                                        className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" 
+                                        className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" 
                                         onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}
                                     >
                                         <PlusCircle size={14} />
@@ -200,7 +200,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                         variant="ghost" 
                                         size="icon" 
                                         title="Skill-Set exportieren"
-                                        className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors"
+                                        className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors"
                                         onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}
                                     >
                                         <Download size={14} />
@@ -511,7 +511,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                     variant="ghost" 
                                                     size="icon" 
                                                     title="Skill kopieren"
-                                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" 
+                                                    className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" 
                                                     onClick={() => onStartNew([skill.id])}
                                                 >
                                                     <PlusCircle size={14} />
@@ -520,7 +520,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                     variant="ghost" 
                                                     size="icon" 
                                                     title="Skill als .md exportieren"
-                                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" 
+                                                    className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" 
                                                     onClick={() => {
                                                         const markdown = `---
 name: "${skill.name}"
@@ -539,10 +539,10 @@ ${skill.prompt || ''}`;
 
                                                 {skill.isCustom && (
                                                     <>
-                                                        <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" onClick={() => handleEditSkillClick(skill)}>
+                                                        <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" onClick={() => handleEditSkillClick(skill)}>
                                                             <Pencil size={14} />
                                                         </Button>
-                                                        <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-400 hover:text-red-500 transition-colors rounded-lg hover:bg-slate-100/80" onClick={() => { if (confirm(`Möchtest du den Skill "${skill.name}" wirklich löschen?`)) onDeleteCustomSkill(skill.id); }}>
+                                                        <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-600 hover:text-red-500 transition-colors rounded-lg hover:bg-slate-100/80" onClick={() => { if (confirm(`Möchtest du den Skill "${skill.name}" wirklich löschen?`)) onDeleteCustomSkill(skill.id); }}>
                                                             <Trash2 size={14} />
                                                         </Button>
                                                     </>

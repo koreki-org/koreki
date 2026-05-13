@@ -64,6 +64,36 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
         handleApplyToSession
     } = useAiProfiles(settings, onSave, onClose, settings.activeAiProfileId || 'system-standard');
 
+    const handleExportProfile = (p: any, e: React.MouseEvent) => {
+        e.stopPropagation();
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(p, null, 2));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href", dataStr);
+        downloadAnchorNode.setAttribute("download", `ai-profile-${p.name.toLowerCase().replace(/\s+/g, '-')}.json`);
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    };
+
+    const handleImportProfile = (p: any) => {
+        setIsCreatingNew(true);
+        setNewProfileName(p.name ? `Import: ${p.name}` : `Import ${new Date().toLocaleDateString()}`);
+        
+        // Load parameters from import
+        if (p.temperature !== undefined) setTemperature(p.temperature);
+        if (p.topP !== undefined) setTopP(p.topP);
+        if (p.maxTokens !== undefined) setMaxTokens(p.maxTokens);
+        if (p.presencePenalty !== undefined) setPresencePenalty(p.presencePenalty);
+        if (p.enableThinking !== undefined) setEnableThinking(p.enableThinking);
+        
+        if (p.visionTemperature !== undefined) setVisionTemperature(p.visionTemperature);
+        if (p.visionTopP !== undefined) setVisionTopP(p.visionTopP);
+        if (p.visionMaxTokens !== undefined) setVisionMaxTokens(p.visionMaxTokens);
+        if (p.visionPresencePenalty !== undefined) setVisionPresencePenalty(p.visionPresencePenalty);
+        
+        setShowEditorMobile(true);
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -113,6 +143,8 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                                 setEditingName(p.name);
                             }}
                             onDeleteProfile={handleDeleteProfile}
+                            onExportProfile={handleExportProfile}
+                            onImportProfile={handleImportProfile}
                             onConfirmRename={handleConfirmRename}
                             setEditingName={setEditingName}
                             setEditingProfileId={setEditingProfileId}

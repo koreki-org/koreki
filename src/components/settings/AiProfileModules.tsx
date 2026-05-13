@@ -1,8 +1,9 @@
 import React from 'react';
-import { SlidersHorizontal, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Save, Brain, Eye } from 'lucide-react';
+import { SlidersHorizontal, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Save, Brain, Eye, Download, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
+import { FloatingActions } from '@/components/ui/FloatingActions';
 import { cn } from '@/lib/utils';
 
 interface SidebarProps {
@@ -15,6 +16,8 @@ interface SidebarProps {
     onSelectProfile: (p: any) => void;
     onStartRename: (e: React.MouseEvent, p: any) => void;
     onDeleteProfile: (id: string, e: React.MouseEvent) => void;
+    onExportProfile: (p: any, e: React.MouseEvent) => void;
+    onImportProfile: (p: any) => void;
     onConfirmRename: () => void;
     setEditingName: (v: string) => void;
     setEditingProfileId: (v: string | null) => void;
@@ -30,78 +33,191 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
     onSelectProfile, 
     onStartRename, 
     onDeleteProfile, 
+    onExportProfile,
+    onImportProfile,
     onConfirmRename, 
     setEditingName, 
     setEditingProfileId
-}) => (
-    <div className="flex-1 flex flex-col overflow-hidden">
-        <div className="p-4 border-b border-slate-100">
-            <Button onClick={onStartNew} className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md gap-2">
-                <PlusCircle size={18} /> Neues Profil
-            </Button>
-        </div>
-        <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-6 pt-4">
-            {/* User Profiles */}
-            {profiles.filter(p => !p.isSystem).length > 0 && (
+}) => {
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [isDragging, setIsDragging] = React.useState(false);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+            onImportProfile(parsed);
+        } catch (err) {
+            alert("Ungültiges KI-Profil-Format (JSON erwartet).");
+        }
+        
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    const handleDrop = async (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        const file = e.dataTransfer.files?.[0];
+        if (!file) return;
+
+        try {
+            const text = await file.text();
+            const parsed = JSON.parse(text);
+            onImportProfile(parsed);
+        } catch (err) {
+            alert("Ungültiges KI-Profil-Format.");
+        }
+    };
+
+    return (
+        <div 
+            className={`flex-1 flex flex-col overflow-hidden relative transition-all duration-200 ${isDragging ? 'bg-indigo-50/80 ring-2 ring-inset ring-indigo-500' : ''}`}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+        >
+            {isDragging && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-indigo-50/80 backdrop-blur-sm border-2 border-dashed border-indigo-500 rounded-2xl m-2 pointer-events-none">
+                    <div className="flex flex-col items-center text-indigo-600 font-bold gap-2">
+                        <RefreshCcw size={32} className="animate-spin-slow" />
+                        <p>KI-Profil hier loslassen!</p>
+                    </div>
+                </div>
+            )}
+            <div className="p-4 border-b border-slate-100 space-y-2">
+                <Button onClick={onStartNew} className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md gap-2">
+                    <PlusCircle size={18} /> Neues Profil
+                </Button>
+                <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full h-10 border-dashed border-indigo-200 text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 gap-2">
+                    <RefreshCcw size={16} /> KI-Profil importieren
+                </Button>
+                <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleFileChange} 
+                    accept=".json" 
+                    className="hidden" 
+                />
+            </div>
+            <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-6 pt-4">
+                {/* User Profiles */}
+                {profiles.filter(p => !p.isSystem).length > 0 && (
+                    <div className="space-y-2">
+                        <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">Eigene Profile</label>
+                        {profiles.filter(p => !p.isSystem).map(p => (
+                            <div
+                                key={p.id}
+                                onClick={() => onSelectProfile(p)}
+                                className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
+                            >
+                                <div className="flex items-center gap-3 flex-1 min-w-0">
+                                    <SlidersHorizontal size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
+                                    {editingProfileId === p.id ? (
+                                        <Input 
+                                            autoFocus value={editingName} onChange={(e) => setEditingName(e.target.value)}
+                                            className="h-8 text-xs font-bold border-indigo-200" onClick={(e) => e.stopPropagation()}
+                                            onBlur={onConfirmRename} onKeyDown={(e) => e.key === 'Enter' && onConfirmRename()}
+                                        />
+                                    ) : (
+                                        <span className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'} group-hover:pr-[80px]`}>{p.name}</span>
+                                    )}
+                                </div>
+                                
+                                <FloatingActions className="-top-2 -right-2">
+                                    {editingProfileId === p.id ? (
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
+                                            <Check size={14} />
+                                        </Button>
+                                    ) : (
+                                        <>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                title="Profil kopieren"
+                                                className="h-8 w-8 text-slate-600 hover:text-indigo-600 transition-colors"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    onSelectProfile(p);
+                                                    onStartNew();
+                                                }}
+                                            >
+                                                <PlusCircle size={14} />
+                                            </Button>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                className="h-8 w-8 text-slate-600 hover:text-indigo-600 transition-colors" 
+                                                onClick={(e) => onExportProfile(p, e)} 
+                                                title="Profil exportieren (.json)"
+                                            >
+                                                <Download size={14} />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => onStartRename(e, p)} title="Umbenennen">
+                                                <Pencil size={14} />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:text-red-500 transition-colors" onClick={(e) => onDeleteProfile(p.id, e)} title="Löschen">
+                                                <Trash2 size={14} />
+                                            </Button>
+                                        </>
+                                    )}
+                                </FloatingActions>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                {/* System Templates */}
                 <div className="space-y-2">
-                    <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">Eigene Profile</label>
-                    {profiles.filter(p => !p.isSystem).map(p => (
+                    <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">System-Vorlagen</label>
+                    {profiles.filter(p => p.isSystem).map(p => (
                         <div
-                            key={p.id}
+                            key={p.name}
                             onClick={() => onSelectProfile(p)}
-                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
+                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
                         >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                                 <SlidersHorizontal size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
-                                {editingProfileId === p.id ? (
-                                    <Input 
-                                        autoFocus value={editingName} onChange={(e) => setEditingName(e.target.value)}
-                                        className="h-8 text-xs font-bold border-indigo-200" onClick={(e) => e.stopPropagation()}
-                                        onBlur={onConfirmRename} onKeyDown={(e) => e.key === 'Enter' && onConfirmRename()}
-                                    />
-                                ) : (
-                                    <span className={`text-xs md:text-sm font-bold truncate ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}>{p.name}</span>
-                                )}
+                                <span className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'} group-hover:pr-[40px]`}>{p.name}</span>
                             </div>
-                            <div className="flex items-center gap-1 shrink-0">
-                                {editingProfileId === p.id ? (
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
-                                        <Check size={14} />
-                                    </Button>
-                                ) : (
-                                    <>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-indigo-600 transition-opacity" onClick={(e) => onStartRename(e, p)}>
-                                            <Pencil size={14} />
-                                        </Button>
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity" onClick={(e) => onDeleteProfile(p.id, e)}>
-                                            <Trash2 size={14} />
-                                        </Button>
-                                    </>
-                                )}
-                            </div>
+                            <FloatingActions className="-top-2 -right-2">
+                                <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    title="Als Vorlage verwenden (Kopieren)"
+                                    className="h-8 w-8 text-slate-600 hover:text-indigo-600 transition-colors"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onSelectProfile(p);
+                                        onStartNew();
+                                    }}
+                                >
+                                    <PlusCircle size={14} />
+                                </Button>
+                            </FloatingActions>
                         </div>
                     ))}
                 </div>
-            )}
-            {/* System Templates */}
-            <div className="space-y-2">
-                <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">System-Vorlagen</label>
-                {profiles.filter(p => p.isSystem).map(p => (
-                    <div
-                        key={p.name}
-                        onClick={() => onSelectProfile(p)}
-                        className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
-                    >
-                        <div className="flex items-center gap-3">
-                            <SlidersHorizontal size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
-                            <span className={`text-xs md:text-sm font-bold ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'}`}>{p.name}</span>
-                        </div>
-                    </div>
-                ))}
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 interface EditorProps {
     isCreatingNew: boolean;
@@ -171,7 +287,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
 
     return (
         <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 overflow-y-auto p-4 sm:p-8">
-            <div className="flex justify-between items-end gap-6">
+            <div className="flex justify-between items-center gap-6">
                 <div className="flex-1 space-y-2">
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
                         {isCreatingNew ? 'Name für neues KI-Profil' : 'Gewähltes KI-Profil'}
@@ -182,18 +298,34 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             placeholder="z.B. Kalt & Präzise" className="text-lg sm:text-xl font-black border-indigo-200 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
                         />
                     ) : (
-                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-3">
+                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-3 truncate">
                             {selectedProfile}
                             {isSystemSelected && <Badge variant="outline" className="text-[7px] sm:text-[10px] bg-slate-100 text-slate-500 px-3 py-1 rounded-full border-transparent">SYSTEM</Badge>}
                         </h3>
                     )}
                 </div>
-                {isDirty && !isCreatingNew && !isSystemSelected && (
-                    <div className="flex items-center gap-2 text-amber-500 animate-pulse pb-2 shrink-0">
-                        <RefreshCcw size={16} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Ungespeichertes</span>
-                    </div>
-                )}
+                <div className="flex items-center gap-2 shrink-0">
+                    {isDirty && !isCreatingNew && !isSystemSelected && (
+                        <div className="flex items-center gap-2 text-amber-500 animate-pulse px-2 hidden sm:flex">
+                            <RefreshCcw size={14} />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Ungespeichert</span>
+                        </div>
+                    )}
+                    {!isSystemSelected && (
+                        <Button 
+                            onClick={onSaveToDB} 
+                            disabled={!isDirty || saving}
+                            className="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-black uppercase rounded-full flex items-center gap-1.5 shadow-md shadow-indigo-100 transition-all border-0"
+                        >
+                            {saving ? (
+                                <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
+                            ) : (
+                                <Save size={14} />
+                            )}
+                            Speichern
+                        </Button>
+                    )}
+                </div>
             </div>
 
             {/* Tabs Navigation */}
@@ -230,18 +362,6 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                     <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
                         <SlidersHorizontal size={18} className="text-indigo-600" /> Parameter-Feintuning
                     </label>
-                    <div className="flex gap-2">
-                        {!isSystemSelected && (
-                            <Button variant="outline" size="sm" disabled={!isDirty || saving} onClick={onSaveToDB} className={`h-8 sm:h-9 rounded-full text-[10px] font-black uppercase gap-2 px-3 sm:px-4 ${isDirty ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse' : 'border-slate-100 text-slate-300'}`}>
-                                <Save size={14} /> Speichern
-                            </Button>
-                        )}
-                        {!isCreatingNew && (
-                            <Button variant="outline" size="sm" onClick={onStartNew} className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border-indigo-100 text-indigo-600 gap-2 px-3 sm:px-4">
-                                <PlusCircle size={14} /> Kopieren
-                            </Button>
-                        )}
-                    </div>
                 </div>
 
                 <div className="space-y-6 overflow-y-auto pr-1">

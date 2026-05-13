@@ -1,13 +1,16 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sparkles, Sliders, Save, CheckCircle, ArrowRight, Bot, ShieldCheck, AlertCircle, Trash2, Check, HelpCircle, BookOpen, Upload, Download } from 'lucide-react';
+import { X, Sparkles, Sliders, Save, CheckCircle, ArrowRight, Bot, ShieldCheck, AlertCircle, Trash2, Check, HelpCircle, BookOpen, Upload, Download, PlusCircle, Pencil } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { FloatingActions } from '../ui/FloatingActions';
 import { AppSettings, GradingMemory, GradingMemoryCase, Task } from '../../types';
 import { useGradingMemories } from '../../hooks/useGradingMemories';
 import { isDesktopTarget } from '../../lib/env-context';
 import { apiClient } from '../../lib/api-client';
 import { downloadFile } from '../../lib/file-utils';
 import { exportGradingMemoryToMarkdown, parseMarkdownGradingMemory } from '../../lib/parsers/markdown-grading-memory-parser';
+import { cn } from '../../lib/utils';
 
 interface GradingMemoryModalProps {
     isOpen: boolean;
@@ -48,6 +51,8 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
     
     const [memories, setMemories] = useState<GradingMemory[]>([]);
     const [editingActiveName, setEditingActiveName] = useState('');
+    const [editingMemoryId, setEditingMemoryId] = useState<string | null>(null);
+    const [editingName, setEditingName] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -167,8 +172,8 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
         }
     };
 
-    const handleRenameActiveMemory = async () => {
-        if (!activeMemoryId || !editingActiveName.trim()) return;
+    const handleConfirmRename = async () => {
+        if (!editingMemoryId || !editingName.trim()) return;
         
         try {
             if (isDesktopTarget()) {
@@ -176,24 +181,24 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                 if (stored) {
                     let list = JSON.parse(stored);
                     list = list.map((m: any) => 
-                        m.id === activeMemoryId ? { ...m, name: editingActiveName } : m
+                        m.id === editingMemoryId ? { ...m, name: editingName } : m
                     );
                     localStorage.setItem('koreki_local_grading_memories', JSON.stringify(list));
                     refreshMemories();
-                    alert("Erfahrungsschatz erfolgreich umbenannt!");
+                    setEditingMemoryId(null);
                 }
             } else {
                 const response = await apiClient.fetch('/api/user/grading-memories', {
                     method: 'PATCH',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        id: activeMemoryId,
-                        newName: editingActiveName
+                        id: editingMemoryId,
+                        newName: editingName
                     })
                 });
                 if (response.ok) {
                     refreshMemories();
-                    alert("Erfahrungsschatz erfolgreich umbenannt!");
+                    setEditingMemoryId(null);
                 } else {
                     throw new Error("Fehler beim Umbenennen im Backend.");
                 }
@@ -481,30 +486,30 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                         <div className="flex-1 flex flex-col md:flex-row gap-6 overflow-hidden">
                             
                             {/* Left Column: List of available memories */}
-                            <div className="w-full md:w-1/2 flex flex-col border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 md:pr-6 overflow-hidden">
-                                <div className="flex items-center justify-between mb-3 shrink-0">
-                                    <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                                        <Sliders size={14} className="text-indigo-500" />
-                                        Gespeicherte Erfahrungsschätze
-                                    </h3>
-                                    <button 
-                                        onClick={handleImportClick}
-                                        className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 hover:text-indigo-800 flex items-center gap-1 bg-indigo-50 hover:bg-indigo-100/80 px-2.5 py-1 rounded-lg border border-indigo-150 transition-colors"
-                                        title="Erfahrungsschatz importieren (.md)"
+                            <div className="w-full md:w-1/3 flex flex-col border-b md:border-b-0 md:border-r border-slate-100 pb-6 md:pb-0 md:pr-6 overflow-hidden">
+                                <div className="p-4 border-b border-slate-100 space-y-2 relative z-10">
+                                    <Button 
+                                        onClick={() => selectMemory(null)} 
+                                        className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md gap-2"
                                     >
-                                        <Upload size={12} />
-                                        Importieren
-                                    </button>
+                                        <PlusCircle size={18} /> Neuer Erfahrungsschatz
+                                    </Button>
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef} 
+                                        onChange={handleImportFile} 
+                                        accept=".md" 
+                                        className="hidden" 
+                                    />
                                 </div>
-                                <input 
-                                    type="file" 
-                                    ref={fileInputRef} 
-                                    onChange={handleImportFile} 
-                                    accept=".md" 
-                                    className="hidden" 
-                                />
 
-                                <div className="flex-1 overflow-y-auto pr-1 space-y-2.5 custom-scrollbar min-h-[150px]">
+                                <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-6 pt-4 custom-scrollbar min-h-[150px]">
+                                    <div className="space-y-2">
+                                        <h3 className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2 flex items-center gap-2 mb-2">
+                                            <Sliders size={14} className="text-indigo-500" />
+                                            Gespeicherte Erfahrungsschätze
+                                        </h3>
+                                    </div>
                                     {/* Default None Option */}
                                     <div 
                                         onClick={() => selectMemory(null)}
@@ -521,43 +526,90 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                                         <div 
                                             key={m.id}
                                             onClick={() => selectMemory(m.id || null)}
-                                            className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center cursor-pointer group ${activeMemoryId === m.id ? 'bg-indigo-50/40 border-indigo-200 text-indigo-900 shadow-sm' : 'bg-slate-50/40 border-transparent hover:bg-slate-100/60 text-slate-700'}`}
+                                            className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${activeMemoryId === m.id ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
                                         >
-                                            <div className="flex flex-col min-w-0 pr-4">
-                                                <span className="text-xs font-extrabold truncate">{m.name}</span>
+                                            <div className="flex flex-col min-w-0 flex-1">
+                                                <span className={`text-xs font-extrabold truncate transition-all duration-300 ${activeMemoryId === m.id ? 'text-indigo-900' : 'text-slate-700'} group-hover:pr-[120px]`}>
+                                                    {editingMemoryId === m.id ? (
+                                                        <Input 
+                                                            autoFocus 
+                                                            value={editingName} 
+                                                            onChange={(e) => setEditingName(e.target.value)}
+                                                            className="h-7 text-xs font-bold border-indigo-200" 
+                                                            onClick={(e) => e.stopPropagation()}
+                                                            onBlur={handleConfirmRename} 
+                                                            onKeyDown={(e) => e.key === 'Enter' && handleConfirmRename()}
+                                                        />
+                                                    ) : (
+                                                        m.name
+                                                    )}
+                                                </span>
                                                 <span className="text-[10px] text-slate-400 font-bold uppercase mt-1">
                                                     {m.cases?.length || 0} Fallbeispiele (Few-Shot)
                                                 </span>
+
                                             </div>
-                                            <div className="flex items-center gap-1.5 shrink-0">
-                                                {activeMemoryId === m.id && (
-                                                    <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full border border-indigo-200">
-                                                        Aktiv
-                                                    </span>
-                                                )}
-                                                <button 
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleExportMemory(m);
-                                                    }}
-                                                    className="p-1.5 hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 rounded-lg transition-colors opacity-60 hover:opacity-100"
-                                                    title="Als .md exportieren"
-                                                >
-                                                    <Download size={13} />
-                                                </button>
-                                                <button 
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        deleteMemory(m.id!);
-                                                    }}
-                                                    className="p-1.5 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded-lg transition-colors opacity-60 hover:opacity-100"
-                                                    title="Löschen"
-                                                >
-                                                    <Trash2 size={13} />
-                                                </button>
+                                            <FloatingActions className="-top-2 -right-2">
+                                                    {editingMemoryId === m.id ? (
+                                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-indigo-600" onClick={(e) => { e.stopPropagation(); handleConfirmRename(); }}>
+                                                            <Check size={14} />
+                                                        </Button>
+                                                    ) : (
+                                                        <>
+                                                            <Button 
+                                                                variant="ghost" 
+                                                                size="icon" 
+                                                                title="Erfahrungsschatz kopieren"
+                                                                className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const newMemory: GradingMemory = {
+                                                                        ...m,
+                                                                        id: `local-grading-memory-${Date.now()}`,
+                                                                        name: `Kopie von ${m.name}`,
+                                                                        createdAt: new Date().toISOString()
+                                                                    };
+                                                                    addLocalMemory(newMemory);
+                                                                }}
+                                                            >
+                                                                <PlusCircle size={14} />
+                                                            </Button>
+                                                            <button 
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleExportMemory(m);
+                                                                }}
+                                                                className="p-1.5 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-lg transition-colors"
+                                                                title="Als .md exportieren"
+                                                            >
+                                                                <Download size={14} />
+                                                            </button>
+                                                            <button 
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setEditingMemoryId(m.id || null);
+                                                                    setEditingName(m.name);
+                                                                }}
+                                                                className="p-1.5 hover:bg-indigo-50 text-slate-600 hover:text-indigo-600 rounded-lg transition-colors"
+                                                                title="Umbenennen"
+                                                            >
+                                                                <Pencil size={14} />
+                                                            </button>
+                                                            <button 
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    deleteMemory(m.id!);
+                                                                }}
+                                                                className="p-1.5 hover:bg-rose-50 text-slate-600 hover:text-rose-600 rounded-lg transition-colors"
+                                                                title="Löschen"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </FloatingActions>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
 
                                     {memories.length === 0 && (
                                         <div className="text-center py-6 text-slate-400 border border-dashed border-slate-150 rounded-2xl text-xs font-semibold">
@@ -576,37 +628,40 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                                              <div className="flex items-center gap-2">
                                                  <Sliders size={16} className="text-indigo-600" />
                                                  <h3 className="text-sm font-black uppercase tracking-wider text-slate-800 font-outfit">
-                                                     Erfahrungsschatz verwalten & editieren
+                                                     Verwalten & Editieren
                                                  </h3>
                                              </div>
-                                             <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full">
-                                                 Aktiviert
-                                             </span>
+                                             <div className="flex items-center gap-2">
+                                                <Button 
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={handleImportClick}
+                                                    className="h-8 rounded-full text-[10px] font-black uppercase text-indigo-600 hover:bg-indigo-50 transition-all flex items-center gap-1.5"
+                                                >
+                                                    <Upload size={14} /> Import
+                                                </Button>
+                                                <Button 
+                                                     onClick={handleSaveActiveMemoryChanges}
+                                                     disabled={isSaving}
+                                                     className={cn(
+                                                         "h-9 px-4 text-[10px] font-black uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0",
+                                                         true 
+                                                             ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100" 
+                                                             : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+                                                     )}
+                                                 >
+                                                     {isSaving ? (
+                                                         <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
+                                                     ) : (
+                                                         <Save size={14} />
+                                                     )}
+                                                     Speichern
+                                                 </Button>
+                                             </div>
                                          </div>
  
                                          {/* Scrollable inputs section */}
                                          <div className="flex-1 overflow-y-auto pr-1 space-y-5 custom-scrollbar min-h-0">
-                                             {/* Rename Chest input */}
-                                             <div className="bg-slate-50/50 border border-slate-150 p-4 rounded-xl space-y-2">
-                                                 <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                                     Name des Erfahrungsschatzes:
-                                                 </label>
-                                                 <div className="flex gap-2">
-                                                     <input 
-                                                         type="text"
-                                                         value={editingActiveName}
-                                                         onChange={e => setEditingActiveName(e.target.value)}
-                                                         className="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-bold text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all shadow-sm"
-                                                     />
-                                                     <Button 
-                                                         onClick={handleRenameActiveMemory}
-                                                         className="px-4 py-2 h-9 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-extrabold rounded-lg border border-slate-300 shadow-sm shrink-0"
-                                                     >
-                                                         Umbenennen
-                                                     </Button>
-                                                 </div>
-                                             </div>
- 
                                              {/* List of Cases to view/edit */}
                                              <div className="space-y-3.5">
                                                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
@@ -679,26 +734,19 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                                              </div>
                                          </div>
  
-                                         <div className="flex flex-col sm:flex-row gap-3 pt-3 mt-3 border-t border-slate-150 shrink-0 bg-white">
-                                             <Button 
-                                                 onClick={handleSaveActiveMemoryChanges}
-                                                 disabled={isSaving}
-                                                 className="flex-1 py-2.5 h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-lg flex items-center justify-center gap-1.5 shadow-md shadow-indigo-100/50 text-xs transition-all border-0"
-                                             >
-                                                 {isSaving ? (
-                                                     <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
-                                                 ) : (
-                                                     <Save size={14} />
-                                                 )}
-                                                 Änderungen speichern
-                                             </Button>
- 
-                                             <Button 
-                                                 onClick={() => selectMemory(null)}
-                                                 className="py-2.5 h-10 bg-white hover:bg-slate-50 text-slate-600 font-extrabold rounded-lg border border-slate-200 shadow-sm text-xs transition-all"
-                                             >
-                                                 Neuen kalibrieren
-                                             </Button>
+                                         {/* Footer Action Bar */}
+                                         <div className="px-4 sm:px-8 py-4 sm:py-6 bg-white border-t border-slate-100 flex justify-end items-center shrink-0 mt-auto">
+                                             <div className="flex gap-2 sm:gap-4 w-full sm:w-auto">
+                                                 <Button variant="ghost" onClick={onClose} className="flex-1 sm:flex-none px-4 sm:px-6 h-10 sm:h-12 font-bold text-slate-400 hover:text-slate-900">
+                                                     Abbrechen
+                                                 </Button>
+                                                 <Button
+                                                     onClick={onClose}
+                                                     className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl sm:rounded-2xl shadow-xl shadow-indigo-100 transition-all"
+                                                 >
+                                                     Zuweisen
+                                                 </Button>
+                                             </div>
                                          </div>
                                      </div>
                                  ) : (

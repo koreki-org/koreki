@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/Badge';
 import { FloatingActions } from '@/components/ui/FloatingActions';
+import { cn } from '@/lib/utils';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
 import { downloadFile } from '@/lib/file-utils';
 
@@ -146,10 +147,10 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
                                         </Button>
                                     ) : (
                                         <>
-                                            <Button variant="ghost" size="icon" title="Profil kopieren" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onStartNew(p.correctionPrompt || p.prompt, `Kopie von ${p.name}`); }}>
+                                            <Button variant="ghost" size="icon" title="Profil kopieren" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onStartNew(p.correctionPrompt || p.prompt, `Kopie von ${p.name}`); }}>
                                                 <PlusCircle size={14} />
                                             </Button>
-                                            <Button variant="ghost" size="icon" title="Profil exportieren" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" onClick={(e) => { 
+                                            <Button variant="ghost" size="icon" title="Profil exportieren" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => { 
                                                 e.stopPropagation(); 
                                                 const markdown = `---
 name: "${p.name}"
@@ -162,10 +163,10 @@ ${p.correctionPrompt || p.prompt}`;
                                             }}>
                                                 <Download size={14} />
                                             </Button>
-                                            <Button variant="ghost" size="icon" title="Umbenennen" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" onClick={(e) => onStartRename(e, p)}>
+                                            <Button variant="ghost" size="icon" title="Umbenennen" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => onStartRename(e, p)}>
                                                 <Pencil size={14} />
                                             </Button>
-                                            <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-400 hover:text-red-500 transition-colors" onClick={(e) => onDeleteProfile(p.id, e)}>
+                                            <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-600 hover:text-red-500 transition-colors" onClick={(e) => onDeleteProfile(p.id, e)}>
                                                 <Trash2 size={14} />
                                             </Button>
                                         </>
@@ -200,7 +201,7 @@ ${p.correctionPrompt || p.prompt}`;
                                     variant="ghost" 
                                     size="icon" 
                                     title="Profil kopieren"
-                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" 
+                                    className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" 
                                     onClick={(e) => { e.stopPropagation(); onStartNew(p.correctionPrompt || p.prompt, `Kopie von ${p.name}`); }}
                                 >
                                     <PlusCircle size={14} />
@@ -209,7 +210,7 @@ ${p.correctionPrompt || p.prompt}`;
                                     variant="ghost" 
                                     size="icon" 
                                     title="Profil exportieren"
-                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" 
+                                    className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" 
                                     onClick={(e) => { 
                                         e.stopPropagation(); 
                                         const markdown = `---
@@ -333,13 +334,21 @@ ${correctionPrompt}`;
                 <div className="flex gap-2">
                     {!isSystemSelected && (
                         <Button 
-                            variant="outline" 
-                            size="sm" 
-                            disabled={!isDirty || saving} 
-                            onClick={onSaveToDB} 
-                            className={`h-9 rounded-full text-[10px] font-black uppercase gap-2 px-4 shadow-sm transition-all ${isDirty ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse' : 'border-slate-100 text-slate-300'}`}
+                            onClick={onSaveToDB}
+                            disabled={saving || !isDirty}
+                            className={cn(
+                                "h-9 px-4 text-[10px] font-black uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0",
+                                isDirty 
+                                    ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100" 
+                                    : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+                            )}
                         >
-                            <Save size={14} /> Speichern
+                            {saving ? (
+                                <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
+                            ) : (
+                                <Save size={14} />
+                            )}
+                            Speichern
                         </Button>
                     )}
                 </div>
