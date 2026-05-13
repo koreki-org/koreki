@@ -236,7 +236,7 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
 
     const handleSaveCustomSkillClick = () => {
         if (!editingSkillData.name.trim()) {
-            alert("Bitte gib einen Namen für die Kompetenz ein.");
+            alert("Bitte gib einen Namen für den Skill ein.");
             return;
         }
         if (!editingSkillData.promptSnippet.trim()) {
@@ -318,7 +318,7 @@ skills: ${skillsYamlArray}
 ---
 
 # Modular AI Grading Skills
-Dieses Dokument enthält die deklarierten Bewertungskompetenzen für die automatisierte Koreki-Prüfungskorrektur.
+Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automatisierte Koreki-Prüfungskorrektur.
 `;
         const filename = `${safeName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_skills.md`;
         try {
@@ -370,7 +370,7 @@ Dieses Dokument enthält die deklarierten Bewertungskompetenzen für die automat
             {/* Middle Controls */}
             <div className="flex justify-between items-center border-b border-slate-100 pb-3 shrink-0">
                 <span className="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-2">
-                    <Sparkles size={16} className="text-indigo-500" /> Kompetenzen konfigurieren
+                    <Sparkles size={16} className="text-indigo-500" /> Skills konfigurieren
                 </span>
                 <div className="flex gap-2 items-center">
                     <Button 
@@ -379,7 +379,7 @@ Dieses Dokument enthält die deklarierten Bewertungskompetenzen für die automat
                         onClick={handleCreateSkillClick}
                         className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-2 px-3 sm:px-4 transition-all"
                     >
-                        <PlusCircle size={14} /> Eigene Kompetenz
+                        <PlusCircle size={14} /> Eigener Skill
                     </Button>
                     {!isCreatingNew && (
                         <>
@@ -465,7 +465,30 @@ Dieses Dokument enthält die deklarierten Bewertungskompetenzen für die automat
                                                 <Button 
                                                     variant="ghost" 
                                                     size="icon" 
-                                                    title="Kompetenz kopieren"
+                                                    title="Skill als .md exportieren"
+                                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100/80" 
+                                                    onClick={() => {
+                                                        const markdown = `---
+name: "${skill.name}"
+description: "${skill.description || ''}"
+category: "${skill.category || 'math-science'}"
+type: "skill"
+version: "1.0.0"
+---
+
+${skill.promptSnippet || ''}
+`;
+                                                        const filename = `${skill.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_skill.md`;
+                                                        downloadFile(markdown, filename, 'text/markdown;charset=utf-8').catch(() => alert('Export fehlgeschlagen.'));
+                                                    }}
+                                                >
+                                                    <Download size={12} />
+                                                </Button>
+
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    title="Skill kopieren"
                                                     className="h-7 w-7 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100/80" 
                                                     onClick={() => {
                                                         setEditingSkillData({
@@ -508,13 +531,13 @@ Dieses Dokument enthält die deklarierten Bewertungskompetenzen für die automat
                         <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                             <h3 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
                                 <Sparkles className="text-indigo-500 animate-pulse" size={20} />
-                                {editingSkillData.id ? 'Eigene Kompetenz bearbeiten' : 'Eigene Kompetenz erstellen'}
+                                {editingSkillData.id ? 'Eigenen Skill bearbeiten' : 'Eigenen Skill erstellen'}
                             </h3>
                         </div>
                         
                         <div className="space-y-4 flex-1 overflow-y-auto pr-1 pb-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Name der Kompetenz</label>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Name des Skills</label>
                                 <Input 
                                     value={editingSkillData.name}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, name: e.target.value })}
