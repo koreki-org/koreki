@@ -3,6 +3,7 @@ import { Wrench, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Download, Sparkl
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
+import { FloatingActions } from '@/components/ui/FloatingActions';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
 import { downloadFile } from '@/lib/file-utils';
 import { STANDARD_SKILLS, GradingSkill } from '@/lib/ai/standard-skills';
@@ -137,29 +138,29 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                         </span>
                                     )}
 
-                                    {/* Action Overlay on Hover - Koreki Premium Style */}
-                                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 p-1 bg-white shadow-xl border border-slate-100 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100 z-10" onClick={(e) => e.stopPropagation()}>
+                                    {/* Unified Floating Actions - Custom Profiles */}
+                                    <FloatingActions className="-top-2 -right-2">
                                         {editingProfileId === p.id ? (
                                             <Button variant="ghost" size="icon" className="h-7 w-7 text-indigo-600" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
                                                 <Check size={14} />
                                             </Button>
                                         ) : (
                                             <>
-                                                <Button variant="ghost" size="icon" title="Skill-Set kopieren" className="h-7 w-7 hover:text-indigo-600" onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}>
+                                                <Button variant="ghost" size="icon" title="Skill-Set kopieren" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}>
                                                     <PlusCircle size={14} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" title="Skill-Set exportieren" className="h-7 w-7 hover:text-indigo-600" onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}>
+                                                <Button variant="ghost" size="icon" title="Skill-Set exportieren" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}>
                                                     <Download size={14} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 hover:text-indigo-600" onClick={(e) => onStartRename(e, p)}>
+                                                <Button variant="ghost" size="icon" title="Umbenennen" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" onClick={(e) => onStartRename(e, p)}>
                                                     <Pencil size={14} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 hover:text-red-500" onClick={(e) => onDeleteProfile(p.id, e)}>
+                                                <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-400 hover:text-red-500 transition-colors" onClick={(e) => onDeleteProfile(p.id, e)}>
                                                     <Trash2 size={14} />
                                                 </Button>
                                             </>
                                         )}
-                                    </div>
+                                    </FloatingActions>
                                 </div>
                             </div>
                         ))}
@@ -184,13 +185,13 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                     {p.name}
                                 </span>
 
-                                {/* System Action Overlay */}
-                                <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1 p-1 bg-white shadow-xl border border-slate-100 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100 z-10" onClick={(e) => e.stopPropagation()}>
+                                {/* Unified Floating Actions - System Profiles */}
+                                <FloatingActions className="-top-2 -right-2">
                                     <Button 
                                         variant="ghost" 
                                         size="icon" 
                                         title="Skill-Set kopieren"
-                                        className="h-7 w-7 text-slate-400 hover:text-indigo-600" 
+                                        className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors" 
                                         onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}
                                     >
                                         <PlusCircle size={14} />
@@ -199,12 +200,12 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                         variant="ghost" 
                                         size="icon" 
                                         title="Skill-Set exportieren"
-                                        className="h-7 w-7 text-slate-400 hover:text-indigo-600"
+                                        className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors"
                                         onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}
                                     >
                                         <Download size={14} />
                                     </Button>
-                                </div>
+                                </FloatingActions>
                             </div>
                         </div>
                     ))}
@@ -504,21 +505,22 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                 )}
                                             </div>
 
-                                            <div className="absolute -top-2 -right-2 flex items-center gap-0.5 p-1.5 bg-white shadow-2xl shadow-indigo-200/50 border border-slate-100 rounded-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100 z-10" onClick={(e) => e.stopPropagation()}>
+                                            {/* Unified Floating Actions - Skill Cards */}
+                                            <FloatingActions className="-top-2 -right-2" onClick={(e) => e.stopPropagation()}>
                                                 <Button 
                                                     variant="ghost" 
                                                     size="icon" 
                                                     title="Skill kopieren"
-                                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100/80" 
+                                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" 
                                                     onClick={() => onStartNew([skill.id])}
                                                 >
-                                                    <PlusCircle size={12} />
+                                                    <PlusCircle size={14} />
                                                 </Button>
                                                 <Button 
                                                     variant="ghost" 
                                                     size="icon" 
                                                     title="Skill als .md exportieren"
-                                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100/80" 
+                                                    className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" 
                                                     onClick={() => {
                                                         const markdown = `---
 name: "${skill.name}"
@@ -532,20 +534,20 @@ ${skill.prompt || ''}`;
                                                         downloadFile(markdown, `${skill.name.toLowerCase().replace(/\s+/g, '_')}.md`, 'text/markdown');
                                                     }}
                                                 >
-                                                    <Download size={12} />
+                                                    <Download size={14} />
                                                 </Button>
 
                                                 {skill.isCustom && (
                                                     <>
-                                                        <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100/80" onClick={() => handleEditSkillClick(skill)}>
-                                                            <Pencil size={12} />
+                                                        <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-slate-400 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" onClick={() => handleEditSkillClick(skill)}>
+                                                            <Pencil size={14} />
                                                         </Button>
-                                                        <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-400 hover:text-red-500 rounded-lg hover:bg-slate-100/80" onClick={() => { if (confirm(`Möchtest du den Skill "${skill.name}" wirklich löschen?`)) onDeleteCustomSkill(skill.id); }}>
-                                                            <Trash2 size={12} />
+                                                        <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-400 hover:text-red-500 transition-colors rounded-lg hover:bg-slate-100/80" onClick={() => { if (confirm(`Möchtest du den Skill "${skill.name}" wirklich löschen?`)) onDeleteCustomSkill(skill.id); }}>
+                                                            <Trash2 size={14} />
                                                         </Button>
                                                     </>
                                                 )}
-                                            </div>
+                                            </FloatingActions>
                                         </div>
                                     );
                                 })}
