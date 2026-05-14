@@ -114,18 +114,20 @@ const Header: React.FC<HeaderProps> = ({
                                     </span>
                                 </div>
                             )}
-                            <div className="hidden sm:flex items-center px-3 py-1 bg-indigo-50/50 rounded-lg border border-indigo-100/50">
-                                <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest whitespace-nowrap">
-                                    {logic.getRoleLabel()}
-                                </span>
-                            </div>
+                            {!isLocalInstance() && (
+                                <div className="hidden sm:flex items-center px-3 py-1 bg-indigo-50/50 rounded-lg border border-indigo-100/50">
+                                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest whitespace-nowrap">
+                                        {logic.getRoleLabel()}
+                                    </span>
+                                </div>
+                            )}
                         </div>
                     )}
                     {/* Expert Prompt button removed from here, now in HeaderBadges island */}
                     <Button variant="outline" size="icon" onClick={onShowHelp} title="Hilfe & Infos" className="border-0 bg-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-900 rounded-xl transition-colors">
                         <HelpCircle size={18} />
                     </Button>
-                    {userData?.role === 'ADMIN' && (
+                    {(userData?.role === 'ADMIN' || isLocalInstance()) && (
                         <Button variant="outline" size="icon" onClick={onShowSettings} title="Einstellungen" className="border-0 bg-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-900 rounded-xl transition-colors">
                             <Settings size={18} />
                         </Button>
