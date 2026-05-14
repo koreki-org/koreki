@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { AppSettings } from '@/types';
 import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
-import { STANDARD_PROFILES } from '@/lib/ai/standard-profiles';
+import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
 
 /**
  * Industrial Prompt Profile Hook (Stage 18)
@@ -47,7 +47,13 @@ export const usePromptProfiles = (
             if (stored) {
                 try { customProfiles = JSON.parse(stored); } catch(e) {}
             }
-            const allProfiles = [...STANDARD_PROFILES, ...customProfiles];
+            const systemExperts = Object.values(EXPERT_REGISTRY).map(entry => ({
+                id: entry.metadata.id,
+                name: entry.metadata.name,
+                isSystem: true,
+                correctionPrompt: entry.promptSnippet
+            }));
+            const allProfiles = [...systemExperts, ...customProfiles];
             setProfiles(allProfiles);
             const current = allProfiles.find((p: any) => p.name === selectedProfile);
             if (current) setLastSavedPrompt(current.correctionPrompt);
@@ -245,7 +251,7 @@ export const usePromptProfiles = (
                 await fetchProfiles();
                 if (selectedProfileData?.id === id) {
                     setSelectedProfile('Standard');
-                    const standard = profiles.find(p => p.name === 'Standard') || STANDARD_PROFILES[0];
+                    const standard = profiles.find(p => p.name === 'Standard') || Object.values(EXPERT_REGISTRY)[0].promptSnippet;
                     if (standard) {
                         setCorrectionPrompt(standard.correctionPrompt);
                         setLastSavedPrompt(standard.correctionPrompt);

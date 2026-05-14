@@ -96,12 +96,12 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
                 </div>
             </div>
         )}
-        <div className="p-4 border-b border-slate-100 space-y-2 relative z-10">
+        <div className="p-4 border-b border-slate-100 space-y-2 relative z-10 shrink-0">
             <Button onClick={() => onStartNew()} className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md gap-2">
-                <PlusCircle size={18} /> Neues Profil
+                <PlusCircle size={18} /> Neues Experten-Profil
             </Button>
             <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full h-10 border-dashed border-indigo-200 text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 gap-2">
-                <RefreshCcw size={16} /> .md Profil Importieren
+                <RefreshCcw size={16} /> .md Experten-Profil Importieren
             </Button>
             <input 
                 type="file" 
@@ -115,7 +115,7 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
             {/* User Profiles */}
             {profiles.filter(p => !p.isSystem).length > 0 && (
                 <div className="space-y-2">
-                    <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">Eigene Profile</label>
+                    <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">Eigene Experten-Profile</label>
                     {profiles.filter(p => !p.isSystem).map(p => (
                         <div
                             key={p.id}
@@ -179,7 +179,7 @@ ${p.correctionPrompt || p.prompt}`;
             )}
             {/* System Templates */}
             <div className="space-y-2">
-                <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">System-Vorlagen</label>
+                <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">Standard-Experten-Profile</label>
                 {profiles.filter(p => p.isSystem).map(p => (
                     <div
                         key={p.name}
@@ -281,7 +281,7 @@ ${correctionPrompt}`;
         <div className="flex justify-between items-end gap-6">
             <div className="flex-1 space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    {isCreatingNew ? 'Name für neues Profil' : 'Gewähltes Profil'}
+                    {isCreatingNew ? 'Name des neuen Experten-Profils' : 'Gewähltes Experten-Profil'}
                 </label>
                 {isCreatingNew ? (
                     <Input

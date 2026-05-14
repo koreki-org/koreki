@@ -3,7 +3,7 @@ import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
 import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
-import { STANDARD_PROFILES } from '@/lib/ai/standard-profiles';
+import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
 
 /**
  * Prompt Profile Governance Hook (Industrial Standard)
@@ -37,7 +37,13 @@ export const usePromptGovernance = (
                 if (stored) {
                     try { customProfiles = JSON.parse(stored); } catch (e) { /* noop */ }
                 }
-                const allProfiles = [...STANDARD_PROFILES, ...customProfiles];
+                const systemExperts = Object.values(EXPERT_REGISTRY).map(entry => ({
+                    id: entry.metadata.id,
+                    name: entry.metadata.name,
+                    isSystem: true,
+                    correctionPrompt: entry.promptSnippet
+                }));
+                const allProfiles = [...systemExperts, ...customProfiles];
                 setProfiles(allProfiles);
 
                 const activePromptId = localStorage.getItem('koreki_active_prompt_profile_id');
@@ -64,11 +70,11 @@ export const usePromptGovernance = (
                 if (standard) {
                     setSessionProfileName('Standard');
                     setSettings(prev => {
-                        if (prev.correctionPrompt === standard.correctionPrompt && prev.activePromptProfileId === 'system-standard') return prev;
+                        if (prev.correctionPrompt === standard.correctionPrompt && prev.activePromptProfileId === 'id-standard') return prev;
                         return {
                             ...prev,
                             correctionPrompt: standard.correctionPrompt,
-                            activePromptProfileId: 'system-standard'
+                            activePromptProfileId: 'id-standard'
                         };
                     });
                 }
@@ -82,7 +88,14 @@ export const usePromptGovernance = (
                 || (typeof window !== 'undefined' ? localStorage.getItem('koreki_active_prompt_profile_id') : null);
 
             if (activePromptId) {
-                const standardProfile = STANDARD_PROFILES.find(
+                const systemExperts = Object.values(EXPERT_REGISTRY).map(entry => ({
+                    id: entry.metadata.id,
+                    name: entry.metadata.name,
+                    isSystem: true,
+                    correctionPrompt: entry.promptSnippet
+                }));
+
+                const standardProfile = systemExperts.find(
                     (p: any) => p.id === activePromptId || p.name === activePromptId
                 );
                 if (standardProfile) {

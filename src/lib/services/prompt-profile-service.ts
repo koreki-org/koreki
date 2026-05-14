@@ -1,5 +1,5 @@
 import prisma from '../prisma';
-import { STANDARD_PROFILES } from '../ai/standard-profiles';
+import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
 
 /**
  * Industrial Prompt Profile Service (Stage 16)
@@ -9,11 +9,16 @@ import { STANDARD_PROFILES } from '../ai/standard-profiles';
  */
 export const PromptProfileService = {
     /**
-     * Returns the hardcoded system default profiles.
+     * Returns the system default profiles from the Markdown library.
      * These are the "factory settings" for different subjects.
      */
     getSystemDefaults() {
-        return STANDARD_PROFILES;
+        return Object.values(EXPERT_REGISTRY).map(entry => ({
+            id: entry.metadata.id,
+            name: entry.metadata.name,
+            isSystem: true,
+            correctionPrompt: entry.promptSnippet
+        }));
     },
 
     /**

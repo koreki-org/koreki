@@ -27,7 +27,7 @@ describe('PromptProfileService 🧪🏮🛡️', () => {
         it('should return exactly 7 subject-specific profiles', () => {
             const defaults = PromptProfileService.getSystemDefaults();
             expect(defaults.length).toBe(7);
-            expect(defaults.map(p => p.name)).toContain('Informatik');
+            expect(defaults.map(p => p.name)).toContain('Fachlehrer Informatik');
             expect(defaults.every(p => p.isSystem)).toBe(true);
         });
     });

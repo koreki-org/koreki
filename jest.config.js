@@ -22,7 +22,9 @@ const customJestConfig = {
         '^@/(.*)$': '<rootDir>/src/$1',
         '^@/components/(.*)$': '<rootDir>/components/$1',
         '^@/pages/(.*)$': '<rootDir>/pages/$1',
-        '\\.md$': '<rootDir>/tests/unit/__mocks__/markdownMock.js',
+    },
+    transform: {
+        '\\.md$': '<rootDir>/tests/unit/__mocks__/markdownTransformer.js',
     },
     collectCoverageFrom: [
         'src/lib/**/*.{ts,tsx}',

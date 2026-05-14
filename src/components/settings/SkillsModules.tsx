@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { FloatingActions } from '@/components/ui/FloatingActions';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
 import { downloadFile } from '@/lib/file-utils';
-import { STANDARD_SKILLS, GradingSkill } from '@/lib/ai/standard-skills';
+import { SKILL_REGISTRY } from '@/prompts/skills';
 
 interface SkillsSidebarProps {
     profiles: any[];
@@ -232,7 +232,6 @@ interface SkillsEditorProps {
     onStartNew: (initialSkills?: string[]) => void;
     onImportParsedProfile: (parsed: any, isSingleSkill?: boolean) => void;
 }
-
 export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     isCreatingNew, selectedProfile, isSystemSelected, isDirty, saving, 
     newProfileName, activeSkillIds, setActiveSkillIds,
@@ -299,16 +298,23 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
         if (isSystemSelected && !isCreatingNew) return; // Prevent direct system profile modifications
 
         let nextIds = [...activeSkillIds];
-        const skill = STANDARD_SKILLS[skillId] || customSkills[skillId];
+        const skillEntry = SKILL_REGISTRY[skillId];
+        const skill = skillEntry ? { ...skillEntry.metadata, promptSnippet: skillEntry.promptSnippet } : customSkills[skillId];
+        
         if (!skill) return;
 
         if (activeSkillIds.includes(skillId)) {
             // UNCHECK
             nextIds = nextIds.filter(id => id !== skillId);
             // Also uncheck any other skills that require this specific skill!
-            const allSkillsList = [...Object.values(STANDARD_SKILLS), ...Object.values(customSkills)];
+            const allSkillsList = [
+                ...Object.values(SKILL_REGISTRY).map(s => s.metadata), 
+                ...Object.values(customSkills)
+            ];
             allSkillsList.forEach(s => {
-                if (s.requires?.includes(skillId)) {
+                const requires = s.requires || [];
+                const reqArray = typeof requires === 'string' ? requires.split(',').map((r: string) => r.trim()) : requires;
+                if (reqArray.includes(skillId)) {
                     nextIds = nextIds.filter(id => id !== s.id);
                 }
             });
@@ -316,19 +322,22 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
             // CHECK
             nextIds.push(skillId);
             // Auto-check requirements
-            if (skill.requires) {
-                skill.requires.forEach(reqId => {
-                    if (!nextIds.includes(reqId)) {
-                        nextIds.push(reqId);
-                    }
-                });
-            }
+            const requires = skill.requires || [];
+            const reqArray = typeof requires === 'string' ? requires.split(',').map((r: string) => r.trim()) : requires;
+            
+            reqArray.forEach((reqId: string) => {
+                if (!nextIds.includes(reqId)) {
+                    nextIds.push(reqId);
+                }
+            });
+            
             // Auto-uncheck conflicting mutually-exclusive skills
-            if (skill.conflictsWith) {
-                skill.conflictsWith.forEach(conflictId => {
-                    nextIds = nextIds.filter(id => id !== conflictId);
-                });
-            }
+            const conflicts = skill.conflictsWith || [];
+            const conflictArray = typeof conflicts === 'string' ? conflicts.split(',').map((c: string) => c.trim()) : conflicts;
+            
+            conflictArray.forEach((conflictId: string) => {
+                nextIds = nextIds.filter(id => id !== conflictId);
+            });
         }
         setActiveSkillIds(nextIds);
     };
@@ -446,7 +455,9 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
             {/* Grid layout of categories and glassmorphic cards */}
             <div className="flex-1 space-y-8 min-h-0">
                 {categories.map(category => {
-                    const standardCategorySkills = Object.values(STANDARD_SKILLS).filter(s => s.category === category.id);
+                    const standardCategorySkills = Object.values(SKILL_REGISTRY)
+                        .filter(s => s.metadata.category === category.id)
+                        .map(s => ({ ...s.metadata, prompt: s.promptSnippet, promptSnippet: s.promptSnippet }));
                     const customCategorySkills = Object.values(customSkills).filter(s => s.category === category.id);
                     const categorySkills = [...standardCategorySkills, ...customCategorySkills];
                     
@@ -491,14 +502,14 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                 {/* Meta details if any */}
                                                 {(skill.requires || skill.conflictsWith) && (
                                                     <div className="flex flex-wrap gap-1.5 pt-2">
-                                                        {skill.requires?.map(reqId => (
+                                                        {skill.requires && (typeof skill.requires === 'string' ? skill.requires.split(',') : skill.requires).map((reqId: string) => (
                                                             <Badge key={reqId} variant="outline" className="text-[8px] px-2 py-0 bg-amber-50 text-amber-700 border-amber-100 rounded-full font-bold">
-                                                                Benötigt: {STANDARD_SKILLS[reqId]?.name || customSkills[reqId]?.name || reqId}
+                                                                Benötigt: {SKILL_REGISTRY[reqId.trim()]?.metadata.name || customSkills[reqId.trim()]?.name || reqId}
                                                             </Badge>
                                                         ))}
-                                                        {skill.conflictsWith?.map(confId => (
+                                                        {skill.conflictsWith && (typeof skill.conflictsWith === 'string' ? skill.conflictsWith.split(',') : skill.conflictsWith).map((confId: string) => (
                                                             <Badge key={confId} variant="outline" className="text-[8px] px-2 py-0 bg-red-50 text-red-600 border-red-100 rounded-full font-bold">
-                                                                Schließt aus: {STANDARD_SKILLS[confId]?.name || customSkills[confId]?.name || confId}
+                                                                Schließt aus: {SKILL_REGISTRY[confId.trim()]?.metadata.name || customSkills[confId.trim()]?.name || confId}
                                                             </Badge>
                                                         ))}
                                                     </div>

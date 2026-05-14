@@ -11,8 +11,9 @@ export interface ParsedProfile {
 }
 
 export function parseMarkdownProfile(content: string): ParsedProfile {
-    // Regex matches YAML Frontmatter enclosed in --- and the rest of the file
-    const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
+    // Resilience: Trim leading whitespace before matching
+    const trimmed = content.trimStart();
+    const match = trimmed.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
     
     if (!match) {
         // Fallback: No metadata found, treat entire file as prompt

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-import { STANDARD_PROFILES } from '../ai/standard-profiles';
+import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
 import { STANDARD_SKILL_PROFILES } from '../ai/standard-skills-profiles';
 import { isLocalInstance } from '../env-context';
 import { GradingMemoryCase, GradingMemory } from '../../types';
@@ -50,7 +50,12 @@ const getStoragePath = (userId?: string) => {
 
 export const LocalProfileService = {
     async getAvailableProfiles(userId?: string) {
-        const profiles = [...STANDARD_PROFILES];
+        const profiles = Object.values(EXPERT_REGISTRY).map(entry => ({
+            id: entry.metadata.id,
+            name: entry.metadata.name,
+            isSystem: true,
+            correctionPrompt: entry.promptSnippet
+        }));
         
         try {
             const storagePath = getStoragePath(userId);

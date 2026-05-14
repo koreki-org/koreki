@@ -1,46 +1,47 @@
 import { Task, GradingMemoryCase } from '../../types';
-import { STANDARD_SKILLS, GradingSkill } from './standard-skills';
+import { SKILL_REGISTRY } from '@/prompts/skills';
+import { PromptLibraryEntry } from './prompt-library';
 
 // Centralized Default Templates
-import correctionSystemDefault from '../../prompts/default/correction/system.md';
-import correctionUserDefault from '../../prompts/default/correction/user.md';
-import studentSimulatorSystemDefault from '../../prompts/default/student-simulator/system.md';
-import studentSimulatorUserDefault from '../../prompts/default/student-simulator/user.md';
+import correctionSystemDefault from '../../prompts/core/default/correction/system.md';
+import correctionUserDefault from '../../prompts/core/default/correction/user.md';
+import studentSimulatorSystemDefault from '../../prompts/core/default/student-simulator/system.md';
+import studentSimulatorUserDefault from '../../prompts/core/default/student-simulator/user.md';
 
-import analyzeCleanSystemDefault from '../../prompts/default/analyze-and-clean/system.md';
-import analyzeCleanUserDefault from '../../prompts/default/analyze-and-clean/user.md';
+import analyzeCleanSystemDefault from '../../prompts/core/default/analyze-and-clean/system.md';
+import analyzeCleanUserDefault from '../../prompts/core/default/analyze-and-clean/user.md';
 
-import analyzeMapSystemDefault from '../../prompts/default/analyze-and-map/system.md';
-import analyzeMapUserDefault from '../../prompts/default/analyze-and-map/user.md';
+import analyzeMapSystemDefault from '../../prompts/core/default/analyze-and-map/system.md';
+import analyzeMapUserDefault from '../../prompts/core/default/analyze-and-map/user.md';
 
-import visionSystemDefault from '../../prompts/default/vision/system.md';
-import visionUserDefault from '../../prompts/default/vision/user.md';
+import visionSystemDefault from '../../prompts/core/default/vision/system.md';
+import visionUserDefault from '../../prompts/core/default/vision/user.md';
 
 // Specialized Gemma4 Templates
-import gemma4CorrectionSystem from '../../prompts/specialized/gemma4/correction/system.md';
-import gemma4CorrectionUser from '../../prompts/specialized/gemma4/correction/user.md';
-import gemma4AnalyzeCleanSystem from '../../prompts/specialized/gemma4/analyze-and-clean/system.md';
-import gemma4AnalyzeCleanUser from '../../prompts/specialized/gemma4/analyze-and-clean/user.md';
-import gemma4AnalyzeMapSystem from '../../prompts/specialized/gemma4/analyze-and-map/system.md';
-import gemma4AnalyzeMapUser from '../../prompts/specialized/gemma4/analyze-and-map/user.md';
+import gemma4CorrectionSystem from '../../prompts/core/specialized/gemma4/correction/system.md';
+import gemma4CorrectionUser from '../../prompts/core/specialized/gemma4/correction/user.md';
+import gemma4AnalyzeCleanSystem from '../../prompts/core/specialized/gemma4/analyze-and-clean/system.md';
+import gemma4AnalyzeCleanUser from '../../prompts/core/specialized/gemma4/analyze-and-clean/user.md';
+import gemma4AnalyzeMapSystem from '../../prompts/core/specialized/gemma4/analyze-and-map/system.md';
+import gemma4AnalyzeMapUser from '../../prompts/core/specialized/gemma4/analyze-and-map/user.md';
 
 // Specialized Qwen 3.6 Templates
-import qwenCorrectionSystem from '../../prompts/specialized/qwen3.6/correction/system.md';
-import qwenCorrectionUser from '../../prompts/specialized/qwen3.6/correction/user.md';
-import qwenAnalyzeCleanSystem from '../../prompts/specialized/qwen3.6/analyze-and-clean/system.md';
-import qwenAnalyzeCleanUser from '../../prompts/specialized/qwen3.6/analyze-and-clean/user.md';
-import qwenAnalyzeMapSystem from '../../prompts/specialized/qwen3.6/analyze-and-map/system.md';
-import qwenAnalyzeMapUser from '../../prompts/specialized/qwen3.6/analyze-and-map/user.md';
-import qwenVisionSystem from '../../prompts/specialized/qwen3.6/vision/system.md';
-import qwenVisionUser from '../../prompts/specialized/qwen3.6/vision/user.md';
+import qwenCorrectionSystem from '../../prompts/core/specialized/qwen3.6/correction/system.md';
+import qwenCorrectionUser from '../../prompts/core/specialized/qwen3.6/correction/user.md';
+import qwenAnalyzeCleanSystem from '../../prompts/core/specialized/qwen3.6/analyze-and-clean/system.md';
+import qwenAnalyzeCleanUser from '../../prompts/core/specialized/qwen3.6/analyze-and-clean/user.md';
+import qwenAnalyzeMapSystem from '../../prompts/core/specialized/qwen3.6/analyze-and-map/system.md';
+import qwenAnalyzeMapUser from '../../prompts/core/specialized/qwen3.6/analyze-and-map/user.md';
+import qwenVisionSystem from '../../prompts/core/specialized/qwen3.6/vision/system.md';
+import qwenVisionUser from '../../prompts/core/specialized/qwen3.6/vision/user.md';
 
 // Specialized Mistral-Small Templates
-import mistralSmallCorrectionSystem from '../../prompts/specialized/mistral-small/correction/system.md';
-import mistralSmallCorrectionUser from '../../prompts/specialized/mistral-small/correction/user.md';
-import mistralSmallAnalyzeCleanSystem from '../../prompts/specialized/mistral-small/analyze-and-clean/system.md';
-import mistralSmallAnalyzeCleanUser from '../../prompts/specialized/mistral-small/analyze-and-clean/user.md';
-import mistralSmallAnalyzeMapSystem from '../../prompts/specialized/mistral-small/analyze-and-map/system.md';
-import mistralSmallAnalyzeMapUser from '../../prompts/specialized/mistral-small/analyze-and-map/user.md';
+import mistralSmallCorrectionSystem from '../../prompts/core/specialized/mistral-small/correction/system.md';
+import mistralSmallCorrectionUser from '../../prompts/core/specialized/mistral-small/correction/user.md';
+import mistralSmallAnalyzeCleanSystem from '../../prompts/core/specialized/mistral-small/analyze-and-clean/system.md';
+import mistralSmallAnalyzeCleanUser from '../../prompts/core/specialized/mistral-small/analyze-and-clean/user.md';
+import mistralSmallAnalyzeMapSystem from '../../prompts/core/specialized/mistral-small/analyze-and-map/system.md';
+import mistralSmallAnalyzeMapUser from '../../prompts/core/specialized/mistral-small/analyze-and-map/user.md';
 
 export interface StructuredPrompt {
     system: string;
@@ -63,7 +64,7 @@ export function buildCorrectionPrompt(
     model?: string,
     gradingMemory?: GradingMemoryCase[] | null,
     activeSkillIds?: string[], // Symmetrisches Grading Skills Center
-    customSkills?: Record<string, GradingSkill> // Custom user-defined skills mapping
+    customSkills?: Record<string, PromptLibraryEntry> // Custom user-defined skills mapping
 ): StructuredPrompt {
     let system = correctionSystemDefault;
     let user = correctionUserDefault;
@@ -93,9 +94,9 @@ export function buildCorrectionPrompt(
     if (activeSkillIds && activeSkillIds.length > 0) {
         skillsSection = '\n\n### AKTIVIERTE BEWERTUNGS-SKILLS (STRIKT BEFOLGEN):\n';
         activeSkillIds.forEach(id => {
-            const skill = STANDARD_SKILLS[id] || (customSkills && customSkills[id]);
-            if (skill) {
-                skillsSection += `\n--- [KORREKTUR-SKILL: ${skill.name}] ---\n${skill.promptSnippet.trim()}\n`;
+            const skillEntry = SKILL_REGISTRY[id];
+            if (skillEntry) {
+                skillsSection += `\n--- [KORREKTUR-SKILL: ${skillEntry.metadata.name}] ---\n${skillEntry.promptSnippet.trim()}\n`;
             }
         });
         skillsSection += '\n--------------------------------------------\n';

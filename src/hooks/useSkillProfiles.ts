@@ -35,7 +35,7 @@ export const useSkillProfiles = (
 
     const isDirty = JSON.stringify([...activeSkillIds].sort()) !== JSON.stringify([...lastSavedSkillIds].sort());
     const selectedProfileData = profiles.find(p => p.name === selectedProfile);
-    const isSystemSelected = selectedProfileData?.isSystem || selectedProfile.includes('Standard') || selectedProfile.includes('Standard (Allgemein)') || selectedProfile.includes('Realschule') || selectedProfile.includes('Gymnasium') || selectedProfile.includes('Standard (MINT & Feedback)') || selectedProfile.includes('Sprachfächer Standard') || selectedProfile.includes('Kulante Bewertung') || selectedProfile.includes('Grundschule') || selectedProfile.includes('Grundschule Mathematik');
+    const isSystemSelected = selectedProfileData?.isSystem || !!profiles.find(p => p.name === selectedProfile && p.isSystem);
 
     // Load custom skills on mount
     useEffect(() => {
@@ -140,8 +140,8 @@ export const useSkillProfiles = (
 
     const handleImportParsedProfile = (parsed: { metadata: any; content?: string; correctionPrompt?: string }, isSingleSkill?: boolean) => {
         // Check if this is an individual skill import rather than a profile layout
-        if (isSingleSkill || parsed.metadata?.type === 'skill' || parsed.metadata?.promptSnippet || parsed.metadata?.prompt) {
-            const promptText = parsed.metadata?.promptSnippet || parsed.metadata?.prompt || parsed.correctionPrompt || parsed.content || "";
+        if (isSingleSkill || parsed.metadata?.type === 'skill' || parsed.metadata?.id?.startsWith('skill-') || parsed.metadata?.promptSnippet) {
+            const promptText = parsed.metadata?.promptSnippet || parsed.metadata?.prompt || (typeof parsed.content === 'string' ? parsed.content : "");
             const newSkill = {
                 id: parsed.metadata?.id || `custom-skill-${Date.now()}`,
                 name: parsed.metadata?.name || "Importierter Skill",
