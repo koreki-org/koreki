@@ -56,15 +56,18 @@ export async function executeOllamaRequest(
         try {
             // BRAKE: Dynamic import to prevent SaaS build issues
             const { invoke } = await import('@tauri-apps/api/core');
-            const isQwen = model.toLowerCase().includes('qwen');
-            const targetFormat = (action === 'vision' || isQwen) ? undefined : 'json';
+            // [Industrial Validation] If Mistral works but Qwen fails with connection error,
+            // we must unify the request structure. Enabled JSON format for all.
+            const targetFormat = (action === 'vision') ? undefined : 'json';
             
             let numCtx: number | undefined = 8192;
             const modelLower = model.toLowerCase();
 
             // Industrial Cluster Check: Adjust context for larger or specialized models
+            // [Industrial Hardening] Reduced from 16k to 8k to rule out VRAM resets 
+            // or proxy timeouts during large model allocation.
             if (modelLower.includes('mistral') || modelLower.includes('31b') || modelLower.includes('qwen')) {
-                numCtx = 16384; 
+                numCtx = 8192; 
             }
 
             // [Industrial Hardening] 🛡️
@@ -139,31 +142,49 @@ function processOllamaResponse(content: string, action: AIAction, modelName: str
     }
 
     // [Industrial Hardening] 🛡️
-    // We try the standard greedy extraction first.
+    // 1. Remove Markdown markers if model wrapped JSON in code blocks (common in non-forced modes)
+    let rawJson = cleaned;
+    if (rawJson.includes('```json')) {
+        const parts = rawJson.split('```json');
+        if (parts.length > 1) rawJson = parts[1].split('```')[0].trim();
+    } else if (rawJson.includes('```')) {
+        const parts = rawJson.split('```');
+        if (parts.length > 1) rawJson = parts[1].split('```')[0].trim();
+    }
+
+    // 2. Greedy Extraction (First { to Last })
     const standardJson = (() => {
-        const match = cleaned.match(/\{[\s\S]*\}/);
-        return match ? match[0] : cleaned;
+        const match = rawJson.match(/\{[\s\S]*\}/);
+        return match ? match[0] : rawJson;
     })();
 
     try {
         return JSON.parse(standardJson);
     } catch (e) {
-        // Fallback for Thinking/Reasoning blocks
+        // Fallback for Thinking/Reasoning blocks or corrupted prefixes
         try {
-            const cleanContent = cleaned
-                .replace(/<thought>[\s\S]*?(<\/thought>|$)/gi, '') // Handle unclosed tags
+            const cleanContent = rawJson
+                .replace(/<thought>[\s\S]*?(<\/thought>|$)/gi, '') 
                 .replace(/<reasoning>[\s\S]*?(<\/reasoning>|$)/gi, '')
                 .replace(/\[thought\][\s\S]*?(\[\/thought\]|$)/gi, '')
                 .trim();
 
             const hardenedMatch = cleanContent.match(/\{[\s\S]*\}/);
             const hardenedJson = hardenedMatch ? hardenedMatch[0] : cleanContent;
-            return JSON.parse(hardenedJson);
+            
+            // Industrial Recovery: Check for trailing commas in arrays/objects (common LLM failure)
+            const partiallyRepaired = hardenedJson
+                .replace(/,\s*([\]\}])/g, '$1') // Removes trailing commas before ] or }
+                .trim();
+
+            return JSON.parse(partiallyRepaired);
         } catch (e2) {
-            // Fatal Error
-            const start = cleaned.slice(0, 50);
-            const end = cleaned.slice(-50);
-            throw new Error(`Ollama JSON-Parse fehlgeschlagen. \nAnfang: [${start}]\nEnde: [${end}]\nLänge: ${cleaned.length}`);
+            // Fatal Error Diagnostics
+            const start = cleaned.slice(0, 100); // Increased visibility
+            const end = cleaned.slice(-100);
+            const errorMsg = e2 instanceof Error ? e2.message : String(e2);
+            
+            throw new Error(`Ollama JSON-Parse fehlgeschlagen (${errorMsg}). \n\nAnfang: [${start}]\n\nEnde: [${end}]\n\nLänge: ${cleaned.length}`);
         }
     }
 }
