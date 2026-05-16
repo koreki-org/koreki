@@ -4,6 +4,7 @@ description: "Sichere und DSGVO-konforme Verteilung von Schülerfeedback via QR-
 author: "@principal_architect"
 date: "2026-05-16"
 last_updated: "2026-05-16"
+version: "1.1.0" (Added PDF Export & QR Hardening)
 status: "Approved"
 domain: "user-guide"
 security_classification: "Public"
@@ -49,11 +50,15 @@ Das Feature ist nahtlos in den **BatchProcessor** integriert.
 
 ### Nutzung für Lehrer:
 1. Nach Abschluss der Korrekturen in der **ExportToolbar** auf „Digitale Slips“ klicken.
-2. Es öffnet sich ein Modal mit einer Druckansicht. Jeder Schüler erhält einen Streifen mit:
-   * Name des Schülers
-   * QR-Code
-   * 4-stelliger PIN (stabil & sicher)
-3. Die Slips ausdrucken, ausschneiden und an die physischen Arbeiten tackern.
+2. Im Export-System stehen zwei Optionen zur Verfügung:
+   * **PDF Export (Empfohlen):** Generiert ein hochauflösendes PDF-Dokument mit optimiertem Layout und großen Namen für den Direktdruck.
+   * **Direktdruck:** Browserbasierte Druckansicht der Slips.
+3. Jeder Slip enthält:
+   * **Name des Schülers** (Extra groß für die Zuordnung)
+   * **Punkteübersicht** (Erreichte Punkte / Gesamtpunkte)
+   * **QR-Code** (Optimierte Kapazität durch Level L)
+   * **4-stelliger PIN** (Deterministisch & Sicher)
+4. Die Slips ausdrucken, an den gestrichelten Linien ausschneiden und verteilen.
 
 ### Nutzung für Schüler:
 1. QR-Code scannen.
@@ -72,7 +77,16 @@ Das Feature ist nahtlos in den **BatchProcessor** integriert.
 
 ---
 
-## 5. Testing & Referenzen
+## 5. Technische Kapazitäten & Limits
+> [!CAUTION]
+> Obwohl QR-Codes sehr effizient sind, gibt es physikalische Limits für die Datenmenge.
+
+* **Kapazität:** Durch den Wechsel auf **Error Correction Level L** wurde die Kapazität auf ca. **2.900 komprimierte Zeichen** (~5.000-6.000 Zeichen Reintext) erhöht. Dies entspricht etwa 1.5 bis 2 vollen DIN-A4-Seiten Feedback.
+* **Safety-Checks:** Das System prüft die Datenmenge vor der Generierung. Bei Überschreitung wird eine Warnung ausgegeben, um fehlerhafte QR-Codes oder Browser-Crashes zu verhindern.
+
+---
+
+## 6. Testing & Referenzen
 * **Unit-Tests:** `tests/unit/distribution.test.ts` (Encoding/Decoding Logic)
 * **Integration-Tests:** `tests/integration/DigitalSlipsModal.test.tsx`
-* **Technologien:** LZ-String (Kompression), qrcode.react (QR-Generierung), Lucide React (UI-Icons).
+* **Technologien:** LZ-String (Kompression), jsPDF (PDF-Generierung), qrcode.react (QR-Generierung).
