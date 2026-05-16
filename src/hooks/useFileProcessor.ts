@@ -147,6 +147,7 @@ export const useFileProcessor = (
         ...state,
         ...actions,
         ...pipeline,
+        processSingleFile: pipeline.processSingleFile,
         handlePDFTypeSelect,
         handleModelUpload,
         executeSplit,

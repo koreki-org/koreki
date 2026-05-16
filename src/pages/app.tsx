@@ -357,6 +357,7 @@ export default function Home() {
                                 avvAccepted={userData?.avvAccepted || userData?.role === 'ADMIN' || userData?.appMode === 'TRIAL' || userData?.appMode === 'PURE'}
                                 settings={aiSettings}
                                 onUpdateSettings={setAiSettings}
+                                onProcessSingleFile={(idx) => fileProcessor.processSingleFile(idx, aiStatus)}
                             />
                         );
                     })()}

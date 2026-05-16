@@ -42,6 +42,7 @@ interface BatchProcessorProps {
     avvAccepted: boolean;
     settings?: AppSettings;
     onUpdateSettings?: (val: AppSettings | ((prev: AppSettings) => AppSettings)) => void;
+    onProcessSingleFile?: (idx: number) => void;
 }
 
 const BatchProcessor: React.FC<BatchProcessorProps> = ({
@@ -67,7 +68,8 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     tasksLayout = [],
     avvAccepted,
     settings,
-    onUpdateSettings
+    onUpdateSettings,
+    onProcessSingleFile
 }) => {
     // --- STAGE 11: INDUSTRIAL BATCH STATUS ENGINE ---
     const { state, metrics, logic, handlers } = useBatchStatus(
@@ -203,6 +205,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                                 getConfidenceColor={getConfidenceColor}
                                 handleReviewPointChange={handleReviewPointChange}
                                 handleReviewFeedbackChange={handleReviewFeedbackChange}
+                                onProcessSingleFile={onProcessSingleFile}
                             />
                         ))}
                     </div>

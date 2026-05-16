@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
     CheckCircle, AlertCircle, AlertTriangle, ChevronDown, Scissors, 
-    Trash2, Highlighter, Loader2
+    Trash2, Highlighter, Loader2, RotateCcw
 } from 'lucide-react';
 import { BatchFile, Task } from '../../types';
 import { Button } from '../ui/Button';
@@ -41,6 +41,7 @@ interface BatchFileListItemProps {
     getConfidenceColor: (conf?: number) => string;
     handleReviewPointChange: (idx: number, name: string, pts: number) => void;
     handleReviewFeedbackChange: (idx: number, name: string, fb: string) => void;
+    onProcessSingleFile?: (idx: number) => void;
 }
 
 /**
@@ -53,7 +54,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
     const {
         item, idx, currentProcessingIndex, loading, expandedIdx, onToggleExpand,
         onToggleSelect, onToggleType, onRemoveFile, onSplit, onRedact, 
-        mobileViewMode, onSetMobileViewMode
+        mobileViewMode, onSetMobileViewMode, onProcessSingleFile
     } = props;
 
     const { 
@@ -109,6 +110,18 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
 
                         
                         <BatchItemStatusSummary item={item} isDone={isDone} onToggleType={onToggleType} idx={idx} itemHasWarnings={itemHasWarnings} />
+                        
+                        {item.status === 'error' && onProcessSingleFile && !isProcessing && (
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={(e) => { e.stopPropagation(); onProcessSingleFile(idx); }}
+                                className="h-7 px-3 bg-red-50 text-red-600 border-red-100 hover:bg-red-600 hover:text-white transition-all rounded-full flex items-center gap-2 font-bold text-[10px] uppercase tracking-wider"
+                            >
+                                <RotateCcw size={12} />
+                                Korrektur neu starten
+                            </Button>
+                        )}
                     </div>
                 </div>
 

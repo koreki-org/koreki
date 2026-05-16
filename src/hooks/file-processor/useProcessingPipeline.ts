@@ -202,6 +202,83 @@ export const useProcessingPipeline = (
         }
     }, [userData, settings, tasksLayout, setUserData, setBatchFiles, setCurrentProcessingIndex, setIsLoadingBatch, ocrStrategy]);
 
+    /**
+     * INDUSTRIAL CORRECTION ENGINE (Single Item)
+     * 🏗️ Handles the correction of a single student file.
+     */
+    const internalCorrectionPipeline = useCallback(async (i: number, freshFiles?: BatchFile[]) => {
+        const files = freshFiles || useBatchStore.getState().batchFiles;
+        const currentFile = files[i];
+
+        if (!currentFile || currentFile.status === 'done' || !currentFile.selected) {
+            return;
+        }
+
+        setCurrentProcessingIndex(i);
+
+        try {
+            // --- STAGE 15 INDUSTRIAL RECOVERY: Ensure studentText is never empty ---
+            const sectionText = currentFile.tasks 
+                && currentFile.tasks.length > 0
+                ? currentFile.tasks.map(t => `### ${t.name} ###\n${t.content || ''}`).join('\n\n') 
+                : '';
+            
+            const finalStudentText = sectionText.trim().length > 0 
+                ? sectionText 
+                : (currentFile.fileText || '');
+
+            if (!finalStudentText.trim()) {
+                throw new Error("Fehler: Kein Schülertext für die Korrektur gefunden.");
+            }
+
+            const startTime = performance.now();
+            let gradingMemoryCases = undefined;
+            try {
+                const storedCases = localStorage.getItem('koreki_active_grading_memory_cases');
+                if (storedCases) {
+                    gradingMemoryCases = JSON.parse(storedCases);
+                }
+            } catch (e) {}
+
+            const data = await performAIRequest('correction', {
+                modelSolution,
+                studentText: finalStudentText,
+                tasksLayout,
+                documentType: currentFile.documentType || 'typed',
+                pageCount: currentFile.pageCount || 1,
+                isCorrection: true,
+                requestId: i, // Scoped streaming
+                expertProfileName,
+                isComplex: ocrStrategy === 'handwriting',
+                gradingMemory: gradingMemoryCases
+            }, userData?.appMode, settings);
+            const duration = performance.now() - startTime;
+
+            setBatchFiles((prev: BatchFile[]) => {
+                const next = [...prev];
+                next[i] = {
+                    ...next[i],
+                    status: 'done',
+                    result: data,
+                    grade: calculateGrade(data.overallMatchPercentage),
+                    inferenceDuration: duration,
+                    error: null // Clear previous errors on success
+                };
+                return next;
+            });
+
+            if (userData?.appMode !== 'PURE') {
+                setUserData((u: any) => u ? { ...u, credits: Math.max(0, u.credits - (currentFile.pageCount || 1)) } : null);
+            }
+        } catch (err: any) {
+            setBatchFiles((prev: BatchFile[]) => {
+                const next = [...prev];
+                next[i] = { ...next[i], status: 'error', error: err.message };
+                return next;
+            });
+        }
+    }, [modelSolution, tasksLayout, userData, settings, setUserData, setBatchFiles, setCurrentProcessingIndex, ocrStrategy, expertProfileName]);
+
     const processBatch = useCallback(async (aiStatus: any) => {
         // INDUSTRIAL FIX: Get FRESH state to prevent closure staleness on auto-start
         const freshFiles = useBatchStore.getState().batchFiles;
@@ -210,83 +287,28 @@ export const useProcessingPipeline = (
         if (!modelSolution) return alert("Bitte zuerst Musterlösung hochladen.");
         setIsLoadingBatch(true);
         try {
-        const indices = freshFiles.map((_, i) => i);
-        
-        await promisePool(indices, 1, async (i: number) => {
-            const currentFile = useBatchStore.getState().batchFiles[i]; // Fetch latest on each iteration!
-
-            if (currentFile.status === 'done' || !currentFile.selected) {
-                return;
-            }
-            
-            setCurrentProcessingIndex(i);
-
-            try {
-                // --- STAGE 15 INDUSTRIAL RECOVERY: Ensure studentText is never empty ---
-                const sectionText = currentFile.tasks 
-                    && currentFile.tasks.length > 0
-                    ? currentFile.tasks.map(t => `### ${t.name} ###\n${t.content || ''}`).join('\n\n') 
-                    : '';
-                
-                const finalStudentText = sectionText.trim().length > 0 
-                    ? sectionText 
-                    : (currentFile.fileText || '');
-
-                if (!finalStudentText.trim()) {
-                    throw new Error("Fehler: Kein Schülertext für die Korrektur gefunden.");
-                }
-
-                const startTime = performance.now();
-                let gradingMemoryCases = undefined;
-                try {
-                    const storedCases = localStorage.getItem('koreki_active_grading_memory_cases');
-                    if (storedCases) {
-                        gradingMemoryCases = JSON.parse(storedCases);
-                    }
-                } catch (e) {}
-
-                const data = await performAIRequest('correction', {
-                    modelSolution,
-                    studentText: finalStudentText,
-                    tasksLayout,
-                    documentType: currentFile.documentType || 'typed',
-                    pageCount: currentFile.pageCount || 1,
-                    isCorrection: true,
-                    requestId: i, // Scoped streaming
-                    expertProfileName,
-                    isComplex: ocrStrategy === 'handwriting',
-                    gradingMemory: gradingMemoryCases
-                }, userData?.appMode, settings);
-                const duration = performance.now() - startTime;
-
-                setBatchFiles((prev: BatchFile[]) => {
-                    const next = [...prev];
-                    next[i] = {
-                        ...next[i],
-                        status: 'done',
-                        result: data,
-                        grade: calculateGrade(data.overallMatchPercentage),
-                        inferenceDuration: duration
-                    };
-                    return next;
-                });
-
-                if (userData?.appMode !== 'PURE') {
-                    setUserData((u: any) => u ? { ...u, credits: Math.max(0, u.credits - (currentFile.pageCount || 1)) } : null);
-                }
-            } catch (err: any) {
-                setBatchFiles((prev: BatchFile[]) => {
-                    const next = [...prev];
-                    next[i] = { ...next[i], status: 'error', error: err.message };
-                    return next;
-                });
-            }
-        });
+            const indices = freshFiles.map((_, i) => i);
+            await promisePool(indices, 1, async (i: number) => {
+                await internalCorrectionPipeline(i, freshFiles);
+            });
         } finally {
             setIsLoadingBatch(false);
             setCurrentProcessingIndex(-1);
         }
-    }, [state.batchFiles, modelSolution, tasksLayout, userData, settings, setUserData, setBatchFiles, setCurrentProcessingIndex, setIsLoadingBatch, ocrStrategy, expertProfileName]);
+    }, [internalCorrectionPipeline, setIsLoadingBatch, setCurrentProcessingIndex, modelSolution]);
+
+    const processSingleFile = useCallback(async (i: number, aiStatus?: any) => {
+        if (aiStatus?.correctionBrakeActive) return alert(aiStatus.message);
+        if (!modelSolution) return alert("Bitte zuerst Musterlösung hochladen.");
+        
+        setIsLoadingBatch(true);
+        try {
+            await internalCorrectionPipeline(i);
+        } finally {
+            setIsLoadingBatch(false);
+            setCurrentProcessingIndex(-1);
+        }
+    }, [internalCorrectionPipeline, setIsLoadingBatch, setCurrentProcessingIndex, modelSolution]);
 
     const cleanAndExtractLayout = useCallback(async (solution: string, currentSettings: AppSettings, pageCount: number = 1, isScan: boolean = false) => {
         if (!solution) return null;
@@ -310,5 +332,5 @@ export const useProcessingPipeline = (
         return null;
     }, [userData?.appMode, state]);
 
-    return { startExtraction, handleExtractOCR, processBatch, cleanAndExtractLayout };
+    return { startExtraction, handleExtractOCR, processBatch, processSingleFile, cleanAndExtractLayout };
 };

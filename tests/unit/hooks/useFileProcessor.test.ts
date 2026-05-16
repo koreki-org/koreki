@@ -125,4 +125,42 @@ describe('useFileProcessor Hook', () => {
             expect(file.status).toBe('pending');
         }, { timeout: 4000 });
     });
+
+    it('should perform processSingleFile and update status to done', async () => {
+        (performAIRequest as jest.Mock).mockResolvedValue({ 
+            overallMatchPercentage: 85,
+            tasks: [{ name: 'A1', pointsObtained: 4, feedback: 'Gut' }]
+        });
+
+        const { result } = renderHook(() => useFileProcessor(
+            mockUserData, { provider: 'mistral', mistralKey: '' }, 'MASTER', [{ name: 'A1', maxPoints: 5 }], setUserData
+        ));
+
+        // Setup a file in error state
+        act(() => {
+            result.current.setBatchFiles([{
+                name: 'Schüler #1',
+                status: 'error',
+                error: 'Previous API Error',
+                fileText: 'SCHÜLER TEXT',
+                selected: true,
+                ocrDone: true,
+                result: null
+            }]);
+        });
+
+        // Trigger single file process
+        await act(async () => {
+            await result.current.processSingleFile(0);
+        });
+
+        // Verification
+        await waitFor(() => {
+            const file = result.current.batchFiles[0];
+            expect(file.status).toBe('done');
+            expect(file.error).toBeNull();
+            expect(file.result).not.toBeNull();
+            expect(file.grade).toBeDefined();
+        });
+    });
 });
