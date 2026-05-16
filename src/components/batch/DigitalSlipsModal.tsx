@@ -90,7 +90,8 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                 doc.text('Bitte Einzel-PDF nutzen.', pageWidth - margin - 35, currentY + 24);
             } else {
                 const qrDataUrl = canvas.toDataURL('image/png');
-                doc.addImage(qrDataUrl, 'PNG', pageWidth - margin - 38, currentY + 8, 30, 30);
+                // Use FAST compression to keep file size low
+                doc.addImage(qrDataUrl, 'PNG', pageWidth - margin - 38, currentY + 8, 30, 30, undefined, 'FAST');
             }
 
             // Footer / Instructions
@@ -197,7 +198,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                                                 ) : (
                                                     <QRCodeCanvas 
                                                         value={url} 
-                                                        size={1024} 
+                                                        size={400} 
                                                         style={{ width: '100px', height: '100px' }}
                                                         level="L"
                                                         ref={(el) => { canvasRefs.current[file.name] = el; }}
