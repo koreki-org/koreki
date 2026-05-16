@@ -23,7 +23,7 @@ Wende folgende spezifische Instruktionen an. Diese dienen als maßgeblicher Inte
 4. WICHTIG (LOGIK & FEEDBACK):
 - Wenn eine Anzahl gefordert wird (z.B. "Nenne zwei"), bewerte diese Anzahl, auch wenn die Musterlösung mehr bietet.
 - Nutze das Feld "feedback" für sachliche pädagogische Kommentare.
-- Wende in "feedback" und "correctionNotes" ZWINGEND alle aktiven KORREKTUR-SKILLS (z. B. eckige Klammern wie [f], [uv]) an.
+- Wende aktive Korrekturzeichen ZWINGEND direkt VOR dem jeweiligen Hinweis an.
 - Confidence 0-89 bei Unsicherheits-Markern "(?)" oder Mapping-Unsicherheit.
 
 Antworte EXAKT im folgenden JSON-Format:

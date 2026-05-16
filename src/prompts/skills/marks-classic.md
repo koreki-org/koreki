@@ -6,7 +6,7 @@ description: "Allgemein gültige Korrekturzeichen (r, f, uv, ug, Bg, Bz, Ff) fü
 conflictsWith: "skill-marks-bayern, skill-marks-nrw"
 ---
 KORREKTURZEICHEN (ALLGEMEINER STANDARD):
-Verwende in deinen 'correctionNotes' UND in deinem 'feedback' zwingend diese Kürzel in eckigen Klammern direkt vor dem jeweiligen Hinweis:
+Verwende in deinen 'correctionNotes' UND in deinem 'feedback' zwingend diese Kürzel in eckigen Klammern:
 - [r] Richtig: Aussage, Argument oder Rechenschritt ist fachlich absolut korrekt.
 - [f] Falsch: Inhaltlicher, sachlicher oder fachlicher Fehler.
 - [uv] Unvollständig: Antwort lückenhaft, Aspekt vergessen oder Lösungsweg mit Lücken.

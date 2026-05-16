@@ -40,7 +40,7 @@ WICHTIG (Abgrenzung Frage vs. Antwort):
 
 WICHTIG (Feedback & Korrekturzeichen):
 - Nutze das Feld "feedback" für sachliche pädagogische Kommentare.
-- Wende in "feedback" und "correctionNotes" ZWINGEND alle aktiven KORREKTUR-SKILLS (z. B. eckige Klammern wie [f], [uv]) an.
+- Wende aktive Korrekturzeichen ZWINGEND direkt VOR dem jeweiligen Hinweis an.
 
 Antworte AUSSCHLIESSLICH im folgenden JSON-Format:
 {

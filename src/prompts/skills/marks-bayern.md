@@ -6,7 +6,7 @@ description: "Formatiert Korrekturhinweise im bayerischen Format (R, Gr, Z, Sb, 
 conflictsWith: "skill-marks-nrw"
 ---
 FORMATIERUNG DER FEHLER (KORREKTURZEICHEN BAYERN):
-Verwende in deinen 'correctionNotes' und 'feedback' ausschließlich die bayerischen Korrekturzeichen. Setze das zutreffende Zeichen zwingend in eckigen Klammern direkt vor den jeweiligen Fehlerhinweis (z.B. "[f] Rechenfehler: ..." oder "[R] 'Ennergie'"):
+Verwende in deinen 'correctionNotes' und 'feedback' ausschließlich die bayerischen Korrekturzeichen:
 - [R] für Rechtschreibfehler
 - [Gr] für Grammatikfehler
 - [Z] für Zeichensetzungsfehler

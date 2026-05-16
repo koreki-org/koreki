@@ -6,7 +6,7 @@ description: "Formatiert Korrekturhinweise im NRW-Format (Orth, Synt, Lex, Inh, 
 conflictsWith: "skill-marks-bayern"
 ---
 FORMATIERUNG DER FEHLER (KORREKTURZEICHEN NRW):
-Verwende in deinen 'correctionNotes' und 'feedback' ausschließlich die NRW-Korrekturzeichen. Setze das zutreffende Zeichen zwingend in eckigen Klammern direkt vor den jeweiligen Fehlerhinweis (z.B. "[Inh] Rechenfehler: ..." oder "[Orth] 'Ennergie'"):
+Verwende in deinen 'correctionNotes' und 'feedback' ausschließlich die NRW-Korrekturzeichen:
 - [Orth] für Rechtschreibfehler
 - [Synt] für Satzbau- und Grammatikfehler
 - [Lex] für Ausdrucks- und Wortwahlfehler
