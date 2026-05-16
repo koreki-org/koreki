@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { CheckCircle2, XCircle, AlertCircle, Sparkles, ShieldCheck, GraduationCap, Calendar, Info, Printer } from 'lucide-react';
+import { CheckCircle2, XCircle, AlertCircle, ShieldCheck, GraduationCap, Calendar, Info, Printer } from 'lucide-react';
 import { decodeFeedback, FeedbackData, parseStatus } from '@/lib/distribution';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Logo } from '@/components/Logo';
 
 export default function StudentFeedbackView() {
     const [data, setData] = useState<FeedbackData | null>(null);
@@ -54,7 +55,9 @@ export default function StudentFeedbackView() {
         return (
             <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-outfit">
                 <div className="text-center animate-pulse">
-                    <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
+                    <div className="mb-6 flex justify-center">
+                        <Logo size={48} />
+                    </div>
                     <p className="text-slate-600 font-medium">Lade dein Feedback...</p>
                 </div>
             </div>
@@ -133,7 +136,7 @@ export default function StudentFeedbackView() {
                 <title>Koreki | Dein Feedback</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
             </Head>
-
+ 
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
                 <div className="absolute top-[-10%] left-[-10%] w-[100vw] h-[100vw] bg-indigo-500/5 blur-[120px] rounded-full" />
                 <div className="absolute bottom-[-10%] right-[-10%] w-[100vw] h-[100vw] bg-blue-500/5 blur-[120px] rounded-full" />
@@ -142,12 +145,13 @@ export default function StudentFeedbackView() {
             <div className="relative z-10 max-w-2xl mx-auto px-4 pt-8">
                 <div className="mb-8 text-center animate-fade-up">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full mb-4">
-                        <Sparkles size={14} />
+                        <Logo size={14} />
                         <span className="text-[10px] font-extrabold uppercase tracking-widest">Digitales Feedback</span>
                     </div>
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
                         Koreki<span className="text-primary">.</span>
                     </h1>
+
                     <div className="flex items-center justify-center gap-4 text-slate-500 text-sm font-medium">
                         <div className="flex items-center gap-1.5">
                             <GraduationCap size={16} className="text-slate-400" />

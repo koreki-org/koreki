@@ -58,6 +58,17 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
             doc.setTextColor(30, 41, 59);
             doc.text(realName, margin + 8, currentY + 15);
 
+            // Koreki Branding (Top Right)
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(10);
+            doc.setTextColor(15, 23, 42); // Slate 900
+            const brandingText = 'Koreki';
+            const brandingWidth = doc.getTextWidth(brandingText);
+            doc.text(brandingText, pageWidth - margin - 38 - brandingWidth - 4, currentY + 14);
+            
+            doc.setTextColor(37, 99, 235); // Blue 600
+            doc.text('.', pageWidth - margin - 38 - 4, currentY + 14);
+
             // Points
             const tasks = (file.result?.tasks || []);
             const points = tasks.reduce((acc, t) => acc + Number(t.pointsObtained || 0), 0);
