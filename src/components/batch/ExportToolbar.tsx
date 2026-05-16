@@ -41,7 +41,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                 variant="outline" 
                 size="sm" 
                 onClick={onExportDigitalSlips} 
-                className="h-9 gap-2 text-xs font-bold bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-600 hover:text-white transition-all rounded-xl shadow-sm whitespace-nowrap shrink-0"
+                className="h-9 gap-2 text-xs font-bold text-slate-700 whitespace-nowrap"
             >
                 <Sparkles size={16} /> Digitale Slips
             </Button>
