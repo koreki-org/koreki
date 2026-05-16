@@ -20,6 +20,13 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
 
     const completedFiles = batchFiles.filter(f => f.status === 'done' && f.result);
 
+    const getRealName = (f: BatchFile) => {
+        if (f.splitInfo) return f.name;
+        // If it's a pseudonym like "Schüler #1", try to get originalName
+        if (/^Schüler #\d+$/.test(f.name) && f.originalName) return f.originalName;
+        return f.name || f.originalName || 'Unbekannt';
+    };
+
     const handleDownloadPDF = async () => {
         const doc = new jsPDF();
         const pageWidth = doc.internal.pageSize.getWidth();
@@ -38,17 +45,18 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
             }
 
             const canvas = canvasRefs.current[file.name];
+            const realName = getRealName(file);
             
             // Draw Slip Border (Dashed)
             doc.setLineDashPattern([2, 2], 0);
             doc.setDrawColor(200, 200, 200);
             doc.rect(margin, currentY, pageWidth - 2 * margin, slipHeight);
             
-            // Student Name (Large & Bold) - Critical for assignment!
+            // Student Name (Large & Bold) - Real Name used for Export!
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(16);
             doc.setTextColor(30, 41, 59);
-            doc.text(file.name, margin + 8, currentY + 15);
+            doc.text(realName, margin + 8, currentY + 15);
 
             // Points
             const tasks = (file.result?.tasks || []);
@@ -68,7 +76,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                 }
                 return (Math.abs(hash) % 9000 + 1000).toString();
             };
-            const pin = getStablePin(file.name);
+            const pin = getStablePin(realName);
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
             doc.setTextColor(30, 41, 59);
@@ -100,25 +108,22 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300 print:p-0 print:bg-white">
-            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border border-white/20 print:max-h-none print:shadow-none print:rounded-none">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+            <div className="bg-white rounded-[2.5rem] shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border border-white/20">
                 {/* Header */}
-                <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 print:hidden">
+                <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                     <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center border border-slate-100">
                             <Logo size={24} />
                         </div>
                         <div>
                             <h2 className="text-xl font-bold text-slate-900">Digitale Rückgabe-Slips</h2>
-                            <p className="text-sm text-slate-500 font-medium">Bereit zum Ausdrucken oder als PDF-Export</p>
+                            <p className="text-sm text-slate-500 font-medium">Bereit zum PDF-Export (mit Klarnamen)</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" onClick={handleDownloadPDF} className="gap-2 font-bold text-slate-700 bg-white shadow-sm hover:bg-slate-50">
                             <Download size={18} /> PDF Export
-                        </Button>
-                        <Button variant="outline" onClick={() => window.print()} className="gap-2 font-bold text-slate-700 bg-white shadow-sm hover:bg-slate-50">
-                            <Printer size={18} /> Drucken
                         </Button>
                         <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors ml-2">
                             <X size={20} className="text-slate-500" />
@@ -127,14 +132,15 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50/30 print:p-0 print:overflow-visible">
-                    <div className="printable-slips grid grid-cols-1 md:grid-cols-2 gap-6 print:block print:w-full">
+                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50/30">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {completedFiles.length === 0 ? (
                             <div className="col-span-full py-20 text-center">
                                 <p className="text-slate-400 font-medium">Keine fertigen Korrekturen zum Exportieren gefunden.</p>
                             </div>
                         ) : (
                             completedFiles.map((file, idx) => {
+                                const realName = getRealName(file);
                                 const getStablePin = (name: string) => {
                                     let hash = 0;
                                     for (let i = 0; i < name.length; i++) {
@@ -143,14 +149,14 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                                     }
                                     return (Math.abs(hash) % 9000 + 1000).toString();
                                 };
-                                const pin = getStablePin(file.name);
+                                const pin = getStablePin(realName);
 
                                 const tasks = (file.result?.tasks || []);
                                 const points = tasks.reduce((acc, t) => acc + Number(t.pointsObtained || 0), 0);
                                 const maxPoints = tasks.reduce((acc, t) => acc + Number(t.maxPoints || 0), 0);
 
                                 const feedbackData: FeedbackData = {
-                                    studentName: file.name,
+                                    studentName: realName,
                                     date: new Date().toLocaleDateString('de-DE'),
                                     overallFeedback: file.result?.overallFeedback || '',
                                     tasks: tasks.map(t => ({
@@ -166,15 +172,12 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
 
                                 const encoded = encodeFeedback(feedbackData);
                                 const url = `https://koreki.org/view#${encoded}`;
-
-                                // Safety Check: QR Code limit is roughly 2900 chars for alphanumeric at Level L
-                                // LZString encoded chars are 6-bit, so safe limit is around 2500-2800.
                                 const isTooLong = encoded.length > 2700;
 
                                 return (
                                     <div 
                                         key={idx} 
-                                        className="slip-card bg-white border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col gap-4 relative hover:border-slate-300 transition-colors print:border-slate-300 print:mb-8 print:break-inside-avoid print:rounded-none print:border-x-0 print:border-t-0"
+                                        className="slip-card bg-white border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col gap-4 relative hover:border-slate-300 transition-colors"
                                     >
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1">
