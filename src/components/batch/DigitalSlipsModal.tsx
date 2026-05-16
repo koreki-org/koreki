@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { X, Printer, ShieldCheck, Sparkles, Download, FileText } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { jsPDF } from 'jspdf';
-import { BatchFile } from '../types';
+import { BatchFile } from '../../types';
 import { FeedbackData, encodeFeedback } from '@/lib/distribution';
 import { Button } from '../ui/Button';
 import Logo from '../Logo';
