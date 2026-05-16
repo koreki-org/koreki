@@ -4,7 +4,7 @@ import { CheckCircle2, XCircle, AlertCircle, ShieldCheck, GraduationCap, Calenda
 import { decodeFeedback, FeedbackData, parseStatus } from '@/lib/distribution';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Logo } from '@/components/Logo';
+import Logo from '@/components/Logo';
 
 export default function StudentFeedbackView() {
     const [data, setData] = useState<FeedbackData | null>(null);
