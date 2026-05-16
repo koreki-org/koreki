@@ -27,6 +27,7 @@ export const useBatchStatus = (
     const [previewUrls, setPreviewUrls] = useState<Record<number, string>>({});
     const [activeGroupName, setActiveGroupName] = useState<string>("");
     const [showAnalytics, setShowAnalytics] = useState<boolean>(false);
+    const [showDigitalSlips, setShowDigitalSlips] = useState<boolean>(false);
     
     // --- Global State Interop ---
     const { ocrStrategy, setOcrStrategy } = useBatchState();
@@ -178,7 +179,8 @@ export const useBatchStatus = (
         state: { 
             expandedIdx, setExpandedIdx, showScan, setShowScan, showConfirm, setShowConfirm, 
             mobileViewMode, setMobileViewMode, activeGroupName, setActiveGroupName,
-            ocrStrategy, setOcrStrategy, showAnalytics, setShowAnalytics
+            ocrStrategy, setOcrStrategy, showAnalytics, setShowAnalytics,
+            showDigitalSlips, setShowDigitalSlips
         },
         metrics,
         logic: { groupedTasks, groupNames, CONFIRM_TEXT },

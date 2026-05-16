@@ -7,6 +7,7 @@ import { ExportToolbar } from './batch/ExportToolbar';
 import { BatchHeader } from './batch/BatchHeader';
 import { BatchFileListItem } from './batch/BatchFileListItem';
 import { AnalyticsModal } from './batch/AnalyticsModal';
+import { DigitalSlipsModal } from './batch/DigitalSlipsModal';
 import { useBatchStatus } from '../hooks/useBatchStatus';
 
 /**
@@ -79,7 +80,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
         onResetResults
     );
 
-    const { expandedIdx, setExpandedIdx, showScan, setShowScan, showConfirm, setShowConfirm, mobileViewMode, setMobileViewMode, activeGroupName, setActiveGroupName, ocrStrategy, setOcrStrategy, showAnalytics, setShowAnalytics } = state;
+    const { expandedIdx, setExpandedIdx, showScan, setShowScan, showConfirm, setShowConfirm, mobileViewMode, setMobileViewMode, activeGroupName, setActiveGroupName, ocrStrategy, setOcrStrategy, showAnalytics, setShowAnalytics, showDigitalSlips, setShowDigitalSlips } = state;
     const { totalPendingCredits, totalPossibleCredits, ocrCreditsRequired, pendingCount, totalCount, hasFinishedFiles, unredactedScansCount } = metrics;
     const { groupedTasks, groupNames, CONFIRM_TEXT } = logic;
     const { handleConfirmAction, handleReviewPointChange, handleReviewFeedbackChange, getPreviewUrl } = handlers;
@@ -150,6 +151,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                             onExportIndividual={onExportIndividual}
                             onExportPDFs={onExportPDFs}
                             onExportKoreki={onExportKoreki}
+                            onExportDigitalSlips={() => setShowDigitalSlips(true)}
                             onToggleAnalytics={() => setShowAnalytics(!showAnalytics)}
                             isAnalyticsOpen={showAnalytics}
                         />
@@ -162,6 +164,13 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                         batchFiles={batchFiles} 
                         settings={settings}
                         isPureMode={isPureMode}
+                    />
+
+                    {/* Digital Return Slips Modal */}
+                    <DigitalSlipsModal 
+                        isOpen={showDigitalSlips} 
+                        onClose={() => setShowDigitalSlips(false)} 
+                        batchFiles={batchFiles} 
                     />
 
                     {/* Industrial File List */}

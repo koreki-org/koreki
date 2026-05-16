@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Info, BarChart3 } from 'lucide-react';
+import { Download, Info, BarChart3, Sparkles } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 interface ExportToolbarProps {
@@ -8,6 +8,7 @@ interface ExportToolbarProps {
     onExportIndividual: () => void;
     onExportPDFs: () => void;
     onExportKoreki: () => void;
+    onExportDigitalSlips: () => void;
     onToggleAnalytics: () => void;
     isAnalyticsOpen?: boolean;
 }
@@ -18,6 +19,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
     onExportIndividual,
     onExportPDFs,
     onExportKoreki,
+    onExportDigitalSlips,
     onToggleAnalytics,
     isAnalyticsOpen
 }) => {
@@ -34,6 +36,14 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
             </Button>
             <Button variant="outline" size="sm" onClick={onExportPDFs} className="h-9 gap-2 text-xs font-bold text-slate-700 whitespace-nowrap">
                 <Download size={16} /> Einzel-PDFs
+            </Button>
+            <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onExportDigitalSlips} 
+                className="h-9 gap-2 text-xs font-bold bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-600 hover:text-white transition-all rounded-xl shadow-sm whitespace-nowrap shrink-0"
+            >
+                <Sparkles size={16} /> Digitale Slips
             </Button>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full lg:w-auto mt-1 lg:mt-0 lg:ml-auto flex-wrap sm:flex-nowrap">
