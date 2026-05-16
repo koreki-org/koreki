@@ -38,10 +38,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
             }
 
             const canvas = canvasRefs.current[file.name];
-            if (!canvas) continue;
-
-            const qrDataUrl = canvas.toDataURL('image/png');
-
+            
             // Draw Slip Border (Dashed)
             doc.setLineDashPattern([2, 2], 0);
             doc.setDrawColor(200, 200, 200);
@@ -77,8 +74,16 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
             doc.setTextColor(30, 41, 59);
             doc.text(`PIN: ${pin}`, margin + 8, currentY + 45);
 
-            // QR Code
-            doc.addImage(qrDataUrl, 'PNG', pageWidth - margin - 38, currentY + 8, 30, 30);
+            if (!canvas || canvas.width === 0) {
+                // If canvas didn't render (e.g. too long), show placeholder in PDF
+                doc.setFontSize(8);
+                doc.setTextColor(239, 68, 68);
+                doc.text('Feedback zu lang für QR!', pageWidth - margin - 35, currentY + 20);
+                doc.text('Bitte Einzel-PDF nutzen.', pageWidth - margin - 35, currentY + 24);
+            } else {
+                const qrDataUrl = canvas.toDataURL('image/png');
+                doc.addImage(qrDataUrl, 'PNG', pageWidth - margin - 38, currentY + 8, 30, 30);
+            }
 
             // Footer / Instructions
             doc.setFontSize(8);
@@ -162,6 +167,10 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                                 const encoded = encodeFeedback(feedbackData);
                                 const url = `https://koreki.org/view#${encoded}`;
 
+                                // Safety Check: QR Code limit is roughly 2900 chars for alphanumeric at Level L
+                                // LZString encoded chars are 6-bit, so safe limit is around 2500-2800.
+                                const isTooLong = encoded.length > 2700;
+
                                 return (
                                     <div 
                                         key={idx} 
@@ -176,13 +185,20 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                                                     <span className="text-[10px] font-bold uppercase tracking-widest">Feedback Slip</span>
                                                 </div>
                                             </div>
-                                            <div className="bg-slate-50 p-2 rounded-xl border border-slate-100">
-                                                <QRCodeCanvas 
-                                                    value={url} 
-                                                    size={100} 
-                                                    level="H"
-                                                    ref={(el) => { canvasRefs.current[file.name] = el; }}
-                                                />
+                                            <div className="bg-slate-50 p-2 rounded-xl border border-slate-100 flex items-center justify-center min-w-[100px] min-h-[100px]">
+                                                {isTooLong ? (
+                                                    <div className="text-[10px] text-red-500 font-bold text-center leading-tight p-2">
+                                                        <X className="mx-auto mb-1" size={16} />
+                                                        Feedback zu lang<br/>für QR-Code
+                                                    </div>
+                                                ) : (
+                                                    <QRCodeCanvas 
+                                                        value={url} 
+                                                        size={100} 
+                                                        level="L"
+                                                        ref={(el) => { canvasRefs.current[file.name] = el; }}
+                                                    />
+                                                )}
                                             </div>
                                         </div>
 
