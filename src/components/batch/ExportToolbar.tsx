@@ -1,7 +1,6 @@
 import React from 'react';
-import { Download, Info, BarChart3 } from 'lucide-react';
+import { Download, Info, BarChart3, QrCode } from 'lucide-react';
 import { Button } from '../ui/Button';
-import { Logo } from '../Logo';
 
 interface ExportToolbarProps {
     onExportTeacher: () => void;
@@ -44,7 +43,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                 onClick={onExportDigitalSlips} 
                 className="h-9 gap-2 text-xs font-bold text-slate-700 whitespace-nowrap"
             >
-                <Logo size={16} /> Digitale Slips
+                <QrCode size={16} /> Digitale Slips
             </Button>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full lg:w-auto mt-1 lg:mt-0 lg:ml-auto flex-wrap sm:flex-nowrap">
