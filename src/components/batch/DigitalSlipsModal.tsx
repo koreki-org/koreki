@@ -185,7 +185,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                                                     <span className="text-[10px] font-bold uppercase tracking-widest">Feedback Slip</span>
                                                 </div>
                                             </div>
-                                            <div className="bg-slate-50 p-2 rounded-xl border border-slate-100 flex items-center justify-center min-w-[100px] min-h-[100px]">
+                                            <div className="bg-white p-2 rounded-xl border border-slate-100 flex items-center justify-center min-w-[120px] min-h-[120px]">
                                                 {isTooLong ? (
                                                     <div className="text-[10px] text-red-500 font-bold text-center leading-tight p-2">
                                                         <X className="mx-auto mb-1" size={16} />
@@ -194,7 +194,8 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                                                 ) : (
                                                     <QRCodeCanvas 
                                                         value={url} 
-                                                        size={100} 
+                                                        size={1024} 
+                                                        style={{ width: '100px', height: '100px' }}
                                                         level="L"
                                                         ref={(el) => { canvasRefs.current[file.name] = el; }}
                                                     />
