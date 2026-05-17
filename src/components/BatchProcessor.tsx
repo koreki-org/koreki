@@ -206,6 +206,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                                 handleReviewPointChange={handleReviewPointChange}
                                 handleReviewFeedbackChange={handleReviewFeedbackChange}
                                 onProcessSingleFile={onProcessSingleFile}
+                                settings={settings}
                             />
                         ))}
                     </div>

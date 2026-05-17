@@ -5,11 +5,12 @@ import {
     buildCleanAndMapPrompt, 
     buildVisionPrompt,
     buildStudentSimulatorPrompt,
+    buildAnonymizePrompt,
     StructuredPrompt 
 } from './prompt-builder';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize';
 
 export interface OpenAIRequestOptions {
     temperature?: number;
@@ -68,6 +69,8 @@ export async function executeOpenAIRequest(
             promptObj = buildCleanAndMapPrompt(payload.text || payload.studentText, payload.tasksLayout, targetModel);
         } else if (action === 'student-simulator') {
             promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout, payload.selectedTasks);
+        } else if (action === 'anonymize') {
+            promptObj = buildAnonymizePrompt(payload.studentText);
         } else {
             throw new Error(`Unsupported action: ${action}`);
         }

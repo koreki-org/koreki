@@ -112,7 +112,7 @@ if (gradingMemory && Array.isArray(gradingMemory) && gradingMemory.length > 0) {
 ### On-The-Fly Kalibrierung (Loop-Closing Feedback Channel)
 Ab Version 12 wurde eine direkte Feedbackschleife aus der laufenden Korrekturoberfläche (`BatchTaskAnalysisCard.tsx`) integriert:
 1. **Zweck:** Weicht die Einschätzung der KI von der gewünschten pädagogischen Bewertung ab, kann die Lehrkraft die Punkte und das Feedback editieren und diesen Fall mit nur einem Klick (**„In Erfahrungsschatz übernehmen“**) direkt als neues Few-Shot-Beispiel anlernen.
-2. **Automatisches PII-Scrubbing:** Der Schülertext wird vor dem Speichern trim-bereinigt. Er enthält standardmäßig keine Schüler-Klarnamen oder sonstige PII-sensiblen Daten.
+2. **Stilistische Anonymisierung & PII-Scrubbing (Neu in v0.9.67):** Vor dem Anlernen eines Beispiels wird die Schülerantwort über den API-Endpunkt `/api/user/grading-memories/anonymize` stilistisch anonymisiert. Rhetorische Eigenheiten, Anekdoten und persönliche Schreibstile werden über einen KI-Zwischenschritt entfernt, während das fachliche Kernargument im Indikativ erhalten bleibt. Dies löst DSGVO/GDPR-Herausforderungen bezüglich der Speicherung von Schüleroriginaldaten im System vollständig. Lehrkräfte erhalten eine interaktive Vorab-Vergleichsansicht (modal), um die anonymisierte Version vor dem Sichern zu reviewen und anzupassen.
 3. **Plattform-Weichenstellung (Drei-Wege-Persistenz):**
    - **SaaS Cloud:** Sichert den Fall sicher in der PostgreSQL-Datenbank über den Next.js-Endpunkt `/api/user/grading-memories/append`. Der Zugriff ist über Logto-Session-Claims (RBAC) gegen unbefugten Fremdzugriff geschützt.
    - **Community (Docker):** Erkennt über `isLocalInstance()` die self-hosted Umgebung und nutzt den `LocalGradingMemoryService`, um den Fall direkt in die Datei `grading_memories.json` im Docker-Volume zu schreiben.
@@ -139,6 +139,7 @@ Um Lehrkräften das Teilen von Erfahrungsschätzen zu ermöglichen, wurde ein Ma
 > [!IMPORTANT]
 > **Datenschutz an Schulen (DSGVO/GDPR):** Da Schülerarbeiten verarbeitet werden, gelten höchste Compliance-Ansprüche.
 
+*   **Stilistische Anonymisierung (DSGVO-Härtung):** Da handschriftliche oder individuelle Formulierungen urheberrechtlich oder datenschutzrechtlich problematisch sein können, wird jede Schülerantwort vor dem Speichern mittels KI abstrahiert. Rhetorische Eigenheiten, Anekdoten und persönliche Schreibstile werden entfernt, um jeglichen Bezug zur Person unumkehrbar aufzuheben.
 *   **Personenbezogene Daten (PII):** Erfahrungsschätze enthalten standardmäßig **keine** Klarnamen oder sonstige Schüler-PII. Schülerantworten werden beim Hinzufügen zum Erfahrungsschatz anonymisiert (Referenzierung über IDs oder anonyme Avatare wie `TYPO`, `LUCK` oder `MISS`).
 *   **Zero-Ops / Offline-Kompatibilität:** Im lokalen Desktop-Modus und Community-Modus werden Erfahrungsschätze vollständig im `LocalStorage` bzw. der lokalen SQLite-Datenbank des Nutzers gespeichert. Es findet keine Übertragung an Koreki-Zentralserver statt.
 *   **AVV-Verschlüsselung:** In der SaaS-Variante sind diese Datensätze durch die mit der Schule/Kommune geschlossene Auftragsdatenverarbeitung (AVV) geschützt und in isolierten Tenant-Datenbankstrukturen abgelegt.

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BatchFile, Task } from '../../types';
+import { BatchFile, Task, AppSettings } from '../../types';
 import { cn } from '@/lib/utils';
 import { BatchDoneHeader } from './parts/BatchDoneHeader';
 import { BatchSolutionPanel } from './parts/BatchSolutionPanel';
@@ -22,6 +22,7 @@ interface BatchItemDoneViewProps {
     mobileViewMode: 'text' | 'image';
     previewUrl: string | null;
     onUpdateText: (idx: number, text: string, tasks?: Task[]) => void;
+    settings?: AppSettings;
 }
 
 /**

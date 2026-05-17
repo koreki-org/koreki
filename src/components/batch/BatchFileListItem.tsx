@@ -3,7 +3,7 @@ import {
     CheckCircle, AlertCircle, AlertTriangle, ChevronDown, Scissors, 
     Trash2, Highlighter, Loader2, RotateCcw
 } from 'lucide-react';
-import { BatchFile, Task } from '../../types';
+import { BatchFile, Task, AppSettings } from '../../types';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Checkbox } from '../ui/Checkbox';
@@ -42,6 +42,7 @@ interface BatchFileListItemProps {
     handleReviewPointChange: (idx: number, name: string, pts: number) => void;
     handleReviewFeedbackChange: (idx: number, name: string, fb: string) => void;
     onProcessSingleFile?: (idx: number) => void;
+    settings?: AppSettings;
 }
 
 /**

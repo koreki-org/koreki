@@ -18,8 +18,10 @@ import { isLocalInstance } from '../../../lib/env-context';
 const memoryCaseSchema = z.object({
     id: z.string(),
     studentText: z.string().min(1, 'Schülertext ist erforderlich'),
+    taskName: z.string().optional(),
     expectedCorrection: z.object({
         pointsObtained: z.number().min(0, 'Punkte dürfen nicht negativ sein'),
+        maxPoints: z.number().optional(),
         correctionNotes: z.string().min(1, 'Korrekturbegründung ist erforderlich'),
         feedback: z.string().optional()
     })

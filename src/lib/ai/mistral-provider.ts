@@ -11,11 +11,12 @@ import {
     buildCleanAndMapPrompt, 
     buildVisionPrompt,
     buildStudentSimulatorPrompt,
+    buildAnonymizePrompt,
     StructuredPrompt 
 } from './prompt-builder';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator' | 'anonymize';
 
 export interface AIRequestOptions {
     temperature?: number;
@@ -94,6 +95,8 @@ export async function executeMistralRequest(
             promptObj = buildCleanAndMapPrompt(payload.text || payload.studentText, payload.tasksLayout, model);
         } else if (action === 'student-simulator') {
             promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout, payload.selectedTasks);
+        } else if (action === 'anonymize') {
+            promptObj = buildAnonymizePrompt(payload.studentText);
         } else {
             throw new Error(`Unsupported text action: ${action}`);
         }

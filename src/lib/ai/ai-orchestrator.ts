@@ -130,7 +130,7 @@ export function parseMappingResult(result: any, tasksLayout?: Task[] | null): an
  * Orchestrates AI requests (Correction, Layout, Vision), choosing between direct Mistral API (PURE) or Koreki Backend (STANDARD).
  */
 export async function performAIRequest(
-    action: 'correction' | 'clean-and-analyze' | 'vision' | 'clean-and-map',
+    action: 'correction' | 'clean-and-analyze' | 'vision' | 'clean-and-map' | 'anonymize',
     payload: any, // ARCH: any required because payload structure varies by action (Correction vs Layout)
     appMode: 'PURE' | 'STANDARD' | 'TRIAL' | undefined,
     settings: AppSettings
@@ -227,7 +227,8 @@ export async function performAIRequest(
         const endpoint = action === 'correction' ? '/api/ai-correct' :
             action === 'clean-and-analyze' ? '/api/clean-and-analyze' :
                 action === 'clean-and-map' ? '/api/clean-and-map' :
-                    '/api/extract-image';
+                    action === 'anonymize' ? '/api/user/grading-memories/anonymize' :
+                        '/api/extract-image';
 
         const res = await apiClient.post(endpoint, { 
             ...payload, 

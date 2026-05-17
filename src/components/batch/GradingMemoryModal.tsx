@@ -4,6 +4,7 @@ import { X, Sparkles, Sliders, Save, CheckCircle, ArrowRight, Bot, ShieldCheck, 
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { FloatingActions } from '../ui/FloatingActions';
+import { PointInput } from '../ui/PointInput';
 import { AppSettings, GradingMemory, GradingMemoryCase, Task } from '../../types';
 import { useGradingMemories } from '../../hooks/useGradingMemories';
 import { isDesktopTarget } from '../../lib/env-context';
@@ -85,6 +86,68 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
         const activeMem = memories.find(m => m.id === activeMemoryId);
         onActiveMemoryChange?.(activeMem ? activeMem.name : undefined);
     }, [activeMemoryId, memories, onActiveMemoryChange]);
+
+    // Auto-persist resolved legacy fields (taskName & maxPoints) back into memories state
+    useEffect(() => {
+        if (!activeMemoryId || !tasksLayout || tasksLayout.length === 0) return;
+        
+        setMemories(prev => {
+            const activeMem = prev.find(m => m.id === activeMemoryId);
+            if (!activeMem) return prev;
+            
+            let changed = false;
+            const updatedCases = activeMem.cases.map(c => {
+                let updatedCase = { ...c };
+                
+                // Resolve taskName
+                let resolvedTaskName = c.taskName;
+                let isHighConfidence = !!c.taskName;
+                if (!resolvedTaskName && c.expectedCorrection.correctionNotes) {
+                    const match = c.expectedCorrection.correctionNotes.match(/^\[Aufgabe:\s*([^\]]+)\]/);
+                    if (match) {
+                        resolvedTaskName = match[1];
+                        isHighConfidence = true;
+                    }
+                }
+                // Fallback matching (low confidence, UI render only, never auto-persist)
+                if (!resolvedTaskName && tasksLayout && tasksLayout.length > 0) {
+                    const combinedText = `${c.studentText} ${c.expectedCorrection.correctionNotes}`.toLowerCase();
+                    const bestTask = tasksLayout.reduce((best, t) => {
+                        const words = `${t.name} ${t.content || ''}`.toLowerCase().match(/\b[a-z0-9äöüß]{3,}\b/g) || [];
+                        const score = words.filter(w => combinedText.includes(w)).length;
+                        return score > best.score ? { task: t, score } : best;
+                    }, { task: null as any, score: 0 });
+                    if (bestTask.score > 2) resolvedTaskName = bestTask.task.name;
+                }
+                
+                if (isHighConfidence && resolvedTaskName && c.taskName !== resolvedTaskName) {
+                    updatedCase.taskName = resolvedTaskName;
+                    changed = true;
+                }
+                
+                // Resolve maxPoints
+                let resolvedMaxPoints = c.expectedCorrection.maxPoints;
+                if (!resolvedMaxPoints && resolvedTaskName && tasksLayout) {
+                    const matched = tasksLayout.find(t => t.name?.toLowerCase() === resolvedTaskName.toLowerCase());
+                    if (matched) resolvedMaxPoints = Number(matched.maxPoints);
+                }
+                
+                if (isHighConfidence && resolvedMaxPoints !== undefined && c.expectedCorrection.maxPoints !== resolvedMaxPoints) {
+                    updatedCase.expectedCorrection = {
+                        ...updatedCase.expectedCorrection,
+                        maxPoints: resolvedMaxPoints
+                    };
+                    changed = true;
+                }
+                
+                return updatedCase;
+            });
+            
+            if (!changed) return prev;
+            
+            return prev.map(m => m.id === activeMemoryId ? { ...m, cases: updatedCases } : m);
+        });
+    }, [activeMemoryId, tasksLayout, memories]);
 
     useEffect(() => {
         setMounted(true);
@@ -232,7 +295,20 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
         }));
     };
 
-    const handleSaveActiveMemoryChanges = async () => {
+        const handleDeleteCase = (caseId: string) => {
+        if (!activeMemoryId) return;
+        if (!window.confirm("Möchtest du dieses Fallbeispiel wirklich aus dem Erfahrungsschatz löschen?")) return;
+
+        setMemories(prev => prev.map(m => {
+            if (m.id !== activeMemoryId) return m;
+            return {
+                ...m,
+                cases: m.cases.filter(c => c.id !== caseId)
+            };
+        }));
+    };
+
+const handleSaveActiveMemoryChanges = async () => {
         const activeMem = memories.find(m => m.id === activeMemoryId);
         if (!activeMem) return;
 
@@ -323,8 +399,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                     const key = ans.uid;
                     
                     let matchedTask = tasksLayout?.find(t => t.name?.toLowerCase() === ans.taskName?.toLowerCase())
-                                   || tasksLayout?.find(t => t.name?.toLowerCase().includes(ans.taskName?.toLowerCase() || ''))
-                                   || tasksLayout?.[0];
+                                   || tasksLayout?.find(t => t.name?.toLowerCase().includes(ans.taskName?.toLowerCase() || ''));
 
                     const actualTaskName = matchedTask?.name || ans.taskName || 'Aufgabe 1';
                     const actualMaxPoints = matchedTask ? Number(matchedTask.maxPoints || 5) : (ans.maxPoints || 5);
@@ -395,8 +470,10 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                 return {
                     id: `case-${key}-${Date.now()}`,
                     studentText: ans.text,
+                    taskName: cal?.taskName,
                     expectedCorrection: {
                         pointsObtained: cal?.pointsObtained || 0,
+                        maxPoints: cal?.maxPoints,
                         correctionNotes: `[Aufgabe: ${cal?.taskName || 'Allgemein'}] ${cal?.correctionNotes || ''}`,
                         feedback: cal?.feedback || undefined
                     }
@@ -700,13 +777,48 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                                                  </h4>
  
                                                  <div className="space-y-4 pr-1">
-                                                     {memories.find(m => m.id === activeMemoryId)?.cases?.map((c, index) => (
+                                                     {memories.find(m => m.id === activeMemoryId)?.cases?.map((c, index) => {
+                                                          // 1. Resolve taskName
+                                                          let resolvedTaskName = c.taskName;
+                                                          if (!resolvedTaskName && c.expectedCorrection.correctionNotes) {
+                                                              const match = c.expectedCorrection.correctionNotes.match(/^\[Aufgabe:\s*([^\]]+)\]/);
+                                                              if (match) resolvedTaskName = match[1];
+                                                          }
+                                                          // Fallback: If tasksLayout is present, match text keywords to map task
+                                                          if (!resolvedTaskName && tasksLayout && tasksLayout.length > 0) {
+                                                              const combinedText = `${c.studentText} ${c.expectedCorrection.correctionNotes}`.toLowerCase();
+                                                              const bestTask = tasksLayout.reduce((best, t) => {
+                                                                  const words = `${t.name} ${t.content || ''}`.toLowerCase().match(/\b[a-z0-9äöüß]{3,}\b/g) || [];
+                                                                  const score = words.filter(w => combinedText.includes(w)).length;
+                                                                  return score > best.score ? { task: t, score } : best;
+                                                              }, { task: null as any, score: 0 });
+                                                              if (bestTask.score > 2) resolvedTaskName = bestTask.task.name;
+                                                          }
+
+                                                          // 2. Resolve maxPoints
+                                                          let resolvedMaxPoints = c.expectedCorrection.maxPoints;
+                                                          if (!resolvedMaxPoints && resolvedTaskName && tasksLayout) {
+                                                              const matched = tasksLayout.find(t => t.name?.toLowerCase() === resolvedTaskName.toLowerCase());
+                                                              if (matched) resolvedMaxPoints = Number(matched.maxPoints);
+                                                          }
+
+                                                          return (
                                                          <div key={c.id} className="p-4 border border-slate-150 rounded-xl bg-slate-50/20 space-y-3">
                                                              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                                                                 <span className="text-xs font-extrabold text-slate-700">Fallbeispiel {index + 1}</span>
-                                                                 <span className="text-[9px] font-black uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                                                                     Few-Shot #{index + 1}
-                                                                 </span>
+                                                                 <span className="text-xs font-extrabold text-slate-700">Fallbeispiel {index + 1} {resolvedTaskName ? `(${resolvedTaskName})` : ''}</span>
+                                                                 <div className="flex items-center gap-2">
+                                                                     <span className="text-[9px] font-black uppercase text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                                                                         Few-Shot #${index + 1}
+                                                                     </span>
+                                                                     <button 
+                                                                         type="button"
+                                                                         onClick={() => handleDeleteCase(c.id)}
+                                                                         className="p-1 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                                                                         title="Fallbeispiel löschen"
+                                                                     >
+                                                                         <Trash2 size={13} />
+                                                                     </button>
+                                                                 </div>
                                                              </div>
  
                                                              <div className="space-y-1">
@@ -722,18 +834,14 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
  
                                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                                                                  <div className="space-y-1">
-                                                                     <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Erwartete Punkte:</span>
-                                                                     <div className="flex items-center gap-2">
-                                                                         <input 
-                                                                             type="number"
-                                                                             min="0"
-                                                                             max="20"
-                                                                             value={c.expectedCorrection.pointsObtained}
-                                                                             onChange={e => handleUpdateCaseField(c.id, 'pointsObtained', parseInt(e.target.value) || 0)}
-                                                                             className="w-16 bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-center font-bold text-slate-800"
-                                                                         />
-                                                                         <span className="text-xs text-slate-400 font-bold">Punkte</span>
-                                                                     </div>
+                                                                     <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Vergebene Punkte:</span>
+                                                                      <PointInput 
+                                                                           value={Number(c.expectedCorrection.pointsObtained ?? 0)}
+                                                                           maxPoints={resolvedMaxPoints}
+                                                                           showMaxPoints={resolvedMaxPoints !== undefined}
+                                                                           onChange={val => handleUpdateCaseField(c.id, 'pointsObtained', val)}
+                                                                           className="bg-white border-slate-200/60 max-w-[125px]"
+                                                                       />
                                                                  </div>
  
                                                                  <div className="space-y-1">
@@ -759,7 +867,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                                                                  />
                                                              </div>
                                                          </div>
-                                                     ))}
+                                                     )})}
                                                  </div>
                                              </div>
                                          </div>

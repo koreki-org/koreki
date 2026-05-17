@@ -16,8 +16,10 @@ import { isLocalInstance } from '../../../../lib/env-context';
 const appendCaseSchema = z.object({
     gradingMemoryId: z.string().min(1, 'ID des Erfahrungsschatzes ist erforderlich'),
     studentText: z.string().min(1, 'Schülerantwort ist erforderlich'),
+    taskName: z.string().optional(),
     expectedCorrection: z.object({
         pointsObtained: z.number().min(0, 'Punkte dürfen nicht negativ sein'),
+        maxPoints: z.number().optional(),
         correctionNotes: z.string().min(1, 'Korrekturbegründung ist erforderlich'),
         feedback: z.string().optional()
     })
@@ -38,11 +40,12 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         });
     }
 
-    const { gradingMemoryId, studentText, expectedCorrection } = validation.data;
+    const { gradingMemoryId, studentText, taskName, expectedCorrection } = validation.data;
     const newCaseId = `case-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     const newCase = {
         id: newCaseId,
         studentText: studentText.trim(),
+        taskName: taskName,
         expectedCorrection
     };
 
