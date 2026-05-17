@@ -104,10 +104,50 @@ export const useProcessingPipeline = (
                     }
 
                     let redactedDataUrls = items[i].redactedDataUrls;
+                    let redactionRects = items[i].redactionRects;
+                    let isRedacted = items[i].isRedacted;
                     
-                    if (items[i].isRedacted && items[i].redactionRects && previewDataUrls && previewDataUrls.length > 0) {
+                    if (items[i].autoRedactTop2cm && previewDataUrls && previewDataUrls.length > 0 && !items[i].isRedacted) {
                         try {
-                            redactedDataUrls = await applyRedactionsToPreviews(previewDataUrls, items[i].redactionRects);
+                            const rects: Record<number, { x: number, y: number, w: number, h: number }[]> = {};
+                            const redactedUrls: string[] = [];
+                            
+                            for (let pageIdx = 0; pageIdx < previewDataUrls.length; pageIdx++) {
+                                const url = previewDataUrls[pageIdx];
+                                const img = new Image();
+                                await new Promise((resolve, reject) => {
+                                    img.onload = resolve;
+                                    img.onerror = reject;
+                                    img.src = url;
+                                });
+                                
+                                const h = Math.round(img.height * 0.0673); // ~2 cm proportional on A4 A-series ratio
+                                const rect = { x: 0, y: 0, w: img.width, h };
+                                rects[pageIdx] = [rect];
+                                
+                                const canvas = document.createElement('canvas');
+                                canvas.width = img.width;
+                                canvas.height = img.height;
+                                const ctx = canvas.getContext('2d');
+                                if (ctx) {
+                                    ctx.drawImage(img, 0, 0);
+                                    ctx.fillStyle = '#0f172a'; // Slate-900 / Black-out
+                                    ctx.fillRect(0, 0, img.width, h);
+                                    redactedUrls.push(canvas.toDataURL('image/jpeg', 0.9));
+                                } else {
+                                    redactedUrls.push(url);
+                                }
+                            }
+                            
+                            redactionRects = rects;
+                            redactedDataUrls = redactedUrls;
+                            isRedacted = true;
+                        } catch (err) {
+                            console.error("Failed auto-redaction during extraction", err);
+                        }
+                    } else if (isRedacted && redactionRects && previewDataUrls && previewDataUrls.length > 0) {
+                        try {
+                            redactedDataUrls = await applyRedactionsToPreviews(previewDataUrls, redactionRects);
                         } catch (err) {
                             console.error("Failed to re-apply redactions", err);
                         }
@@ -117,7 +157,15 @@ export const useProcessingPipeline = (
                         // For scans, we only update metadata and wait for manual OCR
                         setBatchFiles((prev: BatchFile[]) => {
                             const next = [...prev];
-                            next[i] = { ...next[i], pageCount, previewDataUrls, redactedDataUrls, ocrDone: false };
+                            next[i] = { 
+                                ...next[i], 
+                                pageCount, 
+                                previewDataUrls, 
+                                redactedDataUrls, 
+                                redactionRects, 
+                                isRedacted, 
+                                ocrDone: false 
+                            };
                             return next;
                         });
                     } else {
@@ -129,13 +177,27 @@ export const useProcessingPipeline = (
                                 text, 
                                 pageCount, 
                                 1, // Multiplier for digital
-                                { pageCount, previewDataUrls, redactedDataUrls }
+                                { 
+                                    pageCount, 
+                                    previewDataUrls, 
+                                    redactedDataUrls, 
+                                    redactionRects, 
+                                    isRedacted 
+                                }
                             );
                         } else {
                             // Just update metadata if text was already there
                             setBatchFiles((prev: BatchFile[]) => {
                                 const next = [...prev];
-                                next[i] = { ...next[i], pageCount, previewDataUrls, redactedDataUrls, ocrDone: true };
+                                next[i] = { 
+                                    ...next[i], 
+                                    pageCount, 
+                                    previewDataUrls, 
+                                    redactedDataUrls, 
+                                    redactionRects, 
+                                    isRedacted, 
+                                    ocrDone: true 
+                                };
                                 return next;
                             });
                         }

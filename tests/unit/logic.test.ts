@@ -141,5 +141,28 @@ describe('Logic module tests', () => {
             expect(part2.pageCount).toBe(3);
             expect(part2.pageRange).toEqual([3, 5]);
         });
+
+        it('should correctly attach the autoRedactTop2cm flag when autoRedact is true', () => {
+            const { generateSplitBatchItems } = require('../../src/lib/logic');
+            const originalFile = { name: 'Schüler #1' };
+            const splits = [{ name: 'A', pageCount: 1 }, { name: 'B', pageCount: 2 }];
+
+            const result = generateSplitBatchItems(originalFile, splits, 0, true);
+
+            expect(result.length).toBe(2);
+            expect(result[0].autoRedactTop2cm).toBe(true);
+            expect(result[1].autoRedactTop2cm).toBe(true);
+        });
+
+        it('should default autoRedactTop2cm to false when autoRedact is omitted', () => {
+            const { generateSplitBatchItems } = require('../../src/lib/logic');
+            const originalFile = { name: 'Schüler #1' };
+            const splits = [{ name: 'A', pageCount: 1 }];
+
+            const result = generateSplitBatchItems(originalFile, splits, 0);
+
+            expect(result.length).toBe(1);
+            expect(result[0].autoRedactTop2cm).toBe(false);
+        });
     });
 });

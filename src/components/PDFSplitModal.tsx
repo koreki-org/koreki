@@ -13,11 +13,12 @@ interface PDFSplitModalProps {
     fileName: string;
     totalPageCount: number;
     onClose: () => void;
-    onSplit: (students: StudentConfig[]) => void;
+    onSplit: (students: StudentConfig[], autoRedact: boolean) => void;
 }
 
 const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount, onClose, onSplit }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [autoRedact, setAutoRedact] = useState(false);
     const [students, setStudents] = useState<StudentConfig[]>([
         { name: 'Schüler #1', pageCount: totalPageCount }
     ]);
@@ -98,7 +99,7 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
 
     const handleSplit = () => {
         if (assignedPages === 0 || assignedPages > totalPageCount) return;
-        onSplit(students);
+        onSplit(students, autoRedact);
         onClose();
     };
 
@@ -185,7 +186,7 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                         <Plus size={18} /> Schüler hinzufügen
                     </Button>
 
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4">
                         <div className="flex justify-between text-sm mb-1">
                             <span className="text-slate-600 font-medium">Zugeordnete Seiten:</span>
                             <span className={`font-bold ${assignedPages > totalPageCount ? 'text-red-500' : 'text-blue-600'}`}>
@@ -204,6 +205,21 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                             </div>
                         )}
                     </div>
+
+                    <label className="flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 cursor-pointer transition-all">
+                        <input
+                            type="checkbox"
+                            checked={autoRedact}
+                            onChange={(e) => setAutoRedact(e.target.checked)}
+                            className="w-4 h-4 rounded text-primary focus:ring-primary/20 border-slate-300 transition-all cursor-pointer"
+                        />
+                        <div className="flex flex-col">
+                            <span className="text-sm font-bold text-slate-800">Automatische Schwärzung</span>
+                            <span className="text-[11px] text-slate-500 font-medium leading-normal">
+                                Obere 2 cm auf allen Seiten automatisch mit einem schwarzen Balken schwärzen.
+                            </span>
+                        </div>
+                    </label>
                 </div>
 
                 <div className="flex gap-4 mt-8">

@@ -134,6 +134,7 @@ export interface BatchFile {
         sourceFileName?: string;
     };
     inferenceDuration?: number;
+    autoRedactTop2cm?: boolean;
 }
 
 export interface KorekiExport {
@@ -168,8 +169,10 @@ export interface AiProfile {
 export interface GradingMemoryCase {
     id: string;
     studentText: string;
+    taskName?: string;
     expectedCorrection: {
         pointsObtained: number;
+        maxPoints?: number;
         correctionNotes: string;
         feedback?: string;
     };
