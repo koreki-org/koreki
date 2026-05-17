@@ -1,5 +1,5 @@
 import React from 'react';
-import { Crown, Building2, Shield, Sparkles, Loader2, ShieldCheck, BookOpen, Brain, GraduationCap, Wrench } from 'lucide-react';
+import { Crown, Building2, Shield, Sparkles, Loader2, ShieldCheck } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { isLocalInstance } from '@/lib/env-context';
 import { useRouter } from 'next/router';
@@ -9,39 +9,26 @@ interface HeaderBadgesProps {
     upgrading: boolean;
     onUpgrade: () => void;
     onUnlockExpert?: () => void;
-    onShowPrompts?: () => void;
-    onShowSkills?: () => void;
-    onShowAiParams?: () => void;
-    onShowGradingMemory?: () => void;
 }
 
 /**
- * Industrial Header Badges (Stage 9)
+ * Industrial Header Badges (Stage 9 - Clean Version)
  * 🏮🛡️🏛️
  * Encapsulates the visual rendering of credits, roles, and institutional status.
+ * All configuration buttons are unified and handled inside AppHeader.tsx.
  */
 export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
     userData,
     upgrading,
     onUpgrade,
-    onUnlockExpert,
-    onShowPrompts,
-    onShowSkills,
-    onShowAiParams,
-    onShowGradingMemory
+    onUnlockExpert
 }) => {
     const router = useRouter();
-    // Role Label Logic (Industrial Grade)
-    const getRoleLabel = () => {
-        if (userData?.role === 'ADMIN' && !isLocalInstance()) return 'Administrator';
-        if (userData?.activeWorkspaceType === 'ORGANIZATION') return 'Lehrkraft';
-        return 'Experte';
-    };
 
     return (
         <div className="flex gap-2 sm:gap-3 items-center bg-white/70 backdrop-blur-xl p-2 rounded-[1.25rem] border border-white shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/[0.03]">
-            {/* Branding Badge (Institutional Tenancy) */}
-            {userData?.activeWorkspaceType === 'ORGANIZATION' && (
+            {/* Branding Badge (Institutional Tenancy) - ONLY rendered locally, hidden in SaaS for space */}
+            {isLocalInstance() && userData?.activeWorkspaceType === 'ORGANIZATION' && (
                 <div className="flex items-center gap-2.5 px-3.5 py-2 bg-indigo-600/[0.08] text-indigo-700 rounded-xl border border-indigo-100/80 group transition-all hover:bg-indigo-600/10">
                    <Building2 size={16} className="text-indigo-600 opacity-80 group-hover:scale-110 transition-transform" />
                    <div className="flex flex-col">
@@ -114,90 +101,36 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
             )}
 
             {/* Quick Admin Toggles */}
-            <div className="flex items-center gap-1 border-l border-slate-200 ml-1 pl-2">
-                {userData?.role === 'ADMIN' && !isLocalInstance() && (
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => router.push('/admin')}
-                        className="bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-500 hover:text-white rounded-xl shadow-sm h-8 w-8 transition-all"
-                        title="System-Administration (GLOBAL)"
-                    >
-                        <Shield size={16} />
-                    </Button>
-                )}
+            {((userData?.role === 'ADMIN' && !isLocalInstance()) || 
+              (userData?.role !== 'ADMIN' && userData?.activeWorkspaceType === 'ORGANIZATION' && 
+               (userData?.activeMembershipRole === 'ADMIN' || userData?.activeMembershipRole === 'OWNER'))) && (
+                <div className="flex items-center gap-1 border-l border-slate-200 ml-1 pl-2">
+                    {userData?.role === 'ADMIN' && !isLocalInstance() && (
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => router.push('/admin')}
+                            className="bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-500 hover:text-white rounded-xl shadow-sm h-8 w-8 transition-all shrink-0"
+                            title="System-Administration (GLOBAL)"
+                        >
+                            <Shield size={16} />
+                        </Button>
+                    )}
 
-                {userData?.role !== 'ADMIN' && (userData?.activeWorkspaceType === 'ORGANIZATION' && 
-                  (userData?.activeMembershipRole === 'ADMIN' || userData?.activeMembershipRole === 'OWNER')) && (
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => router.push(`/org-admin?workspaceId=${userData?.activeWorkspaceId}`)}
-                        className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white rounded-xl shadow-sm h-8 w-8 transition-all"
-                        title="Schul-Verwaltung (INSTITUT)"
-                    >
-                        <Building2 size={16} />
-                    </Button>
-                )}
-
-                {/* Expert Prompts Button (Stage 10 Stateless) 💎✨ */}
-                {(isLocalInstance() || userData?.canEditPrompts) && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onShowPrompts}
-                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group whitespace-nowrap shrink-0"
-                        title="Expert Center: Fachprofile & Prompts verwalten"
-                    >
-                        <GraduationCap size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
-                        <span className="hidden sm:inline font-bold tracking-tight text-xs">Expertise</span>
-                    </Button>
-                )}
-
-                {/* AI Skills Button ⚙️🎯 */}
-                {(isLocalInstance() || userData?.canEditPrompts) && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onShowSkills}
-                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300 whitespace-nowrap shrink-0"
-                        title="Skills Center: Modulare AI-Bewertungskompetenzen aktivieren"
-                    >
-                        <Wrench size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
-                        <span className="hidden sm:inline font-bold tracking-tight text-xs font-black">Skills</span>
-                    </Button>
-                )}
-
-                {/* GradingMemory Button (Stage 10 Stateless) 🎓🎯 */}
-                {(isLocalInstance() || userData?.canEditPrompts) && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onShowGradingMemory}
-                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300 whitespace-nowrap shrink-0"
-                        title="GradingMemory™: Korrektur-Erfahrungsschatz kalibrieren"
-                    >
-                        <BookOpen size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
-                        <span className="hidden sm:inline font-bold tracking-tight text-xs">Erfahrung</span>
-                    </Button>
-                )}
-
-                {/* AI Parameters Button (Stage 10 Stateless) ⚙️🎛️ */}
-                {(isLocalInstance() || userData?.canEditPrompts) && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onShowAiParams}
-                        className="bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white rounded-xl shadow-sm h-8 px-2 sm:px-3 transition-all flex items-center gap-1.5 sm:gap-2 group animate-in fade-in duration-300 whitespace-nowrap shrink-0"
-                        title="Intelligenz: Denkweise & Leistungskraft der KI steuern"
-                    >
-                        <Brain size={14} className="text-indigo-500 group-hover:text-white transition-colors" />
-                        <span className="hidden sm:inline font-bold tracking-tight text-xs">Intelligenz</span>
-                    </Button>
-                )}
-            </div>
-            
-            {/* Active Profile Info (Mobile specific logic mapping could go here) */}
+                    {userData?.role !== 'ADMIN' && (userData?.activeWorkspaceType === 'ORGANIZATION' && 
+                      (userData?.activeMembershipRole === 'ADMIN' || userData?.activeMembershipRole === 'OWNER')) && (
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => router.push(`/org-admin?workspaceId=${userData?.activeWorkspaceId}`)}
+                            className="bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-600 hover:text-white rounded-xl shadow-sm h-8 w-8 transition-all shrink-0"
+                            title="Schul-Verwaltung (INSTITUT)"
+                        >
+                            <Building2 size={16} />
+                        </Button>
+                    )}
+                </div>
+            )}
         </div>
     );
 };

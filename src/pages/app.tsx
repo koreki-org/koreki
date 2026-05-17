@@ -143,6 +143,7 @@ export default function Home() {
                         activeGradingMemoryName={activeGradingMemoryName}
                         onLoadDemo={loadDemoData}
                         onReset={handleStartNew}
+                        hasActiveWork={!!data.modelSolution || fileProcessor.batchFiles.length > 0}
                         onImportSession={async (file) => {
                             const imported = await fileProcessor.handleKorekiImport(file);
                             if (imported && imported.metadata) {
