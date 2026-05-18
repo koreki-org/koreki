@@ -92,25 +92,67 @@ const Header: React.FC<HeaderProps> = ({
     // --- STAGE 9: INDUSTRIAL GLOBAL STATUS ---
     const { refs, logic, actions } = useGlobalStatus(userData, onImportSession, onRelinkFiles);
 
+    const renderQuickActions = (isMobile: boolean) => (
+        <div className={`${isMobile ? 'flex lg:hidden' : 'hidden lg:flex'} items-center justify-end gap-1.5 sm:gap-2 shrink-0 ml-auto lg:ml-0`}>
+            <Button 
+                variant="outline" 
+                size="icon" 
+                onClick={onShowHelp} 
+                title="Hilfe & Infos" 
+                className="border-0 bg-transparent text-slate-500 hover:bg-white hover:text-slate-900 rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
+            >
+                <HelpCircle size={16} />
+            </Button>
+            
+            {(userData?.role === 'ADMIN' || isLocalInstance()) && (
+                <Button 
+                    variant="outline" 
+                    size="icon" 
+                    onClick={onShowSettings} 
+                    title="System-Einstellungen" 
+                    className="border-0 bg-transparent text-slate-500 hover:bg-white hover:text-slate-900 rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
+                >
+                    <Settings size={16} />
+                </Button>
+            )}
+            
+            {(!isLocalInstance() || isKeycloakAuth()) && (
+                <>
+                    <div className="w-px h-5 bg-slate-200 mx-0.5 shrink-0" />
+                    <Button 
+                        variant="outline" 
+                        size="icon" 
+                        onClick={onLogout} 
+                        title="Abmelden" 
+                        className="border-0 bg-transparent text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
+                    >
+                        <LogOut size={16} />
+                    </Button>
+                </>
+            )}
+        </div>
+    );
+
     return (
         <header className="mb-4 md:mb-5 flex flex-col gap-4 w-full animate-in fade-in duration-500">
             {/* Strictly Single-Row Navigation Bar */}
             <div className="w-full bg-white/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl sm:rounded-[1.25rem] border border-white shadow-xl shadow-slate-200/30 ring-1 ring-slate-900/[0.02] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 transition-all duration-300">
                 
                 {/* Left Side: Badges & Profile Config Buttons */}
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full lg:w-auto">
+                <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full lg:w-auto">
                     
-                    {/* Licenses & Tenancy Badges (no Logo) */}
-                    <div className="shrink-0">
+                    {/* Licenses & Tenancy Badges (no Logo) + Mobile Quick Actions */}
+                    <div className="flex items-center justify-between w-full lg:w-auto shrink-0">
                         <HeaderBadges
                             userData={userData}
                             upgrading={upgrading}
                             onUpgrade={onUpgrade}
                             onUnlockExpert={onUnlockExpert}
                         />
+                        {renderQuickActions(true)}
                     </div>
 
-                    <div className="h-4 w-px bg-slate-200 hidden sm:block shrink-0" />
+                    <div className="h-4 w-px bg-slate-200 hidden lg:block shrink-0" />
 
                     {/* Classic Labeled Configuration Pill Row - strictly horizontal on desktop */}
                     {(isLocalInstance() || userData?.canEditPrompts) && (
@@ -150,80 +192,41 @@ const Header: React.FC<HeaderProps> = ({
                     )}
                 </div>
 
-                {/* Right Side: Quick Action Utilities */}
-                <div className="flex items-center justify-end gap-1.5 sm:gap-2 ml-auto lg:ml-0 shrink-0">
-                    <Button 
-                        variant="outline" 
-                        size="icon" 
-                        onClick={onShowHelp} 
-                        title="Hilfe & Infos" 
-                        className="border-0 bg-transparent text-slate-500 hover:bg-white hover:text-slate-900 rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
-                    >
-                        <HelpCircle size={16} />
-                    </Button>
-                    
-                    {(userData?.role === 'ADMIN' || isLocalInstance()) && (
-                        <Button 
-                            variant="outline" 
-                            size="icon" 
-                            onClick={onShowSettings} 
-                            title="System-Einstellungen" 
-                            className="border-0 bg-transparent text-slate-500 hover:bg-white hover:text-slate-900 rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
-                        >
-                            <Settings size={16} />
-                        </Button>
-                    )}
-                    
-                    {(!isLocalInstance() || isKeycloakAuth()) && (
-                        <>
-                            <div className="w-px h-5 bg-slate-200 mx-0.5 shrink-0" />
-                            <Button 
-                                variant="outline" 
-                                size="icon" 
-                                onClick={onLogout} 
-                                title="Abmelden" 
-                                className="border-0 bg-transparent text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
-                            >
-                                <LogOut size={16} />
-                            </Button>
-                        </>
-                    )}
-                </div>
+                {/* Right Side: Quick Action Utilities (Desktop-only) */}
+                {renderQuickActions(false)}
             </div>
 
             {/* The Classic Center Branding & Action Layer */}
             <div className="flex flex-col items-center text-center mt-5 md:mt-1 animate-in fade-in duration-500 ease-out">
                 <Logo showText={true} textLarge={true} size={40} subtitle="Dein KI-Korrektur Assistent" />
                 
-                <div className="flex flex-col gap-2.5 mt-3 md:mt-4 w-full max-w-[400px] mx-auto px-6 sm:px-0">
+                <div className="flex flex-row gap-2 sm:gap-2.5 mt-3 md:mt-4 w-full max-w-[480px] mx-auto px-4 sm:px-0">
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={onLoadDemo}
+                        className="flex-1 rounded-full px-2 sm:px-4 bg-white/50 backdrop-blur-sm border-slate-200 text-slate-600 hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-[10px] sm:text-xs"
+                    >
+                        <Sparkles size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Demo
+                    </Button>
+
                     <Button
                         variant="default"
                         size="lg"
                         onClick={onReset}
-                        className="w-full rounded-full bg-primary text-primary-foreground hover:shadow-lg hover:-translate-y-0.5 transition-all h-10 font-bold text-sm"
+                        className="flex-1 rounded-full px-2 sm:px-4 bg-primary text-primary-foreground hover:shadow-lg hover:-translate-y-0.5 transition-all h-10 font-bold text-[10px] sm:text-xs whitespace-nowrap"
                     >
-                        <PlusCircle size={16} className="mr-2" /> Neue Korrektur
+                        <PlusCircle size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Neue Korrektur
                     </Button>
 
-                    <div className="flex flex-row gap-2.5 w-full">
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            onClick={onLoadDemo}
-                            className="flex-1 rounded-full px-4 bg-white/50 backdrop-blur-sm border-slate-200 text-slate-600 hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-[11px] sm:text-xs"
-                        >
-                            <Sparkles size={14} className="mr-1.5 inline" /> Demo
-                        </Button>
-
-                        <Button
-                            variant="outline"
-                            size="lg"
-                            onClick={actions.triggerImport}
-                            className="flex-1 rounded-full px-4 bg-white/50 backdrop-blur-sm border-slate-200 text-slate-600 hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-[11px] sm:text-xs"
-                        >
-                            <FileUp size={14} className="mr-1.5 inline" /> Importieren
-                        </Button>
-                    </div>
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={actions.triggerImport}
+                        className="flex-1 rounded-full px-2 sm:px-4 bg-white/50 backdrop-blur-sm border-slate-200 text-slate-600 hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-[10px] sm:text-xs"
+                    >
+                        <FileUp size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Importieren
+                    </Button>
                 </div>
             </div>
 
