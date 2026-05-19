@@ -5,12 +5,13 @@ import {
     buildVisionPrompt,
     buildStudentSimulatorPrompt,
     buildAnonymizePrompt,
+    buildSecondOpinionPrompt,
     StructuredPrompt
 } from './prompt-builder';
 import { AppSettings } from '../../types';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion';
 
 /**
  * Specifically optimized for Gemma 4 E4B (multimodal).
@@ -50,6 +51,18 @@ export async function executeOllamaRequest(
         promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout, payload.selectedTasks);
     } else if (action === 'anonymize') {
         promptObj = buildAnonymizePrompt(payload.studentText);
+    } else if (action === 'second-opinion') {
+        promptObj = buildSecondOpinionPrompt(
+            payload.taskName,
+            payload.taskInstructions,
+            payload.sampleSolution,
+            payload.maxPoints,
+            payload.studentText,
+            payload.currentPoints,
+            payload.currentFeedback,
+            payload.teacherDoubt,
+            payload.chatHistory
+        );
     } else {
         throw new Error(`Unsupported action: ${action}`);
     }
@@ -61,7 +74,7 @@ export async function executeOllamaRequest(
             const { invoke } = await import('@tauri-apps/api/core');
             // [Industrial Validation] If Mistral works but Qwen fails with connection error,
             // we must unify the request structure. Enabled JSON format for all.
-            const targetFormat = (action === 'vision') ? undefined : 'json';
+            const targetFormat = (action === 'vision' || action === 'second-opinion') ? undefined : 'json';
             
             let numCtx: number | undefined = 8192;
             const modelLower = model.toLowerCase();
@@ -120,7 +133,7 @@ export async function executeOllamaRequest(
                 { role: 'system', content: promptObj.system },
                 { role: 'user', content: promptObj.user }
             ],
-            response_format: action === 'vision' ? undefined : { type: 'json_object' },
+            response_format: (action === 'vision' || action === 'second-opinion') ? undefined : { type: 'json_object' },
             options: { 
                 num_ctx: 8192,
                 temperature: promptObj.options?.temperature ?? 0.7,
@@ -136,7 +149,7 @@ export async function executeOllamaRequest(
 }
 
 function processOllamaResponse(content: string, action: AIAction, modelName: string) {
-    if (action === 'vision') return { text: content };
+    if (action === 'vision' || action === 'second-opinion') return { text: content };
     let cleaned = content.trim();
     
     // Industrial Diagnostics: Handle empty responses caused by silent backend failures

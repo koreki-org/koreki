@@ -5,8 +5,8 @@ import { PromptLibraryEntry } from './prompt-library';
 // Centralized Default Templates
 import correctionSystemDefault from '../../prompts/core/default/correction/system.md';
 import correctionUserDefault from '../../prompts/core/default/correction/user.md';
-import studentSimulatorSystemDefault from '../../prompts/core/default/student-simulator/system.md';
-import studentSimulatorUserDefault from '../../prompts/core/default/student-simulator/user.md';
+import studentSimulatorSystemDefault from '../../prompts/student-simulator/system.md';
+import studentSimulatorUserDefault from '../../prompts/student-simulator/user.md';
 
 import analyzeCleanSystemDefault from '../../prompts/core/default/analyze-and-clean/system.md';
 import analyzeCleanUserDefault from '../../prompts/core/default/analyze-and-clean/user.md';
@@ -16,6 +16,9 @@ import analyzeMapUserDefault from '../../prompts/core/default/analyze-and-map/us
 
 import visionSystemDefault from '../../prompts/core/default/vision/system.md';
 import visionUserDefault from '../../prompts/core/default/vision/user.md';
+
+import secondOpinionSystemDefault from '../../prompts/second-opinion/system.md';
+import secondOpinionUserDefault from '../../prompts/second-opinion/user.md';
 
 // Specialized Gemma4 Templates
 import gemma4CorrectionSystem from '../../prompts/core/specialized/gemma4/correction/system.md';
@@ -290,6 +293,65 @@ JSON-Format:
   "anonymizedText": "Hier steht die direkt formulierte, anonymisierte Schülerantwort ohne Einleitungsfloskel."
 }`,
         user: `Zu anonymisierende Schülerantwort:\n"""\n${studentText}\n"""\n\nAbstrahierte, anonymisierte Version im JSON-Format:`,
+        options: { temperature: 0.1, topP: 1.0 }
+    };
+}
+
+/**
+ * Builds the prompt for the Pedagogical Double-Check (Zweitblick)
+ * Act as a senior pedagogical referee resolving grading doubts.
+ */
+export interface ChatMessage {
+    role: 'user' | 'assistant';
+    content: string;
+}
+
+/**
+ * Builds the prompt for the KI-Zweitmeinung / Besprechung Chat
+ */
+export function buildSecondOpinionPrompt(
+    taskName: string,
+    taskInstructions?: string,
+    sampleSolution?: string,
+    maxPoints?: number,
+    studentText?: string,
+    currentPoints?: number,
+    currentFeedback?: string,
+    teacherDoubt?: string,
+    chatHistory?: ChatMessage[]
+): StructuredPrompt {
+    const safeTaskInstructions = taskInstructions?.trim() || 'Keine Angabe';
+    const safeSampleSolution = sampleSolution?.trim() || 'Keine Angabe';
+    const safeStudentText = studentText?.trim() || 'Keine Angabe';
+    const safeCurrentFeedback = currentFeedback?.trim() || 'Keine Angabe';
+    const safeTeacherDoubt = teacherDoubt?.trim() || 'Keine Angabe';
+    const safeMaxPoints = maxPoints ?? 0;
+    const safeCurrentPoints = currentPoints ?? 0;
+
+    let historyText = '';
+    if (chatHistory && chatHistory.length > 0) {
+        historyText = '\n### BISHERIGER CHAT-VERLAUF:\n' + chatHistory.map(msg => 
+            msg.role === 'user' ? `Lehrkraft: "${msg.content}"` : `Koreki: "${msg.content}"`
+        ).join('\n') + '\n';
+    }
+
+    const system = secondOpinionSystemDefault;
+
+    // Interpolate variables into User Prompt Markdown
+    const user = secondOpinionUserDefault
+        .replace(/{{taskName}}/g, taskName)
+        .replace(/{{taskInstructions}}/g, safeTaskInstructions)
+        .replace(/{{sampleSolution}}/g, safeSampleSolution)
+        .replace(/{{maxPoints}}/g, String(safeMaxPoints))
+        .replace(/{{studentText}}/g, safeStudentText)
+        .replace(/{{currentPoints}}/g, String(safeCurrentPoints))
+        .replace(/{{currentFeedback}}/g, safeCurrentFeedback)
+        .replace(/{{historyText}}/g, historyText)
+        .replace(/{{teacherDoubt}}/g, safeTeacherDoubt);
+
+    return {
+        system,
+        user,
         options: { temperature: 0.1, topP: 1.0 }
     };
 }

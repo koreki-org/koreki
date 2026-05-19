@@ -40,3 +40,19 @@ export const CorrectionSchema = z.object({
         })
     })).optional(),
 });
+
+export const secondOpinionRequestSchema = z.object({
+    taskName: z.string().min(1, 'Aufgabenname fehlt'),
+    taskInstructions: z.string().optional(),
+    sampleSolution: z.string().optional(),
+    maxPoints: z.number().nonnegative(),
+    studentText: z.string().min(1, 'Schülertext fehlt'),
+    currentPoints: z.number(),
+    currentFeedback: z.string(),
+    teacherDoubt: z.string().optional(),
+    chatHistory: z.array(z.object({
+        role: z.enum(['user', 'assistant']),
+        content: z.string()
+    })).optional()
+});
+

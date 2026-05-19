@@ -32,7 +32,7 @@ export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }
 
     return (
         <div className={cn(
-            "prose-koreki prose-math max-w-none break-words leading-relaxed font-medium",
+            "prose-koreki prose-math max-w-none break-words leading-relaxed font-normal",
             "text-sm text-foreground/90",
             className
         )}>

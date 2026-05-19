@@ -44,7 +44,7 @@ export const HighlightableTextArea: React.FC<HighlightableTextAreaProps> = ({ va
         <div className={cn("relative overflow-hidden", className)}>
             <div
                 ref={highlightRef}
-                className="absolute inset-0 p-4 text-xs font-mono whitespace-pre-wrap break-words pointer-events-none text-transparent overflow-hidden leading-relaxed border border-transparent"
+                className="absolute inset-0 p-4 text-sm font-mono whitespace-pre-wrap break-words pointer-events-none text-transparent overflow-hidden leading-relaxed border border-transparent"
                 style={{
                     fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
                     lineHeight: '1.625',
@@ -72,7 +72,7 @@ export const HighlightableTextArea: React.FC<HighlightableTextAreaProps> = ({ va
                     textRendering: 'optimizeLegibility',
                     WebkitFontSmoothing: 'antialiased'
                 }}
-                className="w-full h-full p-4 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-xs font-mono focus:outline-none transition-all resize-none shadow-inner leading-relaxed relative z-10"
+                className="w-full h-full p-4 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm font-mono focus:outline-none transition-all resize-none shadow-inner leading-relaxed relative z-10"
             />
         </div>
     );

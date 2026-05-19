@@ -11,6 +11,7 @@ import { apiClient } from '@/lib/api-client';
 import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 import { useAuth } from '@/hooks/useAuth';
 import { performAIRequest } from '@/lib/ai/ai-orchestrator';
+import { SecondOpinionDrawer } from './SecondOpinionDrawer';
 
 interface BatchTaskAnalysisCardProps {
     item: BatchFile;
@@ -52,6 +53,45 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
     // Load available memories and sync selected ID
     const { memories, activeMemoryId, refreshMemories } = useGradingMemories();
     const { userData } = useAuth();
+    
+    const [showSecondOpinionDrawer, setShowSecondOpinionDrawer] = React.useState(false);
+    const [activeDoubleCheckTask, setActiveDoubleCheckTask] = React.useState<{
+        name: string;
+        studentText: string;
+        maxPoints: number;
+        currentPoints: number;
+        currentFeedback: string;
+    } | null>(null);
+
+    const handleApplySecondOpinion = (points: number, feedback: string) => {
+        if (!activeDoubleCheckTask) return;
+        handleReviewPointChange(idx, activeDoubleCheckTask.name, points);
+        handleReviewFeedbackChange(idx, activeDoubleCheckTask.name, feedback);
+    };
+
+    const handleSubmitSecondOpinion = async (doubt: string, chatHistory?: any[]) => {
+        if (!activeDoubleCheckTask) return;
+        const sIdx = (tasksLayout || []).findIndex(t => t.name === activeDoubleCheckTask.name);
+        const instructions = sIdx !== -1 ? (tasksLayout[sIdx].instructions || '') : '';
+        const solution = sIdx !== -1 ? (tasksLayout[sIdx].sampleSolution || '') : '';
+
+        return await performAIRequest(
+            'second-opinion',
+            {
+                taskName: activeDoubleCheckTask.name,
+                studentText: activeDoubleCheckTask.studentText,
+                currentPoints: activeDoubleCheckTask.currentPoints,
+                maxPoints: activeDoubleCheckTask.maxPoints,
+                currentFeedback: activeDoubleCheckTask.currentFeedback,
+                teacherDoubt: doubt,
+                taskInstructions: instructions,
+                sampleSolution: solution,
+                chatHistory
+            },
+            userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
+            settings || {} as any
+        );
+    };
 
     const [showAnonymizeDialog, setShowAnonymizeDialog] = React.useState(false);
     const [anonymizing, setAnonymizing] = React.useState(false);
@@ -443,7 +483,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                         <Textarea 
                             value={aiResult?.feedback || ''}
                             onChange={(e) => handleReviewFeedbackChange(idx, task.name || '', e.target.value)}
-                            className="w-full min-h-[90px] p-3 rounded-xl bg-muted/20 border-transparent focus-visible:border-primary/30 focus-visible:bg-background focus-visible:ring-0 focus-visible:ring-offset-0 text-xs text-foreground/80 leading-relaxed transition-all resize-none shadow-inner font-inter"
+                            className="w-full min-h-[90px] p-3 rounded-xl bg-muted/20 border-transparent focus-visible:border-primary/30 focus-visible:bg-background focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-foreground/80 leading-relaxed transition-all resize-none shadow-inner font-inter"
                             placeholder="Feedback ..."
                         />
 
@@ -528,16 +568,46 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                                         )}
                                     </div>
                                 ) : (
-                                    <button
-                                        onClick={() => {
-                                            setSavingTaskId(task.name);
-                                            if (activeMemoryId) setTargetMemoryId(activeMemoryId);
-                                        }}
-                                        className="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors group/btn py-1 px-1.5 hover:bg-indigo-50/50 rounded-lg self-start"
-                                    >
-                                        <GraduationCap size={13} className="text-indigo-500 group-hover/btn:scale-110 transition-transform" />
-                                        In Erfahrungsschatz übernehmen
-                                    </button>
+                                    <div className="flex items-center gap-4 mt-1">
+                                        <button
+                                            onClick={() => {
+                                                setSavingTaskId(task.name);
+                                                if (activeMemoryId) setTargetMemoryId(activeMemoryId);
+                                            }}
+                                            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors group/btn py-1 px-1.5 hover:bg-indigo-50/50 rounded-lg self-start"
+                                        >
+                                            <GraduationCap size={13} className="text-indigo-500 group-hover/btn:scale-110 transition-transform" />
+                                            In Erfahrungsschatz übernehmen
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                const sIdx = (tasksLayout || []).findIndex(t => t.name === task.name);
+                                                let studentAnswer = '';
+                                                if (item.status === 'done' && item.result) {
+                                                    const aiTask = item.result.tasks.find(t => t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
+                                                    if (aiTask && aiTask.content) {
+                                                        studentAnswer = aiTask.content;
+                                                    }
+                                                }
+                                                if (!studentAnswer) {
+                                                    studentAnswer = sIdx !== -1 ? (studentSections?.[sIdx] || '') : '';
+                                                }
+                                                
+                                                setActiveDoubleCheckTask({
+                                                    name: task.name,
+                                                    studentText: studentAnswer,
+                                                    maxPoints: Number(task.maxPoints || 0),
+                                                    currentPoints: Number(aiResult?.pointsObtained ?? 0),
+                                                    currentFeedback: aiResult?.feedback || ''
+                                                });
+                                                setShowSecondOpinionDrawer(true);
+                                            }}
+                                            className="inline-flex items-center gap-1.5 text-[11px] font-bold text-indigo-600 hover:text-primary transition-colors group/btn py-1 px-1.5 hover:bg-primary/5 rounded-lg self-start"
+                                        >
+                                            <Sparkles size={13} className="text-indigo-500 group-hover/btn:text-primary group-hover/btn:scale-110 transition-all animate-pulse" />
+                                            KI-Zweitmeinung
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         )}
@@ -545,6 +615,21 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                 );
             })}
             {anonymizeModal}
+            <SecondOpinionDrawer
+                isOpen={showSecondOpinionDrawer}
+                onClose={() => {
+                    setShowSecondOpinionDrawer(false);
+                    setActiveDoubleCheckTask(null);
+                }}
+                taskName={activeDoubleCheckTask?.name || ''}
+                studentText={activeDoubleCheckTask?.studentText || ''}
+                currentPoints={activeDoubleCheckTask?.currentPoints ?? 0}
+                maxPoints={activeDoubleCheckTask?.maxPoints ?? 0}
+                currentFeedback={activeDoubleCheckTask?.currentFeedback || ''}
+                onApply={handleApplySecondOpinion}
+                onSubmit={handleSubmitSecondOpinion}
+                isSaaSService={true}
+            />
         </div>
     );
 };

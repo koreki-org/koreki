@@ -12,11 +12,12 @@ import {
     buildVisionPrompt,
     buildStudentSimulatorPrompt,
     buildAnonymizePrompt,
+    buildSecondOpinionPrompt,
     StructuredPrompt 
 } from './prompt-builder';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator' | 'anonymize';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator' | 'anonymize' | 'second-opinion';
 
 export interface AIRequestOptions {
     temperature?: number;
@@ -57,6 +58,8 @@ export async function executeMistralRequest(
         if (action === 'clean-and-analyze' || action === 'clean-and-map') {
             // Upgrade to Large for complex scans (verbatim integrity), otherwise stay on Small
             model = options.isScan ? MISTRAL_CHATS_MODEL : MISTRAL_UTILS_MODEL; 
+        } else if (action === 'second-opinion') {
+            model = MISTRAL_CORE_MODEL; // mistral-large-latest (Mistral Large) as preferred by the user
         }
     }
 
@@ -97,6 +100,18 @@ export async function executeMistralRequest(
             promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout, payload.selectedTasks);
         } else if (action === 'anonymize') {
             promptObj = buildAnonymizePrompt(payload.studentText);
+        } else if (action === 'second-opinion') {
+            promptObj = buildSecondOpinionPrompt(
+                payload.taskName,
+                payload.taskInstructions,
+                payload.sampleSolution,
+                payload.maxPoints,
+                payload.studentText,
+                payload.currentPoints,
+                payload.currentFeedback,
+                payload.teacherDoubt,
+                payload.chatHistory
+            );
         } else {
             throw new Error(`Unsupported text action: ${action}`);
         }
@@ -105,7 +120,9 @@ export async function executeMistralRequest(
             { role: 'system', content: promptObj.system },
             { role: 'user', content: promptObj.user }
         ];
-        responseFormat = { type: 'json_object' };
+        if (action !== 'second-opinion') {
+            responseFormat = { type: 'json_object' };
+        }
     }
 
     // 3. API Execution (VRE Parameter Hardening)

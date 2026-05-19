@@ -6,11 +6,12 @@ import {
     buildVisionPrompt,
     buildStudentSimulatorPrompt,
     buildAnonymizePrompt,
+    buildSecondOpinionPrompt,
     StructuredPrompt 
 } from './prompt-builder';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion';
 
 export interface OpenAIRequestOptions {
     temperature?: number;
@@ -71,6 +72,18 @@ export async function executeOpenAIRequest(
             promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout, payload.selectedTasks);
         } else if (action === 'anonymize') {
             promptObj = buildAnonymizePrompt(payload.studentText);
+        } else if (action === 'second-opinion') {
+            promptObj = buildSecondOpinionPrompt(
+                payload.taskName,
+                payload.taskInstructions,
+                payload.sampleSolution,
+                payload.maxPoints,
+                payload.studentText,
+                payload.currentPoints,
+                payload.currentFeedback,
+                payload.teacherDoubt,
+                payload.chatHistory
+            );
         } else {
             throw new Error(`Unsupported action: ${action}`);
         }
@@ -103,6 +116,7 @@ export async function executeOpenAIRequest(
     // This supports documents up to ~25,000 words.
     const structuralActions: AIAction[] = ['correction', 'clean-and-analyze', 'clean-and-map'];
     const defaultLimit = structuralActions.includes(action) ? 32768 : 4000;
+    const isJsonFormat = action !== 'vision' && action !== 'second-opinion';
 
     const body: any = {
         model: targetModel,
@@ -111,7 +125,7 @@ export async function executeOpenAIRequest(
         top_p: targetTopP,
         presence_penalty: options.presencePenalty ?? (structuralActions.includes(action) ? 0.0 : presencePenalty),
         max_tokens: options.maxTokens ?? (isThinking ? 32768 : defaultLimit),
-        response_format: action === 'vision' ? undefined : { type: 'json_object' }
+        response_format: isJsonFormat ? { type: 'json_object' } : undefined
     };
 
     // Specific Qwen/OpenAI-compat Extra Params
@@ -164,7 +178,7 @@ export async function executeOpenAIRequest(
     const content = responseContent;
 
     // 4. Robust JSON Parsing
-    if (action !== 'vision') {
+    if (action !== 'vision' && action !== 'second-opinion') {
         // [Industrial Hardening] 🛡️
         // We try the standard greedy extraction first to maintain backward compatibility.
         const standardJson = (() => {

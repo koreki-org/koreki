@@ -186,4 +186,26 @@ export interface GradingMemory {
     createdAt?: string;
 }
 
+export interface ChatMessage {
+    role: 'user' | 'assistant';
+    content: string;
+}
+
+export interface SecondOpinionRequestPayload {
+    taskName: string;
+    taskInstructions?: string;
+    sampleSolution?: string;
+    maxPoints: number;
+    studentText: string;
+    currentPoints: number;
+    currentFeedback: string;
+    teacherDoubt?: string;
+    chatHistory?: ChatMessage[];
+}
+
+export interface SecondOpinionResponse {
+    response: string;
+}
+
+
 

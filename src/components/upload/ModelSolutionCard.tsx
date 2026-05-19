@@ -196,7 +196,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             value={modelSolution}
                             onChange={(e) => onModelSolutionChange && onModelSolutionChange(e.target.value)}
                             className={cn(
-                                "flex-1 min-h-[350px] p-5 rounded-[1.5rem] bg-white/50 border-slate-200 shadow-inner font-mono text-xs resize-none",
+                                "flex-1 min-h-[350px] p-5 rounded-[1.5rem] bg-white/50 border-slate-200 shadow-inner font-mono text-sm resize-none",
                                 extractingLayout && "opacity-50 pointer-events-none"
                             )}
                             placeholder={extractingLayout ? "Lese Inhalt..." : "Inhalt der Musterlösung hier bearbeiten..."}
