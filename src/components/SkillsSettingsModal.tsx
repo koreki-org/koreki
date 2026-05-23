@@ -15,13 +15,15 @@ interface SkillsSettingsModalProps {
     onSave: (newSettings: AppSettings, profileName?: string, profileId?: string) => void;
     onClose: () => void;
     currentProfileName?: string;
+    onGenerateGraph?: (taskText: string, discipline?: string) => Promise<any | null>;
 }
 
 const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
     settings,
     onSave,
     onClose,
-    currentProfileName = 'MINT Standard (Allgemein)'
+    currentProfileName = 'MINT Standard (Allgemein)',
+    onGenerateGraph
 }) => {
     // --- STANDALONE FOURTH PILLAR SYMMETRICS ---
     const {
@@ -135,6 +137,7 @@ const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
                             onDeleteCustomSkill={handleDeleteCustomSkill}
                             onStartNew={handleStartNew}
                             onImportParsedProfile={handleImportParsedProfile}
+                            onGenerateGraph={onGenerateGraph}
                         />
 
                         {/* Footer Action Bar */}

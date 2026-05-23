@@ -70,7 +70,7 @@ export const SkillProfileService = {
      * Upserts a personal or system skill profile.
      * Enforces permissions: only admins can edit system presets.
      */
-    async upsertProfile(userId: string, data: { name: string, activeSkillIds: string[] }, userRole: string = 'USER') {
+    async upsertProfile(userId: string, data: { name: string, activeSkillIds: string[], customSkills?: any }, userRole: string = 'USER') {
         const existingSystem = await prisma.skillProfile.findFirst({
             where: { name: data.name, isSystem: true }
         });
@@ -80,6 +80,7 @@ export const SkillProfileService = {
         }
 
         const activeSkillIdsJson = data.activeSkillIds;
+        const customSkillsJson = data.customSkills || {};
 
         return prisma.skillProfile.upsert({
             where: { 
@@ -90,11 +91,13 @@ export const SkillProfileService = {
             },
             update: { 
                 activeSkillIds: activeSkillIdsJson,
+                customSkills: customSkillsJson,
                 userId: userId
             },
             create: { 
                 name: data.name, 
                 activeSkillIds: activeSkillIdsJson, 
+                customSkills: customSkillsJson,
                 userId: userId, 
                 isSystem: false 
             }

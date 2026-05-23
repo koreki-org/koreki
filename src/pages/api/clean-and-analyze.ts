@@ -44,9 +44,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 { isScan }
             );
         } else if (settings.provider === 'openai-compatible') {
-            const baseUrl = settings.openaiUrl || 'https://llm.aihosting.mittwald.de/v1';
-            const apiKey = settings.openaiKey || process.env.MITTWALD_API_KEY;
-            const model = settings.openaiModel || 'Qwen3.6-35B-A3B-FP8';
+            const baseUrl = settings.openaiUrl || process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || 'https://llm.aihosting.mittwald.de/v1';
+            const apiKey = settings.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
+            const model = settings.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
 
             if (!apiKey) throw new Error('Mittwald/OpenAI API-Key fehlt.');
 

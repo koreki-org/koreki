@@ -17,6 +17,7 @@ import { isLocalInstance } from '../../../lib/env-context';
 const skillProfileSchema = z.object({
     name: z.string().min(1, 'Name ist erforderlich'),
     activeSkillIds: z.array(z.string()).default([]),
+    customSkills: z.record(z.string(), z.any()).optional(),
 });
 
 const deleteSchema = z.object({

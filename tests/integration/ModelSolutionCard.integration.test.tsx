@@ -13,8 +13,35 @@ jest.mock('lucide-react', () => ({
     Eye: () => <div data-testid="eye-icon" />,
     PlusCircle: () => <div data-testid="plus-circle" />,
     Trash2: () => <div data-testid="trash-icon" />,
-    Check: () => <div data-testid="check-icon" />
+    Check: () => <div data-testid="check-icon" />,
+    Sparkles: () => <div data-testid="sparkles-icon" />,
+    Loader2: () => <div data-testid="loader2-icon" />,
+    Layers: () => <div data-testid="layers-icon" />,
+    Link2Off: () => <div data-testid="link2off-icon" />
 }));
+
+// Mock MathMarkdown to avoid ESM import issues with remark-gfm
+jest.mock('../../src/components/ui/MathMarkdown', () => ({
+    MathMarkdown: ({ content }: any) => <div data-testid="math-markdown">{content}</div>
+}));
+
+// Mock GradingGraphModal to intercept and trigger custom skill save actions in tests
+jest.mock('../../src/components/batch/GradingGraphModal', () => ({
+    GradingGraphModal: ({ isOpen, onSaveCustomSkill }: any) => {
+        if (!isOpen) return null;
+        return (
+            <div data-testid="mock-grading-graph-modal">
+                <button 
+                    data-testid="mock-save-custom-skill-btn"
+                    onClick={() => onSaveCustomSkill('Test Custom Graph Skill', { taskId: 'test-id', variables: [] })}
+                >
+                    Save Custom Skill
+                </button>
+            </div>
+        );
+    }
+}));
+
 
 // Mock UI components that might use complex shadcn/radix logic
 jest.mock('../../src/components/ui/Card', () => ({
@@ -71,7 +98,7 @@ describe('ModelSolutionCard Integration (Layer 2)', () => {
         fireEvent.click(pencil!);
 
         // 3. Type in the Textarea
-        const textarea = screen.getByRole('textbox');
+        const textarea = screen.getByPlaceholderText('Musterlösung hier eingeben...');
         fireEvent.change(textarea, { target: { value: 'Aufgabe 1: New LaTeX $x^2$' } });
 
         // 4. Switch back to view mode to see the update
@@ -88,7 +115,7 @@ describe('ModelSolutionCard Integration (Layer 2)', () => {
         fireEvent.click(screen.getByTestId('pencil-icon').closest('button')!);
         
         // 2. Change text
-        const textarea = screen.getByRole('textbox');
+        const textarea = screen.getByPlaceholderText('Musterlösung hier eingeben...');
         fireEvent.change(textarea, { target: { value: 'Updated' } });
 
         // 3. Switch back to view
@@ -96,5 +123,26 @@ describe('ModelSolutionCard Integration (Layer 2)', () => {
 
         // 4. Value should still be in the DOM (rendered)
         expect(screen.getByText('Updated')).toBeInTheDocument();
+    });
+
+    it('should save custom skills under the graph-skills category', async () => {
+        render(<TestWrapper initialModelSolution="Initial" initialTasks={[{ name: 'Task', maxPoints: 5, gradingGraph: { taskId: 'task-1', variables: [] } }]} />);
+
+        // 1. Click the sparkles button to open the graph modal
+        const sparklesBtn = screen.getByTestId('sparkles-icon').closest('button');
+        fireEvent.click(sparklesBtn!);
+
+        // 2. Verify mock modal is rendered and click save custom skill
+        expect(screen.getByTestId('mock-grading-graph-modal')).toBeInTheDocument();
+        fireEvent.click(screen.getByTestId('mock-save-custom-skill-btn'));
+
+        // 3. Check localStorage or store to verify category is 'graph-skills'
+        const stored = localStorage.getItem('koreki_custom_skills');
+        expect(stored).toBeDefined();
+        const customSkills = JSON.parse(stored!);
+        const skillId = Object.keys(customSkills).find(key => customSkills[key].name === 'Test Custom Graph Skill');
+        expect(skillId).toBeDefined();
+        expect(customSkills[skillId!].category).toBe('graph-skills');
+        expect(customSkills[skillId!].isGraphBased).toBe(true);
     });
 });

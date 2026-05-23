@@ -8,7 +8,8 @@ import { isLocalInstance } from './env-context';
  */
 
 const ALLOWED_EXTERNAL_DOMAINS = [
-    'api.mistral.ai' // PURE Mode Exception
+    'api.mistral.ai', // Mistral AI (EU GDPR Compliant)
+    'llm.aihosting.mittwald.de' // Mittwald Inferenz (Germany GDPR Compliant)
 ];
 
 const PRIVATE_NETWORK_REGEX = /^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.|localhost|127\.0\.0\.1|tauri\.localhost)/;

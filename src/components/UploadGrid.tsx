@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { Task } from '../types';
+import { Task, AppSettings } from '../types';
 
 // Sub-Components
 import { ModelSolutionCard } from './upload/ModelSolutionCard';
@@ -17,6 +17,9 @@ interface UploadGridProps {
     onTasksChange?: (newTasks: Task[]) => void;
     isPureMode?: boolean;
     isLocked?: boolean;
+    settings?: AppSettings;
+    appMode?: 'PURE' | 'STANDARD' | 'TRIAL';
+    onGenerateGraph?: (taskIndex: number, taskText: string) => Promise<any>;
 }
 
 const UploadGrid: React.FC<UploadGridProps> = ({
@@ -30,7 +33,10 @@ const UploadGrid: React.FC<UploadGridProps> = ({
     onModelSolutionChange,
     onTasksChange,
     isPureMode = false,
-    isLocked = false
+    isLocked = false,
+    settings,
+    appMode,
+    onGenerateGraph
 }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch mb-8">
@@ -43,6 +49,9 @@ const UploadGrid: React.FC<UploadGridProps> = ({
                 onModelSolutionChange={onModelSolutionChange}
                 onTasksChange={onTasksChange}
                 isLocked={isLocked}
+                settings={settings}
+                appMode={appMode}
+                onGenerateGraph={onGenerateGraph}
             />
 
             {/* Schülerarbeiten Card */}

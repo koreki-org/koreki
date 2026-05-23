@@ -434,7 +434,7 @@ export const LocalSkillProfileService = {
         return profiles;
     },
 
-    async upsertProfile(data: { name: string, activeSkillIds: string[] }, userId?: string) {
+    async upsertProfile(data: { name: string, activeSkillIds: string[], customSkills?: any }, userId?: string) {
         const storagePath = getSkillStoragePath(userId);
         let customProfiles: any[] = [];
         
@@ -448,20 +448,23 @@ export const LocalSkillProfileService = {
 
         const existingIdx = customProfiles.findIndex(p => p.name === data.name);
         const activeSkillIds = Array.isArray(data.activeSkillIds) ? data.activeSkillIds : [];
+        const customSkills = data.customSkills || {};
         
         if (existingIdx >= 0) {
             customProfiles[existingIdx].activeSkillIds = activeSkillIds;
+            customProfiles[existingIdx].customSkills = customSkills;
         } else {
             customProfiles.push({
                 id: `local-skill-${Date.now()}`,
                 name: data.name,
                 activeSkillIds: activeSkillIds,
+                customSkills: customSkills,
                 isSystem: false
             });
         }
 
         fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
-        return { name: data.name, activeSkillIds };
+        return { name: data.name, activeSkillIds, customSkills };
     },
 
     async deleteProfile(id: string, userId?: string) {

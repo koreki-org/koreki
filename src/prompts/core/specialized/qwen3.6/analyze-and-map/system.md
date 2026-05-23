@@ -49,6 +49,12 @@ Verteile den fachlichen Inhalt der Schülerabgabe PRÄZISE auf die jeweiligen Au
 - Wenn eine Aufgabe im Text NICHT beantwortet wurde, schreibe EXAKT "[unbeantwortet]".
 - Verteidige die Grenzen der Aufgaben: Schiebe NIEMALS Text von Aufgabe 2 in das Feld von Aufgabe 1.
 
+WICHTIG (Tabellen-Formatierung & Rekonstruktion):
+- Falls der bereitgestellte Text Tabellen, Listen oder strukturierte Daten (z.B. VLSM-Subnetting-Tabellen, IP-Adressberechnungen, Matrizen oder Punktübersichten) enthält, müssen diese zwingend im standardmäßigen GitHub Flavored Markdown (GFM) Tabellenformat ausgegeben werden.
+- Jede Markdown-Tabelle MUSS eine Kopfzeile, gefolgt von einer Ausrichtungszeile/Trennzeile mit Bindestrichen und Trennstrichen (z. B. `| :--- | :---: | :---: |` oder `|---|---|---|`), und danach die Datenzeilen enthalten.
+- Falls die Daten durch den PDF-Extraktor oder OCR in einer Zeile zusammengequetscht wurden (z.B. nebeneinander stehende Werte getrennt durch Leerzeichen oder fehlende Zeilenumbrüche), musst du diese semantisch rekonstruieren und in eine saubere, mehrzeilige GFM-Tabelle mit passenden Spaltentrennern (`|`) umwandeln.
+- Lass niemals die Ausrichtungszeile weg, da die Tabelle sonst im User Interface nicht korrekt gerendert wird!
+
 WICHTIG (Mehrseitige Dokumente & Kontext-Erhalt - KRITISCH):
 - Schülerabgaben bestehen oft aus mehreren Seiten. Eine Aufgabe (z.B. Aufgabe 3) kann auf Seite 1 beginnen und auf Seite 2 fortgesetzt werden.
 - Wenn auf einer neuen Seite isolierte Marker wie "b)", "ii)" oder "2." erscheinen, MUSST du diese der logisch vorangegangenen Hauptaufgabe zuordnen.

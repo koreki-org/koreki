@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wrench, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Download, Sparkles, BookOpen, Calculator, Settings, GraduationCap } from 'lucide-react';
+import { Wrench, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Download, Sparkles, BookOpen, Calculator, Settings, GraduationCap, Loader2, Layers } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
@@ -7,6 +7,8 @@ import { FloatingActions } from '@/components/ui/FloatingActions';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
 import { downloadFile } from '@/lib/file-utils';
 import { SKILL_REGISTRY } from '@/prompts/skills';
+import { GradingGraphModal } from '../batch/GradingGraphModal';
+
 
 interface SkillsSidebarProps {
     profiles: any[];
@@ -139,7 +141,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                     )}
 
                                     {/* Unified Floating Actions - Custom Profiles */}
-                                    <FloatingActions className="-top-2 -right-2">
+                                    <FloatingActions className="-top-2 -right-2" onClick={(e) => e.stopPropagation()}>
                                         {editingProfileId === p.id ? (
                                             <Button variant="ghost" size="icon" className="h-7 w-7 text-indigo-600" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
                                                 <Check size={14} />
@@ -152,10 +154,10 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                                 <Button variant="ghost" size="icon" title="Skill-Set exportieren" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}>
                                                     <Download size={14} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" title="Umbenennen" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => onStartRename(e, p)}>
+                                                <Button variant="ghost" size="icon" title="Umbenennen" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onStartRename(e, p); }}>
                                                     <Pencil size={14} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-600 hover:text-red-500 transition-colors" onClick={(e) => onDeleteProfile(p.id, e)}>
+                                                <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-600 hover:text-red-500 transition-colors" onClick={(e) => { e.stopPropagation(); onDeleteProfile(p.id, e); }}>
                                                     <Trash2 size={14} />
                                                 </Button>
                                             </>
@@ -186,7 +188,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                 </span>
 
                                 {/* Unified Floating Actions - System Profiles */}
-                                <FloatingActions className="-top-2 -right-2">
+                                <FloatingActions className="-top-2 -right-2" onClick={(e) => e.stopPropagation()}>
                                     <Button 
                                         variant="ghost" 
                                         size="icon" 
@@ -231,18 +233,22 @@ interface SkillsEditorProps {
     onDeleteCustomSkill: (id: string) => void;
     onStartNew: (initialSkills?: string[]) => void;
     onImportParsedProfile: (parsed: any, isSingleSkill?: boolean) => void;
+    onGenerateGraph?: (taskText: string, discipline?: string) => Promise<Record<string, unknown> | null>;
 }
 export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     isCreatingNew, selectedProfile, isSystemSelected, isDirty, saving, 
     newProfileName, activeSkillIds, setActiveSkillIds,
     onSaveToDB, setNewProfileName,
     customSkills, onSaveCustomSkill, onDeleteCustomSkill,
-    onStartNew, onImportParsedProfile
+    onStartNew, onImportParsedProfile, onGenerateGraph
 }) => {
     
     // Custom Skill Modal/Inline Editor State
     const [isEditingSkill, setIsEditingSkill] = React.useState(false);
     const [editingSkillData, setEditingSkillData] = React.useState<any>(null);
+    const [isGraphModalOpen, setIsGraphModalOpen] = React.useState(false);
+    const [isGeneratingGraph, setIsGeneratingGraph] = React.useState(false);
+    const [graphGenTaskText, setGraphGenTaskText] = React.useState('');
 
     const handleCreateSkillClick = () => {
         setEditingSkillData({
@@ -258,6 +264,25 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     const handleEditSkillClick = (skill: any) => {
         setEditingSkillData({ ...skill });
         setIsEditingSkill(true);
+    };
+
+    const handleAIGraphGenerate = async () => {
+        if (!onGenerateGraph || !graphGenTaskText.trim()) return;
+        setIsGeneratingGraph(true);
+        try {
+            const result = await onGenerateGraph(graphGenTaskText, editingSkillData?.category);
+            if (result) {
+                setEditingSkillData({
+                    ...editingSkillData,
+                    gradingGraph: result
+                });
+                setGraphGenTaskText('');
+            }
+        } catch (err) {
+            console.error('Graph generation failed:', err);
+        } finally {
+            setIsGeneratingGraph(false);
+        }
     };
 
     const handleSaveCustomSkillClick = () => {
@@ -299,7 +324,7 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
 
         let nextIds = [...activeSkillIds];
         const skillEntry = SKILL_REGISTRY[skillId];
-        const skill = skillEntry ? { ...skillEntry.metadata, promptSnippet: skillEntry.promptSnippet } : customSkills[skillId];
+        const skill = skillEntry ? { ...skillEntry.metadata, promptSnippet: skillEntry.promptSnippet } : (customSkills || {})[skillId];
         
         if (!skill) return;
 
@@ -309,7 +334,7 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
             // Also uncheck any other skills that require this specific skill!
             const allSkillsList = [
                 ...Object.values(SKILL_REGISTRY).map(s => s.metadata), 
-                ...Object.values(customSkills)
+                ...Object.values(customSkills || {})
             ];
             allSkillsList.forEach(s => {
                 const requires = s.requires || [];
@@ -368,6 +393,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
     // Category mappings
     const categories = [
         { id: 'math-science', label: 'MINT-Fächer', icon: <Calculator size={16} className="text-indigo-500" /> },
+        { id: 'graph-skills', label: 'Graph-basierte Skills (PANG)', icon: <Layers size={16} className="text-emerald-500" /> },
         { id: 'languages', label: 'Sprachen & Textästhetik', icon: <BookOpen size={16} className="text-blue-500" /> },
         { id: 'standards', label: 'Korrekturzeichen & Bundesländer', icon: <Settings size={16} className="text-indigo-600" /> },
         { id: 'feedback', label: 'Pädagogisches Feedback', icon: <GraduationCap size={16} className="text-indigo-500" /> }
@@ -456,9 +482,9 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
             <div className="flex-1 space-y-8 min-h-0">
                 {categories.map(category => {
                     const standardCategorySkills = Object.values(SKILL_REGISTRY)
-                        .filter(s => s.metadata.category === category.id)
+                        .filter(s => s.metadata.category === category.id && !s.metadata.isGraphBased && s.metadata.id !== 'skill-calc-vlsm' && s.metadata.id !== 'skill-calc-raid')
                         .map(s => ({ ...s.metadata, prompt: s.promptSnippet, promptSnippet: s.promptSnippet }));
-                    const customCategorySkills = Object.values(customSkills).filter(s => s.category === category.id);
+                    const customCategorySkills = Object.values(customSkills || {}).filter(s => s.category === category.id);
                     const categorySkills = [...standardCategorySkills, ...customCategorySkills];
                     
                     if (categorySkills.length === 0) return null;
@@ -495,6 +521,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         {skill.name}
                                                     </h4>
                                                     {skill.isCustom && <Badge className="text-[7px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 font-bold hover:bg-indigo-100 rounded">EIGEN</Badge>}
+                                                    {skill.isGraphBased && <Badge className="text-[7px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 font-bold hover:bg-emerald-100 rounded flex items-center gap-0.5">⚙️ GRAPH</Badge>}
                                                 </div>
                                                 <p className="text-xs text-slate-500 font-medium leading-relaxed">
                                                     {skill.description}
@@ -504,12 +531,12 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                     <div className="flex flex-wrap gap-1.5 pt-2">
                                                         {skill.requires && (typeof skill.requires === 'string' ? skill.requires.split(',') : skill.requires).map((reqId: string) => (
                                                             <Badge key={reqId} variant="outline" className="text-[8px] px-2 py-0 bg-amber-50 text-amber-700 border-amber-100 rounded-full font-bold">
-                                                                Benötigt: {SKILL_REGISTRY[reqId.trim()]?.metadata.name || customSkills[reqId.trim()]?.name || reqId}
+                                                                Benötigt: {SKILL_REGISTRY[reqId.trim()]?.metadata.name || customSkills?.[reqId.trim()]?.name || reqId}
                                                             </Badge>
                                                         ))}
                                                         {skill.conflictsWith && (typeof skill.conflictsWith === 'string' ? skill.conflictsWith.split(',') : skill.conflictsWith).map((confId: string) => (
                                                             <Badge key={confId} variant="outline" className="text-[8px] px-2 py-0 bg-red-50 text-red-600 border-red-100 rounded-full font-bold">
-                                                                Schließt aus: {SKILL_REGISTRY[confId.trim()]?.metadata.name || customSkills[confId.trim()]?.name || confId}
+                                                                Schließt aus: {SKILL_REGISTRY[confId.trim()]?.metadata.name || customSkills?.[confId.trim()]?.name || confId}
                                                             </Badge>
                                                         ))}
                                                     </div>
@@ -598,11 +625,119 @@ ${skill.prompt || ''}`;
                                     className="w-full h-11 px-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer"
                                 >
                                     <option value="math-science">MINT-Fächer</option>
+                                    <option value="graph-skills">Graph-basierte Skills (PANG)</option>
                                     <option value="languages">Sprachen & Textästhetik</option>
                                     <option value="standards">Korrekturzeichen & Bundesländer</option>
                                     <option value="feedback">Pädagogisches Feedback</option>
                                 </select>
                             </div>
+
+                            <div className="flex items-center gap-2.5 pt-1 pb-1">
+                                <input
+                                    type="checkbox"
+                                    id="is-graph-based"
+                                    checked={!!editingSkillData.isGraphBased}
+                                    onChange={e => {
+                                        const isChecked = e.target.checked;
+                                        setEditingSkillData({
+                                            ...editingSkillData,
+                                            isGraphBased: isChecked,
+                                            category: isChecked ? 'graph-skills' : (editingSkillData.category === 'graph-skills' ? 'math-science' : editingSkillData.category),
+                                            gradingGraph: isChecked ? (editingSkillData.gradingGraph || {
+                                                taskId: `skill-graph-${Date.now()}`,
+                                                discipline: 'computer-science-networking',
+                                                variables: [
+                                                    { id: 'subnetA_hosts', type: 'input', defaultValue: 50, validationType: 'exact', maxPoints: 1 },
+                                                    { id: 'subnetA_netId', type: 'input', defaultValue: '192.168.1.0', validationType: 'exact', maxPoints: 1 },
+                                                    { id: 'subnetA_mask', type: 'formula', expression: 'network.calculateMask(subnetA_hosts)', validationType: 'exact', maxPoints: 1 }
+                                                ]
+                                            }) : undefined
+                                        });
+                                    }}
+                                    className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                                />
+                                <label htmlFor="is-graph-based" className="text-xs font-bold text-slate-700 cursor-pointer">
+                                    Graph-basierter Skill (PANG Engine)
+                                </label>
+                            </div>
+
+                            {editingSkillData.isGraphBased && (
+                                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 flex flex-col gap-3">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs font-black text-primary uppercase tracking-widest">Grading Graph</span>
+                                        <div className="flex gap-2">
+                                            {onGenerateGraph && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    disabled={isGeneratingGraph}
+                                                    onClick={() => {
+                                                        if (graphGenTaskText.trim()) {
+                                                            // Already has text, generate directly
+                                                            handleAIGraphGenerate();
+                                                        } else {
+                                                            // Show inline textarea
+                                                            setGraphGenTaskText(editingSkillData.description || '');
+                                                        }
+                                                    }}
+                                                    className="h-8 text-xs font-bold border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 rounded-lg px-3 gap-1.5 transition-all duration-300"
+                                                >
+                                                    {isGeneratingGraph ? (
+                                                        <Loader2 size={13} className="animate-spin" />
+                                                    ) : (
+                                                        <Sparkles size={13} />
+                                                    )}
+                                                    {isGeneratingGraph ? 'Generiere...' : 'KI-Graph generieren'}
+                                                </Button>
+                                            )}
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setIsGraphModalOpen(true)}
+                                                className="h-8 text-xs font-bold border-primary/20 text-primary bg-white hover:bg-primary/5 rounded-lg px-3 transition-all duration-300"
+                                            >
+                                                Graph bearbeiten ⚙️
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    {/* AI Generation Textarea (inline, shown when user clicks KI-Graph generieren) */}
+                                    {onGenerateGraph && graphGenTaskText !== undefined && !isGeneratingGraph && (
+                                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                            <label className="text-xs font-bold text-muted-foreground">Aufgabentext für KI-Analyse:</label>
+                                            <textarea
+                                                value={graphGenTaskText}
+                                                onChange={e => setGraphGenTaskText(e.target.value)}
+                                                placeholder="Füge hier den Aufgabentext ein, aus dem die KI Variablen und Formeln extrahieren soll..."
+                                                rows={4}
+                                                className="w-full p-3 rounded-xl border border-border text-sm font-medium text-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary/50 outline-none resize-none bg-background"
+                                            />
+                                            <Button
+                                                size="sm"
+                                                disabled={!graphGenTaskText.trim() || isGeneratingGraph}
+                                                onClick={handleAIGraphGenerate}
+                                                className="h-8 rounded-lg px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-1.5 transition-all duration-300"
+                                            >
+                                                <Sparkles size={13} />
+                                                Graph generieren
+                                            </Button>
+                                        </div>
+                                    )}
+
+                                    <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                                        Definieren Sie Variablen, Abhängigkeiten und mathematische Ausdrücke für automatisierte Berechnungen und präzise Folgefehlererkennung.
+                                    </p>
+                                    {editingSkillData.gradingGraph?.variables && (
+                                        <div className="flex flex-wrap gap-1.5 pt-1">
+                                            {editingSkillData.gradingGraph.variables.map((v: any) => (
+                                                <Badge key={v.id} variant="outline" className="text-xs font-mono px-2 py-0.5 bg-background border-border text-muted-foreground rounded-md">
+                                                    {v.id}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kurzbeschreibung</label>
@@ -644,6 +779,20 @@ ${skill.prompt || ''}`;
                         </div>
                     </div>
                 </div>
+            )}
+            {isGraphModalOpen && (
+                <GradingGraphModal
+                    isOpen={isGraphModalOpen}
+                    onClose={() => setIsGraphModalOpen(false)}
+                    initialGraph={editingSkillData?.gradingGraph}
+                    taskName={editingSkillData?.name || "Benutzerdefinierter Skill"}
+                    onSave={(updatedGraph) => {
+                        setEditingSkillData({
+                            ...editingSkillData,
+                            gradingGraph: updatedGraph
+                        });
+                    }}
+                />
             )}
         </div>
     );

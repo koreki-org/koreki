@@ -1,6 +1,6 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
-import { Sparkles, GraduationCap, X, Check, Loader2, ShieldCheck, Lock, AlertCircle, RefreshCw, Copy } from 'lucide-react';
+import { Sparkles, GraduationCap, X, Check, Loader2, ShieldCheck, Lock, AlertCircle, RefreshCw, Copy, Maximize2, Minimize2 } from 'lucide-react';
 import { PointInput } from '../../ui/PointInput';
 import { Textarea } from '../../ui/Textarea';
 import { Button } from '@/components/ui/Button';
@@ -25,6 +25,8 @@ interface BatchTaskAnalysisCardProps {
     tasksLayout?: any[];
     studentSections?: string[];
     settings?: AppSettings;
+    focusedPanel?: 'left' | 'right' | null;
+    onToggleFocus?: (panel: 'left' | 'right' | null) => void;
 }
 
 /**
@@ -44,7 +46,9 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
     handleReviewFeedbackChange,
     tasksLayout = [],
     studentSections = [],
-    settings
+    settings,
+    focusedPanel,
+    onToggleFocus
 }) => {
     const [savingTaskId, setSavingTaskId] = React.useState<string | null>(null);
     const [targetMemoryId, setTargetMemoryId] = React.useState<string>('');
@@ -438,13 +442,25 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
         : null;
 
     return (
-        <div className={cn("flex flex-col gap-4 max-h-[80vh] md:max-h-[600px] overflow-y-auto pr-2 custom-scrollbar animate-in slide-in-from-right-4 duration-500 flex-1", 
+        <div className={cn("flex flex-col gap-4 max-h-[80vh] md:max-h-[600px] animate-in slide-in-from-right-4 duration-500 flex-1", 
             mobileViewMode === 'text' ? "hidden md:flex" : "flex", "md:flex")}>
-            <div className="flex items-center gap-2 mb-2">
-                <Sparkles size={14} className="text-primary/60" />
-                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Bearbeitbare Einschätzung</span>
+            <div className="flex items-center justify-between gap-2 mb-2 w-full shrink-0">
+                <div className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-primary/60" />
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Bearbeitbare Einschätzung</span>
+                </div>
+                {onToggleFocus && (
+                    <button
+                        onClick={() => onToggleFocus(focusedPanel === 'right' ? null : 'right')}
+                        className="hidden md:inline-flex p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-muted-foreground hover:text-primary transition-all duration-200"
+                        title={focusedPanel === 'right' ? "Fokus beenden" : "Panel maximieren"}
+                    >
+                        {focusedPanel === 'right' ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+                    </button>
+                )}
             </div>
-            {(activeGroupName && groupedTasks[activeGroupName] ? groupedTasks[activeGroupName] : (item.result?.tasks || [])).map((task) => {
+            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4">
+                {(activeGroupName && groupedTasks[activeGroupName] ? groupedTasks[activeGroupName] : (item.result?.tasks || [])).map((task) => {
                 const aiResult = item.result?.tasks.find(t => 
                     t.name === task.name || 
                     t.name?.toLowerCase() === task.name?.toLowerCase() ||
@@ -460,17 +476,21 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                         key={task.name} 
                         className="bg-background rounded-2xl border border-border/60 shadow-glass p-4 sm:p-5 space-y-4 hover:border-primary/40 transition-all group/card"
                     >
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <span className="text-xs font-bold text-foreground font-outfit">{task.name}</span>
+                        <div className="flex items-center justify-between w-full">
+                            <div className="flex items-center gap-1.5 sm:gap-3">
+                                <span className="text-xs font-bold text-foreground font-outfit whitespace-nowrap">
+                                    <span className="inline sm:hidden">{task.name.replace(/Aufgabe\s*/i, 'A.')}</span>
+                                    <span className="hidden sm:inline">{task.name}</span>
+                                </span>
                                 <div className={cn(
-                                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-black uppercase tracking-tight",
+                                    "flex items-center gap-1.5 px-2 py-1 rounded-full border text-[11px] font-black uppercase tracking-tight whitespace-nowrap",
                                     confidence >= 90 ? "bg-emerald-50 text-emerald-600 border-emerald-200" :
                                     confidence >= 50 ? "bg-orange-50 text-orange-600 border-orange-200" :
                                     "bg-destructive/10 text-destructive border-destructive/20"
                                 )}>
                                     <div className={cn("w-2 h-2 rounded-full", getConfidenceColor(confidence))}></div>
-                                    Ki-Vertrauen: {confidence}%
+                                    <span className="hidden sm:inline">Ki-Vertrauen: {confidence}%</span>
+                                    <span className="sm:hidden">KI: {confidence}%</span>
                                 </div>
                             </div>
                             <PointInput 
@@ -483,7 +503,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                         <Textarea 
                             value={aiResult?.feedback || ''}
                             onChange={(e) => handleReviewFeedbackChange(idx, task.name || '', e.target.value)}
-                            className="w-full min-h-[90px] p-3 rounded-xl bg-muted/20 border-transparent focus-visible:border-primary/30 focus-visible:bg-background focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-foreground/80 leading-relaxed transition-all resize-none shadow-inner font-inter"
+                            className="w-full min-h-[150px] p-3 rounded-xl bg-muted/20 border-transparent focus-visible:border-primary/30 focus-visible:bg-background focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-foreground/80 leading-relaxed transition-all resize-y shadow-inner font-inter"
                             placeholder="Feedback ..."
                         />
 
@@ -614,6 +634,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                     </div>
                 );
             })}
+            </div>
             {anonymizeModal}
             <SecondOpinionDrawer
                 isOpen={showSecondOpinionDrawer}

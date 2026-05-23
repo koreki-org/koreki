@@ -1,5 +1,5 @@
 import React from 'react';
-import { FileText } from 'lucide-react';
+import { FileText, Maximize2, Minimize2 } from 'lucide-react';
 import { BatchFile, Task } from '../../../types';
 import { cn } from '@/lib/utils';
 import { EditableMathArea } from '../../ui/EditableMathArea';
@@ -15,6 +15,8 @@ interface BatchSolutionPanelProps {
     studentSections: string[];
     onUpdateText?: (idx: number, text: string, tasks?: Task[]) => void;
     idx: number;
+    focusedPanel?: 'left' | 'right' | null;
+    onToggleFocus?: (panel: 'left' | 'right' | null) => void;
 }
 
 /**
@@ -31,11 +33,33 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
     tasksLayout,
     studentSections,
     onUpdateText,
-    idx
+    idx,
+    focusedPanel,
+    onToggleFocus
 }) => {
     return (
-        <div className={cn("flex flex-col gap-4 animate-in fade-in duration-500 min-h-[400px]", 
-            mobileViewMode === 'image' ? "hidden md:flex" : "flex", "md:flex flex-1")}>
+        <div className={cn("flex flex-col gap-4 animate-in fade-in duration-500 min-h-[400px] flex-1", 
+            mobileViewMode === 'image' ? "hidden md:flex" : "flex", "md:flex")}>
+            
+            {/* Static Header with Focus controls */}
+            <div className="flex items-center justify-between gap-2 mb-2 w-full shrink-0">
+                <div className="flex items-center gap-2">
+                    <FileText size={14} className="text-muted-foreground" />
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                        {showScan ? "Original-Scan der Schülerlösung" : "Erkannte Schülerlösung"}
+                    </span>
+                </div>
+                {onToggleFocus && (
+                    <button
+                        onClick={() => onToggleFocus(focusedPanel === 'left' ? null : 'left')}
+                        className="hidden md:inline-flex p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-muted-foreground hover:text-primary transition-all duration-200"
+                        title={focusedPanel === 'left' ? "Fokus beenden" : "Panel maximieren"}
+                    >
+                        {focusedPanel === 'left' ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
+                    </button>
+                )}
+            </div>
+
             {showScan ? (
                 <div className="flex-1 border border-border rounded-2xl bg-muted/30 overflow-hidden relative shadow-inner h-full min-h-[500px] transition-all duration-300">
                     <div className="w-full h-full overflow-auto custom-scrollbar bg-background/50 flex flex-col items-center">
@@ -54,10 +78,6 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
                 </div>
             ) : (
                 <div className="flex-1 space-y-6 max-h-[80vh] md:max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                    <div className="flex items-center gap-2 mb-2">
-                        <FileText size={14} className="text-muted-foreground" />
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Erkannte Schülerlösung</span>
-                    </div>
                     {(activeGroupName && groupedTasks[activeGroupName] ? groupedTasks[activeGroupName] : (item.result?.tasks || [])).map((task) => {
                         const sIdx = tasksLayout.findIndex(t => t.name === task.name);
                         let sectionText = '';

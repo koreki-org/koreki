@@ -33,6 +33,7 @@ interface BatchItemDoneViewProps {
  */
 export const BatchItemDoneView: React.FC<BatchItemDoneViewProps> = (props) => {
     const { mobileViewMode } = props;
+    const [focusedPanel, setFocusedPanel] = React.useState<'left' | 'right' | null>(null);
 
     return (
         <div className="animate-in fade-in duration-500">
@@ -40,13 +41,34 @@ export const BatchItemDoneView: React.FC<BatchItemDoneViewProps> = (props) => {
             <BatchDoneHeader {...props} />
 
             {/* 2. Main Analysis Grid */}
-            <div className={cn("grid grid-cols-1 gap-6 sm:gap-8 h-fit md:grid-cols-2 mt-4")}>
+            <div className={cn(
+                "grid grid-cols-1 gap-6 sm:gap-8 h-fit mt-4 transition-all duration-300",
+                focusedPanel ? "md:grid-cols-1" : "md:grid-cols-2"
+            )}>
                 
                 {/* COLUMN LEFT: Student Solution / Scan Preview */}
-                <BatchSolutionPanel {...props} />
+                <div className={cn(
+                    focusedPanel === 'right' ? "hidden" : "block",
+                    focusedPanel === 'left' && "w-full"
+                )}>
+                    <BatchSolutionPanel 
+                        {...props} 
+                        focusedPanel={focusedPanel}
+                        onToggleFocus={setFocusedPanel}
+                    />
+                </div>
 
                 {/* COLUMN RIGHT: KI Analysis & Grading Cards */}
-                <BatchTaskAnalysisCard {...props} />
+                <div className={cn(
+                    focusedPanel === 'left' ? "hidden" : "block",
+                    focusedPanel === 'right' && "w-full"
+                )}>
+                    <BatchTaskAnalysisCard 
+                        {...props} 
+                        focusedPanel={focusedPanel}
+                        onToggleFocus={setFocusedPanel}
+                    />
+                </div>
                 
             </div>
         </div>

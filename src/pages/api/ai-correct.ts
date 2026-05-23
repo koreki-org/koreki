@@ -1,12 +1,13 @@
 import type { NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
-import { parseCorrectionResult } from '@/lib/ai/ai-orchestrator';
+import { parseCorrectionResult, extractStudentAnswersWithLLM } from '@/lib/ai/ai-orchestrator';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { CorrectionSchema } from '@/lib/validation';
 import { performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
 import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
+import { GraphRunner } from '@/lib/grading/GraphRunner';
 
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 
@@ -32,6 +33,34 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         // --- COMPLIANCE EARLY GATEKEEPER ---
         await resolveActiveWorkspace(logtoId);
+
+        // --- DETECT DETERMINISTIC GRAPH-BASED TASKS & EVALUATE LOCALLY (PANG Architecture) ---
+        if (tasksLayout && Array.isArray(tasksLayout)) {
+            const activeSkillIds = settings?.activeSkillIds || [];
+            const customSkills = settings?.customSkills || {};
+            
+            for (const task of tasksLayout) {
+                const isGraphTask = task.taskType && (
+                    task.taskType === 'vlsm' || 
+                    (activeSkillIds.includes(task.taskType) && (
+                        task.taskType.startsWith('skill-calc-') || 
+                        customSkills[task.taskType]?.isGraphBased
+                    ))
+                );
+
+                if (isGraphTask && task.gradingGraph) {
+                    try {
+                        const studentValues = await extractStudentAnswersWithLLM(studentText, task.gradingGraph, 'STANDARD', settings as any, task.taskType);
+                        const gradingResult = GraphRunner.grade(task.gradingGraph, studentValues);
+                        task.gradingResult = gradingResult;
+                        task.pointsObtained = gradingResult.totalPoints;
+                        task.maxPoints = gradingResult.maxPoints;
+                    } catch (err: any) {
+                        logger.error('Error in local GraphRunner execution', { taskName: task.name, error: err.message });
+                    }
+                }
+            }
+        }
 
         const effectivePageCount = Math.max(1, pageCount || 1);
         const requiredCredits = effectivePageCount * 1;
@@ -87,9 +116,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 }
             );
         } else {
-            const baseUrl = settings.openaiUrl || 'https://llm.aihosting.mittwald.de/v1';
-            const apiKey = settings.openaiKey || process.env.MITTWALD_API_KEY;
-            const model = settings.openaiModel || 'Qwen3.6-35B-A3B-FP8';
+            const baseUrl = settings.openaiUrl || process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || 'https://llm.aihosting.mittwald.de/v1';
+            const apiKey = settings.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
+            const model = settings.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
             
             if (!apiKey) throw new Error('Mittwald/OpenAI API-Key fehlt.');
  

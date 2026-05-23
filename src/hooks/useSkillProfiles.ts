@@ -57,14 +57,101 @@ export const useSkillProfiles = (
         });
     };
 
-    const handleDeleteCustomSkill = (id: string) => {
+    const handleDeleteCustomSkill = async (id: string) => {
+        // 1. Bereinige globalen customSkills State und localStorage
         setCustomSkills(prev => {
             const updated = { ...prev };
             delete updated[id];
             localStorage.setItem('koreki_custom_skills', JSON.stringify(updated));
             return updated;
         });
-        setActiveSkillIds(prev => prev.filter(sid => sid !== id));
+        
+        // 2. Bereinige activeSkillIds State des aktuellen Profils
+        const updatedActiveSkillIds = activeSkillIds.filter(sid => sid !== id);
+        setActiveSkillIds(updatedActiveSkillIds);
+
+        // 3. Globales Löschen aus allen benutzerdefinierten Profilen im State & Persistierung
+        const updatedProfiles = profiles.map(p => {
+            if (p.isSystem) return p;
+            
+            const profileCustomSkills = p.customSkills ? { ...p.customSkills } : {};
+            let isChanged = false;
+            if (profileCustomSkills[id]) {
+                delete profileCustomSkills[id];
+                isChanged = true;
+            }
+            
+            let pActiveSkillIds = Array.isArray(p.activeSkillIds) ? [...p.activeSkillIds] : [];
+            if (pActiveSkillIds.includes(id)) {
+                pActiveSkillIds = pActiveSkillIds.filter((sid: any) => sid !== id);
+                isChanged = true;
+            }
+            
+            if (isChanged) {
+                return {
+                    ...p,
+                    customSkills: profileCustomSkills,
+                    activeSkillIds: pActiveSkillIds
+                };
+            }
+            return p;
+        });
+
+        // 4. Speicher-Persistierung aller geänderten benutzerdefinierten Profile
+        if (isDesktopTarget()) {
+            const stored = localStorage.getItem('koreki_local_skill_profiles');
+            if (stored) {
+                try {
+                    let customProfiles = JSON.parse(stored);
+                    const updatedCustomProfiles = customProfiles.map((p: any) => {
+                        const profileCustomSkills = p.customSkills ? { ...p.customSkills } : {};
+                        let isChanged = false;
+                        if (profileCustomSkills[id]) {
+                            delete profileCustomSkills[id];
+                            isChanged = true;
+                        }
+                        let pActiveSkillIds = Array.isArray(p.activeSkillIds) ? [...p.activeSkillIds] : [];
+                        if (pActiveSkillIds.includes(id)) {
+                            pActiveSkillIds = pActiveSkillIds.filter((sid: any) => sid !== id);
+                            isChanged = true;
+                        }
+                        if (isChanged) {
+                            return {
+                                ...p,
+                                customSkills: profileCustomSkills,
+                                activeSkillIds: pActiveSkillIds
+                            };
+                        }
+                        return p;
+                    });
+                    localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(updatedCustomProfiles));
+                } catch (e) {}
+            }
+        } else {
+            // SaaS/Community: Für jedes geänderte benutzerdefinierte Profil ein API-POST absetzen
+            for (const p of updatedProfiles) {
+                if (p.isSystem) continue;
+                
+                // Prüfen ob dieses Profil tatsächlich den gelöschten Skill enthielt
+                const originalProfile = profiles.find(op => op.name === p.name);
+                const hadSkill = originalProfile?.customSkills?.[id] || originalProfile?.activeSkillIds?.includes(id);
+                
+                if (hadSkill) {
+                    try {
+                        await apiClient.post('/api/user/skill-profiles', {
+                            name: p.name,
+                            activeSkillIds: p.activeSkillIds,
+                            customSkills: p.customSkills
+                        });
+                    } catch (err) {
+                        console.error(`Fehler beim Synchronisieren des gelöschten Skills im Profil ${p.name} in der DB:`, err);
+                    }
+                }
+            }
+        }
+
+        // 5. Aktualisiere profiles State global, um das UI synchron zu halten
+        setProfiles(updatedProfiles);
     };
 
     const fetchProfiles = useCallback(async () => {
@@ -82,6 +169,15 @@ export const useSkillProfiles = (
                 const skills = Array.isArray(current.activeSkillIds) ? current.activeSkillIds : [];
                 setActiveSkillIds(skills);
                 setLastSavedSkillIds(skills);
+                
+                // Hydrate custom skills from the loaded profile
+                if (current.customSkills && typeof current.customSkills === 'object') {
+                    setCustomSkills(prev => {
+                        const merged = { ...prev, ...current.customSkills };
+                        localStorage.setItem('koreki_custom_skills', JSON.stringify(merged));
+                        return merged;
+                    });
+                }
             }
             return;
         }
@@ -97,6 +193,15 @@ export const useSkillProfiles = (
                     const skills = Array.isArray(current.activeSkillIds) ? current.activeSkillIds : [];
                     setActiveSkillIds(skills);
                     setLastSavedSkillIds(skills);
+                    
+                    // Hydrate custom skills from the loaded profile
+                    if (current.customSkills && typeof current.customSkills === 'object') {
+                        setCustomSkills(prev => {
+                            const merged = { ...prev, ...current.customSkills };
+                            localStorage.setItem('koreki_custom_skills', JSON.stringify(merged));
+                            return merged;
+                        });
+                    }
                 }
             }
         } catch (err) {
@@ -116,6 +221,15 @@ export const useSkillProfiles = (
                 const skills = Array.isArray(current.activeSkillIds) ? current.activeSkillIds : [];
                 setActiveSkillIds(skills);
                 setLastSavedSkillIds(skills);
+                
+                // Hydrate custom skills from the loaded profile
+                if (current.customSkills && typeof current.customSkills === 'object') {
+                    setCustomSkills(prev => {
+                        const merged = { ...prev, ...current.customSkills };
+                        localStorage.setItem('koreki_custom_skills', JSON.stringify(merged));
+                        return merged;
+                    });
+                }
             }
         }
     }, [profiles, selectedProfile]);
@@ -127,6 +241,15 @@ export const useSkillProfiles = (
         setActiveSkillIds(skills);
         setLastSavedSkillIds(skills);
         setShowEditorMobile(true);
+        
+        // Hydrate custom skills immediately on manual select
+        if (profile.customSkills && typeof profile.customSkills === 'object') {
+            setCustomSkills(prev => {
+                const merged = { ...prev, ...profile.customSkills };
+                localStorage.setItem('koreki_custom_skills', JSON.stringify(merged));
+                return merged;
+            });
+        }
     };
 
     const handleStartNew = (initialSkills?: string[], initialName?: string) => {
@@ -193,11 +316,13 @@ export const useSkillProfiles = (
             const existingIdx = customProfiles.findIndex(p => p.name === nameToSave);
             if (existingIdx >= 0) {
                 customProfiles[existingIdx].activeSkillIds = activeSkillIds;
+                customProfiles[existingIdx].customSkills = customSkills;
             } else {
                 customProfiles.push({
                     id: `local-skill-${Date.now()}`,
                     name: nameToSave,
                     activeSkillIds,
+                    customSkills,
                     isSystem: false
                 });
             }
@@ -216,7 +341,8 @@ export const useSkillProfiles = (
         try {
             const res = await apiClient.post('/api/user/skill-profiles', {
                 name: nameToSave,
-                activeSkillIds
+                activeSkillIds,
+                customSkills
             });
 
             const data = await res.json();

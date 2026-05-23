@@ -1,6 +1,6 @@
 import { Task, GradingMemoryCase } from '../../types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
-import { PromptLibraryEntry } from './prompt-library';
+import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
 
 // Centralized Default Templates
 import correctionSystemDefault from '../../prompts/core/default/correction/system.md';
@@ -19,6 +19,9 @@ import visionUserDefault from '../../prompts/core/default/vision/user.md';
 
 import secondOpinionSystemDefault from '../../prompts/second-opinion/system.md';
 import secondOpinionUserDefault from '../../prompts/second-opinion/user.md';
+import variableExtractionSystem from '../../prompts/core/default/variable-extraction/system.md';
+import variableExtractionUser from '../../prompts/core/default/variable-extraction/user.md';
+
 
 // Specialized Gemma4 Templates
 import gemma4CorrectionSystem from '../../prompts/core/specialized/gemma4/correction/system.md';
@@ -99,7 +102,8 @@ export function buildCorrectionPrompt(
         activeSkillIds.forEach(id => {
             const skillEntry = SKILL_REGISTRY[id];
             if (skillEntry) {
-                skillsSection += `\n--- [KORREKTUR-SKILL: ${skillEntry.metadata.name}] ---\n${skillEntry.promptSnippet.trim()}\n`;
+                const { correctionSnippet } = splitSkillSnippet(skillEntry.promptSnippet);
+                skillsSection += `\n--- [KORREKTUR-SKILL: ${skillEntry.metadata.name}] ---\n${correctionSnippet.trim()}\n`;
             }
         });
         skillsSection += '\n--------------------------------------------\n';
@@ -115,6 +119,27 @@ export function buildCorrectionPrompt(
     if (tasksLayout && Array.isArray(tasksLayout) && tasksLayout.length > 0) {
         const layoutText = tasksLayout.map(t => `- ${t.name} (Max: ${t.maxPoints} P)`).join('\n');
         system += `\n\nACHTUNG: Du MUSST dich strikt an diese Aufgabenliste halten.\n\nStruktur:\n${layoutText}`;
+
+        // Dynamic Injection of mathematical-deterministic Graph Runner Vorevaluierung (PANG Architecture)
+        let vorevaluierungBlock = '';
+        tasksLayout.forEach(t => {
+            if (t.gradingResult) {
+                vorevaluierungBlock += `\n\n### MATHEMATISCH-DETERMINISTISCHE VOREVALUIERUNG FÜR "${t.name}":\n`;
+                vorevaluierungBlock += `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!\n`;
+                vorevaluierungBlock += `- ZU VERGEBENDE PUNKTE: ${t.gradingResult.totalPoints} von max ${t.gradingResult.maxPoints} Punkten.\n`;
+                vorevaluierungBlock += `- DETAIL-ERGEBNISSE DER EINZELNEN SCHRITTE:\n`;
+                t.gradingResult.stepResults.forEach((step: any) => {
+                    const statusStr = step.status === 'correct' ? 'Korrekt' : 
+                                    step.status === 'consecutive_correct' ? 'Folgefehler-Kompensiert (Korrekt gewertet)' : 
+                                    'Fehlerhaft';
+                    vorevaluierungBlock += `  * Schritt/Variable "${step.variableId}": Schülerwert: "${step.studentValue !== undefined ? step.studentValue : 'nicht angegeben'}", Erwartet: "${step.expectedValue}", Status: ${statusStr}. ${step.note}\n`;
+                });
+                vorevaluierungBlock += `\nWICHTIG: Du musst exakt ${t.gradingResult.totalPoints} Punkte für diese Aufgabe vergeben (in dem Feld "pointsObtained" für dieses Objekt). Formuliere die Begründung (correctionNotes) und das Feedback genau auf Basis dieser Schritte und hebe insbesondere hervor, wenn Folgefehler kulant unbepunktet blieben (Folgeschritt-Kompensation).`;
+            }
+        });
+        if (vorevaluierungBlock) {
+            system += vorevaluierungBlock;
+        }
     }
 
     user = user.replace('{{modelSolution}}', modelSolution);
@@ -355,5 +380,31 @@ export function buildSecondOpinionPrompt(
         options: { temperature: 0.1, topP: 1.0 }
     };
 }
+
+/**
+ * Builds the prompt for semantic, highly-precise variable extraction from student text.
+ */
+export function buildVariableExtractionPrompt(studentText: string, variables: any[], extractionInstructions?: string): StructuredPrompt {
+    let system = variableExtractionSystem;
+    let user = variableExtractionUser;
+
+    if (extractionInstructions) {
+        system += `\n\n### SPEZIFISCHE EXTRAKTIONSRICHTLINIEN FÜR DIESEN AUFGABENTYP (STRIKT BEFOLGEN):\n${extractionInstructions}\n`;
+    }
+
+    const variablesList = variables.map(v => 
+        `- ID: "${v.id}" (Typ: "${v.type}", Standardwert/Erwartet: "${v.defaultValue !== undefined ? v.defaultValue : 'keine Vorgabe'}")`
+    ).join('\n');
+
+    user = user.replace('{{studentText}}', studentText);
+    user = user.replace('{{variablesList}}', variablesList);
+
+    return {
+        system,
+        user,
+        options: { temperature: 0.0, topP: 0.1 }
+    };
+}
+
 
 

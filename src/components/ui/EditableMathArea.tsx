@@ -12,6 +12,7 @@ interface EditableMathAreaProps {
     className?: string;
     initialEditMode?: boolean;
     label?: string;
+    leftAction?: React.ReactNode;
 }
 
 /**
@@ -25,14 +26,21 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
     placeholder,
     className,
     initialEditMode = false,
-    label
+    label,
+    leftAction
 }) => {
     const [isEditing, setIsEditing] = useState(initialEditMode);
 
     return (
         <div className={cn("relative group w-full", className)}>
             {/* Header / Actions */}
-            <div className="flex items-center justify-end mb-2 px-1">
+            <div className="flex items-center justify-between mb-2 px-1">
+                {leftAction ? (
+                    <div className="flex items-center gap-2">
+                        {leftAction}
+                    </div>
+                ) : <div />}
+                
                 <div className="ml-auto flex items-center gap-1 opacity-30 group-hover:opacity-100 transition-all duration-300">
                     <Button 
                         variant="ghost" 

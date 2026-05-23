@@ -14,5 +14,6 @@ Moderne KIs neigen zur Überkonfidenz bei unleserlichen Wörtern. Du MUSST diese
 QUALITÄTSREGELN:
 - GESTRICHENES: Wenn bestimmte Wörter oder Zeilen durchgestrichen sind, ignoriere NUR diese spezifischen Wörter/Zeilen und markiere sie mit [GESTRICHEN]. WICHTIG: Überspringe niemals gültigen Text, der vor oder nach dem Gekritzel steht!
 - MATHEMATIK: Standard-LaTeX für Formeln verwenden.
-- STRUKTUR: Jede sichtbare Zeile im Bild = eine Zeile im Output.
+- TABELLEN: Wenn du eine visuelle Tabelle (Gitternetz, strukturierte Tabellenzeilen/spalten) erkennst, transkribiere diese zwingend als standardmäßige GitHub Flavored Markdown (GFM) Tabelle. Nutze für Spaltentrenner das Zeichen `|` und erstelle nach der Kopfzeile eine Ausrichtungs-/Trennzeile mit Bindestrichen (z.B. `|---|---|`). Jede Zeile der Tabelle muss eine vollständige Zeile mit passenden Trennzeichen sein, damit Spalten und Zeilen visuell perfekt erhalten bleiben.
+- STRUKTUR: Jede sichtbare Zeile im Bild = eine Zeile im Output (außerhalb von Tabellen).
 - KEIN CHAT: Gib ausschließlich den Text aus. Keine Einleitungen.

@@ -18,6 +18,7 @@ import { useGradingMemories } from '@/hooks/useGradingMemories';
 import { useDashboardActions } from '@/hooks/useDashboardActions';
 import { useDashboardOrchestrator } from '@/hooks/useDashboardOrchestrator';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
+import { performAIRequest } from '@/lib/ai/ai-orchestrator';
 
 // Libs
 import { exportTeacherList, exportStudentSummaries, exportIndividualFeedbacks } from '@/lib/excel';
@@ -61,6 +62,68 @@ export default function Home() {
 
     const { saveSettings, handleModeSelect, handleUnlockExpert } = useDashboardActions(userData, setUserData, aiSettings, setAiSettings, fetchAiStatus);
 
+    const handleGenerateGraphForTask = async (taskIndex: number, taskText: string) => {
+        try {
+            const discipline = data.tasksLayout[taskIndex]?.taskType;
+            const response = await performAIRequest(
+                'generate-graph',
+                { taskText, discipline },
+                userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
+                aiSettings
+            );
+            if (response) {
+                const updatedTasks = [...data.tasksLayout];
+                let determinedType = updatedTasks[taskIndex].taskType || 'default';
+                
+                if (response.discipline === 'computer-science-storage') {
+                    determinedType = 'skill-calc-raid';
+                } else if (response.discipline === 'computer-science-networking') {
+                    determinedType = 'skill-calc-vlsm';
+                }
+
+                updatedTasks[taskIndex] = {
+                    ...updatedTasks[taskIndex],
+                    taskType: determinedType,
+                    gradingGraph: response
+                };
+                data.setTasksLayout(updatedTasks);
+                return response;
+            }
+            return null;
+        } catch (error: any) {
+            console.error('Error generating graph:', error);
+            const msg = error.message || error || '';
+            const msgLower = String(msg).toLowerCase();
+            if (msgLower.includes('422') || msgLower.includes('validation') || msgLower.includes('keinen') || msgLower.includes('bewertungs') || msgLower.includes('gültig')) {
+                alert(`Fehler bei der Graph-Generierung:\n\nDie KI konnte keinen Bewertungs-Graphen erstellen.\n\nHinweis: Das PANG-System ist für mathematisch-numerische Aufgaben (z. B. Subnetting, RAID, Berechnungen) optimiert. Für rein textuelle/konzeptionelle Fragen (wie z. B. Freitext-Erklärungen) ist kein Rechengraph erforderlich – nutze hierfür einfach die Standard-Korrektur ohne Graph.`);
+            } else {
+                alert(`Fehler bei der Graph-Generierung: ${msg}`);
+            }
+            throw error;
+        }
+    };
+
+    const handleGenerateGraphFromText = async (taskText: string, discipline?: string) => {
+        try {
+            const response = await performAIRequest(
+                'generate-graph',
+                { taskText, discipline },
+                userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
+                aiSettings
+            );
+            return response;
+        } catch (error: any) {
+            console.error('Error generating custom graph:', error);
+            const msg = error.message || error || '';
+            const msgLower = String(msg).toLowerCase();
+            if (msgLower.includes('422') || msgLower.includes('validation') || msgLower.includes('keinen') || msgLower.includes('bewertungs') || msgLower.includes('gültig')) {
+                alert(`Fehler bei der Graph-Generierung:\n\nDie KI konnte keinen Bewertungs-Graphen erstellen.\n\nHinweis: Das PANG-System ist für mathematisch-numerische Aufgaben (z. B. Subnetting, RAID, Berechnungen) optimiert. Für rein textuelle/konzeptionelle Fragen (wie z. B. Freitext-Erklärungen) ist kein Rechengraph erforderlich – nutze hierfür einfach die Standard-Korrektur ohne Graph.`);
+            } else {
+                alert(`Fehler bei der Graph-Generierung: ${msg}`);
+            }
+            return null;
+        }
+    };
 
     // Initial State Effects
     useEffect(() => {
@@ -251,6 +314,7 @@ export default function Home() {
                         handleAiOllamaSave={actions.handleAiOllamaSave}
                         handleAiMistralSave={actions.handleAiMistralSave}
                         handleAiCustomSave={actions.handleAiCustomSave}
+                        onGenerateGraph={handleGenerateGraphFromText}
                     />
 
                     <GradingMemoryModal 
@@ -272,6 +336,8 @@ export default function Home() {
                     )}
 
                     <UploadGrid
+                        settings={aiSettings}
+                        onGenerateGraph={handleGenerateGraphForTask}
                         onModelUpload={(e) => {
                             const file = e.target.files?.[0];
                             if (file) {

@@ -6,12 +6,15 @@ import {
     buildStudentSimulatorPrompt,
     buildAnonymizePrompt,
     buildSecondOpinionPrompt,
+    buildVariableExtractionPrompt,
     StructuredPrompt
+
 } from './prompt-builder';
+import { buildGraphGenerationPrompt } from '../grading/graph-generator';
 import { AppSettings } from '../../types';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'variable-extraction';
 
 /**
  * Specifically optimized for Gemma 4 E4B (multimodal).
@@ -63,6 +66,10 @@ export async function executeOllamaRequest(
             payload.teacherDoubt,
             payload.chatHistory
         );
+    } else if (action === 'generate-graph') {
+        promptObj = buildGraphGenerationPrompt(payload.taskText, payload.discipline);
+    } else if (action === 'variable-extraction') {
+        promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions);
     } else {
         throw new Error(`Unsupported action: ${action}`);
     }

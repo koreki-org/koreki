@@ -52,6 +52,18 @@ describe('Mistral Provider (Bridge) - Unit Tests', () => {
             const body = JSON.parse(mockFetchWithRetry.mock.calls[0][1].body);
             expect(body.model).toBe(constants.MISTRAL_CHATS_MODEL);
         });
+
+        it('should map "second-opinion" to MISTRAL_CORE_MODEL', async () => {
+            mockFetchWithRetry.mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ choices: [{ message: { content: '{}' } }] })
+            });
+
+            await executeMistralRequest('second-opinion', { taskName: 'T' }, API_KEY);
+            
+            const body = JSON.parse(mockFetchWithRetry.mock.calls[0][1].body);
+            expect(body.model).toBe(constants.MISTRAL_CORE_MODEL);
+        });
     });
 
     describe('executeMistralRequest - Prompt Construction', () => {

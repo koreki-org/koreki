@@ -164,6 +164,7 @@ model SkillProfile {
   id             String   @id @default(cuid())
   name           String
   activeSkillIds Json     @default("[]") // Plattformübergreifendes JSON-Array
+  customSkills   Json     @default("{}") // Speicher für { [skillId]: SkillDefinition }
   isSystem       Boolean  @default(false)
   userId         String?
   user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -72,5 +72,48 @@ describe('AI Orchestrator (Layer 1 Unit)', () => {
             expect(result.tasks[0].content).toBe('');
             expect(result.tasks[0].feedback).toBe('Vom System nicht erkannt oder von der KI übersprungen.');
         });
+
+        it('should override with PANG engine deterministic results when layoutTask has gradingResult', () => {
+            const layoutWithGraph: Task[] = [
+                {
+                    name: 'Aufgabe 3.1.1',
+                    maxPoints: 15,
+                    content: '',
+                    taskType: 'vlsm',
+                    pointsObtained: 13,
+                    gradingResult: {
+                        totalPoints: 13,
+                        maxPoints: 15,
+                        stepResults: [
+                            { variableId: 'subnetA_hosts', status: 'correct', points: 1, expectedValue: '500', studentValue: '500', note: 'Korrekt' },
+                            { variableId: 'subnetA_mask', status: 'consecutive_correct', points: 1, expectedValue: '/23', studentValue: '/23', note: 'Folgefehler' }
+                        ]
+                    }
+                }
+            ];
+
+            const rawAnalysis = {
+                tasks: [
+                    {
+                        name: 'Aufgabe 3.1.1',
+                        pointsObtained: 0, // AI hallucinated 0 points!
+                        confidence: 90,
+                        feedback: 'AI feedback that should be appended',
+                        content: 'Schülerantwort...'
+                    }
+                ]
+            };
+
+            const result = parseCorrectionResult(rawAnalysis, layoutWithGraph);
+
+            expect(result.tasks).toHaveLength(1);
+            expect(result.tasks[0].pointsObtained).toBe(13); // Overridden to deterministic 13 points!
+            expect(result.tasks[0].feedback).toContain('[⚙️ PANG Engine - Mathematischer Graph-Abgleich]');
+            expect(result.tasks[0].feedback).toContain('• subnetA_hosts: Schülerwert: "500" (Erwartet: "500") ➔ KORREKT');
+            expect(result.tasks[0].feedback).toContain('[KI-Pädagogische Einschätzung]');
+            expect(result.tasks[0].feedback).toContain('AI feedback that should be appended');
+            expect(result.tasks[0].confidence).toBe(95); // High confidence enforced
+        });
     });
 });
+

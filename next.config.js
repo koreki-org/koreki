@@ -1,10 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    webpack: (config) => {
+    transpilePackages: ['remark-gfm', 'react-markdown'],
+    webpack: (config, { dev }) => {
         config.module.rules.push({
             test: /\.md$/,
             type: 'asset/source',
         });
+        if (dev) {
+            config.cache = false;
+        }
         return config;
     },
     reactStrictMode: true,

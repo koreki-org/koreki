@@ -384,6 +384,14 @@ export const useProcessingPipeline = (
                 requestId: 'model-solution' // Unique scope for model solution
             }, userData?.appMode, currentSettings);
 
+            if (data && Array.isArray(data.tasks)) {
+                data.tasks = data.tasks.map((task: any) => ({
+                    ...task,
+                    taskType: 'default',
+                    gradingGraph: undefined
+                }));
+            }
+
             return data;
         } catch (err: any) {
             console.error("Layout extraction error:", err);

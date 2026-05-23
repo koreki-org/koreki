@@ -1,4 +1,5 @@
-import { buildCleanAndAnalyzePrompt, buildCorrectionPrompt, buildCleanAndMapPrompt } from '../../../../src/lib/ai/prompt-builder';
+import { buildCleanAndAnalyzePrompt, buildCorrectionPrompt, buildCleanAndMapPrompt, buildVariableExtractionPrompt } from '../../../../src/lib/ai/prompt-builder';
+import { splitSkillSnippet } from '../../../../src/lib/ai/prompt-library';
 
 describe('Prompt Builder Specialized Routing', () => {
     
@@ -37,5 +38,29 @@ describe('Prompt Builder Specialized Routing', () => {
             // For now, they are identical but separate files.
             expect(prompt).toBeDefined();
         });
+    });
+});
+
+describe('splitSkillSnippet and extractionInstructions dynamic handling', () => {
+    it('should split standard prompt snippet with EXTRAKTIONSRICHTLINIEN correctly', () => {
+        const fullSnippet = "VLSM SUBNETTING-ENGINE (PRÄZISE AUSFÜHRUNG):\n- Berechnet für ein gegebenes Hauptnetz...\n\n### EXTRAKTIONSRICHTLINIEN\n\nFür VLSM-Subnetztabellen:\n1. Messe-besucher -> MesseBesucher";
+        const { correctionSnippet, extractionSnippet } = splitSkillSnippet(fullSnippet);
+        expect(correctionSnippet).toContain("VLSM SUBNETTING-ENGINE (PRÄZISE AUSFÜHRUNG):");
+        expect(correctionSnippet).not.toContain("### EXTRAKTIONSRICHTLINIEN");
+        expect(extractionSnippet).toContain("### EXTRAKTIONSRICHTLINIEN");
+        expect(extractionSnippet).toContain("1. Messe-besucher -> MesseBesucher");
+    });
+
+    it('should handle skill snippets without EXTRAKTIONSRICHTLINIEN gracefully', () => {
+        const fullSnippet = "Einfacher RAID-Auswertungs prompt ohne extraktionen.";
+        const { correctionSnippet, extractionSnippet } = splitSkillSnippet(fullSnippet);
+        expect(correctionSnippet).toBe(fullSnippet);
+        expect(extractionSnippet).toBe('');
+    });
+
+    it('should append extractionInstructions to variable extraction prompt if provided', () => {
+        const prompt = buildVariableExtractionPrompt('Student Text', [], 'Extract MesseBesucher');
+        expect(prompt.system).toContain('### SPEZIFISCHE EXTRAKTIONSRICHTLINIEN FÜR DIESEN AUFGABENTYP (STRIKT BEFOLGEN):');
+        expect(prompt.system).toContain('Extract MesseBesucher');
     });
 });

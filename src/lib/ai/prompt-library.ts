@@ -65,3 +65,20 @@ export function parsePromptFile(raw: string): PromptLibraryEntry {
 
     return { metadata, promptSnippet };
 }
+
+/**
+ * Splits a skill prompt snippet into correction and extraction guidelines.
+ * Seeks for `### EXTRAKTIONSRICHTLINIEN` (case-insensitive) to perform the boundary split.
+ */
+export function splitSkillSnippet(snippet: string): { correctionSnippet: string; extractionSnippet: string } {
+    const delimiterRegex = /###\s*EXTRAKTIONSRICHTLINIEN/i;
+    const match = snippet.match(delimiterRegex);
+    if (match && match.index !== undefined) {
+        const index = match.index;
+        const correctionSnippet = snippet.substring(0, index).trim();
+        const extractionSnippet = snippet.substring(index).trim();
+        return { correctionSnippet, extractionSnippet };
+    }
+    return { correctionSnippet: snippet, extractionSnippet: '' };
+}
+

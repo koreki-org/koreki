@@ -82,6 +82,7 @@ interface DashboardModalsProps {
     handleAiOllamaSave: (url: string, model: string) => void;
     handleAiMistralSave: (key: string) => void;
     handleAiCustomSave: (url: string, key: string, model: string, thinking: boolean) => void;
+    onGenerateGraph?: (taskText: string, discipline?: string) => Promise<any | null>;
 }
 
 export const DashboardModals: React.FC<DashboardModalsProps> = ({
@@ -108,7 +109,8 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
     pdfTypeQueue, handlePDFTypeSelect,
     showAiSetup, setShowAiSetup,
     showAiParamsSettings, setShowAiParamsSettings,
-    handleAiOllamaSave, handleAiMistralSave, handleAiCustomSave
+    handleAiOllamaSave, handleAiMistralSave, handleAiCustomSave,
+    onGenerateGraph
 }) => {
     const queryClient = useQueryClient();
 
@@ -175,6 +177,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                 <SkillsSettingsModal
                     settings={settings}
                     currentProfileName={sessionSkillsProfileName}
+                    onGenerateGraph={onGenerateGraph}
                     onSave={async (newSettings, profileName, profileId) => {
                         setSettings(newSettings);
                         if (profileName) setSessionSkillsProfileName(profileName);

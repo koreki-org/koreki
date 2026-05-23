@@ -50,7 +50,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         avvAccepted: true,
                         canEditPrompts: true,
                         canBuyCredits: false,
-                        hasGlobalAiKey: !!process.env.MISTRAL_API_KEY || !!process.env.MITTWALD_API_KEY
+                        hasGlobalAiKey: !!process.env.MISTRAL_API_KEY || !!process.env.MITTWALD_API_KEY || !!process.env.OPENAI_API_KEY
                     },
                     aiStatus: { ocrBrakeActive: false, correctionBrakeActive: false }
                 });
@@ -116,7 +116,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     activeMembershipRole: activeMembership?.role,
                     canEditPrompts,
                     canBuyCredits,
-                    hasGlobalAiKey: !!process.env.MISTRAL_API_KEY || !!process.env.MITTWALD_API_KEY
+                    hasGlobalAiKey: !!process.env.MISTRAL_API_KEY || !!process.env.MITTWALD_API_KEY || !!process.env.OPENAI_API_KEY
                 },
                 aiStatus: await getSystemAiStatus()
             });

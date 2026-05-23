@@ -7,11 +7,14 @@ import {
     buildStudentSimulatorPrompt,
     buildAnonymizePrompt,
     buildSecondOpinionPrompt,
+    buildVariableExtractionPrompt,
     StructuredPrompt 
+
 } from './prompt-builder';
+import { buildGraphGenerationPrompt } from '../grading/graph-generator';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'variable-extraction';
 
 export interface OpenAIRequestOptions {
     temperature?: number;
@@ -40,7 +43,7 @@ export async function executeOpenAIRequest(
     apiKey: string,
     options: OpenAIRequestOptions = {}
 ): Promise<any> {
-    const targetModel = options.model || 'qwen3.6:latest';
+    const targetModel = options.model || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
     
     // 1. Prompt Building
     let promptObj: StructuredPrompt;
@@ -84,6 +87,10 @@ export async function executeOpenAIRequest(
                 payload.teacherDoubt,
                 payload.chatHistory
             );
+        } else if (action === 'generate-graph') {
+            promptObj = buildGraphGenerationPrompt(payload.taskText, payload.discipline);
+        } else if (action === 'variable-extraction') {
+            promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions);
         } else {
             throw new Error(`Unsupported action: ${action}`);
         }
