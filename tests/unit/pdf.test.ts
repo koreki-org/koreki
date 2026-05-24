@@ -1,4 +1,5 @@
 import { exportIndividualPDFs } from '../../src/lib/pdf';
+import { cleanDidacticalMarks, formatMarkdownTableForPDF } from '../../src/lib/pdf-utils';
 import jsPDF from 'jspdf';
 import JSZip from 'jszip';
 
@@ -52,5 +53,36 @@ describe('PDF Utils tests', () => {
     it('should return early if results are empty', async () => {
         await exportIndividualPDFs([]);
         expect(jsPDF).not.toHaveBeenCalled();
+    });
+
+    describe('PDF Text and Table Formatting Helpers', () => {
+        it('should keep didactical codes untouched and strip emojis', () => {
+            const rawText = '[r] LOB: Toll gemacht! [f] TIPP: Fehler hier. [FF] Folgefehler.';
+            const cleaned = cleanDidacticalMarks(rawText);
+            expect(cleaned).toBe('[r] LOB: Toll gemacht! [f] TIPP: Fehler hier. [FF] Folgefehler.');
+        });
+
+        it('should replace system/gear tag and strip emojis', () => {
+            const rawText = '[⚙️ AGS Engine - VLSM] Test';
+            const cleaned = cleanDidacticalMarks(rawText);
+            expect(cleaned).toBe('[System AGS Engine - VLSM] Test');
+        });
+
+        it('should format a markdown table as a structured bulleted list', () => {
+            const rawTable = `[⚙️ AGS Engine - VLSM]
+| Subnetz | Netz-ID | Maske | First |
+|---|---|---|---|
+| **Subnetz A** | 10.0.0.0 [r] | /24 [r] | 10.0.0.1 [r] |
+| **Subnetz B** | 10.0.1.0 [f] | /24 [r] | - |`;
+
+            const formatted = formatMarkdownTableForPDF(rawTable);
+            expect(formatted).toContain('[System AGS Engine - VLSM]');
+            expect(formatted).toContain('• Subnetz A:');
+            expect(formatted).toContain('- Netz-ID: 10.0.0.0 [r]');
+            expect(formatted).toContain('- Maske: /24 [r]');
+            expect(formatted).toContain('• Subnetz B:');
+            expect(formatted).toContain('- Netz-ID: 10.0.1.0 [f]');
+            expect(formatted).not.toContain('- First: -'); // Omitted empty/dash cells
+        });
     });
 });

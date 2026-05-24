@@ -4,6 +4,8 @@ import JSZip from 'jszip';
 import { StudentResult } from './excel';
 import { downloadFile } from './file-utils';
 
+import { cleanDidacticalMarks, formatMarkdownTableForPDF } from './pdf-utils';
+
 /**
  * Helper to generate a PDF blob for a single student.
  */
@@ -36,7 +38,7 @@ const generateStudentPDF = (r: StudentResult): Blob => {
     doc.text('Gesamtfeedback:', 14, 52);
     doc.setFont('helvetica', 'normal');
     
-    const feedbackText = analysis.overallFeedback || 'Kein Gesamtfeedback vorhanden.';
+    const feedbackText = cleanDidacticalMarks(analysis.overallFeedback || 'Kein Gesamtfeedback vorhanden.');
     const splitFeedback = doc.splitTextToSize(feedbackText, 180);
     doc.text(splitFeedback, 14, 58);
 
@@ -48,7 +50,7 @@ const generateStudentPDF = (r: StudentResult): Blob => {
         analysis.tasks.forEach((task, index) => {
             tableData.push([
                 task.name || `Aufgabe ${index + 1}`,
-                task.feedback || '-'
+                formatMarkdownTableForPDF(task.feedback || '-')
             ]);
         });
     }
