@@ -357,7 +357,7 @@ export async function extractStudentAnswersWithLLM(
  * Orchestrates AI requests (Correction, Layout, Vision), choosing between direct Mistral API (PURE) or Koreki Backend (STANDARD).
  */
 export async function performAIRequest(
-    action: 'correction' | 'clean-and-analyze' | 'vision' | 'clean-and-map' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'variable-extraction',
+    action: 'correction' | 'clean-and-analyze' | 'vision' | 'clean-and-map' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction',
     payload: any, // ARCH: any required because payload structure varies by action (Correction vs Layout)
     appMode: 'PURE' | 'STANDARD' | 'TRIAL' | undefined,
     settings: AppSettings
@@ -466,7 +466,7 @@ export async function performAIRequest(
                 }
             } else if (action === 'clean-and-map') {
                 result = parseMappingResult(result, payload.tasksLayout);
-            } else if (action === 'generate-graph') {
+            } else if (action === 'generate-graph' || action === 'refine-graph') {
                 result = parseGeneratedGraph(typeof result === 'string' ? result : JSON.stringify(result));
             }
         }
@@ -488,7 +488,8 @@ export async function performAIRequest(
                     action === 'anonymize' ? '/api/user/grading-memories/anonymize' :
                         action === 'second-opinion' ? '/api/second-opinion' :
                             action === 'generate-graph' ? '/api/generate-graph' :
-                                '/api/extract-image';
+                                action === 'refine-graph' ? '/api/refine-graph' :
+                                    '/api/extract-image';
 
         const res = await apiClient.post(endpoint, { 
             ...payload, 

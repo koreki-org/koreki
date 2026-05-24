@@ -2,6 +2,8 @@
  * Domain-Specific Helper Engines (Plugins)
  * Provides standardized mathematical and logical helpers for the Graph Engine.
  */
+import { Parser } from 'expr-eval';
+
 
 // Helper to convert IP to number and vice versa for network math
 export const ipToLong = (ip: string): number => {
@@ -212,91 +214,33 @@ export const plugins: Record<string, Record<string, Function>> = {
 };
 
 
-function splitArguments(rawArgs: string): string[] {
-  const args: string[] = [];
-  let currentArg = '';
-  let parenDepth = 0;
-  let inDoubleQuote = false;
-  let inSingleQuote = false;
+const parser = new Parser();
 
-  for (let i = 0; i < rawArgs.length; i++) {
-    const char = rawArgs[i];
-    if (char === '"' && !inSingleQuote) {
-      inDoubleQuote = !inDoubleQuote;
-      currentArg += char;
-    } else if (char === "'" && !inDoubleQuote) {
-      inSingleQuote = !inSingleQuote;
-      currentArg += char;
-    } else if (inDoubleQuote || inSingleQuote) {
-      currentArg += char;
-    } else if (char === '(') {
-      parenDepth++;
-      currentArg += char;
-    } else if (char === ')') {
-      parenDepth--;
-      currentArg += char;
-    } else if (char === ',' && parenDepth === 0) {
-      args.push(currentArg.trim());
-      currentArg = '';
-    } else {
-      currentArg += char;
-    }
+// Dynamically register all existing plugin functions in expr-eval
+for (const [domainName, domainFunctions] of Object.entries(plugins)) {
+  for (const [functionName, fn] of Object.entries(domainFunctions)) {
+    parser.functions[`${domainName}_${functionName}`] = (fn as any).bind(domainFunctions);
   }
-  if (currentArg.trim() !== '') {
-    args.push(currentArg.trim());
-  }
-  return args;
 }
+
+// Extra math and domain helpers
+parser.functions.log2 = (x: number) => Math.log2(x);
+parser.functions.ceil = (x: number) => Math.ceil(x);
+parser.functions.floor = (x: number) => Math.floor(x);
+parser.functions.ipToLong = ipToLong;
+parser.functions.longToIp = longToIp;
 
 /**
  * Evaluates an expression string using resolved variables.
- * Format: "domain.function(arg1, arg2, ...)"
- * Supports nested function calls recursively.
+ * Supports standard mathematical and logical helpers natively (expr-eval)
+ * and maps old "domain.function(...)" calls to registered plugin functions for backward compatibility.
  */
 export function evaluateExpression(expression: string, context: Record<string, any>): any {
-  const match = expression.match(/^([a-zA-Z0-9_]+)\.([a-zA-Z0-9_]+)\((.*)\)$/);
-  if (!match) {
-    throw new Error(`Unsupported expression format: ${expression}`);
-  }
+  // Map dots to underscores to support old format backward compatibility
+  const sanitizedExpression = expression
+    .replace(/network\./g, 'network_')
+    .replace(/raid\./g, 'raid_')
+    .replace(/math\./g, 'math_');
 
-  const [_, domainName, functionName, rawArgs] = match;
-  const domain = plugins[domainName];
-  if (!domain) {
-    throw new Error(`Unknown plugin domain: ${domainName}`);
-  }
-
-  const fn = domain[functionName];
-  if (!fn) {
-    throw new Error(`Unknown function: ${functionName} in domain ${domainName}`);
-  }
-
-  // Parse arguments (can be variable references, literal values, or nested function calls)
-  const args = rawArgs ? splitArguments(rawArgs).map(arg => {
-    const trimmed = arg.trim();
-    
-    // Check if it's a nested function call
-    if (/^[a-zA-Z0-9_]+\.[a-zA-Z0-9_]+\(.*\)$/.test(trimmed)) {
-      return evaluateExpression(trimmed, context);
-    }
-
-    // Check if it's a numeric literal
-    if (!isNaN(Number(trimmed)) && trimmed !== '') {
-      return Number(trimmed);
-    }
-    
-    // Check if it's a string literal (quoted)
-    if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || 
-        (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
-      return trimmed.slice(1, -1);
-    }
-
-    // Otherwise, treat as variable reference
-    if (context[trimmed] !== undefined) {
-      return context[trimmed];
-    }
-
-    throw new Error(`Unresolved argument reference: "${trimmed}" in expression "${expression}"`);
-  }) : [];
-
-  return fn.apply(domain, args);
+  return parser.evaluate(sanitizedExpression, context);
 }

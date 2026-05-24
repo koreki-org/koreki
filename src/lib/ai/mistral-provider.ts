@@ -17,10 +17,10 @@ import {
     StructuredPrompt 
 
 } from './prompt-builder';
-import { buildGraphGenerationPrompt } from '../grading/graph-generator';
+import { buildGraphGenerationPrompt, buildGraphRefinementPrompt } from '../grading/graph-generator';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'variable-extraction';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction';
 
 export interface AIRequestOptions {
     temperature?: number;
@@ -117,6 +117,8 @@ export async function executeMistralRequest(
             );
         } else if (action === 'generate-graph') {
             promptObj = buildGraphGenerationPrompt(payload.taskText, payload.discipline);
+        } else if (action === 'refine-graph') {
+            promptObj = buildGraphRefinementPrompt(payload.taskText, payload.currentGraph, payload.userInstruction, payload.discipline);
         } else if (action === 'variable-extraction') {
             promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions);
         } else {
@@ -220,6 +222,10 @@ export async function executeMistralRequest(
     if (Array.isArray(content)) {
         const textBlock = content.find((block: any) => block.type === 'text');
         content = textBlock ? textBlock.text : '';
+    }
+
+    if (content === null || content === undefined) {
+        throw new Error('Die KI hat eine leere Antwort (null) zurückgegeben. Dies kann passieren, wenn das Modell überlastet ist oder die Eingabe blockiert wurde.');
     }
 
     // 4. Robust JSON Parsing (Standard Pattern)

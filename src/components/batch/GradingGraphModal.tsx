@@ -2,7 +2,8 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { 
     X, Check, AlertCircle, Plus, Trash2, Code, Eye, 
-    Sparkles, RefreshCw, Layers, ArrowRight, HelpCircle, Link2Off
+    Sparkles, RefreshCw, Layers, ArrowRight, HelpCircle, Link2Off,
+    Send, MessageSquare
 } from 'lucide-react';
 import { GradingGraph, VariableDefinition, VariableType, ValidationType } from '../../lib/grading/types';
 import { evaluateExpression } from '../../lib/grading/plugins';
@@ -11,6 +12,8 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Badge } from '../ui/Badge';
 import { cn } from '@/lib/utils';
+import { AppSettings } from '../../types';
+import { apiClient } from '@/lib/api-client';
 
 interface GradingGraphModalProps {
     isOpen: boolean;
@@ -20,6 +23,7 @@ interface GradingGraphModalProps {
     taskContent?: string;
     taskType?: string;
     customSkills?: Record<string, any>;
+    settings?: AppSettings;
     isGenerating?: boolean;
     onEngineChange?: (newEngine: string) => void;
     onRegenerateGraph?: (discipline: string) => Promise<any>;
@@ -36,6 +40,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     taskContent,
     taskType,
     customSkills = {},
+    settings,
     isGenerating = false,
     onEngineChange,
     onRegenerateGraph,
@@ -80,6 +85,10 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     const [playgroundInputs, setPlaygroundInputs] = useState<Record<string, string>>({});
     const [playgroundResult, setPlaygroundResult] = useState<any>(null);
     const [activeTab, setActiveTab] = useState<'designer' | 'playground'>('designer');
+    const [activeRightTab, setActiveRightTab] = useState<'inspector' | 'assistant'>('assistant');
+    const [chatInput, setChatInput] = useState('');
+    const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'assistant'; text: string; hasError?: boolean }[]>([]);
+    const [isRefining, setIsRefining] = useState(false);
 
     const [skillName, setSkillName] = useState(() => {
         if (taskType && taskType.startsWith('custom-skill-') && customSkills?.[taskType]) {
@@ -290,6 +299,58 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
         setPlaygroundInputs(perfect);
     };
 
+    const handleRefineGraph = async () => {
+        if (!chatInput.trim() || isRefining) return;
+
+        const instruction = chatInput.trim();
+        setChatInput('');
+        setIsRefining(true);
+        setChatHistory(prev => [...prev, { role: 'user', text: instruction }]);
+
+        try {
+            const res = await apiClient.post('/api/refine-graph', {
+                taskText: taskContent || "",
+                currentGraph: graph,
+                userInstruction: instruction,
+                discipline: selectedPlugin,
+                settings: settings
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `Fehler bei der Serververarbeitung (${res.status})`);
+            }
+
+            const responseData = await res.json();
+            let updatedGraph = responseData;
+            let explanation = '';
+
+            if (responseData && responseData.graph) {
+                updatedGraph = responseData.graph;
+                explanation = responseData.explanation || '';
+            }
+
+            if (updatedGraph && Array.isArray(updatedGraph.variables)) {
+                setGraph(updatedGraph);
+                setChatHistory(prev => [...prev, { 
+                    role: 'assistant', 
+                    text: explanation || `Graph erfolgreich verfeinert!\nEs wurden ${updatedGraph.variables.length} Variablen deklariert.` 
+                }]);
+            } else {
+                throw new Error("Ungültiges Graphen-Format von KI zurückgegeben.");
+            }
+        } catch (err: any) {
+            const errMsg = err instanceof Error ? err.message : 'Verbindungsfehler';
+            setChatHistory(prev => [...prev, { 
+                role: 'assistant', 
+                text: `Fehler: ${errMsg}`, 
+                hasError: true 
+            }]);
+        } finally {
+            setIsRefining(false);
+        }
+    };
+
     if (!isOpen || !mounted) return null;
 
     const selectedVar = (graph?.variables || []).find(v => v.id === selectedVarId);
@@ -325,7 +386,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             onClick={() => { setActiveTab('playground'); handleRunPlayground(); }}
                             className={cn("px-4 py-1.5 rounded-lg text-xs font-bold transition-all", activeTab === 'playground' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800")}
                         >
-                            Mock-Spielwiese 🧪
+                            Graph testen 🧪
                         </button>
                     </div>
 
@@ -622,7 +683,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                 <div className="bg-white border border-slate-100 shadow-glass rounded-3xl p-6 space-y-4">
                                     <div className="flex justify-between items-center pb-3 border-b border-slate-100">
                                         <div>
-                                            <h4 className="text-sm font-black text-slate-900 font-outfit">Simulations-Spielwiese</h4>
+                                            <h4 className="text-sm font-black text-slate-900 font-outfit">Graph testen &amp; Diagnose</h4>
                                             <p className="text-[10px] text-slate-400 font-medium">Trage hier fehlerhafte Werte ein, um die Folgefehler-Kompensation zu validieren.</p>
                                         </div>
                                         <div className="flex gap-2">
@@ -730,140 +791,255 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         )}
                     </div>
 
-                    {/* Right Panel: Selected Variable Detail Inspector (Designer tab only) */}
+                    {/* Right Panel: Tabs for Inspector vs AI Assistant (Designer tab only) */}
                     {activeTab === 'designer' && (
-                        <div className="w-80 border-l border-slate-100 bg-slate-50/30 flex flex-col overflow-hidden shrink-0">
-                            {selectedVar ? (
-                                <div className="flex flex-col h-full overflow-y-auto p-6 space-y-6">
-                                    <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
-                                        <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider font-outfit">Node-Inspektor</h4>
-                                        <button 
-                                            onClick={() => handleDeleteVariable(selectedVar.id)}
-                                            className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-red-50 rounded-md"
+                        <div className={cn(
+                            "border-l border-slate-100 bg-slate-50/30 flex flex-col overflow-hidden shrink-0 transition-all duration-300 ease-in-out",
+                            activeRightTab === 'assistant' ? "w-[450px]" : "w-80"
+                        )}>
+                            {/* Tab Switcher */}
+                            <div className="flex border-b border-slate-100 bg-slate-50/50 p-1 shrink-0">
+                                <button
+                                    onClick={() => setActiveRightTab('assistant')}
+                                    className={cn(
+                                        "flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5",
+                                        activeRightTab === 'assistant' 
+                                            ? "bg-white text-indigo-600 shadow-xs border border-slate-100" 
+                                            : "text-slate-500 hover:text-slate-700"
+                                    )}
+                                >
+                                    <Sparkles size={11} className={cn(activeRightTab === 'assistant' && "text-indigo-600")} />
+                                    <span>KI-Assistent 🪄</span>
+                                </button>
+                                <button
+                                    onClick={() => setActiveRightTab('inspector')}
+                                    className={cn(
+                                        "flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5",
+                                        activeRightTab === 'inspector' 
+                                            ? "bg-white text-indigo-600 shadow-xs border border-slate-100" 
+                                            : "text-slate-500 hover:text-slate-700"
+                                    )}
+                                >
+                                    <Layers size={11} className={cn(activeRightTab === 'inspector' && "text-indigo-600")} />
+                                    <span>Knoten-Inspektor</span>
+                                </button>
+                            </div>
+
+                            {/* Tab Content 1: AI Assistant */}
+                            {activeRightTab === 'assistant' && (
+                                <div className="flex-1 flex flex-col overflow-hidden p-6 space-y-4">
+                                    <div className="space-y-1.5 shrink-0">
+                                        <h4 className="text-xs font-black uppercase text-slate-800 font-outfit tracking-tight flex items-center gap-2">
+                                            <Sparkles size={13} className="text-indigo-600" />
+                                            Interaktiver KI-Assistent
+                                        </h4>
+                                        <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                                            Steuere die PANG-Engine per Chat. Passe Formeln, Toleranzen oder Punktgewichtungen flexibel mit natürlicher Sprache an.
+                                        </p>
+                                    </div>
+
+                                    {/* Chat History Panel */}
+                                    <div className="flex-1 bg-slate-100/50 rounded-2xl border border-slate-200/40 p-4 overflow-y-auto space-y-3 custom-scrollbar flex flex-col">
+                                        {chatHistory.length === 0 ? (
+                                            <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-400 gap-2 select-none my-auto">
+                                                <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-indigo-500 mb-1">
+                                                    <MessageSquare size={16} />
+                                                </div>
+                                                <p className="text-[10px] font-bold text-slate-600">Keine Chat-Historie</p>
+                                                <p className="text-[9px] leading-relaxed font-medium px-2">
+                                                    Gib unten eine Anweisung ein, z.B. <em>"Setze die Toleranz von subnetA_mask auf 0.1"</em>.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            chatHistory.map((msg, idx) => (
+                                                <div
+                                                    key={idx}
+                                                    className={cn(
+                                                        "p-3 rounded-2xl text-[10px] leading-relaxed max-w-[90%] font-medium transition-all duration-200",
+                                                        msg.role === 'user'
+                                                            ? "bg-indigo-600 text-white rounded-tr-none ml-auto shadow-xs"
+                                                            : msg.hasError
+                                                                ? "bg-rose-50 border border-rose-100 text-rose-700 rounded-tl-none font-mono"
+                                                                : "bg-white border border-slate-200/60 text-slate-700 rounded-tl-none shadow-3xs"
+                                                    )}
+                                                >
+                                                    {msg.text}
+                                                </div>
+                                            ))
+                                        )}
+                                        {isRefining && (
+                                            <div className="bg-slate-200/50 text-slate-500 border border-slate-200/40 p-3 rounded-2xl rounded-tl-none text-[10px] font-bold leading-relaxed max-w-[80%] flex items-center gap-2 animate-pulse">
+                                                <RefreshCw size={11} className="animate-spin text-indigo-500 shrink-0" />
+                                                <span>Passe Graph an...</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Chat Input Bar */}
+                                    <div className="flex items-end gap-2 shrink-0 pt-2 border-t border-slate-100">
+                                        <textarea
+                                            value={chatInput}
+                                            disabled={isRefining}
+                                            onChange={(e) => setChatInput(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && !e.shiftKey) {
+                                                    e.preventDefault();
+                                                    if (chatInput.trim()) {
+                                                        handleRefineGraph();
+                                                    }
+                                                }
+                                            }}
+                                            rows={1}
+                                            placeholder="z.B. Erhöhe Toleranzen..."
+                                            className="flex-grow min-h-[38px] max-h-[120px] px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 bg-white placeholder-slate-400 disabled:opacity-60 transition-all duration-200 resize-none custom-scrollbar leading-relaxed"
+                                        />
+                                        <button
+                                            onClick={handleRefineGraph}
+                                            disabled={isRefining || !chatInput.trim()}
+                                            className="h-9 w-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center transition-all duration-200 shadow-sm shrink-0 mb-0.5"
                                         >
-                                            <Trash2 size={12} />
-                                            Löschen
+                                            <Send size={13} className="relative -left-0.5" />
                                         </button>
                                     </div>
+                                </div>
+                            )}
 
-                                    {/* Edit ID Field */}
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Variablen-ID</label>
-                                        <Input
-                                            value={selectedVar.id}
-                                            onChange={(e) => handleRenameVariableId(selectedVar.id, e.target.value.trim())}
-                                            className="h-9 font-mono text-xs font-bold"
-                                        />
-                                    </div>
+                            {/* Tab Content 2: Node Inspector */}
+                            {activeRightTab === 'inspector' && (
+                                <div className="flex-1 flex flex-col overflow-hidden">
+                                    {selectedVar ? (
+                                        <div className="flex flex-col h-full overflow-y-auto p-6 space-y-6">
+                                            <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
+                                                <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider font-outfit">Node-Inspektor</h4>
+                                                <button 
+                                                    onClick={() => handleDeleteVariable(selectedVar.id)}
+                                                    className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-red-50 rounded-md"
+                                                >
+                                                    <Trash2 size={12} />
+                                                    Löschen
+                                                </button>
+                                            </div>
 
-                                    {/* Type Selector (Input vs Formula) */}
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Knotentyp</label>
-                                        <select
-                                            value={selectedVar.type}
-                                            onChange={(e) => handleUpdateVariable(selectedVar.id, { type: e.target.value as VariableType })}
-                                            className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer"
-                                        >
-                                            <option value="input">📥 Statische Eingabe (Input)</option>
-                                            <option value="formula">⚙️ Berechnete Formel (Formula)</option>
-                                        </select>
-                                    </div>
+                                            {/* Edit ID Field */}
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Variablen-ID</label>
+                                                <Input
+                                                    value={selectedVar.id}
+                                                    onChange={(e) => handleRenameVariableId(selectedVar.id, e.target.value.trim())}
+                                                    className="h-9 font-mono text-xs font-bold"
+                                                />
+                                            </div>
 
-                                    {/* Default Value / Expression fields */}
-                                    {selectedVar.type === 'input' ? (
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Standardwert (Musterlösung)</label>
-                                            <Input
-                                                value={selectedVar.defaultValue !== undefined ? String(selectedVar.defaultValue) : ''}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    // Parse as number if numeric
-                                                    const num = Number(val);
-                                                    handleUpdateVariable(selectedVar.id, { defaultValue: isNaN(num) || val.trim() === '' ? val : num });
-                                                }}
-                                                className="h-9 text-xs font-semibold"
-                                            />
+                                            {/* Type Selector (Input vs Formula) */}
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Knotentyp</label>
+                                                <select
+                                                    value={selectedVar.type}
+                                                    onChange={(e) => handleUpdateVariable(selectedVar.id, { type: e.target.value as VariableType })}
+                                                    className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer"
+                                                >
+                                                    <option value="input">📥 Statische Eingabe (Input)</option>
+                                                    <option value="formula">⚙️ Berechnete Formel (Formula)</option>
+                                                </select>
+                                            </div>
+
+                                            {/* Default Value / Expression fields */}
+                                            {selectedVar.type === 'input' ? (
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Standardwert (Musterlösung)</label>
+                                                    <Input
+                                                        value={selectedVar.defaultValue !== undefined ? String(selectedVar.defaultValue) : ''}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value;
+                                                            // Parse as number if numeric
+                                                            const num = Number(val);
+                                                            handleUpdateVariable(selectedVar.id, { defaultValue: isNaN(num) || val.trim() === '' ? val : num });
+                                                        }}
+                                                        className="h-9 text-xs font-semibold"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-1">
+                                                    <div className="flex justify-between items-center">
+                                                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Formel-Ausdruck</label>
+                                                        {evaluatedContext.errors[selectedVar.id] && (
+                                                            <Badge className="bg-red-50 text-red-600 text-[8px] py-0 px-1 border-red-100 rounded">Error ⚠️</Badge>
+                                                        )}
+                                                    </div>
+                                                    <textarea
+                                                        value={selectedVar.expression || ''}
+                                                        onChange={(e) => handleUpdateVariable(selectedVar.id, { expression: e.target.value })}
+                                                        rows={3}
+                                                        placeholder="e.g. network.calculateMask(subnetA_hosts)"
+                                                        className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white leading-relaxed resize-none"
+                                                    />
+                                                    {evaluatedContext.errors[selectedVar.id] && (
+                                                        <p className="text-[9px] text-red-500 font-semibold font-mono leading-tight pt-1">
+                                                            {evaluatedContext.errors[selectedVar.id]}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
+
+                                            {/* Validation Type */}
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Validierungsart</label>
+                                                <select
+                                                    value={selectedVar.validationType}
+                                                    onChange={(e) => handleUpdateVariable(selectedVar.id, { validationType: e.target.value as ValidationType })}
+                                                    className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer"
+                                                >
+                                                    <option value="exact">Exakte Übereinstimmung</option>
+                                                    <option value="tolerance">Abweichung (Toleranz)</option>
+                                                    <option value="contains">Enthält Substring</option>
+                                                </select>
+                                            </div>
+
+                                            {/* Tolerance offset field */}
+                                            {selectedVar.validationType === 'tolerance' && (
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Zulässige Toleranz (+/-)</label>
+                                                    <Input
+                                                        type="number"
+                                                        value={selectedVar.tolerance !== undefined ? selectedVar.tolerance : 0}
+                                                        onChange={(e) => handleUpdateVariable(selectedVar.id, { tolerance: Number(e.target.value) })}
+                                                        className="h-9 text-xs font-semibold"
+                                                    />
+                                                </div>
+                                            )}
+
+                                            {/* Points allocation */}
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Punkte für diesen Schritt</label>
+                                                <Input
+                                                    type="number"
+                                                    value={selectedVar.maxPoints !== undefined ? selectedVar.maxPoints : 1}
+                                                    onChange={(e) => handleUpdateVariable(selectedVar.id, { maxPoints: Number(e.target.value) })}
+                                                    className="h-9 text-xs font-semibold"
+                                                />
+                                            </div>
+
+                                            {/* Evaluated Value Preview block */}
+                                            <div className="pt-4 border-t border-slate-100 flex flex-col gap-2 shrink-0">
+                                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Echtzeit-Berechnung</span>
+                                                <div className="bg-slate-100/50 rounded-xl p-3 border border-slate-200/50 flex flex-col gap-1 text-xs">
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="font-bold text-slate-500">Erwarteter Wert:</span>
+                                                        <span className="font-mono font-bold text-slate-800">
+                                                            {String(evaluatedContext.context[selectedVar.id])}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     ) : (
-                                        <div className="space-y-1">
-                                            <div className="flex justify-between items-center">
-                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Formel-Ausdruck</label>
-                                                {evaluatedContext.errors[selectedVar.id] && (
-                                                    <Badge className="bg-red-50 text-red-600 text-[8px] py-0 px-1 border-red-100 rounded">Error ⚠️</Badge>
-                                                )}
-                                            </div>
-                                            <textarea
-                                                value={selectedVar.expression || ''}
-                                                onChange={(e) => handleUpdateVariable(selectedVar.id, { expression: e.target.value })}
-                                                rows={3}
-                                                placeholder="e.g. network.calculateMask(subnetA_hosts)"
-                                                className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white leading-relaxed resize-none"
-                                            />
-                                            {evaluatedContext.errors[selectedVar.id] && (
-                                                <p className="text-[9px] text-red-500 font-semibold font-mono leading-tight pt-1">
-                                                    {evaluatedContext.errors[selectedVar.id]}
-                                                </p>
-                                            )}
+                                        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-400 gap-2 select-none">
+                                            <HelpCircle size={32} className="stroke-1 opacity-70" />
+                                            <p className="text-xs font-semibold leading-relaxed">
+                                                Wähle eine Variable aus dem Graph, um ihre Details hier anzupassen.
+                                            </p>
                                         </div>
                                     )}
-
-                                    {/* Validation Type */}
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Validierungsart</label>
-                                        <select
-                                            value={selectedVar.validationType}
-                                            onChange={(e) => handleUpdateVariable(selectedVar.id, { validationType: e.target.value as ValidationType })}
-                                            className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer"
-                                        >
-                                            <option value="exact">Exakte Übereinstimmung</option>
-                                            <option value="tolerance">Abweichung (Toleranz)</option>
-                                            <option value="contains">Enthält Substring</option>
-                                        </select>
-                                    </div>
-
-                                    {/* Tolerance offset field */}
-                                    {selectedVar.validationType === 'tolerance' && (
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Zulässige Toleranz (+/-)</label>
-                                            <Input
-                                                type="number"
-                                                value={selectedVar.tolerance !== undefined ? selectedVar.tolerance : 0}
-                                                onChange={(e) => handleUpdateVariable(selectedVar.id, { tolerance: Number(e.target.value) })}
-                                                className="h-9 text-xs font-semibold"
-                                            />
-                                        </div>
-                                    )}
-
-                                    {/* Points allocation */}
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Punkte für diesen Schritt</label>
-                                        <Input
-                                            type="number"
-                                            value={selectedVar.maxPoints !== undefined ? selectedVar.maxPoints : 1}
-                                            onChange={(e) => handleUpdateVariable(selectedVar.id, { maxPoints: Number(e.target.value) })}
-                                            className="h-9 text-xs font-semibold"
-                                        />
-                                    </div>
-
-                                    {/* Evaluated Value Preview block */}
-                                    <div className="pt-4 border-t border-slate-100 flex flex-col gap-2 shrink-0">
-                                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Echtzeit-Berechnung</span>
-                                        <div className="bg-slate-100/50 rounded-xl p-3 border border-slate-200/50 flex flex-col gap-1 text-xs">
-                                            <div className="flex justify-between items-center">
-                                                <span className="font-bold text-slate-500">Erwarteter Wert:</span>
-                                                <span className="font-mono font-bold text-slate-800">
-                                                    {String(evaluatedContext.context[selectedVar.id])}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-400 gap-2 select-none">
-                                    <HelpCircle size={32} className="stroke-1 opacity-70" />
-                                    <p className="text-xs font-semibold leading-relaxed">
-                                        Wähle eine Variable aus dem Graph, um ihre Details hier anzupassen.
-                                    </p>
                                 </div>
                             )}
                         </div>

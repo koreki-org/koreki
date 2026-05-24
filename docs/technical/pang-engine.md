@@ -3,7 +3,7 @@ title: "PANG Engine & Grading Graph Architecture"
 description: "Technische Dokumentation des graph-basierten Bewertungssystems zur automatisierten Folgefehler-Kompensation (PANG) und des visuellen Skill Designers."
 author: "@principal_architect"
 date: "2026-05-23"
-last_updated: "2026-05-23"
+last_updated: "2026-05-24"
 status: "Approved"
 domain: "technical"
 security_classification: "Internal"
@@ -61,40 +61,86 @@ export interface GraphVariable {
 }
 ```
 
-### 3.2 Verschachtelte Formeln & Rekursiver Interpreter
-Die PANG Engine unterstützt tief verschachtelte Funktionsaufrufe über registrierte Rechen-Plugins (z. B. `math` und `network`):
-`math.multiply(math.subtract(anzahl_platten, 1), kapazitaet_pro_platte)`
+### 3.2 Algebraischer Formel-Parser & Dynamic Math Sandboxing
+Die PANG Engine unterstützt die voll-dynamische Auswertung komplexer mathematischer, physikalischer und logischer Formeln (z. B. für Drehstrommotoren `sqrt(S^2 - P^2)` oder Strangwerte `U_L / sqrt(3)`). Sie nutzt dafür eine sichere, sandboxed mathematische Parser-Engine (`expr-eval`).
 
-#### Intelligenter Argument-Parser (`plugins.ts`):
-Um verschachtelte Funktionsaufrufe fehlerfrei zu evaluieren, verwendet der Interpreter ein klammer-sensitives Argument-Splitting, das Kommas innerhalb von Unterklammern ignoriert:
+#### Dynamische Formelevaluierung (`plugins.ts`):
+Der Parser liest mathematische Zeichenketten ein, setzt die Werte der referenzierten Graphenvariablen aus dem aktuellen Kontext ein und wertet das Ergebnis sicher aus. Er unterstützt standardmäßig:
+*   Standardoperatoren (`+`, `-`, `*`, `/`, `^`, `%`) und Klammern.
+*   Mathematische Kernfunktionen (`sqrt`, `abs`, `sin`, `cos`, `tan`, `acos`, `asin`, `atan`, `min`, `max`, `ceil`, `floor`, `log2`) und Konstanten (`pi`, `e`).
+*   Ternäre Bedingungen (`condition ? true : false`) für komplexe RAID-Kapazitätsprüfungen.
+*   Zusätzliche globale Domänenfunktionen für IP-Umrechnungen (`ipToLong` und `longToIp`).
+
+#### Abwärtskompatibilität für Domänen-Plugins:
+Um bestehende Graphen-Presets weiterhin fehlerfrei auszuführen, registriert das System alle konventionellen Plugin-Funktionen (`networkPlugin`, `raidPlugin`) beim App-Start automatisch im Parser. Vorkommen von Punkten (wie `network.calculateMask(...)`) werden transparent auf die registrierten Funktionen (z. B. `network_calculateMask`) umgemappt:
 
 ```typescript
-export function splitArguments(rawArgs: string): string[] {
-    const args: string[] = [];
-    let current = '';
-    let parenDepth = 0;
+import { Parser } from 'expr-eval';
 
-    for (let i = 0; i < rawArgs.length; i++) {
-        const char = rawArgs[i];
-        if (char === '(') parenDepth++;
-        if (char === ')') parenDepth--;
+const parser = new Parser();
 
-        if (char === ',' && parenDepth === 0) {
-            args.push(current.trim());
-            current = '';
-        } else {
-            current += char;
-        }
-    }
-    if (current.trim()) {
-        args.push(current.trim());
-    }
-    return args;
+// Dynamisch registrierte Plugin-Funktionen mit korrekter 'this'-Bindung
+for (const [domainName, domainFunctions] of Object.entries(plugins)) {
+  for (const [functionName, fn] of Object.entries(domainFunctions)) {
+    parser.functions[`${domainName}_${functionName}`] = (fn as any).bind(domainFunctions);
+  }
+}
+
+// Registrierung der IP-Helfer und Logarithmus-Standardfunktionen
+parser.functions.log2 = (x: number) => Math.log2(x);
+parser.functions.ceil = (x: number) => Math.ceil(x);
+parser.functions.floor = (x: number) => Math.floor(x);
+parser.functions.ipToLong = ipToLong;
+parser.functions.longToIp = longToIp;
+
+export function evaluateExpression(expression: string, context: Record<string, any>): any {
+  // Mapping für Abwärtskompatibilität der alten Dot-Syntax
+  const sanitizedExpression = expression
+    .replace(/network\./g, 'network_')
+    .replace(/raid\./g, 'raid_')
+    .replace(/math\./g, 'math_');
+
+  return parser.evaluate(sanitizedExpression, context);
 }
 ```
 
-#### Rekursive Auswertung (`evaluateExpression`):
-Entspricht ein Funktionsargument selbst dem Muster `domain.function(...)`, wird es rekursiv aufgelöst, bevor die übergeordnete Funktion ausgeführt wird. Das garantiert absolute Flexibilität bei komplexen Berechnungen.
+### 3.3 Unterstützung alternativer Lösungswege (z. B. Subnetz-Rotationen)
+In MINT- und IT-Aufgaben gibt es häufig mehrere gleichermaßen korrekte Lösungen (z. B. wenn zwei VLSM-Subnetze dieselbe Hostanzahl benötigen und somit in beliebiger Reihenfolge adressiert werden können). Die PANG Engine bietet hierfür zwei hochgradig elegante, integrierte Mechanismen:
+
+#### A) Array-basierte alternative Defaultwerte für Inputs
+Für `input`-Variablen kann im Feld `defaultValue` ein Array aller mathematisch zulässigen Alternativen angegeben werden:
+```json
+{
+  "id": "subnetA_netid",
+  "type": "input",
+  "defaultValue": ["192.168.1.0", "192.168.1.32"],
+  "validationType": "exact",
+  "maxPoints": 1
+}
+```
+Die PANG Engine (`GraphRunner.checkMatch`) erkennt Arrays automatisch und markiert die studentische Antwort als korrekt (`correct`), wenn sie mit **einem beliebigen** Element des Arrays übereinstimmt.
+
+#### B) Ternäre Formel-Abhängigkeiten zur Fehler-Kompensation & Betrugsschutz
+Um zu verhindern, dass ein Schüler dieselbe IP doppelt verwendet (was bei unabhängigen Arrays fälschlicherweise Punkte gäbe), wird das zweite Subnetz als `formula`-Variable deklariert. Diese berechnet ihren Erwartungswert mittels eines ternären Operators dynamisch auf Basis des tatsächlich gewählten Wertes des ersten Subnetzes:
+```json
+{
+  "id": "subnetB_netid",
+  "type": "formula",
+  "expression": "subnetA_netid == '192.168.1.0' ? '192.168.1.32' : '192.168.1.0'",
+  "validationType": "exact",
+  "maxPoints": 1
+}
+```
+##### Korrektur-Ablauf:
+* **Choice A (Standard):** Der Schüler wählt Subnetz A = `.0` und Subnetz B = `.32`.
+  * Subnetz A wird korrekt bewertet.
+  * Das System evaluiert `expectedValue` für Subnetz B basierend auf dem Standardwert (`.0` ➔ `.32`). Der Schüler erhält volle Punkte (`correct`).
+* **Choice B (Swapped):** Der Schüler wählt Subnetz A = `.32` und Subnetz B = `.0`.
+  * Subnetz A wird korrekt bewertet (da `.32` im Array).
+  * Für Subnetz B berechnet die PANG Engine den Erwartungswert basierend auf der tatsächlichen Eingabe des Schülers (`.32` ➔ `.0`). Der Schüler erhält volle Punkte (`consecutive_correct` / Folgefehler-Kompensation).
+* **Choice C (Doppelbelegung / Fehler):** Der Schüler wählt Subnetz A = `.0` und Subnetz B = `.0`.
+  * Subnetz A wird korrekt bewertet.
+  * Für Subnetz B erwartet das System aufgrund der Eingabe `.0` zwingend den Wert `.32`. Der Eintrag `.0` schlägt fehl. Der Schüler erhält **0 Punkte** für Subnetz B.
 
 ---
 

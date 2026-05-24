@@ -52,8 +52,8 @@ export class GraphRunner {
         }
       }
 
-      // Populate expected context for subsequent nodes
-      expectedContext[id] = expectedValue;
+      // Populate expected context for subsequent nodes (defaulting to the first alternative if array)
+      expectedContext[id] = Array.isArray(expectedValue) ? expectedValue[0] : expectedValue;
 
       // Get student input
       let studentValue = studentResults[id];
@@ -128,6 +128,10 @@ export class GraphRunner {
    * Helper to compare values based on validation types
    */
   private static checkMatch(studentVal: any, expectedVal: any, type: string, tolerance?: number): boolean {
+    if (Array.isArray(expectedVal)) {
+      return expectedVal.some(val => this.checkMatch(studentVal, val, type, tolerance));
+    }
+
     if (typeof expectedVal === 'string' && typeof studentVal === 'string') {
       // Normalize strings (lowercase, trim)
       const cleanStudent = studentVal.trim().toLowerCase();

@@ -10,11 +10,11 @@ import {
     StructuredPrompt
 
 } from './prompt-builder';
-import { buildGraphGenerationPrompt } from '../grading/graph-generator';
+import { buildGraphGenerationPrompt, buildGraphRefinementPrompt } from '../grading/graph-generator';
 import { AppSettings } from '../../types';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'variable-extraction';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction';
 
 /**
  * Specifically optimized for Gemma 4 E4B (multimodal).
@@ -68,6 +68,8 @@ export async function executeOllamaRequest(
         );
     } else if (action === 'generate-graph') {
         promptObj = buildGraphGenerationPrompt(payload.taskText, payload.discipline);
+    } else if (action === 'refine-graph') {
+        promptObj = buildGraphRefinementPrompt(payload.taskText, payload.currentGraph, payload.userInstruction, payload.discipline);
     } else if (action === 'variable-extraction') {
         promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions);
     } else {
@@ -155,7 +157,10 @@ export async function executeOllamaRequest(
 
 }
 
-function processOllamaResponse(content: string, action: AIAction, modelName: string) {
+function processOllamaResponse(content: string | null | undefined, action: AIAction, modelName: string) {
+    if (content === null || content === undefined) {
+        throw new Error(`Ollama hat eine leere Antwort geliefert. \nGrund: Der Backend-Proxy hat keine Daten vom Modell empfangen.`);
+    }
     if (action === 'vision' || action === 'second-opinion') return { text: content };
     let cleaned = content.trim();
     

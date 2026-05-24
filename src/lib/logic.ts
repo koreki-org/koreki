@@ -35,6 +35,7 @@ export interface Task {
     taskType?: string;
     gradingGraph?: any;
     gradingResult?: any;
+    suggestGraph?: boolean;
 }
 
 export function calculatePercentageFromTasks(tasks: Task[]): number {

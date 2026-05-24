@@ -15,6 +15,9 @@ import { plugins } from './plugins';
 import { StructuredPrompt } from '../ai/prompt-builder';
 import graphGenSystemDefault from '../../prompts/graph-generation/system.md';
 import graphGenUserDefault from '../../prompts/graph-generation/user.md';
+import graphGenRefineSystemDefault from '../../prompts/graph-generation/refine-system.md';
+import graphGenRefineUserDefault from '../../prompts/graph-generation/refine-user.md';
+
 
 // ──────────────────────────────────────────────────────────────────────────
 // 1. Plugin Manifest — Dynamic introspection of available domain functions
@@ -180,6 +183,43 @@ export function buildGraphGenerationPrompt(
   };
 }
 
+/**
+ * Builds the structured prompt for AI-assisted graph refinement (conversational adjustments).
+ * 
+ * @param taskText - The model solution text
+ * @param currentGraph - The existing GradingGraph to refine
+ * @param userInstruction - The natural language instruction from the teacher
+ * @param discipline - Optional discipline hint
+ */
+export function buildGraphRefinementPrompt(
+  taskText: string,
+  currentGraph: GradingGraph,
+  userInstruction: string,
+  discipline?: string
+): StructuredPrompt {
+  const system = graphGenRefineSystemDefault;
+
+  const disciplineHint = discipline
+    ? `Hinweis: Diese Aufgabe gehört zum Fachgebiet "${discipline}". Bevorzuge Plugin-Funktionen aus der passenden Domain.`
+    : '';
+
+  const user = graphGenRefineUserDefault
+    .replace('{{TASK_TEXT}}', taskText)
+    .replace('{{CURRENT_GRAPH}}', JSON.stringify(currentGraph, null, 2))
+    .replace('{{USER_INSTRUCTION}}', userInstruction)
+    .replace('{{DISCIPLINE_HINT}}', disciplineHint);
+
+  return {
+    system,
+    user,
+    options: {
+      temperature: 0.0, // Starke Parameter-Härtung (Keine Kreativität)
+      topP: 1.0
+    }
+  };
+}
+
+
 
 // ──────────────────────────────────────────────────────────────────────────
 // 3. Response Parser — Extracts and validates the generated GradingGraph
@@ -227,23 +267,29 @@ export function parseGeneratedGraph(llmResponse: string): GradingGraph | null {
   // Repair trailing commas (common LLM failure)
   jsonStr = jsonStr.replace(/,\s*([\]\}])/g, '$1');
 
-  let parsed: Record<string, unknown>;
+  let parsed: Record<string, any>;
   try {
     parsed = JSON.parse(jsonStr);
   } catch {
     return null;
   }
 
+  // Smart recovery: If the LLM response is wrapped in { graph, explanation }
+  let targetData = parsed;
+  if (parsed.graph && typeof parsed.graph === 'object' && Array.isArray(parsed.graph.variables)) {
+    targetData = parsed.graph;
+  }
+
   // Schema validation
-  if (!parsed.taskId || typeof parsed.taskId !== 'string') {
-    parsed.taskId = `generated-graph-${Date.now()}`;
+  if (!targetData.taskId || typeof targetData.taskId !== 'string') {
+    targetData.taskId = `generated-graph-${Date.now()}`;
   }
 
-  if (!parsed.discipline || typeof parsed.discipline !== 'string') {
-    parsed.discipline = 'general-science';
+  if (!targetData.discipline || typeof targetData.discipline !== 'string') {
+    targetData.discipline = 'general-science';
   }
 
-  if (!Array.isArray(parsed.variables) || parsed.variables.length === 0) {
+  if (!Array.isArray(targetData.variables) || targetData.variables.length === 0) {
     return null;
   }
 
@@ -251,7 +297,7 @@ export function parseGeneratedGraph(llmResponse: string): GradingGraph | null {
   const validPrefixes = getValidPluginExpressionPrefixes();
   const validatedVariables: VariableDefinition[] = [];
 
-  for (const v of parsed.variables as Record<string, unknown>[]) {
+  for (const v of targetData.variables as Record<string, unknown>[]) {
     if (!v.id || typeof v.id !== 'string') continue;
     if (v.type !== 'input' && v.type !== 'formula') continue;
 
@@ -302,8 +348,8 @@ export function parseGeneratedGraph(llmResponse: string): GradingGraph | null {
   sanitizePointsDistribution(validatedVariables);
 
   return {
-    taskId: parsed.taskId as string,
-    discipline: parsed.discipline as string,
+    taskId: targetData.taskId as string,
+    discipline: targetData.discipline as string,
     variables: validatedVariables
   };
 }

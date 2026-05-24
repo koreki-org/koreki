@@ -417,7 +417,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                             task.taskType === 'skill-calc-vlsm' ||
                                             task.taskType === 'skill-calc-raid' ||
                                             SKILL_REGISTRY[task.taskType]?.metadata?.isGraphBased ||
-                                            settings?.customSkills?.[task.taskType]?.isGraphBased
+                                            (settings?.customSkills && settings.customSkills[task.taskType]?.isGraphBased)
                                         )
                                     );
                                     
@@ -426,8 +426,13 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                         ? settings?.customSkills?.[task.taskType]?.name || "Vorlage"
                                         : null;
 
+                                    const shouldSuggestGraph = !!task.suggestGraph;
+
                                     const graphActionNode = (
-                                        <div className="flex items-center gap-1 opacity-40 hover:opacity-100 transition-all duration-300">
+                                        <div className={cn(
+                                            "flex items-center gap-1 transition-all duration-300",
+                                            shouldSuggestGraph && !task.gradingGraph ? "opacity-95 scale-105" : "opacity-40 hover:opacity-100"
+                                        )}>
                                             <button
                                                 type="button"
                                                 disabled={isLocked}
@@ -437,18 +442,28 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                 }}
                                                 title={task.gradingGraph 
                                                     ? (isCustomSkill ? `Vorlage "${templateName}" bearbeiten` : "Bewertungs-Graph bearbeiten") 
-                                                    : "Bewertungs-Graph erstellen"
+                                                    : (shouldSuggestGraph 
+                                                        ? "Bewertungs-Graph erstellen oder zuweisen (KI-Empfehlung für deterministisches Ergebnis)" 
+                                                        : "Bewertungs-Graph erstellen oder zuweisen")
                                                 }
                                                 className={cn(
-                                                    "h-7 w-7 rounded-lg transition-all flex items-center justify-center shrink-0 border select-none cursor-pointer focus:outline-none",
+                                                    "h-7 w-7 rounded-lg transition-all flex items-center justify-center shrink-0 border select-none cursor-pointer focus:outline-none relative",
                                                     task.gradingGraph 
                                                         ? (isCustomSkill 
                                                             ? "bg-indigo-50/60 border-indigo-100/60 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200" 
                                                             : "bg-emerald-50/60 border-emerald-100/60 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200")
-                                                        : "border-dashed border-slate-200 text-slate-400 hover:text-primary hover:border-primary/50"
+                                                        : (shouldSuggestGraph
+                                                            ? "bg-indigo-50/40 border-indigo-200 text-indigo-500 hover:text-primary hover:border-primary/50 shadow-sm shadow-indigo-100/50"
+                                                            : "border-dashed border-slate-200 text-slate-400 hover:text-primary hover:border-primary/50")
                                                 )}
                                             >
-                                                <Sparkles size={12} className={cn("shrink-0", task.gradingGraph && "animate-pulse")} />
+                                                <Sparkles size={12} className={cn("shrink-0", (task.gradingGraph || shouldSuggestGraph) && "animate-pulse")} />
+                                                {shouldSuggestGraph && !task.gradingGraph && (
+                                                    <span className="absolute -top-1.5 -right-1.5 flex h-2.5 w-2.5">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
+                                                    </span>
+                                                )}
                                             </button>
                                         </div>
                                     );
@@ -543,6 +558,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         taskContent={content}
                         taskType={task?.taskType}
                         customSkills={settings?.customSkills}
+                        settings={settings}
                         onSaveCustomSkill={handleSaveCustomSkill}
                         isGenerating={generatingGraphForTask === editingGraphTaskIdx}
                         onEngineChange={(newEngine) => {

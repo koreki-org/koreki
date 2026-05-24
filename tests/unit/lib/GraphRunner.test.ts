@@ -519,3 +519,123 @@ describe('GradingGraph Engine - Nested Expression Tests', () => {
   });
 });
 
+describe('GradingGraph Engine - Dynamic Math & Three-Phase Current Tests', () => {
+  const threePhaseGraph: GradingGraph = {
+    taskId: 'drehstrom-exam-task-1',
+    discipline: 'electrical-engineering',
+    variables: [
+      { id: 'U_L', type: 'input', defaultValue: 400, validationType: 'exact' },
+      { id: 'P', type: 'input', defaultValue: 15000, validationType: 'exact' },
+      { id: 'cos_phi', type: 'input', defaultValue: 0.8, validationType: 'exact' },
+      { id: 'S', type: 'formula', expression: 'P / cos_phi', validationType: 'tolerance', tolerance: 1 },
+      { id: 'Q', type: 'formula', expression: 'sqrt(abs(S^2 - P^2))', validationType: 'tolerance', tolerance: 5 },
+      { id: 'I_L', type: 'formula', expression: 'P / (sqrt(3) * U_L * cos_phi)', validationType: 'tolerance', tolerance: 0.2 },
+      { id: 'U_P', type: 'formula', expression: 'U_L / sqrt(3)', validationType: 'tolerance', tolerance: 0.5 },
+      { id: 'I_P', type: 'formula', expression: 'I_L', validationType: 'tolerance', tolerance: 0.2 }
+    ]
+  };
+
+  test('Test Case 1: Perfect Student Answer (100% correct)', () => {
+    const perfectStudentResults = {
+      U_L: 400,
+      P: 15000,
+      cos_phi: 0.8,
+      S: 18750,
+      Q: 11250,
+      I_L: 27.06,
+      U_P: 230.94,
+      I_P: 27.06
+    };
+
+    const result = GraphRunner.grade(threePhaseGraph, perfectStudentResults);
+
+    expect(result.totalPoints).toBe(8);
+    expect(result.maxPoints).toBe(8);
+    result.stepResults.forEach(step => {
+      expect(step.status).toBe('correct');
+    });
+  });
+
+  test('Test Case 2: Primary Error in S with Perfect Consecutive Compensation in Q', () => {
+    const errorStudentResults = {
+      U_L: 400,
+      P: 15000,
+      cos_phi: 0.8,
+      S: 12000, // PRIMARY ERROR (Expected: 18750)
+      Q: 9000,   // CONSECUTIVE CORRECT (sqrt(|12000^2 - 15000^2|) = 9000!)
+      I_L: 27.06,
+      U_P: 230.94,
+      I_P: 27.06
+    };
+
+    const result = GraphRunner.grade(threePhaseGraph, errorStudentResults);
+
+    expect(result.totalPoints).toBe(7); // 7/8 points (1 penalty for S)
+    expect(result.maxPoints).toBe(8);
+
+    const sStep = result.stepResults.find(s => s.variableId === 'S')!;
+    expect(sStep.status).toBe('primary_error');
+
+    const qStep = result.stepResults.find(s => s.variableId === 'Q')!;
+    expect(qStep.status).toBe('consecutive_correct'); // Successfully compensated!
+    expect(qStep.points).toBe(1);
+  });
+
+  describe('Array-based Alternative Expected Values', () => {
+    const alternativeGraph: any = {
+      taskId: 'vlsm-alternative-123',
+      discipline: 'computer-science',
+      variables: [
+        {
+          id: 'subnetA_netid',
+          type: 'input',
+          defaultValue: ['192.168.1.0', '192.168.1.32'],
+          validationType: 'exact',
+          maxPoints: 1
+        },
+        {
+          id: 'subnetB_netid',
+          type: 'formula',
+          expression: "subnetA_netid == '192.168.1.0' ? '192.168.1.32' : '192.168.1.0'",
+          validationType: 'exact',
+          maxPoints: 1
+        }
+      ]
+    };
+
+    test('should accept Choice A (standard assignment)', () => {
+      const studentResults = {
+        subnetA_netid: '192.168.1.0',
+        subnetB_netid: '192.168.1.32'
+      };
+      const result = GraphRunner.grade(alternativeGraph, studentResults);
+      expect(result.totalPoints).toBe(2);
+      expect(result.stepResults[0].status).toBe('correct');
+      expect(result.stepResults[1].status).toBe('correct');
+    });
+
+    test('should accept Choice B (swapped assignment)', () => {
+      const studentResults = {
+        subnetA_netid: '192.168.1.32',
+        subnetB_netid: '192.168.1.0'
+      };
+      const result = GraphRunner.grade(alternativeGraph, studentResults);
+      expect(result.totalPoints).toBe(2);
+      expect(result.stepResults[0].status).toBe('correct');
+      // Second step is consecutively correct based on the swapped input of the first!
+      expect(result.stepResults[1].status).toBe('consecutive_correct');
+    });
+
+    test('should reject identical assignments (cheating/error)', () => {
+      const studentResults = {
+        subnetA_netid: '192.168.1.0',
+        subnetB_netid: '192.168.1.0'
+      };
+      const result = GraphRunner.grade(alternativeGraph, studentResults);
+      expect(result.totalPoints).toBe(1); // subnetA is correct, subnetB is primary_error
+      expect(result.stepResults[0].status).toBe('correct');
+      expect(result.stepResults[1].status).toBe('primary_error');
+    });
+  });
+});
+

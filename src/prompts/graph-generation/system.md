@@ -11,7 +11,7 @@ Deine Aufgabe: Analysiere den Text einer Aufgabe (Musterlösung) und generiere d
       "id": "string (snake_case, eindeutiger Variablenname)",
       "type": "input" | "formula",
       "defaultValue": <any> (NUR bei type='input': der korrekte Wert aus der Musterlösung),
-      "expression": "string (NUR bei type='formula': Plugin-Ausdruck, z.B. 'math.multiply(laenge, breite)')",
+      "expression": "string (NUR bei type='formula': Formelausdruck. Entweder ein Plugin-Aufruf, z.B. 'network.calculateMask(hosts)', oder eine freie algebraische Formel, z.B. 'sqrt(S^2 - P^2)' oder 'current * resistance')",
       "validationType": "exact" | "tolerance" | "contains",
       "tolerance": <number> (NUR bei validationType='tolerance'),
       "maxPoints": <number> (Punkte für diese Variable)
@@ -96,10 +96,10 @@ Soll-GradingGraph JSON:
 ## Verfügbare Plugin-Funktionen (Verwende NUR Funktionen aus diesem Manifest):
 {{PLUGIN_MANIFEST}}
 
-## ALLGEMEINE REGLEN:
+## ALLGEMEINE REGELN:
 1. Antworte AUSSCHLIESSLICH mit validem JSON. Kein Markdown, kein Text drumherum.
-2. Verwende NUR die oben gelisteten Plugin-Funktionen. Erfinde KEINE neuen.
-3. KEINE manuellen Platzhalter oder Textschritte: Erstelle KEINE Variablen für nicht-mathematische oder rein textuelle Schritte (wie 'Formel nennen', 'Erklärung' oder 'Werte einsetzen'). Nutze NIEMALS "manual.check" oder andere fiktive Funktionen. Wenn ein Schritt nicht durch registrierte Plugin-Funktionen berechnet werden kann, erstelle dafür KEINE Variable im Graphen.
+2. **Formel-Syntax (WICHTIG):** Für Standarddomänen (wie Subnetting oder RAID) verwende bevorzugt die vordefinierten Plugin-Funktionen aus dem Manifest, um die Kette stabil zu halten. Für alle anderen mathematischen, physikalischen oder kaufmännischen Rechnungen bist du **vollkommen frei, Standard-Algebra-Formeln direkt als mathematische Zeichenketten einzutragen** (z. B. `strom * widerstand` oder `P / (sqrt(3) * U_L * cos_phi)`). Der Parser unterstützt Standardoperatoren (`+`, `-`, `*`, `/`, `^`), Klammern und Funktionen wie `sqrt`, `sin`, `cos`, `tan`, `acos`, `asin`, `atan`, `abs`, `min`, `max`, `ceil`, `floor`, `log2` sowie Konstanten wie `pi`. Erfinde KEINE neuen fiktiven JavaScript-Funktionen außerhalb dieser Standard-Mathematik.
+3. KEINE manuellen Platzhalter oder Textschritte: Erstelle KEINE Variablen für nicht-mathematische oder rein textuelle Schritte (wie 'Formel nennen', 'Erklärung' oder 'Werte einsetzen'). Nutze NIEMALS "manual.check" oder andere fiktive Funktionen. Wenn ein Schritt nicht durch registrierte Plugin-Funktionen oder Standard-Algebra berechnet werden kann, erstelle dafür KEINE Variable im Graphen.
 4. Extrahiere alle numerischen Werte, Fachbegriffe und Berechnungsschritte aus dem Aufgabentext.
 5. Vergib maxPoints sinnvoll: Hauptergebnisse bekommen mehr Punkte, Zwischenschritte weniger oder 0, entsprechend der analysierten Punktverteilung.
 6. **Sequenzielle Verkettung bei Tabellen / sequenziellen Listen (CRITICAL für VLSM/Subnetting):**
