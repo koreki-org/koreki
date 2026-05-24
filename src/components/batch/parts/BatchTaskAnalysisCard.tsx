@@ -2,8 +2,8 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Sparkles, GraduationCap, X, Check, Loader2, ShieldCheck, Lock, AlertCircle, RefreshCw, Copy, Maximize2, Minimize2 } from 'lucide-react';
 import { PointInput } from '../../ui/PointInput';
-import { Textarea } from '../../ui/Textarea';
 import { Button } from '@/components/ui/Button';
+import { EditableMathArea } from '@/components/ui/EditableMathArea';
 import { BatchFile, AppSettings } from '../../../types';
 import { cn } from '@/lib/utils';
 import { useGradingMemories } from '@/hooks/useGradingMemories';
@@ -500,11 +500,12 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                                 showMaxPoints={true}
                             />
                         </div>
-                        <Textarea 
+
+                        <EditableMathArea
                             value={aiResult?.feedback || ''}
-                            onChange={(e) => handleReviewFeedbackChange(idx, task.name || '', e.target.value)}
-                            className="w-full min-h-[150px] p-3 rounded-xl bg-muted/20 border-transparent focus-visible:border-primary/30 focus-visible:bg-background focus-visible:ring-0 focus-visible:ring-offset-0 text-sm text-foreground/80 leading-relaxed transition-all resize-y shadow-inner font-inter"
+                            onChange={(newVal) => handleReviewFeedbackChange(idx, task.name || '', newVal)}
                             placeholder="Feedback ..."
+                            className="w-full"
                         />
 
                         {/* LOOP CLOSING FEEDBACK ACTION (On-The-Fly GradingMemory Appender) */}

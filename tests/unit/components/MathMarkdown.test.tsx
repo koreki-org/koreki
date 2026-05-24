@@ -28,6 +28,29 @@ describe('MathMarkdown Component (Layer 1)', () => {
         expect(markdownContainer.innerHTML).toContain('Wort(?)');
     });
 
+    it('should transform didactical correction shorthand tokens [r], [f], [FF] into visual HTML badges styled in authentic school correction red', () => {
+        const content = "Richtig [r], Fehler [f], Folgefehler [FF]";
+        render(<MathMarkdown content={content} />);
+        
+        const markdownContainer = screen.getByTestId('markdown');
+        expect(markdownContainer.innerHTML).toContain('bg-rose-50');
+        expect(markdownContainer.innerHTML).toContain('&gt;r&lt;/span&gt;');
+        expect(markdownContainer.innerHTML).toContain('&gt;f&lt;/span&gt;');
+        expect(markdownContainer.innerHTML).toContain('&gt;FF&lt;/span&gt;');
+    });
+
+    it('should render all regional and custom error codes uniformly as rose-red', () => {
+        const content = "Spelling [Orth], Satzbau [Sb], custom annotation [Tipp]";
+        render(<MathMarkdown content={content} />);
+        
+        const markdownContainer = screen.getByTestId('markdown');
+        
+        expect(markdownContainer.innerHTML).toContain('bg-rose-50');
+        expect(markdownContainer.innerHTML).toContain('&gt;Orth&lt;/span&gt;');
+        expect(markdownContainer.innerHTML).toContain('&gt;Sb&lt;/span&gt;');
+        expect(markdownContainer.innerHTML).toContain('&gt;Tipp&lt;/span&gt;');
+    });
+
     it('should handle multi-line content correctly', () => {
         const content = "Line 1\nLine 2";
         render(<MathMarkdown content={content} />);

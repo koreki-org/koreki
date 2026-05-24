@@ -168,6 +168,18 @@ export const useBatchActions = (
                         overallMatchPercentage: newPercentage
                     };
                     updatedItem.grade = calculateGrade(newPercentage);
+                    
+                    // CRITICAL WORKFLOW FIX:
+                    // Also persist the manually edited texts in the pre-correction tasks array,
+                    // so that they survive a recorrection reset run instead of falling back to stale OCR text.
+                    if (updatedItem.tasks && updatedItem.tasks.length > 0) {
+                        updatedItem.tasks = updatedItem.tasks.map(t => {
+                            const newT = tasksForResults.find(r => r.name === t.name || r.name?.toLowerCase() === t.name?.toLowerCase());
+                            return newT ? { ...t, content: newT.content } : t;
+                        });
+                    } else {
+                        updatedItem.tasks = tasksForResults;
+                    }
                 } else {
                     // Update pre-correction OCR texts (BatchItemPendingView)
                     updatedItem.tasks = tasksForResults;

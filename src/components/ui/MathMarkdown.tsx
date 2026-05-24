@@ -158,18 +158,37 @@ interface MathMarkdownProps {
  * Uses KaTeX for high-performance, client-side LaTeX rendering.
  */
 export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }) => {
-    // Industrial OCR Warning Detection: Highlight (?) markers even in rendered view
+    // Industrial OCR Warning & Didactical Badge Detection
     const processContent = (text: string) => {
         if (!text) return text;
-        // Robust pattern: Matches any word-like sequence ending with (?)
+        // 1. OCR Warnings (?)
         const pattern = /(\S+\s*\(?\?\))/g;
         const parts = text.split(pattern);
-        return parts.map((part, i) => {
+        let joined = parts.map((part, i) => {
             if (part.match(/\(\?\)/)) {
                 return `<span class="bg-orange-100 border-b border-orange-300 text-orange-900 px-1 rounded-sm font-bold animate-pulse inline-block">${part}</span>`;
             }
             return part;
         }).join('');
+
+        // Helper to resolve styled color palettes based on correction symbol
+        // Authentic school correction pen red (Rotstift) is used for all marks!
+        const getBadgeStyles = () => {
+            return {
+                bg: 'bg-rose-50 dark:bg-rose-950/30',
+                text: 'text-rose-600 dark:text-rose-400',
+                border: 'border-rose-200/60 dark:border-rose-900/30'
+            };
+        };
+
+        // 2. Generic Didactical Badges: [Mark] -> Styled Rotstift-Badge
+        // Handled via raw HTML classes supported perfectly by rehypeRaw
+        joined = joined.replace(/\[([A-Za-z?]{1,5})\]/g, (match, mark) => {
+            const styles = getBadgeStyles();
+            return `<span class="inline-flex items-center px-1.5 py-0.5 rounded-[4px] text-[9px] font-black ${styles.bg} ${styles.text} border ${styles.border} tracking-wider ml-1.5">${mark}</span>`;
+        });
+
+        return joined;
     };
 
     return (

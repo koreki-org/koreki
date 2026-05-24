@@ -48,47 +48,13 @@ WICHTIG (Bewertungsschema erhalten):
 - Kürze den Erwartungshorizont NIEMALS! Er ist die einzige Referenz für die Korrektur. 
 - Falls im OCR-Text Tabellen oder Listen mit Teilpunkten vorkommen, müssen diese im Feld "content" exakt so wiedergegeben werden.
 
-WICHTIG (Automatische Typerkennung & Bewertungsgraphen - NEU):
-Prüfe für jede extrahierte Aufgabe, ob es sich um eine hochgradig mathematisch-strukturierte oder deterministische Aufgabe handelt (insbesondere VLSM/Subnetting-Tabellen, IP-Adressberechnungen, etc.).
-- Falls die Aufgabe eine VLSM-Subnetting-Tabelle oder -Berechnung ist, setze "taskType" auf "vlsm" und erstelle ein "gradingGraph" Objekt im JSON.
-- Falls es eine normale Freitextaufgabe oder andere nicht-mathematische Aufgabe ist, setze "taskType" auf "general" (und setze "gradingGraph" auf null).
-
-Struktur eines "gradingGraph" für "vlsm":
-Das "gradingGraph" Objekt enthält:
-- "taskId": Entspricht dem Namen der Aufgabe (z.B. "Aufgabe 1a")
-- "discipline": "computer-science-networking"
-- "variables": Ein Array von Variablen-Definitionen. Jede Variable definiert einen Rechenschritt oder eine Tabellenzelle.
-  - "id": Eindeutiger Bezeichner (z.B. "subnetA_hosts", "subnetA_netId", "subnetA_mask", "subnetA_broadcast", "subnetB_hosts", "subnetB_mask", "subnetB_netId", "subnetB_broadcast")
-  - "type": "input" (für Vorgaben wie Hosts-Anzahl oder Start-Netz) oder "formula" (für berechnete Werte)
-  - "defaultValue": (nur bei "input") Der Vorgabewert aus der Musterlösung (z.B. 50 oder "192.168.1.0")
-  - "expression": (nur bei "formula") Die Berechnungsformel. Unterstützte Ausdrücke:
-    - "network.calculateMask(hosts_variable)"
-    - "network.calculateBroadcast(netId_variable, mask_variable)"
-    - "network.calculateNetId(prevNetId_variable, prevMask_variable)"
-    - "network.calculateFirstHost(netId_variable)" (Erste nutzbare IP)
-    - "network.calculateGateway(netId_variable, mask_variable)" (Gateway / Höchste nutzbare IP)
-    - "network.calculateLastHost(netId_variable, mask_variable)" (Letzte nutzbare IP)
-  - "validationType": "exact"
-  - "maxPoints": Die Punkte, die auf diesen einzelnen Teilschritt entfallen (Standard ist 1).
-
 Antworte EXAKT im folgenden JSON-Format:
 {
   "tasks": [
     {
       "name": "Eindeutiger Name (z.B. Aufgabe 1a)",
       "maxPoints": (Zahl),
-      "content": "NUR der fachliche Inhalt (Frage & Antwort) dieser spezifischen Aufgabe.",
-      "taskType": "general" | "vlsm",
-      "gradingGraph": null | {
-        "taskId": "Aufgabe 1a",
-        "discipline": "computer-science-networking",
-        "variables": [
-          { "id": "subnetA_hosts", "type": "input", "defaultValue": 50, "validationType": "exact", "maxPoints": 1 },
-          { "id": "subnetA_netId", "type": "input", "defaultValue": "192.168.1.0", "validationType": "exact", "maxPoints": 1 },
-          { "id": "subnetA_mask", "type": "formula", "expression": "network.calculateMask(subnetA_hosts)", "validationType": "exact", "maxPoints": 1 },
-          { "id": "subnetA_broadcast", "type": "formula", "expression": "network.calculateBroadcast(subnetA_netId, subnetA_mask)", "validationType": "exact", "maxPoints": 1 }
-        ]
-      }
+      "content": "NUR der fachliche Inhalt (Frage & Antwort) dieser spezifischen Aufgabe."
     }
   ]
 }

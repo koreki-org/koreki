@@ -108,8 +108,8 @@ describe('AI Orchestrator (Layer 1 Unit)', () => {
 
             expect(result.tasks).toHaveLength(1);
             expect(result.tasks[0].pointsObtained).toBe(13); // Overridden to deterministic 13 points!
-            expect(result.tasks[0].feedback).toContain('[⚙️ PANG Engine - Mathematischer Graph-Abgleich]');
-            expect(result.tasks[0].feedback).toContain('• subnetA_hosts: Schülerwert: "500" (Erwartet: "500") ➔ KORREKT');
+            expect(result.tasks[0].feedback).toContain('[⚙️ AGS Engine - Mathematischer VLSM Abgleich]');
+            expect(result.tasks[0].feedback).toContain('| **Subnetz A** | - | /23 [FF] | - | - | - | - |');
             expect(result.tasks[0].feedback).toContain('[KI-Pädagogische Einschätzung]');
             expect(result.tasks[0].feedback).toContain('AI feedback that should be appended');
             expect(result.tasks[0].confidence).toBe(95); // High confidence enforced

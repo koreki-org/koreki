@@ -6,6 +6,7 @@ import { executeOpenAIRequest } from './openai-provider';
 import { isLocalInstance } from '@/lib/env-context';
 import { GraphRunner } from '../grading/GraphRunner';
 import { parseGeneratedGraph } from '../grading/graph-generator';
+import { formatPluginFeedback } from '../grading/feedback-formatter';
 import { GradingGraph } from '../grading/types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { splitSkillSnippet } from './prompt-library';
@@ -33,30 +34,41 @@ export function parseCorrectionResult(analysis: any, tasksLayout?: Task[] | null
                 let stepFeedback = "";
                 let shownStepsCount = 0;
 
-                layoutTask.gradingResult.stepResults.forEach((step: any) => {
-                    // Skip auxiliary/setup variables with 0 max points to avoid cluttering the UI
-                    if (step.maxPoints === 0) return;
-                    shownStepsCount++;
+                const pluginFeedback = formatPluginFeedback(layoutTask.taskType || "", layoutTask.gradingResult, layoutTask.gradingGraph);
+                if (pluginFeedback) {
+                    stepFeedback = pluginFeedback;
+                    shownStepsCount = layoutTask.gradingResult.stepResults.length;
+                } else {
+                    layoutTask.gradingResult.stepResults.forEach((step: any) => {
+                        // Skip auxiliary/setup variables with 0 max points to avoid cluttering the UI
+                        if (step.maxPoints === 0) return;
+                        shownStepsCount++;
 
-                    const statusStr = step.status === 'correct' ? 'KORREKT' : 
-                                    step.status === 'consecutive_correct' ? 'FOLGEFEHLER OK (Kulanz-Punkte erhalten)' : 
-                                    'FEHLERHAFT (Primärfehler)';
-                    
-                    if (shownStepsCount === 1) {
-                        stepFeedback += `[⚙️ PANG Engine - Mathematischer Graph-Abgleich]\n`;
-                    }
-                    
-                    stepFeedback += `• ${step.variableId}: Schülerwert: "${step.studentValue !== undefined ? step.studentValue : 'nicht angegeben'}" (Erwartet: "${step.expectedValue}") ➔ ${statusStr}\n`;
-                    if (step.note) {
-                        stepFeedback += `  Info: ${step.note}\n`;
-                    }
-                });
+                        const statusStr = step.status === 'correct' ? 'KORREKT' : 
+                                        step.status === 'consecutive_correct' ? 'FOLGEFEHLER OK (Kulanz-Punkte erhalten)' : 
+                                        'FEHLERHAFT (Primärfehler)';
+                        
+                        if (shownStepsCount === 1) {
+                            stepFeedback += `[⚙️ PANG Engine - Mathematischer Graph-Abgleich]\n`;
+                        }
+                        
+                        stepFeedback += `• ${step.variableId}: Schülerwert: "${step.studentValue !== undefined ? step.studentValue : 'nicht angegeben'}" (Erwartet: "${step.expectedValue}") ➔ ${statusStr}\n`;
+                        if (step.note) {
+                            stepFeedback += `  Info: ${step.note}\n`;
+                        }
+                    });
+                }
 
                 // Find the AI task if it exists for extra pedagogical feedback
                 const aiTask = (analysis.tasks || []).find((t: any) => t.name === layoutTask.name);
                 
                 // Idempotency check: If the feedback has already been formatted (e.g. on the server), return it as-is
-                if (aiTask && aiTask.feedback && aiTask.feedback.includes('[⚙️ PANG Engine - Mathematischer Graph-Abgleich]')) {
+                const isAlreadyFormatted = aiTask && aiTask.feedback && (
+                    aiTask.feedback.includes('[⚙️ PANG Engine - Mathematischer Graph-Abgleich]') || 
+                    aiTask.feedback.includes('[⚙️ AGS Engine - Mathematischer VLSM Abgleich]')
+                );
+                
+                if (isAlreadyFormatted) {
                     return {
                         name: layoutTask.name,
                         maxPoints: layoutTask.maxPoints,

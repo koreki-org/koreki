@@ -3,6 +3,7 @@ import { BatchFile, Task, AppSettings } from '../../types';
 import { performAIRequest } from '../../lib/ai-logic';
 import { resolveOCRSource, applyRedactionsToPreviews } from '../../lib/privacy-utils';
 import { calculateGrade } from '../../lib/logic';
+import { splitTextByTasks } from '../../lib/task-utils';
 import { promisePool } from '../../lib/ai/promise-pool';
 import { runExtractionStrategy } from '../../lib/ai/extraction-logic';
 import { extractTextFromFile } from '../../lib/file-utils';
@@ -315,6 +316,29 @@ export const useProcessingPipeline = (
                 gradingMemory: gradingMemoryCases
             }, userData?.appMode, settings);
             const duration = performance.now() - startTime;
+
+            // --- POPULATE student answer content in correction results from pre-correction tasks ---
+            if (data && Array.isArray(data.tasks)) {
+                const cleanLayout = tasksLayout.map(t => ({ ...t, content: undefined }));
+                const rawSplit = splitTextByTasks(currentFile.fileText || "", cleanLayout);
+
+                data.tasks = data.tasks.map((task: any) => {
+                    const preTask = currentFile.tasks?.find(t => t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
+                    let fallbackContent = '';
+                    if (preTask && preTask.content) {
+                        fallbackContent = preTask.content;
+                    } else {
+                        const lIdx = tasksLayout.findIndex(t => t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
+                        if (lIdx !== -1) {
+                            fallbackContent = rawSplit[lIdx] || '';
+                        }
+                    }
+                    return {
+                        ...task,
+                        content: task.content || fallbackContent
+                    };
+                });
+            }
 
             setBatchFiles((prev: BatchFile[]) => {
                 const next = [...prev];
