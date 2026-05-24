@@ -48,13 +48,18 @@ WICHTIG (Bewertungsschema erhalten):
 - Kürze den Erwartungshorizont NIEMALS! Er ist die einzige Referenz für die Korrektur. 
 - Falls im OCR-Text Tabellen oder Listen mit Teilpunkten vorkommen, müssen diese im Feld "content" exakt so wiedergegeben werden.
 
+WICHTIG (Graphen-Vorschlag - suggestGraph):
+- Setze "suggestGraph" auf true, wenn die Aufgabe Berechnungen (z.B. Mathe, Subnetting/VLSM, RAID) enthält.
+- Setze "suggestGraph" auf false bei rein textbasierten Fragen, Beschreibungen oder Erklärungen.
+
 Antworte EXAKT im folgenden JSON-Format:
 {
   "tasks": [
     {
       "name": "Eindeutiger Name (z.B. Aufgabe 1a)",
       "maxPoints": (Zahl),
-      "content": "NUR der fachliche Inhalt (Frage & Antwort) dieser spezifischen Aufgabe."
+      "content": "NUR der fachliche Inhalt (Frage & Antwort) dieser spezifischen Aufgabe.",
+      "suggestGraph": (boolean)
     }
   ]
 }

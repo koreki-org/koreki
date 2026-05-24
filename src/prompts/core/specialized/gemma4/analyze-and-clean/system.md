@@ -44,13 +44,18 @@ WICHTIG (Tabellen-Formatierung & Rekonstruktion):
 - Falls die Daten durch den PDF-Extraktor oder OCR in einer Zeile zusammengequetscht wurden (z.B. nebeneinander stehende Werte getrennt durch Leerzeichen oder fehlende Zeilenumbrüche), musst du diese semantisch rekonstruieren und in eine saubere, mehrzeilige GFM-Tabelle mit passenden Spaltentrennern (`|`) umwandeln.
 - Lass niemals die Ausrichtungszeile weg, da die Tabelle sonst im User Interface nicht korrekt gerendert wird!
 
+WICHTIG (Graphen-Vorschlag - suggestGraph):
+- Setze "suggestGraph" auf true, wenn die Aufgabe Berechnungen (z.B. Mathe, Subnetting/VLSM, RAID) enthält.
+- Setze "suggestGraph" auf false bei rein textbasierten Fragen, Beschreibungen oder Erklärungen.
+
 Antworte EXAKT im folgenden JSON-Format:
 {
   "tasks": [
     {
       "name": "Eindeutiger Name (z.B. Aufgabe 1a)",
       "maxPoints": (Zahl),
-      "content": "VOLLSTÄNDIGER TEXT: Frage + Musterlösung + Bewertungsschema dieser Aufgabe."
+      "content": "VOLLSTÄNDIGER TEXT: Frage + Musterlösung + Bewertungsschema dieser Aufgabe.",
+      "suggestGraph": (boolean)
     }
   ]
 }
