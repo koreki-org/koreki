@@ -525,97 +525,42 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                     {activeTab === 'ai' && (
                         <div className="flex-1 flex overflow-hidden min-h-0 bg-slate-50/30">
                             {graph.variables.length === 0 ? (
-                                <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center">
-                                    <div className="bg-white border border-slate-100 shadow-xl rounded-[2.5rem] p-8 w-full max-w-5xl flex flex-col gap-6 my-auto animate-in fade-in zoom-in-95 duration-500">
-                                        <div className="flex items-center gap-4 border-b border-slate-100 pb-4">
-                                            <div className="w-11 h-11 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100 shrink-0">
-                                                <Sparkles size={20} className="text-indigo-600 animate-pulse" />
+                                <div className="flex-1 flex min-h-0 overflow-hidden bg-slate-50/10">
+                                    {/* Left Panel: Pure Chat Layout */}
+                                    <div className="flex-grow flex flex-col overflow-hidden min-h-0 bg-white">
+                                        <div className="px-8 py-3.5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0 gap-4">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">KI-Generierungs-Engine:</span>
+                                                <select
+                                                    value={selectedPlugin}
+                                                    onChange={(e) => setSelectedPlugin(e.target.value)}
+                                                    className="h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 font-inter"
+                                                >
+                                                    <option value="computer-science-networking">Netzwerk-Plugin (VLSM)</option>
+                                                    <option value="computer-science-storage">Speicher-Plugin (RAID)</option>
+                                                </select>
                                             </div>
-                                            <div>
-                                                <h4 className="font-black text-slate-800 text-lg font-outfit leading-none">Bewertungs-Graph mit KI generieren</h4>
-                                                <p className="text-xs text-slate-400 mt-1.5 leading-normal font-medium">
-                                                    Generiere einen intelligenten PANG-Rechengraph mit Folgefehlerkompensation aus Deiner Musterlösung.
+                                        </div>
+
+                                        {/* Greeting area */}
+                                        <div className="flex-1 bg-slate-50/50 p-8 overflow-y-auto flex flex-col space-y-4 custom-scrollbar">
+                                            <div className="p-4 bg-white border border-slate-200/60 text-slate-700 rounded-2xl rounded-tl-none shadow-3xs text-[11px] leading-relaxed font-medium max-w-[85%] animate-in fade-in slide-in-from-left-2 duration-300">
+                                                <p className="font-extrabold text-slate-900 mb-1 flex items-center gap-1.5">
+                                                    <Sparkles size={12} className="text-indigo-600 animate-pulse" />
+                                                    PANG KI-Assistent
                                                 </p>
+                                                Hallo! Ich bin dein PANG-Assistent. Gib mir einfach deine Wünsche oder Richtlinien für diese Aufgabe ein (z.B. Toleranzen, Subnetze, Punkte) und klicke auf „Graph generieren“, um deinen Bewertungs-Graphen vollautomatisch zu erstellen.
                                             </div>
                                         </div>
 
-                                        {/* Widescreen 2-Column Grid */}
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                                            
-                                            {/* Left Column: Plugin Selection & explanation details */}
-                                            <div className="space-y-5">
-                                                <div className="space-y-2">
-                                                    <label className="text-[10px] font-black uppercase text-indigo-600 tracking-wider">1. KI-Generierungs-Engine wählen</label>
-                                                    <select
-                                                        value={selectedPlugin}
-                                                        onChange={(e) => setSelectedPlugin(e.target.value)}
-                                                        className="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200"
-                                                    >
-                                                        <option value="computer-science-networking">Netzwerk-Plugin (VLSM)</option>
-                                                        <option value="computer-science-storage">Speicher-Plugin (RAID)</option>
-                                                    </select>
-                                                </div>
-
-                                                <div className="bg-slate-50/60 rounded-2xl p-4 border border-slate-100 space-y-3 text-xs leading-relaxed text-slate-600">
-                                                    <p className="font-extrabold text-slate-800 flex items-center gap-1.5">
-                                                        <span>💡</span> Was leistet der PANG-Bewertungsgraph?
-                                                    </p>
-                                                    <ul className="space-y-2 list-none p-0 m-0">
-                                                        <li className="flex items-start gap-2">
-                                                            <span className="text-indigo-600 font-extrabold shrink-0">✓</span>
-                                                            <span><strong>Folgefehlerkompensation:</strong> Ein Rechenfehler führt nicht zu Kettenabzügen. Folgefehler werden vollautomatisch mathematisch kompensiert.</span>
-                                                        </li>
-                                                        <li className="flex items-start gap-2">
-                                                            <span className="text-indigo-600 font-extrabold shrink-0">✓</span>
-                                                            <span><strong>Didaktische Toleranzen:</strong> Definiere Abweichungen für Rundungs- oder Format-Fehler, um Schülerarbeiten fair zu bewerten.</span>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-
-                                            {/* Right Column: AI Notes Suggestion chips & Guidelines */}
-                                            <div className="space-y-3">
-                                                <div className="space-y-2 flex flex-col">
-                                                    <label className="text-[10px] font-black uppercase text-indigo-600 tracking-wider">2. Spezifische Anmerkungen für die KI (optional)</label>
-                                                    
-                                                    {/* Suggestion Chips */}
-                                                    <div className="flex flex-wrap gap-1.5 pt-1">
-                                                        {noteSuggestions.map((s, idx) => (
-                                                            <button
-                                                                key={idx}
-                                                                type="button"
-                                                                onClick={() => handleAddSuggestion(s)}
-                                                                className="text-[9px] font-extrabold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100/60 rounded-full px-2.5 py-1 transition-all duration-200 active:scale-95 flex items-center gap-0.5 select-none cursor-pointer"
-                                                            >
-                                                                <Plus size={9} className="stroke-[3]" />
-                                                                <span>{s}</span>
-                                                            </button>
-                                                        ))}
-                                                    </div>
-
-                                                    <textarea
-                                                        value={initialUserNotes}
-                                                        onChange={(e) => setInitialUserNotes(e.target.value)}
-                                                        placeholder="z.B. Erlaube Subnetz-Rotationen, setze Toleranz für alle Masken auf 0.1, deklariere subnetA_broadcast als Formel..."
-                                                        className="w-full p-4 h-32 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 bg-slate-50/30 placeholder-slate-400 transition-all duration-200 resize-none leading-relaxed shadow-inner"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-                                        <div className="flex gap-4 border-t border-slate-100 pt-4 mt-2">
-                                            <Button
-                                                onClick={() => {
-                                                    // Quick add blank variable
-                                                    handleAddVariable();
-                                                    setActiveTab('editor');
-                                                }}
-                                                variant="outline"
-                                                className="h-10 rounded-xl text-xs font-bold border-slate-200 text-slate-600 hover:bg-slate-50 transition-all flex-1"
-                                            >
-                                                + Manuell erstellen
-                                            </Button>
+                                        {/* Input Box at the bottom */}
+                                        <div className="p-8 border-t border-slate-100 flex flex-col gap-4 bg-white shrink-0">
+                                            <textarea
+                                                value={initialUserNotes}
+                                                onChange={(e) => setInitialUserNotes(e.target.value)}
+                                                placeholder="z.B. Erlaube Subnetz-Rotationen, setze Toleranz für alle Masken auf 0.1, deklariere subnetA_broadcast als Formel..."
+                                                className="w-full p-4 h-24 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 bg-slate-50/30 placeholder-slate-400 transition-all duration-200 resize-none leading-relaxed shadow-inner"
+                                            />
 
                                             {onRegenerateGraph && taskContent && taskContent.trim().length > 10 && (
                                                 <Button
@@ -628,7 +573,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                             setActiveTab('editor');
                                                         }
                                                     }}
-                                                    className="h-10 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-black shadow-lg shadow-indigo-100/60 transition-all active:scale-[0.98] text-xs gap-2 flex-1 flex items-center justify-center"
+                                                    className="h-10 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-black shadow-lg shadow-indigo-100/60 transition-all active:scale-[0.98] text-xs gap-2 flex-grow flex items-center justify-center cursor-pointer"
                                                 >
                                                     {isGenerating ? (
                                                         <RefreshCw size={14} className="animate-spin" />
@@ -638,6 +583,29 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     <span>{isGenerating ? "Erstelle Graph..." : "🪄 Graph mit KI generieren"}</span>
                                                 </Button>
                                             )}
+                                        </div>
+                                    </div>
+
+                                    {/* Right Panel: Widescreen Info Box */}
+                                    <div className="w-80 border-l border-slate-100 bg-white flex flex-col p-6 space-y-4 shrink-0 overflow-y-auto animate-in fade-in duration-300">
+                                        <div className="flex items-center gap-2 pb-2 border-b border-slate-100 shrink-0">
+                                            <span className="text-lg">💡</span>
+                                            <h4 className="text-xs font-black uppercase text-slate-800 font-outfit tracking-tight">Was leistet der PANG-Bewertungsgraph?</h4>
+                                        </div>
+                                        
+                                        <div className="space-y-4 text-xs leading-relaxed text-slate-600">
+                                            <div className="space-y-1">
+                                                <p className="font-bold text-slate-800 flex items-center gap-1">
+                                                    <span className="text-indigo-600 font-extrabold">✓</span> Folgefehlerkompensation
+                                                </p>
+                                                <p className="pl-4 text-slate-400 font-medium leading-normal">Ein Rechenfehler führt nicht zu Kettenabzügen. Folgefehler werden vollautomatisch mathematisch kompensiert.</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="font-bold text-slate-800 flex items-center gap-1">
+                                                    <span className="text-indigo-600 font-extrabold">✓</span> Didaktische Toleranzen
+                                                </p>
+                                                <p className="pl-4 text-slate-400 font-medium leading-normal">Definiere Abweichungen für Rundungs- oder Format-Fehler, um Schülerarbeiten fair zu bewerten.</p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
