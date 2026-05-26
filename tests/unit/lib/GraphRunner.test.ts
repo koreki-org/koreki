@@ -519,6 +519,25 @@ describe('GradingGraph Engine - Nested Expression Tests', () => {
   });
 });
 
+describe('GradingGraph Engine - Expression Auto-healing Tests', () => {
+  test('should auto-heal 1-argument network calculateGateway and calculateBroadcast calls', () => {
+    const context = {
+      messebesucher_netId: '172.16.0.0',
+      messebesucher_mask: '/23'
+    };
+    
+    // Gateway call with 1 argument
+    const gatewayExpr = "network.calculateGateway(messebesucher_netId)";
+    const gatewayResult = evaluateExpression(gatewayExpr, context);
+    expect(gatewayResult).toBe('172.16.1.254'); // 172.16.1.254 is the last usable IP of 172.16.0.0/23
+    
+    // Broadcast call with 1 argument
+    const broadcastExpr = "network.calculateBroadcast(messebesucher_netId)";
+    const broadcastResult = evaluateExpression(broadcastExpr, context);
+    expect(broadcastResult).toBe('172.16.1.255');
+  });
+});
+
 describe('GradingGraph Engine - Dynamic Math & Three-Phase Current Tests', () => {
   const threePhaseGraph: GradingGraph = {
     taskId: 'drehstrom-exam-task-1',

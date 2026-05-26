@@ -236,8 +236,23 @@ parser.functions.longToIp = longToIp;
  * and maps old "domain.function(...)" calls to registered plugin functions for backward compatibility.
  */
 export function evaluateExpression(expression: string, context: Record<string, any>): any {
+  // Resiliency/Auto-healing: If network functions that require both netId and mask are called with only 1 argument,
+  // automatically append the corresponding mask variable (e.g. network.calculateGateway(messebesucher_netId) -> network.calculateGateway(messebesucher_netId, messebesucher_mask))
+  let healedExpression = expression;
+  const singleArgRegex = /(network[\._](?:calculateGateway|calculateBroadcast|calculateLastHost|calculateLastUsable|calculateLastUsableHost))\(\s*([a-zA-Z0-9_]+)\s*\)/g;
+  
+  healedExpression = healedExpression.replace(singleArgRegex, (match, func, arg) => {
+    let maskVar = arg + '_mask';
+    if (arg.endsWith('_netId')) {
+      maskVar = arg.replace(/_netId$/, '_mask');
+    } else if (arg.endsWith('_netid')) {
+      maskVar = arg.replace(/_netid$/, '_mask');
+    }
+    return `${func}(${arg}, ${maskVar})`;
+  });
+
   // Map dots to underscores to support old format backward compatibility
-  const sanitizedExpression = expression
+  const sanitizedExpression = healedExpression
     .replace(/network\./g, 'network_')
     .replace(/raid\./g, 'raid_')
     .replace(/math\./g, 'math_');
