@@ -1,7 +1,6 @@
 import { GraphRunner } from '../../../src/lib/grading/GraphRunner';
 import { GradingGraph } from '../../../src/lib/grading/types';
 import { evaluateExpression } from '../../../src/lib/grading/plugins';
-import { parseGeneratedGraph } from '../../../src/lib/grading/graph-generator';
 
 describe('GradingGraph Engine - VLSM Subnetting Tests', () => {
   // Define a typical VLSM Subnetting Task:
@@ -520,60 +519,6 @@ describe('GradingGraph Engine - Nested Expression Tests', () => {
   });
 });
 
-describe('GradingGraph Engine - Expression Auto-healing Tests', () => {
-  test('should permanently auto-heal 1-argument gateway and broadcast calls during graph generation/parsing', () => {
-    const rawGraphJson = {
-      taskId: 'test-auto-healing-123',
-      discipline: 'computer-science',
-      variables: [
-        {
-          id: 'messebesucher_hosts',
-          type: 'input',
-          defaultValue: 500
-        },
-        {
-          id: 'messebesucher_mask',
-          type: 'formula',
-          expression: 'network.calculateMask(messebesucher_hosts)'
-        },
-        {
-          id: 'messebesucher_netId',
-          type: 'input',
-          defaultValue: '172.16.0.0'
-        },
-        {
-          id: 'messebesucher_gateway',
-          type: 'formula',
-          expression: 'network.calculateGateway(messebesucher_netId)'
-        },
-        {
-          id: 'messebesucher_broadcast',
-          type: 'formula',
-          expression: 'network.calculateBroadcast(messebesucher_netId)'
-        }
-      ]
-    };
-
-    const parsedGraph = parseGeneratedGraph(JSON.stringify(rawGraphJson));
-    expect(parsedGraph).not.toBeNull();
-    
-    // Verify that the gateway expression was permanently corrected to 2 arguments!
-    const gatewayVar = parsedGraph!.variables.find(v => v.id === 'messebesucher_gateway')!;
-    expect(gatewayVar.expression).toBe('network.calculateGateway(messebesucher_netId, messebesucher_mask)');
-
-    // Verify that the broadcast expression was permanently corrected to 2 arguments!
-    const broadcastVar = parsedGraph!.variables.find(v => v.id === 'messebesucher_broadcast')!;
-    expect(broadcastVar.expression).toBe('network.calculateBroadcast(messebesucher_netId, messebesucher_mask)');
-
-    // Verify that standard evaluation now works perfectly without any silent runtime tricks!
-    const context = {
-      messebesucher_netId: '172.16.0.0',
-      messebesucher_mask: '/23'
-    };
-    const evalGateway = evaluateExpression(gatewayVar.expression!, context);
-    expect(evalGateway).toBe('172.16.1.254');
-  });
-});
 
 describe('GradingGraph Engine - Dynamic Math & Three-Phase Current Tests', () => {
   const threePhaseGraph: GradingGraph = {

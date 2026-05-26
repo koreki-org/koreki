@@ -32,6 +32,7 @@ Deine Aufgabe: Nimm einen bestehenden deterministischen Bewertungs-Graphen (Grad
    - Du darfst ternäre Operatoren für bedingte Logik verwenden (z. B. `anzahl_platten > 4 ? 2 : 1`).
    - Verwende für IP-Adressumrechnungen falls nötig `ipToLong(ip)` und `longToIp(long)`.
    - Für die Abwärtskompatibilität kannst du dot-notierte Plugin-Methoden nutzen (z. B. `network.calculateMask(hosts)` oder `raid.calculateNetCapacity(level, disks, size)`), die intern transparent umgemappt werden.
+   - Achte penibel auf die exakte Parameter-Anzahl aller Plugin-Funktionen laut Spezifikation (z. B. benötigt `network.calculateGateway(netId, mask)` und `network.calculateBroadcast(netId, mask)` zwingend ZWEI Parameter (netId und mask), während `network.calculateFirstHost(netId)` nur einen benötigt). Referenziere die Parameter immer über die genauen IDs der Vorgängervariablen.
 4. **Variablen-Nomenklatur & Referenzielle Integrität (Äußerst Wichtig):** 
    - Bevorzuge es dringend, bestehende Variablen-IDs (wie `subnet_spieler_netId`) unverändert zu lassen und nur ihre Typen, Standardwerte oder Formeln anzupassen, anstatt sie umzubennen (z. B. nicht in `spieler_netId` umbenennen!).
    - **Falls** eine Variable umbenannt wird, musst du zwingend sicherstellen, dass ALLE anderen Variablen im Graphen, die diese Variable in ihren `expression`-Formeln referenzieren, ebenfalls aktualisiert werden, um die referenzielle Integrität zu wahren! Andernfalls stürzen nachfolgende Formeln ab.
