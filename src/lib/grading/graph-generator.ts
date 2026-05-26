@@ -322,8 +322,22 @@ export function parseGeneratedGraph(llmResponse: string): GradingGraph | null {
     let shouldKeep = true;
     if (v.type === 'formula') {
       if (typeof v.expression === 'string') {
+        let expr = v.expression as string;
+
+        // Auto-healing: If network functions requiring netId and mask are called with only 1 parameter,
+        // permanently append the matching mask parameter to the stored JSON expression!
+        const singleArgRegex = /(network[\._](?:calculateGateway|calculateBroadcast|calculateLastHost|calculateLastUsable|calculateLastUsableHost))\(\s*([a-zA-Z0-9_]+)\s*\)/g;
+        expr = expr.replace(singleArgRegex, (match, func, arg) => {
+          let maskVar = arg + '_mask';
+          if (arg.endsWith('_netId')) {
+            maskVar = arg.replace(/_netId$/, '_mask');
+          } else if (arg.endsWith('_netid')) {
+            maskVar = arg.replace(/_netid$/, '_mask');
+          }
+          return `${func}(${arg}, ${maskVar})`;
+        });
+
         // Security: Validate that expression uses only registered plugin functions
-        const expr = v.expression as string;
         const isValidExpression = validPrefixes.some(prefix => expr.startsWith(prefix));
 
         if (isValidExpression) {
