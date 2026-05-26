@@ -570,7 +570,6 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                         if (result && Array.isArray(result.variables)) {
                                                             setGraph(result);
                                                             setInitialUserNotes('');
-                                                            setActiveTab('editor');
                                                         }
                                                     }}
                                                     className="h-10 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-black shadow-lg shadow-indigo-100/60 transition-all active:scale-[0.98] text-xs gap-2 flex-grow flex items-center justify-center cursor-pointer"
@@ -611,50 +610,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                 </div>
                             ) : (
                                 <div className="flex-1 flex overflow-hidden min-h-0">
-                                    {/* Left half: visual preview of nodes */}
-                                    <div className="w-1/2 overflow-y-auto p-8 border-r border-slate-100">
-                                        <div className="space-y-6">
-                                            <div className="flex justify-between items-center">
-                                                <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider font-outfit">Visualisierte Graphen-Struktur</h4>
-                                                <Badge className="bg-slate-100 text-slate-600 border border-slate-200/50 py-0.5 px-2 rounded-full font-bold text-[9px] uppercase">{graph.variables.length} Variablen</Badge>
-                                            </div>
-
-                                            <div className="space-y-3">
-                                                {graph.variables.map(v => (
-                                                    <div 
-                                                        key={v.id} 
-                                                        className={cn(
-                                                            "p-3.5 rounded-2xl bg-white border border-slate-100 shadow-xs flex items-center justify-between transition-all",
-                                                            hoveredVarId === v.id && "border-indigo-200 shadow-md shadow-indigo-50"
-                                                        )}
-                                                        onMouseEnter={() => setHoveredVarId(v.id)}
-                                                        onMouseLeave={() => setHoveredVarId(null)}
-                                                    >
-                                                        <div className="space-y-0.5 min-w-0">
-                                                            <div className="flex items-center gap-2">
-                                                                <span className="font-mono font-bold text-xs text-slate-800 truncate leading-none">{v.id}</span>
-                                                                {v.type === 'input' ? (
-                                                                    <Badge className="bg-slate-100 text-slate-500 border border-slate-200/30 text-[8px] py-0 px-1 rounded-sm uppercase font-black">IN</Badge>
-                                                                ) : (
-                                                                    <Badge className="bg-indigo-50 text-indigo-600 border border-indigo-100/50 text-[8px] py-0 px-1 rounded-sm uppercase font-black">FORMEL</Badge>
-                                                                )}
-                                                            </div>
-                                                            <p className="text-[10px] text-slate-400 font-mono truncate leading-none mt-1">
-                                                                {v.type === 'input' ? `Standardwert: ${v.defaultValue}` : `Formel: ${v.expression}`}
-                                                            </p>
-                                                        </div>
-
-                                                        <div className="text-right shrink-0 ml-4 font-mono font-bold text-xs text-indigo-900 bg-indigo-50/50 border border-indigo-100/40 py-1 px-2.5 rounded-xl">
-                                                            {String(evaluatedContext.context[v.id])}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Right half: Interactive chat assistant */}
-                                    <div className="w-1/2 flex flex-col overflow-hidden bg-white p-8">
+                                    {/* Left half: Interactive chat assistant */}
+                                    <div className="w-1/2 flex flex-col overflow-hidden bg-white p-8 border-r border-slate-100">
                                         <div className="space-y-1.5 shrink-0 pb-4 border-b border-slate-100">
                                             <h4 className="text-xs font-black uppercase text-slate-800 font-outfit tracking-tight flex items-center gap-2">
                                                 <Sparkles size={13} className="text-indigo-600 animate-pulse" />
@@ -727,6 +684,48 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                             >
                                                 <Send size={13} className="relative -left-0.5" />
                                             </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Right half: visual preview of nodes */}
+                                    <div className="w-1/2 overflow-y-auto p-8 bg-slate-50/10">
+                                        <div className="space-y-6">
+                                            <div className="flex justify-between items-center">
+                                                <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider font-outfit">Visualisierte Graphen-Struktur</h4>
+                                                <Badge className="bg-slate-100 text-slate-600 border border-slate-200/50 py-0.5 px-2 rounded-full font-bold text-[9px] uppercase">{graph.variables.length} Variablen</Badge>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                {graph.variables.map(v => (
+                                                    <div 
+                                                        key={v.id} 
+                                                        className={cn(
+                                                            "p-3.5 rounded-2xl bg-white border border-slate-100 shadow-xs flex items-center justify-between transition-all",
+                                                            hoveredVarId === v.id && "border-indigo-200 shadow-md shadow-indigo-50"
+                                                        )}
+                                                        onMouseEnter={() => setHoveredVarId(v.id)}
+                                                        onMouseLeave={() => setHoveredVarId(null)}
+                                                    >
+                                                        <div className="space-y-0.5 min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-mono font-bold text-xs text-slate-800 truncate leading-none">{v.id}</span>
+                                                                {v.type === 'input' ? (
+                                                                    <Badge className="bg-slate-100 text-slate-500 border border-slate-200/30 text-[8px] py-0 px-1 rounded-sm uppercase font-black">IN</Badge>
+                                                                ) : (
+                                                                    <Badge className="bg-indigo-50 text-indigo-600 border border-indigo-100/50 text-[8px] py-0 px-1 rounded-sm uppercase font-black">FORMEL</Badge>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-[10px] text-slate-400 font-mono truncate leading-none mt-1">
+                                                                {v.type === 'input' ? `Standardwert: ${v.defaultValue}` : `Formel: ${v.expression}`}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="text-right shrink-0 ml-4 font-mono font-bold text-xs text-indigo-900 bg-indigo-50/50 border border-indigo-100/40 py-1 px-2.5 rounded-xl">
+                                                            {String(evaluatedContext.context[v.id])}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
