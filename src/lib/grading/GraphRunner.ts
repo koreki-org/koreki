@@ -3,16 +3,139 @@ import {
   GradingResult, 
   StepResult, 
   StepResultStatus, 
-  VariableDefinition 
+  VariableDefinition,
+  EquivalenceGroup
 } from './types';
 import { evaluateExpression } from './plugins';
 
 export class GraphRunner {
   /**
+   * Generates all permutations of a list.
+   */
+  private static permute<T>(list: T[]): T[][] {
+    if (list.length === 0) return [[]];
+    const result: T[][] = [];
+    for (let i = 0; i < list.length; i++) {
+      const current = list[i];
+      const remaining = list.slice(0, i).concat(list.slice(i + 1));
+      const remainingPermutations = this.permute(remaining);
+      for (const p of remainingPermutations) {
+        result.push([current].concat(p));
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Generates all prefix mapping combinations for equivalence groups.
+   */
+  private static generatePermutationMappings(groups: EquivalenceGroup[]): Record<string, string>[] {
+    // Start with a single empty mapping
+    let currentMappings: Record<string, string>[] = [{}];
+
+    for (const group of groups) {
+      const originalPrefixes = group.prefixes;
+      const permutations = this.permute(originalPrefixes);
+      
+      const nextMappings: Record<string, string>[] = [];
+      for (const mapping of currentMappings) {
+        for (const perm of permutations) {
+          const newMapping = { ...mapping };
+          for (let i = 0; i < originalPrefixes.length; i++) {
+            newMapping[originalPrefixes[i]] = perm[i] as string;
+          }
+          nextMappings.push(newMapping);
+        }
+      }
+      currentMappings = nextMappings;
+    }
+
+    return currentMappings;
+  }
+
+  /**
+   * Maps student result keys to graph expected keys.
+   */
+  private static mapStudentResultsToGraph(studentResults: Record<string, any>, mapping: Record<string, string>): Record<string, any> {
+    const mapped: Record<string, any> = {};
+    for (const [studentId, val] of Object.entries(studentResults)) {
+      let graphId = studentId;
+      for (const [graphPrefix, studentPrefix] of Object.entries(mapping)) {
+        if (studentId.startsWith(studentPrefix + '_')) {
+          graphId = studentId.replace(studentPrefix + '_', graphPrefix + '_');
+          break;
+        }
+      }
+      mapped[graphId] = val;
+    }
+    return mapped;
+  }
+
+  /**
+   * Restores original student IDs in grading result steps.
+   */
+  private static restoreStudentIdsInResult(result: GradingResult, mapping: Record<string, string>): GradingResult {
+    const restoredStepResults = result.stepResults.map(step => {
+      let studentId = step.variableId;
+      for (const [graphPrefix, studentPrefix] of Object.entries(mapping)) {
+        if (step.variableId.startsWith(graphPrefix + '_')) {
+          studentId = step.variableId.replace(graphPrefix + '_', studentPrefix + '_');
+          break;
+        }
+      }
+      return {
+        ...step,
+        variableId: studentId
+      };
+    });
+
+    return {
+      ...result,
+      stepResults: restoredStepResults
+    };
+  }
+
+  /**
+   * Helper to extract variable dependencies in an expression.
+   */
+  private static getReferencedVariables(expression: string, allVarIds: string[]): string[] {
+    return allVarIds.filter(id => {
+      const regex = new RegExp(`\\b${id}\\b`);
+      return regex.test(expression);
+    });
+  }
+
+  /**
    * Validates a student's answer against both the expected values (master key)
    * and computed values (accounting for previous errors / consecutive compensation).
    */
   public static grade(graph: GradingGraph, studentResults: Record<string, any>): GradingResult {
+    const equivalenceGroups = graph.equivalenceGroups;
+    if (!equivalenceGroups || equivalenceGroups.length === 0) {
+      return this.executeGrading(graph, studentResults);
+    }
+
+    const mappings = this.generatePermutationMappings(equivalenceGroups);
+    let bestResult: GradingResult | null = null;
+    let bestMapping: Record<string, string> | null = null;
+
+    for (const mapping of mappings) {
+      const mappedStudentResults = this.mapStudentResultsToGraph(studentResults, mapping);
+      const virtualResult = this.executeGrading(graph, mappedStudentResults);
+
+      if (!bestResult || virtualResult.totalPoints > bestResult.totalPoints) {
+        bestResult = virtualResult;
+        bestMapping = mapping;
+      }
+    }
+
+    return this.restoreStudentIdsInResult(bestResult!, bestMapping!);
+  }
+
+  /**
+   * Internal grading runner logic.
+   */
+  private static executeGrading(graph: GradingGraph, studentResults: Record<string, any>): GradingResult {
     const stepResults: StepResult[] = [];
     let totalPoints = 0;
     let maxPoints = 0;
@@ -86,9 +209,24 @@ export class GraphRunner {
         points = stepMaxPoints;
         note = `Schritt korrekt gelöst.`;
       } else if (isConsecutivelyCorrect) {
-        status = 'consecutive_correct';
-        points = stepMaxPoints;
-        note = `Folgeschritt mathematisch korrekt fortgeführt basierend auf vorherigem Fehler.`;
+        // Path-based Alternative Promotion:
+        // If all referenced predecessor variables in the expression were correct,
+        // promote this to 'correct' (since it is a valid alternative path).
+        const referencedVars = this.getReferencedVariables(expression || '', graph.variables.map(v => v.id));
+        const hasErrorsInPredecessors = referencedVars.some(depId => {
+          const depResult = stepResults.find(r => r.variableId === depId);
+          return depResult && depResult.status !== 'correct';
+        });
+
+        if (!hasErrorsInPredecessors && referencedVars.length > 0) {
+          status = 'correct';
+          points = stepMaxPoints;
+          note = `Schritt korrekt gelöst (Alternativlösung).`;
+        } else {
+          status = 'consecutive_correct';
+          points = stepMaxPoints;
+          note = `Folgeschritt mathematisch korrekt fortgeführt basierend auf vorherigem Fehler.`;
+        }
       } else {
         status = 'primary_error';
         points = 0;

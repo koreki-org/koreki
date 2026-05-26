@@ -11,10 +11,16 @@ export interface VariableDefinition {
   maxPoints?: number; // Points allocated to this step, defaults to 1
 }
 
+export interface EquivalenceGroup {
+  id: string;
+  prefixes: string[];
+}
+
 export interface GradingGraph {
   taskId: string;
   discipline: string;
   variables: VariableDefinition[];
+  equivalenceGroups?: EquivalenceGroup[];
 }
 
 export type StepResultStatus = 'correct' | 'primary_error' | 'consecutive_correct';

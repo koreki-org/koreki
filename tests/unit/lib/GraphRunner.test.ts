@@ -622,8 +622,8 @@ describe('GradingGraph Engine - Dynamic Math & Three-Phase Current Tests', () =>
       const result = GraphRunner.grade(alternativeGraph, studentResults);
       expect(result.totalPoints).toBe(2);
       expect(result.stepResults[0].status).toBe('correct');
-      // Second step is consecutively correct based on the swapped input of the first!
-      expect(result.stepResults[1].status).toBe('consecutive_correct');
+      // Second step is promoted to correct because the predecessor has no errors under DIRM!
+      expect(result.stepResults[1].status).toBe('correct');
     });
 
     test('should reject identical assignments (cheating/error)', () => {
