@@ -36,7 +36,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     isOpen,
     onClose,
     initialGraph,
-    taskName = "VLSM Subnetting-Aufgabe",
+    taskName = "Bewertungs-Aufgabe",
     taskContent,
     taskType,
     customSkills = {},
@@ -549,7 +549,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     <Sparkles size={12} className="text-indigo-600 animate-pulse" />
                                                     PANG KI-Assistent
                                                 </p>
-                                                Hallo! Ich bin dein PANG-Assistent. Gib mir einfach deine Wünsche oder Richtlinien für diese Aufgabe ein (z.B. Toleranzen, Subnetze, Punkte) und klicke auf „Graph generieren“, um deinen Bewertungs-Graphen vollautomatisch zu erstellen.
+                                                Hallo! Ich bin dein PANG-Assistent. Gib mir einfach deine Wünsche oder Richtlinien für diese Aufgabe ein (z. B. Toleranzen, Formeln oder Punkteverteilung) und klicke auf „Graph generieren“, um deinen Bewertungs-Graphen vollautomatisch zu erstellen.
                                             </div>
                                         </div>
 
@@ -558,7 +558,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                             <textarea
                                                 value={initialUserNotes}
                                                 onChange={(e) => setInitialUserNotes(e.target.value)}
-                                                placeholder="z.B. Erlaube Subnetz-Rotationen, setze Toleranz für alle Masken auf 0.1, deklariere subnetA_broadcast als Formel..."
+                                                placeholder="z. B. Setze die Toleranz für alle Variablen auf 0.1, bestimme bestimmte Werte als Formel oder passe die Punkteverteilung an..."
                                                 className="w-full p-4 h-24 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 bg-slate-50/30 placeholder-slate-400 transition-all duration-200 resize-none leading-relaxed shadow-inner"
                                             />
 
