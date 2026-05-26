@@ -291,9 +291,9 @@ export class GraphRunner {
 
         // Find cell index for this field
         let fieldColIdx = -1;
-        const normalizedFieldKey = fieldKey.replace(/_/g, '');
+        const normalizedFieldKey = fieldKey.replace(/_/g, '').toLowerCase();
         for (const [colIdx, colType] of Object.entries(colMap)) {
-          const normalizedColType = colType.replace(/_/g, '');
+          const normalizedColType = colType.replace(/_/g, '').toLowerCase();
           if (normalizedColType === normalizedFieldKey) {
             fieldColIdx = Number(colIdx);
             break;

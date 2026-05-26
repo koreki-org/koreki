@@ -62,12 +62,12 @@ export default function Home() {
 
     const { saveSettings, handleModeSelect, handleUnlockExpert } = useDashboardActions(userData, setUserData, aiSettings, setAiSettings, fetchAiStatus);
 
-    const handleGenerateGraphForTask = async (taskIndex: number, taskText: string) => {
+    const handleGenerateGraphForTask = async (taskIndex: number, taskText: string, userNotes?: string) => {
         try {
             const discipline = data.tasksLayout[taskIndex]?.taskType;
             const response = await performAIRequest(
                 'generate-graph',
-                { taskText, discipline },
+                { taskText, discipline, userNotes },
                 userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
                 aiSettings
             );
@@ -103,11 +103,11 @@ export default function Home() {
         }
     };
 
-    const handleGenerateGraphFromText = async (taskText: string, discipline?: string) => {
+    const handleGenerateGraphFromText = async (taskText: string, discipline?: string, userNotes?: string) => {
         try {
             const response = await performAIRequest(
                 'generate-graph',
-                { taskText, discipline },
+                { taskText, discipline, userNotes },
                 userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
                 aiSettings
             );

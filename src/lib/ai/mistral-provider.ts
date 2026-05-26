@@ -116,7 +116,7 @@ export async function executeMistralRequest(
                 payload.chatHistory
             );
         } else if (action === 'generate-graph') {
-            promptObj = buildGraphGenerationPrompt(payload.taskText, payload.discipline);
+            promptObj = buildGraphGenerationPrompt(payload.taskText, payload.discipline, payload.userNotes);
         } else if (action === 'refine-graph') {
             promptObj = buildGraphRefinementPrompt(payload.taskText, payload.currentGraph, payload.userInstruction, payload.discipline);
         } else if (action === 'variable-extraction') {

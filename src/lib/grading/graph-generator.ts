@@ -158,7 +158,8 @@ const GRAPH_GENERATION_USER_PROMPT = graphGenUserDefault;
  */
 export function buildGraphGenerationPrompt(
   taskText: string,
-  discipline?: string
+  discipline?: string,
+  userNotes?: string
 ): StructuredPrompt {
   const pluginManifest = formatPluginManifestForPrompt();
 
@@ -169,9 +170,13 @@ export function buildGraphGenerationPrompt(
     ? `Hinweis: Diese Aufgabe gehört zum Fachgebiet "${discipline}". Bevorzuge Plugin-Funktionen aus der passenden Domain.`
     : '';
 
-  const user = GRAPH_GENERATION_USER_PROMPT
+  let user = GRAPH_GENERATION_USER_PROMPT
     .replace('{{TASK_TEXT}}', taskText)
     .replace('{{DISCIPLINE_HINT}}', disciplineHint);
+
+  if (userNotes && userNotes.trim()) {
+    user += `\n\nZUSÄTZLICHE BEDIENER-ANMERKUNGEN UND SPEZIFISCHE ANFORDERUNGEN AN DEN GRAPHEN:\n${userNotes.trim()}\n\nBerücksichtige diese Anmerkungen strikt bei der Strukturierung des Graphen!`;
+  }
 
   return {
     system,

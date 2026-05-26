@@ -26,7 +26,7 @@ interface GradingGraphModalProps {
     settings?: AppSettings;
     isGenerating?: boolean;
     onEngineChange?: (newEngine: string) => void;
-    onRegenerateGraph?: (discipline: string) => Promise<any>;
+    onRegenerateGraph?: (discipline: string, userNotes?: string) => Promise<any>;
     onDeleteGraph?: () => void;
     onSaveCustomSkill?: (name: string, graph: GradingGraph) => void;
     onSave: (graph: GradingGraph) => void;
@@ -77,18 +77,21 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     }, []);
     
     // Collapsible states
-    const [isJsonOpen, setIsJsonOpen] = useState(false);
     const [jsonText, setJsonText] = useState("");
     const [jsonError, setJsonError] = useState<string | null>(null);
 
     // Mock student answer playground values
     const [playgroundInputs, setPlaygroundInputs] = useState<Record<string, string>>({});
     const [playgroundResult, setPlaygroundResult] = useState<any>(null);
-    const [activeTab, setActiveTab] = useState<'designer' | 'playground'>('designer');
-    const [activeRightTab, setActiveRightTab] = useState<'inspector' | 'assistant'>('assistant');
+    const [activeTab, setActiveTab] = useState<'ai' | 'editor' | 'testing' | 'json'>(() => {
+        const hasGraph = initialGraph && Array.isArray(initialGraph.variables) && initialGraph.variables.length > 0;
+        return hasGraph ? 'editor' : 'ai';
+    });
     const [chatInput, setChatInput] = useState('');
     const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'assistant'; text: string; hasError?: boolean }[]>([]);
     const [isRefining, setIsRefining] = useState(false);
+    const [initialUserNotes, setInitialUserNotes] = useState("");
+    const [showAdvancedInspector, setShowAdvancedInspector] = useState(false);
 
     const [skillName, setSkillName] = useState(() => {
         if (taskType && taskType.startsWith('custom-skill-') && customSkills?.[taskType]) {
@@ -173,6 +176,32 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
         return { context, errors };
     }, [graph?.variables]);
+
+    // Helper to extract which variables a formula depends on
+    const getVariableDependencies = (variable: VariableDefinition) => {
+        if (variable.type !== 'formula' || !variable.expression) return [];
+        return (graph?.variables || [])
+            .filter(other => other.id !== variable.id && new RegExp(`\\b${other.id}\\b`).test(variable.expression || ""))
+            .map(other => other.id);
+    };
+
+    // AI wizard suggestion chips
+    const noteSuggestions = [
+        "Toleranz für Masken auf 0.1 setzen",
+        "Erlaube Subnetz-Rotationen",
+        "subnetA_broadcast als Formel deklarieren",
+        "Broadcast-IPs nicht bewerten",
+        "Zusätzliche Punkte für den Broadcast-Schritt"
+    ];
+
+    const handleAddSuggestion = (suggestion: string) => {
+        setInitialUserNotes(prev => {
+            const trimmed = prev.trim();
+            if (!trimmed) return suggestion;
+            if (trimmed.endsWith('.') || trimmed.endsWith(',') || trimmed.endsWith('!')) return `${trimmed} ${suggestion}`;
+            return `${trimmed}, ${suggestion}`;
+        });
+    };
 
     // Sync edited form inputs
     const handleUpdateVariable = (id: string, updated: Partial<VariableDefinition>) => {
@@ -373,20 +402,39 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             <p className="text-xs text-slate-400 font-medium">{taskName} (Variable Beziehungen, Toleranzen & Folgefehler-Pfade)</p>
                         </div>
                     </div>
-                    
-                    {/* Mode selector tab */}
+                                  {/* Mode selector tab */}
                     <div className="flex bg-slate-200/50 p-1 rounded-xl gap-1 shrink-0 ml-auto mr-6">
                         <button 
-                            onClick={() => setActiveTab('designer')}
-                            className={cn("px-4 py-1.5 rounded-lg text-xs font-bold transition-all", activeTab === 'designer' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800")}
+                            type="button"
+                            onClick={() => setActiveTab('ai')}
+                            className={cn("px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5", activeTab === 'ai' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
                         >
-                            Graph Designer
+                            <Sparkles size={12} className={cn(activeTab === 'ai' && "text-indigo-600")} />
+                            KI-Assistent 🪄
                         </button>
                         <button 
-                            onClick={() => { setActiveTab('playground'); handleRunPlayground(); }}
-                            className={cn("px-4 py-1.5 rounded-lg text-xs font-bold transition-all", activeTab === 'playground' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-800")}
+                            type="button"
+                            onClick={() => setActiveTab('editor')}
+                            className={cn("px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5", activeTab === 'editor' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
                         >
+                            <Layers size={12} className={cn(activeTab === 'editor' && "text-indigo-600")} />
+                            Knoten-Editor 📊
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={() => { setActiveTab('testing'); handleRunPlayground(); }}
+                            className={cn("px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5", activeTab === 'testing' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                        >
+                            <Eye size={12} className={cn(activeTab === 'testing' && "text-indigo-600")} />
                             Graph testen 🧪
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={() => setActiveTab('json')}
+                            className={cn("px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5", activeTab === 'json' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                        >
+                            <Code size={12} className={cn(activeTab === 'json' && "text-indigo-600")} />
+                            JSON-Editor 💻
                         </button>
                     </div>
 
@@ -463,222 +511,569 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         )}
                     </div>
 
-                    {/* Divider line */}
-                    <div className="h-6 w-px bg-slate-200"></div>
-
-                    {/* 2. Generate New AI Graph */}
-                    <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">KI-Graph generieren:</span>
-                        
-                        <select
-                            value={selectedPlugin}
-                            onChange={(e) => setSelectedPlugin(e.target.value)}
-                            className="h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200"
-                        >
-                            <option value="computer-science-networking">Netzwerk-Plugin (VLSM)</option>
-                            <option value="computer-science-storage">Speicher-Plugin (RAID)</option>
-                        </select>
-
-                        {onRegenerateGraph && taskContent && taskContent.trim().length > 10 && (
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={isGenerating}
-                                onClick={async () => {
-                                    await onRegenerateGraph(selectedPlugin);
-                                }}
-                                className={cn(
-                                    "h-8 px-3 rounded-xl border text-xs font-bold transition-all duration-300 gap-1.5 shrink-0 bg-primary/5 text-primary border-primary/20 hover:bg-primary hover:text-white"
-                                )}
-                            >
-                                {isGenerating ? (
-                                    <RefreshCw size={12} className="animate-spin" />
-                                ) : (
-                                    <Sparkles size={12} />
-                                )}
-                                <span>{isGenerating ? "Generiere..." : "KI-Graph generieren"}</span>
-                            </Button>
-                        )}
-                    </div>
-
                     {/* Hint text / spacer */}
                     <span className="text-[10px] text-slate-400 font-medium hidden xl:flex items-center gap-1.5 ml-auto">
                         <Sparkles size={11} className="text-indigo-500" />
-                        Hover über Formel für Abhängigkeiten
+                        PANG Engine berechnet Folgefehler vollautomatisch
                     </span>
-
-                    {/* 7. Raw JSON Toggle */}
-                    <div className={cn("flex gap-2", !onRegenerateGraph && "ml-auto")}>
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => setIsJsonOpen(!isJsonOpen)}
-                            className="h-8 text-[10px] font-bold uppercase rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 gap-1.5"
-                        >
-                            <Code size={13} />
-                            {isJsonOpen ? "JSON schließen" : "JSON Code-Editor"}
-                        </Button>
-                    </div>
                 </div>
 
                 {/* Main Content Area */}
                 <div className="flex-1 flex overflow-hidden min-h-0">
                     
-                    {/* Left Panel: Raw JSON code editor */}
-                    {isJsonOpen && (
-                        <div className="w-1/3 border-r border-slate-100 bg-slate-900 flex flex-col overflow-hidden animate-in slide-in-from-left-4 duration-300">
-                            <div className="px-4 py-2 border-b border-slate-800 bg-slate-950 flex justify-between items-center shrink-0">
-                                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 font-mono">raw_graph_config.json</span>
-                                {jsonError ? (
-                                    <span className="text-[9px] font-bold text-red-400 flex items-center gap-1">
-                                        <AlertCircle size={10} /> Syntax-Fehler!
-                                    </span>
-                                ) : (
-                                    <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-1">
-                                        <Check size={10} /> Validiert
-                                    </span>
-                                )}
-                            </div>
-                            <textarea
-                                value={jsonText}
-                                onChange={(e) => handleJsonChange(e.target.value)}
-                                className="flex-1 p-4 bg-slate-950 text-slate-300 font-mono text-xs outline-hidden border-none resize-none overflow-y-auto leading-relaxed"
-                            />
-                            {jsonError && (
-                                <div className="p-3 bg-red-950/40 border-t border-red-900/40 text-[10px] font-bold text-red-300 leading-relaxed font-mono">
-                                    {jsonError}
+                    {/* Tab 1: AI Assistant & Generation */}
+                    {activeTab === 'ai' && (
+                        <div className="flex-1 flex overflow-hidden min-h-0 bg-slate-50/30">
+                            {graph.variables.length === 0 ? (
+                                <div className="flex-1 overflow-y-auto p-12 flex flex-col items-center justify-center">
+                                    <div className="bg-white border border-slate-100 shadow-xl rounded-[2.5rem] p-10 max-w-2xl w-full flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-500">
+                                        <div className="flex items-center gap-4 border-b border-slate-100 pb-5">
+                                            <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100 shrink-0">
+                                                <Sparkles size={22} className="text-indigo-600 animate-pulse" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-black text-slate-800 text-lg font-outfit leading-snug">Noch kein Bewertungs-Graph vorhanden</h4>
+                                                <p className="text-xs text-slate-400 leading-normal font-medium">
+                                                    Generiere einen intelligenten PANG-Rechengraph mit Folgefehlerkompensation aus Deiner Musterlösung.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">KI-Generierungs-Engine:</label>
+                                                <select
+                                                    value={selectedPlugin}
+                                                    onChange={(e) => setSelectedPlugin(e.target.value)}
+                                                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200"
+                                                >
+                                                    <option value="computer-science-networking">Netzwerk-Plugin (VLSM)</option>
+                                                    <option value="computer-science-storage">Speicher-Plugin (RAID)</option>
+                                                </select>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Spezifische Anmerkungen für die KI (z.B. Toleranzen, Formeln, alternative Wege - optional):</label>
+                                                
+                                                {/* Suggestion Chips */}
+                                                <div className="flex flex-wrap gap-2 pt-1 pb-2">
+                                                    {noteSuggestions.map((s, idx) => (
+                                                        <button
+                                                            key={idx}
+                                                            type="button"
+                                                            onClick={() => handleAddSuggestion(s)}
+                                                            className="text-[9px] font-extrabold bg-indigo-50/60 hover:bg-indigo-100 text-indigo-700 border border-indigo-100/50 rounded-full px-2.5 py-1 transition-all duration-200 active:scale-95 flex items-center gap-1 select-none cursor-pointer"
+                                                        >
+                                                            <Plus size={9} className="stroke-[3]" />
+                                                            <span>{s}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                <textarea
+                                                    value={initialUserNotes}
+                                                    onChange={(e) => setInitialUserNotes(e.target.value)}
+                                                    placeholder="z.B. Erlaube Subnetz-Rotationen, setze Toleranz für alle Masken auf 0.1, deklariere subnetA_broadcast als Formel..."
+                                                    className="w-full p-4 h-32 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 bg-slate-50/30 placeholder-slate-400 transition-all duration-200 resize-none leading-relaxed shadow-inner"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-4 border-t border-slate-100 pt-5">
+                                            <Button
+                                                onClick={() => {
+                                                    // Quick add blank variable
+                                                    handleAddVariable();
+                                                    setActiveTab('editor');
+                                                }}
+                                                variant="outline"
+                                                className="h-11 rounded-xl text-xs font-bold border-slate-200 text-slate-600 hover:bg-slate-50 transition-all flex-1"
+                                            >
+                                                + Manuell erstellen
+                                            </Button>
+
+                                            {onRegenerateGraph && taskContent && taskContent.trim().length > 10 && (
+                                                <Button
+                                                    disabled={isGenerating}
+                                                    onClick={async () => {
+                                                        const result = await onRegenerateGraph(selectedPlugin, initialUserNotes);
+                                                        if (result && Array.isArray(result.variables)) {
+                                                            setGraph(result);
+                                                            setInitialUserNotes('');
+                                                            setActiveTab('editor');
+                                                        }
+                                                    }}
+                                                    className="h-11 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-black shadow-lg shadow-indigo-100/60 transition-all active:scale-[0.98] text-xs gap-2 flex-1 flex items-center justify-center"
+                                                >
+                                                    {isGenerating ? (
+                                                        <RefreshCw size={14} className="animate-spin" />
+                                                    ) : (
+                                                        <Sparkles size={14} />
+                                                    )}
+                                                    <span>{isGenerating ? "Erstelle Graph..." : "🪄 Graph mit KI generieren"}</span>
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex-1 flex overflow-hidden min-h-0">
+                                    {/* Left half: visual preview of nodes */}
+                                    <div className="w-1/2 overflow-y-auto p-8 border-r border-slate-100">
+                                        <div className="space-y-6">
+                                            <div className="flex justify-between items-center">
+                                                <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider font-outfit">Visualisierte Graphen-Struktur</h4>
+                                                <Badge className="bg-slate-100 text-slate-600 border border-slate-200/50 py-0.5 px-2 rounded-full font-bold text-[9px] uppercase">{graph.variables.length} Variablen</Badge>
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                {graph.variables.map(v => (
+                                                    <div 
+                                                        key={v.id} 
+                                                        className={cn(
+                                                            "p-3.5 rounded-2xl bg-white border border-slate-100 shadow-xs flex items-center justify-between transition-all",
+                                                            hoveredVarId === v.id && "border-indigo-200 shadow-md shadow-indigo-50"
+                                                        )}
+                                                        onMouseEnter={() => setHoveredVarId(v.id)}
+                                                        onMouseLeave={() => setHoveredVarId(null)}
+                                                    >
+                                                        <div className="space-y-0.5 min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-mono font-bold text-xs text-slate-800 truncate leading-none">{v.id}</span>
+                                                                {v.type === 'input' ? (
+                                                                    <Badge className="bg-slate-100 text-slate-500 border border-slate-200/30 text-[8px] py-0 px-1 rounded-sm uppercase font-black">IN</Badge>
+                                                                ) : (
+                                                                    <Badge className="bg-indigo-50 text-indigo-600 border border-indigo-100/50 text-[8px] py-0 px-1 rounded-sm uppercase font-black">FORMEL</Badge>
+                                                                )}
+                                                            </div>
+                                                            <p className="text-[10px] text-slate-400 font-mono truncate leading-none mt-1">
+                                                                {v.type === 'input' ? `Standardwert: ${v.defaultValue}` : `Formel: ${v.expression}`}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="text-right shrink-0 ml-4 font-mono font-bold text-xs text-indigo-900 bg-indigo-50/50 border border-indigo-100/40 py-1 px-2.5 rounded-xl">
+                                                            {String(evaluatedContext.context[v.id])}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Right half: Interactive chat assistant */}
+                                    <div className="w-1/2 flex flex-col overflow-hidden bg-white p-8">
+                                        <div className="space-y-1.5 shrink-0 pb-4 border-b border-slate-100">
+                                            <h4 className="text-xs font-black uppercase text-slate-800 font-outfit tracking-tight flex items-center gap-2">
+                                                <Sparkles size={13} className="text-indigo-600 animate-pulse" />
+                                                Interaktiver KI-Assistent
+                                            </h4>
+                                            <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                                                Passe Formeln, Toleranzen oder Punktgewichtungen flexibel mit natürlicher Sprache im Chat an.
+                                            </p>
+                                        </div>
+
+                                        {/* Chat History Panel */}
+                                        <div className="flex-1 bg-slate-50 rounded-2xl border border-slate-200/40 p-4 my-4 overflow-y-auto space-y-3 custom-scrollbar flex flex-col">
+                                            {chatHistory.length === 0 ? (
+                                                <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-400 gap-2 select-none my-auto">
+                                                    <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-indigo-500 mb-1">
+                                                        <MessageSquare size={16} />
+                                                    </div>
+                                                    <p className="text-[10px] font-bold text-slate-600">Keine Chat-Historie</p>
+                                                    <p className="text-[9px] leading-relaxed font-medium px-2">
+                                                        Gib unten eine Anweisung ein, z.B. <em>"Setze die Toleranz von subnetA_mask auf 0.1"</em>.
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                chatHistory.map((msg, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        className={cn(
+                                                            "p-3 rounded-2xl text-[10px] leading-relaxed max-w-[90%] font-medium transition-all duration-200",
+                                                            msg.role === 'user'
+                                                                ? "bg-indigo-600 text-white rounded-tr-none ml-auto shadow-xs"
+                                                                : msg.hasError
+                                                                    ? "bg-rose-50 border border-rose-100 text-rose-700 rounded-tl-none font-mono"
+                                                                    : "bg-white border border-slate-200/60 text-slate-700 rounded-tl-none shadow-3xs"
+                                                        )}
+                                                    >
+                                                        {msg.text}
+                                                    </div>
+                                                ))
+                                            )}
+                                            {isRefining && (
+                                                <div className="bg-slate-200/50 text-slate-500 border border-slate-200/40 p-3 rounded-2xl rounded-tl-none text-[10px] font-bold leading-relaxed max-w-[80%] flex items-center gap-2 animate-pulse">
+                                                    <RefreshCw size={11} className="animate-spin text-indigo-500 shrink-0" />
+                                                    <span>Passe Graph an...</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Chat Input Bar */}
+                                        <div className="flex items-end gap-2 shrink-0 pt-2 border-t border-slate-100">
+                                            <textarea
+                                                value={chatInput}
+                                                disabled={isRefining}
+                                                onChange={(e) => setChatInput(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' && !e.shiftKey) {
+                                                        e.preventDefault();
+                                                        if (chatInput.trim()) {
+                                                            handleRefineGraph();
+                                                        }
+                                                    }
+                                                }}
+                                                rows={1}
+                                                placeholder="z.B. Erhöhe Toleranzen..."
+                                                className="flex-grow min-h-[38px] max-h-[120px] px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 bg-white placeholder-slate-400 disabled:opacity-60 transition-all duration-200 resize-none custom-scrollbar leading-relaxed"
+                                            />
+                                            <button
+                                                onClick={handleRefineGraph}
+                                                disabled={isRefining || !chatInput.trim()}
+                                                className="h-9 w-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center transition-all duration-200 shadow-sm shrink-0 mb-0.5"
+                                            >
+                                                <Send size={13} className="relative -left-0.5" />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {/* Center Workspace (Design Flow vs. Playground) */}
-                    <div className="flex-1 overflow-y-auto p-8 bg-slate-50/30">
-                        {activeTab === 'designer' ? (
-                            <div className="space-y-8 pb-12">
-                                <div className="bg-indigo-50/40 border border-indigo-100/60 rounded-3xl p-5 flex gap-4 text-xs text-indigo-950/80 items-start shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <span className="text-xl">💡</span>
-                                    <div className="space-y-1">
-                                        <p className="font-extrabold text-indigo-900 leading-none">Bewertungs-Graph &amp; Folgefehler-Kompensation</p>
-                                        <p className="leading-relaxed">
-                                            Legen Sie hier die mathematische Struktur Ihrer Musterlösung fest. Die PANG-Engine nutzt diese Variablen und Formeln, um Schülerarbeiten intelligent abzugleichen und Folgefehler vollautomatisch und didaktisch perfekt zu bewerten.
-                                        </p>
-                                    </div>
-                                </div>
-                                {Object.keys(groupedVariables).length === 0 ? (
-                                    <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] p-12 text-center max-w-xl mx-auto flex flex-col items-center justify-center gap-4 shadow-lg shadow-slate-100/50 mt-8 animate-in fade-in zoom-in-95 duration-500">
-                                        <div className="w-12 h-12 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400">
-                                            <Sparkles size={24} className="text-indigo-600 animate-pulse" />
-                                        </div>
-                                        <div>
-                                            <h4 className="font-extrabold text-slate-800 text-sm">Noch kein Bewertungs-Graph vorhanden</h4>
-                                            <p className="text-xs text-slate-400 mt-1.5 leading-relaxed font-medium">
-                                                Dieser Task hat noch keine mathematische Struktur hinterlegt. Wählen Sie oben eine <strong>Engine</strong> aus, laden Sie eine <strong>bestehende Vorlage</strong> oder klicken Sie auf <strong>KI-Graph</strong>, um einen passgenauen Graphen generieren zu lassen.
+                    {/* Tab 2: Visual Node Editor & Simplified Inspector */}
+                    {activeTab === 'editor' && (
+                        <div className="flex-1 flex overflow-hidden min-h-0 bg-slate-50/30">
+                            {/* Left part: Variables visual list */}
+                            <div className="flex-1 overflow-y-auto p-8">
+                                <div className="space-y-8 pb-12">
+                                    <div className="bg-indigo-50/40 border border-indigo-100/60 rounded-3xl p-5 flex gap-4 text-xs text-indigo-950/80 items-start shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <span className="text-xl">💡</span>
+                                        <div className="space-y-1">
+                                            <p className="font-extrabold text-indigo-900 leading-none">Manuelle Knotengestaltung</p>
+                                            <p className="leading-relaxed">
+                                                Fügen Sie manuelle Variablen hinzu oder passen Sie Formeln und Punkte an. Wählen Sie einen Knoten aus, um ihn rechts im Detail-Inspektor einfach anzupassen.
                                             </p>
                                         </div>
-                                        <div className="flex gap-3 mt-2">
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => handleAddVariable()}
-                                                className="h-8 text-[10px] font-bold rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
+                                    </div>
+
+                                    {Object.keys(groupedVariables).length === 0 ? (
+                                        <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] p-12 text-center max-w-xl mx-auto flex flex-col items-center justify-center gap-4 shadow-lg shadow-slate-100/50 mt-8 animate-in fade-in zoom-in-95 duration-500">
+                                            <div className="w-12 h-12 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400">
+                                                <Sparkles size={24} className="text-indigo-600 animate-pulse" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-extrabold text-slate-800 text-sm">Noch kein Bewertungs-Graph vorhanden</h4>
+                                                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed font-medium">
+                                                    Dieser Task hat noch keine mathematische Struktur hinterlegt. Du kannst oben im KI-Assistenten 🪄 einen Graphen generieren lassen oder hier direkt eine manuelle Variable hinzufügen.
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-3 mt-2">
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={() => handleAddVariable()}
+                                                    className="h-8 text-[10px] font-bold rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
+                                                >
+                                                    + Erste Variable hinzufügen
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        Object.entries(groupedVariables).map(([groupName, vars]) => (
+                                            <div key={groupName} className="space-y-3">
+                                                <div className="flex justify-between items-center px-1">
+                                                    <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider font-outfit flex items-center gap-2">
+                                                        <Layers size={13} className="text-indigo-400" />
+                                                        {groupName}
+                                                    </h4>
+                                                    <button
+                                                        onClick={() => handleAddVariable(groupName)}
+                                                        className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-indigo-50 rounded-md"
+                                                    >
+                                                        <Plus size={11} /> Variable hinzufügen
+                                                    </button>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                    {vars.map(v => {
+                                                        const isSelected = selectedVarId === v.id;
+                                                        const isHovered = hoveredVarId === v.id;
+                                                        const isDependency = dependenciesOfHovered.has(v.id);
+                                                        const evalVal = evaluatedContext.context[v.id];
+                                                        const hasError = evaluatedContext.errors[v.id];
+
+                                                        return (
+                                                            <div
+                                                                key={v.id}
+                                                                onClick={() => setSelectedVarId(v.id)}
+                                                                onMouseEnter={() => setHoveredVarId(v.id)}
+                                                                onMouseLeave={() => setHoveredVarId(null)}
+                                                                className={cn(
+                                                                    "p-4 rounded-2xl border-2 transition-all flex flex-col gap-3 select-none relative group cursor-pointer text-left",
+                                                                    isSelected ? "bg-white border-indigo-500 shadow-md shadow-indigo-100 ring-1 ring-indigo-500/10" :
+                                                                    isDependency ? "bg-indigo-50/40 border-indigo-200 shadow-sm" :
+                                                                    isHovered ? "bg-white border-slate-300/80 shadow-sm" :
+                                                                    "bg-white border-slate-100 hover:border-slate-200"
+                                                                )}
+                                                            >
+                                                                {/* Variable ID Title and Badges */}
+                                                                <div className="flex justify-between items-start gap-3">
+                                                                    <div className="space-y-0.5 min-w-0">
+                                                                        <h5 className={cn("text-xs font-black font-mono truncate leading-none pt-0.5", isSelected || isDependency ? "text-indigo-950" : "text-slate-800")}>
+                                                                            {v.id}
+                                                                        </h5>
+                                                                        <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                                                                            {v.type === 'input' ? 'Statische Eingabe' : 'Formel-Kalkulation'}
+                                                                        </p>
+                                                                    </div>
+                                                                    <div className="flex gap-1.5 shrink-0">
+                                                                        {v.type === 'input' ? (
+                                                                            <Badge className="bg-slate-100 border-slate-200 text-slate-600 text-[8px] py-0 px-1.5 rounded font-black uppercase">INPUT</Badge>
+                                                                        ) : (
+                                                                            <Badge className="bg-indigo-50 border-indigo-100 text-indigo-700 text-[8px] py-0 px-1.5 rounded font-black uppercase">FORMULA</Badge>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Expected Output / Master value */}
+                                                                <div className="bg-slate-50 rounded-xl p-2.5 flex justify-between items-center text-xs border border-slate-100/50">
+                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Erwarteter Wert:</span>
+                                                                    <span className={cn("font-mono font-bold text-slate-800", hasError ? "text-red-500" : "text-slate-800")}>
+                                                                        {String(evalVal)}
+                                                                    </span>
+                                                                </div>
+
+                                                                {/* Small display of expression / default value */}
+                                                                <div className="text-[10px] leading-tight font-medium text-slate-500 truncate font-mono">
+                                                                    {v.type === 'input' ? (
+                                                                        `Standardwert: ${v.defaultValue}`
+                                                                    ) : (
+                                                                        `Formel: ${v.expression}`
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Visual formula dependencies */}
+                                                                {v.type === 'formula' && (
+                                                                    (() => {
+                                                                        const deps = getVariableDependencies(v);
+                                                                        if (deps.length === 0) return null;
+                                                                        return (
+                                                                            <div className="flex flex-wrap gap-1 mt-1 items-center">
+                                                                                <span className="text-[8px] text-slate-400 font-black uppercase tracking-wider mr-1 shrink-0">🔗 Berechnet aus:</span>
+                                                                                {deps.map(d => (
+                                                                                    <Badge key={d} className="bg-indigo-50/50 border border-indigo-100/30 text-indigo-600 text-[8px] py-0 px-1 font-mono rounded-sm select-none font-bold">
+                                                                                        {d}
+                                                                                    </Badge>
+                                                                                ))}
+                                                                            </div>
+                                                                        );
+                                                                    })()
+                                                                )}
+
+                                                                {/* Hover Delete Action Icon */}
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); handleDeleteVariable(v.id); }}
+                                                                    className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white border border-slate-100 shadow-md hover:bg-red-50 hover:text-red-500 hover:border-red-100 p-1.5 rounded-lg text-slate-400"
+                                                                    title="Variable löschen"
+                                                                >
+                                                                    <Trash2 size={12} />
+                                                                </button>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Right part: Simplified Node Inspector */}
+                            <div className="w-80 border-l border-slate-100 bg-white flex flex-col overflow-hidden shrink-0">
+                                {selectedVar ? (
+                                    <div className="flex flex-col h-full overflow-y-auto p-6 space-y-6">
+                                        <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
+                                            <h4 className="text-xs font-black uppercase text-slate-800 font-outfit tracking-tight flex items-center gap-1.5">
+                                                <Layers size={12} className="text-indigo-600" />
+                                                <span>Knoten-Inspektor</span>
+                                            </h4>
+                                            <button 
+                                                onClick={() => handleDeleteVariable(selectedVar.id)}
+                                                className="text-[10px] font-bold text-red-500 hover:text-red-700 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-red-50 rounded-md cursor-pointer"
                                             >
-                                                + Leere Variable hinzufügen
-                                            </Button>
+                                                <Trash2 size={11} />
+                                                Löschen
+                                            </button>
+                                        </div>
+
+                                        {/* Edit ID Field */}
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Variablen-ID</label>
+                                            <Input
+                                                value={selectedVar.id}
+                                                onChange={(e) => handleRenameVariableId(selectedVar.id, e.target.value.trim())}
+                                                className="h-9 font-mono text-xs font-bold"
+                                            />
+                                            <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                                Eindeutiger Name der Variable in Schülerlösungen (z.B. <code className="font-mono bg-slate-50 px-1 py-0.5 rounded text-slate-600">subnetA_hosts</code>).
+                                            </p>
+                                        </div>
+
+                                        {/* Type Selector (Input vs Formula) */}
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Knotentyp</label>
+                                            <select
+                                                value={selectedVar.type}
+                                                onChange={(e) => handleUpdateVariable(selectedVar.id, { type: e.target.value as VariableType })}
+                                                className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer"
+                                            >
+                                                <option value="input">📥 Statische Eingabe (Input)</option>
+                                                <option value="formula">⚙️ Berechnete Formel (Formula)</option>
+                                            </select>
+                                            <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                                {selectedVar.type === 'input' 
+                                                    ? 'Fester Vorgabewert aus der Musterlösung (z.B. Hostanzahl).' 
+                                                    : 'Wert wird dynamisch berechnet, um Folgefehler von vorherigen Schritten zu kompensieren.'}
+                                            </p>
+                                        </div>
+
+                                        {/* Default Value / Expression fields */}
+                                        {selectedVar.type === 'input' ? (
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Musterlösung (Wert)</label>
+                                                <Input
+                                                    value={selectedVar.defaultValue !== undefined ? String(selectedVar.defaultValue) : ''}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        const num = Number(val);
+                                                        handleUpdateVariable(selectedVar.id, { defaultValue: isNaN(num) || val.trim() === '' ? val : num });
+                                                    }}
+                                                    className="h-9 text-xs font-semibold"
+                                                />
+                                                <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                                    Der didaktisch korrekte Wert aus der Musterlösung.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-1">
+                                                <div className="flex justify-between items-center">
+                                                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Berechnungs-Formel</label>
+                                                    {evaluatedContext.errors[selectedVar.id] && (
+                                                        <Badge className="bg-red-50 text-red-600 text-[8px] py-0 px-1 border-red-100 rounded">Error ⚠️</Badge>
+                                                    )}
+                                                </div>
+                                                <textarea
+                                                    value={selectedVar.expression || ''}
+                                                    onChange={(e) => handleUpdateVariable(selectedVar.id, { expression: e.target.value })}
+                                                    rows={3}
+                                                    placeholder="z.B. network.calculateMask(subnetA_hosts)"
+                                                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white leading-relaxed resize-none shadow-3xs"
+                                                />
+                                                <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                                    Berechnungsvorschrift. Verwende Variablen-IDs (z.B. <code className="font-mono bg-slate-50 px-1 py-0.5 rounded text-slate-600">subnetA_hosts</code>).
+                                                </p>
+                                                {evaluatedContext.errors[selectedVar.id] && (
+                                                    <p className="text-[9px] text-red-500 font-semibold font-mono leading-tight pt-1">
+                                                        {evaluatedContext.errors[selectedVar.id]}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Points allocation */}
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Punkte für diesen Schritt</label>
+                                            <Input
+                                                type="number"
+                                                value={selectedVar.maxPoints !== undefined ? selectedVar.maxPoints : 1}
+                                                onChange={(e) => handleUpdateVariable(selectedVar.id, { maxPoints: Number(e.target.value) })}
+                                                className="h-9 text-xs font-semibold"
+                                            />
+                                            <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                                Wie viele Punkte der Schüler für diesen korrekten Wert erhält.
+                                            </p>
+                                        </div>
+
+                                        {/* Collapsible Advanced Settings for Laypeople ease */}
+                                        <div className="border-t border-slate-100 pt-4">
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowAdvancedInspector(!showAdvancedInspector)}
+                                                className="w-full text-left text-[10px] font-black uppercase text-slate-500 hover:text-slate-700 transition-colors flex items-center justify-between py-1 cursor-pointer"
+                                            >
+                                                <span>⚙️ Erweiterte Einstellungen (Toleranzen)</span>
+                                                <span className="font-bold text-xs">{showAdvancedInspector ? "−" : "+"}</span>
+                                            </button>
+
+                                            {showAdvancedInspector && (
+                                                <div className="space-y-4 pt-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                    {/* Validation Type */}
+                                                    <div className="space-y-1">
+                                                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Validierungsart</label>
+                                                        <select
+                                                            value={selectedVar.validationType}
+                                                            onChange={(e) => handleUpdateVariable(selectedVar.id, { validationType: e.target.value as ValidationType })}
+                                                            className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer"
+                                                        >
+                                                            <option value="exact">Exakte Übereinstimmung</option>
+                                                            <option value="tolerance">Abweichung (Toleranz)</option>
+                                                            <option value="contains">Enthält Substring</option>
+                                                        </select>
+                                                        <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                                            {selectedVar.validationType === 'exact' && 'Der Schüler-Wert muss mathematisch exakt übereinstimmen.'}
+                                                            {selectedVar.validationType === 'tolerance' && 'Erlaubt kleine Abweichungen (z.B. Rundungsfehler).'}
+                                                            {selectedVar.validationType === 'contains' && 'Prüft, ob der Schüler-Wert einen bestimmten Text enthält.'}
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Tolerance offset field */}
+                                                    {selectedVar.validationType === 'tolerance' && (
+                                                        <div className="space-y-1">
+                                                            <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Zulässige Toleranz (+/-)</label>
+                                                            <Input
+                                                                type="number"
+                                                                value={selectedVar.tolerance !== undefined ? selectedVar.tolerance : 0}
+                                                                onChange={(e) => handleUpdateVariable(selectedVar.id, { tolerance: Number(e.target.value) })}
+                                                                className="h-9 text-xs font-semibold"
+                                                            />
+                                                            <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                                                Zulässige Rundungs-Abweichung (z.B. <code className="font-mono bg-slate-50 px-1 py-0.5 rounded text-slate-600">0.1</code>).
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Evaluated Value Preview block */}
+                                        <div className="pt-4 border-t border-slate-100 flex flex-col gap-2 shrink-0">
+                                            <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Echtzeit-Berechnung (Musterlösung)</span>
+                                            <div className="bg-indigo-50/30 rounded-xl p-3 border border-indigo-100/20 flex flex-col gap-1 text-xs">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="font-bold text-slate-500">Erwarteter Wert:</span>
+                                                    <span className="font-mono font-bold text-indigo-900 truncate pl-4">
+                                                        {String(evaluatedContext.context[selectedVar.id])}
+                                                    </span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 ) : (
-                                    Object.entries(groupedVariables).map(([groupName, vars]) => (
-                                        <div key={groupName} className="space-y-3">
-                                            <div className="flex justify-between items-center px-1">
-                                                <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider font-outfit flex items-center gap-2">
-                                                    <Layers size={13} className="text-indigo-400" />
-                                                    {groupName}
-                                                </h4>
-                                                <button
-                                                    onClick={() => handleAddVariable(groupName)}
-                                                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-indigo-50 rounded-md"
-                                                >
-                                                    <Plus size={11} /> Variable hinzufügen
-                                                </button>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                {vars.map(v => {
-                                                    const isSelected = selectedVarId === v.id;
-                                                    const isHovered = hoveredVarId === v.id;
-                                                    const isDependency = dependenciesOfHovered.has(v.id);
-                                                    const evalVal = evaluatedContext.context[v.id];
-                                                    const hasError = evaluatedContext.errors[v.id];
-
-                                                    return (
-                                                        <div
-                                                            key={v.id}
-                                                            onClick={() => setSelectedVarId(v.id)}
-                                                            onMouseEnter={() => setHoveredVarId(v.id)}
-                                                            onMouseLeave={() => setHoveredVarId(null)}
-                                                            className={cn(
-                                                                "p-4 rounded-2xl border-2 transition-all flex flex-col gap-3 select-none relative group cursor-pointer text-left",
-                                                                isSelected ? "bg-white border-indigo-500 shadow-md shadow-indigo-100 ring-1 ring-indigo-500/10" :
-                                                                isDependency ? "bg-indigo-50/40 border-indigo-200 shadow-sm" :
-                                                                isHovered ? "bg-white border-slate-300/80 shadow-sm" :
-                                                                "bg-white border-slate-100 hover:border-slate-200"
-                                                            )}
-                                                        >
-                                                            {/* Variable ID Title and Badges */}
-                                                            <div className="flex justify-between items-start gap-3">
-                                                                <div className="space-y-0.5 min-w-0">
-                                                                    <h5 className={cn("text-xs font-black font-mono truncate leading-none pt-0.5", isSelected || isDependency ? "text-indigo-950" : "text-slate-800")}>
-                                                                        {v.id}
-                                                                    </h5>
-                                                                    <p className="text-[10px] text-slate-400 font-medium">
-                                                                        {v.type === 'input' ? 'Statische Eingabe' : 'Formel-Kalkulation'}
-                                                                    </p>
-                                                                </div>
-                                                                <div className="flex gap-1.5 shrink-0">
-                                                                    {v.type === 'input' ? (
-                                                                        <Badge className="bg-slate-100 border-slate-200 text-slate-600 text-[8px] py-0 px-1.5 rounded font-black uppercase">INPUT</Badge>
-                                                                    ) : (
-                                                                        <Badge className="bg-indigo-50 border-indigo-100 text-indigo-700 text-[8px] py-0 px-1.5 rounded font-black uppercase">FORMULA</Badge>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-
-                                                            {/* Expected Output / Master value */}
-                                                            <div className="bg-slate-50 rounded-xl p-2.5 flex justify-between items-center text-xs border border-slate-100/50">
-                                                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Erwarteter Wert:</span>
-                                                                <span className={cn("font-mono font-bold text-slate-800", hasError ? "text-red-500" : "text-slate-800")}>
-                                                                    {String(evalVal)}
-                                                                </span>
-                                                            </div>
-
-                                                            {/* Small display of expression / default value */}
-                                                            <div className="text-[10px] leading-tight font-medium text-slate-500 truncate font-mono">
-                                                                {v.type === 'input' ? (
-                                                                    `Standardwert: ${v.defaultValue}`
-                                                                ) : (
-                                                                    `Expression: ${v.expression}`
-                                                                )}
-                                                            </div>
-
-                                                            {/* Hover Delete Action Icon */}
-                                                            <button
-                                                                onClick={(e) => { e.stopPropagation(); handleDeleteVariable(v.id); }}
-                                                                className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white border border-slate-100 shadow-md hover:bg-red-50 hover:text-red-500 hover:border-red-100 p-1.5 rounded-lg text-slate-400"
-                                                                title="Variable löschen"
-                                                            >
-                                                                <Trash2 size={12} />
-                                                            </button>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    ))
+                                    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-400 gap-2 select-none">
+                                        <HelpCircle size={32} className="stroke-1 opacity-70" />
+                                        <p className="text-xs font-semibold leading-relaxed">
+                                            Wähle links einen Knoten aus, um seine Werte manuell anzupassen.
+                                        </p>
+                                    </div>
                                 )}
                             </div>
-                        ) : (
-                            // --- PLAYGROUND MODE ---
+                        </div>
+                    )}
+
+                    {/* Tab 3: Testing Sandbox */}
+                    {activeTab === 'testing' && (
+                        <div className="flex-1 overflow-y-auto p-8 bg-slate-50/30">
                             <div className="space-y-6 max-w-3xl mx-auto pb-12">
                                 <div className="bg-white border border-slate-100 shadow-glass rounded-3xl p-6 space-y-4">
                                     <div className="flex justify-between items-center pb-3 border-b border-slate-100">
@@ -687,14 +1082,6 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                             <p className="text-[10px] text-slate-400 font-medium">Trage hier fehlerhafte Werte ein, um die Folgefehler-Kompensation zu validieren.</p>
                                         </div>
                                         <div className="flex gap-2">
-                                            <Button 
-                                                variant="ghost" 
-                                                size="sm" 
-                                                onClick={() => setActiveTab('designer')}
-                                                className="h-8 text-[10px] font-bold text-slate-500 hover:bg-slate-100 rounded-lg px-3 mr-2 border border-slate-200"
-                                            >
-                                                ← Zurück zum Designer
-                                            </Button>
                                             <Button 
                                                 variant="outline" 
                                                 size="sm" 
@@ -714,22 +1101,26 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                     </div>
 
                                     {/* Grid of student mock inputs */}
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {(graph?.variables || []).map(v => (
-                                            <div key={v.id} className="flex flex-col gap-1">
-                                                <label className="text-[10px] font-bold text-slate-500 font-mono truncate">{v.id}</label>
-                                                <div className="relative">
-                                                    <input
-                                                        type="text"
-                                                        value={playgroundInputs[v.id] || ''}
-                                                        onChange={(e) => setPlaygroundInputs({ ...playgroundInputs, [v.id]: e.target.value })}
-                                                        placeholder={`Erwartet: ${evaluatedContext.context[v.id]}`}
-                                                        className="w-full text-xs font-semibold font-mono border border-slate-200 rounded-xl px-3 py-2 bg-slate-50/50 focus:bg-white focus:border-indigo-500 focus:ring-0 focus:outline-hidden transition-all text-slate-800"
-                                                    />
+                                    {graph.variables.length === 0 ? (
+                                        <p className="text-xs text-slate-400 py-4 font-medium text-center">Keine Variablen deklariert. Erstelle zuerst einen Graphen.</p>
+                                    ) : (
+                                        <div className="grid grid-cols-2 gap-4">
+                                            {(graph?.variables || []).map(v => (
+                                                <div key={v.id} className="flex flex-col gap-1">
+                                                    <label className="text-[10px] font-bold text-slate-500 font-mono truncate">{v.id}</label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type="text"
+                                                            value={playgroundInputs[v.id] || ''}
+                                                            onChange={(e) => setPlaygroundInputs({ ...playgroundInputs, [v.id]: e.target.value })}
+                                                            placeholder={`Erwartet: ${evaluatedContext.context[v.id]}`}
+                                                            className="w-full text-xs font-semibold font-mono border border-slate-200 rounded-xl px-3 py-2 bg-slate-50/50 focus:bg-white focus:border-indigo-500 focus:ring-0 focus:outline-hidden transition-all text-slate-800"
+                                                        />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Playground simulation results */}
@@ -788,262 +1179,37 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                     </div>
                                 )}
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
-                    {/* Right Panel: Tabs for Inspector vs AI Assistant (Designer tab only) */}
-                    {activeTab === 'designer' && (
-                        <div className={cn(
-                            "border-l border-slate-100 bg-slate-50/30 flex flex-col overflow-hidden shrink-0 transition-all duration-300 ease-in-out",
-                            activeRightTab === 'assistant' ? "w-[450px]" : "w-80"
-                        )}>
-                            {/* Tab Switcher */}
-                            <div className="flex border-b border-slate-100 bg-slate-50/50 p-1 shrink-0">
-                                <button
-                                    onClick={() => setActiveRightTab('assistant')}
-                                    className={cn(
-                                        "flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5",
-                                        activeRightTab === 'assistant' 
-                                            ? "bg-white text-indigo-600 shadow-xs border border-slate-100" 
-                                            : "text-slate-500 hover:text-slate-700"
-                                    )}
-                                >
-                                    <Sparkles size={11} className={cn(activeRightTab === 'assistant' && "text-indigo-600")} />
-                                    <span>KI-Assistent 🪄</span>
-                                </button>
-                                <button
-                                    onClick={() => setActiveRightTab('inspector')}
-                                    className={cn(
-                                        "flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-1.5",
-                                        activeRightTab === 'inspector' 
-                                            ? "bg-white text-indigo-600 shadow-xs border border-slate-100" 
-                                            : "text-slate-500 hover:text-slate-700"
-                                    )}
-                                >
-                                    <Layers size={11} className={cn(activeRightTab === 'inspector' && "text-indigo-600")} />
-                                    <span>Knoten-Inspektor</span>
-                                </button>
+                    {/* Tab 4: JSON Editor */}
+                    {activeTab === 'json' && (
+                        <div className="flex-grow flex flex-col overflow-hidden bg-slate-900 border-l border-slate-100 animate-in slide-in-from-left-4 duration-300">
+                            <div className="px-6 py-2 border-b border-slate-800 bg-slate-950 flex justify-between items-center shrink-0">
+                                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 font-mono">raw_graph_config.json</span>
+                                {jsonError ? (
+                                    <span className="text-[9px] font-bold text-red-400 flex items-center gap-1">
+                                        <AlertCircle size={10} /> Syntax-Fehler!
+                                    </span>
+                                ) : (
+                                    <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-1">
+                                        <Check size={10} /> Validiert
+                                    </span>
+                                )}
                             </div>
-
-                            {/* Tab Content 1: AI Assistant */}
-                            {activeRightTab === 'assistant' && (
-                                <div className="flex-1 flex flex-col overflow-hidden p-6 space-y-4">
-                                    <div className="space-y-1.5 shrink-0">
-                                        <h4 className="text-xs font-black uppercase text-slate-800 font-outfit tracking-tight flex items-center gap-2">
-                                            <Sparkles size={13} className="text-indigo-600" />
-                                            Interaktiver KI-Assistent
-                                        </h4>
-                                        <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
-                                            Steuere die PANG-Engine per Chat. Passe Formeln, Toleranzen oder Punktgewichtungen flexibel mit natürlicher Sprache an.
-                                        </p>
-                                    </div>
-
-                                    {/* Chat History Panel */}
-                                    <div className="flex-1 bg-slate-100/50 rounded-2xl border border-slate-200/40 p-4 overflow-y-auto space-y-3 custom-scrollbar flex flex-col">
-                                        {chatHistory.length === 0 ? (
-                                            <div className="flex-1 flex flex-col items-center justify-center text-center text-slate-400 gap-2 select-none my-auto">
-                                                <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-indigo-500 mb-1">
-                                                    <MessageSquare size={16} />
-                                                </div>
-                                                <p className="text-[10px] font-bold text-slate-600">Keine Chat-Historie</p>
-                                                <p className="text-[9px] leading-relaxed font-medium px-2">
-                                                    Gib unten eine Anweisung ein, z.B. <em>"Setze die Toleranz von subnetA_mask auf 0.1"</em>.
-                                                </p>
-                                            </div>
-                                        ) : (
-                                            chatHistory.map((msg, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    className={cn(
-                                                        "p-3 rounded-2xl text-[10px] leading-relaxed max-w-[90%] font-medium transition-all duration-200",
-                                                        msg.role === 'user'
-                                                            ? "bg-indigo-600 text-white rounded-tr-none ml-auto shadow-xs"
-                                                            : msg.hasError
-                                                                ? "bg-rose-50 border border-rose-100 text-rose-700 rounded-tl-none font-mono"
-                                                                : "bg-white border border-slate-200/60 text-slate-700 rounded-tl-none shadow-3xs"
-                                                    )}
-                                                >
-                                                    {msg.text}
-                                                </div>
-                                            ))
-                                        )}
-                                        {isRefining && (
-                                            <div className="bg-slate-200/50 text-slate-500 border border-slate-200/40 p-3 rounded-2xl rounded-tl-none text-[10px] font-bold leading-relaxed max-w-[80%] flex items-center gap-2 animate-pulse">
-                                                <RefreshCw size={11} className="animate-spin text-indigo-500 shrink-0" />
-                                                <span>Passe Graph an...</span>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* Chat Input Bar */}
-                                    <div className="flex items-end gap-2 shrink-0 pt-2 border-t border-slate-100">
-                                        <textarea
-                                            value={chatInput}
-                                            disabled={isRefining}
-                                            onChange={(e) => setChatInput(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && !e.shiftKey) {
-                                                    e.preventDefault();
-                                                    if (chatInput.trim()) {
-                                                        handleRefineGraph();
-                                                    }
-                                                }
-                                            }}
-                                            rows={1}
-                                            placeholder="z.B. Erhöhe Toleranzen..."
-                                            className="flex-grow min-h-[38px] max-h-[120px] px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 bg-white placeholder-slate-400 disabled:opacity-60 transition-all duration-200 resize-none custom-scrollbar leading-relaxed"
-                                        />
-                                        <button
-                                            onClick={handleRefineGraph}
-                                            disabled={isRefining || !chatInput.trim()}
-                                            className="h-9 w-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center transition-all duration-200 shadow-sm shrink-0 mb-0.5"
-                                        >
-                                            <Send size={13} className="relative -left-0.5" />
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Tab Content 2: Node Inspector */}
-                            {activeRightTab === 'inspector' && (
-                                <div className="flex-1 flex flex-col overflow-hidden">
-                                    {selectedVar ? (
-                                        <div className="flex flex-col h-full overflow-y-auto p-6 space-y-6">
-                                            <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
-                                                <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider font-outfit">Node-Inspektor</h4>
-                                                <button 
-                                                    onClick={() => handleDeleteVariable(selectedVar.id)}
-                                                    className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-red-50 rounded-md"
-                                                >
-                                                    <Trash2 size={12} />
-                                                    Löschen
-                                                </button>
-                                            </div>
-
-                                            {/* Edit ID Field */}
-                                            <div className="space-y-1">
-                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Variablen-ID</label>
-                                                <Input
-                                                    value={selectedVar.id}
-                                                    onChange={(e) => handleRenameVariableId(selectedVar.id, e.target.value.trim())}
-                                                    className="h-9 font-mono text-xs font-bold"
-                                                />
-                                            </div>
-
-                                            {/* Type Selector (Input vs Formula) */}
-                                            <div className="space-y-1">
-                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Knotentyp</label>
-                                                <select
-                                                    value={selectedVar.type}
-                                                    onChange={(e) => handleUpdateVariable(selectedVar.id, { type: e.target.value as VariableType })}
-                                                    className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer"
-                                                >
-                                                    <option value="input">📥 Statische Eingabe (Input)</option>
-                                                    <option value="formula">⚙️ Berechnete Formel (Formula)</option>
-                                                </select>
-                                            </div>
-
-                                            {/* Default Value / Expression fields */}
-                                            {selectedVar.type === 'input' ? (
-                                                <div className="space-y-1">
-                                                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Standardwert (Musterlösung)</label>
-                                                    <Input
-                                                        value={selectedVar.defaultValue !== undefined ? String(selectedVar.defaultValue) : ''}
-                                                        onChange={(e) => {
-                                                            const val = e.target.value;
-                                                            // Parse as number if numeric
-                                                            const num = Number(val);
-                                                            handleUpdateVariable(selectedVar.id, { defaultValue: isNaN(num) || val.trim() === '' ? val : num });
-                                                        }}
-                                                        className="h-9 text-xs font-semibold"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div className="space-y-1">
-                                                    <div className="flex justify-between items-center">
-                                                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Formel-Ausdruck</label>
-                                                        {evaluatedContext.errors[selectedVar.id] && (
-                                                            <Badge className="bg-red-50 text-red-600 text-[8px] py-0 px-1 border-red-100 rounded">Error ⚠️</Badge>
-                                                        )}
-                                                    </div>
-                                                    <textarea
-                                                        value={selectedVar.expression || ''}
-                                                        onChange={(e) => handleUpdateVariable(selectedVar.id, { expression: e.target.value })}
-                                                        rows={3}
-                                                        placeholder="e.g. network.calculateMask(subnetA_hosts)"
-                                                        className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white leading-relaxed resize-none"
-                                                    />
-                                                    {evaluatedContext.errors[selectedVar.id] && (
-                                                        <p className="text-[9px] text-red-500 font-semibold font-mono leading-tight pt-1">
-                                                            {evaluatedContext.errors[selectedVar.id]}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            )}
-
-                                            {/* Validation Type */}
-                                            <div className="space-y-1">
-                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Validierungsart</label>
-                                                <select
-                                                    value={selectedVar.validationType}
-                                                    onChange={(e) => handleUpdateVariable(selectedVar.id, { validationType: e.target.value as ValidationType })}
-                                                    className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer"
-                                                >
-                                                    <option value="exact">Exakte Übereinstimmung</option>
-                                                    <option value="tolerance">Abweichung (Toleranz)</option>
-                                                    <option value="contains">Enthält Substring</option>
-                                                </select>
-                                            </div>
-
-                                            {/* Tolerance offset field */}
-                                            {selectedVar.validationType === 'tolerance' && (
-                                                <div className="space-y-1">
-                                                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Zulässige Toleranz (+/-)</label>
-                                                    <Input
-                                                        type="number"
-                                                        value={selectedVar.tolerance !== undefined ? selectedVar.tolerance : 0}
-                                                        onChange={(e) => handleUpdateVariable(selectedVar.id, { tolerance: Number(e.target.value) })}
-                                                        className="h-9 text-xs font-semibold"
-                                                    />
-                                                </div>
-                                            )}
-
-                                            {/* Points allocation */}
-                                            <div className="space-y-1">
-                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Punkte für diesen Schritt</label>
-                                                <Input
-                                                    type="number"
-                                                    value={selectedVar.maxPoints !== undefined ? selectedVar.maxPoints : 1}
-                                                    onChange={(e) => handleUpdateVariable(selectedVar.id, { maxPoints: Number(e.target.value) })}
-                                                    className="h-9 text-xs font-semibold"
-                                                />
-                                            </div>
-
-                                            {/* Evaluated Value Preview block */}
-                                            <div className="pt-4 border-t border-slate-100 flex flex-col gap-2 shrink-0">
-                                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Echtzeit-Berechnung</span>
-                                                <div className="bg-slate-100/50 rounded-xl p-3 border border-slate-200/50 flex flex-col gap-1 text-xs">
-                                                    <div className="flex justify-between items-center">
-                                                        <span className="font-bold text-slate-500">Erwarteter Wert:</span>
-                                                        <span className="font-mono font-bold text-slate-800">
-                                                            {String(evaluatedContext.context[selectedVar.id])}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-400 gap-2 select-none">
-                                            <HelpCircle size={32} className="stroke-1 opacity-70" />
-                                            <p className="text-xs font-semibold leading-relaxed">
-                                                Wähle eine Variable aus dem Graph, um ihre Details hier anzupassen.
-                                            </p>
-                                        </div>
-                                    )}
+                            <textarea
+                                value={jsonText}
+                                onChange={(e) => handleJsonChange(e.target.value)}
+                                className="flex-grow p-6 bg-slate-950 text-slate-300 font-mono text-xs outline-hidden border-none resize-none overflow-y-auto leading-relaxed"
+                            />
+                            {jsonError && (
+                                <div className="p-3 bg-red-950/40 border-t border-red-900/40 text-[10px] font-bold text-red-300 leading-relaxed font-mono">
+                                    {jsonError}
                                 </div>
                             )}
                         </div>
                     )}
+
                 </div>
 
                 {/* Footer */}

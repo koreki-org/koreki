@@ -28,7 +28,7 @@ interface ModelSolutionCardProps {
     isLocked?: boolean;
     settings?: AppSettings;
     appMode?: 'PURE' | 'STANDARD' | 'TRIAL';
-    onGenerateGraph?: (taskIndex: number, taskText: string) => Promise<any>;
+    onGenerateGraph?: (taskIndex: number, taskText: string, userNotes?: string) => Promise<any>;
 }
 
 export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
@@ -581,7 +581,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             }
                             onTasksChange?.(updatedTasks);
                         }}
-                        onRegenerateGraph={async (discipline) => {
+                        onRegenerateGraph={async (discipline, userNotes) => {
                             if (onGenerateGraph && content && content.trim().length > 10) {
                                 setGeneratingGraphForTask(editingGraphTaskIdx);
                                 try {
@@ -592,7 +592,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                     };
                                     onTasksChange?.(prepTasks);
 
-                                    const generatedGraph = await onGenerateGraph(editingGraphTaskIdx, content);
+                                    const generatedGraph = await onGenerateGraph(editingGraphTaskIdx, content, userNotes);
                                     if (generatedGraph) {
                                         const updatedTasks = [...tasksLayout];
                                         updatedTasks[editingGraphTaskIdx] = {

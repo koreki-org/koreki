@@ -10,6 +10,7 @@ import { z } from 'zod';
 const GenerateGraphSchema = z.object({
     taskText: z.string().min(1, 'Aufgabentext darf nicht leer sein.'),
     discipline: z.string().optional(),
+    userNotes: z.string().optional(),
     settings: z.object({
         provider: z.string().optional(),
         mistralKey: z.string().optional(),
@@ -35,7 +36,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             return res.status(400).json({ error: validation.error.issues[0].message });
         }
 
-        const { taskText, discipline, settings } = validation.data;
+        const { taskText, discipline, userNotes, settings } = validation.data;
 
         // Provider routing — same pattern as ai-correct.ts
         const useOpenAI = settings?.provider === 'openai-compatible';
@@ -47,7 +48,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
             rawResult = await executeMistralRequest(
                 'generate-graph',
-                { taskText, discipline },
+                { taskText, discipline, userNotes },
                 apiKey,
                 {
                     model: settings?.model,
@@ -66,7 +67,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
             rawResult = await executeOpenAIRequest(
                 'generate-graph',
-                { taskText, discipline },
+                { taskText, discipline, userNotes },
                 baseUrl,
                 apiKey,
                 {
