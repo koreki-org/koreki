@@ -525,46 +525,46 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                     {activeTab === 'ai' && (
                         <div className="flex-1 flex overflow-hidden min-h-0 bg-slate-50/30">
                             {graph.variables.length === 0 ? (
-                                <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center">
-                                    <div className="bg-white border border-slate-100 shadow-xl rounded-[2.5rem] p-10 max-w-2xl w-full flex flex-col gap-6 my-auto animate-in fade-in zoom-in-95 duration-500">
-                                        <div className="flex items-center gap-4 border-b border-slate-100 pb-5">
-                                            <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100 shrink-0">
-                                                <Sparkles size={22} className="text-indigo-600 animate-pulse" />
+                                <div className="flex-1 overflow-y-auto p-6 flex flex-col items-center">
+                                    <div className="bg-white border border-slate-100 shadow-xl rounded-[2rem] p-6 max-w-xl w-full flex flex-col gap-4 my-auto animate-in fade-in zoom-in-95 duration-500">
+                                        <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+                                            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100 shrink-0">
+                                                <Sparkles size={18} className="text-indigo-600 animate-pulse" />
                                             </div>
                                             <div>
-                                                <h4 className="font-black text-slate-800 text-lg font-outfit leading-snug">Noch kein Bewertungs-Graph vorhanden</h4>
-                                                <p className="text-xs text-slate-400 leading-normal font-medium">
+                                                <h4 className="font-black text-slate-800 text-sm font-outfit leading-none">Noch kein Bewertungs-Graph vorhanden</h4>
+                                                <p className="text-[10px] text-slate-400 mt-1 leading-normal font-medium">
                                                     Generiere einen intelligenten PANG-Rechengraph mit Folgefehlerkompensation aus Deiner Musterlösung.
                                                 </p>
                                             </div>
                                         </div>
 
-                                        <div className="space-y-4">
+                                        <div className="space-y-3">
                                             <div className="space-y-1">
-                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">KI-Generierungs-Engine:</label>
+                                                <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider">KI-Generierungs-Engine:</label>
                                                 <select
                                                     value={selectedPlugin}
                                                     onChange={(e) => setSelectedPlugin(e.target.value)}
-                                                    className="w-full h-10 px-3.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200"
+                                                    className="w-full h-9 px-3 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200"
                                                 >
                                                     <option value="computer-science-networking">Netzwerk-Plugin (VLSM)</option>
                                                     <option value="computer-science-storage">Speicher-Plugin (RAID)</option>
                                                 </select>
                                             </div>
 
-                                            <div className="space-y-2">
-                                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Spezifische Anmerkungen für die KI (z.B. Toleranzen, Formeln, alternative Wege - optional):</label>
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Spezifische Anmerkungen für die KI (optional):</label>
                                                 
                                                 {/* Suggestion Chips */}
-                                                <div className="flex flex-wrap gap-2 pt-1 pb-2">
+                                                <div className="flex flex-wrap gap-1.5 pt-0.5 pb-1">
                                                     {noteSuggestions.map((s, idx) => (
                                                         <button
                                                             key={idx}
                                                             type="button"
                                                             onClick={() => handleAddSuggestion(s)}
-                                                            className="text-[9px] font-extrabold bg-indigo-50/60 hover:bg-indigo-100 text-indigo-700 border border-indigo-100/50 rounded-full px-2.5 py-1 transition-all duration-200 active:scale-95 flex items-center gap-1 select-none cursor-pointer"
+                                                            className="text-[8px] font-extrabold bg-indigo-50/50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100/40 rounded-full px-2 py-0.5 transition-all duration-200 active:scale-95 flex items-center gap-0.5 select-none cursor-pointer"
                                                         >
-                                                            <Plus size={9} className="stroke-[3]" />
+                                                            <Plus size={8} className="stroke-[3]" />
                                                             <span>{s}</span>
                                                         </button>
                                                     ))}
@@ -574,12 +574,12 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     value={initialUserNotes}
                                                     onChange={(e) => setInitialUserNotes(e.target.value)}
                                                     placeholder="z.B. Erlaube Subnetz-Rotationen, setze Toleranz für alle Masken auf 0.1, deklariere subnetA_broadcast als Formel..."
-                                                    className="w-full p-4 h-32 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 bg-slate-50/30 placeholder-slate-400 transition-all duration-200 resize-none leading-relaxed shadow-inner"
+                                                    className="w-full p-3 h-24 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 bg-slate-50/30 placeholder-slate-400 transition-all duration-200 resize-none leading-relaxed shadow-inner"
                                                 />
                                             </div>
                                         </div>
 
-                                        <div className="flex gap-4 border-t border-slate-100 pt-5">
+                                        <div className="flex gap-3 border-t border-slate-100 pt-3">
                                             <Button
                                                 onClick={() => {
                                                     // Quick add blank variable
@@ -587,7 +587,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     setActiveTab('editor');
                                                 }}
                                                 variant="outline"
-                                                className="h-11 rounded-xl text-xs font-bold border-slate-200 text-slate-600 hover:bg-slate-50 transition-all flex-1"
+                                                className="h-9 rounded-xl text-xs font-bold border-slate-200 text-slate-600 hover:bg-slate-50 transition-all flex-1"
                                             >
                                                 + Manuell erstellen
                                             </Button>
@@ -603,14 +603,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                             setActiveTab('editor');
                                                         }
                                                     }}
-                                                    className="h-11 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-black shadow-lg shadow-indigo-100/60 transition-all active:scale-[0.98] text-xs gap-2 flex-1 flex items-center justify-center"
+                                                    className="h-9 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-black shadow-lg shadow-indigo-100/60 transition-all active:scale-[0.98] text-xs gap-1.5 flex-1 flex items-center justify-center"
                                                 >
                                                     {isGenerating ? (
-                                                        <RefreshCw size={14} className="animate-spin" />
+                                                        <RefreshCw size={12} className="animate-spin" />
                                                     ) : (
-                                                        <Sparkles size={14} />
+                                                        <Sparkles size={12} />
                                                     )}
-                                                    <span>{isGenerating ? "Erstelle Graph..." : "🪄 Graph mit KI generieren"}</span>
+                                                    <span>{isGenerating ? "Erstelle..." : "🪄 Graph generieren"}</span>
                                                 </Button>
                                             )}
                                         </div>
