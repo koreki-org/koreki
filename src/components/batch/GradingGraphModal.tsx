@@ -85,7 +85,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     const [playgroundResult, setPlaygroundResult] = useState<any>(null);
     const [activeTab, setActiveTab] = useState<'ai' | 'editor' | 'testing' | 'json'>(() => {
         const hasGraph = initialGraph && Array.isArray(initialGraph.variables) && initialGraph.variables.length > 0;
-        return hasGraph ? 'editor' : 'ai';
+        return hasGraph ? 'testing' : 'ai';
     });
     const [chatInput, setChatInput] = useState('');
     const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'assistant'; text: string; hasError?: boolean }[]>([]);
@@ -414,19 +414,19 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         </button>
                         <button 
                             type="button"
-                            onClick={() => setActiveTab('editor')}
-                            className={cn("px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5", activeTab === 'editor' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
-                        >
-                            <Layers size={12} className={cn(activeTab === 'editor' && "text-indigo-600")} />
-                            Knoten-Editor 📊
-                        </button>
-                        <button 
-                            type="button"
                             onClick={() => { setActiveTab('testing'); handleRunPlayground(); }}
                             className={cn("px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5", activeTab === 'testing' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
                         >
                             <Eye size={12} className={cn(activeTab === 'testing' && "text-indigo-600")} />
                             Graph testen 🧪
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={() => setActiveTab('editor')}
+                            className={cn("px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5", activeTab === 'editor' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                        >
+                            <Layers size={12} className={cn(activeTab === 'editor' && "text-indigo-600")} />
+                            Knoten-Editor 📊
                         </button>
                         <button 
                             type="button"
@@ -1065,38 +1065,40 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                     {/* Tab 3: Testing Sandbox */}
                     {activeTab === 'testing' && (
-                        <div className="flex-1 overflow-y-auto p-8 bg-slate-50/30">
-                            <div className="space-y-6 max-w-3xl mx-auto pb-12">
-                                <div className="bg-white border border-slate-100 shadow-glass rounded-3xl p-6 space-y-4">
-                                    <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                                        <div>
-                                            <h4 className="text-sm font-black text-slate-900 font-outfit">Graph testen &amp; Diagnose</h4>
-                                            <p className="text-[10px] text-slate-400 font-medium">Trage hier fehlerhafte Werte ein, um die Folgefehler-Kompensation zu validieren.</p>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Button 
-                                                variant="outline" 
-                                                size="sm" 
-                                                onClick={handleFillPerfectPlayground}
-                                                className="h-8 text-[10px] font-bold border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 rounded-lg px-3"
-                                            >
-                                                Musterlösung ausfüllen
-                                            </Button>
-                                            <Button 
-                                                size="sm" 
-                                                onClick={handleRunPlayground}
-                                                className="h-8 text-[10px] font-black bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 shadow-md shadow-indigo-100"
-                                            >
-                                                Berechnen
-                                            </Button>
-                                        </div>
+                        <div className="flex-1 flex overflow-hidden min-h-0 bg-slate-50/30 p-8 gap-8 animate-in fade-in duration-300">
+                            {/* Left Panel: Inputs (45% width) */}
+                            <div className="w-[45%] flex flex-col min-h-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] overflow-hidden">
+                                {/* Sticky Header with Actions */}
+                                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
+                                    <div>
+                                        <h4 className="text-xs font-black uppercase text-slate-800 font-outfit">Schüler-Eingaben</h4>
+                                        <p className="text-[9px] text-slate-400 font-medium font-inter">Simulationswerte zum Testen</p>
                                     </div>
+                                    <div className="flex gap-2">
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            onClick={handleFillPerfectPlayground}
+                                            className="h-8 text-[9px] font-bold border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 rounded-lg px-2.5"
+                                        >
+                                            Musterlösung
+                                        </Button>
+                                        <Button 
+                                            size="sm" 
+                                            onClick={handleRunPlayground}
+                                            className="h-8 text-[9px] font-black bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3.5 shadow-md shadow-indigo-100"
+                                        >
+                                            Berechnen
+                                        </Button>
+                                    </div>
+                                </div>
 
-                                    {/* Grid of student mock inputs */}
+                                {/* Scrollable Inputs Grid */}
+                                <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                                     {graph.variables.length === 0 ? (
                                         <p className="text-xs text-slate-400 py-4 font-medium text-center">Keine Variablen deklariert. Erstelle zuerst einen Graphen.</p>
                                     ) : (
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-3.5">
                                             {(graph?.variables || []).map(v => (
                                                 <div key={v.id} className="flex flex-col gap-1">
                                                     <label className="text-[10px] font-bold text-slate-500 font-mono truncate">{v.id}</label>
@@ -1114,19 +1116,25 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         </div>
                                     )}
                                 </div>
+                            </div>
 
-                                {/* Playground simulation results */}
-                                {playgroundResult && (
-                                    <div className="bg-white border border-slate-100 shadow-glass rounded-3xl p-6 space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                        <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest font-outfit">Simulations-Ergebnis</span>
+                            {/* Right Panel: Simulation Results (55% width) */}
+                            <div className="w-[55%] flex flex-col min-h-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] overflow-hidden">
+                                {playgroundResult ? (
+                                    <div className="flex flex-col h-full overflow-hidden">
+                                        {/* Sticky Score Header */}
+                                        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
+                                            <div>
+                                                <h4 className="text-xs font-black uppercase text-slate-800 font-outfit">Simulations-Ergebnis</h4>
+                                                <p className="text-[9px] text-slate-400 font-medium font-inter">Bewertung des Schülerversuchs</p>
+                                            </div>
                                             <Badge className="bg-indigo-50 border-indigo-100 text-indigo-700 font-black px-3 py-1 text-xs rounded-full">
                                                 Gesamtpunkte: {playgroundResult.totalPoints} / {playgroundResult.maxPoints} P
                                             </Badge>
                                         </div>
 
-                                        {/* Individual step results list */}
-                                        <div className="space-y-2.5">
+                                        {/* Scrollable Individual Step Results */}
+                                        <div className="flex-1 overflow-y-auto p-6 space-y-2.5 custom-scrollbar">
                                             {playgroundResult.stepResults.map((step: any) => (
                                                 <div 
                                                     key={step.variableId} 
@@ -1137,11 +1145,11 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                         "bg-red-50/50 border-red-100 text-red-800"
                                                     )}
                                                 >
-                                                    <div className="space-y-0.5">
+                                                    <div className="space-y-0.5 min-w-0">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="font-mono font-bold">{step.variableId}</span>
+                                                            <span className="font-mono font-bold truncate">{step.variableId}</span>
                                                             <Badge className={cn(
-                                                                "text-[8px] py-0 px-1.5 rounded font-black uppercase border",
+                                                                "text-[8px] py-0 px-1.5 rounded font-black uppercase border shrink-0",
                                                                 step.status === 'correct' ? "bg-emerald-100 border-emerald-200 text-emerald-700" :
                                                                 step.status === 'consecutive_correct' ? "bg-blue-100 border-blue-200 text-blue-700" :
                                                                 "bg-red-100 border-red-200 text-red-700"
@@ -1167,6 +1175,18 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     </div>
                                                 </div>
                                             ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400 gap-4 select-none">
+                                        <div className="w-16 h-16 bg-indigo-50 border border-indigo-100 rounded-3xl flex items-center justify-center text-indigo-500 mb-2">
+                                            <Eye size={28} className="animate-pulse" />
+                                        </div>
+                                        <div className="max-w-xs space-y-1.5">
+                                            <h4 className="font-extrabold text-slate-800 text-sm font-outfit leading-none mb-1">Bereit zum Testen 🧪</h4>
+                                            <p className="text-[11px] text-slate-400 leading-relaxed font-medium font-inter">
+                                                Fülle die Musterlösung aus, verändere Werte absichtlich, um Fehler zu simulieren, und klicke auf <strong>Berechnen</strong>, um die Folgefehler-Diagnose live zu prüfen.
+                                            </p>
                                         </div>
                                     </div>
                                 )}
