@@ -525,8 +525,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                     {activeTab === 'ai' && (
                         <div className="flex-1 flex overflow-hidden min-h-0 bg-slate-50/30">
                             {graph.variables.length === 0 ? (
-                                <div className="flex-1 overflow-y-auto p-12 flex flex-col items-center justify-center">
-                                    <div className="bg-white border border-slate-100 shadow-xl rounded-[2.5rem] p-10 max-w-2xl w-full flex flex-col gap-6 animate-in fade-in zoom-in-95 duration-500">
+                                <div className="flex-1 overflow-y-auto p-8 flex flex-col items-center">
+                                    <div className="bg-white border border-slate-100 shadow-xl rounded-[2.5rem] p-10 max-w-2xl w-full flex flex-col gap-6 my-auto animate-in fade-in zoom-in-95 duration-500">
                                         <div className="flex items-center gap-4 border-b border-slate-100 pb-5">
                                             <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center border border-indigo-100 shrink-0">
                                                 <Sparkles size={22} className="text-indigo-600 animate-pulse" />
