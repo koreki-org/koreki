@@ -63,18 +63,18 @@ const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({
             className={cn(
                 "relative rounded-xl px-0 md:px-3.5 py-1.5 h-9 text-xs font-bold shadow-sm flex items-center justify-center md:justify-start gap-1.5 transition-all w-9 h-9 md:w-[210px] overflow-visible shrink-0",
                 isActive 
-                    ? "bg-primary hover:bg-primary/90 text-primary-foreground border-primary shadow-md shadow-primary/10" 
-                    : "bg-indigo-50/50 hover:bg-indigo-100/50 text-indigo-600 border-indigo-100 hover:border-indigo-200"
+                    ? "bg-indigo-50/80 hover:bg-indigo-100/60 text-indigo-700 border-indigo-200 shadow-sm" 
+                    : "bg-slate-50/30 hover:bg-slate-100/50 text-slate-600 border-slate-200/60 hover:border-slate-300"
             )}
             title={title}
         >
-            <span className={cn("shrink-0 transition-colors", isActive ? "text-white" : "text-indigo-500")}>
+            <span className={cn("shrink-0 transition-colors", isActive ? "text-indigo-600" : "text-slate-400")}>
                 {icon}
             </span>
-            <span className={cn("hidden md:inline font-semibold transition-colors", isActive ? "text-white/80" : "text-indigo-400")}>
+            <span className={cn("hidden md:inline font-medium transition-colors", isActive ? "text-slate-500" : "text-slate-400")}>
                 {label}:
             </span>
-            <span className={cn("hidden md:inline truncate max-w-[110px] transition-colors", isActive ? "text-white" : "text-indigo-600")}>
+            <span className={cn("hidden md:inline truncate max-w-[110px] transition-colors font-bold", isActive ? "text-indigo-700" : "text-slate-600")}>
                 {value}
             </span>
             
