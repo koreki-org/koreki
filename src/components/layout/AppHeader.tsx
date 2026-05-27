@@ -6,6 +6,7 @@ import { HeaderBadges } from './HeaderBadges';
 import { useGlobalStatus } from '../../hooks/useGlobalStatus';
 import { isLocalInstance, isKeycloakAuth } from '../../lib/env-context';
 import { User } from '../../types';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
     userData: User | null;
@@ -38,24 +39,52 @@ interface ProfileConfigButtonProps {
     value: string;
     onClick: () => void;
     title: string;
+    isActive?: boolean;
 }
 
 /**
  * Labeled Configuration Pill Button
  * 💎 Shows both the category label and the active dynamic value with strict text truncation.
+ * In mobile view, collapses to a square icon button with a pulse indicator for active states.
  */
-const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({ icon, label, value, onClick, title }) => {
+const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({ 
+    icon, 
+    label, 
+    value, 
+    onClick, 
+    title,
+    isActive = false 
+}) => {
     return (
         <Button
             variant="outline"
             size="sm"
             onClick={onClick}
-            className="bg-indigo-50/50 hover:bg-indigo-100/50 text-indigo-600 border-indigo-100 rounded-xl px-3.5 py-1.5 h-9 text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all w-full sm:w-auto"
+            className={cn(
+                "relative rounded-xl px-0 md:px-3.5 py-1.5 h-9 text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all w-9 h-9 md:w-auto overflow-visible shrink-0",
+                isActive 
+                    ? "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600 shadow-indigo-100" 
+                    : "bg-indigo-50/50 hover:bg-indigo-100/50 text-indigo-600 border-indigo-100 hover:border-indigo-200"
+            )}
             title={title}
         >
-            <span className="shrink-0 text-indigo-500">{icon}</span>
-            <span className="text-indigo-400 font-semibold">{label}:</span>
-            <span className="truncate max-w-[125px] sm:max-w-[160px]">{value}</span>
+            <span className={cn("shrink-0 transition-colors", isActive ? "text-white" : "text-indigo-500")}>
+                {icon}
+            </span>
+            <span className={cn("hidden md:inline font-semibold transition-colors", isActive ? "text-indigo-200" : "text-indigo-400")}>
+                {label}:
+            </span>
+            <span className={cn("hidden md:inline truncate max-w-[125px] sm:max-w-[160px] transition-colors", isActive ? "text-white" : "text-indigo-600")}>
+                {value}
+            </span>
+            
+            {/* Pulsing indicator dot in the top-right corner on mobile if active */}
+            {isActive && (
+                <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 md:hidden">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-white"></span>
+                </span>
+            )}
         </Button>
     );
 };
@@ -156,13 +185,14 @@ const Header: React.FC<HeaderProps> = ({
 
                     {/* Classic Labeled Configuration Pill Row - strictly horizontal on desktop */}
                     {(isLocalInstance() || userData?.canEditPrompts) && (
-                        <div className="flex flex-row flex-wrap lg:flex-nowrap items-center gap-2 w-full lg:w-auto">
+                        <div className="grid grid-cols-4 md:flex md:flex-row items-center gap-1.5 sm:gap-2 w-full lg:w-auto">
                             <ProfileConfigButton 
                                 icon={<GraduationCap size={14} />} 
                                 label="Expertise"
                                 value={activeProfileName || 'Standard'} 
                                 onClick={onShowPrompts!} 
                                 title="Expert Center: Fachprofile & Prompts verwalten" 
+                                isActive={!!activeProfileName && activeProfileName !== 'Standard'}
                             />
                             
                             <ProfileConfigButton 
@@ -171,6 +201,7 @@ const Header: React.FC<HeaderProps> = ({
                                 value={activeSkillsProfileName || 'MINT Standard'} 
                                 onClick={onShowSkills!} 
                                 title="Skills Center: Modulare AI-Kompetenzen konfigurieren" 
+                                isActive={!!activeSkillsProfileName && activeSkillsProfileName !== 'MINT Standard'}
                             />
                             
                             <ProfileConfigButton 
@@ -179,6 +210,7 @@ const Header: React.FC<HeaderProps> = ({
                                 value={activeGradingMemoryName || 'Standard-Korrektur'} 
                                 onClick={onShowGradingMemory!} 
                                 title="GradingMemory™: Korrektur-Erfahrung kalibrieren" 
+                                isActive={!!activeGradingMemoryName && activeGradingMemoryName !== 'Standard-Korrektur'}
                             />
                             
                             <ProfileConfigButton 
@@ -187,6 +219,7 @@ const Header: React.FC<HeaderProps> = ({
                                 value={activeAiProfileName || 'Standard'} 
                                 onClick={onShowAiParams!} 
                                 title="Intelligenz: AI-Leistungskraft steuern" 
+                                isActive={!!activeAiProfileName && activeAiProfileName !== 'Standard'}
                             />
                         </div>
                     )}
