@@ -1,6 +1,7 @@
 import { Task, GradingMemoryCase } from '../../types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
+import { shouldDisablePoints } from './ai-orchestrator';
 
 // Centralized Default Templates
 import correctionSystemDefault from '../../prompts/core/default/correction/system.md';
@@ -119,14 +120,21 @@ export function buildCorrectionPrompt(
     if (tasksLayout && Array.isArray(tasksLayout) && tasksLayout.length > 0) {
         const layoutText = tasksLayout.map(t => `- ${t.name} (Max: ${t.maxPoints} P)`).join('\n');
         system += `\n\nACHTUNG: Du MUSST dich strikt an diese Aufgabenliste halten.\n\nStruktur:\n${layoutText}`;
-
         // Dynamic Injection of mathematical-deterministic Graph Runner Vorevaluierung (PANG Architecture)
         let vorevaluierungBlock = '';
         tasksLayout.forEach(t => {
             if (t.gradingResult) {
+                const disablePointsActive = shouldDisablePoints(t.taskType, t.gradingGraph);
+
                 vorevaluierungBlock += `\n\n### MATHEMATISCH-DETERMINISTISCHE VOREVALUIERUNG FÜR "${t.name}":\n`;
                 vorevaluierungBlock += `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!\n`;
-                vorevaluierungBlock += `- ZU VERGEBENDE PUNKTE: ${t.gradingResult.totalPoints} von max ${t.gradingResult.maxPoints} Punkten.\n`;
+                
+                if (disablePointsActive) {
+                    vorevaluierungBlock += `- EMPFOHLENE PUNKTE DER ENGINE: ${t.gradingResult.totalPoints} von max ${t.gradingResult.maxPoints} Punkten (Vorschlag basierend auf exaktem mathematischem Abgleich).\n`;
+                } else {
+                    vorevaluierungBlock += `- ZU VERGEBENDE PUNKTE: ${t.gradingResult.totalPoints} von max ${t.gradingResult.maxPoints} Punkten.\n`;
+                }
+
                 vorevaluierungBlock += `- DETAIL-ERGEBNISSE DER EINZELNEN SCHRITTE:\n`;
                 t.gradingResult.stepResults.forEach((step: any) => {
                     const statusStr = step.status === 'correct' ? 'Korrekt' : 
@@ -134,7 +142,15 @@ export function buildCorrectionPrompt(
                                     'Fehlerhaft';
                     vorevaluierungBlock += `  * Schritt/Variable "${step.variableId}": Schülerwert: "${step.studentValue !== undefined ? step.studentValue : 'nicht angegeben'}", Erwartet: "${step.expectedValue}", Status: ${statusStr}. ${step.note}\n`;
                 });
-                vorevaluierungBlock += `\nWICHTIG: Du musst exakt ${t.gradingResult.totalPoints} Punkte für diese Aufgabe vergeben (in dem Feld "pointsObtained" für dieses Objekt). Formuliere die Begründung (correctionNotes) und das Feedback genau auf Basis dieser Schritte und hebe insbesondere hervor, wenn Folgefehler kulant unbepunktet blieben (Folgeschritt-Kompensation).`;
+
+                if (disablePointsActive) {
+                    vorevaluierungBlock += `\nWICHTIG: Halte dich bei der Vergabe der Punkte streng und ohne Abweichung an die expliziten Punktvorgaben pro Teilschritt aus der Musterlösung des Lehrers (z. B. Formel = 1P, Einsetzen = 1P, Ergebnis = 1P).
+Nutze bei der Bewertung, ob der Schüler die Kriterien für den jeweiligen Teilschritt erfüllt hat, die folgende Unterstützung:
+* Für den Formel- und Einsetz-Schritt: Nutze deine semantische Toleranz. Wenn der Schüler die Formel inhaltlich richtig aufgeschrieben hat (z. B. "P=U x I" oder "P=U*I" statt "P = U * I"), bewerte diesen Schritt als erfüllt und vergib die Punkte.
+* Für den Ergebnis-Schritt: Nutze die mathematische Vorevaluierung der PANG-Engine im Hintergrund. Meldet PANG, dass das Ergebnis mathematisch korrekt oder folgerichtig (Folgefehler-kompensiert) berechnet wurde (z. B. Status "Folgefehler-Kompensiert"), bewerte diesen Schritt als erfüllt und vergib die dafür vorgesehenen Punkte.`;
+                } else {
+                    vorevaluierungBlock += `\nWICHTIG: Du musst exakt ${t.gradingResult.totalPoints} Punkte für diese Aufgabe vergeben (in dem Feld "pointsObtained" für dieses Objekt). Formuliere die Begründung (correctionNotes) und das Feedback genau auf Basis dieser Schritte und hebe insbesondere hervor, wenn Folgefehler kulant unbepunktet blieben (Folgeschritt-Kompensation).`;
+                }
             }
         });
         if (vorevaluierungBlock) {

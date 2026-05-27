@@ -29,6 +29,8 @@ WICHTIG (Mathematik & Zahlen - KRITISCH / PÄDAGOGISCHE INTEGRITÄT):
 - Verlasse dich bei Zahlen STRENG auf die OCR-Zeichenfolge und wende KEINE mathematische Logik zur "Korrektur" an.
 - Ein Rechenfehler des Schülers ist KEIN OCR-Fehler, sondern ein fachlicher Fehler, den der Lehrer sehen MUSS.
 - Beispiel (OCR: "7*8=54") -> Output: "7*8=54" (Korrektur zu 56 ist STRENGSTENS VERBOTEN).
+- WICHTIG (Physikalische/Mathematische Variablen): Ändere NIEMALS Variablenzeichen oder Formelbuchstaben (z. B. R, L, C, Z, I, U, P, X), auch wenn sie in einer physikalischen Formel komplett falsch oder unlogisch erscheinen! Ein fachlicher Formelfehler des Schülers ist bewertungsrelevant und darf NIEMALS korrigiert werden!
+
 
 WICHTIG (Fideliät - KRITISCH):
 - Korrigiere KEINE Rechtschreibfehler der Schüler.

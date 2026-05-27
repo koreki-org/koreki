@@ -47,7 +47,9 @@ export function formatPluginFeedback(
   const hasStructuredVariables = gradingResult.stepResults.some((s) => s.variableId.includes('_'));
 
   // If any check confirms a structured 2D task, format as a Generic Table!
-  if (usesNetworkPlugin || hasSubnetVariables || isVlsmSkill || isNetworkDiscipline || isRaidSkill || hasStructuredVariables) {
+  // BUT: Do not format as a VLSM table if the discipline is math, physics, or general.
+  const isGeneralMathOrPhysics = discipline === 'math' || discipline === 'physics' || discipline === 'general' || discipline === 'general-science';
+  if (!isGeneralMathOrPhysics && (usesNetworkPlugin || hasSubnetVariables || isVlsmSkill || isNetworkDiscipline || isRaidSkill || hasStructuredVariables)) {
     return formatVlsmTableFeedback(gradingResult, gradingGraph);
   }
 

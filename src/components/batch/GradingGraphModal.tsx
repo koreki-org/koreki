@@ -67,7 +67,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     });
     const [selectedVarId, setSelectedVarId] = useState<string | null>(null);
     const [hoveredVarId, setHoveredVarId] = useState<string | null>(null);
-    const [selectedPlugin, setSelectedPlugin] = useState<string>('computer-science-networking');
+    const [selectedPlugin, setSelectedPlugin] = useState<string>('math');
     
     // Mount state for SSR safe Portal mounting
     const [mounted, setMounted] = useState(false);
@@ -132,6 +132,16 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
         });
         return groups;
     }, [graph?.variables]);
+
+    const isPointsDisabled = useMemo(() => {
+        if (graph && typeof graph.disablePoints === 'boolean') {
+            return graph.disablePoints;
+        }
+        const discipline = graph?.discipline;
+        const isRigid = discipline === 'vlsm' || discipline === 'skill-calc-vlsm' || discipline === 'skill-calc-raid' ||
+                        taskType === 'vlsm' || taskType === 'skill-calc-vlsm' || taskType === 'skill-calc-raid';
+        return !isRigid;
+    }, [graph?.disablePoints, graph?.discipline, taskType]);
 
     // Check which variables are dependencies of the hovered/selected variable
     const dependenciesOfHovered = useMemo(() => {
@@ -447,73 +457,75 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                 </div>
 
                 {/* Subheader/Actions Panel Toolbar */}
-                <div className="px-8 py-3 bg-slate-50/20 border-b border-slate-100/50 flex flex-wrap items-center gap-6 shrink-0">
-                    {/* 1. Assign Existing Graph Skill from Skill Center */}
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Bestehender Skill:</span>
-                        <select
-                            value={taskType || 'default'}
-                            onChange={(e) => onEngineChange?.(e.target.value)}
-                            className="h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200"
-                        >
-                            <option value="default">-- Kein Graph-Skill aktiv (Standard) --</option>
-                            {Object.entries(customSkills || {})
-                                .filter(([_, s]) => s && (s.isGraphBased || s.gradingGraph))
-                                .map(([id, skill]) => (
-                                    <option key={id} value={id}>
-                                        {skill.name || id}
-                                    </option>
-                                ))}
-                        </select>
-                    </div>
-
-                    {/* Divider line */}
-                    <div className="h-6 w-px bg-slate-200"></div>
-
-                    {/* 3. Name & Save Custom Skill (Template) */}
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Skill Name:</span>
-                        <Input 
-                            value={skillName}
-                            onChange={(e) => setSkillName(e.target.value)}
-                            placeholder="z.B. Subnetz-Berechnung"
-                            className="h-8 w-44 rounded-xl border border-slate-200 text-xs font-bold px-2.5 focus:border-indigo-500 bg-white"
-                        />
-                        {(onSaveCustomSkill || onSave) && (
-                            <Button
-                                onClick={() => {
-                                    if (!skillName.trim()) {
-                                        alert("Bitte gib einen Namen für den Skill ein.");
-                                        return;
-                                    }
-                                    if (onSaveCustomSkill) {
-                                        onSaveCustomSkill(skillName.trim(), graph);
-                                    } else {
-                                        onSave(graph);
-                                        alert(`Änderungen am Graphen wurden in den Skill "${skillName.trim()}" übernommen. Klicke gleich im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern!`);
-                                    }
-                                }}
-                                className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-sm transition-all text-xs gap-1 px-3 flex items-center shrink-0"
-                                title="Als wiederverwendbaren Custom Skill im Skill Center speichern bzw. übernehmen"
+                <div className="px-8 py-3 bg-slate-50/20 border-b border-slate-100/50 flex items-center justify-between gap-6 shrink-0">
+                    <div className="flex items-center gap-6">
+                        {/* 1. Assign Existing Graph Skill from Skill Center */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Bestehender Skill:</span>
+                            <select
+                                value={taskType || 'default'}
+                                onChange={(e) => onEngineChange?.(e.target.value)}
+                                className="h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200"
                             >
-                                💾 Speichern
-                            </Button>
-                        )}
-                        {onDeleteGraph && initialGraph && (
-                            <Button
-                                variant="outline"
-                                onClick={() => {
-                                    if (confirm("Möchtest du den Bewertungs-Graphen wirklich unwiderruflich löschen?")) {
-                                        onDeleteGraph();
-                                    }
-                                }}
-                                className="h-8 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all text-xs font-bold gap-1 px-3 flex items-center shrink-0"
-                                title="Bewertungs-Graph löschen und Aufgabe zurücksetzen"
-                            >
-                                <Trash2 size={13} />
-                                <span>Löschen</span>
-                            </Button>
-                        )}
+                                <option value="default">-- Kein Graph-Skill aktiv (Standard) --</option>
+                                {Object.entries(customSkills || {})
+                                    .filter(([_, s]) => s && (s.isGraphBased || s.gradingGraph))
+                                    .map(([id, skill]) => (
+                                        <option key={id} value={id}>
+                                            {skill.name || id}
+                                        </option>
+                                    ))}
+                            </select>
+                        </div>
+
+                        {/* Divider line */}
+                        <div className="h-6 w-px bg-slate-200"></div>
+
+                        {/* 3. Name & Save Custom Skill (Template) */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Skill Name:</span>
+                            <Input 
+                                value={skillName}
+                                onChange={(e) => setSkillName(e.target.value)}
+                                placeholder="z.B. Subnetz-Berechnung"
+                                className="h-8 w-44 rounded-xl border border-slate-200 text-xs font-bold px-2.5 focus:border-indigo-500 bg-white"
+                            />
+                            {(onSaveCustomSkill || onSave) && (
+                                <Button
+                                    onClick={() => {
+                                        if (!skillName.trim()) {
+                                            alert("Bitte gib einen Namen für den Skill ein.");
+                                            return;
+                                        }
+                                        if (onSaveCustomSkill) {
+                                            onSaveCustomSkill(skillName.trim(), graph);
+                                        } else {
+                                            onSave(graph);
+                                            alert(`Änderungen am Graphen wurden in den Skill "${skillName.trim()}" übernommen. Klicke gleich im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern!`);
+                                        }
+                                    }}
+                                    className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-sm transition-all text-xs gap-1 px-3 flex items-center shrink-0"
+                                    title="Als wiederverwendbaren Custom Skill im Skill Center speichern bzw. übernehmen"
+                                >
+                                    💾 Speichern
+                                </Button>
+                            )}
+                            {onDeleteGraph && initialGraph && (
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        if (confirm("Möchtest du den Bewertungs-Graphen wirklich unwiderruflich löschen?")) {
+                                            onDeleteGraph();
+                                        }
+                                    }}
+                                    className="h-8 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all text-xs font-bold gap-1 px-3 flex items-center shrink-0"
+                                    title="Bewertungs-Graph löschen und Aufgabe zurücksetzen"
+                                >
+                                    <Trash2 size={13} />
+                                    <span>Löschen</span>
+                                </Button>
+                            )}
+                        </div>
                     </div>
 
                     {/* Hint text / spacer */}
@@ -533,7 +545,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                 <div className="flex-1 flex min-h-0 overflow-hidden bg-slate-50/10">
                                     {/* Left Panel: Pure Chat Layout */}
                                     <div className="flex-grow flex flex-col overflow-hidden min-h-0 bg-white">
-                                        <div className="px-8 py-3.5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0 gap-4">
+                                        <div className="px-8 py-3 bg-slate-50/50 border-b border-slate-100 flex items-center shrink-0 gap-6">
                                             <div className="flex items-center gap-2">
                                                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">KI-Generierungs-Engine:</span>
                                                 <select
@@ -541,14 +553,39 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     onChange={(e) => setSelectedPlugin(e.target.value)}
                                                     className="h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 font-inter"
                                                 >
+                                                    <option value="math">Mathematik-Plugin (Standard-Rechner)</option>
                                                     <option value="computer-science-networking">Netzwerk-Plugin (VLSM)</option>
-                                                    <option value="computer-science-storage">Speicher-Plugin (RAID)</option>
+                                                </select>
+                                            </div>
+
+                                            {/* Divider */}
+                                            <div className="h-5 w-px bg-slate-200"></div>
+
+                                            {/* Bewertung Dropdown */}
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Bewertung:</span>
+                                                <select
+                                                    value={isPointsDisabled ? 'hybrid' : 'strict'}
+                                                    onChange={(e) => {
+                                                        setGraph({
+                                                            ...graph,
+                                                            disablePoints: e.target.value === 'hybrid'
+                                                        });
+                                                    }}
+                                                    className="h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 font-inter"
+                                                    title={isPointsDisabled 
+                                                        ? "Hybrid-Grading aktiv: PANG prüft nur die mathematische Korrektheit. Die finale Punktevergabe erfolgt didaktisch flexibel durch das LLM." 
+                                                        : "Strenge Punktevergabe aktiv: PANG bestimmt die Punkte absolut starr und mathematisch exakt."
+                                                    }
+                                                >
+                                                    <option value="hybrid">✨ Hybrid-Grading (Didaktisch tolerant)</option>
+                                                    <option value="strict">🔒 Strenge Punkte (Mathematisch starr)</option>
                                                 </select>
                                             </div>
                                         </div>
 
                                         {/* Greeting area */}
-                                        <div className="flex-1 bg-slate-50/50 p-8 overflow-y-auto flex flex-col space-y-4 custom-scrollbar">
+                                        <div className="flex-1 bg-slate-50/50 p-6 overflow-y-auto flex flex-col space-y-4 custom-scrollbar">
                                             <div className="p-4 bg-white border border-slate-200/60 text-slate-700 rounded-2xl rounded-tl-none shadow-3xs text-[11px] leading-relaxed font-medium max-w-[85%] animate-in fade-in slide-in-from-left-2 duration-300">
                                                 <p className="font-extrabold text-slate-900 mb-1 flex items-center gap-1.5">
                                                     <Sparkles size={12} className="text-indigo-600 animate-pulse" />
@@ -559,7 +596,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         </div>
 
                                         {/* Input Box at the bottom */}
-                                        <div className="p-8 border-t border-slate-100 flex flex-col gap-4 bg-white shrink-0">
+                                        <div className="px-8 py-5 border-t border-slate-100 flex flex-col gap-4 bg-white shrink-0">
                                             <textarea
                                                 value={initialUserNotes}
                                                 onChange={(e) => setInitialUserNotes(e.target.value)}
@@ -753,6 +790,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                             </p>
                                         </div>
                                     </div>
+
 
                                     {Object.keys(groupedVariables).length === 0 ? (
                                         <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] p-12 text-center max-w-xl mx-auto flex flex-col items-center justify-center gap-4 shadow-lg shadow-slate-100/50 mt-8 animate-in fade-in zoom-in-95 duration-500">
@@ -980,16 +1018,22 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                                         {/* Points allocation */}
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Punkte für diesen Schritt</label>
+                                            <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider text-left block">Punkte für diesen Schritt</label>
                                             <Input
                                                 type="number"
                                                 value={selectedVar.maxPoints !== undefined ? selectedVar.maxPoints : 1}
                                                 onChange={(e) => handleUpdateVariable(selectedVar.id, { maxPoints: Number(e.target.value) })}
                                                 className="h-9 text-xs font-semibold"
                                             />
-                                            <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                            <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5 text-left">
                                                 Wie viele Punkte der Schüler für diesen korrekten Wert erhält.
                                             </p>
+                                            {isPointsDisabled && (
+                                                <p className="text-[9px] text-amber-700 font-semibold leading-relaxed mt-1.5 bg-amber-50 border border-amber-100 rounded-lg p-2 flex items-start gap-1 text-left">
+                                                    <span>⚠️</span>
+                                                    <span>Hybrid-Grading aktiv: Diese Punkte dienen als relative Gewichtung und mathematische Empfehlung. Die finale Vergabe erfolgt didaktisch flexibel durch das LLM.</span>
+                                                </p>
+                                            )}
                                         </div>
 
                                         {/* Collapsible Advanced Settings for Laypeople ease */}
@@ -1129,13 +1173,19 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                     <div className="flex flex-col h-full overflow-hidden">
                                         {/* Sticky Score Header */}
                                         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
-                                            <div>
+                                            <div className="text-left">
                                                 <h4 className="text-xs font-black uppercase text-slate-800 font-outfit">Simulations-Ergebnis</h4>
                                                 <p className="text-[9px] text-slate-400 font-medium font-inter">Bewertung des Schülerversuchs</p>
                                             </div>
-                                            <Badge className="bg-indigo-50 border-indigo-100 text-indigo-700 font-black px-3 py-1 text-xs rounded-full">
-                                                Gesamtpunkte: {playgroundResult.totalPoints} / {playgroundResult.maxPoints} P
-                                            </Badge>
+                                            {isPointsDisabled ? (
+                                                <Badge className="bg-indigo-50 border-indigo-100 text-indigo-700 font-black px-3 py-1 text-xs rounded-full">
+                                                    Variablen: {playgroundResult.stepResults.filter((s: any) => s.status === 'correct' || s.status === 'consecutive_correct').length} / {playgroundResult.stepResults.length} korrekt
+                                                </Badge>
+                                            ) : (
+                                                <Badge className="bg-indigo-50 border-indigo-100 text-indigo-700 font-black px-3 py-1 text-xs rounded-full">
+                                                    Gesamtpunkte: {playgroundResult.totalPoints} / {playgroundResult.maxPoints} P
+                                                </Badge>
+                                            )}
                                         </div>
 
                                         {/* Scrollable Individual Step Results */}
@@ -1174,9 +1224,11 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                             <p className="text-[10px] opacity-60">Schüler-Wert</p>
                                                             <p className="font-mono font-bold">{step.studentValue !== undefined ? String(step.studentValue) : 'Fehlt'}</p>
                                                         </div>
-                                                        <Badge variant="outline" className="border-transparent font-black px-2.5 py-1 rounded-full text-xs">
-                                                            +{step.points} P
-                                                        </Badge>
+                                                        {!isPointsDisabled && (
+                                                            <Badge variant="outline" className="border-transparent font-black px-2.5 py-1 rounded-full text-xs">
+                                                                +{step.points} P
+                                                            </Badge>
+                                                        )}
                                                     </div>
                                                 </div>
                                             ))}

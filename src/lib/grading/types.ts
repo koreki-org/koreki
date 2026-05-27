@@ -21,6 +21,7 @@ export interface GradingGraph {
   discipline: string;
   variables: VariableDefinition[];
   equivalenceGroups?: EquivalenceGroup[];
+  disablePoints?: boolean;
 }
 
 export type StepResultStatus = 'correct' | 'primary_error' | 'consecutive_correct';

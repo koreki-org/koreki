@@ -1,6 +1,6 @@
 import type { NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
-import { parseCorrectionResult, extractStudentAnswersWithLLM } from '@/lib/ai/ai-orchestrator';
+import { parseCorrectionResult, extractStudentAnswersWithLLM, shouldDisablePoints } from '@/lib/ai/ai-orchestrator';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { CorrectionSchema } from '@/lib/validation';
@@ -54,8 +54,12 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         const studentValues = await extractStudentAnswersWithLLM(studentText, task.gradingGraph, 'STANDARD', settings as any, task.taskType);
                         const gradingResult = GraphRunner.grade(task.gradingGraph, studentValues);
                         task.gradingResult = gradingResult;
-                        task.pointsObtained = gradingResult.totalPoints;
-                        task.maxPoints = gradingResult.maxPoints;
+
+                        const disablePointsActive = shouldDisablePoints(task.taskType, task.gradingGraph);
+                        if (!disablePointsActive) {
+                            task.pointsObtained = gradingResult.totalPoints;
+                            task.maxPoints = gradingResult.maxPoints;
+                        }
                     } catch (err: any) {
                         logger.error('Error in local GraphRunner execution', { taskName: task.name, error: err.message });
                     }
@@ -123,7 +127,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             
             if (!apiKey) throw new Error('Mittwald/OpenAI API-Key fehlt.');
  
-            analysis = await executeOpenAIRequest(
+             analysis = await executeOpenAIRequest(
                 'correction',
                 { modelSolution, studentText, tasksLayout, expertProfileName },
                 baseUrl,
@@ -131,6 +135,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 { 
                     model,
                     enableThinking: settings.enableThinking,
+                    temperature: settings.temperature,
+                    topP: settings.topP,
+                    maxTokens: settings.maxTokens,
                     customPrompt: settings.correctionPrompt,
                     gradingMemory,
                     activeSkillIds: settings.activeSkillIds,

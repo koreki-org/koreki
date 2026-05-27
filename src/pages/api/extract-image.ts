@@ -107,7 +107,13 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     { buffer: b.toString('base64'), mimeType },
                     baseUrl,
                     apiKey,
-                    { model }
+                    { 
+                        model,
+                        temperature: settings?.visionTemperature,
+                        topP: settings?.visionTopP,
+                        maxTokens: settings?.visionMaxTokens,
+                        presencePenalty: settings?.visionPresencePenalty
+                    }
                 );
 
                 return {

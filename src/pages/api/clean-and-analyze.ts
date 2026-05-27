@@ -37,11 +37,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
             if (!apiKey) throw new Error('Mistral API-Key fehlt.');
 
-            result = await executeMistralRequest(
+             result = await executeMistralRequest(
                 'clean-and-analyze',
                 { modelSolution },
                 apiKey,
-                { isScan }
+                { isScan, model: settings.model }
             );
         } else if (settings.provider === 'openai-compatible') {
             const baseUrl = settings.openaiUrl || process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || 'https://llm.aihosting.mittwald.de/v1';

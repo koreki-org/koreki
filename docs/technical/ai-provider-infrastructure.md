@@ -3,6 +3,7 @@ title: "Unified AI Provider Infrastructure & Reasoning Mode"
 description: "Dokumentation der provider-agnostischen KI-Architektur, des Qwen 3.6 'Thinking Mode' und der tier-spezifischen Konfigurationslogik."
 author: "@principal_architect"
 date: "2026-04-30"
+last_updated: "2026-05-27"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -52,7 +53,7 @@ In der **Community Edition** kann die KI-Infrastruktur auf zwei Ebenen konfiguri
 
 ## 3. Qwen 3.6 & Deep Thinking Mode 🧠
 
-Koreki optimiert die Inferenz-Parameter automatisch, sobald der **Thinking Mode** aktiviert wird, um die Reasoning-Qualität von Qwen 3.6 zu maximieren:
+Koreki optimiert die Inferenz-Parameter automatisch, sobald der **Thinking Mode** (gesteuert über `enableThinking` im KI-Intelligenz-Modal) aktiviert wird, um die Reasoning-Qualität von Qwen 3.6 zu maximieren:
 
 1.  **Temperature Hardening:** 
     *   Standard (Thinking): `1.0`
@@ -62,7 +63,26 @@ Koreki optimiert die Inferenz-Parameter automatisch, sobald der **Thinking Mode*
 
 ---
 
-## 4. Desktop Hardening: Der Generic AI Proxy 🛡️
+## 4. Isomorphe Präzisions-Sperre & Mistral Medium 3.5 (System-Lock) 🏛️🔒
+
+Um die absolute Integrität von Schülerabgaben zu schützen und unerwünschte „mentale Reparaturen“ (das semantische Glattbügeln von Schülerfehlern durch die KI) zu verhindern, verfügt die Pipeline über einen strikten **System-Lock** für Vorbereitungs- und Mapping-Schritte (`clean-and-map`, `clean-and-analyze`):
+
+### Präzisions-Sperre (System-Lock)
+* **Wirkung:** Sobald eine systeminterne Extraktions- oder Mapping-Aktion ausgeführt wird, werden benutzerdefinierte Profiltemperaturen ( z. B. eine hohe Kreativitätstemperatur von `0.7` für freies Feedback) **ignoriert**.
+* **Parameter:** Diese Aktionen werden im Provider-Layer fest auf `temperature: 0.0` und `top_p: 0.1` fixiert. Dies erzwingt ein vollständig deterministisches Verhalten (Greedy Decoding) ohne jegliche Halluzination.
+* **Prompt-Absicherung:** Alle `analyze-and-map` System-Prompts besitzen eine strikte Negativ-Klausel, die das Verändern von fachlichen Variablen/Formelzeichen (wie $Z$ statt $I$) explizit verbietet, um bewertungsrelevante Fehler unverfälscht abzubilden.
+
+### Mistral Medium Standard (`mistral-medium-2604`)
+* Für Vorbereitungsaufgaben (`clean-and-map` und `clean-and-analyze`) nutzt Koreki im Mistral-Modus standardmäßig das mathematisch optimierte **Mistral Medium** (`mistral-medium-2604`).
+* Dies stellt eine signifikant höhere Genauigkeit und Prompt-Treue sicher als kleinere Modelle (*Small*), vermeidet jedoch den unnötigen Latenz- und Kosten-Overhead von Flaggschiff-Modellen (*Large*).
+
+### Integrierte Vision- & Thinking-Governance
+* **Vision-Steuerung:** Die benutzerspezifischen Parameter aus dem Intelligenz-Modal (`settings.visionTemperature`, `settings.visionTopP`, etc.) werden nun über alle Schnittstellen (einschließlich des OCR-Endpunkts `extract-image.ts`) getreu berücksichtigt.
+* **Thinking-Governance:** Wird `enableThinking` im KI-Intelligenz-Modal deaktiviert, deaktiviert das System die Reasoning-Engine (`enable_thinking: false`) global für alle nachgelagerten Aufrufe, um maximale Kontrolle zu bieten.
+
+---
+
+## 5. Desktop Hardening: Der Generic AI Proxy 🛡️
 
 Aufgrund der **Same-Origin-Policy (SOP)** im Browser können Custom-KI-Endpunkte oft nicht direkt aus der Webview aufgerufen werden (CORS-Fehler).
 
@@ -72,11 +92,11 @@ Aufgrund der **Same-Origin-Policy (SOP)** im Browser können Custom-KI-Endpunkte
 
 ---
 
-## 5. Konfiguration (Operations)
+## 6. Konfiguration (Operations)
 
 ### SaaS Environment Variables
 Für die globale Bereitstellung von Mittwald/Qwen im SaaS-Modus sind folgende Variablen erforderlich:
 *   `MITTWALD_API_KEY`: Globaler Schlüssel für den Standard-Reasoning-Provider.
 
 ---
-*Dokument ID: KOREKI-TECH-012 | Revision: 1.0* 🏛️
+*Dokument ID: KOREKI-TECH-012 | Revision: 1.1* 🏛️

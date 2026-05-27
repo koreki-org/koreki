@@ -3,6 +3,7 @@ import {
     MISTRAL_UTILS_MODEL, 
     MISTRAL_CHATS_MODEL, 
     MISTRAL_OCR_MODEL,
+    MISTRAL_MEDIUM_MODEL,
     fetchWithRetry 
 } from './constants';
 import { 
@@ -59,8 +60,8 @@ export async function executeMistralRequest(
     } else if (!options.model) {
         // Fallback for text actions if no model is provided
         if (action === 'clean-and-analyze' || action === 'clean-and-map') {
-            // Upgrade to Large for complex scans (verbatim integrity), otherwise stay on Small
-            model = options.isScan ? MISTRAL_CHATS_MODEL : MISTRAL_UTILS_MODEL; 
+            // Default to Mistral Medium (mistral-medium-2604) for optimal precision/verbatim integrity without being oversized
+            model = MISTRAL_MEDIUM_MODEL; 
         } else if (action === 'second-opinion') {
             model = MISTRAL_CORE_MODEL; // mistral-large-latest (Mistral Large) as preferred by the user
         }
@@ -137,8 +138,13 @@ export async function executeMistralRequest(
     // 3. API Execution (VRE Parameter Hardening)
     // Rule: temp: 0 already implies top_p: 1.0 (greedy). 
     // Mistral rejects requests where both are manipulated in a way that conflicts.
-    const targetTemp = options.temperature ?? promptObj.options?.temperature ?? 0;
-    const targetTopP = options.topP ?? promptObj.options?.topP ?? 1.0;
+    const isSystemAction = ['clean-and-map', 'clean-and-analyze'].includes(action);
+    const targetTemp = isSystemAction 
+        ? (promptObj.options?.temperature ?? 0.0) 
+        : (options.temperature ?? promptObj.options?.temperature ?? 0);
+    const targetTopP = isSystemAction 
+        ? (promptObj.options?.topP ?? 0.1) 
+        : (options.topP ?? promptObj.options?.topP ?? 1.0);
 
     const url = 'https://api.mistral.ai/v1/chat/completions';
     const body: any = {

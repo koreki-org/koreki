@@ -12,6 +12,26 @@ import { SKILL_REGISTRY } from '@/prompts/skills';
 import { splitSkillSnippet } from './prompt-library';
 
 /**
+ * Helper to determine whether deterministic PANG engine point awarding should be disabled (default true for custom tasks).
+ * Enforces strict PANG scoring for system VLSM/RAID skills, unless explicitly overridden in the graph metadata.
+ */
+export function shouldDisablePoints(taskType?: string, gradingGraph?: any): boolean {
+    if (gradingGraph && typeof gradingGraph.disablePoints === 'boolean') {
+        return gradingGraph.disablePoints;
+    }
+    
+    if (
+        taskType === 'vlsm' || 
+        taskType === 'skill-calc-vlsm' || 
+        taskType === 'skill-calc-raid'
+    ) {
+        return false;
+    }
+    
+    return true;
+}
+
+/**
  * Maps the AI raw JSON results back to the Koreki Task structure and calculates totals.
  */
 export function parseCorrectionResult(analysis: any, tasksLayout?: Task[] | null, studentText?: string): any {
@@ -30,14 +50,25 @@ export function parseCorrectionResult(analysis: any, tasksLayout?: Task[] | null
 
             // --- DETECT DETERMINISTIC GRAPH-BASED TASKS & EVALUATE LOCALLY (PANG Architecture) ---
             if (layoutTask.gradingResult) {
+                const disablePointsActive = shouldDisablePoints(layoutTask.taskType, layoutTask.gradingGraph);
+
                 const isServerResponse = aiTask && (
                     aiTask.feedback?.includes('[⚙️ PANG Engine - Mathematischer Graph-Abgleich]') || 
                     aiTask.feedback?.includes('[⚙️ AGS Engine - Mathematischer VLSM Abgleich]')
                 );
 
-                const enginePoints = isServerResponse 
-                    ? Number(aiTask.pointsObtained ?? layoutTask.gradingResult.totalPoints ?? 0)
-                    : Number(layoutTask.gradingResult.totalPoints ?? layoutTask.pointsObtained ?? 0);
+                let enginePoints: number;
+                if (disablePointsActive) {
+                    // LLM decides (Hybrid): Prefer LLM points if available, fallback to PANG.
+                    enginePoints = aiTask && typeof aiTask.pointsObtained === 'number'
+                        ? Number(aiTask.pointsObtained)
+                        : Number(layoutTask.gradingResult.totalPoints ?? 0);
+                } else {
+                    // Rigid grading: PANG points are absolute.
+                    enginePoints = isServerResponse 
+                        ? Number(aiTask.pointsObtained ?? layoutTask.gradingResult.totalPoints ?? 0)
+                        : Number(layoutTask.gradingResult.totalPoints ?? layoutTask.pointsObtained ?? 0);
+                }
 
                 totalObtained += enginePoints;
 
@@ -394,8 +425,12 @@ export async function performAIRequest(
                     const studentValues = await extractStudentAnswersWithLLM(studentText, task.gradingGraph, appMode, settings, task.taskType);
                     const gradingResult = GraphRunner.grade(task.gradingGraph, studentValues);
                     task.gradingResult = gradingResult;
-                    task.pointsObtained = gradingResult.totalPoints;
-                    task.maxPoints = gradingResult.maxPoints;
+
+                    const disablePointsActive = shouldDisablePoints(task.taskType, task.gradingGraph);
+                    if (!disablePointsActive) {
+                        task.pointsObtained = gradingResult.totalPoints;
+                        task.maxPoints = gradingResult.maxPoints;
+                    }
                 } catch (err: any) {
                     console.error('Error in client-side GraphRunner execution', err);
                 }

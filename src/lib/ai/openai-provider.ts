@@ -104,17 +104,29 @@ export async function executeOpenAIRequest(
     }
 
     // 2. Parameter Hardening (Qwen 3.6 Recommendations)
-    const isThinking = options.enableThinking ?? true;
+    // Thinking mode is only useful for reasoning/pedagogical tasks (correction, second-opinion, graph generation/refinement)
+    // For extraction/cleaning tasks (clean-and-map, clean-and-analyze, variable-extraction, vision, anonymize),
+    // thinking mode is unnecessary, slower, and can lead to unwanted "corrections" or hallucinations.
+    const reasoningActions: AIAction[] = ['correction', 'second-opinion', 'generate-graph', 'refine-graph'];
+    const isThinking = options.enableThinking ?? (reasoningActions.includes(action) ? true : false);
     
-    // Industrial Default Mapping:
-    // If Thinking: temp 1.0 (general) or 0.6 (coding)
-    // If Non-Thinking: temp 0.2 (Koreki default precision)
-    let targetTemp = options.temperature ?? (isThinking ? 1.0 : 0.2);
-    if (action === 'correction' && options.temperature === undefined) {
+    // System-level cleaning/mapping actions where we want to enforce prompt-defined temperature (0.0) 
+    // to guarantee verbatim/structural integrity and prevent any user-configured correction temperature from inducing hallucinations.
+    const isSystemAction = ['clean-and-map', 'clean-and-analyze'].includes(action);
+
+    // Respect the prompt's defined temperature/topP if not overridden by explicit options
+    let targetTemp = isSystemAction 
+        ? (promptObj.options?.temperature ?? 0.0)
+        : (options.temperature ?? promptObj.options?.temperature ?? (isThinking ? 1.0 : 0.2));
+        
+    if (action === 'correction' && options.temperature === undefined && promptObj.options?.temperature === undefined) {
         targetTemp = isThinking ? 0.6 : 0.2;
     }
 
-    const targetTopP = options.topP ?? (isThinking ? 0.95 : 0.8);
+    const targetTopP = isSystemAction
+        ? (promptObj.options?.topP ?? 0.1)
+        : (options.topP ?? promptObj.options?.topP ?? (isThinking ? 0.95 : 0.8));
+        
     const presencePenalty = options.presencePenalty ?? (isThinking ? 1.5 : 1.5); // Both recommend 1.5 for general tasks
 
     // 3. API Execution
