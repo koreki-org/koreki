@@ -78,11 +78,10 @@ const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({
                 {value}
             </span>
             
-            {/* Pulsing indicator dot in the top-right corner on mobile if active */}
+            {/* Subtle static indicator dot in the top-right corner on mobile if active */}
             {isActive && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5 md:hidden">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500 border border-white"></span>
+                <span className="absolute top-0.5 right-0.5 flex h-1.5 w-1.5 md:hidden">
+                    <span className="rounded-full h-1.5 w-1.5 bg-emerald-500 ring-1 ring-white"></span>
                 </span>
             )}
         </Button>
@@ -185,7 +184,7 @@ const Header: React.FC<HeaderProps> = ({
 
                     {/* Classic Labeled Configuration Pill Row - strictly horizontal on desktop */}
                     {(isLocalInstance() || userData?.canEditPrompts) && (
-                        <div className="grid grid-cols-4 md:flex md:flex-row items-center gap-1.5 sm:gap-2 w-full lg:w-auto">
+                        <div className="flex flex-row flex-wrap items-center justify-start gap-2 w-auto">
                             <ProfileConfigButton 
                                 icon={<GraduationCap size={14} />} 
                                 label="Expertise"
