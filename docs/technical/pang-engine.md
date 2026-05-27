@@ -3,7 +3,7 @@ title: "PANG Engine & Grading Graph Architecture"
 description: "Technische Dokumentation des graph-basierten Bewertungssystems zur automatisierten Folgefehler-Kompensation (PANG) und des visuellen Skill Designers."
 author: "@principal_architect"
 date: "2026-05-23"
-last_updated: "2026-05-24"
+last_updated: "2026-05-27"
 status: "Approved"
 domain: "technical"
 security_classification: "Internal"
@@ -142,7 +142,25 @@ Um zu verhindern, dass ein Schüler dieselbe IP doppelt verwendet (was bei unabh
   * Subnetz A wird korrekt bewertet.
   * Für Subnetz B erwartet das System aufgrund der Eingabe `.0` zwingend den Wert `.32`. Der Eintrag `.0` schlägt fehl. Der Schüler erhält **0 Punkte** für Subnetz B.
 
+
+### 3.4 Hybrid-Grading-Architektur (Punkte-Delegation)
+> [!TIP]
+> **Kernidee:** Die mathematische Analyse (Richtig/Falsch/Folgefehler) wird strikt deterministisch von PANG ermittelt, während die finale didaktische Punktevergabe und semantische Bewertung an das flexiblere LLM delegiert werden.
+
+Um die didaktische Starrheit bei der Korrektur von Freitexten zu reduzieren, unterstützt die PANG Engine ein differenziertes **Hybrid-Grading**. Dies wird über das optionale Feld `disablePoints?: boolean` im `GradingGraph`-Schema gesteuert:
+
+#### A) Differentiated Defaults (Differenzierte Standards)
+*   **Strenge Punktevergabe (`disablePoints = false`):** Bei komplexen IT-Systemskills (wie `vlsm` / `skill-calc-vlsm` oder `skill-calc-raid`) sind mathematische Fehler unverzeihlich und müssen absolut präzise bestraft werden. Hier bestimmt PANG die Punkte starr und überschreibt jegliche LLM-Punktevergabe.
+*   **Hybrid-Grading (`disablePoints = true`):** Bei allgemeinen mathematischen/naturwissenschaftlichen Aufgaben (z. B. Physikrechnungen) soll die KI kulant und didaktisch flexibel reagieren. PANG ermittelt nur die Fehler und Folgefehler-Kompensationen, während das LLM die finalen Punkte didaktisch tolerant auf Basis des Modells und der PANG-Engine-Auswertung vergibt.
+
+#### B) UI & UX-Integration im Graph-Designer
+Im interaktiven `GradingGraphModal.tsx` wird diese Einstellung transparent und komfortabel gesteuert:
+*   **Globaler Modus-Wähler:** Ein Dropdown-Feld **`Bewertung:`** befindet sich prominent im KI-Assistenten-Header und lässt den Lehrer den Modus manuell überschreiben (`✨ Hybrid-Grading (Didaktisch tolerant)` vs. `🔒 Strenge Punkte (Mathematisch starr)`).
+*   **Punkte-Ausblendung im Simulator:** Ist Hybrid-Grading aktiv, werden alle Punkte-Badges (`+1 P`) im Simulator ausgeblendet. Stattdessen wird dem Lehrer eine didaktisch wertvolle Variablen-Statistik angezeigt (z. B. `Variablen: 2 / 3 korrekt`), um Missverständnisse über PANG-seitige Bepunktungen auszuschließen.
+*   **Relative Gewichtung:** Ein Hinweis im Detail-Inspektor der Variablen weist darauf hin, dass Punkte-Einträge bei aktivem Hybrid-Grading als relative Gewichtung und Empfehlung für das LLM dienen.
+
 ---
+
 
 ## 4. Security & Compliance (Industrial Grade)
 > [!IMPORTANT]
