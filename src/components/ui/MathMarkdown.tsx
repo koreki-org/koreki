@@ -147,6 +147,46 @@ export function formatSquashedTables(text: string): string {
     return processedLines.join('\n');
 }
 
+/**
+ * Preprocesses markdown text to ensure that list bullets and single newlines
+ * are correctly formatted as native Markdown lists and vertical breaks.
+ */
+export function preprocessMarkdown(text: string): string {
+    if (!text) return "";
+
+    const lines = text.split('\n');
+    const processedLines = lines.map((line) => {
+        const trimmed = line.trim();
+        
+        // 1. Convert "• " to "- " for native markdown lists
+        if (trimmed.startsWith('•')) {
+            const leadingSpaces = line.match(/^\s*/)?.[0] || "";
+            return `${leadingSpaces}- ${trimmed.slice(1).trim()}`;
+        }
+        
+        // 2. Format Info: lines to align beautifully as sub-bullets
+        if (trimmed.startsWith('Info:')) {
+            const leadingSpaces = line.match(/^\s*/)?.[0] || "";
+            const indent = leadingSpaces || "  ";
+            return `${indent}- ${trimmed}`;
+        }
+
+        const isTable = trimmed.startsWith('|') && trimmed.endsWith('|');
+        const isEmpty = trimmed === "";
+        const isHeader = trimmed.startsWith('#');
+        const isListItem = trimmed.startsWith('-') || trimmed.startsWith('*') || /^\d+\./.test(trimmed);
+
+        if (!isTable && !isEmpty && !isHeader && !isListItem) {
+            // Append two spaces to force markdown line break
+            return line + "  ";
+        }
+
+        return line;
+    });
+
+    return processedLines.join('\n');
+}
+
 interface MathMarkdownProps {
     content: string;
     className?: string;
@@ -217,7 +257,7 @@ export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }
                     td: ({ node, ...props }) => <td className="px-4 py-2 border-t border-border text-xs" {...props} />,
                 }}
             >
-                {processContent(formatSquashedTables(content))}
+                {processContent(formatSquashedTables(preprocessMarkdown(content)))}
             </ReactMarkdown>
         </div>
     );

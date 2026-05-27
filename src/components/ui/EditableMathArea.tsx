@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pencil, Check, Eye } from 'lucide-react';
+import { Pencil, Check, Eye, ChevronDown, Settings } from 'lucide-react';
 import { MathMarkdown } from './MathMarkdown';
 import { HighlightableTextArea } from './HighlightableTextArea';
 import { Button } from './Button';
@@ -13,6 +13,61 @@ interface EditableMathAreaProps {
     initialEditMode?: boolean;
     label?: string;
     leftAction?: React.ReactNode;
+}
+
+interface SplitFeedback {
+    technical?: string;
+    pedagogical: string;
+}
+
+/**
+ * Parses and splits raw feedback text into technical engine blocks (PANG/AGS)
+ * and didactical/pedagogical feedback.
+ */
+export function splitFeedback(text: string): SplitFeedback {
+    if (!text) return { pedagogical: "" };
+
+    const pangIndex = text.indexOf('[⚙️ PANG Engine');
+    const agsIndex = text.indexOf('[⚙️ AGS Engine');
+    const engineIndex = pangIndex !== -1 ? pangIndex : agsIndex;
+
+    if (engineIndex === -1) {
+        return { pedagogical: text };
+    }
+
+    const remainingText = text.slice(engineIndex);
+    const dividerIndex = remainingText.indexOf('---');
+    
+    let technical = "";
+    let pedagogical = "";
+
+    if (dividerIndex !== -1) {
+        technical = remainingText.slice(0, dividerIndex).trim();
+        let afterDivider = remainingText.slice(dividerIndex + 3).trim();
+        if (afterDivider.startsWith('[KI-Pädagogische Einschätzung]')) {
+            afterDivider = afterDivider.slice('[KI-Pädagogische Einschätzung]'.length).trim();
+        }
+        pedagogical = afterDivider;
+    } else {
+        const kiIndex = remainingText.indexOf('[KI-Pädagogische Einschätzung]');
+        if (kiIndex !== -1) {
+            technical = remainingText.slice(0, kiIndex).trim();
+            pedagogical = remainingText.slice(kiIndex + '[KI-Pädagogische Einschätzung]'.length).trim();
+        } else {
+            technical = remainingText.trim();
+            pedagogical = "";
+        }
+    }
+
+    const prefix = text.slice(0, engineIndex).trim();
+    if (prefix) {
+        pedagogical = prefix + "\n\n" + pedagogical;
+    }
+
+    return {
+        technical: technical || undefined,
+        pedagogical: pedagogical
+    };
 }
 
 /**
@@ -30,6 +85,8 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
     leftAction
 }) => {
     const [isEditing, setIsEditing] = useState(initialEditMode);
+
+    const { technical, pedagogical } = splitFeedback(value);
 
     return (
         <div className={cn("relative group w-full", className)}>
@@ -67,9 +124,33 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
                         className="min-h-[140px] border-none bg-transparent"
                     />
                 ) : (
-                    <div className="p-5 min-h-[140px]">
+                    <div className="p-5 min-h-[140px] space-y-4">
                         {value.trim() ? (
-                            <MathMarkdown content={value} />
+                            <>
+                                {technical && (
+                                    <details className="group border border-indigo-100 dark:border-indigo-950/40 rounded-xl bg-indigo-50/20 dark:bg-indigo-950/5 overflow-hidden transition-all duration-300 mb-4">
+                                        <summary className="flex items-center justify-between p-3.5 cursor-pointer list-none select-none text-xs font-bold text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 transition-all [&::-webkit-details-marker]:hidden">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="flex items-center justify-center w-5 h-5 rounded-md bg-indigo-100/80 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                                                    <Settings size={12} className="transition-transform duration-500 group-open:rotate-90" />
+                                                </div>
+                                                <span>Technische PANG-Detailanalyse einblenden</span>
+                                            </div>
+                                            <ChevronDown size={14} className="text-indigo-400 dark:text-indigo-500 transition-transform duration-300 group-open:rotate-180" />
+                                        </summary>
+                                        <div className="border-t border-indigo-100/50 dark:border-indigo-950/30 p-4 bg-background/30 text-xs leading-relaxed font-mono">
+                                            <MathMarkdown content={technical} />
+                                        </div>
+                                    </details>
+                                )}
+                                {pedagogical.trim() ? (
+                                    <MathMarkdown content={pedagogical} />
+                                ) : !technical ? (
+                                    <span className="text-muted-foreground/50 italic text-xs">
+                                        {placeholder || "Kein Inhalt vorhanden."}
+                                    </span>
+                                ) : null}
+                            </>
                         ) : (
                             <span className="text-muted-foreground/50 italic text-xs">
                                 {placeholder || "Kein Inhalt vorhanden."}
