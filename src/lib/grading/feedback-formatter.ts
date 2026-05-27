@@ -49,7 +49,11 @@ export function formatPluginFeedback(
   // If any check confirms a structured 2D task, format as a Generic Table!
   // BUT: Do not format as a VLSM table if the discipline is math, physics, or general.
   const isGeneralMathOrPhysics = discipline === 'math' || discipline === 'physics' || discipline === 'general' || discipline === 'general-science';
-  if (!isGeneralMathOrPhysics && (usesNetworkPlugin || hasSubnetVariables || isVlsmSkill || isNetworkDiscipline || isRaidSkill || hasStructuredVariables)) {
+  
+  // A table should ONLY be formatted for actual network subnetting tasks!
+  const isNetworkTask = usesNetworkPlugin || hasSubnetVariables || isVlsmSkill || isNetworkDiscipline;
+
+  if (!isGeneralMathOrPhysics && isNetworkTask) {
     return formatVlsmTableFeedback(gradingResult, gradingGraph);
   }
 
