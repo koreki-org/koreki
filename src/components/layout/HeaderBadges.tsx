@@ -26,7 +26,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
     const router = useRouter();
 
     return (
-        <div className="flex gap-2 sm:gap-3 items-center bg-white/70 backdrop-blur-xl p-2 rounded-[1.25rem] border border-white shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/[0.03]">
+        <div className="flex gap-2 sm:gap-3 items-center bg-white/70 backdrop-blur-xl p-1.5 rounded-[1.25rem] border border-white shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/[0.03] shrink-0">
             {/* Branding Badge (Institutional Tenancy) - ONLY rendered locally, hidden in SaaS for space */}
             {isLocalInstance() && userData?.activeWorkspaceType === 'ORGANIZATION' && (
                 <div className="flex items-center gap-2.5 px-3.5 py-2 bg-indigo-600/[0.08] text-indigo-700 rounded-xl border border-indigo-100/80 group transition-all hover:bg-indigo-600/10">

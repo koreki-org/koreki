@@ -61,9 +61,9 @@ const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({
             size="sm"
             onClick={onClick}
             className={cn(
-                "relative rounded-xl px-0 md:px-3.5 py-1.5 h-9 text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 transition-all w-9 h-9 md:w-auto overflow-visible shrink-0",
+                "relative rounded-xl px-0 md:px-3.5 py-1.5 h-9 text-xs font-bold shadow-sm flex items-center justify-center md:justify-start gap-1.5 transition-all w-9 h-9 md:w-[210px] overflow-visible shrink-0",
                 isActive 
-                    ? "bg-indigo-600 hover:bg-indigo-700 text-white border-indigo-600 shadow-indigo-100" 
+                    ? "bg-primary hover:bg-primary/90 text-primary-foreground border-primary shadow-md shadow-primary/10" 
                     : "bg-indigo-50/50 hover:bg-indigo-100/50 text-indigo-600 border-indigo-100 hover:border-indigo-200"
             )}
             title={title}
@@ -71,10 +71,10 @@ const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({
             <span className={cn("shrink-0 transition-colors", isActive ? "text-white" : "text-indigo-500")}>
                 {icon}
             </span>
-            <span className={cn("hidden md:inline font-semibold transition-colors", isActive ? "text-indigo-200" : "text-indigo-400")}>
+            <span className={cn("hidden md:inline font-semibold transition-colors", isActive ? "text-white/80" : "text-indigo-400")}>
                 {label}:
             </span>
-            <span className={cn("hidden md:inline truncate max-w-[125px] sm:max-w-[160px] transition-colors", isActive ? "text-white" : "text-indigo-600")}>
+            <span className={cn("hidden md:inline truncate max-w-[110px] transition-colors", isActive ? "text-white" : "text-indigo-600")}>
                 {value}
             </span>
             
@@ -173,7 +173,7 @@ const Header: React.FC<HeaderProps> = ({
 
                     {/* Classic Labeled Configuration Pill Row - strictly horizontal on desktop */}
                     {(isLocalInstance() || userData?.canEditPrompts) && (
-                        <div className="flex flex-row flex-wrap items-center justify-start gap-2 w-auto bg-white/70 backdrop-blur-xl p-2 rounded-[1.25rem] border border-white shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/[0.03] md:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none md:border-0 md:shadow-none md:ring-0">
+                        <div className="flex flex-row flex-nowrap shrink-0 items-center justify-start gap-1.5 sm:gap-2 w-auto bg-white/70 backdrop-blur-xl p-1.5 rounded-[1.25rem] border border-white shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/[0.03] md:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none md:border-0 md:shadow-none md:ring-0">
                             <ProfileConfigButton 
                                 icon={<GraduationCap size={14} />} 
                                 label="Expertise"
