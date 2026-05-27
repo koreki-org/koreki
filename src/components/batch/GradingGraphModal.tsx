@@ -422,7 +422,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                     </div>
 
                     {/* Mode selector tab */}
-                    <div className="flex w-full lg:w-auto overflow-x-auto no-scrollbar scrollbar-none bg-slate-200/50 p-1 rounded-xl gap-1 shrink-0 lg:ml-auto lg:mr-6">
+                    <div className="flex w-full lg:w-auto overflow-x-auto max-w-full min-w-0 no-scrollbar scrollbar-none bg-slate-200/50 p-1 rounded-xl gap-1 shrink-0 lg:ml-auto lg:mr-6">
                         <button 
                             type="button"
                             onClick={() => setActiveTab('ai')}
@@ -515,10 +515,10 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     alert(`Änderungen am Graphen wurden in den Skill "${skillName.trim()}" übernommen. Klicke gleich im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern!`);
                                                 }
                                             }}
-                                            className="flex-1 sm:flex-initial h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-sm transition-all text-xs gap-1 px-3 flex items-center justify-center shrink-0"
+                                            className="flex-1 sm:flex-initial h-8 rounded-full text-xs font-black uppercase border border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-1.5 px-4 transition-all flex items-center justify-center shrink-0 shadow-xs duration-300 active:scale-95"
                                             title="Als wiederverwendbaren Custom Skill im Skill Center speichern bzw. übernehmen"
                                         >
-                                            💾 Speichern
+                                            <Check size={14} /> Speichern
                                         </Button>
                                     )}
                                     {onDeleteGraph && initialGraph && (
@@ -790,7 +790,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                     {/* Tab 2: Visual Node Editor & Simplified Inspector */}
                     {activeTab === 'editor' && (
-                        <div className="flex-grow flex flex-col lg:flex-row overflow-hidden min-h-0 bg-slate-50/30">
+                        <div className="flex-grow flex flex-col lg:flex-row overflow-hidden min-h-0 bg-slate-50/30 relative">
                             {/* Left part: Variables visual list */}
                             <div className="flex-1 overflow-y-auto p-4 sm:p-8 min-h-0">
                                 <div className="space-y-8 pb-12">
@@ -939,8 +939,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                             {/* Right part: Simplified Node Inspector */}
                             <div className={cn(
-                                "w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-slate-100 bg-white flex flex-col overflow-hidden shrink-0 transition-all duration-300 min-h-0",
-                                selectedVar ? "h-[50vh] lg:h-full flex" : "h-0 lg:h-full lg:flex hidden"
+                                "absolute inset-0 lg:relative bg-white flex flex-col overflow-hidden shrink-0 transition-all duration-300 min-h-0 lg:w-80 lg:border-l lg:border-t-0 border-t border-slate-100",
+                                selectedVar ? "flex h-full z-40" : "h-0 lg:h-full lg:flex hidden"
                             )}>
                                 {selectedVar ? (
                                     <div className="flex flex-col h-full overflow-y-auto p-4 sm:p-6 space-y-6">
@@ -1141,7 +1141,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                     {activeTab === 'testing' && (
                         <div className="flex-grow flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden min-h-0 bg-slate-50/30 p-4 lg:p-8 gap-4 lg:gap-8">
                             {/* Left Panel: Inputs (45% width) */}
-                            <div className="w-full lg:w-[45%] flex flex-col shrink-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] overflow-hidden h-[50vh] lg:h-full">
+                            <div className="w-full lg:w-[45%] flex flex-col shrink-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] h-auto lg:h-full overflow-visible lg:overflow-hidden">
                                 {/* Sticky Header with Actions */}
                                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
                                     <div>
@@ -1168,7 +1168,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                 </div>
 
                                 {/* Scrollable Inputs Grid */}
-                                <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+                                <div className="flex-grow lg:flex-1 lg:overflow-y-auto p-6 space-y-4 custom-scrollbar">
                                     {graph.variables.length === 0 ? (
                                         <p className="text-xs text-slate-400 py-4 font-medium text-center">Keine Variablen deklariert. Erstelle zuerst einen Graphen.</p>
                                     ) : (
@@ -1193,7 +1193,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             </div>
 
                             {/* Right Panel: Simulation Results (55% width) */}
-                            <div className="w-full lg:w-[55%] flex flex-col min-h-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] overflow-hidden h-[50vh] lg:h-full">
+                            <div className="w-full lg:w-[55%] flex flex-col min-h-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] h-auto lg:h-full overflow-visible lg:overflow-hidden shrink-0">
                                 {playgroundResult ? (
                                     <div className="flex flex-col h-full overflow-hidden">
                                         {/* Sticky Score Header */}
@@ -1214,7 +1214,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         </div>
 
                                         {/* Scrollable Individual Step Results */}
-                                        <div className="flex-1 overflow-y-auto p-6 space-y-2.5 custom-scrollbar">
+                                        <div className="flex-grow lg:flex-1 lg:overflow-y-auto p-6 space-y-2.5 custom-scrollbar">
                                             {playgroundResult.stepResults.map((step: any) => (
                                                 <div 
                                                     key={step.variableId} 
@@ -1260,7 +1260,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400 gap-4 select-none">
+                                    <div className="flex-grow lg:flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400 gap-4 select-none min-h-[250px] lg:min-h-0">
                                         <div className="w-16 h-16 bg-indigo-50 border border-indigo-100 rounded-3xl flex items-center justify-center text-indigo-500 mb-2">
                                             <Eye size={28} className="animate-pulse" />
                                         </div>
