@@ -395,29 +395,38 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     const selectedVar = (graph?.variables || []).find(v => v.id === selectedVarId);
 
     return createPortal(
-        <div className="fixed inset-0 z-[2300] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in font-inter text-slate-700">
-            <div className="bg-white border border-slate-100 shadow-2xl rounded-[2.5rem] w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
+        <div className="fixed inset-0 z-[2300] flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in font-inter text-slate-700">
+            <div className="bg-white border border-slate-100 shadow-2xl rounded-none sm:rounded-[var(--radius)] w-full max-w-6xl h-[100dvh] sm:h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
                 
                 {/* Header */}
-                <div className="px-8 py-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100 shrink-0">
-                            <Layers size={20} className="text-indigo-600 animate-pulse" />
+                <div className="px-4 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row gap-4 lg:gap-3 justify-between items-start lg:items-center shrink-0">
+                    <div className="flex items-center justify-between w-full lg:w-auto gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100 shrink-0">
+                                <Layers size={20} className="text-indigo-600 animate-pulse" />
+                            </div>
+                            <div className="min-w-0">
+                                <h3 className="text-sm sm:text-lg font-black text-slate-900 font-outfit tracking-tight flex items-center gap-2 flex-wrap">
+                                    Grading Graph Designer
+                                    <Badge className="bg-indigo-600 text-white font-bold py-0.5 px-2.5 text-xs rounded-full uppercase">PANG engine</Badge>
+                                </h3>
+                                <p className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">{taskName} (Variable Beziehungen, Toleranzen & Folgefehler-Pfade)</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="text-lg font-black text-slate-900 font-outfit tracking-tight flex items-center gap-2">
-                                Grading Graph Designer
-                                <Badge className="bg-indigo-600 text-white font-bold py-0 px-2 text-[9px] rounded-full uppercase">PANG engine</Badge>
-                            </h3>
-                            <p className="text-xs text-slate-400 font-medium">{taskName} (Variable Beziehungen, Toleranzen & Folgefehler-Pfade)</p>
-                        </div>
+                        <button 
+                            onClick={onClose}
+                            className="lg:hidden text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full shrink-0"
+                        >
+                            <X size={20} />
+                        </button>
                     </div>
-                                  {/* Mode selector tab */}
-                    <div className="flex bg-slate-200/50 p-1 rounded-xl gap-1 shrink-0 ml-auto mr-6">
+
+                    {/* Mode selector tab */}
+                    <div className="flex w-full lg:w-auto overflow-x-auto no-scrollbar scrollbar-none bg-slate-200/50 p-1 rounded-xl gap-1 shrink-0 lg:ml-auto lg:mr-6">
                         <button 
                             type="button"
                             onClick={() => setActiveTab('ai')}
-                            className={cn("px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5", activeTab === 'ai' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'ai' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
                         >
                             <Sparkles size={12} className={cn(activeTab === 'ai' && "text-indigo-600")} />
                             KI-Assistent 🪄
@@ -425,7 +434,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         <button 
                             type="button"
                             onClick={() => { setActiveTab('testing'); handleRunPlayground(); }}
-                            className={cn("px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5", activeTab === 'testing' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'testing' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
                         >
                             <Eye size={12} className={cn(activeTab === 'testing' && "text-indigo-600")} />
                             Graph testen 🧪
@@ -433,7 +442,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         <button 
                             type="button"
                             onClick={() => setActiveTab('editor')}
-                            className={cn("px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5", activeTab === 'editor' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'editor' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
                         >
                             <Layers size={12} className={cn(activeTab === 'editor' && "text-indigo-600")} />
                             Knoten-Editor 📊
@@ -441,7 +450,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         <button 
                             type="button"
                             onClick={() => setActiveTab('json')}
-                            className={cn("px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5", activeTab === 'json' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'json' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
                         >
                             <Code size={12} className={cn(activeTab === 'json' && "text-indigo-600")} />
                             JSON-Editor 💻
@@ -450,22 +459,22 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                     <button 
                         onClick={onClose}
-                        className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full"
+                        className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full hidden lg:block"
                     >
                         <X size={20} />
                     </button>
                 </div>
 
                 {/* Subheader/Actions Panel Toolbar */}
-                <div className="px-8 py-3 bg-slate-50/20 border-b border-slate-100/50 flex items-center justify-between gap-6 shrink-0">
-                    <div className="flex items-center gap-6">
+                <div className="px-4 sm:px-8 py-3 bg-slate-50/20 border-b border-slate-100/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+                    <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
                         {/* 1. Assign Existing Graph Skill from Skill Center */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Bestehender Skill:</span>
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+                            <span className="text-xs font-black uppercase text-slate-400 tracking-wider text-left block">Bestehender Skill:</span>
                             <select
                                 value={taskType || 'default'}
                                 onChange={(e) => onEngineChange?.(e.target.value)}
-                                className="h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200"
+                                className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200"
                             >
                                 <option value="default">-- Kein Graph-Skill aktiv (Standard) --</option>
                                 {Object.entries(customSkills || {})
@@ -479,57 +488,61 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         </div>
 
                         {/* Divider line */}
-                        <div className="h-6 w-px bg-slate-200"></div>
+                        <div className="hidden md:block h-6 w-px bg-slate-200"></div>
 
                         {/* 3. Name & Save Custom Skill (Template) */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Skill Name:</span>
-                            <Input 
-                                value={skillName}
-                                onChange={(e) => setSkillName(e.target.value)}
-                                placeholder="z.B. Subnetz-Berechnung"
-                                className="h-8 w-44 rounded-xl border border-slate-200 text-xs font-bold px-2.5 focus:border-indigo-500 bg-white"
-                            />
-                            {(onSaveCustomSkill || onSave) && (
-                                <Button
-                                    onClick={() => {
-                                        if (!skillName.trim()) {
-                                            alert("Bitte gib einen Namen für den Skill ein.");
-                                            return;
-                                        }
-                                        if (onSaveCustomSkill) {
-                                            onSaveCustomSkill(skillName.trim(), graph);
-                                        } else {
-                                            onSave(graph);
-                                            alert(`Änderungen am Graphen wurden in den Skill "${skillName.trim()}" übernommen. Klicke gleich im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern!`);
-                                        }
-                                    }}
-                                    className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-sm transition-all text-xs gap-1 px-3 flex items-center shrink-0"
-                                    title="Als wiederverwendbaren Custom Skill im Skill Center speichern bzw. übernehmen"
-                                >
-                                    💾 Speichern
-                                </Button>
-                            )}
-                            {onDeleteGraph && initialGraph && (
-                                <Button
-                                    variant="outline"
-                                    onClick={() => {
-                                        if (confirm("Möchtest du den Bewertungs-Graphen wirklich unwiderruflich löschen?")) {
-                                            onDeleteGraph();
-                                        }
-                                    }}
-                                    className="h-8 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all text-xs font-bold gap-1 px-3 flex items-center shrink-0"
-                                    title="Bewertungs-Graph löschen und Aufgabe zurücksetzen"
-                                >
-                                    <Trash2 size={13} />
-                                    <span>Löschen</span>
-                                </Button>
-                            )}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+                            <span className="text-xs font-black uppercase text-slate-400 tracking-wider text-left block">Skill Name:</span>
+                            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
+                                <Input 
+                                    value={skillName}
+                                    onChange={(e) => setSkillName(e.target.value)}
+                                    placeholder="z.B. Subnetz-Berechnung"
+                                    className="h-8 w-full sm:w-44 rounded-xl border border-slate-200 text-xs font-bold px-2.5 focus:border-indigo-500 bg-white"
+                                />
+                                <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                                    {(onSaveCustomSkill || onSave) && (
+                                        <Button
+                                            onClick={() => {
+                                                if (!skillName.trim()) {
+                                                    alert("Bitte gib einen Namen für den Skill ein.");
+                                                    return;
+                                                }
+                                                if (onSaveCustomSkill) {
+                                                    onSaveCustomSkill(skillName.trim(), graph);
+                                                } else {
+                                                    onSave(graph);
+                                                    alert(`Änderungen am Graphen wurden in den Skill "${skillName.trim()}" übernommen. Klicke gleich im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern!`);
+                                                }
+                                            }}
+                                            className="flex-1 sm:flex-initial h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-sm transition-all text-xs gap-1 px-3 flex items-center justify-center shrink-0"
+                                            title="Als wiederverwendbaren Custom Skill im Skill Center speichern bzw. übernehmen"
+                                        >
+                                            💾 Speichern
+                                        </Button>
+                                    )}
+                                    {onDeleteGraph && initialGraph && (
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => {
+                                                if (confirm("Möchtest du den Bewertungs-Graphen wirklich unwiderruflich löschen?")) {
+                                                    onDeleteGraph();
+                                                }
+                                            }}
+                                            className="flex-1 sm:flex-initial h-8 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all text-xs font-bold gap-1 px-3 flex items-center justify-center shrink-0"
+                                            title="Bewertungs-Graph löschen und Aufgabe zurücksetzen"
+                                        >
+                                            <Trash2 size={13} />
+                                            <span>Löschen</span>
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     {/* Hint text / spacer */}
-                    <span className="text-[10px] text-slate-400 font-medium hidden xl:flex items-center gap-1.5 ml-auto">
+                    <span className="text-xs text-slate-400 font-medium hidden xl:flex items-center gap-1.5 ml-auto">
                         <Sparkles size={11} className="text-indigo-500" />
                         PANG Engine berechnet Folgefehler vollautomatisch
                     </span>
@@ -545,13 +558,13 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                 <div className="flex-1 flex min-h-0 overflow-hidden bg-slate-50/10">
                                     {/* Left Panel: Pure Chat Layout */}
                                     <div className="flex-grow flex flex-col overflow-hidden min-h-0 bg-white">
-                                        <div className="px-8 py-3 bg-slate-50/50 border-b border-slate-100 flex items-center shrink-0 gap-6">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">KI-Generierungs-Engine:</span>
+                                        <div className="px-4 sm:px-8 py-3 bg-slate-50/50 border-b border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center shrink-0 gap-3 sm:gap-6">
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+                                                <span className="text-xs font-black uppercase text-slate-400 tracking-wider text-left block">KI-Generierungs-Engine:</span>
                                                 <select
                                                     value={selectedPlugin}
                                                     onChange={(e) => setSelectedPlugin(e.target.value)}
-                                                    className="h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 font-inter"
+                                                    className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 font-inter"
                                                 >
                                                     <option value="math">Mathematik-Plugin (Standard-Rechner)</option>
                                                     <option value="computer-science-networking">Netzwerk-Plugin (VLSM)</option>
@@ -559,11 +572,11 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                             </div>
 
                                             {/* Divider */}
-                                            <div className="h-5 w-px bg-slate-200"></div>
+                                            <div className="hidden sm:block h-5 w-px bg-slate-200"></div>
 
                                             {/* Bewertung Dropdown */}
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Bewertung:</span>
+                                            <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+                                                <span className="text-xs font-black uppercase text-slate-400 tracking-wider text-left block">Bewertung:</span>
                                                 <select
                                                     value={isPointsDisabled ? 'hybrid' : 'strict'}
                                                     onChange={(e) => {
@@ -572,7 +585,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                             disablePoints: e.target.value === 'hybrid'
                                                         });
                                                     }}
-                                                    className="h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 font-inter"
+                                                    className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 font-inter"
                                                     title={isPointsDisabled 
                                                         ? "Hybrid-Grading aktiv: PANG prüft nur die mathematische Korrektheit. Die finale Punktevergabe erfolgt didaktisch flexibel durch das LLM." 
                                                         : "Strenge Punktevergabe aktiv: PANG bestimmt die Punkte absolut starr und mathematisch exakt."
@@ -585,8 +598,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         </div>
 
                                         {/* Greeting area */}
-                                        <div className="flex-1 bg-slate-50/50 p-6 overflow-y-auto flex flex-col space-y-4 custom-scrollbar">
-                                            <div className="p-4 bg-white border border-slate-200/60 text-slate-700 rounded-2xl rounded-tl-none shadow-3xs text-[11px] leading-relaxed font-medium max-w-[85%] animate-in fade-in slide-in-from-left-2 duration-300">
+                                        <div className="flex-1 bg-slate-50/50 p-4 sm:p-6 overflow-y-auto flex flex-col space-y-4 custom-scrollbar">
+                                            <div className="p-4 bg-white border border-slate-200/60 text-slate-700 rounded-2xl rounded-tl-none shadow-3xs text-xs leading-relaxed font-medium max-w-[90%] sm:max-w-[85%] animate-in fade-in slide-in-from-left-2 duration-300">
                                                 <p className="font-extrabold text-slate-900 mb-1 flex items-center gap-1.5">
                                                     <Sparkles size={12} className="text-indigo-600 animate-pulse" />
                                                     PANG KI-Assistent
@@ -596,7 +609,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         </div>
 
                                         {/* Input Box at the bottom */}
-                                        <div className="px-8 py-5 border-t border-slate-100 flex flex-col gap-4 bg-white shrink-0">
+                                        <div className="px-4 sm:px-8 py-5 border-t border-slate-100 flex flex-col gap-4 bg-white shrink-0">
                                             <textarea
                                                 value={initialUserNotes}
                                                 onChange={(e) => setInitialUserNotes(e.target.value)}
@@ -628,7 +641,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                     </div>
 
                                     {/* Right Panel: Widescreen Info Box */}
-                                    <div className="w-80 border-l border-slate-100 bg-white flex flex-col p-6 space-y-4 shrink-0 overflow-y-auto animate-in fade-in duration-300">
+                                    <div className="hidden lg:flex w-80 border-l border-slate-100 bg-white flex flex-col p-6 space-y-4 shrink-0 overflow-y-auto animate-in fade-in duration-300">
                                         <div className="flex items-center gap-2 pb-2 border-b border-slate-100 shrink-0">
                                             <span className="text-lg">💡</span>
                                             <h4 className="text-xs font-black uppercase text-slate-800 font-outfit tracking-tight">Was leistet der PANG-Bewertungsgraph?</h4>
@@ -651,15 +664,15 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                     </div>
                                 </div>
                             ) : (
-                                <div className="flex-1 flex overflow-hidden min-h-0">
+                                <div className="flex-1 flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden min-h-0">
                                     {/* Left half: Interactive chat assistant */}
-                                    <div className="w-1/2 flex flex-col overflow-hidden bg-white p-8 border-r border-slate-100">
+                                    <div className="w-full lg:w-1/2 flex flex-col overflow-hidden bg-white p-4 sm:p-8 border-b lg:border-b-0 lg:border-r border-slate-100 h-[50vh] lg:h-full shrink-0 lg:shrink">
                                         <div className="space-y-1.5 shrink-0 pb-4 border-b border-slate-100">
                                             <h4 className="text-xs font-black uppercase text-slate-800 font-outfit tracking-tight flex items-center gap-2">
                                                 <Sparkles size={13} className="text-indigo-600 animate-pulse" />
                                                 Interaktiver KI-Assistent
                                             </h4>
-                                            <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                                            <p className="text-xs text-slate-400 font-medium leading-relaxed">
                                                 Passe Formeln, Toleranzen oder Punktgewichtungen flexibel mit natürlicher Sprache im Chat an.
                                             </p>
                                         </div>
@@ -671,8 +684,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     <div className="w-10 h-10 bg-indigo-50 border border-indigo-100 rounded-xl flex items-center justify-center text-indigo-500 mb-1">
                                                         <MessageSquare size={16} />
                                                     </div>
-                                                    <p className="text-[10px] font-bold text-slate-600">Keine Chat-Historie</p>
-                                                    <p className="text-[9px] leading-relaxed font-medium px-2">
+                                                    <p className="text-xs font-bold text-slate-600">Keine Chat-Historie</p>
+                                                    <p className="text-xs leading-relaxed font-medium px-2 text-slate-400">
                                                         Gib unten eine Anweisung ein, z.B. <em>"Setze die Toleranz von subnetA_mask auf 0.1"</em>.
                                                     </p>
                                                 </div>
@@ -681,7 +694,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     <div
                                                         key={idx}
                                                         className={cn(
-                                                            "p-3 rounded-2xl text-[10px] leading-relaxed max-w-[90%] font-medium transition-all duration-200",
+                                                            "p-3 rounded-2xl text-xs leading-relaxed max-w-[90%] font-medium transition-all duration-200",
                                                             msg.role === 'user'
                                                                 ? "bg-indigo-600 text-white rounded-tr-none ml-auto shadow-xs"
                                                                 : msg.hasError
@@ -694,7 +707,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                 ))
                                             )}
                                             {isRefining && (
-                                                <div className="bg-slate-200/50 text-slate-500 border border-slate-200/40 p-3 rounded-2xl rounded-tl-none text-[10px] font-bold leading-relaxed max-w-[80%] flex items-center gap-2 animate-pulse">
+                                                <div className="bg-slate-200/50 text-slate-500 border border-slate-200/40 p-3 rounded-2xl rounded-tl-none text-xs font-bold leading-relaxed max-w-[80%] flex items-center gap-2 animate-pulse">
                                                     <RefreshCw size={11} className="animate-spin text-indigo-500 shrink-0" />
                                                     <span>Passe Graph an...</span>
                                                 </div>
@@ -730,11 +743,11 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                     </div>
 
                                     {/* Right half: visual preview of nodes */}
-                                    <div className="w-1/2 overflow-y-auto p-8 bg-slate-50/10">
+                                    <div className="w-full lg:w-1/2 overflow-y-auto p-4 sm:p-8 bg-slate-50/10 h-[50vh] lg:h-full">
                                         <div className="space-y-6">
                                             <div className="flex justify-between items-center">
                                                 <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider font-outfit">Visualisierte Graphen-Struktur</h4>
-                                                <Badge className="bg-slate-100 text-slate-600 border border-slate-200/50 py-0.5 px-2 rounded-full font-bold text-[9px] uppercase">{graph.variables.length} Variablen</Badge>
+                                                <Badge className="bg-slate-100 text-slate-600 border border-slate-200/50 py-0.5 px-2 rounded-full font-bold text-xs uppercase">{graph.variables.length} Variablen</Badge>
                                             </div>
 
                                             <div className="space-y-3">
@@ -757,7 +770,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                                     <Badge className="bg-indigo-50 text-indigo-600 border border-indigo-100/50 text-[8px] py-0 px-1 rounded-sm uppercase font-black">FORMEL</Badge>
                                                                 )}
                                                             </div>
-                                                            <p className="text-[10px] text-slate-400 font-mono truncate leading-none mt-1">
+                                                            <p className="text-xs text-slate-400 font-mono truncate leading-none mt-1">
                                                                 {v.type === 'input' ? `Standardwert: ${v.defaultValue}` : `Formel: ${v.expression}`}
                                                             </p>
                                                         </div>
@@ -777,9 +790,9 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                     {/* Tab 2: Visual Node Editor & Simplified Inspector */}
                     {activeTab === 'editor' && (
-                        <div className="flex-1 flex overflow-hidden min-h-0 bg-slate-50/30">
+                        <div className="flex-grow flex flex-col lg:flex-row overflow-hidden min-h-0 bg-slate-50/30">
                             {/* Left part: Variables visual list */}
-                            <div className="flex-1 overflow-y-auto p-8">
+                            <div className="flex-1 overflow-y-auto p-4 sm:p-8 min-h-0">
                                 <div className="space-y-8 pb-12">
                                     <div className="bg-indigo-50/40 border border-indigo-100/60 rounded-3xl p-5 flex gap-4 text-xs text-indigo-950/80 items-start shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
                                         <span className="text-xl">💡</span>
@@ -808,7 +821,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     variant="outline"
                                                     size="sm"
                                                     onClick={() => handleAddVariable()}
-                                                    className="h-8 text-[10px] font-bold rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
+                                                    className="h-8 text-xs font-bold rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
                                                 >
                                                     + Erste Variable hinzufügen
                                                 </Button>
@@ -824,7 +837,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     </h4>
                                                     <button
                                                         onClick={() => handleAddVariable(groupName)}
-                                                        className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-indigo-50 rounded-md"
+                                                        className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-indigo-50 rounded-md"
                                                     >
                                                         <Plus size={11} /> Variable hinzufügen
                                                     </button>
@@ -858,7 +871,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                                         <h5 className={cn("text-xs font-black font-mono truncate leading-none pt-0.5", isSelected || isDependency ? "text-indigo-950" : "text-slate-800")}>
                                                                             {v.id}
                                                                         </h5>
-                                                                        <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+                                                                        <p className="text-xs text-slate-400 font-medium mt-0.5">
                                                                             {v.type === 'input' ? 'Statische Eingabe' : 'Formel-Kalkulation'}
                                                                         </p>
                                                                     </div>
@@ -873,14 +886,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                                                                 {/* Expected Output / Master value */}
                                                                 <div className="bg-slate-50 rounded-xl p-2.5 flex justify-between items-center text-xs border border-slate-100/50">
-                                                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Erwarteter Wert:</span>
+                                                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">Erwarteter Wert:</span>
                                                                     <span className={cn("font-mono font-bold text-slate-800", hasError ? "text-red-500" : "text-slate-800")}>
                                                                         {String(evalVal)}
                                                                     </span>
                                                                 </div>
 
                                                                 {/* Small display of expression / default value */}
-                                                                <div className="text-[10px] leading-tight font-medium text-slate-500 truncate font-mono">
+                                                                <div className="text-xs leading-tight font-medium text-slate-500 truncate font-mono">
                                                                     {v.type === 'input' ? (
                                                                         `Standardwert: ${v.defaultValue}`
                                                                     ) : (
@@ -925,39 +938,51 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             </div>
 
                             {/* Right part: Simplified Node Inspector */}
-                            <div className="w-80 border-l border-slate-100 bg-white flex flex-col overflow-hidden shrink-0">
+                            <div className={cn(
+                                "w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-slate-100 bg-white flex flex-col overflow-hidden shrink-0 transition-all duration-300 min-h-0",
+                                selectedVar ? "h-[50vh] lg:h-full flex" : "h-0 lg:h-full lg:flex hidden"
+                            )}>
                                 {selectedVar ? (
-                                    <div className="flex flex-col h-full overflow-y-auto p-6 space-y-6">
+                                    <div className="flex flex-col h-full overflow-y-auto p-4 sm:p-6 space-y-6">
                                         <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
                                             <h4 className="text-xs font-black uppercase text-slate-800 font-outfit tracking-tight flex items-center gap-1.5">
                                                 <Layers size={12} className="text-indigo-600" />
                                                 <span>Knoten-Inspektor</span>
                                             </h4>
-                                            <button 
-                                                onClick={() => handleDeleteVariable(selectedVar.id)}
-                                                className="text-[10px] font-bold text-red-500 hover:text-red-700 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-red-50 rounded-md cursor-pointer"
-                                            >
-                                                <Trash2 size={11} />
-                                                Löschen
-                                            </button>
+                                            <div className="flex items-center gap-2">
+                                                <button 
+                                                    onClick={() => handleDeleteVariable(selectedVar.id)}
+                                                    className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-red-50 rounded-md cursor-pointer"
+                                                >
+                                                    <Trash2 size={11} />
+                                                    <span className="hidden sm:inline">Löschen</span>
+                                                </button>
+                                                <button 
+                                                    onClick={() => setSelectedVarId(null)}
+                                                    className="lg:hidden text-slate-400 hover:text-slate-600 transition-colors p-1 hover:bg-slate-100 rounded-full"
+                                                    title="Inspektor schließen"
+                                                >
+                                                    <X size={16} />
+                                                </button>
+                                            </div>
                                         </div>
 
                                         {/* Edit ID Field */}
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Variablen-ID</label>
+                                            <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Variablen-ID</label>
                                             <Input
                                                 value={selectedVar.id}
                                                 onChange={(e) => handleRenameVariableId(selectedVar.id, e.target.value.trim())}
                                                 className="h-9 font-mono text-xs font-bold"
                                             />
-                                            <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                            <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
                                                 Eindeutiger Name der Variable in Schülerlösungen (z.B. <code className="font-mono bg-slate-50 px-1 py-0.5 rounded text-slate-600">subnetA_hosts</code>).
                                             </p>
                                         </div>
 
                                         {/* Type Selector (Input vs Formula) */}
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Knotentyp</label>
+                                            <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Knotentyp</label>
                                             <select
                                                 value={selectedVar.type}
                                                 onChange={(e) => handleUpdateVariable(selectedVar.id, { type: e.target.value as VariableType })}
@@ -966,7 +991,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                 <option value="input">📥 Statische Eingabe (Input)</option>
                                                 <option value="formula">⚙️ Berechnete Formel (Formula)</option>
                                             </select>
-                                            <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                            <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
                                                 {selectedVar.type === 'input' 
                                                     ? 'Fester Vorgabewert aus der Musterlösung (z.B. Hostanzahl).' 
                                                     : 'Wert wird dynamisch berechnet, um Folgefehler von vorherigen Schritten zu kompensieren.'}
@@ -976,7 +1001,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         {/* Default Value / Expression fields */}
                                         {selectedVar.type === 'input' ? (
                                             <div className="space-y-1">
-                                                <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Musterlösung (Wert)</label>
+                                                <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Musterlösung (Wert)</label>
                                                 <Input
                                                     value={selectedVar.defaultValue !== undefined ? String(selectedVar.defaultValue) : ''}
                                                     onChange={(e) => {
@@ -986,14 +1011,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     }}
                                                     className="h-9 text-xs font-semibold"
                                                 />
-                                                <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                                <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
                                                     Der didaktisch korrekte Wert aus der Musterlösung.
                                                 </p>
                                             </div>
                                         ) : (
                                             <div className="space-y-1">
                                                 <div className="flex justify-between items-center">
-                                                    <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Berechnungs-Formel</label>
+                                                    <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Berechnungs-Formel</label>
                                                     {evaluatedContext.errors[selectedVar.id] && (
                                                         <Badge className="bg-red-50 text-red-600 text-[8px] py-0 px-1 border-red-100 rounded">Error ⚠️</Badge>
                                                     )}
@@ -1005,11 +1030,11 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     placeholder="z.B. network.calculateMask(subnetA_hosts)"
                                                     className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white leading-relaxed resize-none shadow-3xs"
                                                 />
-                                                <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                                <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
                                                     Berechnungsvorschrift. Verwende Variablen-IDs (z.B. <code className="font-mono bg-slate-50 px-1 py-0.5 rounded text-slate-600">subnetA_hosts</code>).
                                                 </p>
                                                 {evaluatedContext.errors[selectedVar.id] && (
-                                                    <p className="text-[9px] text-red-500 font-semibold font-mono leading-tight pt-1">
+                                                    <p className="text-xs text-red-500 font-semibold font-mono leading-tight pt-1">
                                                         {evaluatedContext.errors[selectedVar.id]}
                                                     </p>
                                                 )}
@@ -1018,18 +1043,18 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                                         {/* Points allocation */}
                                         <div className="space-y-1">
-                                            <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider text-left block">Punkte für diesen Schritt</label>
+                                            <label className="text-xs font-black uppercase text-slate-500 tracking-wider text-left block">Punkte für diesen Schritt</label>
                                             <Input
                                                 type="number"
                                                 value={selectedVar.maxPoints !== undefined ? selectedVar.maxPoints : 1}
                                                 onChange={(e) => handleUpdateVariable(selectedVar.id, { maxPoints: Number(e.target.value) })}
                                                 className="h-9 text-xs font-semibold"
                                             />
-                                            <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5 text-left">
+                                            <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5 text-left">
                                                 Wie viele Punkte der Schüler für diesen korrekten Wert erhält.
                                             </p>
                                             {isPointsDisabled && (
-                                                <p className="text-[9px] text-amber-700 font-semibold leading-relaxed mt-1.5 bg-amber-50 border border-amber-100 rounded-lg p-2 flex items-start gap-1 text-left">
+                                                <p className="text-xs text-amber-700 font-semibold leading-relaxed mt-1.5 bg-amber-50 border border-amber-100 rounded-lg p-2 flex items-start gap-1 text-left">
                                                     <span>⚠️</span>
                                                     <span>Hybrid-Grading aktiv: Diese Punkte dienen als relative Gewichtung und mathematische Empfehlung. Die finale Vergabe erfolgt didaktisch flexibel durch das LLM.</span>
                                                 </p>
@@ -1041,7 +1066,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                             <button
                                                 type="button"
                                                 onClick={() => setShowAdvancedInspector(!showAdvancedInspector)}
-                                                className="w-full text-left text-[10px] font-black uppercase text-slate-500 hover:text-slate-700 transition-colors flex items-center justify-between py-1 cursor-pointer"
+                                                className="w-full text-left text-xs font-black uppercase text-slate-500 hover:text-slate-700 transition-colors flex items-center justify-between py-1 cursor-pointer"
                                             >
                                                 <span>⚙️ Erweiterte Einstellungen (Toleranzen)</span>
                                                 <span className="font-bold text-xs">{showAdvancedInspector ? "−" : "+"}</span>
@@ -1051,7 +1076,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                 <div className="space-y-4 pt-3 animate-in fade-in slide-in-from-top-1 duration-200">
                                                     {/* Validation Type */}
                                                     <div className="space-y-1">
-                                                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Validierungsart</label>
+                                                        <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Validierungsart</label>
                                                         <select
                                                             value={selectedVar.validationType}
                                                             onChange={(e) => handleUpdateVariable(selectedVar.id, { validationType: e.target.value as ValidationType })}
@@ -1061,7 +1086,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                             <option value="tolerance">Abweichung (Toleranz)</option>
                                                             <option value="contains">Enthält Substring</option>
                                                         </select>
-                                                        <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                                        <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
                                                             {selectedVar.validationType === 'exact' && 'Der Schüler-Wert muss mathematisch exakt übereinstimmen.'}
                                                             {selectedVar.validationType === 'tolerance' && 'Erlaubt kleine Abweichungen (z.B. Rundungsfehler).'}
                                                             {selectedVar.validationType === 'contains' && 'Prüft, ob der Schüler-Wert einen bestimmten Text enthält.'}
@@ -1071,14 +1096,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     {/* Tolerance offset field */}
                                                     {selectedVar.validationType === 'tolerance' && (
                                                         <div className="space-y-1">
-                                                            <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Zulässige Toleranz (+/-)</label>
+                                                            <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Zulässige Toleranz (+/-)</label>
                                                             <Input
                                                                 type="number"
                                                                 value={selectedVar.tolerance !== undefined ? selectedVar.tolerance : 0}
                                                                 onChange={(e) => handleUpdateVariable(selectedVar.id, { tolerance: Number(e.target.value) })}
                                                                 className="h-9 text-xs font-semibold"
                                                             />
-                                                            <p className="text-[9px] text-slate-400 font-medium leading-normal mt-0.5">
+                                                            <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
                                                                 Zulässige Rundungs-Abweichung (z.B. <code className="font-mono bg-slate-50 px-1 py-0.5 rounded text-slate-600">0.1</code>).
                                                             </p>
                                                         </div>
@@ -1089,7 +1114,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                                         {/* Evaluated Value Preview block */}
                                         <div className="pt-4 border-t border-slate-100 flex flex-col gap-2 shrink-0">
-                                            <span className="text-[10px] font-black uppercase text-slate-500 tracking-wider">Echtzeit-Berechnung (Musterlösung)</span>
+                                            <span className="text-xs font-black uppercase text-slate-500 tracking-wider">Echtzeit-Berechnung (Musterlösung)</span>
                                             <div className="bg-indigo-50/30 rounded-xl p-3 border border-indigo-100/20 flex flex-col gap-1 text-xs">
                                                 <div className="flex justify-between items-center">
                                                     <span className="font-bold text-slate-500">Erwarteter Wert:</span>
@@ -1114,28 +1139,28 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                     {/* Tab 3: Testing Sandbox */}
                     {activeTab === 'testing' && (
-                        <div className="flex-1 flex overflow-hidden min-h-0 bg-slate-50/30 p-8 gap-8 animate-in fade-in duration-300">
+                        <div className="flex-grow flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden min-h-0 bg-slate-50/30 p-4 lg:p-8 gap-4 lg:gap-8">
                             {/* Left Panel: Inputs (45% width) */}
-                            <div className="w-[45%] flex flex-col min-h-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] overflow-hidden">
+                            <div className="w-full lg:w-[45%] flex flex-col shrink-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] overflow-hidden h-[50vh] lg:h-full">
                                 {/* Sticky Header with Actions */}
                                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
                                     <div>
                                         <h4 className="text-xs font-black uppercase text-slate-800 font-outfit">Schüler-Eingaben</h4>
-                                        <p className="text-[9px] text-slate-400 font-medium font-inter">Simulationswerte zum Testen</p>
+                                        <p className="text-xs text-slate-400 font-medium font-inter">Simulationswerte zum Testen</p>
                                     </div>
                                     <div className="flex gap-2">
                                         <Button 
                                             variant="outline" 
                                             size="sm" 
                                             onClick={handleFillPerfectPlayground}
-                                            className="h-8 text-[9px] font-bold border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 rounded-lg px-2.5"
+                                            className="h-8 text-xs font-bold border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 rounded-lg px-2.5"
                                         >
                                             Musterlösung
                                         </Button>
                                         <Button 
                                             size="sm" 
                                             onClick={handleRunPlayground}
-                                            className="h-8 text-[9px] font-black bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3.5 shadow-md shadow-indigo-100"
+                                            className="h-8 text-xs font-black bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3.5 shadow-md shadow-indigo-100"
                                         >
                                             Berechnen
                                         </Button>
@@ -1150,9 +1175,9 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         <div className="space-y-3.5">
                                             {(graph?.variables || []).map(v => (
                                                 <div key={v.id} className="flex flex-col gap-1">
-                                                    <label className="text-[10px] font-bold text-slate-500 font-mono truncate">{v.id}</label>
+                                                    <label className="text-xs font-bold text-slate-500 font-mono truncate">{v.id}</label>
                                                     <div className="relative">
-                                                        <input
+                                                        <Input
                                                             type="text"
                                                             value={playgroundInputs[v.id] || ''}
                                                             onChange={(e) => setPlaygroundInputs({ ...playgroundInputs, [v.id]: e.target.value })}
@@ -1168,14 +1193,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             </div>
 
                             {/* Right Panel: Simulation Results (55% width) */}
-                            <div className="w-[55%] flex flex-col min-h-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] overflow-hidden">
+                            <div className="w-full lg:w-[55%] flex flex-col min-h-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] overflow-hidden h-[50vh] lg:h-full">
                                 {playgroundResult ? (
                                     <div className="flex flex-col h-full overflow-hidden">
                                         {/* Sticky Score Header */}
                                         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
                                             <div className="text-left">
                                                 <h4 className="text-xs font-black uppercase text-slate-800 font-outfit">Simulations-Ergebnis</h4>
-                                                <p className="text-[9px] text-slate-400 font-medium font-inter">Bewertung des Schülerversuchs</p>
+                                                <p className="text-xs text-slate-400 font-medium font-inter">Bewertung des Schülerversuchs</p>
                                             </div>
                                             {isPointsDisabled ? (
                                                 <Badge className="bg-indigo-50 border-indigo-100 text-indigo-700 font-black px-3 py-1 text-xs rounded-full">
@@ -1214,14 +1239,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                                  'PRIMÄRFEHLER'}
                                                             </Badge>
                                                         </div>
-                                                        <p className="text-[10px] opacity-80 leading-relaxed font-medium">
+                                                        <p className="text-xs opacity-80 leading-relaxed font-medium">
                                                             {step.note}
                                                         </p>
                                                     </div>
 
                                                     <div className="flex items-center gap-4 shrink-0">
                                                         <div className="text-right font-medium">
-                                                            <p className="text-[10px] opacity-60">Schüler-Wert</p>
+                                                            <p className="text-xs opacity-60">Schüler-Wert</p>
                                                             <p className="font-mono font-bold">{step.studentValue !== undefined ? String(step.studentValue) : 'Fehlt'}</p>
                                                         </div>
                                                         {!isPointsDisabled && (
@@ -1241,7 +1266,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         </div>
                                         <div className="max-w-xs space-y-1.5">
                                             <h4 className="font-extrabold text-slate-800 text-sm font-outfit leading-none mb-1">Bereit zum Testen 🧪</h4>
-                                            <p className="text-[11px] text-slate-400 leading-relaxed font-medium font-inter">
+                                            <p className="text-xs text-slate-400 leading-relaxed font-medium font-inter">
                                                 Fülle die Musterlösung aus, verändere Werte absichtlich, um Fehler zu simulieren, und klicke auf <strong>Berechnen</strong>, um die Folgefehler-Diagnose live zu prüfen.
                                             </p>
                                         </div>
@@ -1255,13 +1280,13 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                     {activeTab === 'json' && (
                         <div className="flex-grow flex flex-col overflow-hidden bg-slate-900 border-l border-slate-100 animate-in slide-in-from-left-4 duration-300">
                             <div className="px-6 py-2 border-b border-slate-800 bg-slate-950 flex justify-between items-center shrink-0">
-                                <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 font-mono">raw_graph_config.json</span>
+                                <span className="text-xs font-black uppercase tracking-wider text-slate-400 font-mono">raw_graph_config.json</span>
                                 {jsonError ? (
-                                    <span className="text-[9px] font-bold text-red-400 flex items-center gap-1">
+                                    <span className="text-xs font-bold text-red-400 flex items-center gap-1">
                                         <AlertCircle size={10} /> Syntax-Fehler!
                                     </span>
                                 ) : (
-                                    <span className="text-[9px] font-bold text-emerald-400 flex items-center gap-1">
+                                    <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
                                         <Check size={10} /> Validiert
                                     </span>
                                 )}
@@ -1272,7 +1297,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                 className="flex-grow p-6 bg-slate-950 text-slate-300 font-mono text-xs outline-hidden border-none resize-none overflow-y-auto leading-relaxed"
                             />
                             {jsonError && (
-                                <div className="p-3 bg-red-950/40 border-t border-red-900/40 text-[10px] font-bold text-red-300 leading-relaxed font-mono">
+                                <div className="p-3 bg-red-950/40 border-t border-red-900/40 text-xs font-bold text-red-300 leading-relaxed font-mono">
                                     {jsonError}
                                 </div>
                             )}
@@ -1282,22 +1307,22 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="px-8 py-5 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
-                    <p className="text-[10px] text-slate-400 font-inter">
+                <div className="px-4 sm:px-8 py-4 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-4 justify-between items-center shrink-0">
+                    <p className="text-xs text-slate-400 font-inter text-center sm:text-left leading-normal">
                         * Die Variablen ID wird beim Parsen von Schülerlösungen automatisch gematcht (z. B. "subnetA_hosts").
                     </p>
-                    <div className="flex gap-3">
+                    <div className="flex gap-3 w-full sm:w-auto justify-stretch sm:justify-end">
                         <Button 
                             variant="ghost" 
                             onClick={onClose}
-                            className="h-10 rounded-xl px-5 font-bold text-slate-500 hover:bg-slate-100"
+                            className="h-10 flex-1 sm:flex-initial rounded-xl px-5 font-bold text-slate-500 hover:bg-slate-100"
                         >
                             Abbrechen
                         </Button>
                         <Button 
                             onClick={() => { onSave(graph); onClose(); }}
                             disabled={!!jsonError}
-                            className="h-10 rounded-xl px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-lg shadow-indigo-100 transition-all"
+                            className="h-10 flex-1 sm:flex-initial rounded-xl px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-lg shadow-indigo-100 transition-all"
                         >
                             Zuweisen
                         </Button>
