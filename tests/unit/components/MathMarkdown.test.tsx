@@ -68,6 +68,11 @@ describe('MathMarkdown Component (Layer 1)', () => {
             expect(formatSquashedTables(input)).toBe(input);
         });
 
+        it('should preserve properly formatted tables with empty/dash cells and not mistake them as squashed', () => {
+            const input = "| Subnetz | Netz-ID | Maske | Erste nutzbare IP | Letzte nutzbare IP | Broadcast | Gateway |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| **Subnetz AUSSTELLER** | 172.16.2.0 [r] | - | - | - | - | 172.16.2. 254 [f] *(Erw: 172.16.2.126)* |";
+            expect(formatSquashedTables(input)).toBe(input);
+        });
+
         it('should reconstruct a squashed single-line table into a formatted multi-line markdown table', () => {
             const squashed = "| Bereich | Anzahl Adressen | Netzadresse | Netzmaske | Erste IP | Gateway | Broadcast | | --- | --- | --- | --- | --- | --- | --- | | Messebesucher | 500 | 172.16.0.0 | /22 | 172.16.0.1 | 172.16.3.254 | 172.16.3.255 | | Aussteller | 100 | 172.16.4.0 | /25 | 172.16.4.1 | 172.16.4.126 | 172.16.4.127 |";
             const formatted = formatSquashedTables(squashed);

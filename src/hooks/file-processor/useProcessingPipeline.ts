@@ -269,11 +269,11 @@ export const useProcessingPipeline = (
      * INDUSTRIAL CORRECTION ENGINE (Single Item)
      * 🏗️ Handles the correction of a single student file.
      */
-    const internalCorrectionPipeline = useCallback(async (i: number, freshFiles?: BatchFile[]) => {
+    const internalCorrectionPipeline = useCallback(async (i: number, freshFiles?: BatchFile[], force: boolean = false) => {
         const files = freshFiles || useBatchStore.getState().batchFiles;
         const currentFile = files[i];
 
-        if (!currentFile || currentFile.status === 'done' || !currentFile.selected) {
+        if (!currentFile || (!force && currentFile.status === 'done') || !currentFile.selected) {
             return;
         }
 
@@ -389,12 +389,17 @@ export const useProcessingPipeline = (
         
         setIsLoadingBatch(true);
         try {
-            await internalCorrectionPipeline(i);
+            setBatchFiles((prev: BatchFile[]) => {
+                const next = [...prev];
+                next[i] = { ...next[i], status: 'pending', error: null };
+                return next;
+            });
+            await internalCorrectionPipeline(i, undefined, true);
         } finally {
             setIsLoadingBatch(false);
             setCurrentProcessingIndex(-1);
         }
-    }, [internalCorrectionPipeline, setIsLoadingBatch, setCurrentProcessingIndex, modelSolution]);
+    }, [internalCorrectionPipeline, setIsLoadingBatch, setCurrentProcessingIndex, modelSolution, setBatchFiles]);
 
     const cleanAndExtractLayout = useCallback(async (solution: string, currentSettings: AppSettings, pageCount: number = 1, isScan: boolean = false) => {
         if (!solution) return null;

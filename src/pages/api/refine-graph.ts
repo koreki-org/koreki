@@ -8,7 +8,7 @@ import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 import { z } from 'zod';
 
 const RefineGraphSchema = z.object({
-    taskText: z.string().min(1, 'Aufgabentext darf nicht leer sein.'),
+    taskText: z.string().optional().default(''),
     currentGraph: z.object({
         taskId: z.string().min(1),
         discipline: z.string().min(1),

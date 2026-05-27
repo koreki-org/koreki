@@ -3,7 +3,7 @@ title: "Automated Graph Validation & Dynamic Isomorphic Role Mapping (DIRM)"
 description: "Architektur-Konzept zur didaktischen und mathematischen Äquivalenz-Bewertung von Graphen mittels DIRM und MSPM im GraphRunner."
 author: "@principal_architect"
 date: "2026-05-26"
-last_updated: "2026-05-26"
+last_updated: "2026-05-27"
 status: "Approved"
 domain: "technical"
 security_classification: "Internal"
@@ -24,7 +24,7 @@ DIRM & MSPM lösen dies deterministisch und performant auf Engine-Ebene. Das LLM
 
 ## 2. Architektur & Systemdesign
 
-DIRM & MSPM transformieren die starre Validierung in eine flexible, isomorphe Lösungsraum-Abdeckung. Das Systemdesign stützt sich auf drei Kern-Säulen:
+DIRM & MSPM transformieren die starre Validierung in eine flexible, isomorphe Lösungsraum-Abdeckung. Das Systemdesign stützt sich auf vier Kern-Säulen:
 
 1. **Equivalence Groups (Deklarative Metadaten):**
    Das Modell des Graphen (`GradingGraph`) wird um `equivalenceGroups` erweitert. Eine Gruppe definiert Variablen-Präfixe, deren Zuweisung symmetrisch getauscht werden darf.
@@ -40,6 +40,10 @@ DIRM & MSPM transformieren die starre Validierung in eine flexible, isomorphe L�
 3. **Path-based Clean-Path Promotion:**
    In Folgeschritten (z. B. Formelberechnungen), die auf einem vom Schüler modifizierten, aber mathematisch korrekten Vorgängerwert basieren, befördert die Engine den Status von `consecutive_correct` (Folgefehler-Kompensation) zu `correct` (vollwertige Alternativlösung), sofern alle Vorgänger-Variablen im mathematischen Ausdruck fehlerfrei (Status `correct`) gelöst wurden.
 
+4. **Didaktische Symmetrie-Toleranz für statische Inputs (Symmetrical Input Fallback):**
+   Wird durch DIRM eine Präfix-Permutation angewendet (z. B. Vertauschen von `spieler_` und `aussteller_`), werden alle Variablen dieses Subnetzes mitvertauscht. Schüler behalten jedoch oft die physikalischen Hostbedarfe der Aufgabenstellung bei (z. B. Spieler = 80, Aussteller = 100), während sie lediglich die IP-Netzadressen vertauschen.
+   **Lösung:** Bei Variablen des Typs `input` führt der `GraphRunner` bei einem Fehlschlag der gemappten Validierung automatisch einen Fallback-Abgleich gegen das ungemappte Originalergebnis des Schülers durch. Dies sichert beide didaktisch korrekten Denkweisen der Schüler perfekt ab.
+
 ```mermaid
 sequenceDiagram
     autonumber
@@ -53,6 +57,7 @@ sequenceDiagram
         Runner->>Runner: Isomorphes Mapping der Schülerantwort-IDs
         Runner->>Runner: Führe Bewertung durch
         Runner->>Runner: Prüfe Clean-Path Promotion (consecutive_correct ➔ correct)
+        Runner->>Runner: Führe Fallback-Abgleich für statische Inputs durch
         Runner->>Runner: Speichere Gesamtpunkte und Detail-Schritte
     end
     
@@ -92,7 +97,7 @@ public static grade(graph: GradingGraph, studentResults: Record<string, any>): G
   // 1. Hole Äquivalenzgruppen
   const groups = graph.equivalenceGroups || [];
   if (groups.length === 0) {
-    return this.executeGrading(graph, studentResults);
+    return this.executeGrading(graph, studentResults, studentResults);
   }
 
   // 2. Generiere alle Permutationen der Präfixe
@@ -103,7 +108,7 @@ public static grade(graph: GradingGraph, studentResults: Record<string, any>): G
   // 3. Durchlaufe alle isomorphen Permutationen (MSPM)
   for (const perm of prefixPermutations) {
     const mappedResults = this.mapStudentResults(studentResults, perm);
-    const candidateResult = this.executeGrading(graph, mappedResults);
+    const candidateResult = this.executeGrading(graph, mappedResults, studentResults);
 
     // Wähle das Ergebnis mit dem maximalen Score
     if (!bestResult || candidateResult.totalPoints > bestResult.totalPoints) {
@@ -125,7 +130,18 @@ public static grade(graph: GradingGraph, studentResults: Record<string, any>): G
 
 ---
 
-## 5. Testing & Referenzen
+## 5. UI-Synchronisations-Brücke (Zero-Latency Auto-Save)
+
+Um die nahtlose Übernahme von Graphen-Edits (wie z. B. das Hinzufügen von `equivalenceGroups` über den JSON-Editor im Skill Center) zu garantieren, wurde das Speicherkonzept grundlegend optimiert:
+
+1. **Auto-Save bei Skill-Edits:**
+   Sobald ein Custom Skill im Skill Center editiert und über den violetten Button "Speichern" gesichert wird, persistiert der Service `useSkillProfiles` die Änderungen augenblicklich und permanent in der PostgreSQL-Datenbank (bzw. dem lokalen Profil). Ein manueller Umweg über das Speichern des gesamten Profils im Header entfällt.
+2. **Real-Time Zustand Sync Bridge:**
+   Gleichzeitig synchronisiert der Service das aktive `tasksLayout` im Zustand-Store atomar und live. Dadurch werden alle Graphen-Änderungen ohne Page-Reload oder zusätzliche Klicks sofort im Dashboard aktiv.
+
+---
+
+## 6. Testing & Referenzen
 
 * **Unit-Tests (`GraphRunner.test.ts`):** 
   Enthält dedizierte Testabdeckungen für array-basierte alternative Erwartungswerte und den didaktischen Tausch von Subnetzen. Verifiziert, dass bei korrekter Alternativ-Planung der Status `correct` vergeben wird und Betrugsversuche (identische Belegungen) zuverlässig als `primary_error` abgewiesen werden.

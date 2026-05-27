@@ -4,6 +4,7 @@ import SettingsModal from '../SettingsModal';
 import PromptSettingsModal from '../PromptSettingsModal';
 import SkillsSettingsModal from '../SkillsSettingsModal';
 import CreditsModal from '../CreditsModal';
+import { useDashboardStore } from '../../hooks/store/useDashboardStore';
 
 import PDFSplitModal from '../PDFSplitModal';
 import RedactionModal from '../RedactionModal';
@@ -113,6 +114,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
     onGenerateGraph
 }) => {
     const queryClient = useQueryClient();
+    const { tasksLayout, setTasksLayout } = useDashboardStore();
 
     return (
         <>
@@ -182,6 +184,20 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         setSettings(newSettings);
                         if (profileName) setSessionSkillsProfileName(profileName);
                         setShowSkillsSettings(false);
+
+                        // SYNC BRIDGE: Update tasksLayout inline graphs with updated custom skill graphs
+                        if (tasksLayout && newSettings.customSkills) {
+                            const updatedTasks = tasksLayout.map(t => {
+                                if (t.taskType && t.taskType.startsWith('custom-skill-') && newSettings.customSkills[t.taskType]) {
+                                    return {
+                                        ...t,
+                                        gradingGraph: newSettings.customSkills[t.taskType].gradingGraph
+                                    };
+                                }
+                                return t;
+                            });
+                            setTasksLayout(updatedTasks);
+                        }
                         
                         const targetProfileId = profileId && profileId !== 'system-standard' ? profileId : null;
                         

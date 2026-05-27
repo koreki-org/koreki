@@ -25,9 +25,20 @@ export function parseCorrectionResult(analysis: any, tasksLayout?: Task[] | null
         let hasMarkerIssue = false;
 
         const mappedTasks = tasksLayout.map((layoutTask: any) => {
+            // Find the AI task if it exists for extra pedagogical feedback
+            const aiTask = (analysis.tasks || []).find((t: any) => t.name === layoutTask.name);
+
             // --- DETECT DETERMINISTIC GRAPH-BASED TASKS & EVALUATE LOCALLY (PANG Architecture) ---
             if (layoutTask.gradingResult) {
-                const enginePoints = Number(layoutTask.pointsObtained ?? layoutTask.gradingResult.totalPoints ?? 0);
+                const isServerResponse = aiTask && (
+                    aiTask.feedback?.includes('[⚙️ PANG Engine - Mathematischer Graph-Abgleich]') || 
+                    aiTask.feedback?.includes('[⚙️ AGS Engine - Mathematischer VLSM Abgleich]')
+                );
+
+                const enginePoints = isServerResponse 
+                    ? Number(aiTask.pointsObtained ?? layoutTask.gradingResult.totalPoints ?? 0)
+                    : Number(layoutTask.gradingResult.totalPoints ?? layoutTask.pointsObtained ?? 0);
+
                 totalObtained += enginePoints;
 
                 // Format a beautiful step-by-step breakdown as feedback
@@ -58,9 +69,6 @@ export function parseCorrectionResult(analysis: any, tasksLayout?: Task[] | null
                         }
                     });
                 }
-
-                // Find the AI task if it exists for extra pedagogical feedback
-                const aiTask = (analysis.tasks || []).find((t: any) => t.name === layoutTask.name);
                 
                 // Idempotency check: If the feedback has already been formatted (e.g. on the server), return it as-is
                 const isAlreadyFormatted = aiTask && aiTask.feedback && (
@@ -96,8 +104,6 @@ export function parseCorrectionResult(analysis: any, tasksLayout?: Task[] | null
                     content: aiTask ? (aiTask.content || '') : ''
                 };
             }
-
-            const aiTask = (analysis.tasks || []).find((t: any) => t.name === layoutTask.name);
 
             if (aiTask) {
                 const obtained = Number(aiTask.pointsObtained || 0);
@@ -215,16 +221,11 @@ export async function extractStudentAnswersWithLLM(
     settings: AppSettings,
     taskType?: string
 ): Promise<Record<string, any>> {
-    // 1. Establish baseline using legacy heuristics (guarantees robustness)
+    // 1. Establish baseline (Deactivated legacy "Schicht A" regex-based heuristics per user & architectural requirement)
     let heuristicValues: Record<string, any> = {};
-    try {
-        heuristicValues = GraphRunner.extractStudentAnswers(studentText, graph);
-    } catch (e) {
-        console.error('Error in legacy GraphRunner.extractStudentAnswers:', e);
-    }
 
     if (!settings) {
-        return heuristicValues;
+        return {};
     }
 
     // Look up extraction instructions from the modular skill if taskType is specified
@@ -248,9 +249,16 @@ export async function extractStudentAnswersWithLLM(
 
     try {
         let extracted: Record<string, any> = {};
+        // Strip defaultValues to eliminate any force-fitting bias towards the expected master key
+        const strippedVariables = graph.variables.map(v => {
+            const copy = { ...v };
+            delete copy.defaultValue;
+            return copy;
+        });
+
         const payload = {
             studentText,
-            variables: graph.variables,
+            variables: strippedVariables,
             extractionInstructions
         };
 
@@ -317,13 +325,13 @@ export async function extractStudentAnswersWithLLM(
                 }
             } else {
                 // Client-side STANDARD mode placeholder: the server handles all correction & variable extraction
-                // in the /api/ai-correct endpoint, so we can securely return the heuristics here.
-                return heuristicValues;
+                // in the /api/ai-correct endpoint, so we can securely return an empty object here.
+                return {};
             }
         }
 
-        // 3. Robust Filtering, Normalization & Merging
-        const merged: Record<string, any> = { ...heuristicValues };
+        // 3. Robust Filtering & Type-safe Normalization
+        const merged: Record<string, any> = {};
 
         if (extracted && typeof extracted === 'object') {
             for (const variable of graph.variables) {
@@ -348,8 +356,8 @@ export async function extractStudentAnswersWithLLM(
 
         return merged;
     } catch (err) {
-        console.error('LLM Variable Extraction failed, using legacy heuristics:', err);
-        return heuristicValues;
+        console.error('LLM Variable Extraction failed:', err);
+        return {};
     }
 }
 
@@ -362,13 +370,17 @@ export async function performAIRequest(
     appMode: 'PURE' | 'STANDARD' | 'TRIAL' | undefined,
     settings: AppSettings
 ): Promise<any> {
-    // Client-side deterministic graph evaluation for PURE mode
-    if (action === 'correction' && payload.tasksLayout && Array.isArray(payload.tasksLayout)) {
+    // Client-side deterministic graph evaluation for PURE mode or local Ollama execution
+    const isClientSideExecution = appMode === 'PURE' || settings?.provider === 'ollama';
+    if (isClientSideExecution && action === 'correction' && payload.tasksLayout && Array.isArray(payload.tasksLayout)) {
         const activeSkillIds = settings?.activeSkillIds || [];
         const customSkills = settings?.customSkills || {};
         
         for (const task of payload.tasksLayout) {
-            const isGraphTask = task.taskType && (
+            // A task is graph-based if it has a GradingGraph attached (the teacher explicitly generated one)
+            // OR if its taskType matches a known graph-based skill pattern.
+            const hasAttachedGraph = !!task.gradingGraph;
+            const isGraphSkill = task.taskType && (
                 task.taskType === 'vlsm' || 
                 (activeSkillIds.includes(task.taskType) && (
                     task.taskType.startsWith('skill-calc-') || 
@@ -376,7 +388,7 @@ export async function performAIRequest(
                 ))
             );
 
-            if (isGraphTask && task.gradingGraph) {
+            if (hasAttachedGraph) {
                 try {
                     const studentText = payload.studentText || payload.text || "";
                     const studentValues = await extractStudentAnswersWithLLM(studentText, task.gradingGraph, appMode, settings, task.taskType);

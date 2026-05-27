@@ -16,7 +16,7 @@ export function formatSquashedTables(text: string): string {
     // 1. Auto-Reconstruct Squashed Tables lacking alignment rows (|---|---|...)
     // If a line has pipes but no alignment row, we chunk it into columns and build a valid Markdown table.
     let processed = text;
-    if (processed.includes('|') && !/\|\s*[-:]+\s*\|/.test(processed)) {
+    if (processed.includes('|') && !/\|\s*[-:]{3,}\s*\|/.test(processed)) {
         const lines = processed.split('\n');
         const processedLines = lines.map(line => {
             const pipeCount = (line.match(/\|/g) || []).length;
@@ -64,13 +64,13 @@ export function formatSquashedTables(text: string): string {
     }
 
     // 2. Fallback to existing squashed table recovery for standard GFM squashed tables
-    if (!processed || !processed.includes('|') || !/\|\s*[-:]+\s*\|/.test(processed)) {
+    if (!processed || !processed.includes('|') || !/\|\s*[-:]{3,}\s*\|/.test(processed)) {
         return processed;
     }
 
     const lines = processed.split('\n');
     const processedLines = lines.map(line => {
-        if (!line.includes('|') || !/\|\s*[-:]+\s*\|/.test(line)) {
+        if (!line.includes('|') || !/\|\s*[-:]{3,}\s*\|/.test(line)) {
             return line;
         }
 

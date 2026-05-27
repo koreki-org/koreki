@@ -3,6 +3,7 @@ import { AppSettings } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { STANDARD_SKILL_PROFILES } from '@/lib/ai/standard-skills-profiles';
+import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 
 /**
  * Industrial Skill Profile Hook
@@ -33,8 +34,22 @@ export const useSkillProfiles = (
     const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState('');
 
-    const isDirty = JSON.stringify([...activeSkillIds].sort()) !== JSON.stringify([...lastSavedSkillIds].sort());
     const selectedProfileData = profiles.find(p => p.name === selectedProfile);
+
+    // Precise Custom Skills dirty checking (Stage 10 Parity)
+    const currentProfileCustomSkills = Object.keys(customSkills)
+        .filter(key => activeSkillIds.includes(key))
+        .reduce((obj, key) => {
+            obj[key] = customSkills[key];
+            return obj;
+        }, {} as Record<string, any>);
+
+    const savedProfileCustomSkills = selectedProfileData?.customSkills && typeof selectedProfileData.customSkills === 'object'
+        ? selectedProfileData.customSkills
+        : {};
+
+    const isCustomSkillsDirty = JSON.stringify(currentProfileCustomSkills) !== JSON.stringify(savedProfileCustomSkills);
+    const isDirty = JSON.stringify([...activeSkillIds].sort()) !== JSON.stringify([...lastSavedSkillIds].sort()) || isCustomSkillsDirty;
     const isSystemSelected = selectedProfileData?.isSystem || !!profiles.find(p => p.name === selectedProfile && p.isSystem);
 
     // Load custom skills on mount
@@ -49,12 +64,68 @@ export const useSkillProfiles = (
         }
     }, []);
 
-    const handleSaveCustomSkill = (skill: any) => {
+    const handleSaveCustomSkill = async (skill: any) => {
+        // 1. Update global customSkills state & localStorage
         setCustomSkills(prev => {
             const updated = { ...prev, [skill.id]: skill };
             localStorage.setItem('koreki_custom_skills', JSON.stringify(updated));
             return updated;
         });
+
+        // 2. Direct Sync and Persistence: Auto-save immediately to active profile
+        const profile = profiles.find(p => p.name === selectedProfile);
+        if (profile && !profile.isSystem) {
+            const updatedProfileCustomSkills = {
+                ...(profile.customSkills || {}),
+                [skill.id]: skill
+            };
+
+            if (isDesktopTarget()) {
+                const stored = localStorage.getItem('koreki_local_skill_profiles');
+                let customProfiles: any[] = [];
+                if (stored) {
+                    try { customProfiles = JSON.parse(stored); } catch (e) {}
+                }
+                const existingIdx = customProfiles.findIndex(p => p.id === profile.id);
+                if (existingIdx >= 0) {
+                    customProfiles[existingIdx].customSkills = updatedProfileCustomSkills;
+                    localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(customProfiles));
+                }
+            } else {
+                try {
+                    await apiClient.post('/api/user/skill-profiles', {
+                        name: profile.name,
+                        activeSkillIds: profile.activeSkillIds,
+                        customSkills: updatedProfileCustomSkills
+                    });
+                } catch (e) {
+                    console.error("[useSkillProfiles] Auto-save custom skill failed:", e);
+                }
+            }
+
+            // Update profiles list state to prevent stale overwrite
+            setProfiles(prev => prev.map(p => {
+                if (p.id === profile.id) {
+                    return { ...p, customSkills: updatedProfileCustomSkills };
+                }
+                return p;
+            }));
+        }
+
+        // 3. Sync Bridge: Update active tasksLayout inline graphs immediately
+        const store = useDashboardStore.getState();
+        if (store.tasksLayout) {
+            const updatedTasks = store.tasksLayout.map(t => {
+                if (t.taskType === skill.id) {
+                    return {
+                        ...t,
+                        gradingGraph: skill.gradingGraph
+                    };
+                }
+                return t;
+            });
+            store.setTasksLayout(updatedTasks);
+        }
     };
 
     const handleDeleteCustomSkill = async (id: string) => {

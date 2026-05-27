@@ -322,14 +322,21 @@ export function parseGeneratedGraph(llmResponse: string): GradingGraph | null {
     let shouldKeep = true;
     if (v.type === 'formula') {
       if (typeof v.expression === 'string') {
-        // Security: Validate that expression uses only registered plugin functions
         const expr = v.expression as string;
-        const isValidExpression = validPrefixes.some(prefix => expr.startsWith(prefix));
 
-        if (isValidExpression) {
+        // 1. Check if expression uses a registered plugin function (e.g. network.calculateMask(...))
+        const isPluginExpression = validPrefixes.some(prefix => expr.startsWith(prefix));
+
+        // 2. Check if expression is a valid free algebraic formula (e.g. 'a * b + c', 'sqrt(x)')
+        //    Security: Only allow safe mathematical characters – variable names, operators,
+        //    numbers, parentheses, commas, dots, spaces, and known math functions.
+        //    Block anything that looks like arbitrary code injection (semicolons, brackets, etc.)
+        const isSafeAlgebra = !isPluginExpression && /^[a-zA-Z0-9_+\-*/^(). ,\t]+$/.test(expr);
+
+        if (isPluginExpression || isSafeAlgebra) {
           variable.expression = expr;
         } else {
-          // Skip invalid formula variables to prevent runtime crashes!
+          // Skip truly invalid expressions to prevent runtime crashes
           console.warn(`Skipping invalid formula variable "${v.id}" with expression: "${expr}"`);
           shouldKeep = false;
         }
@@ -352,11 +359,17 @@ export function parseGeneratedGraph(llmResponse: string): GradingGraph | null {
   // Smart Post-Processing: Prevent the Follow-Through Paradoxon by ensuring robust points distribution
   sanitizePointsDistribution(validatedVariables);
 
-  return {
+  const result: GradingGraph = {
     taskId: targetData.taskId as string,
     discipline: targetData.discipline as string,
     variables: validatedVariables
   };
+
+  if (Array.isArray(targetData.equivalenceGroups)) {
+    result.equivalenceGroups = targetData.equivalenceGroups;
+  }
+
+  return result;
 }
 
 /**

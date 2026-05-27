@@ -256,27 +256,31 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
             category: 'math-science',
             description: '',
             promptSnippet: '',
-            isCustom: true
+            isCustom: true,
+            taskText: ''
         });
+        setGraphGenTaskText('');
         setIsEditingSkill(true);
     };
 
     const handleEditSkillClick = (skill: any) => {
         setEditingSkillData({ ...skill });
+        setGraphGenTaskText(skill.taskText || '');
         setIsEditingSkill(true);
     };
 
     const handleAIGraphGenerate = async () => {
-        if (!onGenerateGraph || !graphGenTaskText.trim()) return;
+        const textToGen = editingSkillData?.taskText || graphGenTaskText;
+        if (!onGenerateGraph || !textToGen.trim()) return;
         setIsGeneratingGraph(true);
         try {
-            const result = await onGenerateGraph(graphGenTaskText, editingSkillData?.category);
+            const result = await onGenerateGraph(textToGen, editingSkillData?.category);
             if (result) {
-                setEditingSkillData({
-                    ...editingSkillData,
-                    gradingGraph: result
-                });
-                setGraphGenTaskText('');
+                setEditingSkillData(prev => ({
+                    ...prev,
+                    gradingGraph: result,
+                    taskText: textToGen
+                }));
             }
         } catch (err) {
             console.error('Graph generation failed:', err);
@@ -670,16 +674,8 @@ ${skill.prompt || ''}`;
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
-                                                    disabled={isGeneratingGraph}
-                                                    onClick={() => {
-                                                        if (graphGenTaskText.trim()) {
-                                                            // Already has text, generate directly
-                                                            handleAIGraphGenerate();
-                                                        } else {
-                                                            // Show inline textarea
-                                                            setGraphGenTaskText(editingSkillData.description || '');
-                                                        }
-                                                    }}
+                                                    disabled={isGeneratingGraph || !editingSkillData.taskText?.trim()}
+                                                    onClick={handleAIGraphGenerate}
                                                     className="h-8 text-xs font-bold border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 rounded-lg px-3 gap-1.5 transition-all duration-300"
                                                 >
                                                     {isGeneratingGraph ? (
@@ -701,28 +697,21 @@ ${skill.prompt || ''}`;
                                         </div>
                                     </div>
 
-                                    {/* AI Generation Textarea (inline, shown when user clicks KI-Graph generieren) */}
-                                    {onGenerateGraph && graphGenTaskText !== undefined && !isGeneratingGraph && (
-                                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                                            <label className="text-xs font-bold text-muted-foreground">Aufgabentext für KI-Analyse:</label>
-                                            <textarea
-                                                value={graphGenTaskText}
-                                                onChange={e => setGraphGenTaskText(e.target.value)}
-                                                placeholder="Füge hier den Aufgabentext ein, aus dem die KI Variablen und Formeln extrahieren soll..."
-                                                rows={4}
-                                                className="w-full p-3 rounded-xl border border-border text-sm font-medium text-foreground focus:ring-2 focus:ring-primary/30 focus:border-primary/50 outline-none resize-none bg-background"
-                                            />
-                                            <Button
-                                                size="sm"
-                                                disabled={!graphGenTaskText.trim() || isGeneratingGraph}
-                                                onClick={handleAIGraphGenerate}
-                                                className="h-8 rounded-lg px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs gap-1.5 transition-all duration-300"
-                                            >
-                                                <Sparkles size={13} />
-                                                Graph generieren
-                                            </Button>
-                                        </div>
-                                    )}
+                                    {/* Permanently visible task text input for graph skills */}
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-primary uppercase tracking-widest">Aufgabentext für KI-Analyse & PANG-Kompensation</label>
+                                        <textarea
+                                            value={editingSkillData.taskText || ''}
+                                            onChange={e => {
+                                                const val = e.target.value;
+                                                setEditingSkillData({ ...editingSkillData, taskText: val });
+                                                setGraphGenTaskText(val);
+                                            }}
+                                            placeholder="Füge hier den Aufgabentext ein, aus dem die KI Variablen und Formeln extrahieren soll..."
+                                            rows={4}
+                                            className="w-full p-3 rounded-xl border border-primary/10 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-white"
+                                        />
+                                    </div>
 
                                     <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                                         Definieren Sie Variablen, Abhängigkeiten und mathematische Ausdrücke für automatisierte Berechnungen und präzise Folgefehlererkennung.
@@ -786,6 +775,7 @@ ${skill.prompt || ''}`;
                     onClose={() => setIsGraphModalOpen(false)}
                     initialGraph={editingSkillData?.gradingGraph}
                     taskName={editingSkillData?.name || "Benutzerdefinierter Skill"}
+                    taskContent={editingSkillData?.taskText || editingSkillData?.description || editingSkillData?.name || ""}
                     onSave={(updatedGraph) => {
                         setEditingSkillData({
                             ...editingSkillData,

@@ -40,7 +40,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const customSkills = settings?.customSkills || {};
             
             for (const task of tasksLayout) {
-                const isGraphTask = task.taskType && (
+                const hasAttachedGraph = !!task.gradingGraph;
+                const isGraphSkill = task.taskType && (
                     task.taskType === 'vlsm' || 
                     (activeSkillIds.includes(task.taskType) && (
                         task.taskType.startsWith('skill-calc-') || 
@@ -48,7 +49,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     ))
                 );
 
-                if (isGraphTask && task.gradingGraph) {
+                if (hasAttachedGraph) {
                     try {
                         const studentValues = await extractStudentAnswersWithLLM(studentText, task.gradingGraph, 'STANDARD', settings as any, task.taskType);
                         const gradingResult = GraphRunner.grade(task.gradingGraph, studentValues);

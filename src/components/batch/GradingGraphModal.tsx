@@ -338,7 +338,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
         try {
             const res = await apiClient.post('/api/refine-graph', {
-                taskText: taskContent || "",
+                taskText: taskContent || '',
                 currentGraph: graph,
                 userInstruction: instruction,
                 discipline: selectedPlugin,
@@ -479,17 +479,22 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             placeholder="z.B. Subnetz-Berechnung"
                             className="h-8 w-44 rounded-xl border border-slate-200 text-xs font-bold px-2.5 focus:border-indigo-500 bg-white"
                         />
-                        {onSaveCustomSkill && (
+                        {(onSaveCustomSkill || onSave) && (
                             <Button
                                 onClick={() => {
                                     if (!skillName.trim()) {
                                         alert("Bitte gib einen Namen für den Skill ein.");
                                         return;
                                     }
-                                    onSaveCustomSkill(skillName.trim(), graph);
+                                    if (onSaveCustomSkill) {
+                                        onSaveCustomSkill(skillName.trim(), graph);
+                                    } else {
+                                        onSave(graph);
+                                        alert(`Änderungen am Graphen wurden in den Skill "${skillName.trim()}" übernommen. Klicke gleich im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern!`);
+                                    }
                                 }}
                                 className="h-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-sm transition-all text-xs gap-1 px-3 flex items-center shrink-0"
-                                title="Als wiederverwendbaren Custom Skill im Skill Center speichern"
+                                title="Als wiederverwendbaren Custom Skill im Skill Center speichern bzw. übernehmen"
                             >
                                 💾 Speichern
                             </Button>

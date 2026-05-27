@@ -555,7 +555,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         onClose={() => setEditingGraphTaskIdx(null)}
                         initialGraph={task?.gradingGraph}
                         taskName={task?.name || `Aufgabe ${editingGraphTaskIdx + 1}`}
-                        taskContent={content}
+                        taskContent={content && content.trim() ? content : (modelSolution || "")}
                         taskType={task?.taskType}
                         customSkills={settings?.customSkills}
                         settings={settings}
