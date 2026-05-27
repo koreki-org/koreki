@@ -78,12 +78,6 @@ const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({
                 {value}
             </span>
             
-            {/* Subtle static indicator dot in the top-right corner on mobile if active */}
-            {isActive && (
-                <span className="absolute top-0.5 right-0.5 flex h-1.5 w-1.5 md:hidden">
-                    <span className="rounded-full h-1.5 w-1.5 bg-emerald-500 ring-1 ring-white"></span>
-                </span>
-            )}
         </Button>
     );
 };
@@ -164,27 +158,22 @@ const Header: React.FC<HeaderProps> = ({
     return (
         <header className="mb-4 md:mb-5 flex flex-col gap-4 w-full animate-in fade-in duration-500">
             {/* Strictly Single-Row Navigation Bar */}
-            <div className="w-full bg-white/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl sm:rounded-[1.25rem] border border-white shadow-xl shadow-slate-200/30 ring-1 ring-slate-900/[0.02] flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 transition-all duration-300">
+            <div className="w-full bg-white/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl sm:rounded-[1.25rem] border border-white shadow-xl shadow-slate-200/30 ring-1 ring-slate-900/[0.02] flex flex-row items-center justify-between gap-3 transition-all duration-300">
                 
                 {/* Left Side: Badges & Profile Config Buttons */}
-                <div className="flex flex-col lg:flex-row lg:items-center gap-3 w-full lg:w-auto">
-                    
-                    {/* Licenses & Tenancy Badges (no Logo) + Mobile Quick Actions */}
-                    <div className="flex items-center justify-between w-full lg:w-auto shrink-0">
-                        <HeaderBadges
-                            userData={userData}
-                            upgrading={upgrading}
-                            onUpgrade={onUpgrade}
-                            onUnlockExpert={onUnlockExpert}
-                        />
-                        {renderQuickActions(true)}
-                    </div>
+                <div className="flex flex-row items-center gap-2 sm:gap-3 w-auto">
+                    <HeaderBadges
+                        userData={userData}
+                        upgrading={upgrading}
+                        onUpgrade={onUpgrade}
+                        onUnlockExpert={onUnlockExpert}
+                    />
 
                     <div className="h-4 w-px bg-slate-200 hidden lg:block shrink-0" />
 
                     {/* Classic Labeled Configuration Pill Row - strictly horizontal on desktop */}
                     {(isLocalInstance() || userData?.canEditPrompts) && (
-                        <div className="flex flex-row flex-wrap items-center justify-start gap-2 w-auto">
+                        <div className="flex flex-row flex-wrap items-center justify-start gap-2 w-auto bg-white/70 backdrop-blur-xl p-2 rounded-[1.25rem] border border-white shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/[0.03] md:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none md:border-0 md:shadow-none md:ring-0">
                             <ProfileConfigButton 
                                 icon={<GraduationCap size={14} />} 
                                 label="Expertise"
@@ -224,8 +213,11 @@ const Header: React.FC<HeaderProps> = ({
                     )}
                 </div>
 
-                {/* Right Side: Quick Action Utilities (Desktop-only) */}
-                {renderQuickActions(false)}
+                {/* Right Side: Quick Action Utilities */}
+                <div className="flex items-center shrink-0">
+                    {renderQuickActions(true)}
+                    {renderQuickActions(false)}
+                </div>
             </div>
 
             {/* The Classic Center Branding & Action Layer */}

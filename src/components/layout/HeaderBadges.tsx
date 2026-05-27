@@ -42,9 +42,9 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
             
             {/* Credits Counter or Local Instance Badge */}
             {isLocalInstance() ? (
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50/50 text-indigo-700 rounded-xl border border-indigo-100/50 shadow-sm animate-in fade-in duration-500">
-                    <ShieldCheck size={14} className="text-indigo-500" />
-                    <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">
+                <div className="flex items-center gap-2 px-2 sm:px-3 py-1.5 bg-indigo-50/50 text-indigo-700 rounded-xl border border-indigo-100/50 shadow-sm animate-in fade-in duration-500 w-9 h-9 sm:w-auto sm:h-auto justify-center shrink-0">
+                    <ShieldCheck size={14} className="text-indigo-500 shrink-0" />
+                    <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap hidden sm:inline">
                         Community Edition
                     </span>
                 </div>
