@@ -16,7 +16,7 @@ export const STANDARD_AI_PROFILE: AiProfile & { isSystem: boolean } = {
     enableThinking: true,
     visionTemperature: 0.0,
     visionTopP: 0.8,
-    visionMaxTokens: 4000,
+    visionMaxTokens: 16000,
     visionPresencePenalty: 0.0,
     isSystem: true
 };
@@ -31,7 +31,7 @@ export const MATH_AI_PROFILE: AiProfile & { isSystem: boolean } = {
     enableThinking: true,
     visionTemperature: 0.0,
     visionTopP: 0.5,
-    visionMaxTokens: 4000,
+    visionMaxTokens: 16000,
     visionPresencePenalty: 0.0,
     isSystem: true
 };
@@ -66,7 +66,7 @@ export const useAiProfiles = (
 
     const [visionTemperature, setVisionTemperature] = useState(settings.visionTemperature ?? 0.0);
     const [visionTopP, setVisionTopP] = useState(settings.visionTopP ?? 0.8);
-    const [visionMaxTokens, setVisionMaxTokens] = useState(settings.visionMaxTokens ?? 4000);
+    const [visionMaxTokens, setVisionMaxTokens] = useState(settings.visionMaxTokens ?? 16000);
     const [visionPresencePenalty, setVisionPresencePenalty] = useState(settings.visionPresencePenalty ?? 0.0);
 
     const selectedProfileData = profiles.find(p => p.name === selectedProfile);
@@ -176,7 +176,7 @@ export const useAiProfiles = (
 
         setVisionTemperature(0.0);
         setVisionTopP(0.8);
-        setVisionMaxTokens(4000);
+        setVisionMaxTokens(16000);
         setVisionPresencePenalty(0.0);
         setShowEditorMobile(true);
     };

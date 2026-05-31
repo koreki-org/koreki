@@ -520,13 +520,13 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{visionMaxTokens.toLocaleString()}</span>
                                 </div>
                                 <input
-                                    type="range" min="1000" max="16384" step="500" value={visionMaxTokens}
+                                    type="range" min="1000" max="32768" step="500" value={visionMaxTokens}
                                     onChange={(e) => setVisionMaxTokens(parseInt(e.target.value))}
                                     className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
                                 />
                                 <div className="flex justify-between items-center text-[10px] text-slate-500 font-semibold">
                                     <span>Maximale Länge des extrahierten Texts</span>
-                                    <span className="text-[9px] text-slate-400 font-medium">Standard: 4.000</span>
+                                    <span className="text-[9px] text-slate-400 font-medium">Standard: 16.000</span>
                                 </div>
                             </div>
 
