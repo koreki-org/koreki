@@ -12,7 +12,6 @@ import feedbackSandwichRaw from './feedback-sandwich.md';
 import feedbackGeneralRaw from './feedback-general.md';
 import orthographyLenientRaw from './orthography-lenient.md';
 import calcVlsmRaw from './calc-vlsm.md';
-import calcRaidRaw from './calc-raid.md';
 
 /**
  * Registry of all available Modular Correction Skills.
@@ -29,8 +28,7 @@ export const SKILL_REGISTRY: Record<string, PromptLibraryEntry> = {
     'skill-feedback-sandwich': parsePromptFile(feedbackSandwichRaw),
     'skill-feedback-general': parsePromptFile(feedbackGeneralRaw),
     'skill-orthography-lenient': parsePromptFile(orthographyLenientRaw),
-    'skill-calc-vlsm': parsePromptFile(calcVlsmRaw),
-    'skill-calc-raid': parsePromptFile(calcRaidRaw)
+    'skill-calc-vlsm': parsePromptFile(calcVlsmRaw)
 };
 
 /**

@@ -193,6 +193,8 @@ export class GraphRunner {
       let isAbsolutelyCorrect = false;
       let isConsecutivelyCorrect = false;
 
+      let isInputFallback = false;
+
       if (studentValue !== undefined && studentValue !== null) {
         isAbsolutelyCorrect = this.checkMatch(studentValue, expectedValue, validationType, tolerance);
         
@@ -211,9 +213,9 @@ export class GraphRunner {
         }
       } else if (type === 'input') {
         // Symmetrical Input Fallback: if an input variable is omitted in the student's text,
-        // automatically treat it as correct and propagate its expected value downstream.
-        studentValue = expectedValue;
-        isAbsolutelyCorrect = true;
+        // treat it as a fallback omission (0 points, primary_error) but propagate its expected value downstream.
+        isInputFallback = true;
+        isAbsolutelyCorrect = false;
       }
 
       // 3. Determine Status and Award Points
@@ -221,7 +223,11 @@ export class GraphRunner {
       let points = 0;
       let note = '';
 
-      if (isAbsolutelyCorrect) {
+      if (isInputFallback) {
+        status = 'primary_error';
+        points = 0;
+        note = `Wert nicht explizit angegeben (als Vorgabe vorausgesetzt).`;
+      } else if (isAbsolutelyCorrect) {
         status = 'correct';
         points = stepMaxPoints;
         note = `Schritt korrekt gelöst.`;
@@ -263,7 +269,7 @@ export class GraphRunner {
         variableId: id,
         status,
         expectedValue,
-        studentValue,
+        studentValue: isInputFallback ? null : studentValue,
         computedValueBasedOnErrors,
         points,
         maxPoints: stepMaxPoints,
@@ -287,9 +293,18 @@ export class GraphRunner {
       return expectedVal.some(val => this.checkMatch(studentVal, val, type, tolerance));
     }
 
-    if (typeof expectedVal === 'string' && typeof studentVal === 'string') {
+    // Robust normalization: Convert string to number if expected value is a number
+    let cleanStudentVal = studentVal;
+    if (typeof expectedVal === 'number' && typeof studentVal === 'string') {
+      const parsed = parseFloat(studentVal.trim());
+      if (!isNaN(parsed)) {
+        cleanStudentVal = parsed;
+      }
+    }
+
+    if (typeof expectedVal === 'string' && typeof cleanStudentVal === 'string') {
       // Normalize strings (lowercase, trim)
-      const cleanStudent = studentVal.trim().toLowerCase();
+      const cleanStudent = cleanStudentVal.trim().toLowerCase();
       const cleanExpected = expectedVal.trim().toLowerCase();
 
       if (type === 'contains') {
@@ -298,14 +313,20 @@ export class GraphRunner {
       return cleanStudent === cleanExpected;
     }
 
-    if (typeof expectedVal === 'number' && typeof studentVal === 'number') {
+    if (typeof expectedVal === 'number' && typeof cleanStudentVal === 'number') {
       if (type === 'tolerance' && tolerance !== undefined) {
-        return Math.abs(studentVal - expectedVal) <= tolerance;
+        const isAbsoluteMatch = Math.abs(cleanStudentVal - expectedVal) <= tolerance;
+        
+        // If tolerance is specified as a fraction (< 1.0, e.g., 0.05 for 5%),
+        // also check it as a relative percentage tolerance based on the expected value.
+        const isRelativeMatch = tolerance < 1.0 && Math.abs(cleanStudentVal - expectedVal) <= (tolerance * Math.abs(expectedVal));
+        
+        return isAbsoluteMatch || isRelativeMatch;
       }
-      return studentVal === expectedVal;
+      return cleanStudentVal === expectedVal;
     }
 
     // Default strict equality
-    return studentVal === expectedVal;
+    return cleanStudentVal === expectedVal;
   }
 }

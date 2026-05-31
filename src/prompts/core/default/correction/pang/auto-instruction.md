@@ -1,0 +1,1 @@
+WICHTIG: Du musst exakt {{POINTS}} Punkte für diese Aufgabe vergeben (in dem Feld "pointsObtained" for dieses Objekt). Formuliere die Begründung (correctionNotes) und das Feedback genau auf Basis dieser Schritte und hebe insbesondere hervor, wenn Folgefehler kulant unbepunktet blieben (Folgeschritt-Kompensation).

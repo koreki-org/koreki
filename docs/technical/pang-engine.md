@@ -71,6 +71,14 @@ Der Parser liest mathematische Zeichenketten ein, setzt die Werte der referenzie
 *   Ternäre Bedingungen (`condition ? true : false`) für komplexe RAID-Kapazitätsprüfungen.
 *   Zusätzliche globale Domänenfunktionen für IP-Umrechnungen (`ipToLong` und `longToIp`).
 
+#### Plugin Manifest & LLM Introspection (SOLID)
+Um Sprachmodellen (wie Mistral oder Qwen) beizubringen, wie sie die bereitgestellten Plugin-Funktionen im `expression`-Feld korrekt kombinieren, existiert ein `PLUGIN_MANIFEST`.
+Gemäß dem **Single Responsibility Principle (SRP)** und **Open/Closed Principle (OCP)** aus SOLID wird dieses Manifest direkt in der Domänen-Datei (`plugins.ts`) neben der Implementierung verankert und vom Graphen-Generator (`graph-generator.ts`) nur noch dynamisch importiert.
+
+> [!WARNING]
+> **Prompt-Sicherheit im Manifest:**
+> Sprachmodelle neigen bei MINT-Aufgaben zu Halluzinationen (z. B. Übergabe einer Broadcast-Adresse anstatt einer Netz-ID an `calculateNetId`). Die `description`-Felder im Manifest müssen daher idiotensicher und restriktiv formuliert sein (z. B. *"Erwartet zwingend die VORHERIGE NETZ-ID ... und NIEMALS eine Broadcast-Adresse!"*).
+
 #### Abwärtskompatibilität für Domänen-Plugins:
 Um bestehende Graphen-Presets weiterhin fehlerfrei auszuführen, registriert das System alle konventionellen Plugin-Funktionen (`networkPlugin`, `raidPlugin`) beim App-Start automatisch im Parser. Vorkommen von Punkten (wie `network.calculateMask(...)`) werden transparent auf die registrierten Funktionen (z. B. `network_calculateMask`) umgemappt:
 
@@ -158,6 +166,37 @@ Im interaktiven `GradingGraphModal.tsx` wird diese Einstellung transparent und k
 *   **Globaler Modus-Wähler:** Ein Dropdown-Feld **`Bewertung:`** befindet sich prominent im KI-Assistenten-Header und lässt den Lehrer den Modus manuell überschreiben (`✨ Hybrid-Grading (Didaktisch tolerant)` vs. `🔒 Strenge Punkte (Mathematisch starr)`).
 *   **Punkte-Ausblendung im Simulator:** Ist Hybrid-Grading aktiv, werden alle Punkte-Badges (`+1 P`) im Simulator ausgeblendet. Stattdessen wird dem Lehrer eine didaktisch wertvolle Variablen-Statistik angezeigt (z. B. `Variablen: 2 / 3 korrekt`), um Missverständnisse über PANG-seitige Bepunktungen auszuschließen.
 *   **Relative Gewichtung:** Ein Hinweis im Detail-Inspektor der Variablen weist darauf hin, dass Punkte-Einträge bei aktivem Hybrid-Grading als relative Gewichtung und Empfehlung für das LLM dienen.
+
+### 3.5 WICHTIG: Das "Folgefehler-Paradoxon" (Anti-Pattern)
+> [!WARNING]
+> **Architectural Decision (2026-05-30): Verbot von automatischer Punkte-Hygiene!**
+> Früher besaß die PANG-Engine einen "Smart Post-Processing Hygienization"-Algorithmus. Dieser verteilte automatisch Punkte auf Input-Variablen, falls alle Inputs 0 Punkte hatten, um zu verhindern, dass Schüler trotz falschem Input durch fehlerfreies Weiterrechnen 100% der Aufgabe erreichen (das sogenannte "Folgefehler-Paradoxon").
+> **Diese Routine wurde restlos entfernt und darf nicht wieder eingebaut werden!** 
+> Sie verletzte die pädagogische Autonomie der Lehrkraft: Wenn eine Lehrkraft (wie z.B. bei VLSM-Tabellen) explizit 0 Punkte für das bloße Ablesen von Startwerten vergibt, muss das System diese Entscheidung respektieren, selbst wenn es zu Folgefehler-Kompensationen auf Basis dieser 0-Punkte-Inputs kommt. Das System hat sich der Didaktik unterzuordnen, nicht umgekehrt.
+
+### 3.6 Automatisierte mathematische Validierung & CoT-Verfeinerung
+Um die Ausfallsicherheit bei der automatischen Graph-Generierung durch Sprachmodelle zu maximieren, verfügt Koreki über ein mehrstufiges, modusspezifisches Validierungssystem.
+
+#### A) Chain-of-Thought (CoT) Prompting
+Für die Graphenerstellung wird die KI angewiesen, zwingend vor dem eigentlichen JSON-Graphen einen Gedanken-Block (`<thought>...</thought>`) zu generieren. 
+* **Mathematische Simulation:** Das LLM deklariert darin alle geplanten Variablen und rechnet die mathematischen Formeln schrittweise mit den Standardwerten (`defaultValue`) der Inputs durch.
+* **Musterlösungs-Abgleich:** Das berechnete Endergebnis wird mit den Soll-Werten der Musterlösung verglichen, um Inkonsistenzen noch vor der JSON-Erstellung abzufangen und zu korrigieren.
+
+#### B) Backend Dry-Run Validierung
+Sobald die API den Graphen erhält und parst, wird eine automatisierte Simulation durchgeführt (`validateGraphDeterminism` in [graph-generator.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/lib/grading/graph-generator.ts)):
+1. **Mock-Inputs:** Die Simulation extrahiert alle `defaultValue`s der `input`-Variablen als fehlerfreie Schülerantworten.
+2. **Auswertung:** Der `GraphRunner` berechnet alle `formula`-Ausdrücke sequenziell.
+3. **Integritäts-Check:** Schlägt eine Formel fehl (z.B. Syntaxfehler, Division-by-Zero, unbekannte Variablen-ID) oder weicht das Ergebnis vom didaktisch erwarteten Wert ab, wird die Validierung abgebrochen und ein detailreicher Fehlerbericht generiert.
+
+#### C) Auto-Correction Loop (Modus-gesteuert)
+Schlägt der Dry-Run fehl, startet das Backend einen automatisierten Korrekturlauf:
+* **Desktop / Community (Lokal / Eigener API-Key):** Das System erlaubt **bis zu 3 automatische Retries** im Hintergrund. Der Fehlerbericht wird in einem verfeinerten Prompt an das LLM übergeben, um die Formeln selbsttätig zu reparieren.
+* **SaaS-Modus:** Um Betriebskosten und API-Token zu minimieren, wird die Auto-Korrektur im Cloud-Betrieb strikt auf **maximal 1 Retry** limitiert. Schlägt auch dieser fehl, wird der Graph mit entsprechenden Warn-Flags an das Frontend ausgeliefert.
+
+#### D) Echtzeit-Feedback & Fehlervisualisierung im UI
+Im [GradingGraphModal.tsx](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/components/batch/GradingGraphModal.tsx) werden die Ergebnisse des Dry-Runs transparent dargestellt:
+* **🛡️ Verifiziert-Banner:** Ein grünes Banner signalisiert der Lehrkraft, dass der Graph mathematisch geprüft und 100% konsistent auswertbar ist.
+* **⚠️ Fehler-Highlights im Editor:** Weist eine Formel Fehler auf (z.B. durch nachträgliche manuelle Bearbeitung im Editor), leuchtet der betroffene Knoten zart rot auf, erhält ein prominentes "FEHLER"-Badge und zeigt die exakte Fehlermeldung direkt als Codebox auf der Knotenkarte an.
 
 ---
 

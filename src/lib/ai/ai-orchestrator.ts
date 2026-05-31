@@ -10,6 +10,7 @@ import { formatPluginFeedback } from '../grading/feedback-formatter';
 import { GradingGraph } from '../grading/types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { splitSkillSnippet } from './prompt-library';
+import { splitTextByTasks } from '../task-utils';
 
 /**
  * Helper to determine whether deterministic PANG engine point awarding should be disabled (default true for custom tasks).
@@ -22,8 +23,7 @@ export function shouldDisablePoints(taskType?: string, gradingGraph?: any): bool
     
     if (
         taskType === 'vlsm' || 
-        taskType === 'skill-calc-vlsm' || 
-        taskType === 'skill-calc-raid'
+        taskType === 'skill-calc-vlsm'
     ) {
         return false;
     }
@@ -81,9 +81,15 @@ export function parseCorrectionResult(analysis: any, tasksLayout?: Task[] | null
                     stepFeedback = pluginFeedback;
                     shownStepsCount = layoutTask.gradingResult.stepResults.length;
                 } else {
-                    layoutTask.gradingResult.stepResults.forEach((step: any) => {
-                        // Skip auxiliary/setup variables with 0 max points to avoid cluttering the UI
-                        if (step.maxPoints === 0) return;
+                    const totalMaxPoints = layoutTask.gradingResult.stepResults.reduce((sum: number, s: any) => sum + (s.maxPoints || 0), 0);
+                    
+                    layoutTask.gradingResult.stepResults.forEach((step: any, idx: number) => {
+                        const originalVar = layoutTask.gradingGraph?.variables?.find((v: any) => v.id === step.variableId);
+                        
+                        // Only skip explicit setup variables to keep the UI clean, but ALWAYS show inputs and formulas
+                        // even if they yield 0 points, so the user can verify the extraction process.
+                        if (originalVar && originalVar.type === 'setup') return;
+                        
                         shownStepsCount++;
 
                         const statusStr = step.status === 'correct' ? 'KORREKT' : 
@@ -94,7 +100,7 @@ export function parseCorrectionResult(analysis: any, tasksLayout?: Task[] | null
                             stepFeedback += `[⚙️ PANG Engine - Mathematischer Graph-Abgleich]\n`;
                         }
                         
-                        stepFeedback += `• ${step.variableId}: Schülerwert: "${step.studentValue !== undefined ? step.studentValue : 'nicht angegeben'}" (Erwartet: "${step.expectedValue}") ➔ ${statusStr}\n`;
+                        stepFeedback += `• ${step.variableId}: Schülerwert: "${step.studentValue !== undefined && step.studentValue !== null ? step.studentValue : 'nicht angegeben'}" (Erwartet: "${step.expectedValue}") ➔ ${statusStr}\n`;
                         if (step.note) {
                             stepFeedback += `  Info: ${step.note}\n`;
                         }
@@ -250,7 +256,8 @@ export async function extractStudentAnswersWithLLM(
     graph: GradingGraph,
     appMode: 'PURE' | 'STANDARD' | 'TRIAL' | undefined,
     settings: AppSettings,
-    taskType?: string
+    taskType?: string,
+    taskName?: string
 ): Promise<Record<string, any>> {
     // 1. Establish baseline (Deactivated legacy "Schicht A" regex-based heuristics per user & architectural requirement)
     let heuristicValues: Record<string, any> = {};
@@ -265,8 +272,6 @@ export async function extractStudentAnswersWithLLM(
         let skillKey = taskType;
         if (skillKey === 'vlsm') {
             skillKey = 'skill-calc-vlsm';
-        } else if (skillKey === 'raid') {
-            skillKey = 'skill-calc-raid';
         }
         
         const skillEntry = SKILL_REGISTRY[skillKey];
@@ -274,6 +279,26 @@ export async function extractStudentAnswersWithLLM(
             const { extractionSnippet } = splitSkillSnippet(skillEntry.promptSnippet);
             if (extractionSnippet) {
                 extractionInstructions = extractionSnippet;
+            }
+        }
+    }
+
+    // [INDUSTRIAL DETERMINISTIC FALLBACK]
+    // If taskType was missing, rely on the explicitly defined discipline in the GradingGraph.
+    // This is mathematically safer than guessing by variable names (SOLID).
+    if (!extractionInstructions && graph.discipline) {
+        let skillKey = '';
+        if (graph.discipline === 'networking') skillKey = 'skill-calc-vlsm';
+        // Add more disciplines here as the system grows (e.g., 'raid' -> 'skill-calc-raid')
+        
+        if (skillKey) {
+            const skillEntry = SKILL_REGISTRY[skillKey];
+            if (skillEntry) {
+                const { extractionSnippet } = splitSkillSnippet(skillEntry.promptSnippet);
+                if (extractionSnippet) {
+                    extractionInstructions = extractionSnippet;
+                    console.log(`[PANG Engine] Deterministic fallback: Graph discipline '${graph.discipline}' mapped to '${skillKey}' extraction instructions.`);
+                }
             }
         }
     }
@@ -290,7 +315,8 @@ export async function extractStudentAnswersWithLLM(
         const payload = {
             studentText,
             variables: strippedVariables,
-            extractionInstructions
+            extractionInstructions,
+            taskName
         };
 
         // 2. Perform Isomorphic Provider Call
@@ -305,7 +331,7 @@ export async function extractStudentAnswersWithLLM(
                     model: settings.openaiModel,
                     temperature: 0.0,
                     topP: 0.1,
-                    maxTokens: 1000
+                    maxTokens: 4000
                 });
             } else {
                 const mistralKey = settings?.mistralKey;
@@ -341,6 +367,15 @@ export async function extractStudentAnswersWithLLM(
                     const model = settings.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
                     if (!apiKey) throw new Error('OpenAI/Mittwald API-Key fehlt.');
 
+                    // DEBUG LOGGER: Log outgoing payload (Webpack bypass)
+                    try {
+                        if (typeof window === 'undefined') {
+                            const fs = eval('require("fs")');
+                            const path = eval('require("path")');
+                            fs.writeFileSync(path.join(process.cwd(), 'scratch', 'debug-extraction-request.json'), JSON.stringify(payload, null, 2));
+                        }
+                    } catch(e) {}
+
                     extracted = await executeOpenAIRequest(
                         'variable-extraction',
                         payload,
@@ -350,16 +385,23 @@ export async function extractStudentAnswersWithLLM(
                             model,
                             temperature: 0.0,
                             topP: 0.1,
-                            maxTokens: 1000
+                            maxTokens: 4000
                         }
                     );
                 }
             } else {
-                // Client-side STANDARD mode placeholder: the server handles all correction & variable extraction
-                // in the /api/ai-correct endpoint, so we can securely return an empty object here.
                 return {};
             }
         }
+
+        // DEBUG LOGGER: Log incoming result (Webpack bypass)
+        try {
+            if (typeof window === 'undefined') {
+                const fs = eval('require("fs")');
+                const path = eval('require("path")');
+                fs.writeFileSync(path.join(process.cwd(), 'scratch', 'debug-extraction-response.json'), JSON.stringify({ extracted, rawValTest: extracted ? Object.keys(extracted) : [] }, null, 2));
+            }
+        } catch(e) {}
 
         // 3. Robust Filtering & Type-safe Normalization
         const merged: Record<string, any> = {};
@@ -369,10 +411,8 @@ export async function extractStudentAnswersWithLLM(
                 const rawVal = extracted[variable.id];
                 if (rawVal !== undefined && rawVal !== null) {
                     let cleanedVal = rawVal;
-                    // Type-safe normalizations
                     if (typeof rawVal === 'string') {
                         const trimmed = rawVal.trim();
-                        // 1. Safe numeric conversion if it matches a clear number
                         const isNumber = /^-?\d+(\.\d+)?$/.test(trimmed);
                         if (isNumber) {
                             cleanedVal = parseFloat(trimmed);
@@ -385,9 +425,25 @@ export async function extractStudentAnswersWithLLM(
             }
         }
 
+        // DEBUG LOGGER: Log final merged output (Webpack bypass)
+        try {
+            if (typeof window === 'undefined') {
+                const fs = eval('require("fs")');
+                const path = eval('require("path")');
+                fs.writeFileSync(path.join(process.cwd(), 'scratch', 'debug-extraction-final.json'), JSON.stringify(merged, null, 2));
+            }
+        } catch(e) {}
+
         return merged;
     } catch (err) {
         console.error('LLM Variable Extraction failed:', err);
+        try {
+            if (typeof window === 'undefined') {
+                const fs = eval('require("fs")');
+                const path = eval('require("path")');
+                fs.writeFileSync(path.join(process.cwd(), 'scratch', 'debug-extraction-error.txt'), String(err));
+            }
+        } catch(e) {}
         return {};
     }
 }
@@ -407,7 +463,11 @@ export async function performAIRequest(
         const activeSkillIds = settings?.activeSkillIds || [];
         const customSkills = settings?.customSkills || {};
         
-        for (const task of payload.tasksLayout) {
+        const studentText = payload.studentText || payload.text || "";
+        const rawSplit = splitTextByTasks(studentText, payload.tasksLayout);
+
+        for (let i = 0; i < payload.tasksLayout.length; i++) {
+            const task = payload.tasksLayout[i];
             // A task is graph-based if it has a GradingGraph attached (the teacher explicitly generated one)
             // OR if its taskType matches a known graph-based skill pattern.
             const hasAttachedGraph = !!task.gradingGraph;
@@ -421,8 +481,15 @@ export async function performAIRequest(
 
             if (hasAttachedGraph) {
                 try {
-                    const studentText = payload.studentText || payload.text || "";
-                    const studentValues = await extractStudentAnswersWithLLM(studentText, task.gradingGraph, appMode, settings, task.taskType);
+                    const studentTaskText = rawSplit[i] || "";
+                    const taskSpecificText = (studentTaskText && studentTaskText.trim().length > 0) ? studentTaskText : studentText;
+                    
+                    console.log(`[PANG Engine Client] Evaluating task "${task.name}". Mapped input text snippet: "${taskSpecificText.substring(0, 100).replace(/\n/g, ' ')}..."`);
+                    
+                    const studentValues = await extractStudentAnswersWithLLM(taskSpecificText, task.gradingGraph, appMode, settings, task.taskType, task.name);
+                    
+                    console.log(`[PANG Engine Client] Task "${task.name}" extracted values:`, studentValues);
+                    
                     const gradingResult = GraphRunner.grade(task.gradingGraph, studentValues);
                     task.gradingResult = gradingResult;
 
@@ -545,7 +612,10 @@ export async function performAIRequest(
             isComplex: payload.isComplex ?? (action === 'vision') 
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'KI Anfrage fehlgeschlagen');
+        if (!res.ok) {
+            console.error("API ERROR RESPONSE:", data);
+            throw new Error(data.error || `KI Anfrage fehlgeschlagen: ${JSON.stringify(data)}`);
+        }
 
         if (action === 'correction') {
             const parsed = parseCorrectionResult(data, payload.tasksLayout);

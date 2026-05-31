@@ -36,6 +36,7 @@ export interface Task {
     gradingGraph?: any;
     gradingResult?: any;
     suggestGraph?: boolean;
+    predictedPluginDomain?: string | null;
 }
 
 export function calculatePercentageFromTasks(tasks: Task[]): number {

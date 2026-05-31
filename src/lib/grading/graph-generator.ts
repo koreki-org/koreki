@@ -11,8 +11,9 @@
  */
 
 import { GradingGraph, VariableDefinition } from './types';
-import { plugins } from './plugins';
+import { plugins, PLUGIN_MANIFEST } from './plugins';
 import { StructuredPrompt } from '../ai/prompt-builder';
+import { GraphRunner } from './GraphRunner';
 import graphGenSystemDefault from '../../prompts/graph-generation/system.md';
 import graphGenUserDefault from '../../prompts/graph-generation/user.md';
 import graphGenRefineSystemDefault from '../../prompts/graph-generation/refine-system.md';
@@ -22,75 +23,7 @@ import graphGenRefineUserDefault from '../../prompts/graph-generation/refine-use
 // ──────────────────────────────────────────────────────────────────────────
 // 1. Plugin Manifest — Dynamic introspection of available domain functions
 // ──────────────────────────────────────────────────────────────────────────
-
-const PLUGIN_DETAILS: Record<string, Record<string, { signature: string; description: string }>> = {
-  network: {
-    calculateMask: {
-      signature: "network.calculateMask(hosts)",
-      description: "Berechnet das CIDR-Präfix (z. B. '/24') basierend auf der benötigten Host-Anzahl."
-    },
-    calculateSize: {
-      signature: "network.calculateSize(mask)",
-      description: "Gibt die Gesamtanzahl an IP-Adressen für eine Maske zurück (z. B. '/24' -> 256)."
-    },
-    calculateNetId: {
-      signature: "network.calculateNetId(prevNetId, prevMask)",
-      description: "Berechnet die nächste Netz-ID basierend auf der vorherigen Netz-ID und Maske."
-    },
-    calculateBroadcast: {
-      signature: "network.calculateBroadcast(netId, mask)",
-      description: "Berechnet die Broadcast-IP für eine Netz-ID und Maske."
-    },
-    calculateFirstHost: {
-      signature: "network.calculateFirstHost(netId)",
-      description: "Berechnet die erste nutzbare Host-IP (Net-ID + 1)."
-    },
-    calculateLastHost: {
-      signature: "network.calculateLastHost(netId, mask)",
-      description: "Berechnet die letzte nutzbare Host-IP (Broadcast-IP - 1)."
-    },
-    calculateGateway: {
-      signature: "network.calculateGateway(netId, mask)",
-      description: "Berechnet die Gateway-IP (standardmäßig die letzte nutzbare IP)."
-    }
-  },
-  raid: {
-    calculateNetCapacity: {
-      signature: "raid.calculateNetCapacity(level, disks, size)",
-      description: "Berechnet die Netto-Kapazität in TB. Parameter: level (RAID-Level: 0, 1, 5, 6, 10), disks (Anzahl Platten), size (Kapazität einer Platte)."
-    },
-    calculateFaultTolerance: {
-      signature: "raid.calculateFaultTolerance(level, disks)",
-      description: "Berechnet die Anzahl der verkraftbaren Plattenausfälle. Parameter: level (RAID-Level: 0, 1, 5, 6, 10), disks (Anzahl Platten)."
-    }
-  },
-  math: {
-    add: {
-      signature: "math.add(a, b)",
-      description: "Addiert a und b."
-    },
-    subtract: {
-      signature: "math.subtract(a, b)",
-      description: "Subtrahiert b von a."
-    },
-    multiply: {
-      signature: "math.multiply(a, b)",
-      description: "Multipliziert a mit b."
-    },
-    divide: {
-      signature: "math.divide(a, b)",
-      description: "Dividiert a durch b (Sicher vor Division durch Null)."
-    },
-    power: {
-      signature: "math.power(base, exponent)",
-      description: "Berechnet base hoch exponent."
-    },
-    percentage: {
-      signature: "math.percentage(part, total)",
-      description: "Berechnet den prozentualen Anteil von part an total."
-    }
-  }
-};
+// PLUGIN_MANIFEST is now imported directly from plugins.ts to adhere to SOLID principles.
 
 interface PluginFunctionSignature {
   domain: string;
@@ -105,12 +38,12 @@ interface PluginFunctionSignature {
 export function getAvailablePluginManifest(): PluginFunctionSignature[] {
   const manifest: PluginFunctionSignature[] = [];
 
-  for (const [domainName, domainFunctions] of Object.entries(plugins)) {
-    for (const functionName of Object.keys(domainFunctions)) {
+  for (const [domain, methods] of Object.entries(PLUGIN_MANIFEST)) {
+    for (const [funcName] of Object.entries(methods)) {
       manifest.push({
-        domain: domainName,
-        functionName,
-        expression: `${domainName}.${functionName}(...)`
+        domain: domain,
+        functionName: funcName,
+        expression: `${domain}.${funcName}(...)`
       });
     }
   }
@@ -129,7 +62,7 @@ function formatPluginManifestForPrompt(): string {
     if (!byDomain[entry.domain]) byDomain[entry.domain] = [];
     
     // Find rich signature/description if available
-    const details = PLUGIN_DETAILS[entry.domain]?.[entry.functionName];
+    const details = PLUGIN_MANIFEST[entry.domain]?.[entry.functionName];
     if (details) {
       byDomain[entry.domain].push(`  - ${details.signature} : ${details.description}`);
     } else {
@@ -242,7 +175,7 @@ function getValidPluginExpressionPrefixes(): string[] {
  * 
  * @returns A validated GradingGraph or null if parsing/validation fails
  */
-export function parseGeneratedGraph(llmResponse: string): GradingGraph | null {
+export function parseGeneratedGraph(llmResponse: string, options?: { skipSanitization?: boolean }): GradingGraph | null {
   if (!llmResponse || !llmResponse.trim()) return null;
 
   let cleaned = llmResponse.trim();
@@ -357,13 +290,19 @@ export function parseGeneratedGraph(llmResponse: string): GradingGraph | null {
   if (validatedVariables.length === 0) return null;
 
   // Smart Post-Processing: Prevent the Follow-Through Paradoxon by ensuring robust points distribution
-  sanitizePointsDistribution(validatedVariables);
+  if (!options?.skipSanitization) {
+    sanitizePointsDistribution(validatedVariables);
+  }
 
   const result: GradingGraph = {
     taskId: targetData.taskId as string,
     discipline: targetData.discipline as string,
     variables: validatedVariables
   };
+
+  if (typeof targetData.disablePoints === 'boolean') {
+    result.disablePoints = targetData.disablePoints;
+  }
 
   if (Array.isArray(targetData.equivalenceGroups)) {
     result.equivalenceGroups = targetData.equivalenceGroups;
@@ -380,56 +319,81 @@ export function parseGeneratedGraph(llmResponse: string): GradingGraph | null {
  * 100% points despite making primary errors (due to consecutive error compensation).
  */
 function sanitizePointsDistribution(variables: VariableDefinition[]): void {
+  const initialTotal = variables.reduce((sum, v) => sum + (v.maxPoints || 0), 0);
+  
+  if (initialTotal === 0) {
+      // Fallback: If LLM failed to assign any points, ensure the graph is valid and visible in UI
+      const formulaVars = variables.filter(v => v.type === 'formula');
+      if (formulaVars.length > 0) {
+          formulaVars.forEach(v => v.maxPoints = 1);
+      } else if (variables.length > 0) {
+          variables[variables.length - 1].maxPoints = 1;
+      }
+  }
+
   const totalPoints = variables.reduce((sum, v) => sum + (v.maxPoints || 0), 0);
   if (totalPoints === 0) return;
 
-  const inputVars = variables.filter(v => v.type === 'input');
-  const formulaVars = variables.filter(v => v.type === 'formula');
+  // Removed: The "Follow-Through Paradoxon" aggressive sanitization has been permanently
+  // deleted because it violates the teacher's pedagogical autonomy to assign 0 points to inputs.
+}
 
-  // Trigger hygienization if:
-  // 1. There is at least one input variable and at least one formula variable.
-  // 2. ALL input variables have 0 (or undefined) points.
-  // 3. At least one formula variable has > 0 points.
-  // This is the classic "Follow-Through Paradoxon" pattern produced by unhygienic LLM graph generation.
-  const hasOnlyZeroPointsInputs = inputVars.length > 0 && inputVars.every(v => !v.maxPoints || v.maxPoints === 0);
-  const hasFormulaWithPoints = formulaVars.some(v => v.maxPoints && v.maxPoints > 0);
+/**
+ * Performs an automated mathematical plausibility dry-run on the generated GradingGraph.
+ * Simulates graph execution using target default values for input variables and validates that
+ * all formulas compile, evaluate, and yield results successfully without throwing runtime exceptions.
+ */
+export function validateGraphDeterminism(graph: GradingGraph): { isValid: boolean; error?: string } {
+  if (!graph || !Array.isArray(graph.variables) || graph.variables.length === 0) {
+    return { isValid: false, error: 'Der generierte Graph enthält keine Variablen.' };
+  }
 
-  if (hasOnlyZeroPointsInputs && hasFormulaWithPoints) {
-    const varCount = variables.length;
+  // 1. Gather all input variables and check their default values
+  const mockStudentAnswers: Record<string, any> = {};
+  for (const v of graph.variables) {
+    if (v.type === 'input') {
+      if (v.defaultValue === undefined || v.defaultValue === null) {
+        return { isValid: false, error: `Die Input-Variable "${v.id}" hat keinen Standardwert (defaultValue).` };
+      }
+      mockStudentAnswers[v.id] = v.defaultValue;
+    }
+  }
 
-    if (totalPoints >= varCount) {
-      // 1. Every variable receives at least 1 point
-      for (const v of variables) {
-        v.maxPoints = 1;
+  // 2. Perform mock grading simulation using the perfect default answers
+  try {
+    const result = GraphRunner.grade(graph, mockStudentAnswers);
+
+    // 3. Inspect results for mathematical errors and non-determinism
+    for (const step of result.stepResults) {
+      const variable = graph.variables.find(v => v.id === step.variableId);
+      if (!variable) continue;
+
+      if (variable.type === 'formula') {
+        // If evaluation failed, the expectedValue is set to null in GraphRunner
+        if (step.expectedValue === null || step.expectedValue === undefined || step.expectedValue === 'Error ⚠️') {
+          return {
+            isValid: false,
+            error: `Mathematischer Auswertungsfehler bei Formel "${step.variableId}" mit Ausdruck: "${variable.expression || ''}". Bitte prüfe Syntax und Variablenreferenzen.`
+          };
+        }
       }
 
-      // 2. Distribute the remaining points onto the final formula variable (the main result)
-      const remaining = totalPoints - varCount;
-      if (formulaVars.length > 0) {
-        const lastFormula = formulaVars[formulaVars.length - 1];
-        lastFormula.maxPoints = (lastFormula.maxPoints || 1) + remaining;
-      } else {
-        const lastVar = variables[variables.length - 1];
-        lastVar.maxPoints = (lastVar.maxPoints || 1) + remaining;
-      }
-    } else {
-      // Fallback: If totalPoints < varCount, distribute as many points as possible (max 1 per variable)
-      let pointsToDistribute = totalPoints;
-      for (const v of variables) {
-        v.maxPoints = 0;
-      }
-      
-      // Prioritize formulas
-      for (let i = formulaVars.length - 1; i >= 0 && pointsToDistribute > 0; i--) {
-        formulaVars[i].maxPoints = 1;
-        pointsToDistribute--;
-      }
-      
-      // Then inputs
-      for (let i = 0; i < inputVars.length && pointsToDistribute > 0; i++) {
-        inputVars[i].maxPoints = 1;
-        pointsToDistribute--;
+      if (variable.type === 'input') {
+        // In a perfect master-key execution run, input variables should evaluate to 'correct'
+        if (step.status !== 'correct') {
+          return {
+            isValid: false,
+            error: `Plausibilitätsfehler beim Ausführen der Input-Variable "${step.variableId}". Der Standardwert ist inkonsistent.`
+          };
+        }
       }
     }
+
+    return { isValid: true };
+  } catch (err: any) {
+    return {
+      isValid: false,
+      error: `Unerwarteter Absturz während der Graphen-Simulation: ${err.message || err}`
+    };
   }
 }

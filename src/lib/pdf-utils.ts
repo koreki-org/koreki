@@ -5,6 +5,17 @@
  * to keep the main pdf.ts orchestrator modular, testable, and lightweight.
  */
 
+import { splitFeedback } from '@/components/ui/EditableMathArea';
+
+/**
+ * Strips the technical PANG engine block from feedback text, keeping only
+ * the pedagogical part. Safe for all student-facing output channels.
+ */
+export function stripPangBlock(text: string): string {
+    if (!text) return '';
+    return splitFeedback(text).pedagogical;
+}
+
 /**
  * Replaces didactical codes ([r], [f], [FF] etc.) with readable text,
  * removes gear/system emojis, and cleans non-ASCII symbols so that

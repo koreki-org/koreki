@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
-import { parseGeneratedGraph } from '@/lib/grading/graph-generator';
+import { parseGeneratedGraph, validateGraphDeterminism } from '@/lib/grading/graph-generator';
 import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
@@ -92,7 +92,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         }
 
         // Parse and validate the LLM output into a strict GradingGraph
-        const graph = parseGeneratedGraph(JSON.stringify(rawResult));
+        // Wir deaktivieren hier die automatische Punkte-Hygiene (skipSanitization: true),
+        // damit vom Lehrer explizit angeforderte Punkteverteilungen (z.B. Dezimalzahlen
+        // oder 0-Punkte für Input-Werte) nicht vom System überschrieben werden.
+        const graph = parseGeneratedGraph(JSON.stringify(rawResult), { skipSanitization: true });
 
         if (!graph) {
             logger.warn('Graph refinement: LLM returned invalid graph structure', {
@@ -102,6 +105,16 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 error: 'Die KI konnte keinen gültigen Bewertungs-Graphen generieren. Bitte passe deine Anweisung an oder versuche es erneut.'
             });
         }
+
+        // Validate the refined graph's determinism
+        const graphValidation = validateGraphDeterminism(graph);
+
+        // Enrich graph with validation metadata for frontend UI consumption
+        (graph as any).validation = {
+            isValid: graphValidation.isValid,
+            error: graphValidation.error,
+            dryRunChecked: true
+        };
 
         const explanation = typeof rawResult.explanation === 'string' ? rawResult.explanation : '';
 

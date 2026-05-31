@@ -61,6 +61,10 @@ Koreki optimiert die Inferenz-Parameter automatisch, sobald der **Thinking Mode*
 2.  **Context Escalation:** Setzt `max_tokens` automatisch auf bis zu `32.768`, um Raum für die Reasoning-Kette zu schaffen.
 3.  **Response Sanitizing:** Der Provider bereinigt die Antwort chirurgisch von `<thinking>` Blöcken und Markdown-Fences, um die Datenintegrität für den nachgelagerten JSON-Parser zu gewährleisten.
 
+> [!WARNING]
+> **Known Issue: Mittwald & Qwen 3.6 (4k Context / enable_thinking Problem)**
+> Beim Einsatz des LiteLLM Proxys (Mittwald) in Verbindung mit Qwen 3.6 kam es bei der Aktivierung von `enable_thinking: true` historisch zu Abstürzen oder Fehlern ("Unknown model name"). **In der Praxis handelt es sich hierbei jedoch höchstwahrscheinlich um ein 4k-Kontext-Limit-Problem**, da der extensive Reasoning-Output den Puffer sprengt und der Fehler unsauber maskiert wird. Das `enable_thinking` Flag wird daher nun explizit an das Backend durchgeleitet, um das KI-Intelligenz-Modal zu bedienen. Es muss jedoch infrastrukturseitig sichergestellt werden, dass die Kontextgrenzen (bis zu 32k) korrekt unterstützt werden.
+
 ---
 
 ## 4. Isomorphe Präzisions-Sperre & Mistral Medium 3.5 (System-Lock) 🏛️🔒

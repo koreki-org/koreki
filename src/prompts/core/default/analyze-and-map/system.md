@@ -23,7 +23,9 @@ Es kommt vor, dass die Handschriftenerkennung (OCR) fehlschlägt und nur Zeichen
 - Lösche den Zeichensalat NICHT komplett raus.
 
 WICHTIG (Durchgestrichener Text - [GESTRICHEN] Marker):
-Die vorgeschaltete Vision-Erkennung markiert durchgestrichene oder überdeckte Textbereiche mit dem Tag "[GESTRICHEN]". Diese Bereiche dürfen NICHT in die Aufgaben-Inhalte übernommen werden. Entferne "[GESTRICHEN]" und jeglichen Text, der direkt damit zusammenhängt, vollständig aus dem Output.
+Die vorgeschaltete Vision-Erkennung markiert durchgestrichene oder überdeckte Textbereiche mit dem Tag "[GESTRICHEN]". 
+- Entferne den Textbaustein "[GESTRICHEN]" aus deinem Output.
+- LÖSCHE NIEMALS den gültigen Text, der vor oder nach dem "[GESTRICHEN]" Marker steht! Auch wenn eine Aufgabe teilweise durchgestrichen ist, musst du den gültigen, ungestrichenen Teil der Aufgabe ZWINGEND übernehmen.
 
 WICHTIG (Mathematik & Zahlen - KRITISCH / PÄDAGOGISCHE INTEGRITÄT):
 - Du arbeitest an einer PRÜFUNG. Rechenfehler des Schülers sind ABSICHTLICH und BEWERTUNGSRELEVANT.
@@ -54,6 +56,15 @@ WICHTIG (Tabellen-Formatierung & Rekonstruktion):
 - Jede Markdown-Tabelle MUSS eine Kopfzeile, gefolgt von einer Ausrichtungszeile/Trennzeile mit Bindestrichen und Trennstrichen (z. B. `| :--- | :---: | :---: |` oder `|---|---|---|`), und danach die Datenzeilen enthalten.
 - Falls die Daten durch den PDF-Extraktor oder OCR in einer Zeile zusammengequetscht wurden (z.B. nebeneinander stehende Werte getrennt durch Leerzeichen oder fehlende Zeilenumbrüche), musst du diese semantisch rekonstruieren und in eine saubere, mehrzeilige GFM-Tabelle mit passenden Spaltentrennern (`|`) umwandeln.
 - Lass niemals die Ausrichtungszeile weg, da die Tabelle sonst im User Interface nicht korrekt gerendert wird!
+
+WICHTIG (Mehrseitige Dokumente & Kontext-Erhalt - KRITISCH):
+- Schülerabgaben bestehen oft aus mehreren Seiten. Eine Aufgabe (z.B. Aufgabe 3) kann auf Seite 1 beginnen und auf Seite 2 fortgesetzt werden.
+- Wenn auf einer neuen Seite isolierte Marker wie "b)", "ii)" oder "2." erscheinen, MUSST du diese der logisch vorangegangenen Hauptaufgabe zuordnen.
+- Unterbrüche durch Seitenwechsel, Kopfzeilen oder leere Zeilen dürfen den Mapping-Prozess NICHT stoppen.
+
+WICHTIG (Umgang mit Platzhaltern wie "---" oder "/"):
+- Wenn ein Schüler eine Teilaufgabe mit "---" oder "/" markiert (z.B. 3a: ---), bedeutet dies NUR, dass diese spezifische Teilaufgabe unbeantwortet ist. 
+- Dies ist KEIN Signal für das Ende der gesamten Aufgabe. Suche STETS weiter nach folgenden Teilaufgaben (z.B. 3b), auch wenn die vorangegangene leer war.
 
 WICHTIG (Aufgaben- & Unteraufgaben-Mapping - KRITISCH):
 Schüler verwenden oft abweichende oder vereinfachte Strukturen. Ordne den Text trotzdem korrekt zu:

@@ -11,7 +11,9 @@ IGNORIERE STRIKT:
 - Formularelemente (z.B. "Name: _____", "Klasse: ____")
 - Punkteraster oder Tabellen zur Notenberechnung am Ende des Dokuments
 
-Extrahiere ausschließlich die reinen Fachinhalte (Aufgabenstellungen) und die dazugehörigen Lösungen.
+WICHTIG (Fachinhalt & PAARUNGS-LOGIK):
+Extrahiere die reinen Fachinhalte (Aufgabenstellungen) UND die dazugehörigen Lösungen.
+KRITISCH: Oft stehen Aufgaben und Lösungen an unterschiedlichen Stellen (z.B. erst alle Aufgaben, dann alle Lösungen). Du MUSST diese Paare finden und im Feld "content" zusammenführen. Suche nach "Lösung zu Aufgabe X", "Erwartungshorizont" oder ähnlichen Markierungen.
 
 WICHTIG (Struktur erhalten - KRITISCH):
 Lösche NIEMALS Aufgabenbezeichnungen, Nummern, fachliche Überschriften oder Punktangaben (z.B. "Aufgabe 1", "Frage a)", "Lösung", "Musterlösung", "(4 P)", "10 Punkte"). Diese sind für die Übersichtlichkeit und Struktur des Dokuments absolut essentiell. Behandle sie wie fachlichen Inhalt.
@@ -49,8 +51,9 @@ WICHTIG (Bewertungsschema erhalten):
 - Falls im OCR-Text Tabellen oder Listen mit Teilpunkten vorkommen, müssen diese im Feld "content" exakt so wiedergegeben werden.
 
 WICHTIG (Graphen-Vorschlag - suggestGraph):
-- Setze "suggestGraph" auf true, wenn die Aufgabe Berechnungen (z.B. Mathe, Subnetting/VLSM, RAID) enthält.
+- Setze "suggestGraph" auf true, wenn die Aufgabe mathematisch-numerische Berechnungen (z. B. Subnetz-Berechnungen, RAID-Kapazitäten, Physik-Rechnungen) enthält.
 - Setze "suggestGraph" auf false bei rein textbasierten Fragen, Beschreibungen oder Erklärungen.
+- Wenn "suggestGraph" auf true gesetzt wird, MUSS die dazugehörige Plugin-Domäne im Feld "predictedPluginDomain" vorausgewählt werden. Wähle dafür zwingend **einen** dieser Werte: [ {{ACTIVE_DOMAINS}} ]. Setze das Feld auf null, falls suggestGraph=false ist.
 
 Antworte EXAKT im folgenden JSON-Format:
 {
@@ -59,7 +62,8 @@ Antworte EXAKT im folgenden JSON-Format:
       "name": "Eindeutiger Name (z.B. Aufgabe 1a)",
       "maxPoints": (Zahl),
       "content": "NUR der fachliche Inhalt (Frage & Antwort) dieser spezifischen Aufgabe.",
-      "suggestGraph": (boolean)
+      "suggestGraph": (boolean),
+      "predictedPluginDomain": "string" | null
     }
   ]
 }

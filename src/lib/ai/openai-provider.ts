@@ -92,7 +92,7 @@ export async function executeOpenAIRequest(
         } else if (action === 'refine-graph') {
             promptObj = buildGraphRefinementPrompt(payload.taskText, payload.currentGraph, payload.userInstruction, payload.discipline);
         } else if (action === 'variable-extraction') {
-            promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions);
+            promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions, payload.taskName);
         } else {
             throw new Error(`Unsupported action: ${action}`);
         }
@@ -119,7 +119,7 @@ export async function executeOpenAIRequest(
         ? (promptObj.options?.temperature ?? 0.0)
         : (options.temperature ?? promptObj.options?.temperature ?? (isThinking ? 1.0 : 0.2));
         
-    if (action === 'correction' && options.temperature === undefined && promptObj.options?.temperature === undefined) {
+    if (action === 'correction' && options.temperature === undefined) {
         targetTemp = isThinking ? 0.6 : 0.2;
     }
 
@@ -139,6 +139,14 @@ export async function executeOpenAIRequest(
     const defaultLimit = structuralActions.includes(action) ? 32768 : 4000;
     const isJsonFormat = action !== 'vision' && action !== 'second-opinion';
 
+    try {
+        if (typeof window === 'undefined') {
+            const fs = eval('require("fs")');
+            const path = eval('require("path")');
+            fs.appendFileSync(path.join(process.cwd(), 'scratch', 'debug-model.log'), `Action: ${action}, Model: ${targetModel}\n`);
+        }
+    } catch(e) {}
+
     const body: any = {
         model: targetModel,
         messages,
@@ -149,11 +157,16 @@ export async function executeOpenAIRequest(
         response_format: isJsonFormat ? { type: 'json_object' } : undefined
     };
 
+    if (isThinking) {
+        body.enable_thinking = true;
+    }
+
     // Specific Qwen/OpenAI-compat Extra Params
     // [Industrial Alert] 🛡️
-    // Thinking mode is often ON by default at Mittwald; we must explicitly send false to disable it.
-    body.enable_thinking = isThinking;
-
+    // LiteLLM (Mittwald's proxy) crashes with 'Unknown model name' if we pass enable_thinking, 
+    // because it falsely assumes this is an Anthropic-specific request and searches the wrong catalog.
+    // We rely on the system prompt or native model behavior for reasoning instead.
+    
     let responseContent: string;
     let responseUsage: any = undefined;
 
@@ -188,11 +201,18 @@ export async function executeOpenAIRequest(
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
+            try {
+                if (typeof window === 'undefined') {
+                    const fs = eval('require("fs")');
+                    const path = eval('require("path")');
+                    fs.writeFileSync(path.join(process.cwd(), 'scratch', 'debug-crash-request.json'), JSON.stringify({ url, body, status: response.status, errorData }, null, 2));
+                }
+            } catch(e) {}
             throw new Error(`KI-Provider Fehler (${response.status}): ${errorData.error?.message || response.statusText}`);
         }
 
         const data = await response.json();
-        responseContent = data.choices[0].message.content;
+        responseContent = data.choices?.[0]?.message?.content;
         responseUsage = data.usage;
     }
 

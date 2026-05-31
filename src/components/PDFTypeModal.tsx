@@ -35,7 +35,7 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
             onClick={onClose}
         >
             <div
-                className="relative w-full max-w-[500px] bg-white rounded-[24px] p-6 sm:p-8 shadow-glass border border-border animate-in zoom-in-95 duration-200"
+                className="relative w-full max-w-[560px] max-h-[90dvh] overflow-y-auto bg-white rounded-2xl p-5 sm:p-8 shadow-glass border border-border animate-in zoom-in-95 duration-200"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Close Button */}
@@ -58,25 +58,25 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                     <Button
                         variant="ghost"
                         className="group flex h-auto flex-col items-center text-center p-5 sm:p-6 bg-white border-2 border-border rounded-2xl hover:border-primary hover:bg-primary/[0.02] transition-all duration-200"
                         onClick={() => onSelect('typed', applyToAll)}
                     >
-                        <div className="w-12 h-12 bg-sky-50 text-sky-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                        <div className="w-14 h-14 bg-sky-50 text-sky-700 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                             <FileText size={24} />
                         </div>
                         <span className="font-semibold text-foreground">Digitaler Text / PDF</span>
-                        <span className="mt-1 text-[0.75rem] text-muted-foreground whitespace-normal">
+                        <span className="mt-1 text-sm text-muted-foreground whitespace-normal">
                             Text-Dateien (.txt) oder einfache PDFs mit direkt kopierbarem Text.
                         </span>
                         {isPureMode ? (
-                            <div className="mt-4 px-3 py-1 bg-secondary text-secondary-foreground text-[0.7rem] font-bold rounded-full">
+                            <div className="mt-4 px-3 py-1 bg-secondary text-secondary-foreground text-xs font-bold rounded-full">
                                 Kostenlos (0 Credits)
                             </div>
                         ) : (
-                            <div className="mt-4 px-3 py-1 bg-sky-50 text-sky-700 text-[0.7rem] font-bold rounded-full">
+                            <div className="mt-4 px-3 py-1 bg-sky-100 text-sky-700 text-xs font-bold rounded-full">
                                 1 Credit / Seite
                             </div>
                         )}
@@ -87,26 +87,26 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                         className="group flex h-auto flex-col items-center text-center p-5 sm:p-6 bg-white border-2 border-border rounded-2xl hover:border-primary hover:bg-primary/[0.02] transition-all duration-200"
                         onClick={() => onSelect('scanned', applyToAll)}
                     >
-                        <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                        <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                             <Camera size={24} />
                         </div>
                         <span className="font-semibold text-foreground">Scan / Bilder / Handschrift</span>
-                        <span className="mt-1 text-[0.75rem] text-muted-foreground whitespace-normal">
+                        <span className="mt-1 text-sm text-muted-foreground whitespace-normal">
                             Komplexere PDFs, Bilder (.jpg, .png) oder handschriftliche Arbeiten.
                         </span>
                         {isPureMode ? (
-                            <div className="mt-4 px-3 py-1 bg-secondary text-secondary-foreground text-[0.7rem] font-bold rounded-full">
+                            <div className="mt-4 px-3 py-1 bg-secondary text-secondary-foreground text-xs font-bold rounded-full">
                                 Kostenlos (0 Credits)
                             </div>
                         ) : (
-                            <div className="mt-4 px-3 py-1 bg-orange-50 text-orange-700 text-[0.7rem] font-bold rounded-full">
+                            <div className="mt-4 px-3 py-1 bg-orange-50 text-orange-700 text-xs font-bold rounded-full">
                                 2 Credits / Seite
                             </div>
                         )}
                     </Button>
                 </div>
 
-                <div className="mb-8">
+                <div className="mb-6">
                     <label
                         className="flex items-center gap-3 cursor-pointer select-none group"
                         onClick={() => setApplyToAll(!applyToAll)}
@@ -122,12 +122,12 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                     {fileName.toLowerCase().endsWith('.txt') && (
                         <div className="mt-4 p-3 bg-sky-50 border border-sky-100 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-1">
                             <FileText size={16} className="text-sky-600 mt-0.5 shrink-0" />
-                            <p className="text-xs text-sky-800 leading-relaxed font-medium">
+                            <p className="text-sm text-sky-800 leading-relaxed font-medium">
                                 💡 <strong className="font-bold">Hinweis:</strong> Dies ist eine <strong className="font-bold">.txt-Datei</strong>. Sie liegt bereits als digitaler Text vor und benötigt keinen Scan-Pfad.
                             </p>
                         </div>
                     )}
-                    <p className="mt-2 ml-8 text-[0.75rem] text-muted-foreground/70">
+                    <p className="mt-2 ml-8 text-xs text-muted-foreground/70">
                         💡 Hinweis: Sie können den Typ später für jeden Schüler einzeln anpassen.
                     </p>
                 </div>

@@ -244,3 +244,72 @@ export function evaluateExpression(expression: string, context: Record<string, a
 
   return parser.evaluate(sanitizedExpression, context);
 }
+
+export const PLUGIN_MANIFEST: Record<string, Record<string, { signature: string; description: string }>> = {
+  network: {
+    calculateMask: {
+      signature: "network.calculateMask(hosts)",
+      description: "Berechnet das CIDR-Präfix (z. B. '/24') basierend auf der benötigten Host-Anzahl."
+    },
+    calculateSize: {
+      signature: "network.calculateSize(mask)",
+      description: "Gibt die Gesamtanzahl an IP-Adressen für eine Maske zurück (z. B. '/24' -> 256)."
+    },
+    calculateNetId: {
+      signature: "network.calculateNetId(prevNetId, prevMask)",
+      description: "Berechnet die nächste Netz-ID. WICHTIG: Erwartet zwingend die VORHERIGE NETZ-ID (z.B. '172.16.0.0') als ersten Parameter und NIEMALS die Broadcast-Adresse!"
+    },
+    calculateBroadcast: {
+      signature: "network.calculateBroadcast(netId, mask)",
+      description: "Berechnet die Broadcast-IP für eine Netz-ID und Maske."
+    },
+    calculateFirstHost: {
+      signature: "network.calculateFirstHost(netId)",
+      description: "Berechnet die erste nutzbare Host-IP (Net-ID + 1)."
+    },
+    calculateLastHost: {
+      signature: "network.calculateLastHost(netId, mask)",
+      description: "Berechnet die letzte nutzbare Host-IP (Broadcast-IP - 1)."
+    },
+    calculateGateway: {
+      signature: "network.calculateGateway(netId, mask)",
+      description: "Berechnet die Gateway-IP (standardmäßig die letzte nutzbare IP)."
+    }
+  },
+  raid: {
+    calculateNetCapacity: {
+      signature: "raid.calculateNetCapacity(level, disks, size)",
+      description: "Berechnet die Netto-Kapazität in TB. Parameter: level (RAID-Level: 0, 1, 5, 6, 10), disks (Anzahl Platten), size (Kapazität einer Platte)."
+    },
+    calculateFaultTolerance: {
+      signature: "raid.calculateFaultTolerance(level, disks)",
+      description: "Berechnet die Anzahl der verkraftbaren Plattenausfälle. Parameter: level (RAID-Level: 0, 1, 5, 6, 10), disks (Anzahl Platten)."
+    }
+  },
+  math: {
+    add: {
+      signature: "math.add(a, b)",
+      description: "Addiert a und b."
+    },
+    subtract: {
+      signature: "math.subtract(a, b)",
+      description: "Subtrahiert b von a."
+    },
+    multiply: {
+      signature: "math.multiply(a, b)",
+      description: "Multipliziert a mit b."
+    },
+    divide: {
+      signature: "math.divide(a, b)",
+      description: "Dividiert a durch b (Sicher vor Division durch Null)."
+    },
+    power: {
+      signature: "math.power(base, exponent)",
+      description: "Berechnet base hoch exponent."
+    },
+    percentage: {
+      signature: "math.percentage(part, total)",
+      description: "Berechnet den prozentualen Anteil von part an total."
+    }
+  }
+};

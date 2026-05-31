@@ -486,7 +486,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
             <div className="flex-1 space-y-8 min-h-0">
                 {categories.map(category => {
                     const standardCategorySkills = Object.values(SKILL_REGISTRY)
-                        .filter(s => s.metadata.category === category.id && !s.metadata.isGraphBased && s.metadata.id !== 'skill-calc-vlsm' && s.metadata.id !== 'skill-calc-raid')
+                        .filter(s => s.metadata.category === category.id && !s.metadata.isGraphBased && s.metadata.id !== 'skill-calc-vlsm')
                         .map(s => ({ ...s.metadata, prompt: s.promptSnippet, promptSnippet: s.promptSnippet }));
                     const customCategorySkills = Object.values(customSkills || {}).filter(s => s.category === category.id);
                     const categorySkills = [...standardCategorySkills, ...customCategorySkills];

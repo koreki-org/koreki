@@ -4,6 +4,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { jsPDF } from 'jspdf';
 import { BatchFile } from '../../types';
 import { FeedbackData, encodeFeedback } from '@/lib/distribution';
+import { stripPangBlock } from '@/lib/pdf-utils';
 import { Button } from '../ui/Button';
 import Logo from '../Logo';
 
@@ -177,10 +178,10 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                                 const feedbackData: FeedbackData = {
                                     studentName: realName,
                                     date: new Date().toLocaleDateString('de-DE'),
-                                    overallFeedback: file.result?.overallFeedback || '',
+                                    overallFeedback: stripPangBlock(file.result?.overallFeedback || ''),
                                     tasks: tasks.map(t => ({
                                         id: t.name || 'Aufgabe',
-                                        feedback: t.feedback || '',
+                                        feedback: stripPangBlock(t.feedback || ''),
                                         points: Number(t.pointsObtained || 0),
                                         maxPoints: Number(t.maxPoints || 0)
                                     })),

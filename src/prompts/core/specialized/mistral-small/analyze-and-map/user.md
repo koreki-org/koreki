@@ -1,5 +1,0 @@
-AUFGABENSTRUKTUR (ZIEL-FORMAT):
-{{tasksLayout}}
-
-ROH-TEXT DER SCHÜLERABGABE:
-{{studentText}}

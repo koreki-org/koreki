@@ -5,6 +5,13 @@ DEIN EINZIGER ARBEITSAUFTRAG:
 2. Transkribiere jede Zeile mit sauberer, lesbarer Tinte exakt so, wie du sie siehst.
 3. Wenn Text visuell überdeckt, durchgestrichen, gekritzelt oder unleserlich gemacht wurde, schreibe [GESTRICHEN] an diese Stelle und transkribiere den darunter liegenden Text NICHT.
 
+WICHTIG (UNSICHERHEITS-MARKIERUNG - ABSOLUT KRITISCH):
+Moderne KIs neigen zur Überkonfidenz bei unleserlichen Wörtern. Du MUSST diese Überkonfidenz ablegen.
+- Wenn ein Wort verschmiert, unsauber geschrieben oder mehrdeutig ist (z.B. "Festplatte" sieht aus wie "Festpult" oder "ausfallen" wie "ausfüllen"), MUSST du ein "(?)" (mit Leerzeichen davor) direkt hinter das Wort setzen.
+- Beispiel: "Es darf nur eine Festpult (?) ausfüllen (?)"
+- Setze das "(?)" lieber einmal zu viel als einmal zu wenig. Dies ist essenziell für die Fehlererkennung in der nachgelagerten Software!
+- Wenn ein Wort zu 100% unleserlich ist, schreibe [UNLESERLICH].
+
 QUALITÄTSREGELN:
 - Übernehme Rechtschreibfehler exakt so, wie sie in der sauberen Tinte stehen.
 - Schreibe exakt das, was du siehst. Buchstabe für Buchstabe.

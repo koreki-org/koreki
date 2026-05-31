@@ -281,9 +281,13 @@ export const useProcessingPipeline = (
 
         try {
             // --- STAGE 15 INDUSTRIAL RECOVERY: Ensure studentText is never empty ---
-            const sectionText = currentFile.tasks 
-                && currentFile.tasks.length > 0
-                ? currentFile.tasks.map(t => `### ${t.name} ###\n${t.content || ''}`).join('\n\n') 
+            // Bugfix: When re-scanning a 'done' item, the user's edits are stored in result.tasks, not currentFile.tasks.
+            const activeTasks = (currentFile.status === 'done' && currentFile.result?.tasks?.length) 
+                ? currentFile.result.tasks 
+                : currentFile.tasks;
+
+            const sectionText = activeTasks && activeTasks.length > 0
+                ? activeTasks.map((t: any) => `### ${t.name} ###\n${t.content || ''}`).join('\n\n') 
                 : '';
             
             const finalStudentText = sectionText.trim().length > 0 

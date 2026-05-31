@@ -121,7 +121,7 @@ export async function executeMistralRequest(
         } else if (action === 'refine-graph') {
             promptObj = buildGraphRefinementPrompt(payload.taskText, payload.currentGraph, payload.userInstruction, payload.discipline);
         } else if (action === 'variable-extraction') {
-            promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions);
+            promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions, payload.taskName);
         } else {
             throw new Error(`Unsupported text action: ${action}`);
         }

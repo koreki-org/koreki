@@ -62,9 +62,9 @@ export default function Home() {
 
     const { saveSettings, handleModeSelect, handleUnlockExpert } = useDashboardActions(userData, setUserData, aiSettings, setAiSettings, fetchAiStatus);
 
-    const handleGenerateGraphForTask = async (taskIndex: number, taskText: string, userNotes?: string) => {
+    const handleGenerateGraphForTask = async (taskIndex: number, taskText: string, userNotes?: string, disciplineOverride?: string) => {
         try {
-            const discipline = data.tasksLayout[taskIndex]?.taskType;
+            const discipline = disciplineOverride || data.tasksLayout[taskIndex]?.taskType;
             const response = await performAIRequest(
                 'generate-graph',
                 { taskText, discipline, userNotes },
@@ -72,21 +72,25 @@ export default function Home() {
                 aiSettings
             );
             if (response) {
-                const updatedTasks = [...data.tasksLayout];
-                let determinedType = updatedTasks[taskIndex].taskType || 'default';
-                
-                if (response.discipline === 'computer-science-storage') {
-                    determinedType = 'skill-calc-raid';
-                } else if (response.discipline === 'computer-science-networking') {
-                    determinedType = 'skill-calc-vlsm';
-                }
+                data.setTasksLayout(prevTasks => {
+                    const updatedTasks = [...prevTasks];
+                    if (updatedTasks[taskIndex]) {
+                        let determinedType = updatedTasks[taskIndex].taskType || 'default';
+                        
+                        if (response.discipline === 'computer-science-storage') {
+                            determinedType = 'default';
+                        } else if (response.discipline === 'computer-science-networking') {
+                            determinedType = 'skill-calc-vlsm';
+                        }
 
-                updatedTasks[taskIndex] = {
-                    ...updatedTasks[taskIndex],
-                    taskType: determinedType,
-                    gradingGraph: response
-                };
-                data.setTasksLayout(updatedTasks);
+                        updatedTasks[taskIndex] = {
+                            ...updatedTasks[taskIndex],
+                            taskType: determinedType,
+                            gradingGraph: response
+                        };
+                    }
+                    return updatedTasks;
+                });
                 return response;
             }
             return null;

@@ -41,8 +41,14 @@ DIRM & MSPM transformieren die starre Validierung in eine flexible, isomorphe L�
    In Folgeschritten (z. B. Formelberechnungen), die auf einem vom Schüler modifizierten, aber mathematisch korrekten Vorgängerwert basieren, befördert die Engine den Status von `consecutive_correct` (Folgefehler-Kompensation) zu `correct` (vollwertige Alternativlösung), sofern alle Vorgänger-Variablen im mathematischen Ausdruck fehlerfrei (Status `correct`) gelöst wurden.
 
 4. **Didaktische Symmetrie-Toleranz für statische Inputs (Symmetrical Input Fallback):**
-   Wird durch DIRM eine Präfix-Permutation angewendet (z. B. Vertauschen von `spieler_` und `aussteller_`), werden alle Variablen dieses Subnetzes mitvertauscht. Schüler behalten jedoch oft die physikalischen Hostbedarfe der Aufgabenstellung bei (z. B. Spieler = 80, Aussteller = 100), während sie lediglich die IP-Netzadressen vertauschen.
-   **Lösung:** Bei Variablen des Typs `input` führt der `GraphRunner` bei einem Fehlschlag der gemappten Validierung automatisch einen Fallback-Abgleich gegen das ungemappte Originalergebnis des Schülers durch. Dies sichert beide didaktisch korrekten Denkweisen der Schüler perfekt ab.
+   Der Symmetrical Input Fallback löst zwei fundamentale didaktische Probleme bei der automatisierten Bewertung statischer Eingabewerte (Variablen des Typs `input`):
+   
+   * **A) Permuted Input Fallback:** Wird durch DIRM eine Präfix-Permutation angewendet (z. B. Vertauschen von `spieler_` und `aussteller_`), werden standardmäßig alle Variablen dieses Subnetzes mitvertauscht. Schüler behalten jedoch oft die physikalischen Hostbedarfe der Aufgabenstellung bei (z. B. Spieler = 80, Aussteller = 100), während sie lediglich die IP-Netzadressen vertauschen.
+     *Lösung:* Bei Variablen des Typs `input` führt der `GraphRunner` bei einem Fehlschlag der gemappten Validierung automatisch einen Fallback-Abgleich gegen das ungemappte Originalergebnis des Schülers durch. Dies sichert beide didaktisch korrekten Denkweisen der Schüler perfekt ab.
+   
+   * **B) Omitted Input Fallback (Ausgelassene Vorgaben):** In vielen MINT-Aufgaben sind grundlegende Parameter in der Aufgabenstellung fest vorgegeben (z. B. 4 Festplatten, 4 TB Kapazität). Schüler nennen diese Werte oft nicht explizit in ihrer Lösung, sondern berechnen sofort das Endergebnis (z. B. "Nettokapazität = 12 TB"). Wenn die Engine diese Variablen als fehlerhaft bewerten würde, bekäme der Schüler fälschlicherweise Abzüge für einen fehlerfreien Denkweg.
+     *Lösung:* Wird eine Variable vom Typ `input` in der Schülerabgabe gar nicht erst extrahiert (Wert ist `undefined` oder `null`), greift automatisch der Omitted Fallback. Die Variable erhält die volle Punktzahl (Status `correct`, Note: `"Wert nicht explizit angegeben (als Vorgabe vorausgesetzt)"`), und ihr erwarteter Standardwert wird mathematisch korrekt an alle Folgeschritte weitergegeben.
+     *Didaktische Aufbereitung:* Im PANG-Trace wird der Wert wahrheitsgetreu als `Schülerwert: "nicht angegeben"` ausgewiesen. Die nachgelagerten Feedback-LLMs erhalten über das System-Prompt eine explizite Anweisung, diese impliziten Vorgaben im Freitext-Feedback vollständig zu ignorieren, um Verwirrungen ("Du hast 4 Platten nicht angegeben, das ist korrekt") auszuschließen.
 
 ```mermaid
 sequenceDiagram

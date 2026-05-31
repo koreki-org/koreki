@@ -30,6 +30,7 @@ interface GradingGraphModalProps {
     onDeleteGraph?: () => void;
     onSaveCustomSkill?: (name: string, graph: GradingGraph) => void;
     onSave: (graph: GradingGraph) => void;
+    isLocked?: boolean;
 }
 
 export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
@@ -46,7 +47,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     onRegenerateGraph,
     onDeleteGraph,
     onSaveCustomSkill,
-    onSave
+    onSave,
+    isLocked = false
 }) => {
     // Standard template if none provided (clean blank canvas)
     const defaultGraph: GradingGraph = {
@@ -101,12 +103,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     });
 
     useEffect(() => {
+        // Only override the user's input if the actual taskType (Dropdown) changes
+        // to a new template. We do not want to override it simply because customSkills reference changed.
         if (taskType && taskType.startsWith('custom-skill-') && customSkills?.[taskType]) {
             setSkillName(customSkills[taskType].name || "");
         } else {
             setSkillName(taskName || "");
         }
-    }, [taskName, taskType, customSkills]);
+    }, [taskName, taskType]); // Removed customSkills from dependency array to prevent typing interruption
 
     // Sync JSON text when graph changes
     useEffect(() => {
@@ -138,8 +142,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
             return graph.disablePoints;
         }
         const discipline = graph?.discipline;
-        const isRigid = discipline === 'vlsm' || discipline === 'skill-calc-vlsm' || discipline === 'skill-calc-raid' ||
-                        taskType === 'vlsm' || taskType === 'skill-calc-vlsm' || taskType === 'skill-calc-raid';
+        const isRigid = discipline === 'vlsm' || discipline === 'skill-calc-vlsm' ||
+                        taskType === 'vlsm' || taskType === 'skill-calc-vlsm';
         return !isRigid;
     }, [graph?.disablePoints, graph?.discipline, taskType]);
 
@@ -370,7 +374,15 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
             }
 
             if (updatedGraph && Array.isArray(updatedGraph.variables)) {
-                setGraph(updatedGraph);
+                // Preserve critical meta-settings from the current graph
+                // so the LLM doesn't accidentally reset the points distribution mode or discipline
+                const mergedGraph = {
+                    ...updatedGraph,
+                    discipline: updatedGraph.discipline || graph.discipline,
+                    disablePoints: graph.disablePoints !== undefined ? graph.disablePoints : updatedGraph.disablePoints
+                };
+                
+                setGraph(mergedGraph);
                 setChatHistory(prev => [...prev, { 
                     role: 'assistant', 
                     text: explanation || `Graph erfolgreich verfeinert!\nEs wurden ${updatedGraph.variables.length} Variablen deklariert.` 
@@ -465,6 +477,13 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                     </button>
                 </div>
 
+                {isLocked && (
+                    <div className="bg-amber-50 border-b border-amber-200 text-amber-800 px-4 sm:px-8 py-3 flex items-center gap-2 text-xs font-semibold shrink-0">
+                        <AlertCircle size={16} className="text-amber-600 shrink-0" />
+                        <span>Der Graph befindet sich im schreibgeschützten Modus (Read-Only), da bereits korrigierte Schülerarbeiten vorliegen. Änderungen sind deaktiviert.</span>
+                    </div>
+                )}
+
                 {/* Subheader/Actions Panel Toolbar */}
                 <div className="px-4 sm:px-8 py-3 bg-slate-50/20 border-b border-slate-100/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                     <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
@@ -473,8 +492,9 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             <span className="text-xs font-black uppercase text-slate-400 tracking-wider text-left block">Bestehender Skill:</span>
                             <select
                                 value={taskType || 'default'}
+                                disabled={isLocked}
                                 onChange={(e) => onEngineChange?.(e.target.value)}
-                                className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200"
+                                className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed font-inter"
                             >
                                 <option value="default">-- Kein Graph-Skill aktiv (Standard) --</option>
                                 {Object.entries(customSkills || {})
@@ -496,12 +516,13 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
                                 <Input 
                                     value={skillName}
+                                    disabled={isLocked}
                                     onChange={(e) => setSkillName(e.target.value)}
                                     placeholder="z.B. Subnetz-Berechnung"
-                                    className="h-8 w-full sm:w-44 rounded-xl border border-slate-200 text-xs font-bold px-2.5 focus:border-indigo-500 bg-white"
+                                    className="h-8 w-full sm:w-44 rounded-xl border border-slate-200 text-xs font-bold px-2.5 focus:border-indigo-500 bg-white disabled:opacity-60 disabled:cursor-not-allowed"
                                 />
                                 <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                                    {(onSaveCustomSkill || onSave) && (
+                                    {(onSaveCustomSkill || onSave) && !isLocked && (
                                         <Button
                                             onClick={() => {
                                                 if (!skillName.trim()) {
@@ -521,7 +542,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                             <Check size={14} /> Speichern
                                         </Button>
                                     )}
-                                    {onDeleteGraph && initialGraph && (
+                                    {onDeleteGraph && initialGraph && !isLocked && (
                                         <Button
                                             variant="outline"
                                             onClick={() => {
@@ -563,8 +584,9 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                 <span className="text-xs font-black uppercase text-slate-400 tracking-wider text-left block">KI-Generierungs-Engine:</span>
                                                 <select
                                                     value={selectedPlugin}
+                                                    disabled={isLocked}
                                                     onChange={(e) => setSelectedPlugin(e.target.value)}
-                                                    className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 font-inter"
+                                                    className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed font-inter"
                                                 >
                                                     <option value="math">Mathematik-Plugin (Standard-Rechner)</option>
                                                     <option value="computer-science-networking">Netzwerk-Plugin (VLSM)</option>
@@ -579,13 +601,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                 <span className="text-xs font-black uppercase text-slate-400 tracking-wider text-left block">Bewertung:</span>
                                                 <select
                                                     value={isPointsDisabled ? 'hybrid' : 'strict'}
+                                                    disabled={isLocked}
                                                     onChange={(e) => {
                                                         setGraph({
                                                             ...graph,
                                                             disablePoints: e.target.value === 'hybrid'
                                                         });
                                                     }}
-                                                    className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 font-inter"
+                                                    className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed font-inter"
                                                     title={isPointsDisabled 
                                                         ? "Hybrid-Grading aktiv: PANG prüft nur die mathematische Korrektheit. Die finale Punktevergabe erfolgt didaktisch flexibel durch das LLM." 
                                                         : "Strenge Punktevergabe aktiv: PANG bestimmt die Punkte absolut starr und mathematisch exakt."
@@ -612,14 +635,15 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         <div className="px-4 sm:px-8 py-5 border-t border-slate-100 flex flex-col gap-4 bg-white shrink-0">
                                             <textarea
                                                 value={initialUserNotes}
+                                                disabled={isLocked}
                                                 onChange={(e) => setInitialUserNotes(e.target.value)}
-                                                placeholder="z. B. Setze die Toleranz für alle Variablen auf 0.1, bestimme bestimmte Werte als Formel oder passe die Punkteverteilung an..."
-                                                className="w-full p-4 h-24 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 bg-slate-50/30 placeholder-slate-400 transition-all duration-200 resize-none leading-relaxed shadow-inner"
+                                                placeholder={isLocked ? "Der Graph ist schreibgeschützt, da bereits Schülerarbeiten korrigiert wurden." : "z. B. Setze die Toleranz für alle Variablen auf 0.1, bestimme bestimmte Werte als Formel oder passe die Punkteverteilung an..."}
+                                                className="w-full p-4 h-24 rounded-2xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/10 bg-slate-50/30 placeholder-slate-400 transition-all duration-200 resize-none leading-relaxed shadow-inner disabled:opacity-60"
                                             />
 
                                             {onRegenerateGraph && taskContent && taskContent.trim().length > 10 && (
                                                 <Button
-                                                    disabled={isGenerating}
+                                                    disabled={isGenerating || isLocked}
                                                     onClick={async () => {
                                                         const result = await onRegenerateGraph(selectedPlugin, initialUserNotes);
                                                         if (result && Array.isArray(result.variables)) {
@@ -627,7 +651,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                             setInitialUserNotes('');
                                                         }
                                                     }}
-                                                    className="h-10 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-black shadow-lg shadow-indigo-100/60 transition-all active:scale-[0.98] text-xs gap-2 flex-grow flex items-center justify-center cursor-pointer"
+                                                    className="h-10 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white font-black shadow-lg shadow-indigo-100/60 transition-all active:scale-[0.98] text-xs gap-2 flex-grow flex items-center justify-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                                 >
                                                     {isGenerating ? (
                                                         <RefreshCw size={14} className="animate-spin" />
@@ -718,23 +742,23 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         <div className="flex items-end gap-2 shrink-0 pt-2 border-t border-slate-100">
                                             <textarea
                                                 value={chatInput}
-                                                disabled={isRefining}
+                                                disabled={isRefining || isLocked}
                                                 onChange={(e) => setChatInput(e.target.value)}
                                                 onKeyDown={(e) => {
                                                     if (e.key === 'Enter' && !e.shiftKey) {
                                                         e.preventDefault();
-                                                        if (chatInput.trim()) {
+                                                        if (chatInput.trim() && !isLocked) {
                                                             handleRefineGraph();
                                                         }
                                                     }
                                                 }}
                                                 rows={1}
-                                                placeholder="z.B. Erhöhe Toleranzen..."
+                                                placeholder={isLocked ? "Graph ist schreibgeschützt..." : "z.B. Erhöhe Toleranzen..."}
                                                 className="flex-grow min-h-[38px] max-h-[120px] px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 bg-white placeholder-slate-400 disabled:opacity-60 transition-all duration-200 resize-none custom-scrollbar leading-relaxed"
                                             />
                                             <button
                                                 onClick={handleRefineGraph}
-                                                disabled={isRefining || !chatInput.trim()}
+                                                disabled={isRefining || !chatInput.trim() || isLocked}
                                                 className="h-9 w-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center transition-all duration-200 shadow-sm shrink-0 mb-0.5"
                                             >
                                                 <Send size={13} className="relative -left-0.5" />
@@ -749,6 +773,27 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                 <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider font-outfit">Visualisierte Graphen-Struktur</h4>
                                                 <Badge className="bg-slate-100 text-slate-600 border border-slate-200/50 py-0.5 px-2 rounded-full font-bold text-xs uppercase">{graph.variables.length} Variablen</Badge>
                                             </div>
+
+                                            {(graph as any).validation?.dryRunChecked && (
+                                                <div className={cn(
+                                                    "rounded-2xl p-4 text-xs leading-normal flex items-start gap-3 border shadow-xs animate-in fade-in slide-in-from-top-2 duration-300",
+                                                    (graph as any).validation.isValid
+                                                        ? "bg-emerald-50/50 border-emerald-100/50 text-emerald-950/80"
+                                                        : "bg-rose-50/50 border-rose-100/50 text-rose-950/80"
+                                                )}>
+                                                    <span className="text-xl shrink-0 mt-0.5">{(graph as any).validation.isValid ? "🛡️" : "⚠️"}</span>
+                                                    <div className="space-y-1">
+                                                        <p className={cn("font-extrabold leading-none", (graph as any).validation.isValid ? "text-emerald-900" : "text-rose-950")}>
+                                                            {(graph as any).validation.isValid ? "Plausibilität verifiziert!" : "Simulationsfehler erkannt"}
+                                                        </p>
+                                                        <p className="leading-relaxed font-medium text-slate-500 mt-1">
+                                                            {(graph as any).validation.isValid 
+                                                                ? `Dieser Graph wurde mathematisch fehlerfrei simuliert. Alle Formeln werten korrekt aus. ${(graph as any).validation.retriesUsed ? `(Selbst-Korrektur aktiv: ${(graph as any).validation.retriesUsed}x)` : ""}`
+                                                                : `Fehler: ${(graph as any).validation.error || "Unbekannter Fehler während der Berechnung."}`}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             <div className="space-y-3">
                                                 {graph.variables.map(v => (
@@ -804,6 +849,26 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         </div>
                                     </div>
 
+                                    {(graph as any).validation?.dryRunChecked && (
+                                        <div className={cn(
+                                            "rounded-3xl p-5 text-xs leading-normal flex items-start gap-3 border shadow-xs animate-in fade-in slide-in-from-top-2 duration-300 mt-4",
+                                            (graph as any).validation.isValid
+                                                ? "bg-emerald-50/50 border-emerald-100/50 text-emerald-950/80"
+                                                : "bg-rose-50/50 border-rose-100/50 text-rose-950/80"
+                                        )}>
+                                            <span className="text-xl shrink-0 mt-0.5">{(graph as any).validation.isValid ? "🛡️" : "⚠️"}</span>
+                                            <div className="space-y-1">
+                                                <p className={cn("font-extrabold leading-none", (graph as any).validation.isValid ? "text-emerald-900" : "text-rose-950")}>
+                                                    {(graph as any).validation.isValid ? "Automatische Validierung: Bestanden" : "Automatische Validierung: Fehler"}
+                                                </p>
+                                                <p className="leading-relaxed font-medium text-slate-500 mt-1">
+                                                    {(graph as any).validation.isValid 
+                                                        ? `Dieser Graph hat alle Dry-Run-Tests im Backend erfolgreich bestanden. Er ist absolut deterministisch auswertbar. ${(graph as any).validation.retriesUsed ? `(Selbst-Korrektur benötigt: ${(graph as any).validation.retriesUsed} Versuche)` : ""}`
+                                                        : `Warnung: ${(graph as any).validation.error || "Es wurde ein mathematischer Berechnungsfehler oder Zirkelbezug im Graphen festgestellt."}`}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {Object.keys(groupedVariables).length === 0 ? (
                                         <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] p-12 text-center max-w-xl mx-auto flex flex-col items-center justify-center gap-4 shadow-lg shadow-slate-100/50 mt-8 animate-in fade-in zoom-in-95 duration-500">
@@ -816,16 +881,18 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     Dieser Task hat noch keine mathematische Struktur hinterlegt. Du kannst oben im KI-Assistenten 🪄 einen Graphen generieren lassen oder hier direkt eine manuelle Variable hinzufügen.
                                                 </p>
                                             </div>
-                                            <div className="flex gap-3 mt-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    onClick={() => handleAddVariable()}
-                                                    className="h-8 text-xs font-bold rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
-                                                >
-                                                    + Erste Variable hinzufügen
-                                                </Button>
-                                            </div>
+                                            {!isLocked && (
+                                                <div className="flex gap-3 mt-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={() => handleAddVariable()}
+                                                        className="h-8 text-xs font-bold rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
+                                                    >
+                                                        + Erste Variable hinzufügen
+                                                    </Button>
+                                                </div>
+                                            )}
                                         </div>
                                     ) : (
                                         Object.entries(groupedVariables).map(([groupName, vars]) => (
@@ -835,12 +902,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                         <Layers size={13} className="text-indigo-400" />
                                                         {groupName}
                                                     </h4>
-                                                    <button
-                                                        onClick={() => handleAddVariable(groupName)}
-                                                        className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-indigo-50 rounded-md"
-                                                    >
-                                                        <Plus size={11} /> Variable hinzufügen
-                                                    </button>
+                                                    {!isLocked && (
+                                                        <button
+                                                            onClick={() => handleAddVariable(groupName)}
+                                                            className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-indigo-50 rounded-md"
+                                                        >
+                                                            <Plus size={11} /> Variable hinzufügen
+                                                        </button>
+                                                    )}
                                                 </div>
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -859,6 +928,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                                 onMouseLeave={() => setHoveredVarId(null)}
                                                                 className={cn(
                                                                     "p-4 rounded-2xl border-2 transition-all flex flex-col gap-3 select-none relative group cursor-pointer text-left",
+                                                                    hasError ? "bg-rose-50/20 border-rose-300 hover:border-rose-400 shadow-rose-50/20 shadow-sm" :
                                                                     isSelected ? "bg-white border-indigo-500 shadow-md shadow-indigo-100 ring-1 ring-indigo-500/10" :
                                                                     isDependency ? "bg-indigo-50/40 border-indigo-200 shadow-sm" :
                                                                     isHovered ? "bg-white border-slate-300/80 shadow-sm" :
@@ -875,7 +945,12 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                                             {v.type === 'input' ? 'Statische Eingabe' : 'Formel-Kalkulation'}
                                                                         </p>
                                                                     </div>
-                                                                    <div className="flex gap-1.5 shrink-0">
+                                                                    <div className="flex gap-1.5 shrink-0 items-center">
+                                                                        {hasError && (
+                                                                            <Badge className="bg-rose-600 text-white text-[8px] py-0 px-1.5 rounded font-black uppercase flex items-center gap-0.5">
+                                                                                <AlertCircle size={8} /> FEHLER
+                                                                            </Badge>
+                                                                        )}
                                                                         {v.type === 'input' ? (
                                                                             <Badge className="bg-slate-100 border-slate-200 text-slate-600 text-[8px] py-0 px-1.5 rounded font-black uppercase">INPUT</Badge>
                                                                         ) : (
@@ -885,12 +960,19 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                                 </div>
 
                                                                 {/* Expected Output / Master value */}
-                                                                <div className="bg-slate-50 rounded-xl p-2.5 flex justify-between items-center text-xs border border-slate-100/50">
+                                                                <div className={cn("rounded-xl p-2.5 flex justify-between items-center text-xs border", hasError ? "bg-rose-50/50 border-rose-100/50" : "bg-slate-50 border-slate-100/50")}>
                                                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">Erwarteter Wert:</span>
-                                                                    <span className={cn("font-mono font-bold text-slate-800", hasError ? "text-red-500" : "text-slate-800")}>
+                                                                    <span className={cn("font-mono font-bold text-slate-800", hasError ? "text-rose-600" : "text-slate-800")}>
                                                                         {String(evalVal)}
                                                                     </span>
                                                                 </div>
+
+                                                                {hasError && (
+                                                                    <div className="bg-rose-50 border border-rose-100/50 text-rose-700 rounded-xl p-2.5 text-[10px] leading-normal font-mono flex items-start gap-1.5">
+                                                                        <AlertCircle size={12} className="shrink-0 mt-0.5 text-rose-600" />
+                                                                        <span className="break-all">{hasError}</span>
+                                                                    </div>
+                                                                )}
 
                                                                 {/* Small display of expression / default value */}
                                                                 <div className="text-xs leading-tight font-medium text-slate-500 truncate font-mono">
@@ -920,13 +1002,15 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                                 )}
 
                                                                 {/* Hover Delete Action Icon */}
-                                                                <button
-                                                                    onClick={(e) => { e.stopPropagation(); handleDeleteVariable(v.id); }}
-                                                                    className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white border border-slate-100 shadow-md hover:bg-red-50 hover:text-red-500 hover:border-red-100 p-1.5 rounded-lg text-slate-400"
-                                                                    title="Variable löschen"
-                                                                >
-                                                                    <Trash2 size={12} />
-                                                                </button>
+                                                                {!isLocked && (
+                                                                    <button
+                                                                        onClick={(e) => { e.stopPropagation(); handleDeleteVariable(v.id); }}
+                                                                        className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white border border-slate-100 shadow-md hover:bg-red-50 hover:text-red-500 hover:border-red-100 p-1.5 rounded-lg text-slate-400"
+                                                                        title="Variable löschen"
+                                                                    >
+                                                                        <Trash2 size={12} />
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         );
                                                     })}
@@ -950,13 +1034,15 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                 <span>Knoten-Inspektor</span>
                                             </h4>
                                             <div className="flex items-center gap-2">
-                                                <button 
-                                                    onClick={() => handleDeleteVariable(selectedVar.id)}
-                                                    className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-red-50 rounded-md cursor-pointer"
-                                                >
-                                                    <Trash2 size={11} />
-                                                    <span className="hidden sm:inline">Löschen</span>
-                                                </button>
+                                                {!isLocked && (
+                                                    <button 
+                                                        onClick={() => handleDeleteVariable(selectedVar.id)}
+                                                        className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-red-50 rounded-md cursor-pointer"
+                                                    >
+                                                        <Trash2 size={11} />
+                                                        <span className="hidden sm:inline">Löschen</span>
+                                                    </button>
+                                                )}
                                                 <button 
                                                     onClick={() => setSelectedVarId(null)}
                                                     className="lg:hidden text-slate-400 hover:text-slate-600 transition-colors p-1 hover:bg-slate-100 rounded-full"
@@ -972,8 +1058,9 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                             <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Variablen-ID</label>
                                             <Input
                                                 value={selectedVar.id}
+                                                disabled={isLocked}
                                                 onChange={(e) => handleRenameVariableId(selectedVar.id, e.target.value.trim())}
-                                                className="h-9 font-mono text-xs font-bold"
+                                                className="h-9 font-mono text-xs font-bold disabled:opacity-60"
                                             />
                                             <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
                                                 Eindeutiger Name der Variable in Schülerlösungen (z.B. <code className="font-mono bg-slate-50 px-1 py-0.5 rounded text-slate-600">subnetA_hosts</code>).
@@ -985,8 +1072,9 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                             <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Knotentyp</label>
                                             <select
                                                 value={selectedVar.type}
+                                                disabled={isLocked}
                                                 onChange={(e) => handleUpdateVariable(selectedVar.id, { type: e.target.value as VariableType })}
-                                                className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer"
+                                                className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                             >
                                                 <option value="input">📥 Statische Eingabe (Input)</option>
                                                 <option value="formula">⚙️ Berechnete Formel (Formula)</option>
@@ -1004,12 +1092,13 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                 <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Musterlösung (Wert)</label>
                                                 <Input
                                                     value={selectedVar.defaultValue !== undefined ? String(selectedVar.defaultValue) : ''}
+                                                    disabled={isLocked}
                                                     onChange={(e) => {
                                                         const val = e.target.value;
                                                         const num = Number(val);
                                                         handleUpdateVariable(selectedVar.id, { defaultValue: isNaN(num) || val.trim() === '' ? val : num });
                                                     }}
-                                                    className="h-9 text-xs font-semibold"
+                                                    className="h-9 text-xs font-semibold disabled:opacity-60"
                                                 />
                                                 <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
                                                     Der didaktisch korrekte Wert aus der Musterlösung.
@@ -1025,10 +1114,11 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                 </div>
                                                 <textarea
                                                     value={selectedVar.expression || ''}
+                                                    disabled={isLocked}
                                                     onChange={(e) => handleUpdateVariable(selectedVar.id, { expression: e.target.value })}
                                                     rows={3}
                                                     placeholder="z.B. network.calculateMask(subnetA_hosts)"
-                                                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white leading-relaxed resize-none shadow-3xs"
+                                                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white leading-relaxed resize-none shadow-3xs disabled:opacity-60"
                                                 />
                                                 <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
                                                     Berechnungsvorschrift. Verwende Variablen-IDs (z.B. <code className="font-mono bg-slate-50 px-1 py-0.5 rounded text-slate-600">subnetA_hosts</code>).
@@ -1047,11 +1137,12 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                             <Input
                                                 type="number"
                                                 value={selectedVar.maxPoints !== undefined ? selectedVar.maxPoints : 1}
+                                                disabled={isLocked}
                                                 onChange={(e) => handleUpdateVariable(selectedVar.id, { maxPoints: Number(e.target.value) })}
-                                                className="h-9 text-xs font-semibold"
+                                                className="h-9 text-xs font-semibold disabled:opacity-60"
                                             />
                                             <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5 text-left">
-                                                Wie viele Punkte der Schüler für diesen korrekten Wert erhält.
+                                                Wie viele Punkte der Schüler für diesen korrektten Wert erhält.
                                             </p>
                                             {isPointsDisabled && (
                                                 <p className="text-xs text-amber-700 font-semibold leading-relaxed mt-1.5 bg-amber-50 border border-amber-100 rounded-lg p-2 flex items-start gap-1 text-left">
@@ -1079,8 +1170,9 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                         <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Validierungsart</label>
                                                         <select
                                                             value={selectedVar.validationType}
+                                                            disabled={isLocked}
                                                             onChange={(e) => handleUpdateVariable(selectedVar.id, { validationType: e.target.value as ValidationType })}
-                                                            className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer"
+                                                            className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                                         >
                                                             <option value="exact">Exakte Übereinstimmung</option>
                                                             <option value="tolerance">Abweichung (Toleranz)</option>
@@ -1100,8 +1192,9 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                             <Input
                                                                 type="number"
                                                                 value={selectedVar.tolerance !== undefined ? selectedVar.tolerance : 0}
+                                                                disabled={isLocked}
                                                                 onChange={(e) => handleUpdateVariable(selectedVar.id, { tolerance: Number(e.target.value) })}
-                                                                className="h-9 text-xs font-semibold"
+                                                                className="h-9 text-xs font-semibold disabled:opacity-60"
                                                             />
                                                             <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
                                                                 Zulässige Rundungs-Abweichung (z.B. <code className="font-mono bg-slate-50 px-1 py-0.5 rounded text-slate-600">0.1</code>).
@@ -1293,6 +1386,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             </div>
                             <textarea
                                 value={jsonText}
+                                readOnly={isLocked}
                                 onChange={(e) => handleJsonChange(e.target.value)}
                                 className="flex-grow p-6 bg-slate-950 text-slate-300 font-mono text-xs outline-hidden border-none resize-none overflow-y-auto leading-relaxed"
                             />
@@ -1317,15 +1411,17 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             onClick={onClose}
                             className="h-10 flex-1 sm:flex-initial rounded-xl px-5 font-bold text-slate-500 hover:bg-slate-100"
                         >
-                            Abbrechen
+                            {isLocked ? "Schließen" : "Abbrechen"}
                         </Button>
-                        <Button 
-                            onClick={() => { onSave(graph); onClose(); }}
-                            disabled={!!jsonError}
-                            className="h-10 flex-1 sm:flex-initial rounded-xl px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-lg shadow-indigo-100 transition-all"
-                        >
-                            Zuweisen
-                        </Button>
+                        {!isLocked && (
+                            <Button 
+                                onClick={() => { onSave(graph); onClose(); }}
+                                disabled={!!jsonError}
+                                className="h-10 flex-1 sm:flex-initial rounded-xl px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-lg shadow-indigo-100 transition-all"
+                            >
+                                Zuweisen
+                            </Button>
+                        )}
                     </div>
                 </div>
 

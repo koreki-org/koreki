@@ -41,7 +41,6 @@ export function formatPluginFeedback(
 
   // 3. Discipline Signature:
   const isNetworkDiscipline = discipline === 'computer-science-networking';
-  const isRaidSkill = taskType === 'skill-calc-raid' || discipline === 'computer-science-storage';
 
   // 4. Tabular Structure Check (e.g., compound names like messebesucher_netzadresse)
   const hasStructuredVariables = gradingResult.stepResults.some((s) => s.variableId.includes('_'));
@@ -53,7 +52,7 @@ export function formatPluginFeedback(
   // A table should ONLY be formatted for actual network subnetting tasks!
   const isNetworkTask = usesNetworkPlugin || hasSubnetVariables || isVlsmSkill || isNetworkDiscipline;
 
-  if (!isGeneralMathOrPhysics && isNetworkTask) {
+  if (usesNetworkPlugin || (!isGeneralMathOrPhysics && isNetworkTask)) {
     return formatVlsmTableFeedback(gradingResult, gradingGraph);
   }
 
@@ -79,7 +78,8 @@ const VLSM_SUFFIX_MAP: { category: string; suffixes: string[] }[] = [
     category: 'netid',
     suffixes: [
       'netzadresse', 'netz_adresse', 'netz_id', 'netzid',
-      'net_id', 'netid', 'networkid', 'network_id', 'ip'
+      'net_id', 'netid', 'networkid', 'network_id', 'ip', 'net',
+      'netaddr', 'netzaddr', 'netz_addr'
     ]
   },
   {
@@ -99,7 +99,7 @@ const VLSM_SUFFIX_MAP: { category: string; suffixes: string[] }[] = [
       'first_host', 'firsthost', 'first_ip', 'firstip',
       'erste_host', 'erstehost', 'erste_ip', 'ersteip',
       'erster_ip', 'ersterip', 'ersten_ip', 'erstenip',
-      'min_host', 'minhost', 'min_ip', 'minip'
+      'min_host', 'minhost', 'min_ip', 'minip', 'first'
     ]
   },
   {
@@ -112,7 +112,7 @@ const VLSM_SUFFIX_MAP: { category: string; suffixes: string[] }[] = [
       'last_host', 'lasthost', 'last_ip', 'lastip',
       'letzte_host', 'letztehost', 'letzte_ip', 'letzteip',
       'letzter_ip', 'letzterip', 'letzten_ip', 'letztenip',
-      'max_host', 'maxhost', 'max_ip', 'maxip'
+      'max_host', 'maxhost', 'max_ip', 'maxip', 'last'
     ]
   },
   {
@@ -200,12 +200,40 @@ function parseVariableId(
         };
       }
     }
+
+    // Prefix match: check if variable STARTS with the field name (e.g. "bcast_messe")
+    const prefixWithUnderscore = item.suffix + '_';
+    if (lowerCleanId.startsWith(prefixWithUnderscore)) {
+      const rawSubnet = cleanId.slice(prefixWithUnderscore.length);
+      const subnetName = rawSubnet.replace(/^_+/, '');
+      if (subnetName) {
+        return {
+          subnetKey: subnetName.toUpperCase(),
+          fieldKey: item.category
+        };
+      }
+    }
   }
 
   // 3. Fallback: if formula detected a category but no specific suffix matched, strip standard suffixes or trailing parts
   if (detectedFieldCategory) {
-    // Just split at the last underscore as a fallback
+    // Check if the first part matches a known subnet convention or looks like a field
+    const firstUnderscore = cleanId.indexOf('_');
     const lastUnderscore = cleanId.lastIndexOf('_');
+    
+    if (firstUnderscore > 0) {
+      const firstPart = cleanId.slice(0, firstUnderscore).toLowerCase();
+      // If the first part looks like a field (e.g., 'net', 'gw'), the subnet is the second part
+      const isFieldFirst = SORTED_VLSM_SUFFIXES.some(s => s.suffix === firstPart);
+      if (isFieldFirst) {
+        return {
+          subnetKey: cleanId.slice(firstUnderscore + 1).toUpperCase(),
+          fieldKey: detectedFieldCategory
+        };
+      }
+    }
+
+    // Otherwise, assume <subnet>_<field>
     if (lastUnderscore > 0) {
       const subnetName = cleanId.slice(0, lastUnderscore);
       return {

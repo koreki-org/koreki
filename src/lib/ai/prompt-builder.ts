@@ -2,12 +2,16 @@ import { Task, GradingMemoryCase } from '../../types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
 import { shouldDisablePoints } from './ai-orchestrator';
+import { getAvailablePluginManifest } from '../grading/graph-generator';
 
 // Centralized Default Templates
 import correctionSystemDefault from '../../prompts/core/default/correction/system.md';
 import correctionUserDefault from '../../prompts/core/default/correction/user.md';
 import studentSimulatorSystemDefault from '../../prompts/student-simulator/system.md';
 import studentSimulatorUserDefault from '../../prompts/student-simulator/user.md';
+import pangFallbackInstruction from '../../prompts/core/default/correction/pang/fallback-instruction.md';
+import pangHybridInstruction from '../../prompts/core/default/correction/pang/hybrid-instruction.md';
+import pangAutoInstruction from '../../prompts/core/default/correction/pang/auto-instruction.md';
 
 import analyzeCleanSystemDefault from '../../prompts/core/default/analyze-and-clean/system.md';
 import analyzeCleanUserDefault from '../../prompts/core/default/analyze-and-clean/user.md';
@@ -18,6 +22,10 @@ import analyzeMapUserDefault from '../../prompts/core/default/analyze-and-map/us
 import visionSystemDefault from '../../prompts/core/default/vision/system.md';
 import visionUserDefault from '../../prompts/core/default/vision/user.md';
 
+// Specialized Qwen Vision Templates
+import qwenVisionSystem from '../../prompts/core/specialized/qwen3.6/vision/system.md';
+import qwenVisionUser from '../../prompts/core/specialized/qwen3.6/vision/user.md';
+
 import secondOpinionSystemDefault from '../../prompts/second-opinion/system.md';
 import secondOpinionUserDefault from '../../prompts/second-opinion/user.md';
 import variableExtractionSystem from '../../prompts/core/default/variable-extraction/system.md';
@@ -25,30 +33,11 @@ import variableExtractionUser from '../../prompts/core/default/variable-extracti
 
 
 // Specialized Gemma4 Templates
-import gemma4CorrectionSystem from '../../prompts/core/specialized/gemma4/correction/system.md';
-import gemma4CorrectionUser from '../../prompts/core/specialized/gemma4/correction/user.md';
-import gemma4AnalyzeCleanSystem from '../../prompts/core/specialized/gemma4/analyze-and-clean/system.md';
-import gemma4AnalyzeCleanUser from '../../prompts/core/specialized/gemma4/analyze-and-clean/user.md';
-import gemma4AnalyzeMapSystem from '../../prompts/core/specialized/gemma4/analyze-and-map/system.md';
-import gemma4AnalyzeMapUser from '../../prompts/core/specialized/gemma4/analyze-and-map/user.md';
+import gemma4CorrectionGuard from '../../prompts/core/specialized/gemma4/correction/guard.md';
+import gemma4AnalyzeCleanGuard from '../../prompts/core/specialized/gemma4/analyze-and-clean/guard.md';
+import gemma4AnalyzeMapGuard from '../../prompts/core/specialized/gemma4/analyze-and-map/guard.md';
 
-// Specialized Qwen 3.6 Templates
-import qwenCorrectionSystem from '../../prompts/core/specialized/qwen3.6/correction/system.md';
-import qwenCorrectionUser from '../../prompts/core/specialized/qwen3.6/correction/user.md';
-import qwenAnalyzeCleanSystem from '../../prompts/core/specialized/qwen3.6/analyze-and-clean/system.md';
-import qwenAnalyzeCleanUser from '../../prompts/core/specialized/qwen3.6/analyze-and-clean/user.md';
-import qwenAnalyzeMapSystem from '../../prompts/core/specialized/qwen3.6/analyze-and-map/system.md';
-import qwenAnalyzeMapUser from '../../prompts/core/specialized/qwen3.6/analyze-and-map/user.md';
-import qwenVisionSystem from '../../prompts/core/specialized/qwen3.6/vision/system.md';
-import qwenVisionUser from '../../prompts/core/specialized/qwen3.6/vision/user.md';
 
-// Specialized Mistral-Small Templates
-import mistralSmallCorrectionSystem from '../../prompts/core/specialized/mistral-small/correction/system.md';
-import mistralSmallCorrectionUser from '../../prompts/core/specialized/mistral-small/correction/user.md';
-import mistralSmallAnalyzeCleanSystem from '../../prompts/core/specialized/mistral-small/analyze-and-clean/system.md';
-import mistralSmallAnalyzeCleanUser from '../../prompts/core/specialized/mistral-small/analyze-and-clean/user.md';
-import mistralSmallAnalyzeMapSystem from '../../prompts/core/specialized/mistral-small/analyze-and-map/system.md';
-import mistralSmallAnalyzeMapUser from '../../prompts/core/specialized/mistral-small/analyze-and-map/user.md';
 
 export interface StructuredPrompt {
     system: string;
@@ -76,15 +65,8 @@ export function buildCorrectionPrompt(
     let system = correctionSystemDefault;
     let user = correctionUserDefault;
 
-    if (model?.toLowerCase().includes('qwen')) {
-        system = qwenCorrectionSystem;
-        user = qwenCorrectionUser;
-    } else if (model?.toLowerCase().includes('gemma')) {
-        system = gemma4CorrectionSystem;
-        user = gemma4CorrectionUser;
-    } else if (model?.toLowerCase().includes('mistral-small')) {
-        system = mistralSmallCorrectionSystem;
-        user = mistralSmallCorrectionUser;
+    if (model?.toLowerCase().includes('gemma')) {
+        system = system + "\n\n" + gemma4CorrectionGuard;
     }
     
     // MIGRATION: Ignore legacy huge default prompts if stuck in DB
@@ -127,10 +109,11 @@ export function buildCorrectionPrompt(
                 const disablePointsActive = shouldDisablePoints(t.taskType, t.gradingGraph);
 
                 vorevaluierungBlock += `\n\n### MATHEMATISCH-DETERMINISTISCHE VOREVALUIERUNG FÜR "${t.name}":\n`;
-                vorevaluierungBlock += `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!\n`;
+                vorevaluierungBlock += `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!\n\n`;
+                vorevaluierungBlock += pangFallbackInstruction + `\n\n`;
                 
                 if (disablePointsActive) {
-                    vorevaluierungBlock += `- EMPFOHLENE PUNKTE DER ENGINE: ${t.gradingResult.totalPoints} von max ${t.gradingResult.maxPoints} Punkten (Vorschlag basierend auf exaktem mathematischem Abgleich).\n`;
+                    vorevaluierungBlock += `- STATUS DER ENGINE: Der Graph wurde erfolgreich ausgewertet. Nutze ausschließlich die folgenden Detail-Ergebnisse (Korrekt/Falsch/Folgefehler) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.\n`;
                 } else {
                     vorevaluierungBlock += `- ZU VERGEBENDE PUNKTE: ${t.gradingResult.totalPoints} von max ${t.gradingResult.maxPoints} Punkten.\n`;
                 }
@@ -140,16 +123,13 @@ export function buildCorrectionPrompt(
                     const statusStr = step.status === 'correct' ? 'Korrekt' : 
                                     step.status === 'consecutive_correct' ? 'Folgefehler-Kompensiert (Korrekt gewertet)' : 
                                     'Fehlerhaft';
-                    vorevaluierungBlock += `  * Schritt/Variable "${step.variableId}": Schülerwert: "${step.studentValue !== undefined ? step.studentValue : 'nicht angegeben'}", Erwartet: "${step.expectedValue}", Status: ${statusStr}. ${step.note}\n`;
+                    vorevaluierungBlock += `  * Schritt/Variable "${step.variableId}": Schülerwert: "${step.studentValue !== undefined && step.studentValue !== null ? step.studentValue : 'nicht angegeben'}", Erwartet: "${step.expectedValue}", Status: ${statusStr}. ${step.note}\n`;
                 });
 
                 if (disablePointsActive) {
-                    vorevaluierungBlock += `\nWICHTIG: Halte dich bei der Vergabe der Punkte streng und ohne Abweichung an die expliziten Punktvorgaben pro Teilschritt aus der Musterlösung des Lehrers (z. B. Formel = 1P, Einsetzen = 1P, Ergebnis = 1P).
-Nutze bei der Bewertung, ob der Schüler die Kriterien für den jeweiligen Teilschritt erfüllt hat, die folgende Unterstützung:
-* Für den Formel- und Einsetz-Schritt: Nutze deine semantische Toleranz. Wenn der Schüler die Formel inhaltlich richtig aufgeschrieben hat (z. B. "P=U x I" oder "P=U*I" statt "P = U * I"), bewerte diesen Schritt als erfüllt und vergib die Punkte.
-* Für den Ergebnis-Schritt: Nutze die mathematische Vorevaluierung der PANG-Engine im Hintergrund. Meldet PANG, dass das Ergebnis mathematisch korrekt oder folgerichtig (Folgefehler-kompensiert) berechnet wurde (z. B. Status "Folgefehler-Kompensiert"), bewerte diesen Schritt als erfüllt und vergib die dafür vorgesehenen Punkte.`;
+                    vorevaluierungBlock += `\n` + pangHybridInstruction;
                 } else {
-                    vorevaluierungBlock += `\nWICHTIG: Du musst exakt ${t.gradingResult.totalPoints} Punkte für diese Aufgabe vergeben (in dem Feld "pointsObtained" für dieses Objekt). Formuliere die Begründung (correctionNotes) und das Feedback genau auf Basis dieser Schritte und hebe insbesondere hervor, wenn Folgefehler kulant unbepunktet blieben (Folgeschritt-Kompensation).`;
+                    vorevaluierungBlock += `\n` + pangAutoInstruction.replace('{{POINTS}}', String(t.gradingResult.totalPoints));
                 }
             }
         });
@@ -201,15 +181,19 @@ export function buildCleanAndAnalyzePrompt(modelSolution: string, model?: string
     let system = analyzeCleanSystemDefault;
     let user = analyzeCleanUserDefault;
 
-    if (model?.toLowerCase().includes('qwen')) {
-        system = qwenAnalyzeCleanSystem;
-        user = qwenAnalyzeCleanUser;
-    } else if (model?.toLowerCase().includes('gemma')) {
-        system = gemma4AnalyzeCleanSystem;
-        user = gemma4AnalyzeCleanUser;
-    } else if (model?.toLowerCase().includes('mistral-small')) {
-        system = mistralSmallAnalyzeCleanSystem;
-        user = mistralSmallAnalyzeCleanUser;
+    if (model?.toLowerCase().includes('gemma')) {
+        system = system + "\n\n" + gemma4AnalyzeCleanGuard;
+    }
+
+    const manifest = getAvailablePluginManifest();
+    const activeDomains = Array.from(new Set(manifest.map(m => m.domain)));
+    const activeDomainsText = activeDomains.map(d => `"${d}"`).join(', ');
+
+    if (system.includes('{{ACTIVE_DOMAINS}}')) {
+        system = system.replace('{{ACTIVE_DOMAINS}}', activeDomainsText);
+    } else {
+        // Safe append if specialized template lacks the placeholder
+        system = system.replace('suggestGraph = false ist.', `suggestGraph = false ist.\nErlaubte Plugin-Domänen: [ ${activeDomainsText} ].`);
     }
 
     user = user.replace('{{modelSolution}}', modelSolution);
@@ -228,15 +212,8 @@ export function buildCleanAndMapPrompt(studentText: string, tasksLayout?: Task[]
     let system = analyzeMapSystemDefault;
     let user = analyzeMapUserDefault;
 
-    if (model?.toLowerCase().includes('qwen')) {
-        system = qwenAnalyzeMapSystem;
-        user = qwenAnalyzeMapUser;
-    } else if (model?.toLowerCase().includes('gemma')) {
-        system = gemma4AnalyzeMapSystem;
-        user = gemma4AnalyzeMapUser;
-    } else if (model?.toLowerCase().includes('mistral-small')) {
-        system = mistralSmallAnalyzeMapSystem;
-        user = mistralSmallAnalyzeMapUser;
+    if (model?.toLowerCase().includes('gemma')) {
+        system = system + "\n\n" + gemma4AnalyzeMapGuard;
     }
 
     const layoutString = tasksLayout 
@@ -400,9 +377,13 @@ export function buildSecondOpinionPrompt(
 /**
  * Builds the prompt for semantic, highly-precise variable extraction from student text.
  */
-export function buildVariableExtractionPrompt(studentText: string, variables: any[], extractionInstructions?: string): StructuredPrompt {
+export function buildVariableExtractionPrompt(studentText: string, variables: any[], extractionInstructions?: string, taskName?: string): StructuredPrompt {
     let system = variableExtractionSystem;
     let user = variableExtractionUser;
+
+    if (taskName) {
+        system += `\n\n### KONTEXT DER AUFGABE:\nDie Aufgabe, die der Schüler beantwortet, heißt: "${taskName}".\nNutze diesen Kontext zwingend, um Mehrdeutigkeiten aufzulösen (z. B. ob ein Wert die Netto-Kapazität der Aufgabe oder die Kapazität einer einzelnen Platte ist).\n`;
+    }
 
     if (extractionInstructions) {
         system += `\n\n### SPEZIFISCHE EXTRAKTIONSRICHTLINIEN FÜR DIESEN AUFGABENTYP (STRIKT BEFOLGEN):\n${extractionInstructions}\n`;

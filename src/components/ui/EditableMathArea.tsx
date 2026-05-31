@@ -36,14 +36,17 @@ export function splitFeedback(text: string): SplitFeedback {
     }
 
     const remainingText = text.slice(engineIndex);
-    const dividerIndex = remainingText.indexOf('---');
+    
+    // Look for a standalone divider to split technical from pedagogical feedback
+    // We must include newlines so we don't accidentally split markdown tables (|:---|)
+    const dividerIndex = remainingText.indexOf('\n---\n');
     
     let technical = "";
     let pedagogical = "";
 
     if (dividerIndex !== -1) {
         technical = remainingText.slice(0, dividerIndex).trim();
-        let afterDivider = remainingText.slice(dividerIndex + 3).trim();
+        let afterDivider = remainingText.slice(dividerIndex + 5).trim();
         if (afterDivider.startsWith('[KI-Pädagogische Einschätzung]')) {
             afterDivider = afterDivider.slice('[KI-Pädagogische Einschätzung]'.length).trim();
         }

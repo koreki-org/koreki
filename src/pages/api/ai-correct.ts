@@ -8,6 +8,7 @@ import { performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
 import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
 import { GraphRunner } from '@/lib/grading/GraphRunner';
+import { splitTextByTasks } from '@/lib/task-utils';
 
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 
@@ -39,7 +40,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const activeSkillIds = settings?.activeSkillIds || [];
             const customSkills = settings?.customSkills || {};
             
-            for (const task of tasksLayout) {
+            // Partition student text by tasks
+            const rawSplit = splitTextByTasks(studentText, tasksLayout);
+
+            for (let i = 0; i < tasksLayout.length; i++) {
+                const task = tasksLayout[i];
                 const hasAttachedGraph = !!task.gradingGraph;
                 const isGraphSkill = task.taskType && (
                     task.taskType === 'vlsm' || 
@@ -51,7 +56,29 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
                 if (hasAttachedGraph) {
                     try {
-                        const studentValues = await extractStudentAnswersWithLLM(studentText, task.gradingGraph, 'STANDARD', settings as any, task.taskType);
+                        const studentTaskText = rawSplit[i] || "";
+                        const taskSpecificText = (studentTaskText && studentTaskText.trim().length > 0) ? studentTaskText : studentText;
+                        
+                        console.log(`[PANG Engine] Evaluating task "${task.name}". Mapped input text snippet: "${taskSpecificText.substring(0, 100).replace(/\n/g, ' ')}..."`);
+                        
+                        const studentValues = await extractStudentAnswersWithLLM(taskSpecificText, task.gradingGraph, 'STANDARD', settings as any, task.taskType, task.name);
+                        
+                        // Dump to file for agent to read
+                        try {
+                            const fs = require('fs');
+                            const path = require('path');
+                            fs.writeFileSync(path.join(process.cwd(), 'scratch', 'debug-pang.json'), JSON.stringify({
+                                taskName: task.name,
+                                taskSpecificText,
+                                studentValues,
+                                studentText: req.body.studentText || req.body.text || ""
+                            }, null, 2));
+                        } catch (e) {
+                            console.error(e);
+                        }
+                        
+                        console.log(`[PANG Engine] Task "${task.name}" extracted values:`, studentValues);
+                        
                         const gradingResult = GraphRunner.grade(task.gradingGraph, studentValues);
                         task.gradingResult = gradingResult;
 

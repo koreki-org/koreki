@@ -6,6 +6,53 @@ import { STANDARD_SKILL_PROFILES } from '@/lib/ai/standard-skills-profiles';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 
 /**
+ * Deterministischer, Key-sortierter Objekt-Stringifier für robustes Dirty-Checking.
+ */
+export const sortObjectKeys = (obj: any): any => {
+    if (obj === null || typeof obj !== 'object') return obj;
+    if (Array.isArray(obj)) return obj.map(sortObjectKeys);
+    return Object.keys(obj)
+        .sort()
+        .reduce((sorted: any, key) => {
+            sorted[key] = sortObjectKeys(obj[key]);
+            return sorted;
+        }, {});
+};
+
+/**
+ * Konsolidiert namensgleiche Skills (case-insensitiv & getrimmt) und leitet Duplikat-IDs um.
+ */
+export const deduplicateCustomSkills = (
+    skills: Record<string, any>,
+    activeIds?: string[]
+): { cleaned: Record<string, any>; updatedActiveIds: string[] } => {
+    const seenNames = new Map<string, string>(); // lowerName -> keptId
+    const cleaned: Record<string, any> = {};
+    const redirections = new Map<string, string>(); // duplicateId -> keptId
+
+    Object.keys(skills).forEach(id => {
+        const skill = skills[id];
+        if (!skill || !skill.name) return;
+
+        const cleanName = skill.name.trim();
+        const lowerName = cleanName.toLowerCase();
+        if (seenNames.has(lowerName)) {
+            const keptId = seenNames.get(lowerName)!;
+            redirections.set(id, keptId);
+            return;
+        }
+        seenNames.set(lowerName, id);
+        cleaned[id] = skill;
+    });
+
+    const updatedActiveIds = activeIds ? Array.from(new Set(
+        activeIds.map(id => redirections.get(id) || id)
+    )) : [];
+
+    return { cleaned, updatedActiveIds };
+};
+
+/**
  * Industrial Skill Profile Hook
  * 🏮🛡️🏛️
  * Symmetrical to usePromptProfiles.ts. Handles database, local storage, and custom skills management.
@@ -36,7 +83,7 @@ export const useSkillProfiles = (
 
     const selectedProfileData = profiles.find(p => p.name === selectedProfile);
 
-    // Precise Custom Skills dirty checking (Stage 10 Parity)
+    // Precise Custom Skills dirty checking (Stage 10 Parity with sorting protection)
     const currentProfileCustomSkills = Object.keys(customSkills)
         .filter(key => activeSkillIds.includes(key))
         .reduce((obj, key) => {
@@ -48,17 +95,20 @@ export const useSkillProfiles = (
         ? selectedProfileData.customSkills
         : {};
 
-    const isCustomSkillsDirty = JSON.stringify(currentProfileCustomSkills) !== JSON.stringify(savedProfileCustomSkills);
+    const isCustomSkillsDirty = JSON.stringify(sortObjectKeys(currentProfileCustomSkills)) !== JSON.stringify(sortObjectKeys(savedProfileCustomSkills));
     const isDirty = JSON.stringify([...activeSkillIds].sort()) !== JSON.stringify([...lastSavedSkillIds].sort()) || isCustomSkillsDirty;
     const isSystemSelected = selectedProfileData?.isSystem || !!profiles.find(p => p.name === selectedProfile && p.isSystem);
 
-    // Load custom skills on mount
+    // Load custom skills on mount with self-healing deduplication
     useEffect(() => {
         if (typeof window !== 'undefined') {
             const stored = localStorage.getItem('koreki_custom_skills');
             if (stored) {
                 try {
-                    setCustomSkills(JSON.parse(stored));
+                    const parsed = JSON.parse(stored);
+                    const { cleaned } = deduplicateCustomSkills(parsed);
+                    setCustomSkills(cleaned);
+                    localStorage.setItem('koreki_custom_skills', JSON.stringify(cleaned));
                 } catch (e) { /* noop */ }
             }
         }
@@ -238,16 +288,20 @@ export const useSkillProfiles = (
             const current = allProfiles.find((p: any) => p.name === selectedProfile);
             if (current) {
                 const skills = Array.isArray(current.activeSkillIds) ? current.activeSkillIds : [];
-                setActiveSkillIds(skills);
-                setLastSavedSkillIds(skills);
                 
-                // Hydrate custom skills from the loaded profile
+                // Hydrate custom skills from the loaded profile with self-healing deduplication
                 if (current.customSkills && typeof current.customSkills === 'object') {
                     setCustomSkills(prev => {
                         const merged = { ...prev, ...current.customSkills };
-                        localStorage.setItem('koreki_custom_skills', JSON.stringify(merged));
-                        return merged;
+                        const { cleaned, updatedActiveIds } = deduplicateCustomSkills(merged, skills);
+                        localStorage.setItem('koreki_custom_skills', JSON.stringify(cleaned));
+                        setActiveSkillIds(updatedActiveIds);
+                        setLastSavedSkillIds(updatedActiveIds);
+                        return cleaned;
                     });
+                } else {
+                    setActiveSkillIds(skills);
+                    setLastSavedSkillIds(skills);
                 }
             }
             return;
@@ -262,16 +316,20 @@ export const useSkillProfiles = (
                 const current = data.find((p: any) => p.name === selectedProfile);
                 if (current) {
                     const skills = Array.isArray(current.activeSkillIds) ? current.activeSkillIds : [];
-                    setActiveSkillIds(skills);
-                    setLastSavedSkillIds(skills);
                     
-                    // Hydrate custom skills from the loaded profile
+                    // Hydrate custom skills from the loaded profile with self-healing deduplication
                     if (current.customSkills && typeof current.customSkills === 'object') {
                         setCustomSkills(prev => {
                             const merged = { ...prev, ...current.customSkills };
-                            localStorage.setItem('koreki_custom_skills', JSON.stringify(merged));
-                            return merged;
+                            const { cleaned, updatedActiveIds } = deduplicateCustomSkills(merged, skills);
+                            localStorage.setItem('koreki_custom_skills', JSON.stringify(cleaned));
+                            setActiveSkillIds(updatedActiveIds);
+                            setLastSavedSkillIds(updatedActiveIds);
+                            return cleaned;
                         });
+                    } else {
+                        setActiveSkillIds(skills);
+                        setLastSavedSkillIds(skills);
                     }
                 }
             }
@@ -290,16 +348,20 @@ export const useSkillProfiles = (
             const current = profiles.find(p => p.name === selectedProfile);
             if (current) {
                 const skills = Array.isArray(current.activeSkillIds) ? current.activeSkillIds : [];
-                setActiveSkillIds(skills);
-                setLastSavedSkillIds(skills);
                 
-                // Hydrate custom skills from the loaded profile
+                // Hydrate custom skills from the loaded profile with self-healing deduplication
                 if (current.customSkills && typeof current.customSkills === 'object') {
                     setCustomSkills(prev => {
                         const merged = { ...prev, ...current.customSkills };
-                        localStorage.setItem('koreki_custom_skills', JSON.stringify(merged));
-                        return merged;
+                        const { cleaned, updatedActiveIds } = deduplicateCustomSkills(merged, skills);
+                        localStorage.setItem('koreki_custom_skills', JSON.stringify(cleaned));
+                        setActiveSkillIds(updatedActiveIds);
+                        setLastSavedSkillIds(updatedActiveIds);
+                        return cleaned;
                     });
+                } else {
+                    setActiveSkillIds(skills);
+                    setLastSavedSkillIds(skills);
                 }
             }
         }
@@ -309,17 +371,21 @@ export const useSkillProfiles = (
         setIsCreatingNew(false);
         setSelectedProfile(profile.name);
         const skills = Array.isArray(profile.activeSkillIds) ? profile.activeSkillIds : [];
-        setActiveSkillIds(skills);
-        setLastSavedSkillIds(skills);
         setShowEditorMobile(true);
         
-        // Hydrate custom skills immediately on manual select
+        // Hydrate custom skills immediately on manual select with self-healing deduplication
         if (profile.customSkills && typeof profile.customSkills === 'object') {
             setCustomSkills(prev => {
                 const merged = { ...prev, ...profile.customSkills };
-                localStorage.setItem('koreki_custom_skills', JSON.stringify(merged));
-                return merged;
+                const { cleaned, updatedActiveIds } = deduplicateCustomSkills(merged, skills);
+                localStorage.setItem('koreki_custom_skills', JSON.stringify(cleaned));
+                setActiveSkillIds(updatedActiveIds);
+                setLastSavedSkillIds(updatedActiveIds);
+                return cleaned;
             });
+        } else {
+            setActiveSkillIds(skills);
+            setLastSavedSkillIds(skills);
         }
     };
 
@@ -378,6 +444,23 @@ export const useSkillProfiles = (
 
         setSaving(true);
         
+        // 1. Fetch freshest custom skills directly from localStorage to prevent stale state overwrites
+        let freshCustomSkills = { ...customSkills };
+        if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem('koreki_custom_skills');
+            if (stored) {
+                try { freshCustomSkills = JSON.parse(stored); } catch (e) {}
+            }
+        }
+
+        // 2. Filter to save ONLY the custom skills active in this profile (Stage 10 Parity)
+        const activeCustomSkills = Object.keys(freshCustomSkills)
+            .filter(key => activeSkillIds.includes(key))
+            .reduce((obj, key) => {
+                obj[key] = freshCustomSkills[key];
+                return obj;
+            }, {} as Record<string, any>);
+
         if (isDesktopTarget()) {
             const stored = localStorage.getItem('koreki_local_skill_profiles');
             let customProfiles: any[] = [];
@@ -387,13 +470,13 @@ export const useSkillProfiles = (
             const existingIdx = customProfiles.findIndex(p => p.name === nameToSave);
             if (existingIdx >= 0) {
                 customProfiles[existingIdx].activeSkillIds = activeSkillIds;
-                customProfiles[existingIdx].customSkills = customSkills;
+                customProfiles[existingIdx].customSkills = activeCustomSkills;
             } else {
                 customProfiles.push({
                     id: `local-skill-${Date.now()}`,
                     name: nameToSave,
                     activeSkillIds,
-                    customSkills,
+                    customSkills: activeCustomSkills,
                     isSystem: false
                 });
             }
@@ -413,7 +496,7 @@ export const useSkillProfiles = (
             const res = await apiClient.post('/api/user/skill-profiles', {
                 name: nameToSave,
                 activeSkillIds,
-                customSkills
+                customSkills: activeCustomSkills
             });
 
             const data = await res.json();
