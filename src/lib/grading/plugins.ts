@@ -234,8 +234,14 @@ parser.functions.longToIp = longToIp;
  * Evaluates an expression string using resolved variables.
  * Supports standard mathematical and logical helpers natively (expr-eval)
  * and maps old "domain.function(...)" calls to registered plugin functions for backward compatibility.
+ * SECURED against Prototype Pollution by blocking specific keywords.
  */
 export function evaluateExpression(expression: string, context: Record<string, any>): any {
+  // 🛡️ Prototype Pollution Guard
+  if (/(?:__proto__|constructor|prototype)/i.test(expression)) {
+    throw new Error("Security Violation: Dangerous expression payload detected.");
+  }
+
   // Map dots to underscores to support old format backward compatibility
   const sanitizedExpression = expression
     .replace(/network\./g, 'network_')

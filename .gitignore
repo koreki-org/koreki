@@ -33,7 +33,8 @@ public/download/
 /lib/generated/prisma
 
 # Testing
-tests/
+tests/reports
+tests/auth/user.json
 coverage/
 test-results/
 playwright-report/

@@ -1,6 +1,6 @@
 {
   "name": "koreki",
-  "version": "0.9.71",
+  "version": "0.9.72",
   "private": true,
   "scripts": {
     "dev": "prisma generate && next dev -p 3000",
@@ -16,7 +16,7 @@
     "db:deploy": "prisma migrate deploy",
     "migrate:generate": "ts-node prisma/scripts/generate-migration.ts",
     "prisma:generate": "prisma generate",
-    "security-check": "npm audit --audit-level=critical",
+    "security-check": "node scripts/security-audit.js && npm test tests/unit/security-audit.test.ts",
     "db:cleanup": "node prisma/scripts/cleanup-logs.js",
     "tauri": "tauri",
     "dev:desktop": "cross-env NEXT_PUBLIC_KOREKI_DESKTOP=true tauri dev",
