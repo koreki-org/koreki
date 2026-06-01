@@ -150,6 +150,38 @@ describe('AI Logic tests', () => {
             .rejects.toThrow('PURE_KEY_MISSING');
     });
 
+    it('should throw error if OPENAI_KEY_MISSING in PURE mode', async () => {
+        await expect(performOCRRequest('b64', 'mime', false, 'PURE', { provider: 'openai-compatible', openaiKey: '' }))
+            .rejects.toThrow('OPENAI_KEY_MISSING');
+    });
+
+    it('should process OCR via OpenAI provider in PURE mode', async () => {
+        (global.fetch as jest.Mock)
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    choices: [{ message: { content: 'OpenAI OCR Result' } }],
+                    usage: { prompt_tokens: 10, completion_tokens: 5 }
+                })
+            })
+            .mockResolvedValueOnce({ ok: true }); // Billing sync
+
+        const res = await performOCRRequest('b64data', 'image/png', false, 'PURE', {
+            provider: 'openai-compatible',
+            openaiKey: 'custom-op-key',
+            openaiUrl: 'https://api.openai.com/v1',
+            openaiModel: 'gpt-4o'
+        });
+
+        expect(res).toBe('OpenAI OCR Result');
+        expect(global.fetch).toHaveBeenCalledTimes(2);
+        const ocrCall = (global.fetch as jest.Mock).mock.calls[0];
+        expect(ocrCall[0]).toContain('https://api.openai.com/v1/chat/completions');
+        const ocrBody = JSON.parse(ocrCall[1].body);
+        expect(ocrBody.model).toBe('gpt-4o');
+        expect(ocrBody.messages[1].content[1].image_url.url).toContain('data:image/png;base64,b64data');
+    });
+
     it('should throw Error if Mistral OCR response is not ok', async () => {
         (global.fetch as jest.Mock).mockResolvedValueOnce({
             ok: false,

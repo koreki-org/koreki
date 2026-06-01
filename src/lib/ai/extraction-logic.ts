@@ -75,6 +75,9 @@ export async function runExtractionStrategy(
 
         // 🚀 INDUSTRIAL PIPELINING: Render Page -> OCR immediately
         const textResults = await promisePool(pageIndices, 1, async (pageNum, idx) => {
+            if (idx > 0) {
+                await new Promise(r => setTimeout(r, 1000));
+            }
             const buffer = await renderSinglePage(pdf, pageNum, 2.5);
             if (needsPreview) {
                 previewDataUrls[idx] = `data:image/jpeg;base64,${buffer}`;

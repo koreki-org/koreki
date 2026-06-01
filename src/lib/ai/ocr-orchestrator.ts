@@ -1,7 +1,9 @@
 import { executeMistralRequest } from './mistral-provider';
 import { executeOllamaRequest } from './ollama-logic';
+import { executeOpenAIRequest } from './openai-provider';
 import { promisePool } from './promise-pool';
 import { AppSettings } from '../../types';
+import { isLocalInstance } from '../env-context';
 
 /**
  * Orchestrates OCR requests, choosing between direct Mistral API (PURE) or Koreki Backend (STANDARD).
@@ -21,14 +23,41 @@ export async function performOCRRequest(
 
     if (appMode === 'PURE') {
         const mistralKey = settings?.mistralKey;
-        if (!mistralKey && settings?.provider !== 'ollama') throw new Error("PURE_KEY_MISSING");
+        const openaiKey = settings?.openaiKey;
 
-        const pageResults = await promisePool(buffers, 1, async (b64) => {
+        if (settings?.provider === 'openai-compatible') {
+            if (!openaiKey) throw new Error("OPENAI_KEY_MISSING");
+        } else if (settings?.provider !== 'ollama') {
+            if (!mistralKey) throw new Error("PURE_KEY_MISSING");
+        }
+
+        const pageResults = await promisePool(buffers, 1, async (b64, idx) => {
+            if (idx > 0) {
+                await new Promise(r => setTimeout(r, 1000));
+            }
             if (settings?.provider === 'ollama') {
                 const data = await executeOllamaRequest(
                     'vision',
                     { buffer: b64, mimeType },
                     settings
+                );
+                return data.text;
+            } else if (settings?.provider === 'openai-compatible') {
+                const baseUrl = settings.openaiUrl || '';
+                const apiKey = settings.openaiKey || '';
+                const model = settings.openaiModel || 'Qwen3.6-35B-A3B-FP8';
+                const data = await executeOpenAIRequest(
+                    'vision',
+                    { buffer: b64, mimeType },
+                    baseUrl,
+                    apiKey,
+                    {
+                        model,
+                        temperature: settings?.visionTemperature,
+                        topP: settings?.visionTopP,
+                        maxTokens: settings?.visionMaxTokens,
+                        presencePenalty: settings?.visionPresencePenalty
+                    }
                 );
                 return data.text;
             } else {
@@ -52,16 +81,18 @@ export async function performOCRRequest(
 
         const fullText = pageResults.join('\n\n');
 
-        // Billing for PURE mode (Ping only, no data)
-        await fetch('/api/billing/pure-deduct', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                pageCount: buffers.length,
-                action: 'ocr',
-                isScan: isScan
-            })
-        });
+        // Billing for PURE mode (Ping only, no data) - Skipped on Local/Desktop to prevent Network/CSP errors
+        if (!isLocalInstance()) {
+            await fetch('/api/billing/pure-deduct', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    pageCount: buffers.length,
+                    action: 'ocr',
+                    isScan: isScan
+                })
+            }).catch(e => console.error("Billing ping failed:", e));
+        }
 
         return fullText;
     } else {

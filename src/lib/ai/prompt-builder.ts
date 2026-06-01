@@ -22,9 +22,7 @@ import analyzeMapUserDefault from '../../prompts/core/default/analyze-and-map/us
 import visionSystemDefault from '../../prompts/core/default/vision/system.md';
 import visionUserDefault from '../../prompts/core/default/vision/user.md';
 
-// Specialized Qwen Vision Templates
-import qwenVisionSystem from '../../prompts/core/specialized/qwen3.6/vision/system.md';
-import qwenVisionUser from '../../prompts/core/specialized/qwen3.6/vision/user.md';
+
 
 import secondOpinionSystemDefault from '../../prompts/second-opinion/system.md';
 import secondOpinionUserDefault from '../../prompts/second-opinion/user.md';
@@ -234,17 +232,9 @@ export function buildCleanAndMapPrompt(studentText: string, tasksLayout?: Task[]
  * Builds the generic or specialized vision prompt.
  */
 export function buildVisionPrompt(model?: string): StructuredPrompt {
-    let system = visionSystemDefault;
-    let user = visionUserDefault;
-
-    if (model?.toLowerCase().includes('qwen')) {
-        system = qwenVisionSystem;
-        user = qwenVisionUser;
-    }
-
     return {
-        system,
-        user,
+        system: visionSystemDefault,
+        user: visionUserDefault,
         options: { temperature: 0.0, topP: 1.0 } // Absolute Strictness / Greedy Mode
     };
 }
