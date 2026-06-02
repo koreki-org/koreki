@@ -495,13 +495,22 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         <div className="flex flex-col gap-4">
                             <p className="text-[0.65rem] font-black uppercase tracking-[0.2em] text-slate-400 px-1">Aufgabenstruktur</p>
 
-                            {eligibleTaskIndices.length > 0 && (
+                            {(eligibleTaskIndices.length > 0 || isBatchGenerating) && (
                                 <div className="flex items-center justify-between gap-3 rounded-xl bg-indigo-50/60 border border-indigo-100/60 px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-200">
                                     <div className="flex items-center gap-2 min-w-0">
                                         <Sparkles size={13} className="text-indigo-500 shrink-0 animate-pulse" />
                                         <p className="text-[0.7rem] text-slate-600 truncate">
-                                            <strong className="text-indigo-600">{eligibleTaskIndices.length} {eligibleTaskIndices.length === 1 ? 'Aufgabe' : 'Aufgaben'} mit Rechenweg erkannt</strong>
-                                            {' – Berechnungsgraph erstellen für bessere Ergebnisse?'}
+                                            {isBatchGenerating ? (
+                                                <>
+                                                    <strong className="text-indigo-600">Berechnungsgraphen werden generiert</strong>
+                                                    {` – ${Object.values(batchStatus).filter(s => s === 'success' || s === 'error').length} von ${Object.keys(batchStatus).length} abgeschlossen`}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <strong className="text-indigo-600">{eligibleTaskIndices.length} {eligibleTaskIndices.length === 1 ? 'Aufgabe' : 'Aufgaben'} mit Rechenweg erkannt</strong>
+                                                    {' – Berechnungsgraph erstellen für bessere Ergebnisse?'}
+                                                </>
+                                            )}
                                         </p>
                                         <KorekiTooltip
                                             title="KI-Berechnungsgraph"
@@ -549,12 +558,12 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                     </Button>
                                 </div>
                             )}
-                            {isBatchGenerating && eligibleTaskIndices.length > 0 && (
+                            {isBatchGenerating && Object.keys(batchStatus).length > 0 && (
                                 <div className="w-full bg-slate-100 rounded-full h-1 overflow-hidden -mt-2">
                                     <div 
                                         className="bg-indigo-500 h-full rounded-full transition-all duration-500" 
                                         style={{ 
-                                            width: `${(Object.values(batchStatus).filter(s => s === 'success' || s === 'error').length / eligibleTaskIndices.length) * 100}%` 
+                                            width: `${(Object.values(batchStatus).filter(s => s === 'success' || s === 'error').length / Object.keys(batchStatus).length) * 100}%` 
                                         }}
                                     />
                                 </div>

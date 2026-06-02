@@ -40,8 +40,16 @@ graph TD
 ```
 
 ### Die zwei Kern-Phasen:
-1. **Verbatim & Intent Extraction:** Ein spezialisiertes, schlankes LLM-Prompting extrahiert die tatsächlichen Werte, die der Schüler verwendet oder errechnet hat (ohne diese zu korrigieren). Fällt das LLM aus, greift ein robustes Regex-Heuristik-Parsing (mit Unterstützung für tabellarische Daten und Formel-Extraktionen wie `(3-1) * 4 TB = 8 TB`) als Fallback.
+1. **Verbatim & Intent Extraction:** Ein spezialisiertes, schlankes LLM-Prompting extrahiert die tatsächlichen Werte, die der Schüler verwendet oder errechnet hat (ohne diese zu korrigieren). Fällt das LLM aus oder wirft der API-Aufruf Fehler, fängt das System dies sicher ab, und nicht angegebene Werte werden deterministisch als Omissionen (0 Punkte, primary_error) deklariert, um fehlerhafte heuristische Zuordnungen auszuschließen.
 2. **Deterministic Evaluation (PANG Interpreter):** Ein zustandsfreier Interpreter läuft durch den topologisch sortierten Graphen. Berechnet der Schüler einen Zwischenschritt falsch, wird sein fehlerhafter Wert in alle Folgeformeln eingesetzt. Ergibt sich daraus ein folgerichtiges Ergebnis, erhält der Schüler für die nachfolgenden Schritte volle Kulanzpunkte (Folgefehler-Kompensation).
+
+### 2.1 Härtung der Variablenextraktion (MINT- & Binär-Normalisierung)
+Da der mathematische Bewertungsgraph zur Vermeidung von Einheiten-Konflikten in Formelketten deterministisch mit physikalischen SI-Basiseinheiten (z. B. Ohm [$\Omega$], Ampere [$A$], Volt [$V$], Watt [$W$]) rechnet oder bestimmte Datenmengen-Ziel-Einheiten erwartet, die Schüler jedoch flexibel mit oder ohne Vorsatzzeichen und in unterschiedlichen Einheiten rechnen dürfen, greift in Phase 1 eine spezialisierte **Präfix-Härtung** im System-Prompt der LLM-Variablenextraktion (`system.md` Rule 10):
+
+* **Deterministische Präfix-Normalisierung (Dezimal & Binär):** Das LLM extrahiert Einheiten-Präfixe nicht mehr rein syntaktisch, sondern übersetzt Schülerwerte mit Vorsatzzeichen vor der Übergabe an den Graphen deterministisch in die mathematische SI-Basiseinheit oder die vom Graphen erwartete Ziel-Einheit:
+  * **Physikalische Größen (Dezimalpräfixe):** z. B. `4 kΩ` ➔ `4000`, `2,5 kΩ` ➔ `2500`, `1,846 mA` ➔ `0.001846`.
+  * **Digitale Datenmengen (Binärpräfixe, Faktor 1024):** z. B. `0.03125 GiB` für eine Variable, die `MiB` erwartet, wird deterministisch auf Basis der Zielvariable in `32` normalisiert ($0,03125 \times 1024 = 32$).
+* **Konsistenz-Schutz bei Einheiten-Fehlern:** Schreibt ein Schüler einen mathematischen Widerspruch auf (z. B. `I = 12 V / 6500 Ω = 0,001846 mA`, obwohl das physikalische Ergebnis in der Basiseinheit Ampere liegt), korrigiert der Konsistenz-Schutz den Skalierungsfehler des Präfixes und übergibt den physikalisch konsistenten Basiseinheits-Wert (`0.001846`) an die Engine. Dies gilt analog für Datenmengen (z. B. wenn ein Schüler versehentlich `MiB` statt `GiB` schreibt, aber mathematisch korrekt gerechnet hat).
 
 ---
 
@@ -197,6 +205,11 @@ Schlägt der Dry-Run fehl, startet das Backend einen automatisierten Korrekturla
 Im [GradingGraphModal.tsx](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/components/batch/GradingGraphModal.tsx) werden die Ergebnisse des Dry-Runs transparent dargestellt:
 * **🛡️ Verifiziert-Banner:** Ein grünes Banner signalisiert der Lehrkraft, dass der Graph mathematisch geprüft und 100% konsistent auswertbar ist.
 * **⚠️ Fehler-Highlights im Editor:** Weist eine Formel Fehler auf (z.B. durch nachträgliche manuelle Bearbeitung im Editor), leuchtet der betroffene Knoten zart rot auf, erhält ein prominentes "FEHLER"-Badge und zeigt die exakte Fehlermeldung direkt als Codebox auf der Knotenkarte an.
+
+### 3.7 Robuste Fehlerfortpflanzung bei ausgelassenen Schritten (Omission-Kompensation)
+Um zu verhindern, dass die mathematische Folgefehler-Kette abreißt, wenn ein Schüler einen Zwischenschritt in seiner freien Ausarbeitung komplett auslässt (Omission), ist die PANG-Engine mit einer dynamischen Omission-Kompensation ausgestattet:
+* **Dynamische Formel-Evaluation:** Wenn ein Schülerwert nicht angegeben ist (`studentValue === undefined`), greift der `GraphRunner` zur Fortpflanzung des Fehlers im `computedContext` nicht mehr blind auf den Erwartungswert der Musterlösung (`expectedValue`) zurück. Stattdessen nutzt er den bereits ermittelten Folgefehler-Wert (`computedValueBasedOnErrors`), falls dieser existiert.
+* **Didaktischer Effekt:** Der rote Faden des Folgefehlers bleibt über beliebig viele ausgelassene Zwischenschritte hinweg absolut intakt, wodurch ungerechte Mehrfach-Abzüge zuverlässig verhindert werden.
 
 ---
 

@@ -263,7 +263,11 @@ export class GraphRunner {
 
       // 4. Update the computed context with the STUDENT'S value
       // This propagates their error downstream so we can check consecutive errors!
-      computedContext[id] = studentValue !== undefined ? studentValue : expectedValue;
+      computedContext[id] = studentValue !== undefined
+        ? studentValue
+        : (computedValueBasedOnErrors !== null && computedValueBasedOnErrors !== undefined
+           ? computedValueBasedOnErrors
+           : expectedValue);
 
       stepResults.push({
         variableId: id,
