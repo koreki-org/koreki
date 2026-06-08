@@ -68,15 +68,18 @@ Um die Extraktionsqualität sicherzustellen, nutzt Koreki zwei Strategien:
 1.  **Markdown-Stripping:** Chirurgische Entfernung von Zäunen (` ```json `) vor dem Parsing.
 2.  **Recall Hardening:** Einsatz von „Absolute Duty“ Instruktionen und Neupositionierung technischer JSON-Constraints ans Ende des Prompts. Dies zwingt das Modell, das gesamte Dokument inhaltlich zu erfassen, bevor es sich auf die Formatierung konzentriert.
 
-### E. Industrial Context Size (8k/16k Pillar)
-Zur Vermeidung von Truncation-Fehlern bei komplexen Vision-Tasks oder großen Dokumenten wird der Kontext standardmäßig gehärtet:
-*   **Base Standard:** `num_ctx: 8192`.
-*   **High-Performance Escalation:** Für präzisionskritische Modelle (**Mistral Small**, **Gemma 31B**) wird der Kontext automatisch auf **16.384 Token** erhöht, um Punkt-Extraktion und weitreichende Abhängigkeiten in mehrseitigen Prüfungen sicherzustellen.
-*   **Implementierung:** Direktes Injection in die Ollama-Optionen via Rust-Backend Proxy.
+### E. Industrial Context Size (Dynamic Context Escalation)
+Zur Vermeidung von Truncation-Fehlern bei komplexen Vision-Tasks oder großen Dokumenten wird der Kontext dynamisch gehärtet:
+*   **Base Standard / Tiers:** Der Kontext wird dynamisch in drei Stufen (`8.192`, `16.384`, `32.768` Token) vergeben, um GPU-VRAM-Preallozierungen bei Ollama gering zu halten.
+*   **Token-Schätzung:** Die Schätzung setzt sich aus den Textzeichen des Prompts (Zeichenlänge / 3.7), dem Antwort-Puffer (12.000 Token für Thinking-Modelle, 4.000 Token sonst) sowie einer Bildpauschale zusammen.
+*   **Vision-Hardening:** Für Vision-Tasks wird jedes Bild im Request pauschal mit **8.000 Token** kalkuliert, um zu verhindern, dass Vision-Modelle (wie Qwen oder Gemma) bei der Bild-Analyse an die Kontextgrenze stoßen.
+*   **Implementierung:** Direktes Injection in die Ollama-Optionen via Rust-Backend Proxy (`src/lib/ai/ollama-logic.ts`).
 
-> [!TIP]
-> **Future Optimization - Dynamic Context Sizing:**
-> Aktuell basiert die Eskalation auf harten String-Matches (`mistral-small`, `31b`). Custom-Modelle (z.B. `mistral:latest` oder `mistral-nemo`) fallen derzeit noch auf den 8k-Standard zurück. Eine Erweiterung der Logik auf allgemeine `mistral` oder `nemo` Identifier (inkl. Erhöhung auf 32k) steht noch aus und sollte bei steigendem Bedarf an Large-Document-Analysen implementiert werden.
+### F. Dynamic Content-Security-Policy (CSP) whitelisting (V16 breakthrough) 🛡️
+In Browser-basierten Umgebungen (wie dem selbstgehosteten Community-Modus) verhindern standardmäßige Content-Security-Policies (CSP) des Webbrowsers den Zugriff auf IP-Adressen im lokalen Netzwerk (z. B. `192.168.x.x`).
+*   **Cookie-gestützte Whitelist:** Sobald ein Nutzer eine lokale IP-Adresse für Ollama oder OpenAI im Einstellungs-Modal konfiguriert, wird diese in Browser-Cookies (`koreki_ollama_url` / `koreki_openai_url`) hinterlegt.
+*   **Dynamische Middleware:** Eine Next.js-Middleware (`src/middleware.ts`) fängt Page-Requests ab, liest diese Cookies aus und fügt **exakt und ausschließlich die konfigurierten Ursprungsdomänen** (Origins) in die `connect-src`-Directive der CSP ein.
+*   **Sicherheitsvorteil:** Dies verhindert den Einsatz von unsicheren globalen Wildcards (`*`) in der CSP für Produktivumgebungen und schützt den Browser vor unerwünschten externen Verbindungen.
 
 ---
 

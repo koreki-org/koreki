@@ -3,9 +3,9 @@ import { Task, AppSettings } from '../../types';
 import { executeMistralRequest } from './mistral-provider';
 import { executeOllamaRequest } from './ollama-logic';
 import { executeOpenAIRequest } from './openai-provider';
-import { isLocalInstance } from '@/lib/env-context';
+import { isLocalInstance, isDesktopTarget } from '@/lib/env-context';
 import { GraphRunner } from '../grading/GraphRunner';
-import { parseGeneratedGraph } from '../grading/graph-generator';
+import { parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
 import { formatPluginFeedback } from '../grading/feedback-formatter';
 import { GradingGraph } from '../grading/types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
@@ -458,7 +458,7 @@ export async function performAIRequest(
     settings: AppSettings
 ): Promise<any> {
     // Client-side deterministic graph evaluation for PURE mode or local Ollama execution
-    const isClientSideExecution = appMode === 'PURE' || settings?.provider === 'ollama';
+    const isClientSideExecution = appMode === 'PURE' || settings?.provider === 'ollama' || isDesktopTarget();
     if (isClientSideExecution && action === 'correction' && payload.tasksLayout && Array.isArray(payload.tasksLayout)) {
         const activeSkillIds = settings?.activeSkillIds || [];
         const customSkills = settings?.customSkills || {};
@@ -508,7 +508,8 @@ export async function performAIRequest(
     // --- HYBRID ORCHESTRATION ---
     // Rule: Ollama always runs client-side (PURE) even in STANDARD mode, 
     // because the backend cannot reach the user's local network.
-    if (appMode === 'PURE' || settings?.provider === 'ollama') {
+    // Also, Desktop Mode (Tauri) has no backend server, so it always runs client-side.
+    if (isClientSideExecution) {
         const mistralKey = settings?.mistralKey;
         if (!mistralKey && settings?.provider === 'mistral') throw new Error("PURE_KEY_MISSING");
 
@@ -541,6 +542,154 @@ export async function performAIRequest(
             }
             result = { text: combinedText };
         } else {
+            if (action === 'generate-graph') {
+                let genResult: any;
+                if (settings?.provider === 'ollama') {
+                    genResult = await executeOllamaRequest('generate-graph', payload, settings);
+                } else if (settings?.provider === 'openai-compatible') {
+                    const baseUrl = settings.openaiUrl || '';
+                    const apiKey = settings.openaiKey || '';
+                    genResult = await executeOpenAIRequest('generate-graph', payload, baseUrl, apiKey, {
+                        model: settings.openaiModel,
+                        enableThinking: settings.enableThinking,
+                        temperature: 0.2,
+                        topP: 0.9,
+                        maxTokens: 4000
+                    });
+                } else {
+                    genResult = await executeMistralRequest('generate-graph', payload, mistralKey, {
+                        model: settings?.model,
+                        enableThinking: settings?.enableThinking,
+                        temperature: 0.2,
+                        topP: 0.9,
+                        maxTokens: 4000
+                    });
+                }
+
+                let graph = parseGeneratedGraph(typeof genResult === 'string' ? genResult : JSON.stringify(genResult));
+                if (!graph) {
+                    throw new Error('Die KI konnte keinen gültigen Bewertungs-Graphen generieren. Bitte versuche es erneut oder passe den Aufgabentext an.');
+                }
+
+                let graphValidation = validateGraphDeterminism(graph);
+                let retryCount = 0;
+                const maxRetries = 3;
+
+                while (!graphValidation.isValid && retryCount < maxRetries) {
+                    console.warn(`[Client] PANG Dry-Run validation failed. Retrying self-correction (${retryCount + 1}/${maxRetries}):`, graphValidation.error);
+
+                    const userInstruction = `AUTOMATISCHE MATHEMATISCHE VALIDIERUNG FEHLGESCHLAGEN:
+Der von dir generierte Graph ist mathematisch nicht konsistent auswertbar.
+Folgender Fehler trat bei der Test-Simulation auf:
+"${graphValidation.error}"
+
+Bitte korrigiere den Graphen. Stelle sicher, dass:
+1. Alle Formel-Ausdrücke syntaktisch korrekt sind und die richtigen Variablen-Namen referenzieren.
+2. Keine fiktiven JavaScript-Funktionen verwendet werden (nutze nur Algebra oder registrierte Plugins).
+3. Jede Formel-Variable mit den Default-Eingabewerten mathematisch exakt das Ergebnis der Musterlösung liefert.
+4. Alle Variablen in snake_case benannt sind.
+
+Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
+
+                    try {
+                        let correctionResult: any;
+                        const correctionPayload = {
+                            taskText: payload.taskText,
+                            currentGraph: graph,
+                            userInstruction,
+                            discipline: payload.discipline
+                        };
+
+                        if (settings?.provider === 'ollama') {
+                            correctionResult = await executeOllamaRequest('refine-graph', correctionPayload, settings);
+                        } else if (settings?.provider === 'openai-compatible') {
+                            const baseUrl = settings.openaiUrl || '';
+                            const apiKey = settings.openaiKey || '';
+                            correctionResult = await executeOpenAIRequest('refine-graph', correctionPayload, baseUrl, apiKey, {
+                                model: settings.openaiModel,
+                                temperature: 0.0,
+                                topP: 1.0,
+                                maxTokens: 4000
+                            });
+                        } else {
+                            correctionResult = await executeMistralRequest('refine-graph', correctionPayload, mistralKey, {
+                                model: settings?.model,
+                                temperature: 0.0,
+                                topP: 1.0,
+                                maxTokens: 4000
+                            });
+                        }
+
+                        const correctedGraph = parseGeneratedGraph(typeof correctionResult === 'string' ? correctionResult : JSON.stringify(correctionResult));
+                        if (correctedGraph) {
+                            graph = correctedGraph;
+                            graphValidation = validateGraphDeterminism(graph);
+                        } else {
+                            break;
+                        }
+                    } catch (err) {
+                        console.error('[Client] Auto-correction request failed in loop', err);
+                        break;
+                    }
+                    retryCount++;
+                }
+
+                (graph as any).validation = {
+                    isValid: graphValidation.isValid,
+                    error: graphValidation.error,
+                    retriesUsed: retryCount,
+                    dryRunChecked: true
+                };
+
+                return graph;
+            } else if (action === 'refine-graph') {
+                let refineResult: any;
+                if (settings?.provider === 'ollama') {
+                    refineResult = await executeOllamaRequest('refine-graph', payload, settings);
+                } else if (settings?.provider === 'openai-compatible') {
+                    const baseUrl = settings.openaiUrl || '';
+                    const apiKey = settings.openaiKey || '';
+                    refineResult = await executeOpenAIRequest('refine-graph', payload, baseUrl, apiKey, {
+                        model: settings.openaiModel,
+                        temperature: 0.0,
+                        topP: 1.0,
+                        maxTokens: 4000
+                    });
+                } else {
+                    refineResult = await executeMistralRequest('refine-graph', payload, mistralKey, {
+                        model: settings?.model,
+                        temperature: 0.0,
+                        topP: 1.0,
+                        maxTokens: 4000
+                    });
+                }
+
+                const rawStr = typeof refineResult === 'string' ? refineResult : JSON.stringify(refineResult);
+                const graph = parseGeneratedGraph(rawStr, { skipSanitization: true });
+
+                if (!graph) {
+                    throw new Error('Die KI konnte keinen gültigen Bewertungs-Graphen generieren. Bitte passe deine Anweisung an oder versuche es erneut.');
+                }
+
+                const graphValidation = validateGraphDeterminism(graph);
+                (graph as any).validation = {
+                    isValid: graphValidation.isValid,
+                    error: graphValidation.error,
+                    dryRunChecked: true
+                };
+
+                let explanation = '';
+                try {
+                    const parsedResult = typeof refineResult === 'string' ? JSON.parse(refineResult) : refineResult;
+                    explanation = parsedResult?.explanation || '';
+                } catch (e) {}
+
+                return {
+                    graph,
+                    explanation: explanation || `Graph erfolgreich verfeinert!\nEs wurden ${graph.variables.length} Variablen deklariert.`
+                };
+            }
+
             // General AI Actions (Correction, Analyze, Map)
             if (settings?.provider === 'ollama') {
                 result = await executeOllamaRequest(action, payload, settings);
@@ -580,8 +729,6 @@ export async function performAIRequest(
                 }
             } else if (action === 'clean-and-map') {
                 result = parseMappingResult(result, payload.tasksLayout);
-            } else if (action === 'generate-graph' || action === 'refine-graph') {
-                result = parseGeneratedGraph(typeof result === 'string' ? result : JSON.stringify(result));
             }
         }
 

@@ -79,7 +79,9 @@ const nextConfig = {
                                 }
                             } catch (e) {}
                             
-                            return `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://auth.koreki.org ${oidcOrigin}; connect-src 'self' https://api.mistral.ai https://auth.koreki.org http://localhost:11434 http://127.0.0.1:11434 ${oidcOrigin}; frame-src 'self' https://auth.koreki.org ${oidcOrigin};`;
+                            const isDev = process.env.NODE_ENV === 'development';
+                            const devConnect = isDev ? '* ws: wss:' : '';
+                            return `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://auth.koreki.org ${oidcOrigin}; connect-src 'self' https://api.mistral.ai https://auth.koreki.org http://localhost:11434 http://127.0.0.1:11434 ${oidcOrigin} ${devConnect}; frame-src 'self' https://auth.koreki.org ${oidcOrigin};`;
                         })()
                     }
                 ]

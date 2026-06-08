@@ -85,15 +85,10 @@ export async function executeOllamaRequest(
             // we must unify the request structure. Enabled JSON format for all.
             const targetFormat = (action === 'vision' || action === 'second-opinion') ? undefined : 'json';
             
-            let numCtx: number | undefined = 8192;
             const modelLower = model.toLowerCase();
 
-            // Industrial Cluster Check: Adjust context for larger or specialized models
-            // [Industrial Hardening] Reduced from 16k to 8k to rule out VRAM resets 
-            // or proxy timeouts during large model allocation.
-            if (modelLower.includes('mistral') || modelLower.includes('31b') || modelLower.includes('qwen')) {
-                numCtx = 8192; 
-            }
+            // Use manually configured context size (num_ctx), defaulting to 16384 if not specified
+            let numCtx: number | undefined = settings.ollamaNumCtx ?? 16384;
 
             // [Industrial Hardening] 🛡️
             // Cloud-variants (using Ollama-compatible gateways) often don't support num_ctx 

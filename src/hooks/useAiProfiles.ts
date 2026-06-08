@@ -18,6 +18,7 @@ export const STANDARD_AI_PROFILE: AiProfile & { isSystem: boolean } = {
     visionTopP: 0.8,
     visionMaxTokens: 16000,
     visionPresencePenalty: 0.0,
+    ollamaNumCtx: 16384,
     isSystem: true
 };
 
@@ -33,6 +34,7 @@ export const MATH_AI_PROFILE: AiProfile & { isSystem: boolean } = {
     visionTopP: 0.5,
     visionMaxTokens: 16000,
     visionPresencePenalty: 0.0,
+    ollamaNumCtx: 16384,
     isSystem: true
 };
 
@@ -68,6 +70,8 @@ export const useAiProfiles = (
     const [visionTopP, setVisionTopP] = useState(settings.visionTopP ?? 0.8);
     const [visionMaxTokens, setVisionMaxTokens] = useState(settings.visionMaxTokens ?? 16000);
     const [visionPresencePenalty, setVisionPresencePenalty] = useState(settings.visionPresencePenalty ?? 0.0);
+    
+    const [ollamaNumCtx, setOllamaNumCtx] = useState(settings.ollamaNumCtx ?? 16384);
 
     const selectedProfileData = profiles.find(p => p.name === selectedProfile);
     const isSystemSelected = selectedProfile === 'Standard' || selectedProfileData?.isSystem;
@@ -86,7 +90,8 @@ export const useAiProfiles = (
             visionTemperature !== base.visionTemperature ||
             visionTopP !== base.visionTopP ||
             visionMaxTokens !== base.visionMaxTokens ||
-            visionPresencePenalty !== base.visionPresencePenalty
+            visionPresencePenalty !== base.visionPresencePenalty ||
+            ollamaNumCtx !== (base.ollamaNumCtx ?? 16384)
         );
     })();
 
@@ -140,6 +145,7 @@ export const useAiProfiles = (
                 setVisionTopP(found.visionTopP);
                 setVisionMaxTokens(found.visionMaxTokens);
                 setVisionPresencePenalty(found.visionPresencePenalty);
+                setOllamaNumCtx(found.ollamaNumCtx ?? 16384);
             }
             hasHydratedRef.current = true;
         }
@@ -159,6 +165,7 @@ export const useAiProfiles = (
         setVisionTopP(profile.visionTopP);
         setVisionMaxTokens(profile.visionMaxTokens);
         setVisionPresencePenalty(profile.visionPresencePenalty);
+        setOllamaNumCtx(profile.ollamaNumCtx ?? 16384);
         setShowEditorMobile(true);
     };
 
@@ -178,6 +185,7 @@ export const useAiProfiles = (
         setVisionTopP(0.8);
         setVisionMaxTokens(16000);
         setVisionPresencePenalty(0.0);
+        setOllamaNumCtx(16384);
         setShowEditorMobile(true);
     };
 
@@ -201,7 +209,8 @@ export const useAiProfiles = (
             visionTemperature,
             visionTopP,
             visionMaxTokens,
-            visionPresencePenalty
+            visionPresencePenalty,
+            ollamaNumCtx
         };
 
         if (isLocal) {
@@ -353,6 +362,7 @@ export const useAiProfiles = (
             visionTopP,
             visionMaxTokens,
             visionPresencePenalty,
+            ollamaNumCtx,
             activeAiProfileId: !profile || profile.id === 'system-standard' ? undefined : profile.id
         }, selectedProfile, profile?.id || 'system-standard');
         onClose();
@@ -388,6 +398,8 @@ export const useAiProfiles = (
         visionTopP, setVisionTopP,
         visionMaxTokens, setVisionMaxTokens,
         visionPresencePenalty, setVisionPresencePenalty,
+        
+        ollamaNumCtx, setOllamaNumCtx,
 
         handleSelectProfile,
         handleStartNew,

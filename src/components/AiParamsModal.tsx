@@ -56,6 +56,8 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
         visionTopP, setVisionTopP,
         visionMaxTokens, setVisionMaxTokens,
         visionPresencePenalty, setVisionPresencePenalty,
+        
+        ollamaNumCtx, setOllamaNumCtx,
 
         handleSelectProfile,
         handleStartNew,
@@ -186,6 +188,10 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                             setVisionMaxTokens={setVisionMaxTokens}
                             visionPresencePenalty={visionPresencePenalty}
                             setVisionPresencePenalty={setVisionPresencePenalty}
+                            
+                            provider={settings.provider}
+                            ollamaNumCtx={ollamaNumCtx}
+                            setOllamaNumCtx={setOllamaNumCtx}
                         />
 
                         {/* Footer Action Bar */}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wrench, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Download, Sparkles, BookOpen, Calculator, Settings, GraduationCap, Loader2, Layers } from 'lucide-react';
+import { Wrench, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Download, Sparkles, BookOpen, Calculator, Settings, GraduationCap, Loader2, Layers, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
@@ -242,6 +242,16 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     customSkills, onSaveCustomSkill, onDeleteCustomSkill,
     onStartNew, onImportParsedProfile, onGenerateGraph
 }) => {
+    
+    // Collapsible Categories State
+    const [collapsedCategories, setCollapsedCategories] = React.useState<Record<string, boolean>>({});
+
+    const toggleCategory = (categoryId: string) => {
+        setCollapsedCategories(prev => ({
+            ...prev,
+            [categoryId]: !prev[categoryId]
+        }));
+    };
     
     // Custom Skill Modal/Inline Editor State
     const [isEditingSkill, setIsEditingSkill] = React.useState(false);
@@ -493,78 +503,98 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                     
                     if (categorySkills.length === 0) return null;
 
+                    const isCollapsed = !!collapsedCategories[category.id];
+                    const activeCount = categorySkills.filter(skill => activeSkillIds.includes(skill.id)).length;
+
                     return (
                         <div key={category.id} className="space-y-3">
-                            <div className="flex items-center gap-2 text-xs font-black text-slate-500 tracking-wider uppercase">
-                                {category.icon}
-                                <span>{category.label}</span>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {categorySkills.map(skill => {
-                                    const isChecked = activeSkillIds.includes(skill.id);
-                                    const isDisabled = isSystemSelected && !isCreatingNew;
+                            <button
+                                type="button"
+                                onClick={() => toggleCategory(category.id)}
+                                className="flex items-center justify-between w-full text-left py-2 px-3 hover:bg-slate-50/50 rounded-xl transition-all duration-200 group/header"
+                            >
+                                <div className="flex items-center gap-2 text-xs font-black text-slate-500 tracking-wider uppercase">
+                                    {category.icon}
+                                    <span>{category.label}</span>
+                                    {activeCount > 0 && (
+                                        <Badge variant="outline" className="text-xs bg-indigo-50 text-indigo-600 border-indigo-100 rounded-full font-bold px-2 py-0.5 ml-2 normal-case tracking-normal">
+                                            {activeCount} aktiv
+                                        </Badge>
+                                    )}
+                                </div>
+                                <ChevronDown 
+                                    size={16} 
+                                    className={`text-slate-400 group-hover/header:text-slate-600 transition-transform duration-300 ${isCollapsed ? '-rotate-90' : ''}`}
+                                />
+                            </button>
+                            
+                            {!isCollapsed && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                                    {categorySkills.map(skill => {
+                                        const isChecked = activeSkillIds.includes(skill.id);
+                                        const isDisabled = isSystemSelected && !isCreatingNew;
 
-                                    return (
-                                        <div 
-                                            key={skill.id}
-                                            onClick={() => !isDisabled && handleToggleSkill(skill.id)}
-                                            className={`p-5 rounded-3xl border-2 transition-all flex items-start gap-4 select-none relative group ${isDisabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'} ${isChecked ? 'bg-gradient-to-br from-indigo-50/40 to-blue-50/10 border-indigo-200/80 shadow-md shadow-indigo-50/20 ring-1 ring-indigo-500/10' : 'bg-slate-50/20 border-slate-100 hover:border-slate-200/80 hover:bg-slate-50/30'}`}
-                                        >
-                                            <div className="pt-0.5 shrink-0">
-                                                <input 
-                                                    type="checkbox" 
-                                                    checked={isChecked}
-                                                    disabled={isDisabled}
-                                                    onChange={() => {}} // Controlled click via parent div
-                                                    className={`w-5 h-5 text-indigo-600 rounded-md border-slate-300 focus:ring-indigo-500 focus:ring-offset-slate-50 cursor-pointer transition-all ${isDisabled ? 'cursor-not-allowed' : ''}`}
-                                                />
-                                            </div>
-                                            <div className="flex-1 space-y-1 min-w-0">
-                                                <div className="flex items-center gap-2">
-                                                    <h4 className={`text-sm font-black tracking-tight leading-tight ${isChecked ? 'text-indigo-950' : 'text-slate-800'}`}>
-                                                        {skill.name}
-                                                    </h4>
-                                                    {skill.isCustom && <Badge className="text-[7px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 font-bold hover:bg-indigo-100 rounded">EIGEN</Badge>}
-                                                    {skill.isGraphBased && <Badge className="text-[7px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 font-bold hover:bg-emerald-100 rounded flex items-center gap-0.5">⚙️ GRAPH</Badge>}
+                                        return (
+                                            <div 
+                                                key={skill.id}
+                                                onClick={() => !isDisabled && handleToggleSkill(skill.id)}
+                                                className={`p-5 rounded-3xl border-2 transition-all flex items-start gap-4 select-none relative group ${isDisabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'} ${isChecked ? 'bg-gradient-to-br from-indigo-50/40 to-blue-50/10 border-indigo-200/80 shadow-md shadow-indigo-50/20 ring-1 ring-indigo-500/10' : 'bg-slate-50/20 border-slate-100 hover:border-slate-200/80 hover:bg-slate-50/30'}`}
+                                            >
+                                                <div className="pt-0.5 shrink-0">
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={isChecked}
+                                                        disabled={isDisabled}
+                                                        onChange={() => {}} // Controlled click via parent div
+                                                        className={`w-5 h-5 text-indigo-600 rounded-md border-slate-300 focus:ring-indigo-500 focus:ring-offset-slate-50 cursor-pointer transition-all ${isDisabled ? 'cursor-not-allowed' : ''}`}
+                                                    />
                                                 </div>
-                                                <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                                                    {skill.description}
-                                                </p>
-                                                {/* Meta details if any */}
-                                                {(skill.requires || skill.conflictsWith) && (
-                                                    <div className="flex flex-wrap gap-1.5 pt-2">
-                                                        {skill.requires && (typeof skill.requires === 'string' ? skill.requires.split(',') : skill.requires).map((reqId: string) => (
-                                                            <Badge key={reqId} variant="outline" className="text-[8px] px-2 py-0 bg-amber-50 text-amber-700 border-amber-100 rounded-full font-bold">
-                                                                Benötigt: {SKILL_REGISTRY[reqId.trim()]?.metadata.name || customSkills?.[reqId.trim()]?.name || reqId}
-                                                            </Badge>
-                                                        ))}
-                                                        {skill.conflictsWith && (typeof skill.conflictsWith === 'string' ? skill.conflictsWith.split(',') : skill.conflictsWith).map((confId: string) => (
-                                                            <Badge key={confId} variant="outline" className="text-[8px] px-2 py-0 bg-red-50 text-red-600 border-red-100 rounded-full font-bold">
-                                                                Schließt aus: {SKILL_REGISTRY[confId.trim()]?.metadata.name || customSkills?.[confId.trim()]?.name || confId}
-                                                            </Badge>
-                                                        ))}
+                                                <div className="flex-1 space-y-1 min-w-0">
+                                                    <div className="flex items-center gap-2">
+                                                        <h4 className={`text-sm font-black tracking-tight leading-tight ${isChecked ? 'text-indigo-950' : 'text-slate-800'}`}>
+                                                            {skill.name}
+                                                        </h4>
+                                                        {skill.isCustom && <Badge className="text-[7px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 font-bold hover:bg-indigo-100 rounded">EIGEN</Badge>}
+                                                        {skill.isGraphBased && <Badge className="text-[7px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 font-bold hover:bg-emerald-100 rounded flex items-center gap-0.5">⚙️ GRAPH</Badge>}
                                                     </div>
-                                                )}
-                                            </div>
+                                                    <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                                                        {skill.description}
+                                                    </p>
+                                                    {/* Meta details if any */}
+                                                    {(skill.requires || skill.conflictsWith) && (
+                                                        <div className="flex flex-wrap gap-1.5 pt-2">
+                                                            {skill.requires && (typeof skill.requires === 'string' ? skill.requires.split(',') : skill.requires).map((reqId: string) => (
+                                                                <Badge key={reqId} variant="outline" className="text-[8px] px-2 py-0 bg-amber-50 text-amber-700 border-amber-100 rounded-full font-bold">
+                                                                    Benötigt: {SKILL_REGISTRY[reqId.trim()]?.metadata.name || customSkills?.[reqId.trim()]?.name || reqId}
+                                                                </Badge>
+                                                            ))}
+                                                            {skill.conflictsWith && (typeof skill.conflictsWith === 'string' ? skill.conflictsWith.split(',') : skill.conflictsWith).map((confId: string) => (
+                                                                <Badge key={confId} variant="outline" className="text-[8px] px-2 py-0 bg-red-50 text-red-600 border-red-100 rounded-full font-bold">
+                                                                    Schließt aus: {SKILL_REGISTRY[confId.trim()]?.metadata.name || customSkills?.[confId.trim()]?.name || confId}
+                                                                </Badge>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
 
-                                            {/* Unified Floating Actions - Skill Cards */}
-                                            <FloatingActions className="-top-2 -right-2" onClick={(e) => e.stopPropagation()}>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
-                                                    title="Skill kopieren"
-                                                    className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" 
-                                                    onClick={() => onStartNew([skill.id])}
-                                                >
-                                                    <PlusCircle size={14} />
-                                                </Button>
-                                                <Button 
-                                                    variant="ghost" 
-                                                    size="icon" 
-                                                    title="Skill als .md exportieren"
-                                                    className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" 
-                                                    onClick={() => {
-                                                        const markdown = `---
+                                                {/* Unified Floating Actions - Skill Cards */}
+                                                <FloatingActions className="-top-2 -right-2" onClick={(e) => e.stopPropagation()}>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        title="Skill kopieren"
+                                                        className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" 
+                                                        onClick={() => onStartNew([skill.id])}
+                                                    >
+                                                        <PlusCircle size={14} />
+                                                    </Button>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        title="Skill als .md exportieren"
+                                                        className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" 
+                                                        onClick={() => {
+                                                            const markdown = `---
 name: "${skill.name}"
 description: "${skill.description || ''}"
 category: "${skill.category || 'math-science'}"
@@ -573,27 +603,28 @@ version: "1.0.0"
 ---
 
 ${skill.prompt || ''}`;
-                                                        downloadFile(markdown, `${skill.name.toLowerCase().replace(/\s+/g, '_')}.md`, 'text/markdown');
-                                                    }}
-                                                >
-                                                    <Download size={14} />
-                                                </Button>
+                                                            downloadFile(markdown, `${skill.name.toLowerCase().replace(/\s+/g, '_')}.md`, 'text/markdown');
+                                                        }}
+                                                    >
+                                                        <Download size={14} />
+                                                    </Button>
 
-                                                {skill.isCustom && (
-                                                    <>
-                                                        <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" onClick={() => handleEditSkillClick(skill)}>
-                                                            <Pencil size={14} />
-                                                        </Button>
-                                                        <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-600 hover:text-red-500 transition-colors rounded-lg hover:bg-slate-100/80" onClick={() => { if (confirm(`Möchtest du den Skill "${skill.name}" wirklich löschen?`)) onDeleteCustomSkill(skill.id); }}>
-                                                            <Trash2 size={14} />
-                                                        </Button>
-                                                    </>
-                                                )}
-                                            </FloatingActions>
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                                                    {skill.isCustom && (
+                                                        <>
+                                                            <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" onClick={() => handleEditSkillClick(skill)}>
+                                                                <Pencil size={14} />
+                                                            </Button>
+                                                            <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-600 hover:text-red-500 transition-colors rounded-lg hover:bg-slate-100/80" onClick={() => { if (confirm(`Möchtest du den Skill "${skill.name}" wirklich löschen?`)) onDeleteCustomSkill(skill.id); }}>
+                                                                <Trash2 size={14} />
+                                                            </Button>
+                                                        </>
+                                                    )}
+                                                </FloatingActions>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     );
                 })}

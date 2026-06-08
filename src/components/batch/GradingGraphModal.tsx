@@ -14,6 +14,7 @@ import { Badge } from '../ui/Badge';
 import { cn } from '@/lib/utils';
 import { AppSettings } from '../../types';
 import { apiClient } from '@/lib/api-client';
+import { performAIRequest } from '@/lib/ai/ai-orchestrator';
 
 interface GradingGraphModalProps {
     isOpen: boolean;
@@ -24,6 +25,7 @@ interface GradingGraphModalProps {
     taskType?: string;
     customSkills?: Record<string, any>;
     settings?: AppSettings;
+    appMode?: 'PURE' | 'STANDARD' | 'TRIAL';
     isGenerating?: boolean;
     onEngineChange?: (newEngine: string) => void;
     onRegenerateGraph?: (discipline: string, userNotes?: string) => Promise<any>;
@@ -42,6 +44,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     taskType,
     customSkills = {},
     settings,
+    appMode,
     isGenerating = false,
     onEngineChange,
     onRegenerateGraph,
@@ -351,20 +354,18 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
         setChatHistory(prev => [...prev, { role: 'user', text: instruction }]);
 
         try {
-            const res = await apiClient.post('/api/refine-graph', {
-                taskText: taskContent || '',
-                currentGraph: graph,
-                userInstruction: instruction,
-                discipline: selectedPlugin,
-                settings: settings
-            });
+            const responseData = await performAIRequest(
+                'refine-graph',
+                {
+                    taskText: taskContent || '',
+                    currentGraph: graph,
+                    userInstruction: instruction,
+                    discipline: selectedPlugin
+                },
+                appMode,
+                settings!
+            );
 
-            if (!res.ok) {
-                const errData = await res.json().catch(() => ({}));
-                throw new Error(errData.error || `Fehler bei der Serververarbeitung (${res.status})`);
-            }
-
-            const responseData = await res.json();
             let updatedGraph = responseData;
             let explanation = '';
 

@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { AppSettings } from '../types';
 import { Button } from './ui/Button';
 import { isLocalInstance } from '@/lib/env-context';
+import packageJson from '../../package.json';
 
 // Sub-Components
 import { PrivacySection, AIProviderSection, AccountSection, DangerZoneSection } from './settings/SettingsSections';
@@ -95,7 +96,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* Footer - Fixed */}
-                <div className="flex justify-end p-8 pt-4 border-t border-slate-50 bg-white rounded-b-[32px]">
+                <div className="flex justify-between items-center p-8 pt-4 border-t border-slate-50 bg-white rounded-b-[32px]">
+                    <span className="text-xs text-slate-400 font-medium font-sans">
+                        Koreki<span className="text-primary">.</span> v{packageJson.version}
+                    </span>
                     <Button onClick={onClose} className="px-8 font-bold shadow-lg shadow-primary/20 rounded-xl h-12">
                         Schließen
                     </Button>

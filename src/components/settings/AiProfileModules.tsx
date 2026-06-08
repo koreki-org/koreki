@@ -253,6 +253,10 @@ interface EditorProps {
     setVisionMaxTokens: (v: number) => void;
     visionPresencePenalty: number;
     setVisionPresencePenalty: (v: number) => void;
+
+    provider?: string;
+    ollamaNumCtx: number;
+    setOllamaNumCtx: (v: number) => void;
 }
 
 export const AiProfileEditor: React.FC<EditorProps> = ({
@@ -267,7 +271,10 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
     visionTemperature, setVisionTemperature,
     visionTopP, setVisionTopP,
     visionMaxTokens, setVisionMaxTokens,
-    visionPresencePenalty, setVisionPresencePenalty
+    visionPresencePenalty, setVisionPresencePenalty,
+    provider,
+    ollamaNumCtx,
+    setOllamaNumCtx
 }) => {
     // Helper for temperature description
     const getTempDescription = (val: number, tab: 'correction' | 'vision') => {
@@ -547,6 +554,57 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                 </div>
                             </div>
                         </>
+                    )}
+
+                    {/* Kontext-Größe (num_ctx) - Desktop / Local Inference only */}
+                    {provider === 'ollama' && (
+                        <div className="pt-4 border-t border-slate-100 space-y-3">
+                            <div className="flex justify-between items-baseline">
+                                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                                    Kontext-Größe (num_ctx)
+                                </label>
+                                <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">
+                                    {ollamaNumCtx ? `${ollamaNumCtx.toLocaleString()}` : 'Standard'}
+                                </span>
+                            </div>
+                            
+                            <div className="flex gap-2">
+                                <select
+                                    value={[8192, 16384, 32768, 65536].includes(ollamaNumCtx) ? ollamaNumCtx : 'custom'}
+                                    onChange={e => {
+                                        const val = e.target.value;
+                                        if (val === 'custom') {
+                                            // keep current
+                                        } else {
+                                            setOllamaNumCtx(Number(val));
+                                        }
+                                    }}
+                                    className="rounded-xl border-2 border-slate-200 focus:border-primary/50 bg-white px-3 py-2 text-xs font-bold text-slate-700 outline-none transition-all"
+                                >
+                                    <option value={8192}>8k (8192)</option>
+                                    <option value={16384}>16k (16384)</option>
+                                    <option value={32768}>32k (32768)</option>
+                                    <option value={65536}>64k (65536)</option>
+                                    <option value="custom">Benutzerdefiniert</option>
+                                </select>
+                                
+                                <Input 
+                                    type="number"
+                                    placeholder="z.B. 16384"
+                                    value={ollamaNumCtx || ''} 
+                                    onChange={e => {
+                                        const val = e.target.value ? Number(e.target.value) : 16384;
+                                        setOllamaNumCtx(val);
+                                    }}
+                                    className="rounded-xl border-2 focus:border-primary/50 transition-all text-xs font-mono flex-1 h-9"
+                                    min={2048}
+                                    max={262144}
+                                />
+                            </div>
+                            <p className="text-[10px] text-slate-400 font-medium">
+                                Bestimmt das maximale Kontextfenster für Ollama. Größere Werte ermöglichen die Verarbeitung größerer Dokumente und Bilder, verbrauchen aber signifikant mehr Grafikspeicher (VRAM).
+                            </p>
+                        </div>
                     )}
                 </div>
             </div>

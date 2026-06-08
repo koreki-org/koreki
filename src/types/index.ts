@@ -76,6 +76,7 @@ export interface AppSettings {
     ollamaUrl?: string;
     ollamaModel?: string;
     customOllamaModel?: string;
+    ollamaNumCtx?: number;
     openaiUrl?: string;
     openaiKey?: string;
     openaiModel?: string;
@@ -161,6 +162,8 @@ export interface AiProfile {
     visionTopP: number;
     visionMaxTokens: number;
     visionPresencePenalty: number;
+
+    ollamaNumCtx?: number;
 
     userId?: string | null;
     createdAt?: string;

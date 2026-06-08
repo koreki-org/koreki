@@ -47,6 +47,23 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
     setAiSettings: (val: any) => set((state: any) => {
         const next = typeof val === 'function' ? val(state.aiSettings) : val;
         
+        if (typeof window !== 'undefined') {
+            if (next.ollamaUrl !== undefined) {
+                if (next.ollamaUrl) {
+                    document.cookie = `koreki_ollama_url=${encodeURIComponent(next.ollamaUrl)}; path=/; max-age=31536000; SameSite=Lax`;
+                } else {
+                    document.cookie = `koreki_ollama_url=; path=/; max-age=0; SameSite=Lax`;
+                }
+            }
+            if (next.openaiUrl !== undefined) {
+                if (next.openaiUrl) {
+                    document.cookie = `koreki_openai_url=${encodeURIComponent(next.openaiUrl)}; path=/; max-age=31536000; SameSite=Lax`;
+                } else {
+                    document.cookie = `koreki_openai_url=; path=/; max-age=0; SameSite=Lax`;
+                }
+            }
+        }
+        
         // Atomic Persistence Layer (Desktop only)
         // SECURITY: Sensitive keys (mistralKey, openaiKey) are NOT saved to localStorage.
         // They are handled by vaultService in the components.
@@ -55,6 +72,7 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
             if (next.ollamaUrl) localStorage.setItem('koreki_ollama_url', next.ollamaUrl);
             if (next.ollamaModel) localStorage.setItem('koreki_ollama_model', next.ollamaModel);
             if (next.customOllamaModel) localStorage.setItem('koreki_ollama_custom_model', next.customOllamaModel);
+            if (next.ollamaNumCtx !== undefined) localStorage.setItem('koreki_ollama_num_ctx', String(next.ollamaNumCtx));
             if (next.openaiUrl) localStorage.setItem('koreki_openai_url', next.openaiUrl);
             if (next.openaiModel) localStorage.setItem('koreki_openai_model', next.openaiModel);
             if (next.enableThinking !== undefined) localStorage.setItem('koreki_openai_thinking', String(next.enableThinking));
@@ -104,10 +122,17 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                 url = url.substring(0, url.indexOf('http', 1)).trim();
                 localStorage.setItem('koreki_ollama_url', url);
             }
+            if (url) {
+                document.cookie = `koreki_ollama_url=${encodeURIComponent(url)}; path=/; max-age=31536000; SameSite=Lax`;
+            }
 
             let model = localStorage.getItem('koreki_ollama_model') || undefined;
             let customModel = localStorage.getItem('koreki_ollama_custom_model') || undefined;
+            const ollamaNumCtx = localStorage.getItem('koreki_ollama_num_ctx') ? Number(localStorage.getItem('koreki_ollama_num_ctx')) : undefined;
             const openaiUrl = localStorage.getItem('koreki_openai_url') || undefined;
+            if (openaiUrl) {
+                document.cookie = `koreki_openai_url=${encodeURIComponent(openaiUrl)}; path=/; max-age=31536000; SameSite=Lax`;
+            }
             const openaiModel = localStorage.getItem('koreki_openai_model') || undefined;
             const enableThinking = localStorage.getItem('koreki_openai_thinking') !== 'false';
             
@@ -143,6 +168,7 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                     ollamaUrl: url,
                     ollamaModel: model,
                     customOllamaModel: customModel,
+                    ollamaNumCtx: ollamaNumCtx,
                     openaiUrl: openaiUrl,
                     openaiModel: openaiModel,
                     enableThinking: enableThinking,

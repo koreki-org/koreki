@@ -837,6 +837,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         taskType={task?.taskType}
                         customSkills={settings?.customSkills}
                         settings={settings}
+                        appMode={appMode}
                         onSaveCustomSkill={handleSaveCustomSkill}
                         isGenerating={generatingGraphForTask === editingGraphTaskIdx}
                         onEngineChange={(newEngine) => {
