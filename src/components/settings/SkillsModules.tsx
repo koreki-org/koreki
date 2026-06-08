@@ -217,6 +217,14 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
     );
 };
 
+const CATEGORIES = [
+    { id: 'math-science', label: 'MINT-Fächer', icon: <Calculator size={16} className="text-indigo-500" /> },
+    { id: 'graph-skills', label: 'Graph-basierte Skills (PANG)', icon: <Layers size={16} className="text-emerald-500" /> },
+    { id: 'languages', label: 'Sprachen & Textästhetik', icon: <BookOpen size={16} className="text-blue-500" /> },
+    { id: 'standards', label: 'Korrekturzeichen & Bundesländer', icon: <Settings size={16} className="text-indigo-600" /> },
+    { id: 'feedback', label: 'Pädagogisches Feedback', icon: <GraduationCap size={16} className="text-indigo-500" /> }
+] as const;
+
 interface SkillsEditorProps {
     isCreatingNew: boolean;
     selectedProfile: string;
@@ -244,14 +252,32 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
 }) => {
     
     // Collapsible Categories State
-    const [collapsedCategories, setCollapsedCategories] = React.useState<Record<string, boolean>>({});
+    const [expandedCategories, setExpandedCategories] = React.useState<Record<string, boolean>>({});
 
     const toggleCategory = (categoryId: string) => {
-        setCollapsedCategories(prev => ({
+        setExpandedCategories(prev => ({
             ...prev,
             [categoryId]: !prev[categoryId]
         }));
     };
+
+    // Smart-Collapse: Auto-expand categories with active skills on profile switch
+    React.useEffect(() => {
+        const initialExpanded: Record<string, boolean> = {};
+        CATEGORIES.forEach(category => {
+            const standardCategorySkills = Object.values(SKILL_REGISTRY)
+                .filter(s => s.metadata.category === category.id && !s.metadata.isGraphBased && s.metadata.id !== 'skill-calc-vlsm')
+                .map(s => s.metadata.id);
+            const customCategorySkills = Object.values(customSkills || {})
+                .filter((s: any) => s.category === category.id)
+                .map((s: any) => s.id);
+            const categorySkillIds = [...standardCategorySkills, ...customCategorySkills];
+            
+            const hasActiveSkill = categorySkillIds.some(id => activeSkillIds.includes(id));
+            initialExpanded[category.id] = hasActiveSkill;
+        });
+        setExpandedCategories(initialExpanded);
+    }, [selectedProfile]);
     
     // Custom Skill Modal/Inline Editor State
     const [isEditingSkill, setIsEditingSkill] = React.useState(false);
@@ -404,14 +430,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
         }
     };
 
-    // Category mappings
-    const categories = [
-        { id: 'math-science', label: 'MINT-Fächer', icon: <Calculator size={16} className="text-indigo-500" /> },
-        { id: 'graph-skills', label: 'Graph-basierte Skills (PANG)', icon: <Layers size={16} className="text-emerald-500" /> },
-        { id: 'languages', label: 'Sprachen & Textästhetik', icon: <BookOpen size={16} className="text-blue-500" /> },
-        { id: 'standards', label: 'Korrekturzeichen & Bundesländer', icon: <Settings size={16} className="text-indigo-600" /> },
-        { id: 'feedback', label: 'Pädagogisches Feedback', icon: <GraduationCap size={16} className="text-indigo-500" /> }
-    ] as const;
+
 
     return (
         <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 overflow-y-auto p-4 sm:p-8 relative">
@@ -494,7 +513,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
 
             {/* Grid layout of categories and glassmorphic cards */}
             <div className="flex-1 space-y-8 min-h-0">
-                {categories.map(category => {
+                {CATEGORIES.map(category => {
                     const standardCategorySkills = Object.values(SKILL_REGISTRY)
                         .filter(s => s.metadata.category === category.id && !s.metadata.isGraphBased && s.metadata.id !== 'skill-calc-vlsm')
                         .map(s => ({ ...s.metadata, prompt: s.promptSnippet, promptSnippet: s.promptSnippet }));
@@ -503,7 +522,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                     
                     if (categorySkills.length === 0) return null;
 
-                    const isCollapsed = !!collapsedCategories[category.id];
+                    const isExpanded = !!expandedCategories[category.id];
                     const activeCount = categorySkills.filter(skill => activeSkillIds.includes(skill.id)).length;
 
                     return (
@@ -524,11 +543,11 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                 </div>
                                 <ChevronDown 
                                     size={16} 
-                                    className={`text-slate-400 group-hover/header:text-slate-600 transition-transform duration-300 ${isCollapsed ? '-rotate-90' : ''}`}
+                                    className={`text-slate-400 group-hover/header:text-slate-600 transition-transform duration-300 ${!isExpanded ? '-rotate-90' : ''}`}
                                 />
                             </button>
                             
-                            {!isCollapsed && (
+                            {isExpanded && (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
                                     {categorySkills.map(skill => {
                                         const isChecked = activeSkillIds.includes(skill.id);
