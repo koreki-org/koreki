@@ -67,7 +67,8 @@ describe('Local Profile & AI Parameter Services 🧪🏮🛡️', () => {
                 visionTemperature: 0.1,
                 visionTopP: 0.9,
                 visionMaxTokens: 2048,
-                visionPresencePenalty: 0.0
+                visionPresencePenalty: 0.0,
+                ollamaNumCtx: 4096
             };
 
             await LocalAiProfileService.upsertProfile(data, 'teacher-123');
@@ -77,6 +78,7 @@ describe('Local Profile & AI Parameter Services 🧪🏮🛡️', () => {
             expect(writtenData[0].name).toBe('Optimized Gemma');
             expect(writtenData[0].temperature).toBe(0.1);
             expect(writtenData[0].enableThinking).toBe(true);
+            expect(writtenData[0].ollamaNumCtx).toBe(4096);
         });
 
         it('should rename a profile by ID', async () => {

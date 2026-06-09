@@ -28,6 +28,11 @@ export async function executeOllamaRequest(
     const baseUrl = settings.ollamaUrl || 'http://localhost:11434';
     const model = (settings.ollamaModel || 'gemma4:latest').trim();
 
+    const isVision = action === 'vision';
+    const targetMaxTokens = isVision
+        ? (settings.visionMaxTokens ?? 16000)
+        : (settings.maxTokens ?? 32768);
+
     // 1. Prompt Building
     let promptObj: StructuredPrompt;
     let images: string[] | undefined = undefined;
@@ -76,6 +81,46 @@ export async function executeOllamaRequest(
         throw new Error(`Unsupported action: ${action}`);
     }
 
+    // 1.5. Dynamic Parameter & Context size Estimation (Industrial Standard)
+    const modelLower = model.toLowerCase();
+
+    let targetTemp = isVision
+        ? (settings.visionTemperature ?? promptObj.options?.temperature ?? 0.0)
+        : (settings.temperature ?? promptObj.options?.temperature ?? 0.7);
+
+    let targetTopP = isVision
+        ? (settings.visionTopP ?? promptObj.options?.topP ?? 1.0)
+        : (settings.topP ?? promptObj.options?.topP ?? 1.0);
+
+    // Enforce minimum temperature of 0.1 for local Ollama to prevent GPU loops
+    if (targetTemp === 0) {
+        targetTemp = 0.1;
+    }
+
+    // Dynamic Context size Estimation
+    let numCtx: number | undefined = settings.ollamaNumCtx;
+    if (!numCtx || numCtx === 0) {
+        const promptCharCount = promptObj.user.length + (promptObj.system?.length || 0);
+        const estimatedTextTokens = Math.ceil(promptCharCount / 3.7);
+        const imageCount = images?.length || 0;
+        const imageTokens = imageCount * 8000; // Vision Hardening: 8000 tokens per image
+        const responseBuffer = settings.enableThinking ? 12000 : 4000;
+        const totalEstimated = estimatedTextTokens + imageTokens + responseBuffer;
+
+        if (totalEstimated <= 8192) {
+            numCtx = 8192;
+        } else if (totalEstimated <= 16384) {
+            numCtx = 16384;
+        } else {
+            numCtx = 32768;
+        }
+    }
+
+    // Cloud-variants often don't support num_ctx or crash on value mismatch
+    if (modelLower.includes('-cloud')) {
+        numCtx = undefined;
+    }
+
     // 2. Execution Path Separation
     if (isDesktopTarget()) {
         try {
@@ -84,24 +129,6 @@ export async function executeOllamaRequest(
             // [Industrial Validation] If Mistral works but Qwen fails with connection error,
             // we must unify the request structure. Enabled JSON format for all.
             const targetFormat = (action === 'vision' || action === 'second-opinion') ? undefined : 'json';
-            
-            const modelLower = model.toLowerCase();
-
-            // Use manually configured context size (num_ctx), defaulting to 16384 if not specified
-            let numCtx: number | undefined = settings.ollamaNumCtx ?? 16384;
-
-            // [Industrial Hardening] 🛡️
-            // Cloud-variants (using Ollama-compatible gateways) often don't support num_ctx 
-            // or crash on value mismatch. We leave it to the backend for '-cloud' models.
-            if (modelLower.includes('-cloud')) {
-                numCtx = undefined;
-            }
-
-            // VRE Parameter Hardening (Greedy mode synchronization)
-            // Rule: temp: 0 already implies top_p: 1.0 (greedy). 
-            // Most cloud backends reject requests where BOTH are 0.0 or conflicting.
-            const targetTemp = promptObj.options?.temperature ?? 0.7;
-            const targetTopP = targetTemp === 0 ? 1.0 : (promptObj.options?.topP ?? 1.0);
 
             const content = await invoke<string>('execute_ollama_command', {
                 url: baseUrl,
@@ -114,9 +141,9 @@ export async function executeOllamaRequest(
                 format: targetFormat,
                 numCtx: numCtx, 
                 temperature: targetTemp,
-                topP: targetTopP
+                topP: targetTopP,
+                numPredict: targetMaxTokens
             });
-
 
             return processOllamaResponse(content, action, model);
 
@@ -139,9 +166,10 @@ export async function executeOllamaRequest(
             ],
             response_format: (action === 'vision' || action === 'second-opinion') ? undefined : { type: 'json_object' },
             options: { 
-                num_ctx: 8192,
-                temperature: promptObj.options?.temperature ?? 0.7,
-                top_p: promptObj.options?.topP ?? 1.0
+                num_ctx: numCtx,
+                temperature: targetTemp,
+                top_p: targetTopP,
+                num_predict: targetMaxTokens
             } // Forward to Ollama options if supported by endpoint variant
         })
     });

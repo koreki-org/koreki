@@ -18,7 +18,7 @@ export const STANDARD_AI_PROFILE: AiProfile & { isSystem: boolean } = {
     visionTopP: 0.8,
     visionMaxTokens: 16000,
     visionPresencePenalty: 0.0,
-    ollamaNumCtx: 16384,
+    ollamaNumCtx: 0,
     isSystem: true
 };
 
@@ -34,7 +34,7 @@ export const MATH_AI_PROFILE: AiProfile & { isSystem: boolean } = {
     visionTopP: 0.5,
     visionMaxTokens: 16000,
     visionPresencePenalty: 0.0,
-    ollamaNumCtx: 16384,
+    ollamaNumCtx: 0,
     isSystem: true
 };
 
@@ -71,7 +71,7 @@ export const useAiProfiles = (
     const [visionMaxTokens, setVisionMaxTokens] = useState(settings.visionMaxTokens ?? 16000);
     const [visionPresencePenalty, setVisionPresencePenalty] = useState(settings.visionPresencePenalty ?? 0.0);
     
-    const [ollamaNumCtx, setOllamaNumCtx] = useState(settings.ollamaNumCtx ?? 16384);
+    const [ollamaNumCtx, setOllamaNumCtx] = useState(settings.ollamaNumCtx ?? 0);
 
     const selectedProfileData = profiles.find(p => p.name === selectedProfile);
     const isSystemSelected = selectedProfile === 'Standard' || selectedProfileData?.isSystem;
@@ -91,7 +91,7 @@ export const useAiProfiles = (
             visionTopP !== base.visionTopP ||
             visionMaxTokens !== base.visionMaxTokens ||
             visionPresencePenalty !== base.visionPresencePenalty ||
-            ollamaNumCtx !== (base.ollamaNumCtx ?? 16384)
+            ollamaNumCtx !== (base.ollamaNumCtx ?? 0)
         );
     })();
 
@@ -145,7 +145,7 @@ export const useAiProfiles = (
                 setVisionTopP(found.visionTopP);
                 setVisionMaxTokens(found.visionMaxTokens);
                 setVisionPresencePenalty(found.visionPresencePenalty);
-                setOllamaNumCtx(found.ollamaNumCtx ?? 16384);
+                setOllamaNumCtx(found.ollamaNumCtx ?? 0);
             }
             hasHydratedRef.current = true;
         }
@@ -165,27 +165,42 @@ export const useAiProfiles = (
         setVisionTopP(profile.visionTopP);
         setVisionMaxTokens(profile.visionMaxTokens);
         setVisionPresencePenalty(profile.visionPresencePenalty);
-        setOllamaNumCtx(profile.ollamaNumCtx ?? 16384);
+        setOllamaNumCtx(profile.ollamaNumCtx ?? 0);
         setShowEditorMobile(true);
     };
 
-    const handleStartNew = () => {
+    const handleStartNew = (template?: any) => {
         setIsCreatingNew(true);
         setSelectedProfile('');
-        setNewProfileName('');
         
-        // Reset settings to default values for a clean start
-        setTemperature(0.2);
-        setTopP(0.8);
-        setMaxTokens(32768);
-        setPresencePenalty(0.0);
-        setEnableThinking(true);
+        if (template) {
+            setNewProfileName(`Kopie von ${template.name}`);
+            setTemperature(template.temperature ?? 0.2);
+            setTopP(template.topP ?? 0.8);
+            setMaxTokens(template.maxTokens ?? 32768);
+            setPresencePenalty(template.presencePenalty ?? 0.0);
+            setEnableThinking(template.enableThinking ?? true);
 
-        setVisionTemperature(0.0);
-        setVisionTopP(0.8);
-        setVisionMaxTokens(16000);
-        setVisionPresencePenalty(0.0);
-        setOllamaNumCtx(16384);
+            setVisionTemperature(template.visionTemperature ?? 0.0);
+            setVisionTopP(template.visionTopP ?? 0.8);
+            setVisionMaxTokens(template.visionMaxTokens ?? 16000);
+            setVisionPresencePenalty(template.visionPresencePenalty ?? 0.0);
+            setOllamaNumCtx(template.ollamaNumCtx ?? 0);
+        } else {
+            setNewProfileName('');
+            // Reset settings to default values for a clean start
+            setTemperature(0.2);
+            setTopP(0.8);
+            setMaxTokens(32768);
+            setPresencePenalty(0.0);
+            setEnableThinking(true);
+
+            setVisionTemperature(0.0);
+            setVisionTopP(0.8);
+            setVisionMaxTokens(16000);
+            setVisionPresencePenalty(0.0);
+            setOllamaNumCtx(0);
+        }
         setShowEditorMobile(true);
     };
 
@@ -367,6 +382,13 @@ export const useAiProfiles = (
         }, selectedProfile, profile?.id || 'system-standard');
         onClose();
     };
+
+    useEffect(() => {
+        if (settings.provider === 'ollama') {
+            if (temperature < 0.1) setTemperature(0.1);
+            if (visionTemperature < 0.1) setVisionTemperature(0.1);
+        }
+    }, [settings.provider, temperature, visionTemperature]);
 
     return {
         profiles,

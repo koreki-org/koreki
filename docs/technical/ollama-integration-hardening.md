@@ -42,7 +42,7 @@ Seit **Iteration V13** unterstützt die Rust-Middleware (`src-tauri/src/lib.rs`)
 
 *   **Parameter Passing:** Die `execute_ollama_command` Funktion akzeptiert nun `temperature` und `top_p`.
 *   **Struct Extension:** Die `OllamaOptions` wurden um diese optionalen Felder erweitert, um sie atomar an den `/api/chat` Endpunkt von Ollama zu senden.
-*   **Determinismus:** Dies erlaubt es dem Frontend, für Vision- und Extraktions-Tasks eine Temperatur von `0.0` zu erzwingen, was lokale Halluzinationen signifikant reduziert.
+*   **Determinismus & Loop-Schutz:** Für lokale Ollama-Modelle wird im Frontend (Einstellungen, hooks) sowie als defensive Absicherung im Backend-Proxy (`ollama-logic.ts`) ein **Mindestwert von `0.1` für die Temperatur** erzwungen (Clamping). Dies verhindert, dass lokale GPU-Inferenz-Instanzen bei einer Temperatur von exakt `0.0` in unendliche Token-Generierungs- oder Grammar-Evaluation-Schleifen geraten. Für Nicht-Ollama-Modelle (Cloud) bleibt das Limit bei `0.0` bestehen.
 
 ---
 
@@ -70,10 +70,12 @@ Um die Extraktionsqualität sicherzustellen, nutzt Koreki zwei Strategien:
 
 ### E. Industrial Context Size (Dynamic Context Escalation)
 Zur Vermeidung von Truncation-Fehlern bei komplexen Vision-Tasks oder großen Dokumenten wird der Kontext dynamisch gehärtet:
-*   **Base Standard / Tiers:** Der Kontext wird dynamisch in drei Stufen (`8.192`, `16.384`, `32.768` Token) vergeben, um GPU-VRAM-Preallozierungen bei Ollama gering zu halten.
+*   **Auto-Skalierung (Empfohlen):** Ist die Option "Automatische Kontext-Skalierung" im Einstellungen-Modal aktiviert, wird `ollamaNumCtx` im Hintergrund auf `0` gesetzt, und die Kontextgröße wird dynamisch berechnet.
+*   **Base Standard / Tiers:** Bei Auto-Skalierung wird der Kontext dynamisch in drei Stufen (`8.192`, `16.384`, `32.768` Token) vergeben, um GPU-VRAM-Preallozierungen bei Ollama gering zu halten.
 *   **Token-Schätzung:** Die Schätzung setzt sich aus den Textzeichen des Prompts (Zeichenlänge / 3.7), dem Antwort-Puffer (12.000 Token für Thinking-Modelle, 4.000 Token sonst) sowie einer Bildpauschale zusammen.
 *   **Vision-Hardening:** Für Vision-Tasks wird jedes Bild im Request pauschal mit **8.000 Token** kalkuliert, um zu verhindern, dass Vision-Modelle (wie Qwen oder Gemma) bei der Bild-Analyse an die Kontextgrenze stoßen.
-*   **Implementierung:** Direktes Injection in die Ollama-Optionen via Rust-Backend Proxy (`src/lib/ai/ollama-logic.ts`).
+*   **Manuelle Steuerung:** Der Nutzer kann die Auto-Skalierung deaktivieren und den Kontext manuell festlegen (z.B. `2048`, `4096`, `8192` etc.).
+*   **Implementierung:** Direktes Injection in die Ollama-Optionen via Rust-Backend Proxy (`src/lib/ai/ollama-logic.ts`), abgesichert durch lokale Persistierung im Desktop-Modus (`LocalAiProfileService`).
 
 ### F. Dynamic Content-Security-Policy (CSP) whitelisting (V16 breakthrough) 🛡️
 In Browser-basierten Umgebungen (wie dem selbstgehosteten Community-Modus) verhindern standardmäßige Content-Security-Policies (CSP) des Webbrowsers den Zugriff auf IP-Adressen im lokalen Netzwerk (z. B. `192.168.x.x`).

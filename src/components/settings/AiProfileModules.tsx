@@ -12,7 +12,7 @@ interface SidebarProps {
     isCreatingNew: boolean;
     editingProfileId: string | null;
     editingName: string;
-    onStartNew: () => void;
+    onStartNew: (template?: any) => void;
     onSelectProfile: (p: any) => void;
     onStartRename: (e: React.MouseEvent, p: any) => void;
     onDeleteProfile: (id: string, e: React.MouseEvent) => void;
@@ -155,8 +155,7 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                                                 className="h-8 w-8 text-slate-600 hover:text-indigo-600 transition-colors"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    onSelectProfile(p);
-                                                    onStartNew();
+                                                    onStartNew(p);
                                                 }}
                                             >
                                                 <PlusCircle size={14} />
@@ -204,8 +203,7 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                                     className="h-8 w-8 text-slate-600 hover:text-indigo-600 transition-colors"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onSelectProfile(p);
-                                        onStartNew();
+                                        onStartNew(p);
                                     }}
                                 >
                                     <PlusCircle size={14} />
@@ -228,7 +226,7 @@ interface EditorProps {
     newProfileName: string;
     setNewProfileName: (v: string) => void;
     onSaveToDB: () => void;
-    onStartNew: () => void;
+    onStartNew: (template?: any) => void;
 
     activeTab: 'correction' | 'vision';
     setActiveTab: (tab: 'correction' | 'vision') => void;
@@ -423,7 +421,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{temperature.toFixed(1)}</span>
                                 </div>
                                 <input
-                                    type="range" min="0.0" max="2.0" step="0.1" value={temperature}
+                                    type="range" min={provider === 'ollama' ? "0.1" : "0.0"} max="2.0" step="0.1" value={temperature}
                                     onChange={(e) => setTemperature(parseFloat(e.target.value))}
                                     className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
                                 />
@@ -493,7 +491,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{visionTemperature.toFixed(1)}</span>
                                 </div>
                                 <input
-                                    type="range" min="0.0" max="2.0" step="0.1" value={visionTemperature}
+                                    type="range" min={provider === 'ollama' ? "0.1" : "0.0"} max="2.0" step="0.1" value={visionTemperature}
                                     onChange={(e) => setVisionTemperature(parseFloat(e.target.value))}
                                     className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
                                 />
@@ -564,46 +562,74 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                     Kontext-Größe (num_ctx)
                                 </label>
                                 <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">
-                                    {ollamaNumCtx ? `${ollamaNumCtx.toLocaleString()}` : 'Standard'}
+                                    {!ollamaNumCtx || ollamaNumCtx === 0 ? 'Automatisch' : `${ollamaNumCtx.toLocaleString()}`}
                                 </span>
                             </div>
-                            
-                            <div className="flex gap-2">
-                                <select
-                                    value={[8192, 16384, 32768, 65536].includes(ollamaNumCtx) ? ollamaNumCtx : 'custom'}
-                                    onChange={e => {
-                                        const val = e.target.value;
-                                        if (val === 'custom') {
-                                            // keep current
-                                        } else {
-                                            setOllamaNumCtx(Number(val));
-                                        }
+
+                            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 p-2.5 rounded-xl hover:bg-slate-100/70 transition-all cursor-pointer" onClick={() => {
+                                if (ollamaNumCtx === 0) {
+                                    setOllamaNumCtx(16384);
+                                } else {
+                                    setOllamaNumCtx(0);
+                                }
+                            }}>
+                                <input
+                                    type="checkbox"
+                                    id="ollamaNumCtxAuto"
+                                    checked={!ollamaNumCtx || ollamaNumCtx === 0}
+                                    onChange={(e) => {
+                                        setOllamaNumCtx(e.target.checked ? 0 : 16384);
                                     }}
-                                    className="rounded-xl border-2 border-slate-200 focus:border-primary/50 bg-white px-3 py-2 text-xs font-bold text-slate-700 outline-none transition-all"
-                                >
-                                    <option value={8192}>8k (8192)</option>
-                                    <option value={16384}>16k (16384)</option>
-                                    <option value={32768}>32k (32768)</option>
-                                    <option value={65536}>64k (65536)</option>
-                                    <option value="custom">Benutzerdefiniert</option>
-                                </select>
-                                
-                                <Input 
-                                    type="number"
-                                    placeholder="z.B. 16384"
-                                    value={ollamaNumCtx || ''} 
-                                    onChange={e => {
-                                        const val = e.target.value ? Number(e.target.value) : 16384;
-                                        setOllamaNumCtx(val);
-                                    }}
-                                    className="rounded-xl border-2 focus:border-primary/50 transition-all text-xs font-mono flex-1 h-9"
-                                    min={2048}
-                                    max={262144}
+                                    className="h-4 w-4 rounded border-slate-350 text-indigo-600 focus:ring-indigo-500/30 transition-all cursor-pointer"
                                 />
+                                <div className="flex-1 cursor-pointer select-none">
+                                    <label htmlFor="ollamaNumCtxAuto" className="text-xs font-bold text-slate-700 block cursor-pointer">
+                                        Automatische Kontext-Skalierung (Empfohlen)
+                                    </label>
+                                    <span className="text-[10px] text-slate-400 block leading-tight">
+                                        Skaliert das Kontextfenster dynamisch je nach Dokumenten- und Bildgröße, um Grafikspeicher (VRAM) zu sparen.
+                                    </span>
+                                </div>
                             </div>
-                            <p className="text-[10px] text-slate-400 font-medium">
-                                Bestimmt das maximale Kontextfenster für Ollama. Größere Werte ermöglichen die Verarbeitung größerer Dokumente und Bilder, verbrauchen aber signifikant mehr Grafikspeicher (VRAM).
-                            </p>
+                            
+                            {ollamaNumCtx > 0 && (
+                                <div className="flex gap-2 animate-fade-in">
+                                    <select
+                                        value={[8192, 16384, 32768, 65536].includes(ollamaNumCtx) ? ollamaNumCtx : 'custom'}
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            if (val !== 'custom') {
+                                                setOllamaNumCtx(Number(val));
+                                            }
+                                        }}
+                                        className="rounded-xl border-2 border-slate-200 focus:border-primary/50 bg-white px-3 py-2 text-xs font-bold text-slate-700 outline-none transition-all"
+                                    >
+                                        <option value={8192}>8k (8192)</option>
+                                        <option value={16384}>16k (16384)</option>
+                                        <option value={32768}>32k (32768)</option>
+                                        <option value={65536}>64k (65536)</option>
+                                        <option value="custom">Benutzerdefiniert</option>
+                                    </select>
+                                    
+                                    <Input 
+                                        type="number"
+                                        placeholder="z.B. 16384"
+                                        value={ollamaNumCtx || ''} 
+                                        onChange={e => {
+                                            const val = e.target.value ? Number(e.target.value) : 16384;
+                                            setOllamaNumCtx(val);
+                                        }}
+                                        className="rounded-xl border-2 focus:border-primary/50 transition-all text-xs font-mono flex-1 h-9"
+                                        min={2048}
+                                        max={262144}
+                                    />
+                                </div>
+                            )}
+                            {ollamaNumCtx > 0 && (
+                                <p className="text-[10px] text-slate-400 font-medium">
+                                    Größere manuelle Werte ermöglichen die Verarbeitung extrem großer Dokumente, verbrauchen aber dauerhaft viel Grafikspeicher (VRAM).
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>

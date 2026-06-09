@@ -219,7 +219,8 @@ export const LocalAiProfileService = {
             visionTemperature: Number(data.visionTemperature ?? 0.0),
             visionTopP: Number(data.visionTopP ?? 0.8),
             visionMaxTokens: Number(data.visionMaxTokens ?? 4000),
-            visionPresencePenalty: Number(data.visionPresencePenalty ?? 0.0)
+            visionPresencePenalty: Number(data.visionPresencePenalty ?? 0.0),
+            ollamaNumCtx: data.ollamaNumCtx !== undefined ? Number(data.ollamaNumCtx) : undefined
         };
 
         if (existingIdx >= 0) {

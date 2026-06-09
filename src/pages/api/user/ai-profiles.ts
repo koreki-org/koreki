@@ -23,6 +23,7 @@ const aiProfileSchema = z.object({
     visionTopP: z.number().default(0.8),
     visionMaxTokens: z.number().default(4000),
     visionPresencePenalty: z.number().default(0.0),
+    ollamaNumCtx: z.number().optional(),
 });
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
@@ -94,7 +95,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 });
             }
 
-            const { id, ...data } = validation.data;
+            const { id, ollamaNumCtx, ...data } = validation.data;
 
             let profile;
             if (id) {
