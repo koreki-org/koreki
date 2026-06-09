@@ -516,6 +516,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                             title="KI-Berechnungsgraph"
                                             iconSize={13}
                                             position="bottom"
+                                            widthClass="w-80"
                                             buttonClassName="h-5 w-5 text-indigo-400"
                                             content={
                                                 <>
@@ -530,7 +531,6 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                         disabled={isLocked || isBatchGenerating}
                                         onClick={() => setShowAutoPilotConfig(true)}
                                         size="sm"
-
                                         className={cn(
                                             "rounded-lg px-3 py-1 h-7 text-[0.65rem] font-bold tracking-wide text-white uppercase flex items-center gap-1.5 shrink-0 transition-all duration-200",
                                             isBatchGenerating 
