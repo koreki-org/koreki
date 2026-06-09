@@ -1,5 +1,24 @@
-import { parseCorrectionResult } from '../../src/lib/ai/ai-orchestrator';
+import { parseCorrectionResult, performAIRequest } from '../../src/lib/ai/ai-orchestrator';
 import { Task } from '../../src/types';
+import { executeMistralRequest } from '../../src/lib/ai/mistral-provider';
+import { isDesktopTarget } from '../../src/lib/env-context';
+
+jest.mock('../../src/lib/env-context', () => ({
+    isLocalInstance: jest.fn(() => true),
+    isDesktopTarget: jest.fn(() => false)
+}));
+
+jest.mock('../../src/lib/ai/mistral-provider', () => ({
+    executeMistralRequest: jest.fn()
+}));
+
+jest.mock('../../src/lib/ai/openai-provider', () => ({
+    executeOpenAIRequest: jest.fn()
+}));
+
+jest.mock('../../src/lib/ai/ollama-logic', () => ({
+    executeOllamaRequest: jest.fn()
+}));
 
 describe('AI Orchestrator (Layer 1 Unit)', () => {
     describe('parseCorrectionResult', () => {
@@ -113,6 +132,104 @@ describe('AI Orchestrator (Layer 1 Unit)', () => {
             expect(result.tasks[0].feedback).toContain('[KI-Pädagogische Einschätzung]');
             expect(result.tasks[0].feedback).toContain('AI feedback that should be appended');
             expect(result.tasks[0].confidence).toBe(95); // High confidence enforced
+        });
+    });
+
+    describe('performAIRequest - Desktop Mode (isomorphic graph generation)', () => {
+        const mockSettings: any = {
+            provider: 'mistral',
+            mistralKey: 'key_123',
+            model: 'mistral-large-latest'
+        };
+
+        beforeEach(() => {
+            (isDesktopTarget as jest.Mock).mockReturnValue(true);
+            jest.clearAllMocks();
+        });
+
+        it('should execute generate-graph client-side in Desktop Mode', async () => {
+            const validGraph = {
+                taskId: 'test-task',
+                discipline: 'general',
+                variables: [
+                    { id: 'var_a', type: 'input', defaultValue: 10, validationType: 'exact', maxPoints: 1 }
+                ]
+            };
+
+            (executeMistralRequest as jest.Mock).mockResolvedValueOnce(validGraph);
+
+            const result = await performAIRequest(
+                'generate-graph',
+                { taskText: 'Task Content' },
+                'STANDARD', // Not PURE, but should still run client-side because of Desktop
+                mockSettings
+            );
+
+            expect(executeMistralRequest).toHaveBeenCalledTimes(1);
+            expect(result.taskId).toBe('test-task');
+            expect(result.validation.isValid).toBe(true);
+        });
+
+        it('should perform client-side generate-graph with self-correction loop when validation fails', async () => {
+            const invalidGraph = {
+                taskId: 'test-task',
+                discipline: 'general',
+                variables: [
+                    { id: 'var_a', type: 'formula', expression: 'invalid_expr', validationType: 'exact', maxPoints: 1 }
+                ]
+            };
+
+            const correctedGraph = {
+                taskId: 'test-task',
+                discipline: 'general',
+                variables: [
+                    { id: 'var_a', type: 'input', defaultValue: 5, validationType: 'exact', maxPoints: 1 }
+                ]
+            };
+
+            // First call returns invalid graph (no input variable for formula, throws during simulation)
+            (executeMistralRequest as jest.Mock).mockResolvedValueOnce(invalidGraph);
+            // Second call (correction) returns valid graph
+            (executeMistralRequest as jest.Mock).mockResolvedValueOnce(correctedGraph);
+
+            const result = await performAIRequest(
+                'generate-graph',
+                { taskText: 'Task Content' },
+                'PURE',
+                mockSettings
+            );
+
+            expect(executeMistralRequest).toHaveBeenCalledTimes(2);
+            expect(result.taskId).toBe('test-task');
+            expect(result.validation.isValid).toBe(true);
+            expect(result.validation.retriesUsed).toBe(1);
+        });
+
+        it('should execute client-side refine-graph and return both graph and explanation', async () => {
+            const refineResponse = {
+                explanation: 'I refined the graph.',
+                graph: {
+                    taskId: 'test-task',
+                    discipline: 'general',
+                    variables: [
+                        { id: 'var_a', type: 'input', defaultValue: 15, validationType: 'exact', maxPoints: 1 }
+                    ]
+                }
+            };
+
+            (executeMistralRequest as jest.Mock).mockResolvedValueOnce(refineResponse);
+
+            const result = await performAIRequest(
+                'refine-graph',
+                { taskText: 'Task Content', currentGraph: {}, userInstruction: 'update' },
+                'PURE',
+                mockSettings
+            );
+
+            expect(executeMistralRequest).toHaveBeenCalledTimes(1);
+            expect(result.graph.taskId).toBe('test-task');
+            expect(result.explanation).toBe('I refined the graph.');
+            expect(result.graph.validation.isValid).toBe(true);
         });
     });
 });
