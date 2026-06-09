@@ -38,6 +38,8 @@ WICHTIG (Mathematik & Formeln):
 - Falls die Musterlösung mathematische Formeln enthält, stelle sicher, dass diese sauber in LaTeX-Delimitern eingeschlossen sind.
 - Nutze `$...$` für Inline-Formeln und `$$...$$` für freigestellte Formeln auf eigener Zeile.
 - Erhalte die fachliche Korrektheit der LaTeX-Syntax (z.B. Brüche, Summen, Integrale).
+- ACHTUNG (JSON-Maskierung): Da du ein JSON-Objekt ausgibst, musst du JEDEN Backslash vor LaTeX-Befehlen doppelt maskieren (z. B. `\\frac`, `\\text`, `\\Omega`, `\\alpha`), damit sie als valider JSON-String geparst werden können und nicht fälschlicherweise als JSON-Kontrollzeichen (wie Tabulator `\t` oder Formfeed `\f`) verloren gehen!
+
 
 WICHTIG (Tabellen-Formatierung & Rekonstruktion):
 - Falls der bereitgestellte Text Tabellen, Listen oder strukturierte Daten (z.B. VLSM-Subnetting-Tabellen, IP-Adressberechnungen, Matrizen oder Punktübersichten) enthält, müssen diese zwingend im standardmäßigen GitHub Flavored Markdown (GFM) Tabellenformat ausgegeben werden.

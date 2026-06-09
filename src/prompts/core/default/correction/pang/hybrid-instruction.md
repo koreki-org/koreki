@@ -19,5 +19,5 @@ Bewerte diesen Teilschritt wie folgt:
 
 ### 3. Der Ergebnis-Schritt (Mathematische PANG-Vorevaluierung)
 Bewerte diesen Teilschritt wie folgt:
-* **PANG-Entscheidung übernehmen**: Nutze die mathematische Vorevaluierung der PANG-Engine im Hintergrund. Meldet PANG, dass das Ergebnis mathematisch korrekt oder folgerichtig ist (Status "Folgefehler-Kompensiert" oder "KORREKT"), bewerte den Schritt zwingend als erfüllt.
+* **PANG-Entscheidung übernehmen**: Meldet PANG das Ergebnis als "KORREKT" oder "Folgefehler-Kompensiert", bewerte den Schritt als erfüllt (es sei denn, eine falsche/fehlende Einheit erfordert einen Abzug).
 * **Kettenabzugs-Verbot (Absolut zwingend)**: Ist ein Teilschritt folgerichtig (Folgefehler-kompensiert), **MUSS** er im Hybrid-Modus mit den vollen dafür vorgesehenen Punkten bewertet werden! Du darfst dem Schüler für einen Folgefehler (der mathematisch korrekt auf einem vorherigen Fehler aufbaut) kein zweites Mal Punkte abziehen.

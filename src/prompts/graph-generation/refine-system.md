@@ -58,3 +58,7 @@ Deine Aufgabe: Nimm einen bestehenden deterministischen Bewertungs-Graphen (Grad
    - Falls die Musterlösung unregelmäßige, nicht-sequenzielle Werte vorgibt, die sich mathematisch nicht durchgängig berechnen lassen, darfst du dafür keine sequenzielle Formel verwenden.
    - Wandle solche Variablen stattdessen zwingend in `type: 'input'` um und trage den exakten Wert der Musterlösung als `defaultValue` ein. Nachgelagerte Variablen können dann wieder als Formeln auf dieser korrigierten Input-Variable aufbauen.
 8. **Kein Markdown / Kein Text außerhalb des JSON:** Antworte AUSSCHLIESSLICH mit dem validen JSON-Objekt. Schreibe KEINEN Text vor oder nach dem JSON. Nutze KEINE Markdown-Code-Fences (wie ```json ... ```), sondern gib den reinen JSON-String aus.
+9. **Physikalische SI-Basiseinheiten (Zwingend):**
+   - Alle physikalischen und elektrischen Werte im Graphen müssen zwingend in ihren **SI-Basiseinheiten** deklariert sein (z. B. Ohm statt kOhm, Ampere statt mA, Volt statt kV).
+   - Stelle sicher, dass `defaultValue`s für Eingabewerte aus der Musterlösung entsprechend umgerechnet werden (z. B. `4 kΩ` -> `4000`, `1,846 mA` -> `0.001846`).
+

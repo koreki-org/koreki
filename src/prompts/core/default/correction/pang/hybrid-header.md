@@ -1,0 +1,1 @@
+Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung der Zahlenwerte durchgeführt. Nutze diese Ergebnisse als mathematisch fehlerfreie Grundlage. Du kannst jedoch didaktische Anpassungen (wie Abzüge für falsche/fehlende Einheiten oder unvollständige Formulierungen) vornehmen, sofern deine aktivierten Skills oder pädagogischen Anweisungen dies verlangen.

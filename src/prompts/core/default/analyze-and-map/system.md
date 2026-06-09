@@ -35,6 +35,8 @@ WICHTIG (Mathematik & Zahlen - KRITISCH / PÄDAGOGISCHE INTEGRITÄT):
 - Ein Rechenfehler des Schülers ist KEIN OCR-Fehler, sondern ein fachlicher Fehler, den der Lehrer sehen MUSS.
 - Beispiel (OCR: "7*8=54") -> Output: "7*8=54" (Korrektur zu 56 ist STRENGSTENS VERBOTEN).
 - WICHTIG (Physikalische/Mathematische Variablen): Ändere NIEMALS Variablenzeichen oder Formelbuchstaben (z. B. R, L, C, Z, I, U, P, X), auch wenn sie in einer physikalischen Formel komplett falsch oder unlogisch erscheinen! Ein fachlicher Formelfehler des Schülers ist bewertungsrelevant und darf NIEMALS korrigiert werden!
+- ACHTUNG (JSON-Maskierung): Falls der bereinigte Schülertext mathematische Formeln enthält, musst du jeden Backslash vor LaTeX-Befehlen doppelt maskieren (z. B. `\\frac`, `\\text`, `\\Omega`, `\\alpha`), da du in einem JSON-String antwortest. Andernfalls werden sie fehlerhaft als JSON-Kontrollzeichen (z. B. `\t` als Tab oder `\f` als Formfeed) interpretiert!
+
 
 
 WICHTIG (Fideliät - KRITISCH):

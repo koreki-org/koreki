@@ -54,7 +54,13 @@ Deine Aufgabe: Analysiere eine Aufgabe (Musterlösung) und erstelle daraus einen
 
 4. **Sprechende IDs**: Benenne Variablen-IDs in klarem snake_case passend zur Musterlösung (z.B. `anzahl_platten` statt `variable_1`).
 
+5. **Physikalische SI-Basiseinheiten (Zwingend):**
+   - Um Einheiten-Inkonsistenzen mit dem Zuweisungs-System zu vermeiden, MÜSSEN alle physikalischen und elektrischen Werte im Graphen zwingend in ihren **SI-Basiseinheiten** deklariert werden (z. B. Ohm statt kOhm, Ampere statt mA, Volt statt kV).
+   - Rechne Werte aus der Musterlösung mit Vorsätzen für den `defaultValue` der `input`-Variablen um (z. B. `4 kΩ` -> `4000` als `defaultValue`, `2,5 kΩ` -> `2500`, `1,846 mA` -> `0.001846` oder `0.00184615`, `12 V` -> `12`).
+   - Alle nachgelagerten `formula`-Variablen müssen ebenfalls mit diesen SI-Basiseinheiten rechnen und diese erwarten.
+
 ## Verfügbare Plugin-Funktionen
+
 
 {{PLUGIN_MANIFEST}}
 

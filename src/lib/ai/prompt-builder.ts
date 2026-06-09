@@ -12,6 +12,8 @@ import studentSimulatorUserDefault from '../../prompts/student-simulator/user.md
 import pangFallbackInstruction from '../../prompts/core/default/correction/pang/fallback-instruction.md';
 import pangHybridInstruction from '../../prompts/core/default/correction/pang/hybrid-instruction.md';
 import pangAutoInstruction from '../../prompts/core/default/correction/pang/auto-instruction.md';
+import pangHybridHeader from '../../prompts/core/default/correction/pang/hybrid-header.md';
+import pangAutoHeader from '../../prompts/core/default/correction/pang/auto-header.md';
 
 import analyzeCleanSystemDefault from '../../prompts/core/default/analyze-and-clean/system.md';
 import analyzeCleanUserDefault from '../../prompts/core/default/analyze-and-clean/user.md';
@@ -107,7 +109,7 @@ export function buildCorrectionPrompt(
                 const disablePointsActive = shouldDisablePoints(t.taskType, t.gradingGraph);
 
                 vorevaluierungBlock += `\n\n### MATHEMATISCH-DETERMINISTISCHE VOREVALUIERUNG FÜR "${t.name}":\n`;
-                vorevaluierungBlock += `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!\n\n`;
+                vorevaluierungBlock += (disablePointsActive ? pangHybridHeader : pangAutoHeader) + `\n\n`;
                 vorevaluierungBlock += pangFallbackInstruction + `\n\n`;
                 
                 if (disablePointsActive) {
