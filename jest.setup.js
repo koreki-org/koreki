@@ -147,6 +147,11 @@ jest.mock('jspdf', () => {
         setLineWidth: jest.fn(),
         line: jest.fn(),
         setPage: jest.fn(),
+        setLineDashPattern: jest.fn(),
+        rect: jest.fn(),
+        getTextWidth: jest.fn().mockReturnValue(10),
+        addImage: jest.fn(),
+        addPage: jest.fn(),
     }));
     return {
         __esModule: true,

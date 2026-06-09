@@ -3,6 +3,13 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { DigitalSlipsModal } from '../../../src/components/batch/DigitalSlipsModal';
 import { BatchFile } from '../../../src/types';
 
+import { downloadFile } from '../../../src/lib/file-utils';
+
+// Mock downloadFile
+jest.mock('../../../src/lib/file-utils', () => ({
+    downloadFile: jest.fn().mockResolvedValue(undefined),
+}));
+
 // Mock window.print
 window.print = jest.fn();
 
@@ -35,7 +42,7 @@ describe('DigitalSlipsModal (Layer 2)', () => {
         expect(screen.getByText(/PIN:/)).toBeInTheDocument();
     });
 
-    test('calls window.print when print button is clicked', () => {
+    test('calls downloadFile when PDF Export button is clicked', async () => {
         render(
             <DigitalSlipsModal 
                 isOpen={true} 
@@ -44,9 +51,9 @@ describe('DigitalSlipsModal (Layer 2)', () => {
             />
         );
 
-        const printButton = screen.getByText('Drucken');
-        fireEvent.click(printButton);
-        expect(window.print).toHaveBeenCalled();
+        const exportButton = screen.getByText('PDF Export');
+        fireEvent.click(exportButton);
+        expect(downloadFile).toHaveBeenCalled();
     });
 
     test('generates a stable PIN for the same student name', () => {

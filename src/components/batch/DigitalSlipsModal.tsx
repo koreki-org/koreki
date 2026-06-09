@@ -1,10 +1,11 @@
 import React, { useRef } from 'react';
-import { X, Printer, ShieldCheck, Sparkles, Download, FileText } from 'lucide-react';
+import { X, ShieldCheck, Sparkles, Download } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { jsPDF } from 'jspdf';
 import { BatchFile } from '../../types';
 import { FeedbackData, encodeFeedback } from '@/lib/distribution';
 import { stripPangBlock } from '@/lib/pdf-utils';
+import { downloadFile } from '@/lib/file-utils';
 import { Button } from '../ui/Button';
 import Logo from '../Logo';
 
@@ -117,7 +118,8 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
             count++;
         }
 
-        doc.save(`Koreki_Feedback_Slips_${new Date().toISOString().split('T')[0]}.pdf`);
+        const pdfBlob = doc.output('blob');
+        await downloadFile(pdfBlob, `Koreki_Feedback_Slips_${new Date().toISOString().split('T')[0]}.pdf`, 'application/pdf');
     };
 
     return (
@@ -135,14 +137,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button 
-                            variant="outline" 
-                            onClick={() => window.print()} 
-                            className="hidden sm:flex gap-2 font-bold text-slate-700 bg-white shadow-sm hover:bg-slate-50 border-slate-200"
-                        >
-                            <Printer size={18} /> Drucken
-                        </Button>
-                        <Button variant="outline" onClick={handleDownloadPDF} className="gap-2 font-bold text-slate-700 bg-white shadow-sm hover:bg-slate-50">
+                        <Button variant="outline" onClick={handleDownloadPDF} className="gap-2 font-bold text-slate-700 bg-white shadow-sm hover:bg-slate-50 border-slate-200">
                             <Download size={18} /> PDF Export
                         </Button>
                         <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors ml-2">
@@ -253,27 +248,6 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                     </div>
                 </div>
             </div>
-
-            <style jsx global>{`
-                @media print {
-                    body { visibility: hidden !important; }
-                    .printable-slips, .printable-slips * { visibility: visible !important; }
-                    .printable-slips { 
-                        position: absolute !important; 
-                        left: 0 !important; 
-                        top: 0 !important; 
-                        width: 100% !important; 
-                        display: block !important;
-                    }
-                    .slip-card {
-                        border-bottom: 2px dashed #ccc !important;
-                        margin-bottom: 0 !important;
-                        padding: 30px !important;
-                        page-break-inside: avoid !important;
-                    }
-                    @page { margin: 1cm; }
-                }
-            `}</style>
         </div>
     );
 };
