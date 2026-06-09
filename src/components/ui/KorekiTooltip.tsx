@@ -11,6 +11,7 @@ interface KorekiTooltipProps {
     iconSize?: number;
     className?: string;
     buttonClassName?: string;
+    widthClass?: string; // Optional width override (e.g. w-72, w-80, w-96)
 }
 
 /**
@@ -25,7 +26,8 @@ export const KorekiTooltip: React.FC<KorekiTooltipProps> = ({
     position = 'bottom',
     iconSize = 18,
     className,
-    buttonClassName
+    buttonClassName,
+    widthClass = 'w-64'
 }) => {
     const [isVisible, setIsVisible] = useState(false);
 
@@ -49,7 +51,8 @@ export const KorekiTooltip: React.FC<KorekiTooltipProps> = ({
             
             {isVisible && (
                 <div className={cn(
-                    "absolute right-0 w-64 bg-white/95 backdrop-blur-md border border-indigo-200 p-4 rounded-[1.5rem] shadow-2xl z-[100] text-sm animate-in fade-in duration-200",
+                    "absolute right-0 bg-white/95 backdrop-blur-md border border-indigo-200 p-4 rounded-[1.5rem] shadow-2xl z-[100] text-sm animate-in fade-in duration-200",
+                    widthClass,
                     positionClasses
                 )}>
                     <p className="text-indigo-600 font-bold text-[10px] uppercase tracking-widest mb-2 font-outfit">
