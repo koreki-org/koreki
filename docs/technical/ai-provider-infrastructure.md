@@ -49,9 +49,19 @@ In der **Community Edition** kann die KI-Infrastruktur auf zwei Ebenen konfiguri
     *   Das automatische **AI-Setup-Modal** wird für Endnutzer unterdrückt, um einen nahtlosen Start zu ermöglichen.
 2.  **Individuell (User-Side):** Falls keine globalen Keys gesetzt sind (oder der Nutzer ein eigenes Modell nutzen möchte), erlaubt das **Expert Center** die Hinterlegung individueller Keys (z.B. ein eigener Ollama-Endpunkt für eine Lehrkraft). Diese Keys werden isoliert im Profil des Nutzers gespeichert.
 
+### Serverseitiges Ollama-Routing (Community Edition)
+> [!IMPORTANT]
+> Um in verteilten Schulnetzen den Zugriff auf lokale oder zentrale Inferenz-Ressourcen zu garantieren, werden im Community-Modus (STANDARD) alle Ollama-Anfragen **serverseitig** durch die Next.js-API-Endpunkte geschleift.
+> * **Vorteil:** Die App-Server können auf eine zentrale Ollama-Instanz zugreifen, die im privaten Schulnetzwerk gehostet wird, ohne dass Lehrkräfte Ollama auf ihren Arbeitsplatzrechnern installieren müssen.
+> * **Sicherheit:** CORS-Probleme des Browsers werden vollständig vermieden, da der Server direkt via HTTP mit dem Ollama-Host kommuniziert.
+> * **Keine stillen Fallbacks:** Sollte Ollama auf der Serverseite nicht erreichbar sein, wird ein Verbindungsfehler zurückgegeben und nicht unbemerkt auf SaaS-Modelle (wie Mistral oder Mittwald) ausgewichen.
+
 ---
 
 ## 3. Qwen 3.6 & Deep Thinking Mode 🧠
+
+> [!TIP]
+> **Modell-Empfehlung (Goldstandard):** Für alle Bilderkennungs- (Vision/OCR), Mapping- und Korrekturaufgaben in Koreki ist **Qwen 3.6** (insbesondere das Preset `qwen3.6:35b`) derzeit **mit Abstand das beste und leistungsfähigste Modell**. Dank seiner dynamischen Bildauflösung und der hochentwickelten Mixture-of-Experts (MoE) Inferenz liefert es präzisere OCR-Ergebnisse bei Handschriften und komplexen Tabellen als andere Open-Weight-Modelle (wie Gemma).
 
 Koreki optimiert die Inferenz-Parameter automatisch, sobald der **Thinking Mode** (gesteuert über `enableThinking` im KI-Intelligenz-Modal) aktiviert wird, um die Reasoning-Qualität von Qwen 3.6 zu maximieren:
 
@@ -73,7 +83,11 @@ Um die absolute Integrität von Schülerabgaben zu schützen und unerwünschte �
 
 ### Präzisions-Sperre (System-Lock)
 * **Wirkung:** Sobald eine systeminterne Extraktions- oder Mapping-Aktion ausgeführt wird, werden benutzerdefinierte Profiltemperaturen ( z. B. eine hohe Kreativitätstemperatur von `0.7` für freies Feedback) **ignoriert**.
-* **Parameter:** Diese Aktionen werden im Provider-Layer fest auf `temperature: 0.0` und `top_p: 0.1` fixiert. Dies erzwingt ein vollständig deterministisches Verhalten (Greedy Decoding) ohne jegliche Halluzination.
+* **Parameter:** Diese Aktionen werden im Provider-Layer standardmäßig fest auf `temperature: 0.0` und `top_p: 0.1` (SaaS APIs wie Mistral) fixiert. Dies erzwingt ein vollständig deterministisches Verhalten (Greedy Decoding) ohne jegliche Halluzination.
+* **Ollama-Sonderregelung (Lokale Inferenz):** Bei der Ausführung über lokale Ollama-Modelle weicht das System ab, um Inferenz-Schleifen und Abstürze in Verbindung mit dem JSON-Modus (`format: "json"`) zu verhindern. Hier gelten für `clean-and-map` und `clean-and-analyze` feste, modell-spezifische Parameter, die Profileinstellungen vollständig ignorieren:
+  * **Gemma / MoE Modelle:** Fest auf `temperature: 0.5` und `top_p: 0.9`.
+  * **Qwen Modelle:** Fest auf `temperature: 0.3` und `top_p: 0.9`.
+  * **Andere Modelle:** Fest auf `temperature: 0.2` und `top_p: 0.9` (zur Stabilitätsoptimierung von `0.1` angehoben).
 * **Prompt-Absicherung:** Alle `analyze-and-map` System-Prompts besitzen eine strikte Negativ-Klausel, die das Verändern von fachlichen Variablen/Formelzeichen (wie $Z$ statt $I$) explizit verbietet, um bewertungsrelevante Fehler unverfälscht abzubilden.
 
 ### Mistral Medium Standard (`mistral-medium-2604`)

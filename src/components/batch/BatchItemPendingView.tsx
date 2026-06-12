@@ -43,15 +43,15 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
     return (
         <div className={cn("grid grid-cols-1 gap-4 sm:gap-8 h-fit", item.documentType === 'scanned' && "md:grid-cols-2")}>
             {/* OCR Verification View */}
-            <div className={cn("flex flex-col gap-4 min-h-[300px] md:min-h-[400px]", (mobileViewMode === 'image' && item.documentType === 'scanned') ? "hidden md:flex" : "flex", "md:flex")}>
-                <div className="flex-1 space-y-4 w-full">
+            <div className={cn("flex flex-col gap-4 min-h-[300px] md:min-h-[400px] md:h-[600px]", (mobileViewMode === 'image' && item.documentType === 'scanned') ? "hidden md:flex" : "flex", "md:flex")}>
+                <div className="flex-1 space-y-4 w-full flex flex-col min-h-0">
                     {/* RESTORATION: Image 2 Header Title */}
-                    <div className="flex items-center gap-2 mb-3 px-1 pt-4">
+                    <div className="flex items-center gap-2 mb-3 px-1 pt-4 shrink-0">
                         <FileText size={14} className="text-slate-400" />
                         <span className="text-xs font-black text-slate-400 uppercase tracking-widest font-outfit">OCR Verifizierung</span>
                     </div>
 
-                    <div className="flex gap-2 overflow-x-auto px-2 py-1.5 -mx-2 no-scrollbar border-b border-slate-100/50 mb-4 w-full max-w-full">
+                    <div className="flex gap-2 overflow-x-auto px-2 py-1.5 -mx-2 no-scrollbar border-b border-slate-100/50 mb-4 w-full max-w-full shrink-0">
                         {groupNames.map(name => {
                             const subtasks = groupedTasks[name];
                             const groupHasWarnings = subtasks.some(task => {
@@ -79,7 +79,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                         })}
                     </div>
 
-                    <div className="space-y-4 max-h-[80vh] md:max-h-[600px] overflow-y-auto pr-2 custom-scrollbar animate-in fade-in duration-500">
+                    <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar animate-in fade-in duration-500">
                         {activeGroupName && groupedTasks[activeGroupName]?.map((task) => {
                             const sIdx = tasksLayout.findIndex(t => t.name === task.name);
                             const sectionText = studentSections[sIdx] || '';

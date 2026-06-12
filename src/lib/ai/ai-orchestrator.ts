@@ -320,7 +320,7 @@ export async function extractStudentAnswersWithLLM(
         };
 
         // 2. Perform Isomorphic Provider Call
-        if (appMode === 'PURE' || settings?.provider === 'ollama') {
+        if (appMode === 'PURE' || isDesktopTarget()) {
             // Client-Side (PURE or local Ollama)
             if (settings?.provider === 'ollama') {
                 extracted = await executeOllamaRequest('variable-extraction', payload, settings);
@@ -346,8 +346,10 @@ export async function extractStudentAnswersWithLLM(
         } else {
             // Server-Side (STANDARD mode execution) - directly invoke provider (isomorphic optimization)
             if (typeof window === 'undefined') {
-                const useOpenAI = settings.provider === 'openai-compatible';
-                if (!useOpenAI) {
+                if (settings.provider === 'ollama') {
+                    const { executeOllamaRequest } = require('./ollama-logic');
+                    extracted = await executeOllamaRequest('variable-extraction', payload, settings);
+                } else if (settings.provider === 'mistral') {
                     const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
                     if (!apiKey) throw new Error('Mistral API-Key fehlt.');
                     extracted = await executeMistralRequest(
@@ -455,10 +457,11 @@ export async function performAIRequest(
     action: 'correction' | 'clean-and-analyze' | 'vision' | 'clean-and-map' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction',
     payload: any, // ARCH: any required because payload structure varies by action (Correction vs Layout)
     appMode: 'PURE' | 'STANDARD' | 'TRIAL' | undefined,
-    settings: AppSettings
+    settings: AppSettings,
+    signal?: AbortSignal
 ): Promise<any> {
     // Client-side deterministic graph evaluation for PURE mode or local Ollama execution
-    const isClientSideExecution = appMode === 'PURE' || settings?.provider === 'ollama' || isDesktopTarget();
+    const isClientSideExecution = appMode === 'PURE' || isDesktopTarget();
     if (isClientSideExecution && action === 'correction' && payload.tasksLayout && Array.isArray(payload.tasksLayout)) {
         const activeSkillIds = settings?.activeSkillIds || [];
         const customSkills = settings?.customSkills || {};
@@ -692,7 +695,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
 
             // General AI Actions (Correction, Analyze, Map)
             if (settings?.provider === 'ollama') {
-                result = await executeOllamaRequest(action, payload, settings);
+                result = await executeOllamaRequest(action, payload, settings, signal);
             } else if (settings?.provider === 'openai-compatible') {
                 const baseUrl = settings.openaiUrl || '';
                 const apiKey = settings.openaiKey || '';
@@ -706,7 +709,8 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                     customPrompt: settings?.correctionPrompt,
                     gradingMemory: payload.gradingMemory,
                     activeSkillIds: settings?.activeSkillIds,
-                    customSkills: settings?.customSkills
+                    customSkills: settings?.customSkills,
+                    signal
                 });
             } else {
                 result = await executeMistralRequest(action, payload, mistralKey, {
@@ -718,7 +722,8 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                     topP: settings?.topP,
                     maxTokens: settings?.maxTokens,
                     activeSkillIds: settings?.activeSkillIds,
-                    customSkills: settings?.customSkills
+                    customSkills: settings?.customSkills,
+                    signal
                 });
             }
 
@@ -757,7 +762,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
             studentText: payload.studentText || payload.text, 
             settings, 
             isComplex: payload.isComplex ?? (action === 'vision') 
-        });
+        }, { signal });
         const data = await res.json();
         if (!res.ok) {
             console.error("API ERROR RESPONSE:", data);

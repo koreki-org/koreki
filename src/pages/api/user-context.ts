@@ -12,7 +12,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     const { claims } = req.user;
     const logtoId = claims.sub;
 
-    const { isLocalInstance } = require('@/lib/env-context');
+    const { isLocalInstance } = require('../../lib/env-context');
     if (isLocalInstance()) {
         return res.status(200).json({
             workspaces: [

@@ -39,11 +39,20 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         const { taskText, discipline, userNotes, settings } = validation.data;
 
+
+
         // Provider routing — same pattern as ai-correct.ts
         const useOpenAI = settings?.provider === 'openai-compatible';
         let rawResult: Record<string, unknown>;
 
-        if (!useOpenAI) {
+        if (settings?.provider === 'ollama') {
+            const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
+            rawResult = await executeOllamaRequest(
+                'generate-graph',
+                { taskText, discipline, userNotes },
+                settings
+            );
+        } else if (!useOpenAI) {
             const apiKey = settings?.mistralKey || process.env.MISTRAL_API_KEY;
             if (!apiKey) throw new Error('Mistral API-Key fehlt.');
 
@@ -118,7 +127,14 @@ Bitte korrigiere den Graphen. Stelle sicher, dass:
 Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
 
             try {
-                if (!useOpenAI) {
+                if (settings?.provider === 'ollama') {
+                    const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
+                    rawResult = await executeOllamaRequest(
+                        'refine-graph',
+                        { taskText, currentGraph: graph, userInstruction, discipline },
+                        settings
+                    );
+                } else if (!useOpenAI) {
                     const apiKey = settings?.mistralKey || process.env.MISTRAL_API_KEY;
                     if (apiKey) {
                         rawResult = await executeMistralRequest(

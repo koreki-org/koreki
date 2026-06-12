@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { FileText, FileUp, RefreshCw, Sparkles, Loader2, Layers, Trash2, Link2Off, HelpCircle, AlertCircle, ShieldCheck, ShieldAlert, Clock, ToggleLeft, ToggleRight } from 'lucide-react';
+import { FileText, FileUp, RefreshCw, Sparkles, Loader2, Layers, Trash2, Link2Off, HelpCircle, AlertCircle, ShieldCheck, ShieldAlert, Clock, ToggleLeft, ToggleRight, Download } from 'lucide-react';
 import { Task, AppSettings } from '@/types';
 import { promisePool } from '../../lib/ai/promise-pool';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -18,6 +18,7 @@ import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { STANDARD_SKILL_PROFILES } from '@/lib/ai/standard-skills-profiles';
 import { AutoPilotConfigModal } from './AutoPilotConfigModal';
+import { downloadFile } from '@/lib/file-utils';
 
 
 
@@ -447,6 +448,35 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         }
     }, [tasksLayout, onTasksChange, onModelSolutionChange, getDefaultGradingGraph]);
 
+    const handleExportModelSolution = async () => {
+        const exportData = {
+            version: '2.0',
+            modelSolution,
+            tasksLayout,
+            timestamp: new Date().toISOString(),
+            metadata: {
+                activeProfileId: settings?.activePromptProfileId,
+                activeAiProfileId: settings?.activeAiProfileId
+            }
+        };
+        const data = JSON.stringify(exportData, null, 2);
+
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        
+        const filename = `koreki-ml-${yyyy}-${mm}-${dd}_${hh}${min}.koreki`;
+        
+        try {
+            await downloadFile(data, filename, 'application/json;charset=utf-8');
+        } catch (error) {
+            console.error('Fehler beim Exportieren der Musterlösung:', error);
+            alert('Export der Musterlösung fehlgeschlagen.');
+        }
+    };
 
     return (
         <Card className="flex flex-col border-white/50 bg-white/60 backdrop-blur-xl shadow-xl shadow-slate-200/50 rounded-[2rem] overflow-hidden">
@@ -467,6 +497,17 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             >
                                 <RefreshCw size={12} className={extractingLayout ? "animate-spin" : ""} />
                                 <span>Ändern</span>
+                            </Button>
+                            
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 px-3 flex items-center gap-2 bg-emerald-500/5 text-emerald-600 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-emerald-500/10 hover:bg-emerald-600 hover:text-white transition-all animate-fade-in"
+                                onClick={handleExportModelSolution}
+                                title="Musterlösung als Zwischenstand exportieren (.koreki)"
+                            >
+                                <Download size={12} />
+                                <span>Exportieren</span>
                             </Button>
                         </>
                     )}

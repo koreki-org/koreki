@@ -1,1 +1,1 @@
-W I C H T I G :   A n t w o r t e   A U S S C H L I E S S L I C H   m i t   d e m   J S O N - O b j e k t .   K e i n e n   E i n l e i t u n g s t e x t ,   k e i n   G e p l ä n k e l ,   K E I N E   M a r k d o w n - Z ä u n e   ( ` ` ` j s o n ) .
+WICHTIG: Antworte AUSSCHLIESSLICH mit dem JSON-Objekt. Keinen Einleitungstext, kein Geplänkel, KEINE Markdown-Zäune (```json).

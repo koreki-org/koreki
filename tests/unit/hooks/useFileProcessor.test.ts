@@ -4,6 +4,7 @@ import React from 'react';
 import { extractTextFromFile, convertPdfToImage, toBase64 } from '../../../src/lib/file-utils';
 import { performOCRRequest, performAIRequest } from '../../../src/lib/ai-logic';
 import { runExtractionStrategy } from '../../../src/lib/ai/extraction-logic';
+import { useBatchStore } from '../../../src/hooks/store/useBatchStore';
 
 // 1. Mock file-utils, ai-logic and extraction-logic
 jest.mock('../../../src/lib/ai/extraction-logic', () => ({
@@ -162,5 +163,50 @@ describe('useFileProcessor Hook', () => {
             expect(file.result).not.toBeNull();
             expect(file.grade).toBeDefined();
         });
+    });
+
+    it('should allow aborting handleExtractOCR using the activeBatchController', async () => {
+        let isAborted = false;
+        (runExtractionStrategy as jest.Mock).mockImplementation((file, options) => {
+            return new Promise((resolve, reject) => {
+                if (options.signal) {
+                    options.signal.addEventListener('abort', () => {
+                        isAborted = true;
+                        reject(new DOMException('The user aborted a request.', 'AbortError'));
+                    });
+                }
+            });
+        });
+
+        const { result } = renderHook(() => useFileProcessor(
+            mockUserData, { provider: 'mistral', mistralKey: '' }, 'MASTER', [{ name: 'A1', maxPoints: 5 }], setUserData
+        ));
+
+        const testFile = new File([''], 'scanned.pdf', { type: 'application/pdf' });
+        act(() => {
+            result.current.setBatchFiles([{
+                name: 'Schüler #1',
+                files: [testFile],
+                status: 'pending',
+                documentType: 'scanned',
+                selected: true,
+                ocrDone: false,
+                result: null,
+                error: null
+            }]);
+        });
+
+        const ocrPromise = act(async () => {
+            await result.current.handleExtractOCR(result.current.batchFiles);
+        });
+
+        act(() => {
+            useBatchStore.getState().abortBatch();
+        });
+
+        await ocrPromise;
+
+        expect(isAborted).toBe(true);
+        expect(result.current.batchFiles[0].status).toBe('pending');
     });
 });

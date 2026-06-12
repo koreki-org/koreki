@@ -23,7 +23,8 @@ jest.mock('lucide-react', () => ({
     ShieldAlert: () => <div data-testid="shieldalert-icon" />,
     Clock: () => <div data-testid="clock-icon" />,
     ToggleLeft: () => <div data-testid="toggleleft-icon" />,
-    ToggleRight: () => <div data-testid="toggleright-icon" />
+    ToggleRight: () => <div data-testid="toggleright-icon" />,
+    Download: () => <div data-testid="download-icon" />
 }));
 
 // Mock MathMarkdown to avoid ESM import issues with remark-gfm

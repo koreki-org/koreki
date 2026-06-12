@@ -34,6 +34,7 @@ export interface AIRequestOptions {
     gradingMemory?: any[] | null;
     activeSkillIds?: string[];
     customSkills?: Record<string, any>;
+    signal?: AbortSignal;
 }
 
 /**
@@ -74,7 +75,7 @@ export async function executeMistralRequest(
 
     if (action === 'ocr') {
         // OCR uses the /v1/ocr endpoint, not chat/completions
-        return await handleOCRRequest(payload, apiKey, options.isScan);
+        return await handleOCRRequest(payload, apiKey, options.isScan, options.signal);
     }
 
     // Industrial Single-Pass: Build prompt once and extract options
@@ -173,7 +174,7 @@ export async function executeMistralRequest(
     if (isDesktopTarget()) {
         try {
             const { invoke } = await import('@tauri-apps/api/core');
-            const res = await invoke<string>('execute_ai_proxy_command', {
+            const invokePromise = invoke<string>('execute_ai_proxy_command', {
                 url,
                 method: 'POST',
                 headers: {
@@ -182,6 +183,23 @@ export async function executeMistralRequest(
                 },
                 body: JSON.stringify(body)
             });
+            
+            let res: string;
+            if (options.signal) {
+                if (options.signal.aborted) {
+                    throw new DOMException('The user aborted a request.', 'AbortError');
+                }
+                res = await Promise.race([
+                    invokePromise,
+                    new Promise<string>((_, reject) => {
+                        options.signal!.addEventListener('abort', () => {
+                            reject(new DOMException('The user aborted a request.', 'AbortError'));
+                        });
+                    })
+                ]);
+            } else {
+                res = await invokePromise;
+            }
             responseData = JSON.parse(res);
         } catch (e) {
             throw new Error(`Desktop Proxy Fehler: ${e}`);
@@ -193,7 +211,8 @@ export async function executeMistralRequest(
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`
             },
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal: options.signal
         });
 
         if (!response.ok) {
@@ -258,7 +277,7 @@ export async function executeMistralRequest(
 /**
  * Specialized handler for Mistral OCR Endpoint
  */
-async function handleOCRRequest(payload: any, apiKey: string, isScan: boolean = false): Promise<any> {
+async function handleOCRRequest(payload: any, apiKey: string, isScan: boolean = false, signal?: AbortSignal): Promise<any> {
     const url = 'https://api.mistral.ai/v1/ocr';
     const body = {
         model: MISTRAL_OCR_MODEL,
@@ -273,7 +292,7 @@ async function handleOCRRequest(payload: any, apiKey: string, isScan: boolean = 
     if (isDesktopTarget()) {
         try {
             const { invoke } = await import('@tauri-apps/api/core');
-            const res = await invoke<string>('execute_ai_proxy_command', {
+            const invokePromise = invoke<string>('execute_ai_proxy_command', {
                 url,
                 method: 'POST',
                 headers: {
@@ -282,6 +301,23 @@ async function handleOCRRequest(payload: any, apiKey: string, isScan: boolean = 
                 },
                 body: JSON.stringify(body)
             });
+            
+            let res: string;
+            if (signal) {
+                if (signal.aborted) {
+                    throw new DOMException('The user aborted a request.', 'AbortError');
+                }
+                res = await Promise.race([
+                    invokePromise,
+                    new Promise<string>((_, reject) => {
+                        signal.addEventListener('abort', () => {
+                            reject(new DOMException('The user aborted a request.', 'AbortError'));
+                        });
+                    })
+                ]);
+            } else {
+                res = await invokePromise;
+            }
             responseData = JSON.parse(res);
         } catch (e) {
             throw new Error(`Desktop OCR Proxy Fehler: ${e}`);
@@ -293,7 +329,8 @@ async function handleOCRRequest(payload: any, apiKey: string, isScan: boolean = 
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`
             },
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal
         });
 
         if (!response.ok) {

@@ -33,9 +33,12 @@ export const useBatchActions = (
             const data = JSON.parse(text);
             let importedFiles: BatchFile[] = [];
 
-            if (Array.isArray(data)) importedFiles = data;
-            else if (data?.batchFiles) {
-                importedFiles = data.batchFiles;
+            if (Array.isArray(data)) {
+                importedFiles = data;
+            } else if (data) {
+                if (data.batchFiles) {
+                    importedFiles = data.batchFiles;
+                }
                 if (data.modelSolution && setModelSolution) setModelSolution(data.modelSolution);
                 if (data.tasksLayout && setTasksLayout) setTasksLayout(data.tasksLayout);
             }

@@ -33,10 +33,17 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     try {
         let result: any;
 
-        if (settings.provider === 'mistral') {
+        if (settings.provider === 'ollama') {
+            const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
+            result = await executeOllamaRequest(
+                'clean-and-analyze',
+                { modelSolution },
+                settings
+            );
+        } else if (settings.provider === 'mistral') {
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
             if (!apiKey) throw new Error('Mistral API-Key fehlt.');
-
+ 
              result = await executeMistralRequest(
                 'clean-and-analyze',
                 { modelSolution },

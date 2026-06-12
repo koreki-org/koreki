@@ -43,6 +43,7 @@ interface BatchProcessorProps {
     settings?: AppSettings;
     onUpdateSettings?: (val: AppSettings | ((prev: AppSettings) => AppSettings)) => void;
     onProcessSingleFile?: (idx: number) => void;
+    onProcessSingleOCR?: (idx: number) => void;
 }
 
 const BatchProcessor: React.FC<BatchProcessorProps> = ({
@@ -69,7 +70,8 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     avvAccepted,
     settings,
     onUpdateSettings,
-    onProcessSingleFile
+    onProcessSingleFile,
+    onProcessSingleOCR
 }) => {
     // --- STAGE 11: INDUSTRIAL BATCH STATUS ENGINE ---
     const { state, metrics, logic, handlers } = useBatchStatus(
@@ -206,6 +208,8 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                                 handleReviewPointChange={handleReviewPointChange}
                                 handleReviewFeedbackChange={handleReviewFeedbackChange}
                                 onProcessSingleFile={onProcessSingleFile}
+                                onProcessSingleOCR={onProcessSingleOCR}
+                                isOcrBatchFinished={!loading && batchFiles.every(f => f.documentType !== 'scanned' || f.selected === false || f.ocrDone || f.status === 'error')}
                                 settings={settings}
                             />
                         ))}

@@ -30,6 +30,11 @@ interface BatchStateStore {
     
     ocrStrategy: 'standard' | 'handwriting';
     setOcrStrategy: Setter<'standard' | 'handwriting'>;
+    
+    activeBatchController: AbortController | null;
+    registerBatchController: (controller: AbortController) => void;
+    abortBatch: () => void;
+    clearBatchController: () => void;
 }
 
 // Helper to create React-style setter functions for Zustand
@@ -65,4 +70,14 @@ export const useBatchStore = create<BatchStateStore>((set) => ({
     
     ocrStrategy: 'standard',
     setOcrStrategy: createSetter(set, 'ocrStrategy'),
+
+    activeBatchController: null,
+    registerBatchController: (controller) => set({ activeBatchController: controller }),
+    abortBatch: () => set((state) => {
+        if (state.activeBatchController) {
+            state.activeBatchController.abort();
+        }
+        return { activeBatchController: null };
+    }),
+    clearBatchController: () => set({ activeBatchController: null }),
 }));

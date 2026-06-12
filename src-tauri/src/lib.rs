@@ -33,6 +33,8 @@ struct OllamaChatRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     format: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    think: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     options: Option<OllamaOptions>,
 }
 
@@ -181,6 +183,7 @@ async fn execute_ollama_command(
     temperature: Option<f32>,
     top_p: Option<f32>,
     num_predict: Option<i32>,
+    think: Option<bool>,
 ) -> Result<String, String> {
     let mut messages = Vec::new();
     if let Some(sys_content) = system {
@@ -194,6 +197,7 @@ async fn execute_ollama_command(
         messages,
         stream,
         format,
+        think,
         options: Some(OllamaOptions { 
             num_ctx,
             temperature,

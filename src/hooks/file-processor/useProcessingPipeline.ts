@@ -29,18 +29,34 @@ export const useProcessingPipeline = (
         textToMap: string, 
         pageCount: number, 
         costMultiplier: number = 1,
-        sourceMetadata: Partial<BatchFile> = {}
+        sourceMetadata: Partial<BatchFile> = {},
+        signal?: AbortSignal
     ) => {
         if (!textToMap || tasksLayout.length === 0) return;
-
+ 
+        // 🔍 DIAGNOSTIC: Log the raw OCR text that goes into the mapping
+        console.log(`[MAPPING-DEBUG] === Student #${index} - RAW OCR INPUT ===`);
+        console.log(textToMap);
+        console.log(`[MAPPING-DEBUG] === Tasks Layout: ${tasksLayout.map(t => t.name).join(', ')} ===`);
+ 
         const cleanData = await performAIRequest('clean-and-map', {
             text: textToMap, 
             isInclusive: false, 
             tasksLayout, 
             pageCount,
             requestId: index // Scoped streaming
-        }, userData?.appMode, settings);
+        }, userData?.appMode, settings, signal);
 
+        // 🔍 DIAGNOSTIC: Log the mapping result
+        console.log(`[MAPPING-DEBUG] === Student #${index} - MAPPING RESULT ===`);
+        if (cleanData?.tasks) {
+            cleanData.tasks.forEach((t: any) => {
+                const preview = (t.content || '').substring(0, 80);
+                console.log(`  → ${t.name}: "${preview}${(t.content || '').length > 80 ? '...' : ''}"`);
+            });
+        } else {
+            console.log('  → NO TASKS IN RESULT!', cleanData);
+        }
 
         if (cleanData?.tasks && cleanData.tasks.length > 0) {
             const structuredTasks = cleanData.tasks;
@@ -60,16 +76,22 @@ export const useProcessingPipeline = (
         }
     }, [userData, settings, tasksLayout, setUserData, setBatchFiles]);
 
+
     const startExtraction = useCallback(async (items: BatchFile[]) => {
         setIsLoadingBatch(true);
+        const controller = new AbortController();
+        useBatchStore.getState().registerBatchController(controller);
+        const signal = controller.signal;
+
         try {
             for (let i = 0; i < items.length; i++) {
+                if (signal.aborted) break;
                 if (items[i].status !== 'pending' && items[i].previewDataUrls?.length) continue;
                 setCurrentProcessingIndex(i);
                 
                 // Moodle/Digital Path: If no physical file but text is present, go straight to mapping
                 if ((!items[i].files || items[i].files.length === 0) && items[i].fileText) {
-                    await internalProcessMapping(i, items[i].fileText, 1, 1);
+                    await internalProcessMapping(i, items[i].fileText, 1, 1, {}, signal);
                     continue;
                 }
 
@@ -96,13 +118,16 @@ export const useProcessingPipeline = (
                             appMode: userData?.appMode,
                             settings,
                             pageRange: items[i].pageRange,
-                            isComplex: ocrStrategy === 'handwriting'
+                            isComplex: ocrStrategy === 'handwriting',
+                            signal
                         });
                         text = res.text;
                         pageCount = res.pageCount;
                         documentType = res.documentType;
                         previewDataUrls = res.previewDataUrls;
                     }
+
+                    if (signal.aborted) break;
 
                     let redactedDataUrls = items[i].redactedDataUrls;
                     let redactionRects = items[i].redactionRects;
@@ -114,6 +139,7 @@ export const useProcessingPipeline = (
                             const redactedUrls: string[] = [];
                             
                             for (let pageIdx = 0; pageIdx < previewDataUrls.length; pageIdx++) {
+                                if (signal.aborted) break;
                                 const url = previewDataUrls[pageIdx];
                                 const img = new Image();
                                 await new Promise((resolve, reject) => {
@@ -154,6 +180,8 @@ export const useProcessingPipeline = (
                         }
                     }
 
+                    if (signal.aborted) break;
+
                     if (documentType === 'scanned' || isScan) {
                         // For scans, we only update metadata and wait for manual OCR
                         setBatchFiles((prev: BatchFile[]) => {
@@ -184,7 +212,8 @@ export const useProcessingPipeline = (
                                     redactedDataUrls, 
                                     redactionRects, 
                                     isRedacted 
-                                }
+                                },
+                                signal
                             );
                         } else {
                             // Just update metadata if text was already there
@@ -203,20 +232,30 @@ export const useProcessingPipeline = (
                             });
                         }
                     }
-                } catch (err) {
+                } catch (err: any) {
+                    if (err.name === 'AbortError' || signal.aborted) {
+                        console.log("Extraction aborted by user");
+                        break;
+                    }
                     console.error("Extraction error", err);
                 }
             }
         } finally {
             setIsLoadingBatch(false);
             setCurrentProcessingIndex(-1);
+            useBatchStore.getState().clearBatchController();
         }
-    }, [userData, settings, tasksLayout, setUserData, setBatchFiles, setCurrentProcessingIndex, setIsLoadingBatch, ocrStrategy]);
+    }, [userData, settings, tasksLayout, setUserData, setBatchFiles, setCurrentProcessingIndex, setIsLoadingBatch, ocrStrategy, internalProcessMapping]);
 
     const handleExtractOCR = useCallback(async (currentBatch: BatchFile[]) => {
         setIsLoadingBatch(true);
+        const controller = new AbortController();
+        useBatchStore.getState().registerBatchController(controller);
+        const signal = controller.signal;
+
         try {
             for (let i = 0; i < currentBatch.length; i++) {
+                if (signal.aborted) break;
                 if (currentBatch[i].selected && !currentBatch[i].ocrDone) {
                     setCurrentProcessingIndex(i);
                     try {
@@ -232,8 +271,11 @@ export const useProcessingPipeline = (
                             settings,
                             pageRange: currentBatch[i].pageRange,
                             sourceOverride: ocrSource || undefined,
-                            isComplex: ocrStrategy === 'handwriting'
+                            isComplex: ocrStrategy === 'handwriting',
+                            signal
                         });
+
+                        if (signal.aborted) break;
 
                         // 🏗️ Step 2: Unified Mapping & State Update
                         await internalProcessMapping(
@@ -241,9 +283,14 @@ export const useProcessingPipeline = (
                             ocrRes.text, 
                             ocrRes.pageCount || currentBatch[i].pageCount || 1, 
                             2, // Multiplier for OCR
-                            { previewDataUrls: ocrRes.previewDataUrls || currentBatch[i].previewDataUrls }
+                            { previewDataUrls: ocrRes.previewDataUrls || currentBatch[i].previewDataUrls },
+                            signal
                         );
                     } catch (err: any) {
+                        if (err.name === 'AbortError' || signal.aborted) {
+                            console.log("OCR aborted by user");
+                            break;
+                        }
                         const isRateLimit = err.message?.includes('429') || err.message?.toLowerCase().includes('rate limit') || err.message?.includes('überlastet');
                         setBatchFiles((prev: BatchFile[]) => {
                             const next = [...prev];
@@ -262,20 +309,23 @@ export const useProcessingPipeline = (
         } finally {
             setIsLoadingBatch(false);
             setCurrentProcessingIndex(-1);
+            useBatchStore.getState().clearBatchController();
         }
-    }, [userData, settings, tasksLayout, setUserData, setBatchFiles, setCurrentProcessingIndex, setIsLoadingBatch, ocrStrategy]);
+    }, [userData, settings, tasksLayout, setUserData, setBatchFiles, setCurrentProcessingIndex, setIsLoadingBatch, ocrStrategy, internalProcessMapping]);
 
     /**
      * INDUSTRIAL CORRECTION ENGINE (Single Item)
      * 🏗️ Handles the correction of a single student file.
      */
-    const internalCorrectionPipeline = useCallback(async (i: number, freshFiles?: BatchFile[], force: boolean = false) => {
+    const internalCorrectionPipeline = useCallback(async (i: number, freshFiles?: BatchFile[], force: boolean = false, signal?: AbortSignal) => {
         const files = freshFiles || useBatchStore.getState().batchFiles;
         const currentFile = files[i];
 
         if (!currentFile || (!force && currentFile.status === 'done') || !currentFile.selected) {
             return;
         }
+
+        if (signal?.aborted) return;
 
         setCurrentProcessingIndex(i);
 
@@ -307,6 +357,8 @@ export const useProcessingPipeline = (
                 }
             } catch (e) {}
 
+            if (signal?.aborted) return;
+
             const data = await performAIRequest('correction', {
                 modelSolution,
                 studentText: finalStudentText,
@@ -318,7 +370,9 @@ export const useProcessingPipeline = (
                 expertProfileName,
                 isComplex: ocrStrategy === 'handwriting',
                 gradingMemory: gradingMemoryCases
-            }, userData?.appMode, settings);
+            }, userData?.appMode, settings, signal);
+
+            if (signal?.aborted) return;
             const duration = performance.now() - startTime;
 
             // --- POPULATE student answer content in correction results from pre-correction tasks ---
@@ -344,6 +398,8 @@ export const useProcessingPipeline = (
                 });
             }
 
+            if (signal?.aborted) return;
+
             setBatchFiles((prev: BatchFile[]) => {
                 const next = [...prev];
                 next[i] = {
@@ -361,6 +417,15 @@ export const useProcessingPipeline = (
                 setUserData((u: any) => u ? { ...u, credits: Math.max(0, u.credits - (currentFile.pageCount || 1)) } : null);
             }
         } catch (err: any) {
+            if (err.name === 'AbortError' || signal?.aborted) {
+                console.log(`Correction of file ${i} aborted by user`);
+                setBatchFiles((prev: BatchFile[]) => {
+                    const next = [...prev];
+                    next[i] = { ...next[i], status: 'pending', error: null };
+                    return next;
+                });
+                return;
+            }
             setBatchFiles((prev: BatchFile[]) => {
                 const next = [...prev];
                 next[i] = { ...next[i], status: 'error', error: err.message };
@@ -376,14 +441,21 @@ export const useProcessingPipeline = (
         if (aiStatus?.correctionBrakeActive) return alert(aiStatus.message);
         if (!modelSolution) return alert("Bitte zuerst Musterlösung hochladen.");
         setIsLoadingBatch(true);
+
+        const controller = new AbortController();
+        useBatchStore.getState().registerBatchController(controller);
+        const signal = controller.signal;
+
         try {
             const indices = freshFiles.map((_, i) => i);
             await promisePool(indices, 1, async (i: number) => {
-                await internalCorrectionPipeline(i, freshFiles);
+                if (signal.aborted) return;
+                await internalCorrectionPipeline(i, freshFiles, false, signal);
             });
         } finally {
             setIsLoadingBatch(false);
             setCurrentProcessingIndex(-1);
+            useBatchStore.getState().clearBatchController();
         }
     }, [internalCorrectionPipeline, setIsLoadingBatch, setCurrentProcessingIndex, modelSolution]);
 
@@ -392,22 +464,114 @@ export const useProcessingPipeline = (
         if (!modelSolution) return alert("Bitte zuerst Musterlösung hochladen.");
         
         setIsLoadingBatch(true);
+        const controller = new AbortController();
+        useBatchStore.getState().registerBatchController(controller);
+        const signal = controller.signal;
+
         try {
             setBatchFiles((prev: BatchFile[]) => {
                 const next = [...prev];
                 next[i] = { ...next[i], status: 'pending', error: null };
                 return next;
             });
-            await internalCorrectionPipeline(i, undefined, true);
+            await internalCorrectionPipeline(i, undefined, true, signal);
         } finally {
             setIsLoadingBatch(false);
             setCurrentProcessingIndex(-1);
+            useBatchStore.getState().clearBatchController();
         }
     }, [internalCorrectionPipeline, setIsLoadingBatch, setCurrentProcessingIndex, modelSolution, setBatchFiles]);
+
+    const processSingleOCR = useCallback(async (i: number) => {
+        const freshFiles = useBatchStore.getState().batchFiles;
+        const currentFile = freshFiles[i];
+        if (!currentFile || !currentFile.files?.[0]) return;
+
+        setIsLoadingBatch(true);
+        setCurrentProcessingIndex(i);
+
+        const controller = new AbortController();
+        useBatchStore.getState().registerBatchController(controller);
+        const signal = controller.signal;
+
+        try {
+            // Reset state for this specific file to ocrDone: false, clear results/errors/grade
+            setBatchFiles((prev: BatchFile[]) => {
+                const next = [...prev];
+                next[i] = { 
+                    ...next[i], 
+                    ocrDone: false,
+                    status: 'pending',
+                    result: null,
+                    grade: undefined,
+                    error: null
+                };
+                return next;
+            });
+
+            const mainFile = currentFile.files[0];
+            
+            // 🏮 INDUSTRIAL PRIVACY CHECK (Layer 2)
+            const ocrSource = resolveOCRSource(currentFile);
+            
+            const ocrRes = await runExtractionStrategy(mainFile, {
+                isScan: currentFile.documentType === 'scanned',
+                needsPreview: true,
+                appMode: userData?.appMode,
+                settings,
+                pageRange: currentFile.pageRange,
+                sourceOverride: ocrSource || undefined,
+                isComplex: ocrStrategy === 'handwriting',
+                signal
+            });
+
+            if (signal.aborted) return;
+
+            // 🏗️ Step 2: Unified Mapping & State Update
+            await internalProcessMapping(
+                i, 
+                ocrRes.text, 
+                ocrRes.pageCount || currentFile.pageCount || 1, 
+                2, // Multiplier for OCR
+                { previewDataUrls: ocrRes.previewDataUrls || currentFile.previewDataUrls },
+                signal
+            );
+        } catch (err: any) {
+            if (err.name === 'AbortError' || signal.aborted) {
+                console.log(`OCR of file ${i} aborted by user`);
+                setBatchFiles((prev: BatchFile[]) => {
+                    const next = [...prev];
+                    next[i] = { ...next[i], status: 'pending', error: null };
+                    return next;
+                });
+                return;
+            }
+            const isRateLimit = err.message?.includes('429') || err.message?.toLowerCase().includes('rate limit') || err.message?.includes('überlastet');
+            setBatchFiles((prev: BatchFile[]) => {
+                const next = [...prev];
+                next[i] = { 
+                    ...next[i], 
+                    status: 'error', 
+                    error: isRateLimit 
+                        ? 'KI-Server ausgelastet — bitte ca. 30s warten und erneut starten.' 
+                        : err.message 
+                };
+                return next;
+            });
+        } finally {
+            setIsLoadingBatch(false);
+            setCurrentProcessingIndex(-1);
+            useBatchStore.getState().clearBatchController();
+        }
+    }, [userData, settings, tasksLayout, setUserData, setBatchFiles, setCurrentProcessingIndex, setIsLoadingBatch, ocrStrategy, internalProcessMapping]);
 
     const cleanAndExtractLayout = useCallback(async (solution: string, currentSettings: AppSettings, pageCount: number = 1, isScan: boolean = false) => {
         if (!solution) return null;
         state.setIsLoadingModel(true);
+        const controller = new AbortController();
+        useBatchStore.getState().registerBatchController(controller);
+        const signal = controller.signal;
+
         try {
             const data = await performAIRequest('clean-and-analyze', {
                 modelSolution: solution,
@@ -415,7 +579,7 @@ export const useProcessingPipeline = (
                 pageCount,
                 isScan,
                 requestId: 'model-solution' // Unique scope for model solution
-            }, userData?.appMode, currentSettings);
+            }, userData?.appMode, currentSettings, signal);
 
             if (data && Array.isArray(data.tasks)) {
                 data.tasks = data.tasks.map((task: any) => ({
@@ -427,13 +591,17 @@ export const useProcessingPipeline = (
 
             return data;
         } catch (err: any) {
+            if (err.name === 'AbortError' || signal.aborted) {
+                console.log("Layout extraction aborted by user");
+                return null;
+            }
             console.error("Layout extraction error:", err);
             throw err;
         } finally {
             state.setIsLoadingModel(false);
+            useBatchStore.getState().clearBatchController();
         }
-        return null;
     }, [userData?.appMode, state]);
 
-    return { startExtraction, handleExtractOCR, processBatch, processSingleFile, cleanAndExtractLayout };
+    return { startExtraction, handleExtractOCR, processBatch, processSingleFile, processSingleOCR, cleanAndExtractLayout };
 };

@@ -86,6 +86,10 @@ Ein Kernpfeiler der Koreki-Pädagogik ist die Trennung der Sampling-Strategien b
 Bei der Texterkennung (Vision) und Layout-Analyse (Mapping) wird eine **Temperature von 0.0** verwendet.
 *   **Rational:** In dieser Phase darf kein pädagogischer Interpretationsspielraum existieren. Die KI fungiert als rein physischer Sensor. Jede Form von Kreativität wird hier als Halluzination gewertet.
 
+> [!NOTE]
+> **Ausnahme für Lokale Ollama-Modelle (Inferenz-Stabilität):** 
+> Bei der lokalen Ausführung über Ollama ( z. B. mit `gemma4` oder `qwen`) wird bei `clean-and-map` und `clean-and-analyze` eine höhere Mindesttemperatur verwendet (Gemma/MoE: `0.5`, Qwen: `0.3`, Sonstige: `0.2`), da extrem niedrige Temperaturen bei lokalen Modellen im JSON-Modus zu Endlosschleifen oder Inferenz-Abstürzen führen können.
+
 ### Phase 2: Die "Pädagogische Wärme" (Grading-Kulanz)
 Bei der inhaltlichen Bewertung (Correction) wird eine **Temperature von 0.7** verwendet.
 *   **Rational:** Nur hier ist "Fuzzy-Logic" erwünscht, um semantische Ähnlichkeiten zu erkennen (z.B. "höhere Geschwindigkeit" vs. "Durchsatz"). Ohne diese Wärme würde die KI zu einer pedantischen Wort-Suchmaschine degradieren.

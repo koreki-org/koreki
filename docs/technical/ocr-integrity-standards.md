@@ -3,7 +3,7 @@ title: "Industrial OCR Integrity Standards"
 description: "Architektur und Protokolle zur Sicherstellung der 100%igen Transkriptions-Treue bei pädagogischen Scans."
 author: "@principal_architect"
 date: "2026-04-14"
-last_updated: "2026-04-16"
+last_updated: "2026-06-10"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -144,6 +144,13 @@ messages = [
 **Problem:** Die Mistral OCR API (`/v1/ocr`) ist ein rein deterministischer Extraktor und akzeptiert keine generativen Parameter (`temperature`, `top_p`). Das Senden dieser Parameter führt zu einem 422 Error.
 
 **Lösung:** Parameter werden nur an den Chat-Endpunkt (`/v1/chat/completions`) gesendet. Die OCR-Route ist parameter-frei.
+
+### Limitation 4: Circled Digit OCR Misreadings (Eingekreiste Aufgabennummern)
+**Problem:** Handschriftlich eingekreiste Ziffern oder Buchstaben (z. B. eine eingekreiste "2" (②)) werden von Vision-Modellen häufig als falsche Unicode-Sonderzeichen (wie `③` oder `④`) transkribiert. Das nachgelagerte Mapping ordnet diese fälschlicherweise den falschen Aufgaben zu.
+
+**Root Cause:** Unicode-Kreiszeichen sind im Trainingsdatensatz der Vision-Modelle unterrepräsentiert und visuell schwer von anderen Kreiszahlen zu unterscheiden, wenn der Kreis die Ziffer schneidet.
+
+**Lösung:** Im Vision-System-Prompt wird explizit verboten, Unicode-Kreissymbole zu verwenden. Stattdessen wird erzwungen, eingekreiste Zeichen als Standard-Zeichen mit Klammer zu transkribieren (z. B. `2)` statt `②`). Da der Mapper normale Nummerierungen wie `2)` bereits nativ verarbeitet, wird die Zuordnungszuverlässigkeit maximiert.
 
 ---
 

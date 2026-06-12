@@ -61,7 +61,7 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
             </div>
 
             {showScan ? (
-                <div className="flex-1 border border-border rounded-2xl bg-muted/30 overflow-hidden relative shadow-inner h-full min-h-[500px] transition-all duration-300">
+                <div className="flex-1 border border-border rounded-2xl bg-muted/30 overflow-hidden relative shadow-inner h-[80vh] md:h-[600px] transition-all duration-300">
                     <div className="w-full h-full overflow-auto custom-scrollbar bg-background/50 flex flex-col items-center">
                         {item.isRedacted && item.redactedDataUrls && item.redactedDataUrls.length > 0 ? (
                             item.redactedDataUrls.map((url, pIdx) => (
@@ -77,7 +77,7 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
                     </div>
                 </div>
             ) : (
-                <div className="flex-1 space-y-6 max-h-[80vh] md:max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="flex-1 space-y-6 h-[80vh] md:h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                     {(activeGroupName && groupedTasks[activeGroupName] ? groupedTasks[activeGroupName] : (item.result?.tasks || [])).map((task) => {
                         const sIdx = tasksLayout.findIndex(t => t.name === task.name);
                         let sectionText = '';

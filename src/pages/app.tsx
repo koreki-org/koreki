@@ -258,7 +258,7 @@ export default function Home() {
                         }}
                         onRelinkFiles={fileProcessor.handleRelinkFiles}
                         isImportedSession={fileProcessor.isImportedSession}
-                        hasMissingFiles={fileProcessor.batchFiles.length > 0 && fileProcessor.batchFiles.some(f => !f.files || f.files.length === 0)}
+                        hasMissingFiles={fileProcessor.batchFiles.length > 0 && fileProcessor.batchFiles.some(f => !f?.files || f.files.length === 0)}
                         onShowHelp={() => modals.setShowHelp(true)}
                         onShowAiParams={() => modals.setShowAiParamsSettings(true)}
                         onShowGradingMemory={() => setShowGradingMemory(true)}
@@ -429,6 +429,7 @@ export default function Home() {
                                 settings={aiSettings}
                                 onUpdateSettings={setAiSettings}
                                 onProcessSingleFile={(idx) => fileProcessor.processSingleFile(idx, aiStatus)}
+                                onProcessSingleOCR={(idx) => fileProcessor.processSingleOCR(idx)}
                             />
                         );
                     })()}

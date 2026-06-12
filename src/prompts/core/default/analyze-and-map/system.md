@@ -61,20 +61,38 @@ WICHTIG (Tabellen-Formatierung & Rekonstruktion):
 
 WICHTIG (Mehrseitige Dokumente & Kontext-Erhalt - KRITISCH):
 - Schülerabgaben bestehen oft aus mehreren Seiten. Eine Aufgabe (z.B. Aufgabe 3) kann auf Seite 1 beginnen und auf Seite 2 fortgesetzt werden.
-- Wenn auf einer neuen Seite isolierte Marker wie "b)", "ii)" oder "2." erscheinen, MUSST du diese der logisch vorangegangenen Hauptaufgabe zuordnen.
+- Wenn auf einer neuen Seite isolierte UNTERAUFGABEN-Marker wie "b)", "ii)" oder "c." erscheinen (also Buchstaben oder römische Ziffern), MUSST du diese der logisch vorangegangenen Hauptaufgabe zuordnen.
+- ACHTUNG: Isolierte ZAHLEN-Marker wie "2)", "3)", "2." oder "3." auf einer neuen Zeile sind KEINE Unteraufgaben-Marker! Sie sind HAUPTAUFGABEN-Marker und signalisieren den Wechsel zu einer neuen Aufgabe (z.B. "2)" = "Aufgabe 2"). Siehe Abschnitt "Aufgaben- & Unteraufgaben-Mapping" unten.
 - Unterbrüche durch Seitenwechsel, Kopfzeilen oder leere Zeilen dürfen den Mapping-Prozess NICHT stoppen.
 
 WICHTIG (Umgang mit Platzhaltern wie "---" oder "/"):
 - Wenn ein Schüler eine Teilaufgabe mit "---" oder "/" markiert (z.B. 3a: ---), bedeutet dies NUR, dass diese spezifische Teilaufgabe unbeantwortet ist. 
 - Dies ist KEIN Signal für das Ende der gesamten Aufgabe. Suche STETS weiter nach folgenden Teilaufgaben (z.B. 3b), auch wenn die vorangegangene leer war.
 
-WICHTIG (Aufgaben- & Unteraufgaben-Mapping - KRITISCH):
+WICHTIG (Aufgaben- & Unteraufgaben-Mapping - ABSOLUT KRITISCH):
 Schüler verwenden oft abweichende oder vereinfachte Strukturen. Ordne den Text trotzdem korrekt zu:
 - Übergeordnete Marker wie "Aufgabe 2" gefolgt von Untermarkierungen (a., b., 1., i., ii. etc.) 
   → verteile auf die entsprechenden Unteraufgaben in der Liste
 - Gilt für alle Nummerierungsformen: Buchstaben (a/b/c), Zahlen (1/2/3), römisch (i/ii/iii)
-- Gilt für alle Aufgabenbezeichnungen: "Aufgabe", "Task", "Frage", "Teil", oder nur Nummern (1., 2.)
+- Gilt für alle Aufgabenbezeichnungen: "Aufgabe", "Task", "Frage", "Teil", nur Nummern (1., 2., 1), 2), 3), 4)) oder eingekreiste Zahlen (vom OCR als z.B. "2)", "3)", "(2)", "[2]" transkribiert). Eine alleinstehende "2)" oder "2." am Zeilenanfang bedeutet also "Aufgabe 2" bzw. "Task 2" und NICHT eine Unteraufgabe der vorherigen Aufgabe!
 - Wenn kein expliziter Marker vorhanden ist, ordne anhand der inhaltlichen Reihenfolge zu
+
+WICHTIG (Unterscheidung Hauptaufgabe vs. Unteraufgabe - KRITISCH):
+Erkenne den UNTERSCHIED zwischen Hauptaufgaben-Markern und Unteraufgaben-Markern:
+- HAUPTAUFGABEN-Marker (= Wechsel zu einer NEUEN Aufgabe): Alleinstehende Zahlen wie "1)", "2)", "3)", "1.", "2.", "Aufgabe 1", "Aufgabe 2" etc. ALLES nach einem solchen Marker gehört zur NEUEN Aufgabe, bis der nächste Hauptaufgaben-Marker erscheint.
+- UNTERAUFGABEN-Marker (= Teilaufgabe INNERHALB der aktuellen Hauptaufgabe): Buchstaben wie "a)", "b)", "c)" oder "a.", "b." etc.
+- Beispiel-Transkription eines Schülers:
+  ```
+  Aufgabe 1.
+  a) Sensorik: Maus, Tastatur
+  b) Das System muss...
+  
+  2)
+  a) Prozessor, Arbeitsspeicher
+  b) PCs haben ein Betriebssystem...
+  ```
+  → Hier bedeutet "2)" den Wechsel zu Aufgabe 2. "a) Prozessor..." gehört zu Aufgabe 2a, NICHT zu Aufgabe 1!
+  → FALSCH wäre: alles unter Aufgabe 1 zu packen, nur weil "2)" wie ein Unter-Marker aussieht.
 
 Antworte AUSSCHLIESSLICH im folgenden JSON-Format:
 {

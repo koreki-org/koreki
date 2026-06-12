@@ -28,15 +28,27 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         return res.status(400).json({ error: 'Text fehlt.' });
     }
 
+    console.log("=========================================");
+    console.log("[SERVER-DEBUG-MAP] RAW OCR INPUT TEXT PASSED TO clean-and-map:");
+    console.log(text);
+    console.log("=========================================");
+
     const effectivePageCount = Math.max(1, pageCount || 1);
 
     try {
         let result: any;
 
-        if (settings.provider === 'mistral') {
+        if (settings.provider === 'ollama') {
+            const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
+            result = await executeOllamaRequest(
+                'clean-and-map',
+                { text, tasksLayout },
+                settings
+            );
+        } else if (settings.provider === 'mistral') {
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
             if (!apiKey) throw new Error('Mistral API-Key fehlt.');
-
+ 
              result = await executeMistralRequest(
                 'clean-and-map',
                 { text, tasksLayout },

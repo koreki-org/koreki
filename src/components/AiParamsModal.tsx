@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, RefreshCcw } from 'lucide-react';
 import { AppSettings } from '../types';
 import { Button } from './ui/Button';
+import { downloadFile } from '@/lib/file-utils';
 
 // Sub-Components
 import { AiProfileSidebar, AiProfileEditor } from './settings/AiProfileModules';
@@ -67,15 +68,16 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
         handleApplyToSession
     } = useAiProfiles(settings, onSave, onClose, settings.activeAiProfileId || 'system-standard');
 
-    const handleExportProfile = (p: any, e: React.MouseEvent) => {
+    const handleExportProfile = async (p: any, e: React.MouseEvent) => {
         e.stopPropagation();
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(p, null, 2));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href", dataStr);
-        downloadAnchorNode.setAttribute("download", `ai-profile-${p.name.toLowerCase().replace(/\s+/g, '-')}.json`);
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
+        const jsonContent = JSON.stringify(p, null, 2);
+        const filename = `ai-profile-${p.name.toLowerCase().replace(/\s+/g, '-')}.json`;
+        try {
+            await downloadFile(jsonContent, filename, 'application/json;charset=utf-8');
+        } catch (error) {
+            console.error('Fehler beim Exportieren des KI-Profils:', error);
+            alert('Export fehlgeschlagen.');
+        }
     };
 
     const handleImportProfile = (p: any) => {

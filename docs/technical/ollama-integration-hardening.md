@@ -1,9 +1,9 @@
 ---
-title: "Ollama Desktop Integration & SSoT Hardening (V13)"
+title: "Ollama Desktop Integration & SSoT Hardening (V14)"
 description: "Dokumentation der lokalen KI-Architektur, der VRE Parameter-Steuerung via Rust-Bridge und der industriellen Härtung."
 author: "@principal_architect"
 date: "2026-04-12"
-last_updated: "2026-04-16"
+last_updated: "2026-06-12"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -82,6 +82,28 @@ In Browser-basierten Umgebungen (wie dem selbstgehosteten Community-Modus) verhi
 *   **Cookie-gestützte Whitelist:** Sobald ein Nutzer eine lokale IP-Adresse für Ollama oder OpenAI im Einstellungs-Modal konfiguriert, wird diese in Browser-Cookies (`koreki_ollama_url` / `koreki_openai_url`) hinterlegt.
 *   **Dynamische Middleware:** Eine Next.js-Middleware (`src/middleware.ts`) fängt Page-Requests ab, liest diese Cookies aus und fügt **exakt und ausschließlich die konfigurierten Ursprungsdomänen** (Origins) in die `connect-src`-Directive der CSP ein.
 *   **Sicherheitsvorteil:** Dies verhindert den Einsatz von unsicheren globalen Wildcards (`*`) in der CSP für Produktivumgebungen und schützt den Browser vor unerwünschten externen Verbindungen.
+
+### G. Serverseitige Inferenz in der Web-Community-Edition
+* **Web-Community (STANDARD):** Um in typischen Produktivumgebungen CORS/CSP-Konfigurationen auf Client-Arbeitsplätzen zu erleichtern, greift das System bei ausgewähltem Ollama-Provider serverseitig über die Next.js-API-Routen auf Ollama zu.
+* **Browser-Entlastung:** Große multimodale Vision-Payloads (OCR-Scans) werden vom Next.js-Server verarbeitet und direkt an die interne Ollama-Instanz gestreamt.
+* **Desktop (PURE):** In der Desktop-Applikation (Tauri) läuft die Inferenz weiterhin komplett clientseitig unter Verwendung des lokalen Rust-Proxys.
+
+### H. Native Deaktivierung der Reasoning-Phase (Qwen / DeepSeek-R1) 🚀
+Mit dem Einzug von Reasoning-Modellen (wie Qwen2.5-Instruct mit Denkphase oder DeepSeek-R1) auf lokalen Servern kommt es bei Bilderkennungs-Tasks (OCR) oft zu immensen Latenzzeiten und Timeouts. Da die Inferenz bei komplexen handschriftlichen Bildern versucht, einen ausführlichen Denkprozess (`<thought>`) zu generieren, läuft die Anfrage häufig in den 5-Minuten-Gateway-Timeout des Servers und liefert leere Antworten zurück.
+
+*   **API-Konstruktion:** Zur Lösung dieses Problems wurde in der Ollama API-Anfrage ([ollama-logic.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/lib/ai/ollama-logic.ts)) der native, top-level Parameter `think` integriert:
+    ```json
+    {
+      "model": "qwen3.6:35b",
+      "messages": [...],
+      "stream": true,
+      "think": false,
+      "options": { ... }
+    }
+    ```
+*   **Deaktivierung bei OCR:** Für alle Bildanalysen und Textextraktionen (`action === 'vision'`) wird `think: false` fest erzwungen. Dies schaltet die Reasoning-Phase des Modells auf Serverebene komplett ab.
+*   **Benutzersteuerung für Textkorrekturen:** Bei textbasierten Aktionen (z. B. `correction`) wird der `think`-Parameter dynamisch mit dem Schalter `"Denkprozess aktivieren"` (`settings.enableThinking`) synchronisiert.
+*   **Performance-Gewinn:** Durch die Deaktivierung des Reasoning bei Vision-Tasks sank die Erkennungszeit von über 5 Minuten (mit fatalen Timeouts) auf **unter 10 Sekunden pro Seite** bei identischer Erkennungsqualität.
 
 ---
 

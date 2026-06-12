@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { FloatingActions } from '@/components/ui/FloatingActions';
 import { cn } from '@/lib/utils';
+import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
 
 interface SidebarProps {
     profiles: any[];
@@ -416,8 +417,17 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
 
                             {/* Slider: Temperature */}
                             <div className="space-y-1.5">
-                                <div className="flex justify-between items-baseline">
-                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Temperatur (Kreativität)</label>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-1">
+                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Temperatur (Kreativität)</label>
+                                        <KorekiTooltip 
+                                            title="Temperatur" 
+                                            content="Steuert die Kreativität des Modells. 0.0 ist maximal deterministisch (präzise). Höhere Werte erlauben kreativeres und abwechslungsreicheres Feedback."
+                                            buttonClassName="h-6 w-6"
+                                            iconSize={14}
+                                            align="left"
+                                        />
+                                    </div>
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{temperature.toFixed(1)}</span>
                                 </div>
                                 <input
@@ -433,8 +443,17 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
 
                             {/* Slider: Top P */}
                             <div className="space-y-1.5">
-                                <div className="flex justify-between items-baseline">
-                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Top P (Nucleus Sampling)</label>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-1">
+                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Top P (Nucleus Sampling)</label>
+                                        <KorekiTooltip 
+                                            title="Top P" 
+                                            content="Eingrenzung des Wortschatzes. 0.95 bedeutet, dass nur die obersten 95% der wahrscheinlichsten Wörter berücksichtigt werden, um Ausreißer zu vermeiden."
+                                            buttonClassName="h-6 w-6"
+                                            iconSize={14}
+                                            align="left"
+                                        />
+                                    </div>
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{topP.toFixed(2)}</span>
                                 </div>
                                 <input
@@ -450,12 +469,21 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
 
                             {/* Slider: Max Tokens */}
                             <div className="space-y-1.5">
-                                <div className="flex justify-between items-baseline">
-                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Max Tokens</label>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-1">
+                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Max Tokens (num_predict)</label>
+                                        <KorekiTooltip 
+                                            title="Max Tokens" 
+                                            content="Die absolute Obergrenze für die Länge der KI-Generierung. Verhindert unendliche Textschleifen. System-Aktionen (z. B. Mapping) werden im Backend automatisch auf 8.192 gedeckelt, um Kontextüberläufe zu verhindern."
+                                            buttonClassName="h-6 w-6"
+                                            iconSize={14}
+                                            align="left"
+                                        />
+                                    </div>
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{maxTokens.toLocaleString()}</span>
                                 </div>
                                 <input
-                                    type="range" min="2000" max="32768" step="1000" value={maxTokens}
+                                    type="range" min="2048" max="32768" step="1024" value={maxTokens}
                                     onChange={(e) => setMaxTokens(parseInt(e.target.value))}
                                     className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
                                 />
@@ -467,8 +495,17 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
 
                             {/* Slider: Presence Penalty */}
                             <div className="space-y-1.5">
-                                <div className="flex justify-between items-baseline">
-                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Presence Penalty</label>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-1">
+                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Presence Penalty</label>
+                                        <KorekiTooltip 
+                                            title="Presence Penalty" 
+                                            content="Bestraft die wiederholte Verwendung gleicher Wörter. Ein Wert von 0.0 ist empfohlen für mathematische Aufgaben und präzise Tabellen-Mappings, um Auslassungen von Aufgabenbezeichnern zu vermeiden."
+                                            buttonClassName="h-6 w-6"
+                                            iconSize={14}
+                                            align="left"
+                                        />
+                                    </div>
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{presencePenalty.toFixed(1)}</span>
                                 </div>
                                 <input
@@ -486,8 +523,17 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                         <>
                             {/* Slider: Vision Temperature */}
                             <div className="space-y-1.5">
-                                <div className="flex justify-between items-baseline">
-                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Vision Temperatur</label>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-1">
+                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Vision Temperatur</label>
+                                        <KorekiTooltip 
+                                            title="Vision Temperatur" 
+                                            content="Steuert die Temperatur speziell für die Handschriften-Erkennung (OCR). Werte nahe 0.4 werden erzwungen, um lokale Schleifen bei unklaren Schriftzeichen zu verhindern."
+                                            buttonClassName="h-6 w-6"
+                                            iconSize={14}
+                                            align="left"
+                                        />
+                                    </div>
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{visionTemperature.toFixed(1)}</span>
                                 </div>
                                 <input
@@ -503,8 +549,17 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
 
                             {/* Slider: Vision Top P */}
                             <div className="space-y-1.5">
-                                <div className="flex justify-between items-baseline">
-                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Vision Top P</label>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-1">
+                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Vision Top P</label>
+                                        <KorekiTooltip 
+                                            title="Vision Top P" 
+                                            content="Begrenzung des Wortschatzes bei der OCR. Hilft dem Vision-Modell, sich auf wahrscheinliche Zeichenkombinationen zu fokussieren."
+                                            buttonClassName="h-6 w-6"
+                                            iconSize={14}
+                                            align="left"
+                                        />
+                                    </div>
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{visionTopP.toFixed(2)}</span>
                                 </div>
                                 <input
@@ -520,12 +575,21 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
 
                             {/* Slider: Vision Max Tokens */}
                             <div className="space-y-1.5">
-                                <div className="flex justify-between items-baseline">
-                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Vision Max Tokens</label>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-1">
+                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Vision Max Tokens (num_predict)</label>
+                                        <KorekiTooltip 
+                                            title="Vision Max Tokens" 
+                                            content="Die maximale Token-Länge für die OCR-Erkennung pro Seite. Standardmäßig auf 16.000 begrenzt."
+                                            buttonClassName="h-6 w-6"
+                                            iconSize={14}
+                                            align="left"
+                                        />
+                                    </div>
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{visionMaxTokens.toLocaleString()}</span>
                                 </div>
                                 <input
-                                    type="range" min="1000" max="32768" step="500" value={visionMaxTokens}
+                                    type="range" min="1024" max="32768" step="1024" value={visionMaxTokens}
                                     onChange={(e) => setVisionMaxTokens(parseInt(e.target.value))}
                                     className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
                                 />
@@ -537,8 +601,17 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
 
                             {/* Slider: Vision Presence Penalty */}
                             <div className="space-y-1.5">
-                                <div className="flex justify-between items-baseline">
-                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Vision Presence Penalty</label>
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-1">
+                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Vision Presence Penalty</label>
+                                        <KorekiTooltip 
+                                            title="Vision Presence Penalty" 
+                                            content="Bestrafung wiederholter Wörter beim OCR-Durchlauf. Empfohlener Standard ist 0.0."
+                                            buttonClassName="h-6 w-6"
+                                            iconSize={14}
+                                            align="left"
+                                        />
+                                    </div>
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{visionPresencePenalty.toFixed(1)}</span>
                                 </div>
                                 <input
@@ -557,10 +630,19 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                     {/* Kontext-Größe (num_ctx) - Desktop / Local Inference only */}
                     {provider === 'ollama' && (
                         <div className="pt-4 border-t border-slate-100 space-y-3">
-                            <div className="flex justify-between items-baseline">
-                                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                                    Kontext-Größe (num_ctx)
-                                </label>
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-1">
+                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                                        Kontext-Größe (num_ctx)
+                                    </label>
+                                    <KorekiTooltip 
+                                        title="Kontext-Größe (num_ctx)" 
+                                        content="Das Gesamtfenster (Prompt + Antwort) des Modells. Im automatischen Modus skaliert das System die Größe dynamisch passend zur OCR-Textlänge. num_predict (die maximale Generierung) wird im Backend immer automatisch auf das verbleibende Kontextfenster gedeckelt, damit die Antwort nicht unvollständig abgeschnitten wird."
+                                        buttonClassName="h-6 w-6"
+                                        iconSize={14}
+                                        align="left"
+                                    />
+                                </div>
                                 <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">
                                     {!ollamaNumCtx || ollamaNumCtx === 0 ? 'Automatisch' : `${ollamaNumCtx.toLocaleString()}`}
                                 </span>

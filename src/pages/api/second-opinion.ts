@@ -35,8 +35,11 @@ const secondOpinionSchema = z.object({
         openaiUrl: z.string().optional(),
         openaiKey: z.string().optional(),
         openaiModel: z.string().optional(),
-        model: z.string().optional()
-    })
+        model: z.string().optional(),
+        ollamaUrl: z.string().optional(),
+        ollamaModel: z.string().optional(),
+        ollamaNumCtx: z.number().optional()
+    }).passthrough()
 });
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {

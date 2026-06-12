@@ -35,6 +35,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const { claims } = req.user;
         const logtoId = claims.sub!; // sub is guaranteed if authenticated
 
+
+
         // --- COMPLIANCE EARLY GATEKEEPER ---
         await resolveActiveWorkspace(logtoId);
 
@@ -134,12 +136,42 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             };
         };
 
-        // Route to OpenAI (Mittwald Qwen3.6) if settings say so, OR if "Hohe Genauigkeit" (isComplex) is toggled
-        const useOpenAI = settings?.provider === 'openai-compatible' || isComplex;
+        const tryOllama = async (buffers: Buffer[]) => {
+            const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
 
-        const resultData = useOpenAI 
-            ? await tryOpenAI(dataBuffer) 
-            : await tryMistral(dataBuffer);
+            const pageResults = await promisePool(buffers, 1, async (b) => {
+                const result = await executeOllamaRequest(
+                    'vision',
+                    { buffer: b.toString('base64'), mimeType },
+                    settings
+                );
+
+                return {
+                    content: result.text,
+                    promptTokens: 0,
+                    completionTokens: 0
+                };
+            });
+
+            const fullText = pageResults.map(r => r.content).join('\n\n');
+
+            return { 
+                text: fullText, 
+                inputTokens: 0, 
+                outputTokens: 0 
+            };
+        };
+
+        // Route to selected AI provider
+        let resultData;
+        if (settings?.provider === 'ollama') {
+            resultData = await tryOllama(dataBuffer);
+        } else {
+            const useOpenAI = settings?.provider === 'openai-compatible' || isComplex;
+            resultData = useOpenAI 
+                ? await tryOpenAI(dataBuffer) 
+                : await tryMistral(dataBuffer);
+        }
         
         // --- ATOMIC BILLING & TRACKING ---
         await performBillingAction({

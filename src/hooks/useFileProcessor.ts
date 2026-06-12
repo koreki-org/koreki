@@ -41,7 +41,7 @@ export const useFileProcessor = (
         setUserData,
         profileName
     );
-    const { startExtraction, handleExtractOCR, processBatch } = pipeline;
+    const { startExtraction, handleExtractOCR, processBatch, processSingleOCR } = pipeline;
 
     // 3. UI Actions
     const actions = useBatchActions(
@@ -148,6 +148,7 @@ export const useFileProcessor = (
         ...actions,
         ...pipeline,
         processSingleFile: pipeline.processSingleFile,
+        processSingleOCR: pipeline.processSingleOCR,
         handlePDFTypeSelect,
         handleModelUpload,
         executeSplit,

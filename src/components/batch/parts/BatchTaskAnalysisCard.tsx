@@ -442,7 +442,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
         : null;
 
     return (
-        <div className={cn("flex flex-col gap-4 max-h-[80vh] md:max-h-[600px] animate-in slide-in-from-right-4 duration-500 flex-1", 
+        <div className={cn("flex flex-col gap-4 h-[80vh] md:h-[600px] animate-in slide-in-from-right-4 duration-500 flex-1", 
             mobileViewMode === 'text' ? "hidden md:flex" : "flex", "md:flex")}>
             <div className="flex items-center justify-between gap-2 mb-2 w-full shrink-0">
                 <div className="flex items-center gap-2">

@@ -62,16 +62,42 @@ export const useAiProfiles = (
     // Active tuning slider properties
     const [temperature, setTemperature] = useState(settings.temperature ?? 0.2);
     const [topP, setTopP] = useState(settings.topP ?? 0.8);
-    const [maxTokens, setMaxTokens] = useState(settings.maxTokens ?? 32768);
+    const [maxTokens, setMaxTokensState] = useState(settings.maxTokens ?? 32768);
     const [presencePenalty, setPresencePenalty] = useState(settings.presencePenalty ?? 0.0);
     const [enableThinking, setEnableThinking] = useState(settings.enableThinking ?? true);
 
     const [visionTemperature, setVisionTemperature] = useState(settings.visionTemperature ?? 0.0);
     const [visionTopP, setVisionTopP] = useState(settings.visionTopP ?? 0.8);
-    const [visionMaxTokens, setVisionMaxTokens] = useState(settings.visionMaxTokens ?? 16000);
+    const [visionMaxTokens, setVisionMaxTokensState] = useState(settings.visionMaxTokens ?? 16000);
     const [visionPresencePenalty, setVisionPresencePenalty] = useState(settings.visionPresencePenalty ?? 0.0);
     
-    const [ollamaNumCtx, setOllamaNumCtx] = useState(settings.ollamaNumCtx ?? 0);
+    const [ollamaNumCtx, setOllamaNumCtxState] = useState(settings.ollamaNumCtx ?? 0);
+
+    const setMaxTokens = (val: number) => {
+        setMaxTokensState(val);
+        if (ollamaNumCtx > 0 && ollamaNumCtx < val + 4000) {
+            setOllamaNumCtxState(val + 4000);
+        }
+    };
+
+    const setVisionMaxTokens = (val: number) => {
+        setVisionMaxTokensState(val);
+        if (ollamaNumCtx > 0 && ollamaNumCtx < val + 4000) {
+            setOllamaNumCtxState(val + 4000);
+        }
+    };
+
+    const setOllamaNumCtx = (val: number) => {
+        setOllamaNumCtxState(val);
+        if (val > 0) {
+            if (val < maxTokens + 4000) {
+                setMaxTokensState(Math.max(2000, val - 4000));
+            }
+            if (val < visionMaxTokens + 4000) {
+                setVisionMaxTokensState(Math.max(1000, val - 4000));
+            }
+        }
+    };
 
     const selectedProfileData = profiles.find(p => p.name === selectedProfile);
     const isSystemSelected = selectedProfile === 'Standard' || selectedProfileData?.isSystem;
@@ -138,14 +164,14 @@ export const useAiProfiles = (
                 setSelectedProfile(found.name);
                 setTemperature(found.temperature);
                 setTopP(found.topP);
-                setMaxTokens(found.maxTokens);
+                setMaxTokensState(found.maxTokens);
                 setPresencePenalty(found.presencePenalty);
                 setEnableThinking(found.enableThinking);
                 setVisionTemperature(found.visionTemperature);
                 setVisionTopP(found.visionTopP);
-                setVisionMaxTokens(found.visionMaxTokens);
+                setVisionMaxTokensState(found.visionMaxTokens);
                 setVisionPresencePenalty(found.visionPresencePenalty);
-                setOllamaNumCtx(found.ollamaNumCtx ?? 0);
+                setOllamaNumCtxState(found.ollamaNumCtx ?? 0);
             }
             hasHydratedRef.current = true;
         }
@@ -157,15 +183,15 @@ export const useAiProfiles = (
         
         setTemperature(profile.temperature);
         setTopP(profile.topP);
-        setMaxTokens(profile.maxTokens);
+        setMaxTokensState(profile.maxTokens);
         setPresencePenalty(profile.presencePenalty);
         setEnableThinking(profile.enableThinking);
 
         setVisionTemperature(profile.visionTemperature);
         setVisionTopP(profile.visionTopP);
-        setVisionMaxTokens(profile.visionMaxTokens);
+        setVisionMaxTokensState(profile.visionMaxTokens);
         setVisionPresencePenalty(profile.visionPresencePenalty);
-        setOllamaNumCtx(profile.ollamaNumCtx ?? 0);
+        setOllamaNumCtxState(profile.ollamaNumCtx ?? 0);
         setShowEditorMobile(true);
     };
 
@@ -177,29 +203,29 @@ export const useAiProfiles = (
             setNewProfileName(`Kopie von ${template.name}`);
             setTemperature(template.temperature ?? 0.2);
             setTopP(template.topP ?? 0.8);
-            setMaxTokens(template.maxTokens ?? 32768);
+            setMaxTokensState(template.maxTokens ?? 32768);
             setPresencePenalty(template.presencePenalty ?? 0.0);
             setEnableThinking(template.enableThinking ?? true);
 
             setVisionTemperature(template.visionTemperature ?? 0.0);
             setVisionTopP(template.visionTopP ?? 0.8);
-            setVisionMaxTokens(template.visionMaxTokens ?? 16000);
+            setVisionMaxTokensState(template.visionMaxTokens ?? 16000);
             setVisionPresencePenalty(template.visionPresencePenalty ?? 0.0);
-            setOllamaNumCtx(template.ollamaNumCtx ?? 0);
+            setOllamaNumCtxState(template.ollamaNumCtx ?? 0);
         } else {
             setNewProfileName('');
             // Reset settings to default values for a clean start
             setTemperature(0.2);
             setTopP(0.8);
-            setMaxTokens(32768);
+            setMaxTokensState(32768);
             setPresencePenalty(0.0);
             setEnableThinking(true);
 
             setVisionTemperature(0.0);
             setVisionTopP(0.8);
-            setVisionMaxTokens(16000);
+            setVisionMaxTokensState(16000);
             setVisionPresencePenalty(0.0);
-            setOllamaNumCtx(0);
+            setOllamaNumCtxState(0);
         }
         setShowEditorMobile(true);
     };

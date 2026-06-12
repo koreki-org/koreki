@@ -17,7 +17,8 @@ export async function performOCRRequest(
     settings: AppSettings,
     isScan: boolean = false,
     pageCount?: number,
-    isComplex?: boolean 
+    isComplex?: boolean,
+    signal?: AbortSignal
 ): Promise<string> {
     const buffers = Array.isArray(bufferOrBuffers) ? bufferOrBuffers : [bufferOrBuffers];
 
@@ -39,7 +40,8 @@ export async function performOCRRequest(
                 const data = await executeOllamaRequest(
                     'vision',
                     { buffer: b64, mimeType },
-                    settings
+                    settings,
+                    signal
                 );
                 return data.text;
             } else if (settings?.provider === 'openai-compatible') {
@@ -56,7 +58,8 @@ export async function performOCRRequest(
                         temperature: settings?.visionTemperature,
                         topP: settings?.visionTopP,
                         maxTokens: settings?.visionMaxTokens,
-                        presencePenalty: settings?.visionPresencePenalty
+                        presencePenalty: settings?.visionPresencePenalty,
+                        signal
                     }
                 );
                 return data.text;
@@ -73,7 +76,7 @@ export async function performOCRRequest(
                     finalAction, 
                     { buffer: b64, mimeType }, 
                     mistralKey, 
-                    { isScan, model: settings.model }
+                    { isScan, model: settings.model, signal }
                 );
                 return data.text;
             }
@@ -106,7 +109,8 @@ export async function performOCRRequest(
                 isScan,
                 isComplex: isComplex ?? true, // Default to true (Aggressive/Large Vision) for SaaS legacy compatibility
                 pageCount
-            })
+            }),
+            signal
         });
         const extractData = await res.json();
         if (!res.ok) throw new Error(extractData.error || 'Fehler bei der OCR-Bilderkennung');

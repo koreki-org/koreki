@@ -24,7 +24,10 @@ export const CorrectionSchema = z.object({
         maxTokens: z.number().optional(),
         activeSkillIds: z.array(z.string()).optional(),
         customSkills: z.record(z.string(), z.any()).optional(),
-    }),
+        ollamaUrl: z.string().optional(),
+        ollamaModel: z.string().optional(),
+        ollamaNumCtx: z.number().optional()
+    }).passthrough(),
     tasksLayout: z.any().optional(),
     documentType: z.string().optional(),
     pageCount: z.number().min(1).optional(),

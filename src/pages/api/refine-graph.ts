@@ -43,6 +43,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         const { taskText, currentGraph, userInstruction, discipline, settings } = validation.data;
 
+
+
         // Provider routing
         const useOpenAI = settings?.provider === 'openai-compatible';
         let rawResult: Record<string, unknown>;
@@ -52,7 +54,14 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const topP = 1.0;
         const presencePenalty = 0.0;
 
-        if (!useOpenAI) {
+        if (settings?.provider === 'ollama') {
+            const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
+            rawResult = await executeOllamaRequest(
+                'refine-graph',
+                { taskText, currentGraph, userInstruction, discipline },
+                settings
+            );
+        } else if (!useOpenAI) {
             const apiKey = settings?.mistralKey || process.env.MISTRAL_API_KEY;
             if (!apiKey) throw new Error('Mistral API-Key fehlt.');
 

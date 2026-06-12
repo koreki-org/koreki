@@ -11,19 +11,25 @@ export async function register() {
             const { default: prisma } = await import('./lib/prisma');
 
             // --- PILLAR 6: AUTOMATED DATA RETENTION ---
-            // Trigger once on startup to verify functionality and keep DB lean
-            cleanupLogs(prisma).catch(err => console.error('[INSTRUMENTATION FATAL] Startup Cleanup failed:', err.message));
+            // Verify if DB is reachable before scheduling retention
+            prisma.$connect()
+                .then(() => {
+                    // Trigger once on startup to verify functionality and keep DB lean
+                    cleanupLogs(prisma).catch(err => console.error('[INSTRUMENTATION FATAL] Startup Cleanup failed:', err.message));
 
-            // Schedule: Daily at 3:00 AM
-            cron.schedule('0 3 * * *', async () => {
-                try {
-                    await cleanupLogs(prisma);
-                } catch (err: any) {
-                    console.error('[CRON FATAL] Pillar 6 Cleanup failed:', err.message);
-                }
-            });
-
-            console.log('[INSTRUMENTATION] Security Guard Active: Pillar 6 (Retention) scheduled daily at 03:00.');
+                    // Schedule: Daily at 3:00 AM
+                    cron.schedule('0 3 * * *', async () => {
+                        try {
+                            await cleanupLogs(prisma);
+                        } catch (err: any) {
+                            console.error('[CRON FATAL] Pillar 6 Cleanup failed:', err.message);
+                        }
+                    });
+                    console.log('[INSTRUMENTATION] Security Guard Active: Pillar 6 (Retention) scheduled daily at 03:00.');
+                })
+                .catch(() => {
+                    console.log('[INSTRUMENTATION] Database not available (offline/desktop mode). Skipping automated data retention.');
+                });
         } catch (error: any) {
             console.error('[INSTRUMENTATION ERROR] Failed to initialize security cron:', error.message);
         }

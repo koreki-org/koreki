@@ -76,4 +76,41 @@ describe('Data Integrity Integration (Layer 2)', () => {
         const nextState = updateFn([initialFile]) as BatchFile[];
         expect(nextState[0].fileText).toBe('Neue Fassung');
     });
+
+    it('should import model solution and tasks layout when batchFiles is missing', async () => {
+        const mockSetModelSolution = jest.fn();
+        const mockSetTasksLayout = jest.fn();
+        const mockSetBatchFilesLocal = jest.fn();
+        const localState = {
+            ...state,
+            setBatchFiles: mockSetBatchFilesLocal,
+        };
+
+        const { result } = renderHook(() => useBatchActions(
+            localState,
+            {},
+            { mistralKey: 'test-key' },
+            mockStartExtraction,
+            mockSetModelSolution,
+            mockSetTasksLayout
+        ));
+
+        // Create a mock File containing only model solution and task layout
+        const mockModelData = {
+            version: '2.0',
+            modelSolution: 'This is the model solution content',
+            tasksLayout: [{ name: 'Task 1', maxPoints: 10 }]
+        };
+        const mockFile = {
+            text: jest.fn().mockResolvedValue(JSON.stringify(mockModelData))
+        } as unknown as File;
+
+        await act(async () => {
+            await result.current.handleKorekiImport(mockFile);
+        });
+
+        expect(mockSetModelSolution).toHaveBeenCalledWith('This is the model solution content');
+        expect(mockSetTasksLayout).toHaveBeenCalledWith([{ name: 'Task 1', maxPoints: 10 }]);
+        expect(mockSetBatchFilesLocal).toHaveBeenCalledWith([]);
+    });
 });

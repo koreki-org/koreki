@@ -32,6 +32,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const { claims } = req.user;
         const logtoId = claims.sub;
 
+
+
         // --- COMPLIANCE EARLY GATEKEEPER ---
         await resolveActiveWorkspace(logtoId);
 
@@ -121,7 +123,14 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // In SaaS mode (where we manage centralized billing/scaling), we keep the default behavior of routing isComplex to OpenAI/Qwen.
         const useOpenAI = settings.provider === 'openai-compatible' || (isComplex && !isLocalInstance() && settings.provider !== 'mistral');
 
-        if (!useOpenAI) {
+        if (settings.provider === 'ollama') {
+            const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
+            analysis = await executeOllamaRequest(
+                'correction',
+                { modelSolution, studentText, tasksLayout, expertProfileName, gradingMemory },
+                settings
+            );
+        } else if (!useOpenAI) {
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
             if (!apiKey) throw new Error('Mistral API-Key fehlt.');
 

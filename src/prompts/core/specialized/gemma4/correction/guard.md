@@ -1,1 +1,1 @@
-WICHTIG: Antworte AUSSCHLIESSLICH mit dem JSON-Objekt. Keine Markdown-Zäune (```json).
+WICHTIG: Antworte AUSSCHLIESSLICH mit dem JSON-Objekt. Keine Markdown-Zäune (```json). Kein Text davor oder danach. Keine Erklärungen. Keine Kommentare. Maskiere alle Anführungszeichen innerhalb von JSON-Strings zwingend als \".

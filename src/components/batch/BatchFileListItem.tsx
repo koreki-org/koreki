@@ -42,6 +42,8 @@ interface BatchFileListItemProps {
     handleReviewPointChange: (idx: number, name: string, pts: number) => void;
     handleReviewFeedbackChange: (idx: number, name: string, fb: string) => void;
     onProcessSingleFile?: (idx: number) => void;
+    onProcessSingleOCR?: (idx: number) => void;
+    isOcrBatchFinished?: boolean;
     settings?: AppSettings;
 }
 
@@ -55,7 +57,8 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
     const {
         item, idx, currentProcessingIndex, loading, expandedIdx, onToggleExpand,
         onToggleSelect, onToggleType, onRemoveFile, onSplit, onRedact, 
-        mobileViewMode, onSetMobileViewMode, onProcessSingleFile
+        mobileViewMode, onSetMobileViewMode, onProcessSingleFile,
+        onProcessSingleOCR, isOcrBatchFinished
     } = props;
 
     const { 
@@ -112,7 +115,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                         
                         <BatchItemStatusSummary item={item} isDone={isDone} onToggleType={onToggleType} idx={idx} itemHasWarnings={itemHasWarnings} />
                         
-                        {item.status === 'error' && onProcessSingleFile && !isProcessing && (
+                        {item.status === 'error' && item.ocrDone && onProcessSingleFile && !isProcessing && (
                             <Button 
                                 variant="outline" 
                                 size="sm" 
@@ -121,6 +124,22 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                             >
                                 <RotateCcw size={12} />
                                 Korrektur neu starten
+                            </Button>
+                        )}
+
+                        {item.documentType === 'scanned' && 
+                        (item.status === 'pending' || (item.status === 'error' && !item.ocrDone)) && 
+                        isOcrBatchFinished && 
+                        !isProcessing && 
+                        onProcessSingleOCR && (
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={(e) => { e.stopPropagation(); onProcessSingleOCR(idx); }}
+                                className="h-7 px-3 bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-600 hover:text-white transition-all rounded-full flex items-center gap-2 font-bold text-[10px] uppercase tracking-wider"
+                            >
+                                <RotateCcw size={12} />
+                                OCR neu starten
                             </Button>
                         )}
                     </div>

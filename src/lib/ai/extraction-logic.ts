@@ -24,9 +24,10 @@ export async function runExtractionStrategy(
         pageRange?: [number, number];
         sourceOverride?: { buffers: string[], mimeType: string, isScanned: boolean };
         isComplex?: boolean;
+        signal?: AbortSignal;
     }
 ): Promise<OCRResult> {
-    const { isScan, needsPreview, appMode, settings, pageRange, sourceOverride, isComplex } = options;
+    const { isScan, needsPreview, appMode, settings, pageRange, sourceOverride, isComplex, signal } = options;
 
     // --- CASE 0: Privacy / Source Override ---
     if (sourceOverride) {
@@ -38,7 +39,8 @@ export async function runExtractionStrategy(
             settings, 
             sourceOverride.isScanned,
             sourceOverride.buffers.length,
-            isComplex
+            isComplex,
+            signal
         );
         return { 
             text, 
@@ -90,7 +92,8 @@ export async function runExtractionStrategy(
                 settings, 
                 true, 
                 1,
-                isComplex
+                isComplex,
+                signal
             );
         });
 
@@ -112,7 +115,8 @@ export async function runExtractionStrategy(
         settings, 
         true, 
         1,
-        isComplex
+        isComplex,
+        signal
     );
     return {
         text,

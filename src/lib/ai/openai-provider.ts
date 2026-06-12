@@ -27,6 +27,7 @@ export interface OpenAIRequestOptions {
     gradingMemory?: any[] | null;
     activeSkillIds?: string[];
     customSkills?: Record<string, any>;
+    signal?: AbortSignal;
 }
 
 /**
@@ -127,7 +128,10 @@ export async function executeOpenAIRequest(
         ? (promptObj.options?.topP ?? 0.1)
         : (options.topP ?? promptObj.options?.topP ?? (isThinking ? 0.95 : 0.8));
         
-    const presencePenalty = options.presencePenalty ?? (isThinking ? 1.5 : 1.5); // Both recommend 1.5 for general tasks
+    // presence_penalty: Always respect user-configured value from AI profile.
+    // Default 0.0 matches the UI default in useAiProfiles.ts. The old hardcoded 1.5 caused OCR
+    // to skip repeated tokens (e.g. circled task numbers ②) and was never aligned with the UI.
+    const presencePenalty = options.presencePenalty ?? 0.0;
 
     // 3. API Execution
     const url = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
@@ -152,7 +156,7 @@ export async function executeOpenAIRequest(
         messages,
         temperature: targetTemp,
         top_p: targetTopP,
-        presence_penalty: options.presencePenalty ?? (structuralActions.includes(action) ? 0.0 : presencePenalty),
+        presence_penalty: presencePenalty,
         max_tokens: options.maxTokens ?? (isThinking ? 32768 : defaultLimit),
         response_format: isJsonFormat ? { type: 'json_object' } : undefined
     };
@@ -173,7 +177,7 @@ export async function executeOpenAIRequest(
     if (isDesktopTarget()) {
         try {
             const { invoke } = await import('@tauri-apps/api/core');
-            const res = await invoke<string>('execute_ai_proxy_command', {
+            const invokePromise = invoke<string>('execute_ai_proxy_command', {
                 url,
                 method: 'POST',
                 headers: {
@@ -182,6 +186,23 @@ export async function executeOpenAIRequest(
                 },
                 body: JSON.stringify(body)
             });
+            
+            let res: string;
+            if (options.signal) {
+                if (options.signal.aborted) {
+                    throw new DOMException('The user aborted a request.', 'AbortError');
+                }
+                res = await Promise.race([
+                    invokePromise,
+                    new Promise<string>((_, reject) => {
+                        options.signal!.addEventListener('abort', () => {
+                            reject(new DOMException('The user aborted a request.', 'AbortError'));
+                        });
+                    })
+                ]);
+            } else {
+                res = await invokePromise;
+            }
             
             const data = JSON.parse(res);
             responseContent = data.choices[0].message.content;
@@ -196,7 +217,8 @@ export async function executeOpenAIRequest(
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`
             },
-            body: JSON.stringify(body)
+            body: JSON.stringify(body),
+            signal: options.signal
         });
 
         if (!response.ok) {

@@ -105,15 +105,15 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
 
     return (
         <div className="fixed inset-0 z-[2100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300">
-            <div className="relative w-full max-w-[550px] bg-white rounded-[24px] p-8 shadow-glass border border-border animate-in zoom-in-95 duration-500 overflow-hidden">
-                <div className="flex justify-between items-center mb-6">
+            <div className="relative w-full max-w-[550px] max-h-[90vh] md:max-h-[85vh] bg-white rounded-[24px] p-8 shadow-glass border border-border animate-in zoom-in-95 duration-500 overflow-hidden flex flex-col">
+                <div className="flex justify-between items-center mb-6 shrink-0">
                     <h2 className="text-xl font-bold text-slate-900 tracking-tight">PDF Aufteilen</h2>
                     <Button variant="ghost" size="icon" className="h-auto p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors" onClick={onClose}>
                         <X size={24} />
                     </Button>
                 </div>
 
-                <div className="mb-6">
+                <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin mb-6">
                     <div className="flex justify-between items-start gap-4 mb-4">
                         <p className="text-slate-500 text-sm m-0">
                             Datei: <strong className="text-slate-800">{fileName}</strong> ({totalPageCount} Seiten)
@@ -222,7 +222,7 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                     </label>
                 </div>
 
-                <div className="flex gap-4 mt-8">
+                <div className="flex gap-4 mt-auto pt-4 border-t border-slate-100 shrink-0">
                     <Button variant="outline" onClick={onClose} className="flex-1 font-semibold">
                         Abbrechen
                     </Button>

@@ -17,19 +17,70 @@ import { isDesktopTarget } from '@/lib/env-context';
 export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction';
 
 /**
+ * Helper to normalize Ollama URLs ensuring they have a protocol prefix.
+ */
+export function normalizeOllamaUrl(url: string): string {
+    let clean = url.trim();
+    if (!clean) return 'http://localhost:11434';
+    if (!clean.startsWith('http://') && !clean.startsWith('https://')) {
+        clean = `http://${clean}`;
+    }
+    return clean;
+}
+
+async function sendDebugLog(data: {
+    action: string;
+    model: string;
+    numCtx?: number;
+    temp: number;
+    topP: number;
+    finalMaxTokens: number;
+    systemPrompt?: string;
+    userPrompt: string;
+    response: any;
+}) {
+    try {
+        await fetch('/api/debug-log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    } catch (e) {
+        // Silent catch
+    }
+}
+
+/**
  * Specifically optimized for Gemma 4 E4B (multimodal).
  * In Desktop mode, this bypasses CORS by using a Rust-Backend Proxy.
  */
 export async function executeOllamaRequest(
     action: AIAction,
     payload: any,
-    settings: AppSettings
+    settings: AppSettings,
+    signal?: AbortSignal
 ): Promise<any> {
-    const baseUrl = settings.ollamaUrl || 'http://localhost:11434';
-    const model = (settings.ollamaModel || 'gemma4:latest').trim();
+    if (!settings || !settings.ollamaUrl) {
+        throw new Error('Ollama-Verbindung fehlgeschlagen: Keine Ollama-URL in den Einstellungen konfiguriert.');
+    }
+    if (!settings.ollamaModel) {
+        throw new Error('Ollama-Verbindung fehlgeschlagen: Kein Ollama-Modell in den Einstellungen ausgewählt.');
+    }
+    const baseUrl = normalizeOllamaUrl(settings.ollamaUrl);
+    let model = settings.ollamaModel.trim();
+
+    // Dynamically resolve model name against available local models
+    try {
+        const { models } = await fetchOllamaModels(baseUrl);
+        if (models && models.length > 0) {
+            model = resolveOllamaModel(model, models);
+        }
+    } catch (e) {
+        console.warn("Failed to dynamically resolve Ollama model name:", e);
+    }
 
     const isVision = action === 'vision';
-    const targetMaxTokens = isVision
+    let targetMaxTokens = isVision
         ? (settings.visionMaxTokens ?? 16000)
         : (settings.maxTokens ?? 32768);
 
@@ -83,28 +134,71 @@ export async function executeOllamaRequest(
 
     // 1.5. Dynamic Parameter & Context size Estimation (Industrial Standard)
     const modelLower = model.toLowerCase();
+    const isSystemAction = ['clean-and-analyze', 'clean-and-map', 'variable-extraction', 'generate-graph', 'refine-graph'].includes(action);
 
-    let targetTemp = isVision
-        ? (settings.visionTemperature ?? promptObj.options?.temperature ?? 0.0)
-        : (settings.temperature ?? promptObj.options?.temperature ?? 0.7);
+    if (isSystemAction) {
+        targetMaxTokens = Math.min(targetMaxTokens, 8192);
+    }
 
-    let targetTopP = isVision
-        ? (settings.visionTopP ?? promptObj.options?.topP ?? 1.0)
-        : (settings.topP ?? promptObj.options?.topP ?? 1.0);
+    const isGemmaOrMoE = (modelLower.includes('gemma') || modelLower.includes('26b') || modelLower.includes('a4b') || modelLower.includes('moe'))
+        && !modelLower.includes('31b')
+        && !modelLower.includes('32b')
+        && !modelLower.includes('dense');
+    const isQwen = modelLower.includes('qwen');
 
-    // Enforce minimum temperature of 0.1 for local Ollama to prevent GPU loops
-    if (targetTemp === 0) {
-        targetTemp = 0.1;
+    let targetTemp: number;
+    let targetTopP: number;
+
+    if (isVision) {
+        targetTemp = settings.visionTemperature ?? promptObj.options?.temperature ?? 0.0;
+        targetTopP = settings.visionTopP ?? promptObj.options?.topP ?? 1.0;
+    } else if (isSystemAction) {
+        // Respect user temperature if configured, otherwise apply model-specific defaults:
+        // gemma/moe -> 0.5, qwen -> 0.3, others -> 0.2
+        const defaultTemp = isGemmaOrMoE ? 0.5 : (isQwen ? 0.3 : 0.2);
+        const defaultTopP = 0.9;
+
+        if (action === 'clean-and-map' || action === 'clean-and-analyze') {
+            // clean-and-map and clean-and-analyze must use fixed default values and ignore profile settings completely
+            targetTemp = defaultTemp;
+            targetTopP = defaultTopP;
+        } else {
+            targetTemp = settings.temperature ?? defaultTemp;
+            targetTopP = settings.topP ?? defaultTopP;
+        }
+    } else {
+        // Respect user intelligence settings for correction and second-opinion
+        const defaultTemp = isGemmaOrMoE ? 0.5 : (isQwen ? 0.3 : 0.1);
+        targetTemp = settings.temperature ?? promptObj.options?.temperature ?? defaultTemp;
+        targetTopP = settings.topP ?? promptObj.options?.topP ?? 1.0;
+    }
+
+    // Enforce minimum temperature to prevent local GPU loops
+    if (isVision) {
+        if (targetTemp < 0.4) {
+            targetTemp = 0.4;
+        }
+    } else {
+        if (targetTemp === 0) {
+            targetTemp = 0.1;
+        }
+
+        // Clamp minimum temperature specifically for Gemma / MoE models to prevent loops in JSON mode
+        if (isGemmaOrMoE && targetTemp < 0.5) {
+            targetTemp = 0.5;
+        }
     }
 
     // Dynamic Context size Estimation
+    const promptCharCount = promptObj.user.length + (promptObj.system?.length || 0);
+    const estimatedTextTokens = Math.ceil(promptCharCount / 3.7);
+    const imageCount = images?.length || 0;
+    const imageTokens = imageCount * 8000; // Vision Hardening: 8000 tokens per image
+
     let numCtx: number | undefined = settings.ollamaNumCtx;
     if (!numCtx || numCtx === 0) {
-        const promptCharCount = promptObj.user.length + (promptObj.system?.length || 0);
-        const estimatedTextTokens = Math.ceil(promptCharCount / 3.7);
-        const imageCount = images?.length || 0;
-        const imageTokens = imageCount * 8000; // Vision Hardening: 8000 tokens per image
-        const responseBuffer = settings.enableThinking ? 12000 : 4000;
+        const customLimit = isVision ? (settings.visionMaxTokens ?? 0) : (settings.maxTokens ?? 0);
+        const responseBuffer = Math.max(settings.enableThinking ? 12000 : 4000, customLimit);
         const totalEstimated = estimatedTextTokens + imageTokens + responseBuffer;
 
         if (totalEstimated <= 8192) {
@@ -121,6 +215,10 @@ export async function executeOllamaRequest(
         numCtx = undefined;
     }
 
+    const finalMaxTokens = numCtx 
+        ? Math.min(targetMaxTokens, Math.max(1000, numCtx - estimatedTextTokens - imageTokens)) 
+        : targetMaxTokens;
+
     // 2. Execution Path Separation
     if (isDesktopTarget()) {
         try {
@@ -130,7 +228,7 @@ export async function executeOllamaRequest(
             // we must unify the request structure. Enabled JSON format for all.
             const targetFormat = (action === 'vision' || action === 'second-opinion') ? undefined : 'json';
 
-            const content = await invoke<string>('execute_ollama_command', {
+            const invokePromise = invoke<string>('execute_ollama_command', {
                 url: baseUrl,
                 model,
                 prompt: promptObj.user,
@@ -142,7 +240,42 @@ export async function executeOllamaRequest(
                 numCtx: numCtx, 
                 temperature: targetTemp,
                 topP: targetTopP,
-                numPredict: targetMaxTokens
+                numPredict: finalMaxTokens,
+                think: action === 'vision' ? false : (settings.enableThinking ?? false)
+            });
+
+            let content: string;
+            if (signal) {
+                if (signal.aborted) {
+                    throw new DOMException('The user aborted a request.', 'AbortError');
+                }
+                content = await Promise.race([
+                    invokePromise,
+                    new Promise<string>((_, reject) => {
+                        signal.addEventListener('abort', () => {
+                            reject(new DOMException('The user aborted a request.', 'AbortError'));
+                        });
+                    })
+                ]);
+            } else {
+                content = await invokePromise;
+            }
+
+            console.log(`[OLLAMA-DEBUG-TAURI] Action: ${action}, Model: ${model}, numCtx: ${numCtx}, temp: ${targetTemp}, topP: ${targetTopP}, finalMaxTokens: ${finalMaxTokens}`);
+            console.log(`[OLLAMA-DEBUG-TAURI] Prompt (System):`, promptObj.system);
+            console.log(`[OLLAMA-DEBUG-TAURI] Prompt (User):`, promptObj.user?.substring(0, 500) + (promptObj.user?.length > 500 ? '...' : ''));
+            console.log(`[OLLAMA-DEBUG-TAURI] Response Raw:`, content);
+
+            sendDebugLog({
+                action,
+                model,
+                numCtx,
+                temp: targetTemp,
+                topP: targetTopP,
+                finalMaxTokens,
+                systemPrompt: promptObj.system,
+                userPrompt: promptObj.user,
+                response: content
             });
 
             return processOllamaResponse(content, action, model);
@@ -151,33 +284,138 @@ export async function executeOllamaRequest(
             console.error("Ollama Backend Proxy Error:", error);
             throw new Error(`Ollama Verbindung fehlgeschlagen: ${error}`);
         }
+    }    // --- Native Ollama API Fetch ---
+    const messages: any[] = [];
+    if (promptObj.system) {
+        messages.push({ role: 'system', content: promptObj.system });
+    }
+    if (isVision) {
+        messages.push({
+            role: 'user',
+            content: promptObj.user,
+            images: [payload.buffer]
+        });
+    } else {
+        messages.push({
+            role: 'user',
+            content: promptObj.user
+        });
     }
 
-
-    // --- SaaS FALLBACK (Legacy Fetch, likely blocked by CORS but safe) ---
-    const response = await fetch(`${baseUrl}/v1/chat/completions`, {
+    const response = await fetch(`${baseUrl}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal,
         body: JSON.stringify({
             model,
-            messages: [
-                { role: 'system', content: promptObj.system },
-                { role: 'user', content: promptObj.user }
-            ],
-            response_format: (action === 'vision' || action === 'second-opinion') ? undefined : { type: 'json_object' },
+            messages,
+            stream: true,
+            format: (action === 'vision' || action === 'second-opinion') ? undefined : 'json',
+            think: action === 'vision' ? false : (settings.enableThinking ?? false),
             options: { 
                 num_ctx: numCtx,
                 temperature: targetTemp,
                 top_p: targetTopP,
-                num_predict: targetMaxTokens
-            } // Forward to Ollama options if supported by endpoint variant
+                num_predict: finalMaxTokens,
+                repeat_penalty: isVision ? 1.2 : 1.15,
+                presence_penalty: settings.presencePenalty ?? 0.0
+            }
         })
     });
 
-    if (!response.ok) throw new Error(`Ollama Error: ${response.status}`);
-    const data = await response.json();
-    return processOllamaResponse(data.choices[0].message.content, action, model);
+    if (!response.ok) {
+        const errText = await response.text().catch(() => '');
+        throw new Error(`Ollama Error: ${response.status}${errText ? ` - ${errText}` : ''}`);
+    }
 
+    let fullContent = '';
+    if (response.body) {
+        if (typeof (response.body as any).getReader === 'function') {
+            const reader = (response.body as any).getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+                for (const line of lines) {
+                    const cleanLine = line.trim();
+                    if (!cleanLine) continue;
+                    try {
+                        const parsed = JSON.parse(cleanLine);
+                        if (parsed.message?.content) {
+                            fullContent += parsed.message.content;
+                        }
+                    } catch (e) {
+                        // ignore
+                    }
+                }
+            }
+            if (buffer.trim()) {
+                try {
+                    const parsed = JSON.parse(buffer.trim());
+                    if (parsed.message?.content) {
+                        fullContent += parsed.message.content;
+                    }
+                } catch (e) {}
+            }
+        } else {
+            for await (const chunk of response.body as any) {
+                const chunkStr = chunk.toString();
+                const lines = chunkStr.split('\n');
+                for (const line of lines) {
+                    const cleanLine = line.trim();
+                    if (!cleanLine) continue;
+                    try {
+                        const parsed = JSON.parse(cleanLine);
+                        if (parsed.message?.content) {
+                            fullContent += parsed.message.content;
+                        }
+                    } catch (e) {}
+                }
+            }
+        }
+    }
+
+    console.log(`[OLLAMA-DEBUG-NATIVE] Action: ${action}, Model: ${model}, numCtx: ${numCtx}, temp: ${targetTemp}, topP: ${targetTopP}, finalMaxTokens: ${finalMaxTokens}`);
+    console.log(`[OLLAMA-DEBUG-NATIVE] Prompt (System):`, promptObj.system);
+    console.log(`[OLLAMA-DEBUG-NATIVE] Prompt (User):`, promptObj.user?.substring(0, 500) + (promptObj.user?.length > 500 ? '...' : ''));
+    console.log(`[OLLAMA-DEBUG-NATIVE] Response Raw:`, fullContent);
+
+    sendDebugLog({
+        action,
+        model,
+        numCtx,
+        temp: targetTemp,
+        topP: targetTopP,
+        finalMaxTokens,
+        systemPrompt: promptObj.system,
+        userPrompt: promptObj.user,
+        response: fullContent
+    });
+
+    return processOllamaResponse(fullContent, action, model);
+
+}
+
+function validateOllamaResponse(parsed: any, action: AIAction): any {
+    if ((action === 'clean-and-analyze' || action === 'clean-and-map') && parsed) {
+        if (!parsed.tasks || !Array.isArray(parsed.tasks)) {
+            throw new Error(`Ungültige KI-Struktur: Das "tasks"-Array fehlt oder ist unvollständig.`);
+        }
+        for (let i = 0; i < parsed.tasks.length; i++) {
+            const task = parsed.tasks[i];
+            if (!task || typeof task !== 'object') {
+                throw new Error(`Ungültige KI-Struktur: Aufgabe an Index ${i} ist kein gültiges Objekt.`);
+            }
+            if (!task.name || String(task.name).trim() === '') {
+                throw new Error(`Ungültige KI-Struktur: Aufgabe an Index ${i} besitzt keinen gültigen Namen (Punkte: ${task.maxPoints ?? 'unbekannt'}).`);
+            }
+        }
+    }
+    return parsed;
 }
 
 function processOllamaResponse(content: string | null | undefined, action: AIAction, modelName: string) {
@@ -210,8 +448,11 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
     })();
 
     try {
-        return JSON.parse(standardJson);
+        return validateOllamaResponse(JSON.parse(standardJson), action);
     } catch (e) {
+        if (e instanceof Error && e.message.startsWith('Ungültige KI-Struktur')) {
+            throw e;
+        }
         // Fallback for Thinking/Reasoning blocks or corrupted prefixes
         try {
             const cleanContent = rawJson
@@ -228,8 +469,11 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
                 .replace(/,\s*([\]\}])/g, '$1') // Removes trailing commas before ] or }
                 .trim();
 
-            return JSON.parse(partiallyRepaired);
+            return validateOllamaResponse(JSON.parse(partiallyRepaired), action);
         } catch (e2) {
+            if (e2 instanceof Error && e2.message.startsWith('Ungültige KI-Struktur')) {
+                throw e2;
+            }
             // Fatal Error Diagnostics
             const start = cleaned.slice(0, 100); // Increased visibility
             const end = cleaned.slice(-100);
@@ -244,10 +488,11 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
  * Industrial Ping for Ollama Discovery
  */
 export async function pingOllama(baseUrl: string): Promise<{ success: boolean; isSelfSigned: boolean; version: string }> {
+    const url = normalizeOllamaUrl(baseUrl);
     if (typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__) {
         try {
             const { invoke } = await import('@tauri-apps/api/core');
-            const res = await invoke<{ success: boolean; is_self_signed: boolean; version: string }>('ping_ollama_command', { url: baseUrl });
+            const res = await invoke<{ success: boolean; is_self_signed: boolean; version: string }>('ping_ollama_command', { url });
             return { success: res.success, isSelfSigned: res.is_self_signed, version: res.version };
         } catch (e) {
             return { success: false, isSelfSigned: false, version: '' };
@@ -255,7 +500,10 @@ export async function pingOllama(baseUrl: string): Promise<{ success: boolean; i
     }
 
     try {
-        const res = await fetch(`${baseUrl}/api/tags`, { method: 'GET' });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(`${url}/api/tags`, { method: 'GET', signal: controller.signal });
+        clearTimeout(timeoutId);
         return { success: res.ok, isSelfSigned: false, version: '' };
     } catch (e) {
         return { success: false, isSelfSigned: false, version: '' };
@@ -267,10 +515,11 @@ export async function pingOllama(baseUrl: string): Promise<{ success: boolean; i
  * In Community/SaaS mode, it attempts a direct fetch.
  */
 export async function fetchOllamaModels(baseUrl: string): Promise<{ models: string[]; isSelfSigned: boolean; version: string }> {
+    const url = normalizeOllamaUrl(baseUrl);
     if (typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__) {
         try {
             const { invoke } = await import('@tauri-apps/api/core');
-            const res = await invoke<{ models: string[]; is_self_signed: boolean; version: string }>('get_ollama_models_command', { url: baseUrl });
+            const res = await invoke<{ models: string[]; is_self_signed: boolean; version: string }>('get_ollama_models_command', { url });
             return { models: res.models, isSelfSigned: res.is_self_signed, version: res.version };
         } catch (e) {
             console.error("Desktop Model Fetch Error:", e);
@@ -279,10 +528,13 @@ export async function fetchOllamaModels(baseUrl: string): Promise<{ models: stri
     }
 
     try {
-        const res = await fetch(`${baseUrl}/api/tags`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        const res = await fetch(`${url}/api/tags`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (!res.ok) return { models: [], isSelfSigned: false, version: '' };
         const data = await res.json();
-        const models = data.models.map((m: any) => m.name);
+        const models = Array.isArray(data?.models) ? data.models.map((m: any) => m.name) : [];
         return { models, isSelfSigned: false, version: '' };
     } catch (e) {
         console.error("Community Model Fetch Error:", e);
