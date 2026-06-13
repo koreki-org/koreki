@@ -38,6 +38,24 @@ Das Kernkonzept basiert darauf, dass es keine persistente serverseitige Speicher
 *   **Model Solution & Tasks Layout:** Die vom Lehrer definierten Musterlösungen.
 *   **BatchFiles (Schülerarbeiten):** Das Array aller verarbeiteten Arbeiten inklusive AI-Zensuren.
 
+### Zwischenstand-Sicherungen (Intermediate Exports)
+
+Um den Korrektur-Workflow flexibler zu gestalten, unterstützt Koreki neben dem vollständigen Session-Export auch dedizierte Zwischenstands-Exporte im `.koreki`-Format:
+
+1. **Musterlösung (koreki-ml-*)**
+   - **Namensschema:** `koreki-ml-YYYY-MM-DD_HHMM.koreki`
+   - **Inhalt:** Nur die `modelSolution` und das extrahierte `tasksLayout` (Struktur der Teilaufgaben).
+   - **Zweck:** Ermöglicht es Lehrkräften, eine einmal ausgearbeitete Musterlösung separat zu sichern und in neuen Batches wiederzuverwenden.
+   - **UI-Trigger:** Ein grauer "Exportieren"-Button auf der `ModelSolutionCard` im Upload-Bereich (Desktop & Web).
+
+2. **Schülerlösungen (Zwischenstand nach Bilderkennung, koreki-sl-*)**
+   - **Namensschema:** `koreki-sl-YYYY-MM-DD_HHMM.koreki`
+   - **Inhalt:** Musterlösung, Aufgabenstruktur und Schülertexte (OCR-Ergebnisse der hochgeladenen Dokumente), jedoch ohne finale KI-Bewertungen.
+   - **Zweck:** Sichern des Zustands direkt nach dem Hochladen und Einlesen der Dokumente (OCR), bevor die automatische Korrektur gestartet wird.
+   - **UI-Trigger:** Ein smaragdgrüner "Exportieren"-Button links neben dem "Korrigieren"-Button in der Batch-Verarbeitungskopfzeile.
+
+Beim Import über die zentrale Import-Schnittstelle (`handleKorekiImport` in `useBatchActions.ts`) wird die `.koreki`-Struktur flexibel geparst: Falls kein Schüler-Array (`batchFiles`) vorhanden ist (wie beim ML-Export), lädt das System zuverlässig nur die Musterlösung und das Layout, ohne Fehler zu werfen.
+
 ---
 
 ## 3. Implementierung & Nutzung

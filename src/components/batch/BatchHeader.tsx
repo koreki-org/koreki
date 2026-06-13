@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, PenLine, Brain } from 'lucide-react';
+import { Loader2, PenLine, Brain, Download } from 'lucide-react';
 import { CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { cn } from '@/lib/utils';
@@ -25,6 +25,8 @@ interface BatchHeaderProps {
     hasFinishedFiles?: boolean;
     totalPossibleCredits?: number;
     isPureMode?: boolean;
+    onExportSL?: () => void;
+    hasPendingOcr?: boolean;
 }
 
 export const BatchHeader: React.FC<BatchHeaderProps> = ({
@@ -43,7 +45,9 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
     hasScans = true,
     hasFinishedFiles = false,
     totalPossibleCredits = 0,
-    isPureMode = false
+    isPureMode = false,
+    onExportSL,
+    hasPendingOcr = false
 }) => {
     const lockStrategy = loading || isStrategyLocked;
     const isReCorrectionMode = pendingCount === 0 && hasFinishedFiles;
@@ -144,6 +148,18 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                             >
                                 {loading ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
                                 Bilderkennung ({ocrCreditsRequired} Credits)
+                            </Button>
+                        )}
+                        {onExportSL && !isReCorrectionMode && !hasPendingOcr && (
+                            <Button
+                                variant="outline"
+                                className="border border-emerald-500/10 bg-emerald-500/5 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all rounded-xl w-full sm:w-auto flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider h-10 sm:h-auto py-2 px-4"
+                                onClick={onExportSL}
+                                disabled={loading}
+                                title="Schülerlösung als Zwischenstand exportieren (.koreki)"
+                            >
+                                <Download size={14} />
+                                <span>Exportieren</span>
                             </Button>
                         )}
                         <Button

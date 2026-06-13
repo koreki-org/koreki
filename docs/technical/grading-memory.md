@@ -140,7 +140,7 @@ Um Lehrkräften das Teilen von Erfahrungsschätzen zu ermöglichen, wurde ein Ma
 > **Datenschutz an Schulen (DSGVO/GDPR):** Da Schülerarbeiten verarbeitet werden, gelten höchste Compliance-Ansprüche.
 
 *   **Stilistische Anonymisierung (DSGVO-Härtung):** Da handschriftliche oder individuelle Formulierungen urheberrechtlich oder datenschutzrechtlich problematisch sein können, wird jede Schülerantwort vor dem Speichern mittels KI abstrahiert. Rhetorische Eigenheiten, Anekdoten und persönliche Schreibstile werden entfernt, um jeglichen Bezug zur Person unumkehrbar aufzuheben.
-*   **Personenbezogene Daten (PII):** Erfahrungsschätze enthalten standardmäßig **keine** Klarnamen oder sonstige Schüler-PII. Schülerantworten werden beim Hinzufügen zum Erfahrungsschatz anonymisiert (Referenzierung über IDs oder anonyme Avatare wie `TYPO`, `LUCK` oder `MISS`).
+*   **Personenbezogene Daten (PII):** Erfahrungsschätze enthalten standardmäßig **keine** Klarnamen oder sonstige Schüler-PII. Schülerantworten werden beim Hinzufügen zum Erfahrungsschatz anonymisiert (Referenzierung über IDs oder anonyme Avatare wie `CONCEPT_CONFUSION` [Verwechsler] oder `INCOMPLETE` [Unvollständige]).
 *   **Zero-Ops / Offline-Kompatibilität:** Im lokalen Desktop-Modus und Community-Modus werden Erfahrungsschätze vollständig im `LocalStorage` bzw. der lokalen SQLite-Datenbank des Nutzers gespeichert. Es findet keine Übertragung an Koreki-Zentralserver statt.
 *   **AVV-Verschlüsselung:** In der SaaS-Variante sind diese Datensätze durch die mit der Schule/Kommune geschlossene Auftragsdatenverarbeitung (AVV) geschützt und in isolierten Tenant-Datenbankstrukturen abgelegt.
 

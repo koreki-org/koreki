@@ -17,6 +17,7 @@ interface BatchItemDoneViewProps {
     getConfidenceColor: (conf?: number) => string;
     handleReviewPointChange: (idx: number, name: string, pts: number) => void;
     handleReviewFeedbackChange: (idx: number, name: string, fb: string) => void;
+    handleReviewPointAndFeedbackChange?: (idx: number, name: string, pts: number, fb: string) => void;
     showScan: boolean;
     onToggleScan: (idx: number) => void;
     mobileViewMode: 'text' | 'image';

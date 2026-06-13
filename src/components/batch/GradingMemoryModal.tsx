@@ -559,6 +559,7 @@ const handleSaveActiveMemoryChanges = async () => {
             >
                 {/* Close Button */}
                 <button 
+                    type="button"
                     onClick={onClose}
                     className="absolute top-5 right-5 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors z-20"
                 >
@@ -682,6 +683,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                                                 <PlusCircle size={14} />
                                                             </Button>
                                                             <button 
+                                                                type="button"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     handleExportMemory(m);
@@ -692,6 +694,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                                                 <Download size={14} />
                                                             </button>
                                                             <button 
+                                                                type="button"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     setEditingMemoryId(m.id || null);
@@ -703,6 +706,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                                                 <Pencil size={14} />
                                                             </button>
                                                             <button 
+                                                                type="button"
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     deleteMemory(m.id!);
@@ -812,7 +816,11 @@ const handleSaveActiveMemoryChanges = async () => {
                                                                      </span>
                                                                      <button 
                                                                          type="button"
-                                                                         onClick={() => handleDeleteCase(c.id)}
+                                                                         onClick={(e) => {
+                                                                             e.stopPropagation();
+                                                                             e.preventDefault();
+                                                                             handleDeleteCase(c.id);
+                                                                         }}
                                                                          className="p-1 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded transition-colors"
                                                                          title="Fallbeispiel löschen"
                                                                      >
@@ -840,7 +848,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                                                            maxPoints={resolvedMaxPoints}
                                                                            showMaxPoints={resolvedMaxPoints !== undefined}
                                                                            onChange={val => handleUpdateCaseField(c.id, 'pointsObtained', val)}
-                                                                           className="bg-white border-slate-200/60 max-w-[125px]"
+                                                                           className="bg-white border-slate-200/60 max-w-[140px]"
                                                                        />
                                                                  </div>
  
@@ -1122,9 +1130,9 @@ const handleSaveActiveMemoryChanges = async () => {
                                                 type="range" 
                                                 min="0" 
                                                 max={cal.maxPoints} 
-                                                step="1"
+                                                step="0.5"
                                                 value={cal.pointsObtained}
-                                                onChange={e => handleUpdateCalibration(activeKey, { pointsObtained: parseInt(e.target.value) })}
+                                                onChange={e => handleUpdateCalibration(activeKey, { pointsObtained: parseFloat(e.target.value) })}
                                                 className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                             />
                                             <div className="flex justify-between text-[10px] text-slate-400 font-bold px-1">

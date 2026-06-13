@@ -734,6 +734,10 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                 }
             } else if (action === 'clean-and-map') {
                 result = parseMappingResult(result, payload.tasksLayout);
+            } else if (action === 'second-opinion') {
+                result = {
+                    response: result.response || result.text || (typeof result === 'string' ? result : JSON.stringify(result))
+                };
             }
         }
 

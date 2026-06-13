@@ -415,6 +415,20 @@ export default function Home() {
                                         activeGradingMemoryName: activeGradingMemoryName
                                     }
                                 )}
+                                onExportSL={() => exportSessionToJson(
+                                    fileProcessor.batchFiles, 
+                                    data.modelSolution, 
+                                    data.tasksLayout,
+                                    {
+                                        activeProfileId: aiSettings.activePromptProfileId,
+                                        activeProfileName: sessionProfileName,
+                                        activeAiProfileId: aiSettings.activeAiProfileId,
+                                        activeAiProfileName: sessionAiProfileName,
+                                        activeGradingMemoryId: localStorage.getItem('koreki_active_grading_memory_id') || undefined,
+                                        activeGradingMemoryName: activeGradingMemoryName
+                                    },
+                                    true
+                                )}
                                 onToggleSelect={fileProcessor.onToggleSelect}
                                 onToggleType={fileProcessor.onToggleType}
                                 onUpdateText={fileProcessor.onUpdateText}

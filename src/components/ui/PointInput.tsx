@@ -69,7 +69,7 @@ export const PointInput: React.FC<PointInputProps> = ({
                 </div>
             </div>
 
-            <span className="text-xs font-bold text-muted-foreground pr-1 select-none font-outfit uppercase tracking-wider order-2">
+            <span className="text-xs font-bold text-muted-foreground pr-1 select-none font-outfit uppercase tracking-wider order-2 whitespace-nowrap">
                 {showMaxPoints && maxPoints !== undefined ? `/ ${maxPoints} P` : "P"}
             </span>
         </div>

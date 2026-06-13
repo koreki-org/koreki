@@ -34,6 +34,7 @@ interface BatchProcessorProps {
     onRedact: (index: number) => void;
     onRemoveFile: (index: number) => void;
     onExportKoreki: () => void;
+    onExportSL?: () => void;
     onResetResults?: () => void;
     onRelinkFiles?: (files: File[]) => void;
     credits: number;
@@ -57,6 +58,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     onExportIndividual,
     onExportPDFs,
     onExportKoreki,
+    onExportSL,
     onResetResults,
     onToggleSelect,
     onToggleType,
@@ -85,9 +87,9 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     );
 
     const { expandedIdx, setExpandedIdx, showScan, setShowScan, showConfirm, setShowConfirm, mobileViewMode, setMobileViewMode, activeGroupName, setActiveGroupName, ocrStrategy, setOcrStrategy, showAnalytics, setShowAnalytics, showDigitalSlips, setShowDigitalSlips } = state;
-    const { totalPendingCredits, totalPossibleCredits, ocrCreditsRequired, pendingCount, totalCount, hasFinishedFiles, unredactedScansCount } = metrics;
+    const { totalPendingCredits, totalPossibleCredits, ocrCreditsRequired, pendingCount, totalCount, hasFinishedFiles, unredactedScansCount, hasPendingOcr } = metrics;
     const { groupedTasks, groupNames, CONFIRM_TEXT } = logic;
-    const { handleConfirmAction, handleReviewPointChange, handleReviewFeedbackChange, getPreviewUrl } = handlers;
+    const { handleConfirmAction, handleReviewPointChange, handleReviewFeedbackChange, handleReviewPointAndFeedbackChange, getPreviewUrl } = handlers;
 
     const getConfidenceColor = (conf: number = 0) => {
         if (conf >= 90) return "bg-emerald-500 text-white";
@@ -144,6 +146,8 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                     hasFinishedFiles={hasFinishedFiles}
                     totalPossibleCredits={totalPossibleCredits}
                     isPureMode={isPureMode}
+                    onExportSL={onExportSL}
+                    hasPendingOcr={hasPendingOcr}
                 />
 
                 <CardContent>
@@ -207,6 +211,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                                 getConfidenceColor={getConfidenceColor}
                                 handleReviewPointChange={handleReviewPointChange}
                                 handleReviewFeedbackChange={handleReviewFeedbackChange}
+                                handleReviewPointAndFeedbackChange={handleReviewPointAndFeedbackChange}
                                 onProcessSingleFile={onProcessSingleFile}
                                 onProcessSingleOCR={onProcessSingleOCR}
                                 isOcrBatchFinished={!loading && batchFiles.every(f => f.documentType !== 'scanned' || f.selected === false || f.ocrDone || f.status === 'error')}

@@ -57,8 +57,9 @@ export const useBatchStatus = (
         const totalCount = batchFiles.length;
         const hasFinishedFiles = batchFiles.some(f => f.status === 'done');
         const unredactedScansCount = batchFiles.filter(f => f.documentType === 'scanned' && !f.isRedacted && f.selected !== false).length;
+        const hasPendingOcr = batchFiles.some(f => f.documentType === 'scanned' && !f.ocrDone && f.selected !== false);
         
-        return { totalPendingCredits, totalPossibleCredits, ocrCreditsRequired, pendingCount, totalCount, hasFinishedFiles, unredactedScansCount };
+        return { totalPendingCredits, totalPossibleCredits, ocrCreditsRequired, pendingCount, totalCount, hasFinishedFiles, unredactedScansCount, hasPendingOcr };
     }, [batchFiles]);
 
     // --- Task Grouping Logic ---
@@ -161,6 +162,15 @@ export const useBatchStatus = (
         onUpdateText(idx, item.fileText || '', newTasks);
     }, [batchFiles, onUpdateText]);
 
+    const handleReviewPointAndFeedbackChange = useCallback((idx: number, taskName: string, points: number, feedback: string) => {
+        const item = batchFiles[idx];
+        if (!item?.result) return;
+        const newTasks = item.result.tasks.map(t => 
+            t.name === taskName ? { ...t, pointsObtained: points, feedback } : t
+        );
+        onUpdateText(idx, item.fileText || '', newTasks);
+    }, [batchFiles, onUpdateText]);
+
     const getPreviewUrl = useCallback((idx: number, item: BatchFile) => {
         if (item.redactedDataUrls && item.redactedDataUrls.length > 0) return item.redactedDataUrls[0];
         if (item.previewDataUrls && item.previewDataUrls.length > 0) return item.previewDataUrls[0];
@@ -184,6 +194,6 @@ export const useBatchStatus = (
         },
         metrics,
         logic: { groupedTasks, groupNames, CONFIRM_TEXT },
-        handlers: { handleConfirmAction, handleReviewPointChange, handleReviewFeedbackChange, getPreviewUrl }
+        handlers: { handleConfirmAction, handleReviewPointChange, handleReviewFeedbackChange, handleReviewPointAndFeedbackChange, getPreviewUrl }
     };
 };

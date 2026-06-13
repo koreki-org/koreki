@@ -41,6 +41,7 @@ interface BatchFileListItemProps {
     getConfidenceColor: (conf?: number) => string;
     handleReviewPointChange: (idx: number, name: string, pts: number) => void;
     handleReviewFeedbackChange: (idx: number, name: string, fb: string) => void;
+    handleReviewPointAndFeedbackChange?: (idx: number, name: string, pts: number, fb: string) => void;
     onProcessSingleFile?: (idx: number) => void;
     onProcessSingleOCR?: (idx: number) => void;
     isOcrBatchFinished?: boolean;

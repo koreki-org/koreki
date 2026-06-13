@@ -23,7 +23,8 @@ export async function exportSessionToJson(
         activeAiProfileName?: string;
         activeGradingMemoryId?: string;
         activeGradingMemoryName?: string;
-    }
+    },
+    isStudentSolution: boolean = false
 ) {
     const exportData: any = {
         version: '2.0',
@@ -42,7 +43,18 @@ export async function exportSessionToJson(
         return value;
     }, 2);
     
-    await downloadFile(data, `koreki-session-${new Date().toISOString().split('T')[0]}.koreki`, 'application/json');
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const hh = String(now.getHours()).padStart(2, '0');
+    const min = String(now.getMinutes()).padStart(2, '0');
+
+    const filename = isStudentSolution
+        ? `koreki-sl-${yyyy}-${mm}-${dd}_${hh}${min}.koreki`
+        : `koreki-session-${yyyy}-${mm}-${dd}.koreki`;
+
+    await downloadFile(data, filename, 'application/json;charset=utf-8');
 }
 
 
