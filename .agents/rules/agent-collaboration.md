@@ -33,10 +33,16 @@ Wir agieren als **einheitliches High-Performance Team**. Keine Aufgabe erfolgt i
 - **Action:* Obligatorische Validierung. Kein Feature wird ohne Security-Audit und automatisierte Tests (Layer 1-3) freigegeben.
 
 ## The Koreki Workflow
+0. **Pre-Flight Check (CRITICAL):** Bevor auch nur EINE Zeile Code geplant oder geschrieben wird, MUSS der Agent zwingend die zur Aufgabe passenden `.agents/skills/.../SKILL.md` Dateien mit dem `view_file` Tool einlesen.
 1. **Scope:** PM gibt den funktionalen Rahmen vor.
 2. **Design:** Architekt entwirft den technischen Pfad (Review durch Experten).
 3. **Build:** Experten (UI, DB) implementieren synchronisiert.
 4. **Gate:** Audit durch Security und QA gegen die "Industrial Standards".
+5. **Agent Compliance Gate (MANDATORY):** Bevor eine Aufgabe an den User zurückgegeben wird, MUSS der Agent folgende Checkliste abhaken:
+   - [ ] Wurden `console.log` im Backend durch den `logger` ersetzt?
+   - [ ] Sind alle Typen strikt (`: any` durch Interfaces ersetzt)?
+   - [ ] Bleiben alle neuen Komponenten unter 300 Zeilen Code?
+   - [ ] Werden Secrets / URLs aus `.env` statt Hardcoding geladen?
 
 ## Collaboration Rules
 - **Architectural Supremacy:** Bei Konflikten zwischen UI/DB-Vorschlägen und der Vision entscheidet der `@principal_architect`.

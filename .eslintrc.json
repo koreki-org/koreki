@@ -1,3 +1,17 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "overrides": [
+    {
+      "files": ["src/pages/api/**/*.ts", "src/lib/**/*.ts"],
+      "rules": {
+        "no-console": "warn"
+      }
+    },
+    {
+      "files": ["src/components/**/*.tsx"],
+      "rules": {
+        "max-lines": ["warn", 300]
+      }
+    }
+  ]
 }

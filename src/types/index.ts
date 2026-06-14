@@ -210,5 +210,21 @@ export interface SecondOpinionResponse {
     response: string;
 }
 
+export interface AITask {
+    name: string;
+    pointsObtained: number;
+    maxPoints?: number;
+    feedback?: string;
+    confidence?: number;
+    content?: string;
+}
+
+export interface AIAnalysisResult {
+    tasks: AITask[];
+    overallMatchPercentage?: number;
+    confidence?: number;
+    expertProfile?: string;
+}
+
 
 

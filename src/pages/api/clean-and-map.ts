@@ -2,6 +2,7 @@ import type { NextApiResponse } from 'next';
 import prisma from '../../lib/prisma';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
+import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
 import { performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
 import { logger } from '@/lib/logger';
 
@@ -28,10 +29,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         return res.status(400).json({ error: 'Text fehlt.' });
     }
 
-    console.log("=========================================");
-    console.log("[SERVER-DEBUG-MAP] RAW OCR INPUT TEXT PASSED TO clean-and-map:");
-    console.log(text);
-    console.log("=========================================");
+    logger.info('OCR Request passed to clean-and-map', { 
+        pageCount: pageCount, 
+        provider: settings?.provider 
+    });
 
     const effectivePageCount = Math.max(1, pageCount || 1);
 
@@ -39,7 +40,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         let result: any;
 
         if (settings.provider === 'ollama') {
-            const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
+
             result = await executeOllamaRequest(
                 'clean-and-map',
                 { text, tasksLayout },

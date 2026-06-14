@@ -26,7 +26,7 @@ Dieses Dokument definiert das Erscheinungsbild und die Interaktionsstandards fü
 - **Formulare**: Textareas und Inputs sollten Fokus-Ringe in der Primärfarbe besitzen.
 
 ## 5. Industrial Scale & Performance
-- **Component LOC Limit**: UI-Komponenten sollten primär **< 150 Zeilen** Code umfassen. Grow-Buster: Komplexe Logik MUSS in Hooks extrahiert werden, Sub-Layouts in eigene Komponenten.
+- **Component LOC Limit**: UI-Komponenten sollten primär **< 300 Zeilen** Code umfassen. Grow-Buster: Komplexe Logik MUSS in Hooks extrahiert werden, Sub-Layouts in eigene Komponenten.
 - **Next.js 15 Link Compliance**: Nutze niemals verschachtelte `<a>` Tags innerhalb von `<Link>`, es sei denn, `legacyBehavior` ist explizit gefordert. Styles gehören direkt auf die `Link`-Komponente.
 
 ## 6. Global Stacking Context (Z-Index)
@@ -242,6 +242,6 @@ Das Branding von Koreki folgt strikten typografischen Regeln:
 
 ## 11. Industrial Maintenance Protocol 🏮
 1. **Consistency First**: Neue Komponenten müssen das bestehende Design-Vokabular (Rundungen, Schatten, HSL) von Koreki nutzen.
-2. **Refactor-Trigger**: Fällt eine Komponente durch das LOC-Limit (> 150 Zeilen), wird sie unmittelbar modularisiert.
+2. **Refactor-Trigger**: Fällt eine Komponente durch das LOC-Limit (> 300 Zeilen), wird sie unmittelbar modularisiert.
 3. **No-Bypass**: Manuelle z-index Vergaben außerhalb der globalen Strategie sind untersagt.
 

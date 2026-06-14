@@ -1,5 +1,6 @@
+import { logger } from '@/lib/logger';
 import { apiClient } from '../api-client';
-import { Task, AppSettings } from '../../types';
+import { Task, AppSettings, AITask, AIAnalysisResult } from '../../types';
 import { executeMistralRequest } from './mistral-provider';
 import { executeOllamaRequest } from './ollama-logic';
 import { executeOpenAIRequest } from './openai-provider';
@@ -34,7 +35,7 @@ export function shouldDisablePoints(taskType?: string, gradingGraph?: any): bool
 /**
  * Maps the AI raw JSON results back to the Koreki Task structure and calculates totals.
  */
-export function parseCorrectionResult(analysis: any, tasksLayout?: Task[] | null, studentText?: string): any {
+export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: Task[] | null, studentText?: string): AIAnalysisResult {
     if (tasksLayout && Array.isArray(tasksLayout) && tasksLayout.length > 0) {
         let totalObtained = 0;
         let totalMax = 0;
@@ -297,7 +298,6 @@ export async function extractStudentAnswersWithLLM(
                 const { extractionSnippet } = splitSkillSnippet(skillEntry.promptSnippet);
                 if (extractionSnippet) {
                     extractionInstructions = extractionSnippet;
-                    console.log(`[PANG Engine] Deterministic fallback: Graph discipline '${graph.discipline}' mapped to '${skillKey}' extraction instructions.`);
                 }
             }
         }
@@ -369,14 +369,7 @@ export async function extractStudentAnswersWithLLM(
                     const model = settings.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
                     if (!apiKey) throw new Error('OpenAI/Mittwald API-Key fehlt.');
 
-                    // DEBUG LOGGER: Log outgoing payload (Webpack bypass)
-                    try {
-                        if (typeof window === 'undefined') {
-                            const fs = eval('require("fs")');
-                            const path = eval('require("path")');
-                            fs.writeFileSync(path.join(process.cwd(), 'scratch', 'debug-extraction-request.json'), JSON.stringify(payload, null, 2));
-                        }
-                    } catch(e) {}
+
 
                     extracted = await executeOpenAIRequest(
                         'variable-extraction',
@@ -396,14 +389,7 @@ export async function extractStudentAnswersWithLLM(
             }
         }
 
-        // DEBUG LOGGER: Log incoming result (Webpack bypass)
-        try {
-            if (typeof window === 'undefined') {
-                const fs = eval('require("fs")');
-                const path = eval('require("path")');
-                fs.writeFileSync(path.join(process.cwd(), 'scratch', 'debug-extraction-response.json'), JSON.stringify({ extracted, rawValTest: extracted ? Object.keys(extracted) : [] }, null, 2));
-            }
-        } catch(e) {}
+
 
         // 3. Robust Filtering & Type-safe Normalization
         const merged: Record<string, any> = {};
@@ -427,25 +413,12 @@ export async function extractStudentAnswersWithLLM(
             }
         }
 
-        // DEBUG LOGGER: Log final merged output (Webpack bypass)
-        try {
-            if (typeof window === 'undefined') {
-                const fs = eval('require("fs")');
-                const path = eval('require("path")');
-                fs.writeFileSync(path.join(process.cwd(), 'scratch', 'debug-extraction-final.json'), JSON.stringify(merged, null, 2));
-            }
-        } catch(e) {}
+
 
         return merged;
     } catch (err) {
-        console.error('LLM Variable Extraction failed:', err);
-        try {
-            if (typeof window === 'undefined') {
-                const fs = eval('require("fs")');
-                const path = eval('require("path")');
-                fs.writeFileSync(path.join(process.cwd(), 'scratch', 'debug-extraction-error.txt'), String(err));
-            }
-        } catch(e) {}
+        logger.error('LLM Variable Extraction failed:', err);
+
         return {};
     }
 }
@@ -487,11 +460,9 @@ export async function performAIRequest(
                     const studentTaskText = rawSplit[i] || "";
                     const taskSpecificText = (studentTaskText && studentTaskText.trim().length > 0) ? studentTaskText : studentText;
                     
-                    console.log(`[PANG Engine Client] Evaluating task "${task.name}". Mapped input text snippet: "${taskSpecificText.substring(0, 100).replace(/\n/g, ' ')}..."`);
                     
                     const studentValues = await extractStudentAnswersWithLLM(taskSpecificText, task.gradingGraph, appMode, settings, task.taskType, task.name);
                     
-                    console.log(`[PANG Engine Client] Task "${task.name}" extracted values:`, studentValues);
                     
                     const gradingResult = GraphRunner.grade(task.gradingGraph, studentValues);
                     task.gradingResult = gradingResult;
@@ -502,7 +473,7 @@ export async function performAIRequest(
                         task.maxPoints = gradingResult.maxPoints;
                     }
                 } catch (err: any) {
-                    console.error('Error in client-side GraphRunner execution', err);
+                    logger.error('Error in client-side GraphRunner execution', err);
                 }
             }
         }
@@ -579,7 +550,7 @@ export async function performAIRequest(
                 const maxRetries = 3;
 
                 while (!graphValidation.isValid && retryCount < maxRetries) {
-                    console.warn(`[Client] PANG Dry-Run validation failed. Retrying self-correction (${retryCount + 1}/${maxRetries}):`, graphValidation.error);
+                    logger.warn(`[Client] PANG Dry-Run validation failed. Retrying self-correction (${retryCount + 1}/${maxRetries}):`, graphValidation.error);
 
                     const userInstruction = `AUTOMATISCHE MATHEMATISCHE VALIDIERUNG FEHLGESCHLAGEN:
 Der von dir generierte Graph ist mathematisch nicht konsistent auswertbar.
@@ -631,7 +602,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                             break;
                         }
                     } catch (err) {
-                        console.error('[Client] Auto-correction request failed in loop', err);
+                        logger.error('[Client] Auto-correction request failed in loop', err);
                         break;
                     }
                     retryCount++;
@@ -769,7 +740,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
         }, { signal });
         const data = await res.json();
         if (!res.ok) {
-            console.error("API ERROR RESPONSE:", data);
+            logger.error("API ERROR RESPONSE:", data);
             throw new Error(data.error || `KI Anfrage fehlgeschlagen: ${JSON.stringify(data)}`);
         }
 

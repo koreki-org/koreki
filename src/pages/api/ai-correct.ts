@@ -70,7 +70,6 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         const studentTaskText = rawSplit[i] || "";
                         const taskSpecificText = (studentTaskText && studentTaskText.trim().length > 0) ? studentTaskText : studentText;
                         
-                        console.log(`[PANG Engine] Evaluating task "${task.name}". Mapped input text snippet: "${taskSpecificText.substring(0, 100).replace(/\n/g, ' ')}..."`);
                         
                         const studentValues = await extractStudentAnswersWithLLM(taskSpecificText, task.gradingGraph, 'STANDARD', settings as any, task.taskType, task.name);
                         
@@ -85,10 +84,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                                 studentText: req.body.studentText || req.body.text || ""
                             }, null, 2));
                         } catch (e) {
-                            console.error(e);
+                            logger.error(e);
                         }
                         
-                        console.log(`[PANG Engine] Task "${task.name}" extracted values:`, studentValues);
                         
                         const gradingResult = GraphRunner.grade(task.gradingGraph, studentValues);
                         task.gradingResult = gradingResult;

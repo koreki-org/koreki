@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import { 
     buildCorrectionPrompt, 
     buildCleanAndAnalyzePrompt, 
@@ -76,7 +77,7 @@ export async function executeOllamaRequest(
             model = resolveOllamaModel(model, models);
         }
     } catch (e) {
-        console.warn("Failed to dynamically resolve Ollama model name:", e);
+        logger.warn("Failed to dynamically resolve Ollama model name:", e);
     }
 
     const isVision = action === 'vision';
@@ -261,10 +262,6 @@ export async function executeOllamaRequest(
                 content = await invokePromise;
             }
 
-            console.log(`[OLLAMA-DEBUG-TAURI] Action: ${action}, Model: ${model}, numCtx: ${numCtx}, temp: ${targetTemp}, topP: ${targetTopP}, finalMaxTokens: ${finalMaxTokens}`);
-            console.log(`[OLLAMA-DEBUG-TAURI] Prompt (System):`, promptObj.system);
-            console.log(`[OLLAMA-DEBUG-TAURI] Prompt (User):`, promptObj.user?.substring(0, 500) + (promptObj.user?.length > 500 ? '...' : ''));
-            console.log(`[OLLAMA-DEBUG-TAURI] Response Raw:`, content);
 
             sendDebugLog({
                 action,
@@ -281,7 +278,7 @@ export async function executeOllamaRequest(
             return processOllamaResponse(content, action, model);
 
         } catch (error) {
-            console.error("Ollama Backend Proxy Error:", error);
+            logger.error("Ollama Backend Proxy Error:", error);
             throw new Error(`Ollama Verbindung fehlgeschlagen: ${error}`);
         }
     }    // --- Native Ollama API Fetch ---
@@ -379,10 +376,6 @@ export async function executeOllamaRequest(
         }
     }
 
-    console.log(`[OLLAMA-DEBUG-NATIVE] Action: ${action}, Model: ${model}, numCtx: ${numCtx}, temp: ${targetTemp}, topP: ${targetTopP}, finalMaxTokens: ${finalMaxTokens}`);
-    console.log(`[OLLAMA-DEBUG-NATIVE] Prompt (System):`, promptObj.system);
-    console.log(`[OLLAMA-DEBUG-NATIVE] Prompt (User):`, promptObj.user?.substring(0, 500) + (promptObj.user?.length > 500 ? '...' : ''));
-    console.log(`[OLLAMA-DEBUG-NATIVE] Response Raw:`, fullContent);
 
     sendDebugLog({
         action,
@@ -522,7 +515,7 @@ export async function fetchOllamaModels(baseUrl: string): Promise<{ models: stri
             const res = await invoke<{ models: string[]; is_self_signed: boolean; version: string }>('get_ollama_models_command', { url });
             return { models: res.models, isSelfSigned: res.is_self_signed, version: res.version };
         } catch (e) {
-            console.error("Desktop Model Fetch Error:", e);
+            logger.error("Desktop Model Fetch Error:", e);
             return { models: [], isSelfSigned: false, version: '' };
         }
     }
@@ -537,7 +530,7 @@ export async function fetchOllamaModels(baseUrl: string): Promise<{ models: stri
         const models = Array.isArray(data?.models) ? data.models.map((m: any) => m.name) : [];
         return { models, isSelfSigned: false, version: '' };
     } catch (e) {
-        console.error("Community Model Fetch Error:", e);
+        logger.error("Community Model Fetch Error:", e);
         return { models: [], isSelfSigned: false, version: '' };
     }
 }

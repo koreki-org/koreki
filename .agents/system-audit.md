@@ -41,7 +41,7 @@ Nachfolgend finden Sie das Audit inklusive kleinerer "Blindspots" (Lücken), die
 ## 5. UI Expert & Design System
 **📚 Verknüpfung:** `ui_expert/agent.md` ↔ `koreki_design_system/SKILL.md`
 
-- **🌟 Stärken:** Das LOC-Limit (< 150 Zeilen) ist eine mächtige Waffe gegen überladene Komponenten. Die strikte Verwaltung des Z-Index Stacking Context und die Trennung zwischen `AppLayout` (minimal) und `MarketingLayout` (premium) sind goldrichtig.
+- **🌟 Stärken:** Das LOC-Limit (< 300 Zeilen) ist eine mächtige Waffe gegen überladene Komponenten. Die strikte Verwaltung des Z-Index Stacking Context und die Trennung zwischen `AppLayout` (minimal) und `MarketingLayout` (premium) sind goldrichtig.
 - **⚠️ Gaps / Optimierung:** 
   - Das Design ist sehr visuell fokussiert (Gradients, Glassmorphism, Blur), aber **Accessibility (a11y)**, insbesondere ARIA-Labels und minimaler Farbkontrast für Text auf "Glass", wird nicht als harte Governance-Regel für den UI-Agenten durchgesetzt.
 

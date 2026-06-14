@@ -1,3 +1,4 @@
+import { logger } from '@/lib/logger';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -27,7 +28,7 @@ const getStoragePath = (userId?: string) => {
     try {
         if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
     } catch (e) {
-        console.error('[LocalProfileService] Critical: Could not create directory:', e);
+        logger.error('[LocalProfileService] Critical: Could not create directory:', e);
     }
 
     // Industrial Hashing: Completely decouple input from filesystem path
@@ -70,7 +71,7 @@ export const LocalProfileService = {
                 }
             }
         } catch (err) {
-            console.error('[LocalProfileService] Error reading profiles:', err);
+            logger.error('[LocalProfileService] Error reading profiles:', err);
         }
         
         return profiles;
@@ -119,7 +120,7 @@ export const LocalProfileService = {
             customProfiles = customProfiles.filter((p: any) => p.id !== id);
             fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
         } catch (err) {
-            console.error('[LocalProfileService] Error deleting profile:', err);
+            logger.error('[LocalProfileService] Error deleting profile:', err);
         }
     },
 
@@ -134,7 +135,7 @@ export const LocalProfileService = {
             );
             fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
         } catch (err) {
-            console.error('[LocalProfileService] Error renaming profile:', err);
+            logger.error('[LocalProfileService] Error renaming profile:', err);
         }
     }
 };
@@ -153,7 +154,7 @@ const getAiStoragePath = (userId?: string) => {
     try {
         if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
     } catch (e) {
-        console.error('[LocalProfileService] Critical: Could not create directory:', e);
+        logger.error('[LocalProfileService] Critical: Could not create directory:', e);
     }
 
     // Industrial Hashing: Completely decouple input from filesystem path
@@ -188,7 +189,7 @@ export const LocalAiProfileService = {
                 }
             }
         } catch (err) {
-            console.error('[LocalAiProfileService] Error reading profiles:', err);
+            logger.error('[LocalAiProfileService] Error reading profiles:', err);
         }
         
         return [];
@@ -242,7 +243,7 @@ export const LocalAiProfileService = {
             customProfiles = customProfiles.filter((p: any) => p.id !== id);
             fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
         } catch (err) {
-            console.error('[LocalAiProfileService] Error deleting profile:', err);
+            logger.error('[LocalAiProfileService] Error deleting profile:', err);
         }
     },
 
@@ -257,7 +258,7 @@ export const LocalAiProfileService = {
             );
             fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
         } catch (err) {
-            console.error('[LocalAiProfileService] Error renaming profile:', err);
+            logger.error('[LocalAiProfileService] Error renaming profile:', err);
         }
     }
 };
@@ -276,7 +277,7 @@ const getGradingMemoryStoragePath = (userId?: string) => {
     try {
         if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
     } catch (e) {
-        console.error('[LocalGradingMemoryService] Critical: Could not create directory:', e);
+        logger.error('[LocalGradingMemoryService] Critical: Could not create directory:', e);
     }
 
     // Industrial Hashing: Completely decouple input from filesystem path
@@ -311,7 +312,7 @@ export const LocalGradingMemoryService = {
                 }
             }
         } catch (err) {
-            console.error('[LocalGradingMemoryService] Error reading profiles:', err);
+            logger.error('[LocalGradingMemoryService] Error reading profiles:', err);
         }
         
         return [];
@@ -358,7 +359,7 @@ export const LocalGradingMemoryService = {
             customProfiles = customProfiles.filter((p: any) => p.id !== id);
             fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
         } catch (err) {
-            console.error('[LocalGradingMemoryService] Error deleting profile:', err);
+            logger.error('[LocalGradingMemoryService] Error deleting profile:', err);
         }
     },
 
@@ -373,7 +374,7 @@ export const LocalGradingMemoryService = {
             );
             fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
         } catch (err) {
-            console.error('[LocalGradingMemoryService] Error renaming profile:', err);
+            logger.error('[LocalGradingMemoryService] Error renaming profile:', err);
         }
     }
 };
@@ -392,7 +393,7 @@ const getSkillStoragePath = (userId?: string) => {
     try {
         if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
     } catch (e) {
-        console.error('[LocalSkillProfileService] Critical: Could not create directory:', e);
+        logger.error('[LocalSkillProfileService] Critical: Could not create directory:', e);
     }
 
     // Industrial Hashing
@@ -429,7 +430,7 @@ export const LocalSkillProfileService = {
                 }
             }
         } catch (err) {
-            console.error('[LocalSkillProfileService] Error reading profiles:', err);
+            logger.error('[LocalSkillProfileService] Error reading profiles:', err);
         }
         
         return profiles;
@@ -477,7 +478,7 @@ export const LocalSkillProfileService = {
             customProfiles = customProfiles.filter((p: any) => p.id !== id);
             fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
         } catch (err) {
-            console.error('[LocalSkillProfileService] Error deleting profile:', err);
+            logger.error('[LocalSkillProfileService] Error deleting profile:', err);
         }
     },
 
@@ -492,7 +493,7 @@ export const LocalSkillProfileService = {
             );
             fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
         } catch (err) {
-            console.error('[LocalSkillProfileService] Error renaming profile:', err);
+            logger.error('[LocalSkillProfileService] Error renaming profile:', err);
         }
     }
 };

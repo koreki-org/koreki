@@ -143,13 +143,7 @@ export async function executeOpenAIRequest(
     const defaultLimit = structuralActions.includes(action) ? 32768 : 4000;
     const isJsonFormat = action !== 'vision' && action !== 'second-opinion';
 
-    try {
-        if (typeof window === 'undefined') {
-            const fs = eval('require("fs")');
-            const path = eval('require("path")');
-            fs.appendFileSync(path.join(process.cwd(), 'scratch', 'debug-model.log'), `Action: ${action}, Model: ${targetModel}\n`);
-        }
-    } catch(e) {}
+
 
     const body: any = {
         model: targetModel,
@@ -223,13 +217,7 @@ export async function executeOpenAIRequest(
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
-            try {
-                if (typeof window === 'undefined') {
-                    const fs = eval('require("fs")');
-                    const path = eval('require("path")');
-                    fs.writeFileSync(path.join(process.cwd(), 'scratch', 'debug-crash-request.json'), JSON.stringify({ url, body, status: response.status, errorData }, null, 2));
-                }
-            } catch(e) {}
+
             throw new Error(`KI-Provider Fehler (${response.status}): ${errorData.error?.message || response.statusText}`);
         }
 
