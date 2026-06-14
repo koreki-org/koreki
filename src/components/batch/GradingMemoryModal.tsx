@@ -76,16 +76,44 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
     }, [hookMemories]);
 
     useEffect(() => {
+        let name = '';
         const activeMem = hookMemories.find(m => m.id === activeMemoryId);
         if (activeMem) {
-            setEditingActiveName(activeMem.name);
+            name = activeMem.name;
+        } else if (activeMemoryId && typeof window !== 'undefined') {
+            name = localStorage.getItem('koreki_active_grading_memory_name') || '';
+        }
+        if (name) {
+            setEditingActiveName(name);
         }
     }, [activeMemoryId, hookMemories]);
 
     useEffect(() => {
         const activeMem = memories.find(m => m.id === activeMemoryId);
-        onActiveMemoryChange?.(activeMem ? activeMem.name : undefined);
+        let activeName = activeMem ? activeMem.name : undefined;
+        if (!activeName && activeMemoryId && typeof window !== 'undefined') {
+            activeName = localStorage.getItem('koreki_active_grading_memory_name') || undefined;
+        }
+        onActiveMemoryChange?.(activeName);
     }, [activeMemoryId, memories, onActiveMemoryChange]);
+
+    // Resolve active memory - either from local list or imported unsaved from localStorage
+    let activeMemory = memories.find(m => m.id === activeMemoryId) || null;
+    let isImportedAndUnsaved = false;
+    if (!activeMemory && activeMemoryId) {
+        const storedName = typeof window !== 'undefined' ? localStorage.getItem('koreki_active_grading_memory_name') : null;
+        const storedCasesStr = typeof window !== 'undefined' ? localStorage.getItem('koreki_active_grading_memory_cases') : null;
+        if (storedCasesStr) {
+            try {
+                activeMemory = {
+                    id: activeMemoryId,
+                    name: storedName || 'Importierter Erfahrungsschatz',
+                    cases: JSON.parse(storedCasesStr)
+                };
+                isImportedAndUnsaved = true;
+            } catch (e) {}
+        }
+    }
 
     // Auto-persist resolved legacy fields (taskName & maxPoints) back into memories state
     useEffect(() => {
@@ -337,6 +365,40 @@ const handleSaveActiveMemoryChanges = async () => {
                     alert("Änderungen erfolgreich gespeichert!");
                 } else {
                     throw new Error("Fehler beim Speichern im Backend.");
+                }
+            }
+        } catch (e: any) {
+            alert("Fehler beim Speichern: " + (e.message || String(e)));
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleSaveImportedMemory = async (memory: GradingMemory) => {
+        setIsSaving(true);
+        try {
+            if (isDesktopTarget()) {
+                const localMemory: GradingMemory = {
+                    id: `local-grading-memory-${Date.now()}`,
+                    name: memory.name,
+                    cases: memory.cases,
+                    userId: null,
+                    createdAt: new Date().toISOString()
+                };
+                addLocalMemory(localMemory);
+                alert(`Erfahrungsschatz "${memory.name}" erfolgreich in deiner lokalen Bibliothek gespeichert!`);
+            } else {
+                const response = await apiClient.post('/api/user/grading-memories', {
+                    name: memory.name,
+                    cases: memory.cases
+                });
+                if (response.ok) {
+                    const saved = await response.json();
+                    addLocalMemory(saved);
+                    alert(`Erfahrungsschatz "${memory.name}" erfolgreich in deiner Bibliothek gespeichert!`);
+                } else {
+                    const errData = await response.json();
+                    throw new Error(errData.message || "Fehler beim Speichern des importierten Erfahrungsschatzes im Backend.");
                 }
             }
         } catch (e: any) {
@@ -630,6 +692,25 @@ const handleSaveActiveMemoryChanges = async () => {
                                         {!activeMemoryId && <Check size={16} className="text-indigo-600" />}
                                     </div>
 
+                                    {/* Unsaved Imported Memory entry */}
+                                    {isImportedAndUnsaved && activeMemory && (
+                                        <div 
+                                            onClick={() => selectMemory(activeMemory.id || null)}
+                                            className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center group cursor-pointer relative bg-indigo-50/20 border-indigo-300 shadow-sm`}
+                                        >
+                                            <div className="flex flex-col min-w-0 flex-1">
+                                                <span className="text-xs font-extrabold text-indigo-900 flex items-center gap-1.5">
+                                                    <Download size={12} className="text-indigo-600 animate-pulse" />
+                                                    {activeMemory.name}
+                                                </span>
+                                                <span className="text-[10px] text-indigo-500 font-bold uppercase mt-1 font-outfit">
+                                                    {activeMemory.cases?.length || 0} Fallbeispiele (Importiert, Nicht gespeichert)
+                                                </span>
+                                            </div>
+                                            <Check size={16} className="text-indigo-600 animate-pulse" />
+                                        </div>
+                                    )}
+
                                     {memories.map((m) => (
                                         <div 
                                             key={m.id}
@@ -752,7 +833,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                                     <Upload size={14} /> Import
                                                 </Button>
                                                 <Button 
-                                                     onClick={handleSaveActiveMemoryChanges}
+                                                     onClick={isImportedAndUnsaved ? () => handleSaveImportedMemory(activeMemory!) : handleSaveActiveMemoryChanges}
                                                      disabled={isSaving}
                                                      className={cn(
                                                          "h-9 px-4 text-[10px] font-black uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0",
@@ -773,15 +854,40 @@ const handleSaveActiveMemoryChanges = async () => {
  
                                          {/* Scrollable inputs section */}
                                          <div className="flex-1 overflow-y-auto pr-1 space-y-5 custom-scrollbar min-h-0">
+                                             
+                                             {/* SAVE IMPORTED MEMORY BANNER */}
+                                             {isImportedAndUnsaved && activeMemory && (
+                                                 <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl flex items-center justify-between gap-4 shadow-sm">
+                                                     <div className="space-y-1">
+                                                         <h4 className="text-xs font-black text-indigo-900 uppercase tracking-wide">Importierter Erfahrungsschatz</h4>
+                                                         <p className="text-[10px] text-indigo-700 font-bold leading-normal">
+                                                             Dieser Erfahrungsschatz wurde mit der Sitzung importiert, ist aber noch nicht in deiner lokalen Bibliothek gespeichert. Sichert alle {activeMemory.cases?.length || 0} Beispiele dauerhaft.
+                                                         </p>
+                                                     </div>
+                                                     <Button 
+                                                         onClick={() => handleSaveImportedMemory(activeMemory!)}
+                                                         disabled={isSaving}
+                                                         className="bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-[10px] uppercase h-9 px-4 rounded-xl flex items-center gap-1.5 shrink-0 shadow-md shadow-indigo-100"
+                                                     >
+                                                         {isSaving ? (
+                                                             <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
+                                                         ) : (
+                                                             <Save size={14} />
+                                                         )}
+                                                         Sichern
+                                                     </Button>
+                                                 </div>
+                                             )}
+
                                              {/* List of Cases to view/edit */}
                                              <div className="space-y-3.5">
                                                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                                                      <BookOpen size={12} className="text-indigo-500" />
-                                                     Enthaltene Fallbeispiele ({memories.find(m => m.id === activeMemoryId)?.cases?.length || 0}):
+                                                     Enthaltene Fallbeispiele ({activeMemory?.cases?.length || 0}):
                                                  </h4>
  
                                                  <div className="space-y-4 pr-1">
-                                                     {memories.find(m => m.id === activeMemoryId)?.cases?.map((c, index) => {
+                                                     {activeMemory?.cases?.map((c, index) => {
                                                           // 1. Resolve taskName
                                                           let resolvedTaskName = c.taskName;
                                                           if (!resolvedTaskName && c.expectedCorrection.correctionNotes) {
@@ -816,12 +922,13 @@ const handleSaveActiveMemoryChanges = async () => {
                                                                      </span>
                                                                      <button 
                                                                          type="button"
+                                                                         disabled={isImportedAndUnsaved}
                                                                          onClick={(e) => {
                                                                              e.stopPropagation();
                                                                              e.preventDefault();
                                                                              handleDeleteCase(c.id);
                                                                          }}
-                                                                         className="p-1 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                                                                         className="p-1 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                                                          title="Fallbeispiel löschen"
                                                                      >
                                                                          <Trash2 size={13} />
@@ -834,8 +941,9 @@ const handleSaveActiveMemoryChanges = async () => {
                                                                  <textarea 
                                                                      rows={3}
                                                                      value={c.studentText}
+                                                                     disabled={isImportedAndUnsaved}
                                                                      onChange={e => handleUpdateCaseField(c.id, 'studentText', e.target.value)}
-                                                                     className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-sm resize-y"
+                                                                     className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-sm resize-y disabled:bg-slate-100/55 disabled:text-slate-500 disabled:cursor-not-allowed"
                                                                      placeholder="Simulierter Schülertext..."
                                                                  />
                                                              </div>
@@ -847,6 +955,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                                                            value={Number(c.expectedCorrection.pointsObtained ?? 0)}
                                                                            maxPoints={resolvedMaxPoints}
                                                                            showMaxPoints={resolvedMaxPoints !== undefined}
+                                                                           disabled={isImportedAndUnsaved}
                                                                            onChange={val => handleUpdateCaseField(c.id, 'pointsObtained', val)}
                                                                            className="bg-white border-slate-200/60 max-w-[140px]"
                                                                        />
@@ -857,8 +966,9 @@ const handleSaveActiveMemoryChanges = async () => {
                                                                      <input 
                                                                          type="text"
                                                                          value={c.expectedCorrection.feedback || ''}
+                                                                         disabled={isImportedAndUnsaved}
                                                                          onChange={e => handleUpdateCaseField(c.id, 'feedback', e.target.value)}
-                                                                         className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm"
+                                                                         className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm disabled:bg-slate-100/55 disabled:text-slate-500 disabled:cursor-not-allowed"
                                                                          placeholder="Optionales Feedback..."
                                                                      />
                                                                  </div>
@@ -869,8 +979,9 @@ const handleSaveActiveMemoryChanges = async () => {
                                                                  <textarea 
                                                                      rows={2}
                                                                      value={c.expectedCorrection.correctionNotes}
+                                                                     disabled={isImportedAndUnsaved}
                                                                      onChange={e => handleUpdateCaseField(c.id, 'correctionNotes', e.target.value)}
-                                                                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 leading-relaxed shadow-sm resize-none"
+                                                                     className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs font-medium text-slate-700 leading-relaxed shadow-sm resize-none disabled:bg-slate-100/55 disabled:text-slate-500 disabled:cursor-not-allowed"
                                                                      placeholder="Korrekturbegründung..."
                                                                  />
                                                              </div>

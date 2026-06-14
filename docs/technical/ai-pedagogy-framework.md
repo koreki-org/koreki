@@ -3,7 +3,7 @@ title: "AI Pedagogy Framework (V13/VRE)"
 description: "Framework für faire, präzise und pädagogisch sinnvolle KI-Korrekturen via VRE Parameter-Steuerung"
 author: "@principal_architect"
 date: "2026-04-06"
-last_updated: "2026-05-09"
+last_updated: "2026-06-13"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -29,16 +29,16 @@ Diese Ebene ist im Core-Template (`correction.md`) fest verankert und kann nicht
 *   **Struktur-Treue**: Aufgaben-Namen und Max-Points aus der Musterlösung sind Gesetz.
 *   **Mathematische Präzision**: Die Vergabe von Teilpunkten folgt einer logischen, nachvollziehbaren Teilabzug-Logik.
 
-### Layer 2: Pädagogischer Core (Semantic Fairness)
-Die "Anti-Pedanterie"-Regel stellt sicher, dass die KI nicht zum "Erbsenzähler" wird.
-*   **Inhaltliche Kulanz**: Korrekte Konzepte in einfacher Sprache (z.B. "höhere Geschwindigkeit") werden als RICHTIG bewertet, auch wenn die Musterlösung komplexere Fachtermini ("Durchsatzoptimierung") nutzt.
-*   **Semantisches Matching**: Der Fokus liegt auf der Logik der Antwort, nicht auf der Wortwahl.
+### Layer 2: Pädagogischer Core (Strict-by-Default / Precision)
+Die Kern-Engine bewertet standardmäßig mathematisch präzise und streng nach Vorgabe der Musterlösung.
+*   **Keine implizite Kulanz**: Semantische Weichzeichner sind auf Systemebene deaktiviert, um Benotungs-Inkonsistenzen und "mentale Reparaturen" der KI bei inhaltlichen Fehlern zu verhindern.
+*   **Objektivität**: Die Bewertung ist starr an Fakten gekoppelt.
 
 ### Layer 3: Fach-Spezialisierung (Expert Overlays)
-Individuelle Lehrer-Instruktionen ergänzen das System, ohne die Leitplanken zu gefährden.
+Individuelle Lehrer-Instruktionen ergänzen das System und steuern das Niveau der Pedanterie.
 *   **Persona**: Setzt die Rolle (z.B. "Als Fachlehrer für Informatik...").
-*   **Fokus**: Erlaubt spezifische Schwerpunkte (z.B. "Achte besonders auf Quellkritik").
-*   **Status**: Diese Anweisungen sind **Ergänzungen**, keine Overrides für System-Regeln.
+*   **Kulanz-Steuerung**: Gewünschte Kulanzniveaus (z.B. Akzeptanz von Alltagssprache statt Fachbegriffen) werden flexibel über den Experten-Prompt (`expertInstructions`) oder aktivierte Skills gesteuert, anstatt global erzwungen zu werden.
+*   **Status**: Diese Anweisungen sind **Ergänzungen**, keine Overrides für System-Leitplanken.
 
 ---
 
@@ -51,8 +51,8 @@ Um "mentale Reparaturen" der KI zu verhindern, nutzen wir folgende Guards:
 ```markdown
 // Beispiel für den hierarchischen Aufbau im Prompt:
 1. System-Leitplanken (Mandatory)
-2. Pädagogischer Core (Mandatory)
-3. Fach-Spezialisierung (Custom Supplement)
+2. Pädagogischer Core (Strict-by-Default / Precision)
+3. Fach-Spezialisierung (Custom Supplement / Leniency Control)
 4. Kontext: Musterlösung + Schülertext
 ```
 

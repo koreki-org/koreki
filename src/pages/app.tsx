@@ -25,6 +25,7 @@ import { exportTeacherList, exportStudentSummaries, exportIndividualFeedbacks } 
 import { exportIndividualPDFs } from '@/lib/pdf';
 import { exportSessionToJson } from '@/lib/utils';
 import { AlertTriangle } from 'lucide-react';
+import { isDesktopTarget } from '@/lib/env-context';
 import AuthGuard from '@/components/guards/AuthGuard';
 
 export default function Home() {
@@ -134,6 +135,26 @@ export default function Home() {
         checkAuth();
         hydrateAiSettings(); // Hydrate Desktop/Ollama settings once after mount
     }, [checkAuth, hydrateAiSettings]);
+
+    // Tauri DevTools Keyboard Shortcut (F12 / Ctrl+Shift+I)
+    useEffect(() => {
+        if (!isDesktopTarget()) return;
+
+        const handleKeyDown = async (e: KeyboardEvent) => {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I'))) {
+                e.preventDefault();
+                try {
+                    const { invoke } = await import('@tauri-apps/api/core');
+                    await invoke('open_devtools');
+                } catch (err) {
+                    console.error('Failed to open devtools:', err);
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     // Auto-Scroll Logic: Smooth scroll to BatchProcessor once files are added
     const prevFilesCount = React.useRef(0);
@@ -250,8 +271,12 @@ export default function Home() {
 
                                 if (targetMemoryName) {
                                     setActiveGradingMemoryName(targetMemoryName);
+                                    localStorage.setItem('koreki_active_grading_memory_name', targetMemoryName);
                                     if (activeGradingMemoryId) {
                                         selectMemory(activeGradingMemoryId);
+                                    }
+                                    if (imported.metadata?.activeGradingMemoryCases) {
+                                        localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(imported.metadata.activeGradingMemoryCases));
                                     }
                                 }
                             }
@@ -402,33 +427,49 @@ export default function Home() {
                                 onExportStudents={() => exportStudentSummaries(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(f => ({ studentName: getExportName(f), analysis: f.result!, grade: f.grade })))}
                                 onExportIndividual={() => exportIndividualFeedbacks(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(f => ({ studentName: getExportName(f), analysis: f.result!, grade: f.grade })))}
                                 onExportPDFs={() => exportIndividualPDFs(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(f => ({ studentName: getExportName(f), analysis: f.result!, grade: f.grade })))}
-                                onExportKoreki={() => exportSessionToJson(
-                                    fileProcessor.batchFiles, 
-                                    data.modelSolution, 
-                                    data.tasksLayout,
-                                    {
-                                        activeProfileId: aiSettings.activePromptProfileId,
-                                        activeProfileName: sessionProfileName,
-                                        activeAiProfileId: aiSettings.activeAiProfileId,
-                                        activeAiProfileName: sessionAiProfileName,
-                                        activeGradingMemoryId: localStorage.getItem('koreki_active_grading_memory_id') || undefined,
-                                        activeGradingMemoryName: activeGradingMemoryName
-                                    }
-                                )}
-                                onExportSL={() => exportSessionToJson(
-                                    fileProcessor.batchFiles, 
-                                    data.modelSolution, 
-                                    data.tasksLayout,
-                                    {
-                                        activeProfileId: aiSettings.activePromptProfileId,
-                                        activeProfileName: sessionProfileName,
-                                        activeAiProfileId: aiSettings.activeAiProfileId,
-                                        activeAiProfileName: sessionAiProfileName,
-                                        activeGradingMemoryId: localStorage.getItem('koreki_active_grading_memory_id') || undefined,
-                                        activeGradingMemoryName: activeGradingMemoryName
-                                    },
-                                    true
-                                )}
+                                onExportKoreki={() => {
+                                    let cases = undefined;
+                                    try {
+                                        const stored = localStorage.getItem('koreki_active_grading_memory_cases');
+                                        if (stored) cases = JSON.parse(stored);
+                                    } catch (e) {}
+                                    exportSessionToJson(
+                                        fileProcessor.batchFiles, 
+                                        data.modelSolution, 
+                                        data.tasksLayout,
+                                        {
+                                            activeProfileId: aiSettings.activePromptProfileId,
+                                            activeProfileName: sessionProfileName,
+                                            activeAiProfileId: aiSettings.activeAiProfileId,
+                                            activeAiProfileName: sessionAiProfileName,
+                                            activeGradingMemoryId: localStorage.getItem('koreki_active_grading_memory_id') || undefined,
+                                            activeGradingMemoryName: activeGradingMemoryName,
+                                            activeGradingMemoryCases: cases
+                                        }
+                                    );
+                                }}
+                                onExportSL={() => {
+                                    let cases = undefined;
+                                    try {
+                                        const stored = localStorage.getItem('koreki_active_grading_memory_cases');
+                                        if (stored) cases = JSON.parse(stored);
+                                    } catch (e) {}
+                                    exportSessionToJson(
+                                        fileProcessor.batchFiles, 
+                                        data.modelSolution, 
+                                        data.tasksLayout,
+                                        {
+                                            activeProfileId: aiSettings.activePromptProfileId,
+                                            activeProfileName: sessionProfileName,
+                                            activeAiProfileId: aiSettings.activeAiProfileId,
+                                            activeAiProfileName: sessionAiProfileName,
+                                            activeGradingMemoryId: localStorage.getItem('koreki_active_grading_memory_id') || undefined,
+                                            activeGradingMemoryName: activeGradingMemoryName,
+                                            activeGradingMemoryCases: cases
+                                        },
+                                        true
+                                    );
+                                }}
                                 onToggleSelect={fileProcessor.onToggleSelect}
                                 onToggleType={fileProcessor.onToggleType}
                                 onUpdateText={fileProcessor.onUpdateText}

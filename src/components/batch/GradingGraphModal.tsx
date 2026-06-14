@@ -732,9 +732,15 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                 ))
                                             )}
                                             {isRefining && (
-                                                <div className="bg-slate-200/50 text-slate-500 border border-slate-200/40 p-3 rounded-2xl rounded-tl-none text-xs font-bold leading-relaxed max-w-[80%] flex items-center gap-2 animate-pulse">
-                                                    <RefreshCw size={11} className="animate-spin text-indigo-500 shrink-0" />
-                                                    <span>Passe Graph an...</span>
+                                                <div className="flex flex-col items-start max-w-[85%] animate-in fade-in duration-300 gap-1">
+                                                    <span className="text-[10px] text-slate-400 font-bold font-outfit px-1">
+                                                        Koreki passt Graph an...
+                                                    </span>
+                                                    <div className="bg-white border border-slate-200/60 dark:bg-slate-900/60 dark:border-slate-800/50 rounded-2xl rounded-tl-none py-2.5 px-3.5 flex items-center gap-1.5 shadow-3xs">
+                                                        <span className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full chatgpt-dot" style={{ animationDelay: '0ms' }} />
+                                                        <span className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full chatgpt-dot" style={{ animationDelay: '150ms' }} />
+                                                        <span className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full chatgpt-dot" style={{ animationDelay: '300ms' }} />
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>

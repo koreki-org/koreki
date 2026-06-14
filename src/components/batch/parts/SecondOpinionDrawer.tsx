@@ -79,10 +79,10 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
 
     // Parser für das <grading_proposal> XML Tag
     const parseProposal = (text: string): { points: number; feedback: string; cleanText: string } | null => {
-        const regex = /<grading_proposal\s+points="([\d.]+)">([\s\S]*?)<\/grading_proposal>/i;
+        const regex = /<grading_proposal\s+points="([\d.,]+)">([\s\S]*?)<\/grading_proposal>/i;
         const match = text.match(regex);
         if (match) {
-            const points = parseFloat(match[1]);
+            const points = parseFloat(match[1].replace(',', '.'));
             const feedback = match[2].trim();
             const cleanText = text.replace(regex, '').trim();
             return { points, feedback, cleanText };
@@ -325,15 +325,6 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                         Koreki schreibt...
                                     </span>
                                     <div className="bg-slate-100/80 border border-slate-200/40 text-foreground dark:bg-slate-900/60 dark:border-slate-800/50 rounded-2xl rounded-tl-none py-3 px-4 flex items-center gap-1.5">
-                                        <style dangerouslySetInnerHTML={{__html: `
-                                            @keyframes chatgptPulse {
-                                                0%, 100% { transform: translateY(0); opacity: 0.35; }
-                                                50% { transform: translateY(-4px); opacity: 1; }
-                                            }
-                                            .chatgpt-dot {
-                                                animation: chatgptPulse 1.2s ease-in-out infinite;
-                                            }
-                                        `}} />
                                         <span className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full chatgpt-dot" style={{ animationDelay: '0ms' }} />
                                         <span className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full chatgpt-dot" style={{ animationDelay: '150ms' }} />
                                         <span className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full chatgpt-dot" style={{ animationDelay: '300ms' }} />

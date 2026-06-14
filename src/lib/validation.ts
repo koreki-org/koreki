@@ -36,8 +36,10 @@ export const CorrectionSchema = z.object({
     gradingMemory: z.array(z.object({
         id: z.string(),
         studentText: z.string(),
+        taskName: z.string().optional(),
         expectedCorrection: z.object({
             pointsObtained: z.number(),
+            maxPoints: z.number().optional(),
             correctionNotes: z.string(),
             feedback: z.string().optional()
         })

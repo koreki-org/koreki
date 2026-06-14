@@ -142,23 +142,34 @@ export function buildCorrectionPrompt(
  
     let examplesText = '';
     if (gradingMemory && Array.isArray(gradingMemory) && gradingMemory.length > 0) {
+        console.log(`[PromptBuilder] Injecting ${gradingMemory.length} grading memory cases into correction prompt.`);
         examplesText = '\n\n### WICHTIGER PÄDAGOGISCHER ERFAHRUNGSSCHATZ (BENOTUNGS-REFERENZ):\n';
-        examplesText += 'Diese Beispiele zeigen dir, wie der Lehrer in der Vergangenheit bestimmte Typen von Fehlern bewertet hat. Sie dienen als qualitative Orientierung für deinen Bewertungsmaßstab (z. B. wie kulant oder streng du bei bestimmten Abweichungen sein sollst).\n\n';
-        examplesText += 'ACHTUNG (Sicherheit vor Memory-Bleed - UNANTASTBAR):\n';
-        examplesText += '- Kopiere NIEMALS blind die spezifischen Fehlerbeschreibungen, IP-Adressen, Ports, Zahlenwerte oder das Feedback aus den Beispielen für die aktuelle Schülerabgabe, es sei denn, die aktuelle Abgabe enthält exakt denselben Fehler mit exakt denselben Werten.\n';
-        examplesText += '- Analysiere die aktuelle Schülerabgabe stets eigenständig und mathematisch präzise auf Basis der Musterlösung. Die Fallbeispiele sind reine Richtlinien zur Bewertungsmethodik (Kulanz-Niveau) und keine Schablonen zum Abschreiben.\n\n';
+        examplesText += 'Diese Beispiele zeigen dir, wie der Lehrer in der Vergangenheit bestimmte Typen von Fehlern bewertet hat. Sie dienen als Orientierung für deinen Bewertungsmaßstab (z. B. wie kulant oder streng du bei bestimmten Abweichungen sein sollst) und für die Formulierung deines Feedbacks.\n\n';
+        examplesText += 'RICHTLINIEN FÜR DIE ANWENDUNG:\n';
+        examplesText += '- Nutze dieselben Kriterien und Abzugsprinzipien für ähnliche Fehler des Schülers.\n';
+        examplesText += '- Übernimm die pädagogischen Kernpunkte und Hinweise für dein Feedback, wenn der Schüler den gleichen konzeptionellen Fehler gemacht hat. Passe die Formulierung jedoch an die konkrete Schreibweise und die Variablen des aktuellen Schülers an.\n';
+        examplesText += '- Vermeide das blinde Kopieren von Werten (wie IP-Adressen oder Zahlen) aus anderen Aufgabenstellungen, wenn diese für die aktuelle Aufgabe nicht relevant sind.\n\n';
         
         gradingMemory.forEach((item, index) => {
             examplesText += `BEISPIEL ${index + 1}:\n`;
+            if (item.taskName) {
+                examplesText += `[Betrifft Aufgabe]\n"${item.taskName}"\n\n`;
+            }
             examplesText += `[Schülerantwort]\n"${item.studentText}"\n\n`;
             examplesText += `[Erwartete Bewertung]\n`;
-            examplesText += `- Vergebene Punkte: ${item.expectedCorrection.pointsObtained}\n`;
+            examplesText += `- Vergebene Punkte: ${item.expectedCorrection.pointsObtained}`;
+            if (item.expectedCorrection.maxPoints !== undefined && item.expectedCorrection.maxPoints !== null) {
+                examplesText += ` von ${item.expectedCorrection.maxPoints}`;
+            }
+            examplesText += `\n`;
             examplesText += `- Begründung (correctionNotes): "${item.expectedCorrection.correctionNotes}"\n`;
             if (item.expectedCorrection.feedback) {
                 examplesText += `- Feedback: "${item.expectedCorrection.feedback}"\n`;
             }
             examplesText += '\n-------------------\n\n';
         });
+    } else {
+        console.log('[PromptBuilder] No active grading memory cases to inject (gradingMemory is empty or null).');
     }
 
     if (examplesText) {

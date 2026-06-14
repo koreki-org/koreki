@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { GradingMemory } from '../types';
 import { isDesktopTarget } from '../lib/env-context';
 import { apiClient } from '../lib/api-client';
@@ -11,6 +12,7 @@ export const useGradingMemories = (userData?: any) => {
     const [memories, setMemories] = useState<GradingMemory[]>([]);
     const [loading, setLoading] = useState(false);
     const [activeMemoryId, setActiveMemoryId] = useState<string | null>(null);
+    const queryClient = useQueryClient();
 
     const fetchMemories = useCallback(async () => {
         setLoading(true);
@@ -24,8 +26,11 @@ export const useGradingMemories = (userData?: any) => {
                     const savedId = localStorage.getItem('koreki_active_grading_memory_id');
                     if (savedId) {
                         const activeMem = list.find((m: any) => m.id === savedId);
-                        if (activeMem && activeMem.cases) {
-                            localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(activeMem.cases));
+                        if (activeMem) {
+                            localStorage.setItem('koreki_active_grading_memory_name', activeMem.name);
+                            if (activeMem.cases) {
+                                localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(activeMem.cases));
+                            }
                         }
                     }
                 } catch (e) {
@@ -45,8 +50,11 @@ export const useGradingMemories = (userData?: any) => {
                 const savedId = userData?.activeGradingMemoryId || localStorage.getItem('koreki_active_grading_memory_id');
                 if (savedId) {
                     const activeMem = data.find((m: any) => m.id === savedId);
-                    if (activeMem && activeMem.cases) {
-                        localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(activeMem.cases));
+                    if (activeMem) {
+                        localStorage.setItem('koreki_active_grading_memory_name', activeMem.name);
+                        if (activeMem.cases) {
+                            localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(activeMem.cases));
+                        }
                     }
                 }
             }
@@ -70,17 +78,24 @@ export const useGradingMemories = (userData?: any) => {
         if (id) {
             localStorage.setItem('koreki_active_grading_memory_id', id);
             const memory = memories.find(m => m.id === id);
-            if (memory && memory.cases) {
-                localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(memory.cases));
+            if (memory) {
+                localStorage.setItem('koreki_active_grading_memory_name', memory.name);
+                if (memory.cases) {
+                    localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(memory.cases));
+                }
             }
         } else {
             localStorage.removeItem('koreki_active_grading_memory_id');
+            localStorage.removeItem('koreki_active_grading_memory_name');
             localStorage.removeItem('koreki_active_grading_memory_cases');
         }
 
         // Hybrid Sync (Arch §2): SaaS / Community -> DB Persistence
         if (!isDesktopTarget()) {
             apiClient.post('/api/user/update-grading-memory-profile', { gradingMemoryId: id })
+                .then(() => {
+                    queryClient.invalidateQueries(['user']);
+                })
                 .catch(err => console.error('[useGradingMemories] Failed to sync active grading memory to database', err));
         }
     };

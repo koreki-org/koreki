@@ -8,6 +8,58 @@ import { promisePool } from '../../lib/ai/promise-pool';
 import { runExtractionStrategy } from '../../lib/ai/extraction-logic';
 import { extractTextFromFile } from '../../lib/file-utils';
 import { useBatchStore } from '../store/useBatchStore';
+import { isDesktopTarget } from '../../lib/env-context';
+import { apiClient } from '../../lib/api-client';
+
+async function ensureActiveGradingMemorySynced() {
+    try {
+        const activeId = localStorage.getItem('koreki_active_grading_memory_id');
+        if (!activeId) {
+            localStorage.removeItem('koreki_active_grading_memory_cases');
+            localStorage.removeItem('koreki_active_grading_memory_name');
+            console.log('[GradingMemory Sync] No active grading memory configured. Cleared cases.');
+            return;
+        }
+
+        if (isDesktopTarget()) {
+            const stored = localStorage.getItem('koreki_local_grading_memories');
+            if (stored) {
+                const list = JSON.parse(stored);
+                const activeMem = list.find((m: any) => m.id === activeId);
+                if (activeMem) {
+                    localStorage.setItem('koreki_active_grading_memory_name', activeMem.name);
+                    if (activeMem.cases) {
+                        localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(activeMem.cases));
+                        console.log(`[GradingMemory Sync] (Desktop) Synced active memory "${activeMem.name}" with ${activeMem.cases.length} cases.`);
+                    } else {
+                        localStorage.setItem('koreki_active_grading_memory_cases', '[]');
+                    }
+                }
+            }
+            return;
+        }
+
+        // Community / SaaS Mode
+        const res = await apiClient.get('/api/user/grading-memories');
+        if (res.ok) {
+            const data = await res.json();
+            if (Array.isArray(data)) {
+                const activeMem = data.find((m: any) => m.id === activeId);
+                if (activeMem) {
+                    localStorage.setItem('koreki_active_grading_memory_name', activeMem.name);
+                    if (activeMem.cases) {
+                        localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(activeMem.cases));
+                        console.log(`[GradingMemory Sync] (Server) Synced active memory "${activeMem.name}" with ${activeMem.cases.length} cases.`);
+                    } else {
+                        localStorage.setItem('koreki_active_grading_memory_cases', '[]');
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        console.error('[GradingMemory Sync] Error syncing active memory before correction:', e);
+    }
+}
 
 export const useProcessingPipeline = (
     state: any,
@@ -193,7 +245,7 @@ export const useProcessingPipeline = (
                                 redactedDataUrls, 
                                 redactionRects, 
                                 isRedacted, 
-                                ocrDone: false 
+                                ocrDone: next[i].ocrDone || false 
                             };
                             return next;
                         });
@@ -348,6 +400,9 @@ export const useProcessingPipeline = (
                 throw new Error("Fehler: Kein Schülertext für die Korrektur gefunden.");
             }
 
+            // --- SYNC ACTIVE GRADING MEMORY SYNCHRONOUSLY BEFORE PROMPT COMPILATION ---
+            await ensureActiveGradingMemorySynced();
+
             const startTime = performance.now();
             let gradingMemoryCases = undefined;
             try {
@@ -356,6 +411,8 @@ export const useProcessingPipeline = (
                     gradingMemoryCases = JSON.parse(storedCases);
                 }
             } catch (e) {}
+
+            console.log(`[Pipeline] Launching AI correction for index ${i}. Active memory cases sent:`, gradingMemoryCases?.length || 0);
 
             if (signal?.aborted) return;
 

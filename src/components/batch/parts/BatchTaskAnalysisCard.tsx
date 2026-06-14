@@ -57,9 +57,9 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
     const [targetMemoryId, setTargetMemoryId] = React.useState<string>('');
     const [isPending, setIsPending] = React.useState(false);
 
-    // Load available memories and sync selected ID
-    const { memories, activeMemoryId, refreshMemories } = useGradingMemories();
     const { userData } = useAuth();
+    // Load available memories and sync selected ID
+    const { memories, activeMemoryId, refreshMemories } = useGradingMemories(userData);
     
     const [showSecondOpinionDrawer, setShowSecondOpinionDrawer] = React.useState(false);
     const [activeDoubleCheckTask, setActiveDoubleCheckTask] = React.useState<{
@@ -244,34 +244,46 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
         try {
             if (isDesktopTarget()) {
                 // --- TAURI CLIENT-SIDE LOCAL STORAGE SYNC ---
+                let list = [];
                 const stored = localStorage.getItem('koreki_local_grading_memories');
                 if (stored) {
                     try {
-                        const list = JSON.parse(stored);
-                        const memIdx = list.findIndex((m: any) => m.id === targetMemoryId);
-                        if (memIdx !== -1) {
-                            const newCase = {
-                                id: `case-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-                                studentText: studentText.trim(),
-                                taskName: taskName,
-                                expectedCorrection: {
-                                    pointsObtained: points,
-                                    maxPoints: maxPoints,
-                                    correctionNotes: notes.trim()
-                                }
-                            };
-                            list[memIdx].cases = [...(list[memIdx].cases || []), newCase];
-                            localStorage.setItem('koreki_local_grading_memories', JSON.stringify(list));
-                            
-                            // Propagate active cases instantly
-                            const activeId = localStorage.getItem('koreki_active_grading_memory_id');
-                            if (activeId === targetMemoryId) {
-                                localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(list[memIdx].cases));
-                            }
-                        }
+                        list = JSON.parse(stored);
                     } catch (e) {
                         console.error('Failed to parse local memories JSON', e);
                     }
+                }
+                
+                let memIdx = list.findIndex((m: any) => m.id === targetMemoryId);
+                if (memIdx === -1) {
+                    // Create a placeholder local memory profile if it doesn't exist yet
+                    const activeName = localStorage.getItem('koreki_active_grading_memory_name') || 'Importierter Erfahrungsschatz';
+                    const newMemory = {
+                        id: targetMemoryId,
+                        name: activeName,
+                        cases: []
+                    };
+                    list.push(newMemory);
+                    memIdx = list.length - 1;
+                }
+
+                const newCase = {
+                    id: `case-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+                    studentText: studentText.trim(),
+                    taskName: taskName,
+                    expectedCorrection: {
+                        pointsObtained: points,
+                        maxPoints: maxPoints,
+                        correctionNotes: notes.trim()
+                    }
+                };
+                list[memIdx].cases = [...(list[memIdx].cases || []), newCase];
+                localStorage.setItem('koreki_local_grading_memories', JSON.stringify(list));
+                
+                // Propagate active cases instantly
+                const activeId = localStorage.getItem('koreki_active_grading_memory_id');
+                if (activeId === targetMemoryId) {
+                    localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(list[memIdx].cases));
                 }
                 
                 await refreshMemories();

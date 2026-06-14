@@ -23,6 +23,7 @@ export async function exportSessionToJson(
         activeAiProfileName?: string;
         activeGradingMemoryId?: string;
         activeGradingMemoryName?: string;
+        activeGradingMemoryCases?: any[];
     },
     isStudentSolution: boolean = false
 ) {

@@ -221,3 +221,12 @@ body {
 .no-spinners {
   -moz-appearance: textfield;
 }
+
+/* Koreki Typing Indicator Dots Animation */
+@keyframes chatgptPulse {
+  0%, 100% { transform: translateY(0); opacity: 0.35; }
+  50% { transform: translateY(-4px); opacity: 1; }
+}
+.chatgpt-dot {
+  animation: chatgptPulse 1.2s ease-in-out infinite;
+}

@@ -140,8 +140,14 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                             item.previewDataUrls.map((url, pIdx) => (
                                 <img key={pIdx} src={url} alt={`Seite ${pIdx + 1}`} className="w-full h-auto object-contain p-1 border-b border-slate-300 last:border-0 shadow-sm" />
                             ))
+                        ) : previewUrl ? (
+                            <img src={previewUrl} alt="Scan Vorschau" className="min-w-full object-contain p-1" />
                         ) : (
-                            <img src={previewUrl || ''} alt="Scan Vorschau" className="min-w-full object-contain p-1" />
+                            <div className="flex flex-col items-center justify-center p-8 text-slate-400 text-sm text-center h-full w-full max-w-xs m-auto space-y-2">
+                                <FileText size={40} className="stroke-1 opacity-60 text-slate-400" />
+                                <span className="font-semibold text-slate-500">Keine Scan-Vorschau aktiv</span>
+                                <span className="text-xs text-slate-400">Du kannst deine Scans jederzeit nachträglich über den „Dateien verknüpfen“-Button ganz oben erneut laden.</span>
+                            </div>
                         )}
                     </div>
                 </div>

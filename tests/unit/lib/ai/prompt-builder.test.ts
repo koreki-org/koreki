@@ -70,3 +70,27 @@ describe('splitSkillSnippet and extractionInstructions dynamic handling', () => 
         expect(prompt.system).toContain('Extract MesseBesucher');
     });
 });
+
+describe('Grading Memory prompt formatting', () => {
+    it('should include taskName and maxPoints when formatting few-shot grading memory examples', () => {
+        const memoryCases = [
+            {
+                id: 'case-1',
+                studentText: '3 nennungen',
+                taskName: 'Aufgabe 1a',
+                expectedCorrection: {
+                    pointsObtained: 1.5,
+                    maxPoints: 2,
+                    correctionNotes: 'Sollte 1.5 Punkte geben.',
+                    feedback: 'Gut.'
+                }
+            }
+        ];
+        const prompt = buildCorrectionPrompt('Muster', 'Schüler', null, '', 'qwen3-vl:8b', memoryCases);
+        expect(prompt.user).toContain('[Betrifft Aufgabe]');
+        expect(prompt.user).toContain('"Aufgabe 1a"');
+        expect(prompt.user).toContain('Vergebene Punkte: 1.5 von 2');
+        expect(prompt.user).toContain('Sollte 1.5 Punkte geben.');
+        expect(prompt.user).toContain('Gut.');
+    });
+});

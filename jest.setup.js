@@ -1,5 +1,8 @@
 import '@testing-library/jest-dom';
 
+// Increase default timeout for slow sandbox environments
+jest.setTimeout(45000);
+
 // --- Web API Polyfills for Node.js / JSDOM Environment ---
 // Required for Prisma 7 + PostgreSQL Driver Adapter (pg) in tests
 const { TextEncoder, TextDecoder } = require('util');

@@ -412,6 +412,11 @@ async fn delete_secret(key: String) -> Result<(), String> {
     Ok(())
 }
 
+#[tauri::command]
+fn open_devtools(window: tauri::WebviewWindow) {
+    window.open_devtools();
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -426,7 +431,8 @@ pub fn run() {
         open_file_native,
         save_secret,
         get_secret,
-        delete_secret
+        delete_secret,
+        open_devtools
     ])
     .setup(|_app| {
       if cfg!(debug_assertions) {

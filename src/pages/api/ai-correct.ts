@@ -32,6 +32,15 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const { claims } = req.user;
         const logtoId = claims.sub;
 
+        logger.info('[API:ai-correct] Received correction request', {
+            hasModelSolution: !!modelSolution,
+            studentTextLength: studentText?.length || 0,
+            tasksCount: tasksLayout?.length || 0,
+            expertProfileName,
+            hasGradingMemory: !!gradingMemory,
+            gradingMemoryCasesCount: gradingMemory?.length || 0
+        });
+
 
 
         // --- COMPLIANCE EARLY GATEKEEPER ---

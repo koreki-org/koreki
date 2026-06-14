@@ -234,6 +234,7 @@ export async function executeOpenAIRequest(
         }
 
         const data = await response.json();
+        console.log("[OPENAI-RESPONSE-DATA]", JSON.stringify(data));
         responseContent = data.choices?.[0]?.message?.content;
         responseUsage = data.usage;
     }
