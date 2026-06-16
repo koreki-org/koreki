@@ -38,7 +38,9 @@ WICHTIG (Mathematik & Formeln):
 - Falls die Musterlösung mathematische Formeln enthält, stelle sicher, dass diese sauber in LaTeX-Delimitern eingeschlossen sind.
 - Nutze `$...$` für Inline-Formeln und `$$...$$` für freigestellte Formeln auf eigener Zeile.
 - Erhalte die fachliche Korrektheit der LaTeX-Syntax (z.B. Brüche, Summen, Integrale).
-- ACHTUNG (JSON-Maskierung): Da du ein JSON-Objekt ausgibst, musst du JEDEN Backslash vor LaTeX-Befehlen doppelt maskieren (z. B. `\\frac`, `\\text`, `\\Omega`, `\\alpha`), damit sie als valider JSON-String geparst werden können und nicht fälschlicherweise als JSON-Kontrollzeichen (wie Tabulator `\t` oder Formfeed `\f`) verloren gehen!
+- ACHTUNG (JSON-Maskierung & Delimiter): Da du ein JSON-Objekt ausgibst, musst du JEDEN Backslash vor LaTeX-Befehlen doppelt maskieren (z. B. `\\frac`, `\\text`, `\\Omega`, `\\alpha`) UND die Formeln zwingend in `$` bzw. `$$` einschließen.
+  * FALSCH: `"content": "P = U \\times I = 230,\\text{V} \\times 10,\\text{A}"`
+  * RICHTIG: `"content": "$P = U \\times I = 230,\\text{V} \\times 10,\\text{A}$"`
 
 
 WICHTIG (Tabellen-Formatierung & Rekonstruktion):

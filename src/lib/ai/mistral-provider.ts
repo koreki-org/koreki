@@ -18,7 +18,7 @@ import {
     StructuredPrompt 
 
 } from './prompt-builder';
-import { buildGraphGenerationPrompt, buildGraphRefinementPrompt } from '../grading/graph-generator';
+import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
 import { isDesktopTarget } from '@/lib/env-context';
 
 export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction';
@@ -34,6 +34,7 @@ export interface AIRequestOptions {
     gradingMemory?: any[] | null;
     activeSkillIds?: string[];
     customSkills?: Record<string, any>;
+    responseSchema?: any;
     signal?: AbortSignal;
 }
 
@@ -132,7 +133,18 @@ export async function executeMistralRequest(
             { role: 'user', content: promptObj.user }
         ];
         if (action !== 'second-opinion') {
-            responseFormat = { type: 'json_object' };
+            if (options.responseSchema) {
+                responseFormat = {
+                    type: "json_schema",
+                    json_schema: {
+                        name: "GradingGraph",
+                        strict: true,
+                        schema: options.responseSchema
+                    }
+                };
+            } else {
+                responseFormat = { type: 'json_object' };
+            }
         }
     }
 
@@ -169,85 +181,137 @@ export async function executeMistralRequest(
         }
     }
 
-    let responseData: any;
+    const isGraphAction = action === 'generate-graph' || action === 'refine-graph';
+    if (isGraphAction) {
+        body.tools = [VALIDATE_GRAPH_TOOL];
+        body.tool_choice = "auto";
+    }
 
-    if (isDesktopTarget()) {
-        try {
-            const { invoke } = await import('@tauri-apps/api/core');
-            const invokePromise = invoke<string>('execute_ai_proxy_command', {
-                url,
+    let responseContent: string | null = null;
+    let responseUsage: any = undefined;
+    let toolRetryCount = 0;
+    const maxToolRetries = 3;
+
+    while (toolRetryCount <= maxToolRetries) {
+        let responseData: any;
+
+        if (isDesktopTarget()) {
+            try {
+                const { invoke } = await import('@tauri-apps/api/core');
+                const invokePromise = invoke<string>('execute_ai_proxy_command', {
+                    url,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                let res: string;
+                if (options.signal) {
+                    if (options.signal.aborted) {
+                        throw new DOMException('The user aborted a request.', 'AbortError');
+                    }
+                    res = await Promise.race([
+                        invokePromise,
+                        new Promise<string>((_, reject) => {
+                            options.signal!.addEventListener('abort', () => {
+                                reject(new DOMException('The user aborted a request.', 'AbortError'));
+                            });
+                        })
+                    ]);
+                } else {
+                    res = await invokePromise;
+                }
+                responseData = JSON.parse(res);
+            } catch (e) {
+                throw new Error(`Desktop Proxy Fehler: ${e}`);
+            }
+        } else {
+            const response = await fetchWithRetry(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`
                 },
-                body: JSON.stringify(body)
+                body: JSON.stringify(body),
+                signal: options.signal
             });
-            
-            let res: string;
-            if (options.signal) {
-                if (options.signal.aborted) {
-                    throw new DOMException('The user aborted a request.', 'AbortError');
-                }
-                res = await Promise.race([
-                    invokePromise,
-                    new Promise<string>((_, reject) => {
-                        options.signal!.addEventListener('abort', () => {
-                            reject(new DOMException('The user aborted a request.', 'AbortError'));
-                        });
-                    })
-                ]);
-            } else {
-                res = await invokePromise;
-            }
-            responseData = JSON.parse(res);
-        } catch (e) {
-            throw new Error(`Desktop Proxy Fehler: ${e}`);
-        }
-    } else {
-        const response = await fetchWithRetry(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify(body),
-            signal: options.signal
-        });
 
-        if (!response.ok) {
-            let errorMessage = `Mistral API Error: ${response.status}`;
-            try {
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    const errorData = await response.json();
-                    errorMessage = errorData.error?.message || errorMessage;
-                } else {
-                    const errorText = await response.text();
-                    if (errorText.toLowerCase().includes('bad gateway')) {
-                        errorMessage = "Der KI-Server ist aktuell nicht erreichbar (Bad Gateway). Bitte versuchen Sie es in Kürze erneut.";
-                    } else if (response.status === 504) {
-                        errorMessage = "Zeitüberschreitung bei der KI-Anfrage (Gateway Timeout). Die Musterlösung ist eventuell zu komplex.";
+            if (!response.ok) {
+                let errorMessage = `Mistral API Error: ${response.status}`;
+                try {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error?.message || errorMessage;
                     } else {
-                        errorMessage = `Server-Fehler (${response.status}). Bitte versuchen Sie es erneut.`;
+                        const errorText = await response.text();
+                        if (errorText.toLowerCase().includes('bad gateway')) {
+                            errorMessage = "Der KI-Server ist aktuell nicht erreichbar (Bad Gateway). Bitte versuchen Sie es in Kürze erneut.";
+                        } else if (response.status === 504) {
+                            errorMessage = "Zeitüberschreitung bei der KI-Anfrage (Gateway Timeout). Die Musterlösung ist eventuell zu komplex.";
+                        } else {
+                            errorMessage = `Server-Fehler (${response.status}). Bitte versuchen Sie es erneut.`;
+                        }
+                    }
+                } catch (e) {
+                    errorMessage = `Kritischer API-Fehler (${response.status}).`;
+                }
+                throw new Error(errorMessage);
+            }
+            responseData = await response.json();
+        }
+
+        const data = responseData;
+        const message = data.choices[0].message;
+        responseUsage = data.usage;
+
+        // Handle structured content block arrays returned by Mistral's reasoning models
+        let content = message.content;
+        if (Array.isArray(content)) {
+            const textBlock = content.find((block: any) => block.type === 'text');
+            content = textBlock ? textBlock.text : '';
+        }
+
+        if (message?.tool_calls && message.tool_calls.length > 0) {
+            const toolCall = message.tool_calls[0];
+            if (toolCall.function.name === 'validate_graph') {
+                const draftGraphJson = toolCall.function.arguments;
+                const draftGraph = parseGeneratedGraph(draftGraphJson, { skipSanitization: true });
+                let toolResultString = "";
+                
+                if (!draftGraph) {
+                    toolResultString = "Invalid JSON structure or missing variables. Ensure you match the GRADING_GRAPH_SCHEMA exactly.";
+                } else {
+                    const validation = validateGraphDeterminism(draftGraph);
+                    if (validation.isValid) {
+                        toolResultString = "Valid! The graph is mathematically deterministic. Please return the exact same graph as the final JSON output now.";
+                    } else {
+                        toolResultString = `Mathematical validation failed: ${validation.error}. Please fix this and try again or return the corrected graph.`;
                     }
                 }
-            } catch (e) {
-                errorMessage = `Kritischer API-Fehler (${response.status}).`;
+                
+                messages.push(message);
+                messages.push({
+                    role: "tool",
+                    tool_call_id: toolCall.id,
+                    name: toolCall.function.name,
+                    content: toolResultString
+                });
+
+                body.messages = messages;
+                toolRetryCount++;
+                continue;
             }
-            throw new Error(errorMessage);
         }
-        responseData = await response.json();
+
+        responseContent = content;
+        break;
     }
 
-    const data = responseData;
-    let content = data.choices[0].message.content;
-
-    // Handle structured content block arrays returned by Mistral's reasoning models (e.g., mistral-medium-2604)
-    if (Array.isArray(content)) {
-        const textBlock = content.find((block: any) => block.type === 'text');
-        content = textBlock ? textBlock.text : '';
-    }
+    let content = responseContent;
 
     if (content === null || content === undefined) {
         throw new Error('Die KI hat eine leere Antwort (null) zurückgegeben. Dies kann passieren, wenn das Modell überlastet ist oder die Eingabe blockiert wurde.');

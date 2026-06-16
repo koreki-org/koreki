@@ -123,7 +123,8 @@ describe('Logic module tests', () => {
             
             // Check clearing of historical data
             const part1 = result[0];
-            expect(part1.name).toBe('Schüler #1 (Teil 1)');
+            expect(part1.name).toBe('Schüler #1');
+            expect(part1.originalName).toBe('Schüler #1 (Teil 1)');
             expect(part1.status).toBe('pending');
             expect(part1.result).toBeNull();
             expect(part1.error).toBeNull();
@@ -137,7 +138,8 @@ describe('Logic module tests', () => {
             expect(part1.pageRange).toEqual([1, 2]);
 
             const part2 = result[1];
-            expect(part2.name).toBe('Schüler #2 (Teil 2)');
+            expect(part2.name).toBe('Schüler #2');
+            expect(part2.originalName).toBe('Schüler #2 (Teil 2)');
             expect(part2.pageCount).toBe(3);
             expect(part2.pageRange).toEqual([3, 5]);
         });
@@ -163,6 +165,32 @@ describe('Logic module tests', () => {
 
             expect(result.length).toBe(1);
             expect(result[0].autoRedactTop2cm).toBe(false);
+        });
+
+        it('should preserve user-provided split name in originalName to survive reindexing', () => {
+            const { generateSplitBatchItems } = require('../../src/lib/logic');
+            const originalFile = { name: 'scans', originalName: 'scans' };
+            const splits = [
+                { name: 'Max Mustermann', pageCount: 2 }, // Explicit name
+                { name: 'Schüler #2', pageCount: 1 },     // Default-style name
+                { name: '', pageCount: 1 }                // Empty name
+            ];
+
+            const result = generateSplitBatchItems(originalFile, splits, 0);
+
+            expect(result.length).toBe(3);
+
+            // Item 1: Explicit name provided
+            expect(result[0].name).toBe('Schüler #1');
+            expect(result[0].originalName).toBe('Max Mustermann');
+
+            // Item 2: Default style name provided
+            expect(result[1].name).toBe('Schüler #2');
+            expect(result[1].originalName).toBeUndefined();
+
+            // Item 3: No name provided
+            expect(result[2].name).toBe('Schüler #3');
+            expect(result[2].originalName).toBeUndefined();
         });
     });
 });

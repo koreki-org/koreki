@@ -160,8 +160,64 @@ export function buildGraphRefinementPrompt(
 
 
 // ──────────────────────────────────────────────────────────────────────────
-// 3. Response Parser — Extracts and validates the generated GradingGraph
+// 3. Response Parser & Schema — Extracts and validates the generated GradingGraph
 // ──────────────────────────────────────────────────────────────────────────
+
+export const GRADING_GRAPH_SCHEMA = {
+  type: "object",
+  properties: {
+    taskId: { type: "string" },
+    discipline: { type: "string" },
+    disablePoints: { type: ["boolean", "null"] },
+    equivalenceGroups: {
+      type: ["array", "null"],
+      items: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          prefixes: { type: "array", items: { type: "string" } }
+        },
+        required: ["id", "prefixes"],
+        additionalProperties: false
+      }
+    },
+    variables: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          type: { type: "string", enum: ["input", "formula"] },
+          defaultValue: { type: ["string", "number", "boolean", "null"] },
+          expression: { type: ["string", "null"] },
+          validationType: { type: "string", enum: ["exact", "tolerance", "contains"] },
+          tolerance: { type: ["number", "null"] },
+          maxPoints: { type: ["number", "null"] }
+        },
+        required: ["id", "type", "defaultValue", "expression", "validationType", "tolerance", "maxPoints"],
+        additionalProperties: false
+      }
+    }
+  },
+  required: ["taskId", "discipline", "disablePoints", "equivalenceGroups", "variables"],
+  additionalProperties: false
+};
+
+export const VALIDATE_GRAPH_TOOL = {
+  type: "function",
+  function: {
+    name: "validate_graph",
+    description: "Validates a grading graph for mathematical determinism. Use this to test your graph before returning the final result. If the validation fails, you will receive an error message explaining what needs to be fixed. Once you are confident the graph is correct, just output the final graph as JSON.",
+    parameters: {
+      type: "object",
+      properties: {
+        graph: GRADING_GRAPH_SCHEMA
+      },
+      required: ["graph"],
+      additionalProperties: false
+    }
+  }
+};
 
 /** Set of all valid plugin expressions for security validation */
 function getValidPluginExpressionPrefixes(): string[] {
@@ -178,37 +234,11 @@ function getValidPluginExpressionPrefixes(): string[] {
 export function parseGeneratedGraph(llmResponse: string, options?: { skipSanitization?: boolean }): GradingGraph | null {
   if (!llmResponse || !llmResponse.trim()) return null;
 
-  let cleaned = llmResponse.trim();
-
-  // Strip Markdown code fences
-  if (cleaned.includes('```json')) {
-    const parts = cleaned.split('```json');
-    if (parts.length > 1) cleaned = parts[1].split('```')[0].trim();
-  } else if (cleaned.includes('```')) {
-    const parts = cleaned.split('```');
-    if (parts.length > 1) cleaned = parts[1].split('```')[0].trim();
-  }
-
-  // Strip thinking/reasoning blocks (common with Qwen, Mistral Medium)
-  cleaned = cleaned
-    .replace(/<thought>[\s\S]*?(<\/thought>|$)/gi, '')
-    .replace(/<reasoning>[\s\S]*?(<\/reasoning>|$)/gi, '')
-    .replace(/\[thought\][\s\S]*?(\[\/thought\]|$)/gi, '')
-    .trim();
-
-  // Greedy JSON extraction
-  const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) return null;
-
-  let jsonStr = jsonMatch[0];
-
-  // Repair trailing commas (common LLM failure)
-  jsonStr = jsonStr.replace(/,\s*([\]\}])/g, '$1');
-
   let parsed: Record<string, any>;
   try {
-    parsed = JSON.parse(jsonStr);
-  } catch {
+    parsed = JSON.parse(llmResponse.trim());
+  } catch (e) {
+    console.warn("parseGeneratedGraph: JSON.parse failed. Expected structured JSON output.", e);
     return null;
   }
 

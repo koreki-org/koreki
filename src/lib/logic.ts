@@ -93,9 +93,13 @@ export function generateSplitBatchItems(
     
     let currentStartPage = 1;
     return splits.map((s, idx) => {
+        const defaultName = `Schüler #${baseIdx + idx + 1}`;
+        const realNameProvided = s.name && !/^Schüler #\d+$/.test(s.name);
+
         const item = {
             ...originalFile,
-            name: s.name || `Schüler #${baseIdx + idx + 1}`,
+            name: defaultName,
+            originalName: realNameProvided ? s.name : undefined,
             status: 'pending',
             result: null,
             error: null,

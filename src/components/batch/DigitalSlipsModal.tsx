@@ -23,7 +23,6 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
     const completedFiles = batchFiles.filter(f => f.status === 'done' && f.result);
 
     const getRealName = (f: BatchFile) => {
-        if (f.splitInfo) return f.name;
         // If it's a pseudonym like "Schüler #1", try to get originalName
         if (/^Schüler #\d+$/.test(f.name) && f.originalName) return f.originalName;
         return f.name || f.originalName || 'Unbekannt';

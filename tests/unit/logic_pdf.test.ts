@@ -11,8 +11,10 @@ describe('Logic/PDF Utils', () => {
         const result = generateSplitBatchItems(original, splits, 0);
         
         expect(result.length).toBe(2);
-        expect(result[0].name).toBe('S1');
-        expect(result[1].name).toBe('S2');
+        expect(result[0].name).toBe('Schüler #1');
+        expect(result[0].originalName).toBe('S1');
+        expect(result[1].name).toBe('Schüler #2');
+        expect(result[1].originalName).toBe('S2');
         
         // Ranges
         expect(result[0].pageRange).toEqual([1, 2]);

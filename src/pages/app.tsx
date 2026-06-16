@@ -404,7 +404,6 @@ export default function Home() {
 
                     {fileProcessor.batchFiles.length > 0 && (() => {
                         const getExportName = (f: any) => {
-                            if (f.splitInfo) return f.name;
                             if (/^Schüler #\d+$/.test(f.name) && f.originalName) return f.originalName;
                             return f.name || f.originalName || 'Unbekannt';
                         };

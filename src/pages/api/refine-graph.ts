@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
-import { parseGeneratedGraph, validateGraphDeterminism } from '@/lib/grading/graph-generator';
+import { parseGeneratedGraph, validateGraphDeterminism, GRADING_GRAPH_SCHEMA } from '@/lib/grading/graph-generator';
 import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
@@ -59,7 +59,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             rawResult = await executeOllamaRequest(
                 'refine-graph',
                 { taskText, currentGraph, userInstruction, discipline },
-                settings
+                settings,
+                undefined,
+                { responseSchema: GRADING_GRAPH_SCHEMA }
             );
         } else if (!useOpenAI) {
             const apiKey = settings?.mistralKey || process.env.MISTRAL_API_KEY;
@@ -74,7 +76,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     enableThinking: settings?.enableThinking ?? false, // Disabled thinking for fast simple JSON modifications
                     temperature,
                     topP,
-                    maxTokens: settings?.maxTokens ?? 4000
+                    maxTokens: settings?.maxTokens ?? 4000,
+                    responseSchema: GRADING_GRAPH_SCHEMA
                 }
             );
         } else {
@@ -95,7 +98,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     temperature,
                     topP,
                     presencePenalty,
-                    maxTokens: settings?.maxTokens ?? 4000
+                    maxTokens: settings?.maxTokens ?? 4000,
+                    responseSchema: GRADING_GRAPH_SCHEMA
                 }
             );
         }

@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
-import { parseGeneratedGraph, validateGraphDeterminism } from '@/lib/grading/graph-generator';
+import { parseGeneratedGraph, validateGraphDeterminism, GRADING_GRAPH_SCHEMA } from '@/lib/grading/graph-generator';
 import { performBillingAction } from '@/lib/billing';
 import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
@@ -50,7 +50,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             rawResult = await executeOllamaRequest(
                 'generate-graph',
                 { taskText, discipline, userNotes },
-                settings
+                settings,
+                undefined,
+                { responseSchema: GRADING_GRAPH_SCHEMA }
             );
         } else if (!useOpenAI) {
             const apiKey = settings?.mistralKey || process.env.MISTRAL_API_KEY;
@@ -65,7 +67,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     enableThinking: settings?.enableThinking,
                     temperature: settings?.temperature ?? 0.2,
                     topP: settings?.topP ?? 0.9,
-                    maxTokens: settings?.maxTokens ?? 4000
+                    maxTokens: settings?.maxTokens ?? 4000,
+                    responseSchema: GRADING_GRAPH_SCHEMA
                 }
             );
         } else {
@@ -85,7 +88,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     enableThinking: settings?.enableThinking,
                     temperature: settings?.temperature ?? 0.2,
                     topP: settings?.topP ?? 0.9,
-                    maxTokens: settings?.maxTokens ?? 4000
+                    maxTokens: settings?.maxTokens ?? 4000,
+                    responseSchema: GRADING_GRAPH_SCHEMA
                 }
             );
         }
@@ -132,7 +136,9 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                     rawResult = await executeOllamaRequest(
                         'refine-graph',
                         { taskText, currentGraph: graph, userInstruction, discipline },
-                        settings
+                        settings,
+                        undefined,
+                        { responseSchema: GRADING_GRAPH_SCHEMA }
                     );
                 } else if (!useOpenAI) {
                     const apiKey = settings?.mistralKey || process.env.MISTRAL_API_KEY;
@@ -146,7 +152,8 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                                 enableThinking: false, // Fast, low-latency correction
                                 temperature: 0.0,
                                 topP: 1.0,
-                                maxTokens: settings?.maxTokens ?? 4000
+                                maxTokens: settings?.maxTokens ?? 4000,
+                                responseSchema: GRADING_GRAPH_SCHEMA
                             }
                         );
                     }
@@ -166,7 +173,8 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                                 enableThinking: false, // Fast, low-latency correction
                                 temperature: 0.0,
                                 topP: 1.0,
-                                maxTokens: settings?.maxTokens ?? 4000
+                                maxTokens: settings?.maxTokens ?? 4000,
+                                responseSchema: GRADING_GRAPH_SCHEMA
                             }
                         );
                     }

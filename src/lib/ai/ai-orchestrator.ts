@@ -6,7 +6,7 @@ import { executeOllamaRequest } from './ollama-logic';
 import { executeOpenAIRequest } from './openai-provider';
 import { isLocalInstance, isDesktopTarget } from '@/lib/env-context';
 import { GraphRunner } from '../grading/GraphRunner';
-import { parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
+import { parseGeneratedGraph, validateGraphDeterminism, GRADING_GRAPH_SCHEMA } from '../grading/graph-generator';
 import { formatPluginFeedback } from '../grading/feedback-formatter';
 import { GradingGraph } from '../grading/types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
@@ -519,7 +519,7 @@ export async function performAIRequest(
             if (action === 'generate-graph') {
                 let genResult: any;
                 if (settings?.provider === 'ollama') {
-                    genResult = await executeOllamaRequest('generate-graph', payload, settings);
+                    genResult = await executeOllamaRequest('generate-graph', payload, settings, signal, { responseSchema: GRADING_GRAPH_SCHEMA });
                 } else if (settings?.provider === 'openai-compatible') {
                     const baseUrl = settings.openaiUrl || '';
                     const apiKey = settings.openaiKey || '';
@@ -528,7 +528,8 @@ export async function performAIRequest(
                         enableThinking: settings.enableThinking,
                         temperature: 0.2,
                         topP: 0.9,
-                        maxTokens: 4000
+                        maxTokens: 4000,
+                        responseSchema: GRADING_GRAPH_SCHEMA
                     });
                 } else {
                     genResult = await executeMistralRequest('generate-graph', payload, mistralKey, {
@@ -536,7 +537,8 @@ export async function performAIRequest(
                         enableThinking: settings?.enableThinking,
                         temperature: 0.2,
                         topP: 0.9,
-                        maxTokens: 4000
+                        maxTokens: 4000,
+                        responseSchema: GRADING_GRAPH_SCHEMA
                     });
                 }
 
@@ -575,7 +577,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                         };
 
                         if (settings?.provider === 'ollama') {
-                            correctionResult = await executeOllamaRequest('refine-graph', correctionPayload, settings);
+                            correctionResult = await executeOllamaRequest('refine-graph', correctionPayload, settings, signal, { responseSchema: GRADING_GRAPH_SCHEMA });
                         } else if (settings?.provider === 'openai-compatible') {
                             const baseUrl = settings.openaiUrl || '';
                             const apiKey = settings.openaiKey || '';
@@ -583,14 +585,16 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                                 model: settings.openaiModel,
                                 temperature: 0.0,
                                 topP: 1.0,
-                                maxTokens: 4000
+                                maxTokens: 4000,
+                                responseSchema: GRADING_GRAPH_SCHEMA
                             });
                         } else {
                             correctionResult = await executeMistralRequest('refine-graph', correctionPayload, mistralKey, {
                                 model: settings?.model,
                                 temperature: 0.0,
                                 topP: 1.0,
-                                maxTokens: 4000
+                                maxTokens: 4000,
+                                responseSchema: GRADING_GRAPH_SCHEMA
                             });
                         }
 
@@ -619,7 +623,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
             } else if (action === 'refine-graph') {
                 let refineResult: any;
                 if (settings?.provider === 'ollama') {
-                    refineResult = await executeOllamaRequest('refine-graph', payload, settings);
+                    refineResult = await executeOllamaRequest('refine-graph', payload, settings, signal, { responseSchema: GRADING_GRAPH_SCHEMA });
                 } else if (settings?.provider === 'openai-compatible') {
                     const baseUrl = settings.openaiUrl || '';
                     const apiKey = settings.openaiKey || '';
@@ -627,14 +631,16 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                         model: settings.openaiModel,
                         temperature: 0.0,
                         topP: 1.0,
-                        maxTokens: 4000
+                        maxTokens: 4000,
+                        responseSchema: GRADING_GRAPH_SCHEMA
                     });
                 } else {
                     refineResult = await executeMistralRequest('refine-graph', payload, mistralKey, {
                         model: settings?.model,
                         temperature: 0.0,
                         topP: 1.0,
-                        maxTokens: 4000
+                        maxTokens: 4000,
+                        responseSchema: GRADING_GRAPH_SCHEMA
                     });
                 }
 
@@ -738,10 +744,21 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
             settings, 
             isComplex: payload.isComplex ?? (action === 'vision') 
         }, { signal });
-        const data = await res.json();
+        let data: any;
+        const rawText = await res.text();
+        try {
+            data = JSON.parse(rawText);
+        } catch (e) {
+            // Wenn die API kein JSON zurückgibt (z.B. Nginx 502 HTML Page oder Next.js Crash)
+            data = { error: rawText || `HTTP Error ${res.status}` };
+        }
+
         if (!res.ok) {
             logger.error("API ERROR RESPONSE:", data);
-            throw new Error(data.error || `KI Anfrage fehlgeschlagen: ${JSON.stringify(data)}`);
+            const errorMessage = typeof data.error === 'string' 
+                ? data.error 
+                : (data.error?.message || data.message || `KI Anfrage fehlgeschlagen (HTTP ${res.status})`);
+            throw new Error(errorMessage);
         }
 
         if (action === 'correction') {

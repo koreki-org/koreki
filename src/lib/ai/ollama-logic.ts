@@ -11,7 +11,7 @@ import {
     StructuredPrompt
 
 } from './prompt-builder';
-import { buildGraphGenerationPrompt, buildGraphRefinementPrompt } from '../grading/graph-generator';
+import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
 import { AppSettings } from '../../types';
 import { isDesktopTarget } from '@/lib/env-context';
 
@@ -59,7 +59,8 @@ export async function executeOllamaRequest(
     action: AIAction,
     payload: any,
     settings: AppSettings,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    options?: { responseSchema?: any }
 ): Promise<any> {
     if (!settings || !settings.ollamaUrl) {
         throw new Error('Ollama-Verbindung fehlgeschlagen: Keine Ollama-URL in den Einstellungen konfiguriert.');
@@ -227,7 +228,9 @@ export async function executeOllamaRequest(
             const { invoke } = await import('@tauri-apps/api/core');
             // [Industrial Validation] If Mistral works but Qwen fails with connection error,
             // we must unify the request structure. Enabled JSON format for all.
-            const targetFormat = (action === 'vision' || action === 'second-opinion') ? undefined : 'json';
+            const targetFormat = (action === 'vision' || action === 'second-opinion') 
+                ? undefined 
+                : (options?.responseSchema ? options.responseSchema : 'json');
 
             const invokePromise = invoke<string>('execute_ollama_command', {
                 url: baseUrl,
@@ -299,81 +302,146 @@ export async function executeOllamaRequest(
         });
     }
 
-    const response = await fetch(`${baseUrl}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        signal,
-        body: JSON.stringify({
-            model,
-            messages,
-            stream: true,
-            format: (action === 'vision' || action === 'second-opinion') ? undefined : 'json',
-            think: action === 'vision' ? false : (settings.enableThinking ?? false),
-            options: { 
-                num_ctx: numCtx,
-                temperature: targetTemp,
-                top_p: targetTopP,
-                num_predict: finalMaxTokens,
-                repeat_penalty: isVision ? 1.2 : 1.15,
-                presence_penalty: settings.presencePenalty ?? 0.0
-            }
-        })
-    });
-
-    if (!response.ok) {
-        const errText = await response.text().catch(() => '');
-        throw new Error(`Ollama Error: ${response.status}${errText ? ` - ${errText}` : ''}`);
+    const isGraphAction = action === 'generate-graph' || action === 'refine-graph';
+    let tools: any[] | undefined = undefined;
+    if (isGraphAction) {
+        tools = [VALIDATE_GRAPH_TOOL];
     }
 
     let fullContent = '';
-    if (response.body) {
-        if (typeof (response.body as any).getReader === 'function') {
-            const reader = (response.body as any).getReader();
-            const decoder = new TextDecoder();
-            let buffer = '';
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split('\n');
-                buffer = lines.pop() || '';
-                for (const line of lines) {
-                    const cleanLine = line.trim();
-                    if (!cleanLine) continue;
-                    try {
-                        const parsed = JSON.parse(cleanLine);
-                        if (parsed.message?.content) {
-                            fullContent += parsed.message.content;
+    let toolRetryCount = 0;
+    const maxToolRetries = 3;
+
+    while (toolRetryCount <= maxToolRetries) {
+        // We disable streaming if we are using tools to safely capture the full tool_calls object.
+        const isStreaming = !isGraphAction;
+
+        const response = await fetch(`${baseUrl}/api/chat`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal,
+            body: JSON.stringify({
+                model,
+                messages,
+                stream: isStreaming,
+                tools,
+                format: (action === 'vision' || action === 'second-opinion') 
+                    ? undefined 
+                    : (options?.responseSchema ? options.responseSchema : 'json'),
+                think: action === 'vision' ? false : (settings.enableThinking ?? false),
+                options: { 
+                    num_ctx: numCtx,
+                    temperature: targetTemp,
+                    top_p: targetTopP,
+                    num_predict: finalMaxTokens,
+                    repeat_penalty: isVision ? 1.2 : 1.15,
+                    presence_penalty: settings.presencePenalty ?? 0.0
+                }
+            })
+        });
+
+        if (!response.ok) {
+            const errText = await response.text().catch(() => '');
+            throw new Error(`Ollama Error: ${response.status}${errText ? ` - ${errText}` : ''}`);
+        }
+
+        fullContent = '';
+        let toolCalls: any[] = [];
+
+        if (isStreaming) {
+            if (response.body) {
+                if (typeof (response.body as any).getReader === 'function') {
+                    const reader = (response.body as any).getReader();
+                    const decoder = new TextDecoder();
+                    let buffer = '';
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
+                        for (const line of lines) {
+                            const cleanLine = line.trim();
+                            if (!cleanLine) continue;
+                            try {
+                                const parsed = JSON.parse(cleanLine);
+                                if (parsed.message?.content) {
+                                    fullContent += parsed.message.content;
+                                }
+                            } catch (e) {
+                                // ignore
+                            }
                         }
-                    } catch (e) {
-                        // ignore
+                    }
+                    if (buffer.trim()) {
+                        try {
+                            const parsed = JSON.parse(buffer.trim());
+                            if (parsed.message?.content) {
+                                fullContent += parsed.message.content;
+                            }
+                        } catch (e) {}
+                    }
+                } else {
+                    for await (const chunk of response.body as any) {
+                        const chunkStr = chunk.toString();
+                        const lines = chunkStr.split('\n');
+                        for (const line of lines) {
+                            const cleanLine = line.trim();
+                            if (!cleanLine) continue;
+                            try {
+                                const parsed = JSON.parse(cleanLine);
+                                if (parsed.message?.content) {
+                                    fullContent += parsed.message.content;
+                                }
+                            } catch (e) {}
+                        }
                     }
                 }
-            }
-            if (buffer.trim()) {
-                try {
-                    const parsed = JSON.parse(buffer.trim());
-                    if (parsed.message?.content) {
-                        fullContent += parsed.message.content;
-                    }
-                } catch (e) {}
             }
         } else {
-            for await (const chunk of response.body as any) {
-                const chunkStr = chunk.toString();
-                const lines = chunkStr.split('\n');
-                for (const line of lines) {
-                    const cleanLine = line.trim();
-                    if (!cleanLine) continue;
-                    try {
-                        const parsed = JSON.parse(cleanLine);
-                        if (parsed.message?.content) {
-                            fullContent += parsed.message.content;
-                        }
-                    } catch (e) {}
+            const data = await response.json();
+            fullContent = data.message?.content || '';
+            toolCalls = data.message?.tool_calls || [];
+        }
+
+        // Handle tool calls
+        if (toolCalls.length > 0) {
+            const toolCall = toolCalls[0];
+            if (toolCall.function.name === 'validate_graph') {
+                const args = toolCall.function.arguments;
+                const draftGraphJson = typeof args === 'string' ? args : JSON.stringify(args);
+                const draftGraph = parseGeneratedGraph(draftGraphJson, { skipSanitization: true });
+                let toolResultString = "";
+                
+                if (!draftGraph) {
+                    toolResultString = "Invalid JSON structure or missing variables. Ensure you match the GRADING_GRAPH_SCHEMA exactly.";
+                } else {
+                    const validation = validateGraphDeterminism(draftGraph);
+                    if (validation.isValid) {
+                        toolResultString = "Valid! The graph is mathematically deterministic. Please return the exact same graph as the final JSON output now.";
+                    } else {
+                        toolResultString = `Mathematical validation failed: ${validation.error}. Please fix this and try again or return the corrected graph.`;
+                    }
                 }
+                
+                messages.push({
+                    role: "assistant",
+                    content: fullContent,
+                    tool_calls: toolCalls
+                });
+                messages.push({
+                    role: "tool",
+                    name: toolCall.function.name,
+                    content: toolResultString
+                });
+
+                toolRetryCount++;
+                continue;
             }
         }
+
+        // If no tool calls, exit loop
+        break;
     }
 
 

@@ -11,7 +11,7 @@ import {
     StructuredPrompt 
 
 } from './prompt-builder';
-import { buildGraphGenerationPrompt, buildGraphRefinementPrompt } from '../grading/graph-generator';
+import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
 import { isDesktopTarget } from '@/lib/env-context';
 
 export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction';
@@ -27,6 +27,7 @@ export interface OpenAIRequestOptions {
     gradingMemory?: any[] | null;
     activeSkillIds?: string[];
     customSkills?: Record<string, any>;
+    responseSchema?: any;
     signal?: AbortSignal;
 }
 
@@ -151,9 +152,21 @@ export async function executeOpenAIRequest(
         temperature: targetTemp,
         top_p: targetTopP,
         presence_penalty: presencePenalty,
-        max_tokens: options.maxTokens ?? (isThinking ? 32768 : defaultLimit),
-        response_format: isJsonFormat ? { type: 'json_object' } : undefined
+        max_tokens: options.maxTokens ?? (isThinking ? 32768 : defaultLimit)
     };
+    
+    if (options.responseSchema) {
+        body.response_format = {
+            type: "json_schema",
+            json_schema: {
+                name: "GradingGraph",
+                strict: true,
+                schema: options.responseSchema
+            }
+        };
+    } else if (isJsonFormat) {
+        body.response_format = { type: 'json_object' };
+    }
 
     if (isThinking) {
         body.enable_thinking = true;
@@ -165,66 +178,113 @@ export async function executeOpenAIRequest(
     // because it falsely assumes this is an Anthropic-specific request and searches the wrong catalog.
     // We rely on the system prompt or native model behavior for reasoning instead.
     
-    let responseContent: string;
-    let responseUsage: any = undefined;
+    const isGraphAction = action === 'generate-graph' || action === 'refine-graph';
+    if (isGraphAction) {
+        body.tools = [VALIDATE_GRAPH_TOOL];
+        body.tool_choice = "auto";
+    }
 
-    if (isDesktopTarget()) {
-        try {
-            const { invoke } = await import('@tauri-apps/api/core');
-            const invokePromise = invoke<string>('execute_ai_proxy_command', {
-                url,
+    let responseContent: string | null = null;
+    let responseUsage: any = undefined;
+    let toolRetryCount = 0;
+    const maxToolRetries = 3;
+
+    while (toolRetryCount <= maxToolRetries) {
+        let currentData: any;
+
+        if (isDesktopTarget()) {
+            try {
+                const { invoke } = await import('@tauri-apps/api/core');
+                const invokePromise = invoke<string>('execute_ai_proxy_command', {
+                    url,
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify(body)
+                });
+                
+                let res: string;
+                if (options.signal) {
+                    if (options.signal.aborted) {
+                        throw new DOMException('The user aborted a request.', 'AbortError');
+                    }
+                    res = await Promise.race([
+                        invokePromise,
+                        new Promise<string>((_, reject) => {
+                            options.signal!.addEventListener('abort', () => {
+                                reject(new DOMException('The user aborted a request.', 'AbortError'));
+                            });
+                        })
+                    ]);
+                } else {
+                    res = await invokePromise;
+                }
+                
+                currentData = JSON.parse(res);
+            } catch (e) {
+                throw new Error(`Desktop Proxy Fehler: ${e}`);
+            }
+        } else {
+            const response = await fetchWithRetry(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiKey}`
                 },
-                body: JSON.stringify(body)
+                body: JSON.stringify(body),
+                signal: options.signal
             });
-            
-            let res: string;
-            if (options.signal) {
-                if (options.signal.aborted) {
-                    throw new DOMException('The user aborted a request.', 'AbortError');
-                }
-                res = await Promise.race([
-                    invokePromise,
-                    new Promise<string>((_, reject) => {
-                        options.signal!.addEventListener('abort', () => {
-                            reject(new DOMException('The user aborted a request.', 'AbortError'));
-                        });
-                    })
-                ]);
-            } else {
-                res = await invokePromise;
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(`KI-Provider Fehler (${response.status}): ${errorData.error?.message || response.statusText}`);
             }
-            
-            const data = JSON.parse(res);
-            responseContent = data.choices[0].message.content;
-            responseUsage = data.usage;
-        } catch (e) {
-            throw new Error(`Desktop Proxy Fehler: ${e}`);
-        }
-    } else {
-        const response = await fetchWithRetry(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: JSON.stringify(body),
-            signal: options.signal
-        });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-
-            throw new Error(`KI-Provider Fehler (${response.status}): ${errorData.error?.message || response.statusText}`);
+            currentData = await response.json();
+            console.log("[OPENAI-RESPONSE-DATA]", JSON.stringify(currentData));
         }
 
-        const data = await response.json();
-        console.log("[OPENAI-RESPONSE-DATA]", JSON.stringify(data));
-        responseContent = data.choices?.[0]?.message?.content;
-        responseUsage = data.usage;
+        const message = currentData.choices?.[0]?.message;
+        responseUsage = currentData.usage;
+
+        // Tool Calling Logic
+        if (message?.tool_calls && message.tool_calls.length > 0) {
+            const toolCall = message.tool_calls[0];
+            if (toolCall.function.name === 'validate_graph') {
+                const draftGraphJson = toolCall.function.arguments;
+                const draftGraph = parseGeneratedGraph(draftGraphJson, { skipSanitization: true });
+                let toolResultString = "";
+                
+                if (!draftGraph) {
+                    toolResultString = "Invalid JSON structure or missing variables. Ensure you match the GRADING_GRAPH_SCHEMA exactly.";
+                } else {
+                    const validation = validateGraphDeterminism(draftGraph);
+                    if (validation.isValid) {
+                        toolResultString = "Valid! The graph is mathematically deterministic. Please return the exact same graph as the final JSON output now.";
+                    } else {
+                        toolResultString = `Mathematical validation failed: ${validation.error}. Please fix this and try again or return the corrected graph.`;
+                    }
+                }
+                
+                messages.push(message);
+                messages.push({
+                    role: "tool",
+                    tool_call_id: toolCall.id,
+                    name: toolCall.function.name,
+                    content: toolResultString
+                });
+
+                body.messages = messages; // Update the payload for the next request
+                toolRetryCount++;
+                continue;
+            }
+        }
+
+        // No tool calls or unknown tool, we have our final content
+        responseContent = message?.content;
+        break;
     }
 
     const content = responseContent;
