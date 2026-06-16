@@ -745,7 +745,13 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
             isComplex: payload.isComplex ?? (action === 'vision') 
         }, { signal });
         let data: any;
-        const rawText = await res.text();
+        let rawText = '';
+        if (typeof res.text === 'function') {
+            rawText = await res.text();
+        } else if (typeof res.json === 'function') {
+            const jsonVal = await res.json();
+            rawText = typeof jsonVal === 'string' ? jsonVal : JSON.stringify(jsonVal);
+        }
         try {
             data = JSON.parse(rawText);
         } catch (e) {

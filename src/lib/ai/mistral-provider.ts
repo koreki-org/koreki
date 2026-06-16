@@ -325,7 +325,7 @@ export async function executeMistralRequest(
             const cleanJson = jsonMatch ? jsonMatch[0] : content;
             return {
                 ...JSON.parse(cleanJson),
-                usage: data.usage // Pass usage data for billing
+                usage: responseUsage // Pass usage data for billing
             };
         } catch (e) {
             throw new Error("KI-Antwort konnte nicht als JSON verarbeitet werden.");
@@ -334,7 +334,7 @@ export async function executeMistralRequest(
 
     return { 
         text: content,
-        usage: data.usage 
+        usage: responseUsage 
     };
 }
 
