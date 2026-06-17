@@ -46,15 +46,20 @@ sequenceDiagram
 ## 3. Implementierung & Nutzung
 
 ### Docker-Compose Start
-Nutze das spezialisierte Compose-File, das Keycloak und eine PostgreSQL-Datenbank (für Keycloak) automatisch mitstartet:
+Nutze das spezialisierte Compose-File (`community-multi-full.yml`), das Keycloak, Nginx-Gateway und eine PostgreSQL-Datenbank (für Keycloak) automatisch mitstartet.
 
-```powershell
-# Startet Koreki, Keycloak und DB
-$env:KOREKI_DOMAIN="localhost"; docker-compose -f docker-compose.community-multi.yml up -d --build
+> [!WARNING]
+> **Die APP_URL ist das Herzstück des Setups!** Sie muss exakt die IP oder Domain enthalten, über die die Nutzer später auf Koreki zugreifen (z.B. `http://192.168.250.12:8083` oder `https://koreki.schule.de`).
+> Wenn du die `APP_URL` oder Einstellungen in der `.env` nachträglich änderst, **musst du zwingend das `--build` Flag anhängen**, damit das Frontend die neuen Variablen übernimmt!
+
+```bash
+# Startet Koreki, Keycloak, Nginx und DB (Immer mit --build beim ersten Mal oder nach Änderungen)
+APP_URL="http://192.168.250.12:8083" docker compose -f docker-compose.community-multi-full.yml up -d --build
 ```
 
 ### Umgebungsvariablen (Koreki)
 Folgende Variablen müssen in der `.env` oder im Compose-File gesetzt sein:
+* `APP_URL`: Die finale Aufruf-URL inklusive http(s) und Port. (Muss in der `.env` stehen oder beim Befehl übergeben werden)
 * `NEXT_PUBLIC_KOREKI_MODE=community`: Aktiviert lokale Isolation.
 * `NEXT_PUBLIC_AUTH_TYPE=KEYCLOAK`: Aktiviert den OIDC/Keycloak-Pfad im Frontend.
 * `KEYCLOAK_ISSUER`: URL deines Keycloak Realms (z.B. `http://localhost:8080/realms/koreki`).

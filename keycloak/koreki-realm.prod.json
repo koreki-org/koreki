@@ -46,10 +46,10 @@
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
       "redirectUris": [
-        "https://koreki.example.com/*"
+        "${env.APP_URL}/*"
       ],
       "webOrigins": [
-        "https://koreki.example.com"
+        "${env.APP_URL}"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256"

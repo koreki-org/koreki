@@ -46,10 +46,10 @@
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
       "redirectUris": [
-        "http://localhost:8080/*"
+        "${env.APP_URL}/*"
       ],
       "webOrigins": [
-        "http://localhost:8080"
+        "${env.APP_URL}"
       ],
       "defaultClientScopes": [
         "web-origins",
