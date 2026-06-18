@@ -14,8 +14,9 @@ Durch die Einreichung von Beiträgen (Code, Dokumentation, Grafiken, etc.) an di
 ## 🛠️ Entwicklungsprozess
 
 1.  **Issues**: Bitte suchen Sie zuerst nach bestehenden Issues, bevor Sie ein neues eröffnen.
-2.  **Pull Requests**:
+2.  **Pull Requests & Pushes**:
     *   Erstellen Sie für jede Änderung einen eigenen Branch.
+    *   **Pre-Push Hook**: Jeder `git push` löst automatisch einen lokalen Security-Audit (`npm run security-check`) und einen Type-Check (`npx tsc --noEmit`) aus. Ohne erfolgreichen Durchlauf wird der Push blockiert.
     *   Stellen Sie sicher, dass alle Tests (`npm test`) lokal erfolgreich durchlaufen.
     *   Beschreiben Sie Ihre Änderungen klar und präzise.
 
