@@ -123,7 +123,21 @@ Koreki unterstützt eine Auswahl an Modellen für verschiedene Hardware-Szenarie
 
 ---
 
-## 5. Security & Compliance 🛡️
+## 5. Agentic Loop Hardening (Tools & Short-Circuiting) ⚙️
+Beim Einsatz von Agenten-Loops (z. B. dem `validate_graph` Tool zur mathematischen Selbstkontrolle des LLMs) müssen zwei kritische Stabilitäts-Regeln über alle isomorphen Provider (`ollama-logic.ts`, `mistral-provider.ts`, `openai-provider.ts`) hinweg strikt eingehalten werden:
+
+### 5.1 JSON Schema Format Conflict (Ollama Timeout Bug)
+Wird in Ollama ein `tools`-Array übergeben, darf der Parameter `format` **unter keinen Umständen** mit einem strikten JSON-Schema (`options.responseSchema`) belegt werden.
+* **Grund:** Ein Tool-Aufruf des Modells (z. B. `{"name": "validate_graph", "arguments": {...}}`) entspricht strukturell *nicht* dem erwarteten Graphen-Schema. Der interne JSON-Parser (State Machine) von Ollama blockiert daraufhin die Token-Generierung, läuft in einen extrem langen Timeout (ca. 110 Sekunden) und bricht letztendlich mit einem leeren String (`""`) ab.
+* **Lösung:** Sobald Tools aktiv sind, muss `format: undefined` oder maximal `format: 'json'` (ohne spezifisches Schema) gesetzt werden, um dem LLM syntaktischen Freiraum für den Tool-Aufruf zu gewähren.
+
+### 5.2 Short-Circuit Optimization
+Nahezu alle LLMs (inkl. Qwen, Mistral, OpenAI) neigen dazu, den Kontext zu "vergessen", wenn sie im Loop die Rückmeldung erhalten: *"Tool-Aufruf war erfolgreich, bitte gib genau dieses JSON nun als finale Antwort zurück"*. Anstatt das JSON zu wiederholen, brechen sie oft sofort ab (`""`).
+* **Lösung:** Sobald ein Tool-Aufruf (`validateGraphDeterminism`) grünes Licht gibt (`isValid: true`), wird die Schleife **hart abgebrochen** (Short-Circuit) und der bereits valide geparste `draftGraph` direkt als Endergebnis an den Orchestrator zurückgegeben. Dies spart API-Kosten, halbiert die Latenz und eliminiert Halluzinationen auf der "Zielgeraden".
+
+---
+
+## 6. Security & Compliance 🛡️
 > [!IMPORTANT]
 > **Data Sovereignty:** Im Ollama-Modus bleiben alle Schülerdaten (Texte & Bilder) lokal auf dem Gerät des Nutzers. Es erfolgt kein Cloud-Transfer.
 
