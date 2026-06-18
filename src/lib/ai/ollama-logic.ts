@@ -316,6 +316,15 @@ export async function executeOllamaRequest(
         // We disable streaming if we are using tools to safely capture the full tool_calls object.
         const isStreaming = !isGraphAction;
 
+        // If tools are active, we CANNOT enforce a strict responseSchema! 
+        // A tool call structure {"name": "...", "arguments": {...}} would violate the graph schema, 
+        // causing Ollama's backend to reject the generation and return an empty string.
+        // Furthermore, passing complex JSON Schemas to Ollama can cause 110s timeouts.
+        // We rely on standard 'json' formatting and the system prompt.
+        const formatParam = (action === 'vision' || action === 'second-opinion' || tools) 
+            ? undefined 
+            : 'json';
+
         const response = await fetch(`${baseUrl}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -325,9 +334,7 @@ export async function executeOllamaRequest(
                 messages,
                 stream: isStreaming,
                 tools,
-                format: (action === 'vision' || action === 'second-opinion') 
-                    ? undefined 
-                    : (options?.responseSchema ? options.responseSchema : 'json'),
+                format: formatParam,
                 think: action === 'vision' ? false : (settings.enableThinking ?? false),
                 options: { 
                     num_ctx: numCtx,
@@ -418,7 +425,10 @@ export async function executeOllamaRequest(
                 } else {
                     const validation = validateGraphDeterminism(draftGraph);
                     if (validation.isValid) {
-                        toolResultString = "Valid! The graph is mathematically deterministic. Please return the exact same graph as the final JSON output now.";
+                        // [Short-Circuit Optimization]
+                        // Qwen/Mistral often return empty strings after a successful tool call instead of repeating the JSON.
+                        // We intercept the valid draftGraph here and return it immediately.
+                        return draftGraph;
                     } else {
                         toolResultString = `Mathematical validation failed: ${validation.error}. Please fix this and try again or return the corrected graph.`;
                     }

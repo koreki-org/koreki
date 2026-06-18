@@ -262,7 +262,8 @@ export async function executeOpenAIRequest(
                 } else {
                     const validation = validateGraphDeterminism(draftGraph);
                     if (validation.isValid) {
-                        toolResultString = "Valid! The graph is mathematically deterministic. Please return the exact same graph as the final JSON output now.";
+                        // [Short-Circuit Optimization]
+                        return draftGraph;
                     } else {
                         toolResultString = `Mathematical validation failed: ${validation.error}. Please fix this and try again or return the corrected graph.`;
                     }
