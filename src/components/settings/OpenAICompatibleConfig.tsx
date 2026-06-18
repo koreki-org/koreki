@@ -161,7 +161,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                                         <p className={`text-[11px] font-black uppercase tracking-tight ${
                                             settings.enableThinking ? 'text-indigo-900' : 'text-slate-600'
                                         }`}>Deep Reasoning</p>
-                                        <p className="text-[9px] text-slate-500 font-medium">Aktiviert den "Thinking"-Modus (z.B. für Qwen)</p>
+                                        <p className="text-[9px] text-slate-500 font-medium">Aktiviert den &quot;Thinking&quot;-Modus (z.B. für Qwen)</p>
                                     </div>
                                 </div>
                                 <div className={`w-10 h-5 rounded-full relative transition-colors ${

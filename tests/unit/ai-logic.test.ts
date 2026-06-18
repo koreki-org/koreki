@@ -64,10 +64,10 @@ describe('AI Logic tests', () => {
     it('should calculate match percentage even without layout', () => {
         const aiResult = {
             tasks: [
-                { pointsObtained: 5, maxPoints: 10 },
-                { pointsObtained: 5, maxPoints: 10 }
+                { name: 'Aufgabe 1', pointsObtained: 5, maxPoints: 10 },
+                { name: 'Aufgabe 2', pointsObtained: 5, maxPoints: 10 }
             ]
-        };
+        } as any;
         const final = parseCorrectionResult(aiResult);
         expect(final.overallMatchPercentage).toBe(50);
     });
