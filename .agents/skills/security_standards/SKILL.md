@@ -23,7 +23,8 @@ Jede schülerbezogene Datenverarbeitung muss unter Wahrung der **Datensparsamkei
 - Sicherheitskritische Ereignisse werden via `AuditService` in der Datenbank protokolliert.
 
 ### Säule 3: CI/CD Security Guard
-- Der Build-Prozess erfordert das Bestehen des `security-check` Scripts. (Automatisiert via GitHub Actions).
+- **Pre-Push Hook (Lokal)**: Jeder `git push` muss lokal durch Husky (`npm run security-check` & `tsc --noEmit`) validiert werden.
+- **Pipeline (Remote)**: Der Build-Prozess erfordert das Bestehen des `security-check` Scripts. (Automatisiert via GitHub Actions).
 
 ### Säule 4: Logging Sanitization
 - Konsolen-Logs werden automatisch von PII und Secrets bereinigt (`logger.ts`).
