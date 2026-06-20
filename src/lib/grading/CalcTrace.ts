@@ -48,7 +48,7 @@ function validateAST(formula: string): void {
       throw new Error(`[CalcTrace Security] Forbidden expression syntax: ${n.type}`);
     }
     if (n.type === 'FunctionNode') {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      // eslint-disable-next-line
       const funcNode = n as any;
       const name = typeof funcNode.name === 'string' ? funcNode.name : funcNode.name?.name;
       if (!ALLOWED_FUNCTIONS.has(name)) {

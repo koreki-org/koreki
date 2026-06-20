@@ -54,7 +54,7 @@ describe('OpenAI Provider (Bridge) - Unit Tests', () => {
             });
             
             const body = JSON.parse(mockFetchWithRetry.mock.calls[0][1].body);
-            expect(body.enable_thinking).toBe(true);
+            expect(body.chat_template_kwargs?.enable_thinking).toBe(true);
         });
 
         it('should force temperature 0.6 for "correction" when Thinking Mode is active', async () => {
