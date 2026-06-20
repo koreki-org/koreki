@@ -177,7 +177,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
     return createPortal(
         <div className="fixed inset-0 z-[2300] flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in font-inter text-slate-700">
-            <div className="bg-white border border-slate-100 shadow-2xl rounded-none sm:rounded-[var(--radius)] w-full max-w-6xl h-[100dvh] sm:h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
+            <div className="bg-white border border-slate-100 shadow-2xl rounded-none sm:rounded-[var(--radius)] w-full max-w-7xl lg:max-w-[1360px] h-[100dvh] sm:h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
                 
                 {/* Header */}
                 <div className="px-4 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row gap-4 lg:gap-3 justify-between items-start lg:items-center shrink-0">
@@ -427,17 +427,17 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
                                 <div className="flex-grow border border-slate-100 rounded-2xl overflow-hidden bg-white shadow-sm flex flex-col min-h-0">
                                     <div className="flex-grow overflow-auto custom-scrollbar">
-                                        <table className="w-full text-left border-collapse min-w-[700px]">
+                                        <table className="w-full text-left border-collapse min-w-[1000px]">
                                             <thead>
                                                 <tr className="border-b border-slate-100 bg-slate-50 text-[10px] font-black uppercase text-slate-400 tracking-wider">
-                                                    <th className="py-2.5 px-3 w-16">ID</th>
-                                                    <th className="py-2.5 px-3">Bezeichnung</th>
-                                                    <th className="py-2.5 px-3 w-24">Typ</th>
-                                                    <th className="py-2.5 px-3 w-24">Musterwert</th>
-                                                    <th className="py-2.5 px-3">Formel (mathjs)</th>
-                                                    <th className="py-2.5 px-3 w-20">Toleranz</th>
-                                                    <th className="py-2.5 px-3 w-20">Einheit</th>
-                                                    <th className="py-2.5 px-3 w-16">Punkte</th>
+                                                    <th className="py-2.5 px-3 w-32 min-w-[128px]">ID</th>
+                                                    <th className="py-2.5 px-3 min-w-[160px]">Bezeichnung</th>
+                                                    <th className="py-2.5 px-3 w-28 min-w-[112px]">Typ</th>
+                                                    <th className="py-2.5 px-3 w-28 min-w-[112px]">Musterwert</th>
+                                                    <th className="py-2.5 px-3 min-w-[200px]">Formel (mathjs)</th>
+                                                    <th className="py-2.5 px-3 w-24 min-w-[96px]">Toleranz</th>
+                                                    <th className="py-2.5 px-3 w-24 min-w-[96px]">Einheit</th>
+                                                    <th className="py-2.5 px-3 w-20 min-w-[80px]">Punkte</th>
                                                     {!isLocked && <th className="py-2.5 px-3 w-12 text-center"></th>}
                                                 </tr>
                                             </thead>

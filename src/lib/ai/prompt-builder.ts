@@ -243,6 +243,7 @@ export function buildCorrectionPrompt(
 
 /**
  * Builds the prompt for model solution analysis (Cleaning & Structuring).
+ * HMR Trigger: 2026-06-20T15:25:00
  */
 export function buildCleanAndAnalyzePrompt(modelSolution: string, model?: string): StructuredPrompt {
     let system = analyzeCleanSystemDefault;

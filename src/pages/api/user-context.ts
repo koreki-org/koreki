@@ -2,6 +2,7 @@ import type { NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 import { logger } from '@/lib/logger';
+import { isLocalInstance } from '@/lib/env-context';
 
 /**
  * User Context API
@@ -12,7 +13,6 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     const { claims } = req.user;
     const logtoId = claims.sub;
 
-    const { isLocalInstance } = require('../../lib/env-context');
     if (isLocalInstance()) {
         return res.status(200).json({
             workspaces: [

@@ -49,6 +49,7 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                 } else {
                     enginePoints = Number(layoutTask.calcTraceResult.totalPoints ?? 0);
                 }
+
                 totalObtained += enginePoints;
 
                 const isAlreadyFormatted = aiTask && aiTask.feedback && (
@@ -526,8 +527,8 @@ export async function performAIRequest(
                     const disablePointsActive = shouldDisablePoints(task.taskType, trace);
                     if (!disablePointsActive) {
                         task.pointsObtained = calcTraceResult.totalPoints;
+                        task.maxPoints = calcTraceResult.maxPoints;
                     }
-                    task.maxPoints = calcTraceResult.maxPoints;
                 } catch (err: any) {
                     logger.error('Error in client-side CalcTrace execution', err);
                 }

@@ -122,8 +122,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         const disablePointsActive = shouldDisablePoints(task.taskType, trace);
                         if (!disablePointsActive) {
                             task.pointsObtained = calcTraceResult.totalPoints;
+                            task.maxPoints = calcTraceResult.maxPoints;
                         }
-                        task.maxPoints = calcTraceResult.maxPoints;
                     } catch (err: any) {
                         logger.error('Error in server-side CalcTrace execution', { taskName: task.name, error: err.message });
                     }

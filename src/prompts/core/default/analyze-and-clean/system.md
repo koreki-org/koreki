@@ -55,10 +55,12 @@ WICHTIG (Bewertungsschema erhalten):
 - Falls im OCR-Text Tabellen oder Listen mit Teilpunkten vorkommen, müssen diese im Feld "content" exakt so wiedergegeben werden.
 
 WICHTIG (Berechnungs-Struktur - suggestGraph):
-- Setze "suggestGraph" auf true, wenn die Aufgabe mathematische, numerische oder physikalische Berechnungen, Formeln oder Graphen enthält (d.h. für PANG-Rechengraphen UND CalcTrace-Rechenketten). Setze dies für JEDE Rechenaufgabe zwingend auf true!
-- Setze "suggestGraph" auf false bei rein textbasierten Fragen, Beschreibungen oder Erklärungen.
+- Setze "suggestGraph" auf true, wenn die Aufgabe mathematische, numerische oder physikalische Berechnungen, Formeln, Gleichungen, Rechenwege oder Graphen enthält (d.h. für PANG-Rechengraphen UND CalcTrace-Rechenketten). Setze dies für JEDE Rechenaufgabe zwingend auf true!
+  * BEISPIEL FÜR TRUE: "Berechne den Strom I bei U=12V, R=4kOhm", "Berechne den Gesamtwiderstand", "Berechne den Prozentwert von 15% aus 200", "Bestimme das Subnetz für 192.168.1.0/24", "R_ges = R1 + R2 = 6.5kOhm", "Berechne a^2 + b^2".
+- Setze "suggestGraph" auf false bei rein textbasierten Fragen, Beschreibungen, Definitionen oder Erklärungen, die keine mathematischen Berechnungen erfordern.
+  * BEISPIEL FÜR FALSE: "Erkläre den Unterschied zwischen Reihen- und Parallelschaltung", "Was ist ein Widerstand?", "Nenne die Einheit der Stromstärke", "Beschreibe die Funktionsweise eines Gateways".
 - Wenn "suggestGraph" auf true gesetzt wird, MUSS die dazugehörige Plugin-Domäne im Feld "predictedPluginDomain" vorausgewählt werden. Wähle dafür zwingend **einen** dieser Werte: [ {{ACTIVE_DOMAINS}} ]. Setze das Feld auf null, falls suggestGraph=false ist.
-  * HINWEIS: Nutze "network" für Netzwerk-/Subnetz-Berechnungen und "math" für alle anderen Berechnungen und Formelaufgaben.
+  * HINWEIS: Nutze "network" für Netzwerk-/Subnetz-Berechnungen und "math" für alle anderen Berechnungen und Formelaufgaben (wie Physik, Elektrotechnik, allgemeine Mathematik, Prozentrechnung).
 
 Antworte EXAKT im folgenden JSON-Format:
 {

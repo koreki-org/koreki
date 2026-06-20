@@ -73,9 +73,7 @@ export async function extractCalcTraceValues(
       // Server-Side (STANDARD mode execution)
       if (typeof window === 'undefined') {
         if (settings.provider === 'ollama') {
-          // Dynamic import to prevent client-side bundling issues in server-only contexts
-          const { executeOllamaRequest: execOllama } = require('../ai/ollama-logic');
-          extracted = await execOllama('calc-trace-extraction', payload, settings);
+          extracted = await executeOllamaRequest('calc-trace-extraction', payload, settings);
         } else if (settings.provider === 'mistral') {
           const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
           if (!apiKey) throw new Error('Mistral API-Key fehlt.');
