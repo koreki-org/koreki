@@ -54,8 +54,8 @@ WICHTIG (Bewertungsschema erhalten):
 - Kürze den Erwartungshorizont NIEMALS! Er ist die einzige Referenz für die Korrektur. 
 - Falls im OCR-Text Tabellen oder Listen mit Teilpunkten vorkommen, müssen diese im Feld "content" exakt so wiedergegeben werden.
 
-WICHTIG (Graphen-Vorschlag - suggestGraph):
-- Setze "suggestGraph" auf true, wenn die Aufgabe mathematische, numerische oder physikalische Berechnungen und Formeln enthält.
+WICHTIG (Berechnungs-Struktur - suggestGraph):
+- Setze "suggestGraph" auf true, wenn die Aufgabe mathematische, numerische oder physikalische Berechnungen, Formeln oder Graphen enthält (d.h. für PANG-Rechengraphen UND CalcTrace-Rechenketten). Setze dies für JEDE Rechenaufgabe zwingend auf true!
 - Setze "suggestGraph" auf false bei rein textbasierten Fragen, Beschreibungen oder Erklärungen.
 - Wenn "suggestGraph" auf true gesetzt wird, MUSS die dazugehörige Plugin-Domäne im Feld "predictedPluginDomain" vorausgewählt werden. Wähle dafür zwingend **einen** dieser Werte: [ {{ACTIVE_DOMAINS}} ]. Setze das Feld auf null, falls suggestGraph=false ist.
   * HINWEIS: Nutze "network" für Netzwerk-/Subnetz-Berechnungen und "math" für alle anderen Berechnungen und Formelaufgaben.

@@ -489,7 +489,7 @@ export function buildCalcTraceExtractionPrompt(
     };
 }
 
-// HMR Trigger: 2026-06-20T09:36:00 (Forces prompt recompilation)
+// HMR Trigger: 2026-06-20T15:21:00 (Forces prompt recompilation)
 
 
 
