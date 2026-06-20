@@ -9,6 +9,8 @@ import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
 import { GraphRunner } from '@/lib/grading/GraphRunner';
 import { splitTextByTasks } from '@/lib/task-utils';
+import { evaluateCalcTrace } from '@/lib/grading/CalcTrace';
+import { extractCalcTraceValues } from '@/lib/grading/calc-trace-extraction';
 
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 
@@ -65,6 +67,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     ))
                 );
 
+                const hasAttachedCalcTrace = !!task.calcTrace;
+                const isCalcTraceSkill = task.taskType && (
+                    customSkills[task.taskType]?.isCalcTrace
+                );
+
                 if (hasAttachedGraph) {
                     try {
                         const studentTaskText = rawSplit[i] || "";
@@ -98,6 +105,25 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         }
                     } catch (err: any) {
                         logger.error('Error in local GraphRunner execution', { taskName: task.name, error: err.message });
+                    }
+                } else if (hasAttachedCalcTrace || isCalcTraceSkill) {
+                    try {
+                        const studentTaskText = rawSplit[i] || "";
+                        const taskSpecificText = (studentTaskText && studentTaskText.trim().length > 0) ? studentTaskText : studentText;
+                        
+                        const trace = task.calcTrace || customSkills[task.taskType]?.calcTrace;
+                        
+                        const studentValues = await extractCalcTraceValues(taskSpecificText, trace, 'STANDARD', settings as any, task.name);
+                        const calcTraceResult = evaluateCalcTrace(trace, studentValues);
+                        
+                        task.calcTraceResult = calcTraceResult;
+                        const disablePointsActive = shouldDisablePoints(task.taskType, trace);
+                        if (!disablePointsActive) {
+                            task.pointsObtained = calcTraceResult.totalPoints;
+                        }
+                        task.maxPoints = calcTraceResult.maxPoints;
+                    } catch (err: any) {
+                        logger.error('Error in server-side CalcTrace execution', { taskName: task.name, error: err.message });
                     }
                 }
             }

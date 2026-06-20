@@ -108,6 +108,36 @@ export default function Home() {
         }
     };
 
+    const handleGenerateCalcTraceForTask = async (taskIndex: number, taskText: string, userNotes?: string) => {
+        try {
+            const response = await performAIRequest(
+                'generate-calc-trace',
+                { taskText, userNotes },
+                userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
+                aiSettings
+            );
+            if (response) {
+                data.setTasksLayout(prevTasks => {
+                    const updatedTasks = [...prevTasks];
+                    if (updatedTasks[taskIndex]) {
+                        updatedTasks[taskIndex] = {
+                            ...updatedTasks[taskIndex],
+                            taskType: 'calc-trace',
+                            calcTrace: response
+                        };
+                    }
+                    return updatedTasks;
+                });
+                return response;
+            }
+            return null;
+        } catch (error: any) {
+            console.error('Error generating calc trace:', error);
+            alert(`Fehler bei der Rechenketten-Generierung: ${error.message || error}`);
+            throw error;
+        }
+    };
+
     const handleGenerateGraphFromText = async (taskText: string, discipline?: string, userNotes?: string) => {
         try {
             const response = await performAIRequest(
@@ -126,6 +156,22 @@ export default function Home() {
             } else {
                 alert(`Fehler bei der Graph-Generierung: ${msg}`);
             }
+            return null;
+        }
+    };
+
+    const handleGenerateCalcTraceFromText = async (taskText: string, userNotes?: string) => {
+        try {
+            const response = await performAIRequest(
+                'generate-calc-trace',
+                { taskText, userNotes },
+                userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
+                aiSettings
+            );
+            return response;
+        } catch (error: any) {
+            console.error('Error generating custom calc trace:', error);
+            alert(`Fehler bei der Rechenketten-Generierung: ${error.message || error}`);
             return null;
         }
     };
@@ -344,6 +390,7 @@ export default function Home() {
                         handleAiMistralSave={actions.handleAiMistralSave}
                         handleAiCustomSave={actions.handleAiCustomSave}
                         onGenerateGraph={handleGenerateGraphFromText}
+                        onGenerateCalcTrace={handleGenerateCalcTraceFromText}
                     />
 
                     <GradingMemoryModal 
@@ -367,6 +414,7 @@ export default function Home() {
                     <UploadGrid
                         settings={aiSettings}
                         onGenerateGraph={handleGenerateGraphForTask}
+                        onGenerateCalcTrace={handleGenerateCalcTraceForTask}
                         onModelUpload={(e) => {
                             const file = e.target.files?.[0];
                             if (file) {

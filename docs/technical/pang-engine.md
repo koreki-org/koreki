@@ -49,7 +49,7 @@ Da der mathematische Bewertungsgraph zur Vermeidung von Einheiten-Konflikten in 
 * **Deterministische Präfix-Normalisierung (Dezimal & Binär):** Das LLM extrahiert Einheiten-Präfixe nicht mehr rein syntaktisch, sondern übersetzt Schülerwerte mit Vorsatzzeichen vor der Übergabe an den Graphen deterministisch in die mathematische SI-Basiseinheit oder die vom Graphen erwartete Ziel-Einheit:
   * **Physikalische Größen (Dezimalpräfixe):** z. B. `4 kΩ` ➔ `4000`, `2,5 kΩ` ➔ `2500`, `1,846 mA` ➔ `0.001846`.
   * **Digitale Datenmengen (Binärpräfixe, Faktor 1024):** z. B. `0.03125 GiB` für eine Variable, die `MiB` erwartet, wird deterministisch auf Basis der Zielvariable in `32` normalisiert ($0,03125 \times 1024 = 32$).
-* **Konsistenz-Schutz bei Einheiten-Fehlern:** Schreibt ein Schüler einen mathematischen Widerspruch auf (z. B. `I = 12 V / 6500 Ω = 0,001846 mA`, obwohl das physikalische Ergebnis in der Basiseinheit Ampere liegt), korrigiert der Konsistenz-Schutz den Skalierungsfehler des Präfixes und übergibt den physikalisch konsistenten Basiseinheits-Wert (`0.001846`) an die Engine. Dies gilt analog für Datenmengen (z. B. wenn ein Schüler versehentlich `MiB` statt `GiB` schreibt, aber mathematisch korrekt gerechnet hat).
+* **Strikte Bewertung von Einheiten-Fehlern:** Schreibt ein Schüler einen mathematischen/physikalischen Widerspruch auf (z. B. `I = 12 V / 6500 Ω = 0,001846 mA` statt `1.846 mA` oder `0.001846 A`), wird dieser Skalierungsfehler nicht korrigiert. Der Wert wird mit der falschen Skalierung an die Engine übergeben, was zu einem Fehler in dieser Aufgabe führt. Nur wenn der Schüler eine physikalisch andere, aber korrekte Einheit aufgeschrieben hat (z. B. `0,001846 A`), wird diese in die erwartete Einheit umgerechnet.
 
 ---
 

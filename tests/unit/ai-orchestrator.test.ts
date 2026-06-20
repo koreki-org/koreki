@@ -133,6 +133,96 @@ describe('AI Orchestrator (Layer 1 Unit)', () => {
             expect(result.tasks[0].feedback).toContain('AI feedback that should be appended');
             expect(result.tasks[0].confidence).toBe(95); // High confidence enforced
         });
+
+        it('should override with CalcTrace engine points when disablePoints is false (strict grading)', () => {
+            const layoutWithCalcTrace: Task[] = [
+                {
+                    name: 'Aufgabe 1a',
+                    maxPoints: 6,
+                    content: '',
+                    taskType: 'custom-skill-1',
+                    calcTrace: {
+                        taskId: 'Aufgabe 1a',
+                        disablePoints: false,
+                        steps: []
+                    },
+                    calcTraceResult: {
+                        totalPoints: 3,
+                        maxPoints: 6,
+                        primaryErrors: 1,
+                        consecutiveErrors: 0,
+                        results: [
+                            { id: 'r_ges', label: 'Gesamtwiderstand', expected: 6.5, studentValue: 6.5, computed: 6.5, status: 'correct', pointsAwarded: 3, pointsMax: 3 },
+                            { id: 'i_ges', label: 'Stromstärke', expected: 1.846, studentValue: 0.001846, computed: 0.001846, status: 'error', pointsAwarded: 0, pointsMax: 3 }
+                        ]
+                    }
+                }
+            ];
+
+            const rawAnalysis = {
+                tasks: [
+                    {
+                        name: 'Aufgabe 1a',
+                        pointsObtained: 5, // AI hallucinated 5 points in hybrid manner
+                        confidence: 90,
+                        feedback: 'Sehr gut, nur die Stromstärke hat falsche Einheiten.',
+                        content: 'Schülerantwort...'
+                    }
+                ]
+            };
+
+            const result = parseCorrectionResult(rawAnalysis, layoutWithCalcTrace);
+
+            expect(result.tasks).toHaveLength(1);
+            expect(result.tasks[0].pointsObtained).toBe(3); // Overridden to strict 3 points!
+            expect(result.tasks[0].feedback).toContain('[📐 CalcTrace Engine - Mathematischer Abgleich]');
+            expect(result.tasks[0].feedback).toContain('[KI-Pädagogische Einschätzung]');
+        });
+
+        it('should prioritize LLM points for CalcTrace when disablePoints is true (hybrid grading)', () => {
+            const layoutWithCalcTrace: Task[] = [
+                {
+                    name: 'Aufgabe 1a',
+                    maxPoints: 6,
+                    content: '',
+                    taskType: 'custom-skill-1',
+                    calcTrace: {
+                        taskId: 'Aufgabe 1a',
+                        disablePoints: true, // Hybrid grading active
+                        steps: []
+                    },
+                    calcTraceResult: {
+                        totalPoints: 3,
+                        maxPoints: 6,
+                        primaryErrors: 1,
+                        consecutiveErrors: 0,
+                        results: [
+                            { id: 'r_ges', label: 'Gesamtwiderstand', expected: 6.5, studentValue: 6.5, computed: 6.5, status: 'correct', pointsAwarded: 3, pointsMax: 3 },
+                            { id: 'i_ges', label: 'Stromstärke', expected: 1.846, studentValue: 0.001846, computed: 0.001846, status: 'error', pointsAwarded: 0, pointsMax: 3 }
+                        ]
+                    }
+                }
+            ];
+
+            const rawAnalysis = {
+                tasks: [
+                    {
+                        name: 'Aufgabe 1a',
+                        pointsObtained: 5, // AI correctly evaluates hybrid didactical points
+                        confidence: 90,
+                        feedback: 'Formel und Einsetzen bei der Stromstärke sind korrekt. Nur das Endergebnis hat die falsche Einheit.',
+                        content: 'Schülerantwort...'
+                    }
+                ]
+            };
+
+            const result = parseCorrectionResult(rawAnalysis, layoutWithCalcTrace);
+
+            expect(result.tasks).toHaveLength(1);
+            expect(result.tasks[0].pointsObtained).toBe(5); // Retains didactical 5 points from AI!
+            expect(result.tasks[0].feedback).toContain('[📐 CalcTrace Engine - Mathematischer Abgleich]');
+            expect(result.tasks[0].feedback).toContain('[KI-Pädagogische Einschätzung]');
+        });
     });
 
     describe('performAIRequest - Desktop Mode (isomorphic graph generation)', () => {

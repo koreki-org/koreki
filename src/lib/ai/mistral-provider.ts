@@ -15,13 +15,15 @@ import {
     buildAnonymizePrompt,
     buildSecondOpinionPrompt,
     buildVariableExtractionPrompt,
+    buildCalcTraceExtractionPrompt,
     StructuredPrompt 
 
 } from './prompt-builder';
 import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
+import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, VALIDATE_CALC_TRACE_TOOL, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
 
 export interface AIRequestOptions {
     temperature?: number;
@@ -124,6 +126,12 @@ export async function executeMistralRequest(
             promptObj = buildGraphRefinementPrompt(payload.taskText, payload.currentGraph, payload.userInstruction, payload.discipline);
         } else if (action === 'variable-extraction') {
             promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions, payload.taskName);
+        } else if (action === 'generate-calc-trace') {
+            promptObj = buildCalcTraceGenerationPrompt(payload.taskText, payload.discipline, payload.userNotes);
+        } else if (action === 'refine-calc-trace') {
+            promptObj = buildCalcTraceRefinementPrompt(payload.taskText, payload.currentTrace, payload.userInstruction, payload.discipline);
+        } else if (action === 'calc-trace-extraction') {
+            promptObj = buildCalcTraceExtractionPrompt(payload.studentText, payload.expectedValues, payload.taskName);
         } else {
             throw new Error(`Unsupported text action: ${action}`);
         }
@@ -182,8 +190,12 @@ export async function executeMistralRequest(
     }
 
     const isGraphAction = action === 'generate-graph' || action === 'refine-graph';
+    const isCalcTraceAction = action === 'generate-calc-trace' || action === 'refine-calc-trace';
     if (isGraphAction) {
         body.tools = [VALIDATE_GRAPH_TOOL];
+        body.tool_choice = "auto";
+    } else if (isCalcTraceAction) {
+        body.tools = [VALIDATE_CALC_TRACE_TOOL];
         body.tool_choice = "auto";
     }
 
@@ -305,6 +317,33 @@ export async function executeMistralRequest(
                 body.messages = messages;
                 toolRetryCount++;
                 continue;
+            } else if (toolCall.function.name === 'validate_calc_trace') {
+                const draftTraceJson = toolCall.function.arguments;
+                const draftTrace = parseGeneratedCalcTrace(draftTraceJson);
+                let toolResultString = "";
+
+                if (!draftTrace) {
+                    toolResultString = "Invalid JSON structure or missing fields. Ensure you match the CALC_TRACE_SCHEMA exactly.";
+                } else {
+                    const validation = validateCalcTraceDeterminism(draftTrace);
+                    if (validation.isValid) {
+                        return draftTrace;
+                    } else {
+                        toolResultString = `Mathematical validation failed: ${validation.error}. Please fix this and try again.`;
+                    }
+                }
+
+                messages.push(message);
+                messages.push({
+                    role: "tool",
+                    tool_call_id: toolCall.id,
+                    name: toolCall.function.name,
+                    content: toolResultString
+                });
+
+                body.messages = messages;
+                toolRetryCount++;
+                continue;
             }
         }
 
@@ -312,20 +351,28 @@ export async function executeMistralRequest(
         break;
     }
 
+    if (toolRetryCount > maxToolRetries) {
+        throw new Error('Die KI konnte nach mehreren Versuchen keinen mathematisch validen Graphen generieren. Bitte passe den Aufgabentext an oder nutze ein leistungsstärkeres Modell.');
+    }
+
     let content = responseContent;
 
-    if (content === null || content === undefined) {
+    if (content === null || content === undefined || content === '') {
         throw new Error('Die KI hat eine leere Antwort (null) zurückgegeben. Dies kann passieren, wenn das Modell überlastet ist oder die Eingabe blockiert wurde.');
     }
 
     // 4. Robust JSON Parsing (Standard Pattern)
     if (responseFormat?.type === 'json_object') {
+        const repairUnescapedBackslashes = (jsonStr: string): string => {
+            return jsonStr.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
+        };
+
         try {
             // Regex-Protection: Find the first { and the last } to ignore markdown fences
             const jsonMatch = content.match(/\{[\s\S]*\}/);
             const cleanJson = jsonMatch ? jsonMatch[0] : content;
             return {
-                ...JSON.parse(cleanJson),
+                ...JSON.parse(repairUnescapedBackslashes(cleanJson)),
                 usage: responseUsage // Pass usage data for billing
             };
         } catch (e) {

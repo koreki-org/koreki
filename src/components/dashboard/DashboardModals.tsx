@@ -84,6 +84,7 @@ interface DashboardModalsProps {
     handleAiMistralSave: (key: string) => void;
     handleAiCustomSave: (url: string, key: string, model: string, thinking: boolean) => void;
     onGenerateGraph?: (taskText: string, discipline?: string) => Promise<any | null>;
+    onGenerateCalcTrace?: (taskText: string, userNotes?: string) => Promise<any | null>;
 }
 
 export const DashboardModals: React.FC<DashboardModalsProps> = ({
@@ -111,7 +112,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
     showAiSetup, setShowAiSetup,
     showAiParamsSettings, setShowAiParamsSettings,
     handleAiOllamaSave, handleAiMistralSave, handleAiCustomSave,
-    onGenerateGraph
+    onGenerateGraph, onGenerateCalcTrace
 }) => {
     const queryClient = useQueryClient();
     const { tasksLayout, setTasksLayout } = useDashboardStore();
@@ -180,18 +181,21 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                     settings={settings}
                     currentProfileName={sessionSkillsProfileName}
                     onGenerateGraph={onGenerateGraph}
+                    onGenerateCalcTrace={onGenerateCalcTrace}
                     onSave={async (newSettings, profileName, profileId) => {
                         setSettings(newSettings);
                         if (profileName) setSessionSkillsProfileName(profileName);
                         setShowSkillsSettings(false);
 
-                        // SYNC BRIDGE: Update tasksLayout inline graphs with updated custom skill graphs
+                        // SYNC BRIDGE: Update tasksLayout inline graphs/traces with updated custom skill configurations
                         if (tasksLayout && newSettings.customSkills) {
                             const updatedTasks = tasksLayout.map(t => {
                                 if (t.taskType && t.taskType.startsWith('custom-skill-') && newSettings.customSkills[t.taskType]) {
+                                    const customSkill = newSettings.customSkills[t.taskType];
                                     return {
                                         ...t,
-                                        gradingGraph: newSettings.customSkills[t.taskType].gradingGraph
+                                        gradingGraph: customSkill.isCalcTrace ? undefined : customSkill.gradingGraph,
+                                        calcTrace: customSkill.isCalcTrace ? customSkill.calcTrace : undefined
                                     };
                                 }
                                 return t;

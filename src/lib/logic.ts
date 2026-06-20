@@ -1,4 +1,5 @@
 import { diffWords } from 'diff';
+import type { CalcTrace, CalcTraceResult } from './grading/calc-trace-types';
 
 /**
  * Compares two strings and returns an array of diff objects.
@@ -35,6 +36,8 @@ export interface Task {
     taskType?: string;
     gradingGraph?: any;
     gradingResult?: any;
+    calcTrace?: CalcTrace;
+    calcTraceResult?: CalcTraceResult;
     suggestGraph?: boolean;
     predictedPluginDomain?: string | null;
 }

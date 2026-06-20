@@ -8,6 +8,7 @@ import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
 import { downloadFile } from '@/lib/file-utils';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { GradingGraphModal } from '../batch/GradingGraphModal';
+import { CalcTraceModal } from '../batch/CalcTraceModal';
 
 
 interface SkillsSidebarProps {
@@ -220,6 +221,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
 const CATEGORIES = [
     { id: 'math-science', label: 'MINT-Fächer', icon: <Calculator size={16} className="text-indigo-500" /> },
     { id: 'graph-skills', label: 'Graph-basierte Skills (PANG)', icon: <Layers size={16} className="text-emerald-500" /> },
+    { id: 'calc-skills', label: 'Rechenketten-Skills (CalcTrace)', icon: <Layers size={16} className="text-blue-500" /> },
     { id: 'languages', label: 'Sprachen & Textästhetik', icon: <BookOpen size={16} className="text-blue-500" /> },
     { id: 'standards', label: 'Korrekturzeichen & Bundesländer', icon: <Settings size={16} className="text-indigo-600" /> },
     { id: 'feedback', label: 'Pädagogisches Feedback', icon: <GraduationCap size={16} className="text-indigo-500" /> }
@@ -236,19 +238,20 @@ interface SkillsEditorProps {
     setActiveSkillIds: (ids: string[]) => void;
     onSaveToDB: () => void;
     setNewProfileName: (v: string) => void;
-    customSkills: Record<string, any>;
+        customSkills: Record<string, any>;
     onSaveCustomSkill: (skill: any) => void;
     onDeleteCustomSkill: (id: string) => void;
     onStartNew: (initialSkills?: string[]) => void;
     onImportParsedProfile: (parsed: any, isSingleSkill?: boolean) => void;
     onGenerateGraph?: (taskText: string, discipline?: string) => Promise<Record<string, unknown> | null>;
+    onGenerateCalcTrace?: (taskText: string, userNotes?: string) => Promise<any | null>;
 }
 export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     isCreatingNew, selectedProfile, isSystemSelected, isDirty, saving, 
     newProfileName, activeSkillIds, setActiveSkillIds,
     onSaveToDB, setNewProfileName,
     customSkills, onSaveCustomSkill, onDeleteCustomSkill,
-    onStartNew, onImportParsedProfile, onGenerateGraph
+    onStartNew, onImportParsedProfile, onGenerateGraph, onGenerateCalcTrace
 }) => {
     
     // Collapsible Categories State
@@ -266,7 +269,18 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
         const initialExpanded: Record<string, boolean> = {};
         CATEGORIES.forEach(category => {
             const standardCategorySkills = Object.values(SKILL_REGISTRY)
-                .filter(s => s.metadata.category === category.id && !s.metadata.isGraphBased && s.metadata.id !== 'skill-calc-vlsm')
+                .filter(s => {
+                    if (category.id === 'graph-skills') {
+                        return !!s.metadata.isGraphBased || s.metadata.category === 'graph-skills' || s.metadata.id === 'skill-calc-vlsm';
+                    }
+                    if (category.id === 'calc-skills') {
+                        return !!s.metadata.isCalcTrace || s.metadata.category === 'calc-skills';
+                    }
+                    if (category.id === 'math-science') {
+                        return s.metadata.category === 'math-science' && !s.metadata.isGraphBased && !s.metadata.isCalcTrace && s.metadata.id !== 'skill-calc-vlsm';
+                    }
+                    return s.metadata.category === category.id;
+                })
                 .map(s => s.metadata.id);
             const customCategorySkills = Object.values(customSkills || {})
                 .filter((s: any) => s.category === category.id)
@@ -284,6 +298,8 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     const [editingSkillData, setEditingSkillData] = React.useState<any>(null);
     const [isGraphModalOpen, setIsGraphModalOpen] = React.useState(false);
     const [isGeneratingGraph, setIsGeneratingGraph] = React.useState(false);
+    const [isCalcTraceModalOpen, setIsCalcTraceModalOpen] = React.useState(false);
+    const [isGeneratingTrace, setIsGeneratingTrace] = React.useState(false);
     const [graphGenTaskText, setGraphGenTaskText] = React.useState('');
 
     const handleCreateSkillClick = () => {
@@ -322,6 +338,26 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
             console.error('Graph generation failed:', err);
         } finally {
             setIsGeneratingGraph(false);
+        }
+    };
+
+    const handleAICalcTraceGenerate = async () => {
+        const textToGen = editingSkillData?.taskText || graphGenTaskText;
+        if (!onGenerateCalcTrace || !textToGen.trim()) return;
+        setIsGeneratingTrace(true);
+        try {
+            const result = await onGenerateCalcTrace(textToGen);
+            if (result) {
+                setEditingSkillData(prev => ({
+                    ...prev,
+                    calcTrace: result,
+                    taskText: textToGen
+                }));
+            }
+        } catch (err) {
+            console.error('CalcTrace generation failed:', err);
+        } finally {
+            setIsGeneratingTrace(false);
         }
     };
 
@@ -515,7 +551,18 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
             <div className="flex-1 space-y-8 min-h-0">
                 {CATEGORIES.map(category => {
                     const standardCategorySkills = Object.values(SKILL_REGISTRY)
-                        .filter(s => s.metadata.category === category.id && !s.metadata.isGraphBased && s.metadata.id !== 'skill-calc-vlsm')
+                        .filter(s => {
+                            if (category.id === 'graph-skills') {
+                                return !!s.metadata.isGraphBased || s.metadata.category === 'graph-skills' || s.metadata.id === 'skill-calc-vlsm';
+                            }
+                            if (category.id === 'calc-skills') {
+                                return !!s.metadata.isCalcTrace || s.metadata.category === 'calc-skills';
+                            }
+                            if (category.id === 'math-science') {
+                                return s.metadata.category === 'math-science' && !s.metadata.isGraphBased && !s.metadata.isCalcTrace && s.metadata.id !== 'skill-calc-vlsm';
+                            }
+                            return s.metadata.category === category.id;
+                        })
                         .map(s => ({ ...s.metadata, prompt: s.promptSnippet, promptSnippet: s.promptSnippet }));
                     const customCategorySkills = Object.values(customSkills || {}).filter(s => s.category === category.id);
                     const categorySkills = [...standardCategorySkills, ...customCategorySkills];
@@ -535,28 +582,32 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                 <div className="flex items-center gap-2 text-xs font-black text-slate-500 tracking-wider uppercase">
                                     {category.icon}
                                     <span>{category.label}</span>
-                                    {activeCount > 0 && (
-                                        <Badge variant="outline" className="text-xs bg-indigo-50 text-indigo-600 border-indigo-100 rounded-full font-bold px-2 py-0.5 ml-2 normal-case tracking-normal">
-                                            {activeCount} aktiv
-                                        </Badge>
-                                    )}
+                                    <Badge className="bg-slate-100 group-hover/header:bg-slate-200 text-slate-600 font-bold px-1.5 py-0.5 text-[9px] rounded-full transition-all">
+                                        {activeCount} / {categorySkills.length}
+                                    </Badge>
                                 </div>
-                                <ChevronDown 
-                                    size={16} 
-                                    className={`text-slate-400 group-hover/header:text-slate-600 transition-transform duration-300 ${!isExpanded ? '-rotate-90' : ''}`}
-                                />
+                                <div className="text-slate-400 group-hover/header:text-slate-600 transition-all">
+                                    <ChevronDown size={16} className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+                                </div>
                             </button>
                             
                             {isExpanded && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pl-3 animate-fade-down duration-200">
                                     {categorySkills.map(skill => {
                                         const isChecked = activeSkillIds.includes(skill.id);
-                                        const isDisabled = isSystemSelected && !isCreatingNew;
+                                        const isDisabled = isSystemSelected && !skill.isCustom;
 
                                         return (
                                             <div 
                                                 key={skill.id}
-                                                onClick={() => !isDisabled && handleToggleSkill(skill.id)}
+                                                onClick={() => {
+                                                    if (isDisabled) return;
+                                                    if (isChecked) {
+                                                        setActiveSkillIds(activeSkillIds.filter(id => id !== skill.id));
+                                                    } else {
+                                                        setActiveSkillIds([...activeSkillIds, skill.id]);
+                                                    }
+                                                }}
                                                 className={`p-5 rounded-3xl border-2 transition-all flex items-start gap-4 select-none relative group ${isDisabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'} ${isChecked ? 'bg-gradient-to-br from-indigo-50/40 to-blue-50/10 border-indigo-200/80 shadow-md shadow-indigo-50/20 ring-1 ring-indigo-500/10' : 'bg-slate-50/20 border-slate-100 hover:border-slate-200/80 hover:bg-slate-50/30'}`}
                                             >
                                                 <div className="pt-0.5 shrink-0">
@@ -575,6 +626,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         </h4>
                                                         {skill.isCustom && <Badge className="text-[7px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 font-bold hover:bg-indigo-100 rounded">EIGEN</Badge>}
                                                         {skill.isGraphBased && <Badge className="text-[7px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 font-bold hover:bg-emerald-100 rounded flex items-center gap-0.5">⚙️ GRAPH</Badge>}
+                                                        {skill.isCalcTrace && <Badge className="text-[7px] bg-blue-100 text-blue-700 px-1.5 py-0.5 font-bold hover:bg-blue-100 rounded flex items-center gap-0.5">📐 CALC</Badge>}
                                                     </div>
                                                     <p className="text-xs text-slate-500 font-medium leading-relaxed">
                                                         {skill.description}
@@ -680,6 +732,7 @@ ${skill.prompt || ''}`;
                                 >
                                     <option value="math-science">MINT-Fächer</option>
                                     <option value="graph-skills">Graph-basierte Skills (PANG)</option>
+                                    <option value="calc-skills">Rechenketten-Skills (CalcTrace)</option>
                                     <option value="languages">Sprachen & Textästhetik</option>
                                     <option value="standards">Korrekturzeichen & Bundesländer</option>
                                     <option value="feedback">Pädagogisches Feedback</option>
@@ -696,6 +749,8 @@ ${skill.prompt || ''}`;
                                         setEditingSkillData({
                                             ...editingSkillData,
                                             isGraphBased: isChecked,
+                                            isCalcTrace: false,
+                                            calcTrace: undefined,
                                             category: isChecked ? 'graph-skills' : (editingSkillData.category === 'graph-skills' ? 'math-science' : editingSkillData.category),
                                             gradingGraph: isChecked ? (editingSkillData.gradingGraph || {
                                                 taskId: `skill-graph-${Date.now()}`,
@@ -712,6 +767,36 @@ ${skill.prompt || ''}`;
                                 />
                                 <label htmlFor="is-graph-based" className="text-xs font-bold text-slate-700 cursor-pointer">
                                     Graph-basierter Skill (PANG Engine)
+                                </label>
+                            </div>
+
+                            <div className="flex items-center gap-2.5 pt-1 pb-1">
+                                <input
+                                    type="checkbox"
+                                    id="is-calc-trace"
+                                    checked={!!editingSkillData.isCalcTrace}
+                                    onChange={e => {
+                                        const isChecked = e.target.checked;
+                                        setEditingSkillData({
+                                            ...editingSkillData,
+                                            isCalcTrace: isChecked,
+                                            isGraphBased: false,
+                                            gradingGraph: undefined,
+                                            category: isChecked ? 'calc-skills' : (editingSkillData.category === 'calc-skills' ? 'math-science' : editingSkillData.category),
+                                            calcTrace: isChecked ? (editingSkillData.calcTrace || {
+                                                taskId: `skill-trace-${Date.now()}`,
+                                                steps: [
+                                                    { id: 'P', label: 'Leistung P', type: 'given', value: 2300, unit: 'W' },
+                                                    { id: 't', label: 'Zeit t', type: 'given', value: 0.0833, unit: 'h' },
+                                                    { id: 'W', label: 'Energie W', type: 'calc', value: 0.1916, formula: 'P * t', unit: 'kWh', points: 1 }
+                                                ]
+                                            }) : undefined
+                                        });
+                                    }}
+                                    className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                                />
+                                <label htmlFor="is-calc-trace" className="text-xs font-bold text-slate-700 cursor-pointer">
+                                    MINT Rechenkette (CalcTrace Engine)
                                 </label>
                             </div>
 
@@ -778,6 +863,68 @@ ${skill.prompt || ''}`;
                                 </div>
                             )}
 
+                            {editingSkillData.isCalcTrace && (
+                                <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex flex-col gap-3">
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs font-black text-blue-700 uppercase tracking-widest">MINT Rechenkette (CalcTrace)</span>
+                                        <div className="flex gap-2">
+                                            {onGenerateCalcTrace && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    disabled={isGeneratingTrace || !editingSkillData.taskText?.trim()}
+                                                    onClick={handleAICalcTraceGenerate}
+                                                    className="h-8 text-xs font-bold border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100/50 rounded-lg px-3 gap-1.5 transition-all duration-300"
+                                                >
+                                                    {isGeneratingTrace ? (
+                                                        <Loader2 size={13} className="animate-spin" />
+                                                    ) : (
+                                                        <Sparkles size={13} />
+                                                    )}
+                                                    {isGeneratingTrace ? 'Generiere...' : 'KI-Kette generieren'}
+                                                </Button>
+                                            )}
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setIsCalcTraceModalOpen(true)}
+                                                className="h-8 text-xs font-bold border-blue-200 text-blue-700 bg-white hover:bg-blue-50/50 rounded-lg px-3 transition-all duration-300"
+                                            >
+                                                Kette bearbeiten 📐
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Aufgabentext für KI-Analyse & CalcTrace-Kompensation</label>
+                                        <textarea
+                                            value={editingSkillData.taskText || ''}
+                                            onChange={e => {
+                                                const val = e.target.value;
+                                                setEditingSkillData({ ...editingSkillData, taskText: val });
+                                                setGraphGenTaskText(val);
+                                            }}
+                                            placeholder="Füge hier den Aufgabentext ein, aus dem die KI Rechenschritte extrahieren soll..."
+                                            rows={4}
+                                            className="w-full p-3 rounded-xl border border-blue-100 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-blue-100 focus:border-transparent outline-none bg-white resize-none"
+                                        />
+                                    </div>
+
+                                    <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                                        Definieren Sie Rechenschritte, Formeln, Einheiten und Toleranzen für eine flache Rechenkette mit automatischer Folgefehlererkennung.
+                                    </p>
+                                    {editingSkillData.calcTrace?.steps && (
+                                        <div className="flex flex-wrap gap-1.5 pt-1">
+                                            {editingSkillData.calcTrace.steps.map((s: any) => (
+                                                <Badge key={s.id} variant="outline" className="text-xs font-mono px-2 py-0.5 bg-background border-border text-muted-foreground rounded-md">
+                                                    {s.id}: {s.label} ({s.type === 'given' ? 'gegeben' : s.formula})
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kurzbeschreibung</label>
                                 <textarea 
@@ -830,6 +977,21 @@ ${skill.prompt || ''}`;
                         setEditingSkillData({
                             ...editingSkillData,
                             gradingGraph: updatedGraph
+                        });
+                    }}
+                />
+            )}
+            {isCalcTraceModalOpen && (
+                <CalcTraceModal
+                    isOpen={isCalcTraceModalOpen}
+                    onClose={() => setIsCalcTraceModalOpen(false)}
+                    initialTrace={editingSkillData?.calcTrace}
+                    taskName={editingSkillData?.name || "Benutzerdefinierter Skill"}
+                    taskContent={editingSkillData?.taskText || editingSkillData?.description || editingSkillData?.name || ""}
+                    onSave={(updatedTrace) => {
+                        setEditingSkillData({
+                            ...editingSkillData,
+                            calcTrace: updatedTrace
                         });
                     }}
                 />

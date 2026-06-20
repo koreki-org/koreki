@@ -29,7 +29,16 @@ export function splitFeedback(text: string): SplitFeedback {
 
     const pangIndex = text.indexOf('[⚙️ PANG Engine');
     const agsIndex = text.indexOf('[⚙️ AGS Engine');
-    const engineIndex = pangIndex !== -1 ? pangIndex : agsIndex;
+    const calcIndex = text.indexOf('[📐 CalcTrace Engine');
+    
+    let engineIndex = -1;
+    if (pangIndex !== -1) {
+        engineIndex = pangIndex;
+    } else if (agsIndex !== -1) {
+        engineIndex = agsIndex;
+    } else if (calcIndex !== -1) {
+        engineIndex = calcIndex;
+    }
 
     if (engineIndex === -1) {
         return { pedagogical: text };

@@ -43,6 +43,10 @@ koreki/
 │   │   ├── ollama-logic.ts     # Ollama Native Bridge (Desktop/Bypass)
 │   │   ├── ai-orchestrator.ts  # Logic Facade (Orchestrator Between Providers)
 │   │   └── ocr-orchestrator.ts # OCR/Vision Orchestration
+│   ├── grading/              # Deterministic Assessment Engines
+│   │   ├── CalcTrace.ts      # CalcTrace Engine (Calculation Chains)
+│   │   ├── GraphRunner.ts    # PANG Engine (Grading Graphs)
+│   │   └── ...
 │   ├── ai-logic.ts           # Legacy Orchestration Facade (Backward Compatibility)
 │   ├── billing/              # Billing & Credits logic
 │   └── logic.ts              # Mathematical models
@@ -99,7 +103,14 @@ graph TD
 2. **AI Text Cleaning/Mapping**: Die Bridge säubert den Text und mappt die Aufgaben über eine zentrale `internalProcessMapping` Logik. Im Desktop-Modus wird hierbei bevorzugt **Ollama** via Tauri-Invoke genutzt (siehe [Ollama Integration](./ollama-integration-hardening.md)).
 3. **AI Correction**: Der finale Korrektur-Call nutzt die Bridge mit `mistral-large` (SaaS) oder spezialisierten lokalen Modellen (**Gemma 31B**, **Mistral Small 3.2**). Ein struktureller Fehler triggert automatisch den "Confidence Brake" (Status: Review erforderlich).
 
-### 3.2 Hybrid AI Orchestration (V16) ⚛️🛡️
+### 3.2 Dual-Engine Assessment (PANG vs. CalcTrace) 📐⚙️
+Um eine präzise mathematisch-technische Bewertung mit didaktischer Folgefehler-Kompensation zu garantieren, verfügt Koreki über zwei spezialisierte Bewertungs-Engines:
+*   **PANG Engine (Graph-basiert):** Wird für komplexe, netzwerkartige oder abhängige Tabellenstrukturen (wie VLSM-Subnetting oder RAID-Kapazitäten) eingesetzt. Sie baut einen topologisch sortierten gerichteten Graphen (`GradingGraph`) auf und nutzt `expr-eval` zur Formelauflösung.
+*   **CalcTrace Engine (Rechenketten-basiert):** Wird für lineare Formeln in MINT-Fächern (wie Elektrotechnik, Physik) verwendet. Sie evaluiert eine flache Kette von Berechnungsschritten (`CalcTrace`) sequenziell und nutzt eine sandboxed mathjs-AST-Prüfung (`validateAST`) zum Schutz vor Prompt-Injection in generierten Formeln.
+
+Beide Engines propagieren Fehler mithilfe eines Dual-Context-Modells (Musterlösung vs. Schüler-Kontext), um folgerichtige Folgeschritte mit vollen Kulanzpunkten zu bewerten.
+
+### 3.3 Hybrid AI Orchestration (V16) ⚛️🛡️
 
 Um maximale Flexibilität bei gleichzeitiger Sicherheit zu gewährleisten, nutzt der `AI-Orchestrator` ein hybrides Routing-Modell:
 

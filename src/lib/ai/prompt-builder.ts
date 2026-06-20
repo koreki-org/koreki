@@ -9,11 +9,11 @@ import correctionSystemDefault from '../../prompts/core/default/correction/syste
 import correctionUserDefault from '../../prompts/core/default/correction/user.md';
 import studentSimulatorSystemDefault from '../../prompts/student-simulator/system.md';
 import studentSimulatorUserDefault from '../../prompts/student-simulator/user.md';
-import pangFallbackInstruction from '../../prompts/core/default/correction/pang/fallback-instruction.md';
-import pangHybridInstruction from '../../prompts/core/default/correction/pang/hybrid-instruction.md';
-import pangAutoInstruction from '../../prompts/core/default/correction/pang/auto-instruction.md';
-import pangHybridHeader from '../../prompts/core/default/correction/pang/hybrid-header.md';
-import pangAutoHeader from '../../prompts/core/default/correction/pang/auto-header.md';
+import mathFallbackInstruction from '../../prompts/core/default/correction/math-engine/fallback-instruction.md';
+import mathHybridInstruction from '../../prompts/core/default/correction/math-engine/hybrid-instruction.md';
+import mathAutoInstruction from '../../prompts/core/default/correction/math-engine/auto-instruction.md';
+import mathHybridHeader from '../../prompts/core/default/correction/math-engine/hybrid-header.md';
+import mathAutoHeader from '../../prompts/core/default/correction/math-engine/auto-header.md';
 
 import analyzeCleanSystemDefault from '../../prompts/core/default/analyze-and-clean/system.md';
 import analyzeCleanUserDefault from '../../prompts/core/default/analyze-and-clean/user.md';
@@ -30,6 +30,7 @@ import secondOpinionSystemDefault from '../../prompts/second-opinion/system.md';
 import secondOpinionUserDefault from '../../prompts/second-opinion/user.md';
 import variableExtractionSystem from '../../prompts/core/default/variable-extraction/system.md';
 import variableExtractionUser from '../../prompts/core/default/variable-extraction/user.md';
+import calcTraceExtractionSystem from '../../prompts/calc-trace/extraction.md';
 
 
 // Specialized Gemma4 Templates
@@ -109,8 +110,8 @@ export function buildCorrectionPrompt(
                 const disablePointsActive = shouldDisablePoints(t.taskType, t.gradingGraph);
 
                 vorevaluierungBlock += `\n\n### MATHEMATISCH-DETERMINISTISCHE VOREVALUIERUNG FÜR "${t.name}":\n`;
-                vorevaluierungBlock += (disablePointsActive ? pangHybridHeader : pangAutoHeader) + `\n\n`;
-                vorevaluierungBlock += pangFallbackInstruction + `\n\n`;
+                vorevaluierungBlock += (disablePointsActive ? mathHybridHeader : mathAutoHeader) + `\n\n`;
+                vorevaluierungBlock += mathFallbackInstruction + `\n\n`;
                 
                 if (disablePointsActive) {
                     vorevaluierungBlock += `- STATUS DER ENGINE: Der Graph wurde erfolgreich ausgewertet. Nutze ausschließlich die folgenden Detail-Ergebnisse (Korrekt/Falsch/Folgefehler) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.\n`;
@@ -127,14 +128,51 @@ export function buildCorrectionPrompt(
                 });
 
                 if (disablePointsActive) {
-                    vorevaluierungBlock += `\n` + pangHybridInstruction;
+                    vorevaluierungBlock += `\n` + mathHybridInstruction;
                 } else {
-                    vorevaluierungBlock += `\n` + pangAutoInstruction.replace('{{POINTS}}', String(t.gradingResult.totalPoints));
+                    vorevaluierungBlock += `\n` + mathAutoInstruction.replace('{{POINTS}}', String(t.gradingResult.totalPoints));
                 }
             }
         });
         if (vorevaluierungBlock) {
             system += vorevaluierungBlock;
+        }
+
+        // Dynamic Injection of mathematical-deterministic CalcTrace Vorevaluierung
+        let calcTraceVorevaluierungBlock = '';
+        tasksLayout.forEach(t => {
+            if (t.calcTraceResult) {
+                const disablePointsActive = shouldDisablePoints(t.taskType, t.calcTrace);
+
+                calcTraceVorevaluierungBlock += `\n\n### MATHEMATISCH-DETERMINISTISCHE CALCTRACE VOREVALUIERUNG FÜR "${t.name}":\n`;
+                calcTraceVorevaluierungBlock += (disablePointsActive ? mathHybridHeader : `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!`) + `\n\n`;
+                calcTraceVorevaluierungBlock += mathFallbackInstruction + `\n\n`;
+
+                if (disablePointsActive) {
+                    calcTraceVorevaluierungBlock += `- STATUS DER ENGINE: Die Rechenkette wurde erfolgreich ausgewertet. Nutze ausschließlich die folgenden Detail-Ergebnisse (Korrekt/Fehlerhaft/Folgefehler) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.\n`;
+                } else {
+                    calcTraceVorevaluierungBlock += `- ZU VERGEBENDE PUNKTE: ${t.calcTraceResult.totalPoints} von max ${t.calcTraceResult.maxPoints} Punkten.\n`;
+                }
+
+                calcTraceVorevaluierungBlock += `- DETAIL-ERGEBNISSE DER EINZELNEN RECHENSCHRITTE:\n`;
+                t.calcTraceResult.results.forEach((step: any) => {
+                    const statusStr = step.status === 'correct' ? 'Korrekt' : 
+                                    step.status === 'consecutive' ? 'Folgefehler-Kompensiert (Korrekt gewertet)' : 
+                                    step.status === 'omission' ? 'Ausgelassen' :
+                                    'Fehlerhaft (Primärfehler)';
+                    const unitSuffix = step.unit ? ` ${step.unit}` : '';
+                    calcTraceVorevaluierungBlock += `  * Schritt "${step.label}" (${step.id}): Schülerwert: "${step.studentValue !== undefined && step.studentValue !== null ? step.studentValue + unitSuffix : 'nicht angegeben'}", Erwartet: "${step.expected}${unitSuffix}", Status: ${statusStr}. Punkte: ${step.pointsAwarded}/${step.pointsMax}\n`;
+                });
+
+                if (disablePointsActive) {
+                    calcTraceVorevaluierungBlock += `\n` + mathHybridInstruction;
+                } else {
+                    calcTraceVorevaluierungBlock += `\nÜbernimm zwingend die oben berechnete Punktzahl (${t.calcTraceResult.totalPoints} von ${t.calcTraceResult.maxPoints}) für diese Aufgabe und begründe sie im Feedback anhand der Detail-Ergebnisse.\n`;
+                }
+            }
+        });
+        if (calcTraceVorevaluierungBlock) {
+            system += calcTraceVorevaluierungBlock;
         }
     }
 
@@ -405,6 +443,36 @@ export function buildVariableExtractionPrompt(studentText: string, variables: an
         options: { temperature: 0.0, topP: 0.1 }
     };
 }
+
+/**
+ * Builds the prompt for semantic, highly-precise CalcTrace variable extraction.
+ */
+export function buildCalcTraceExtractionPrompt(
+    studentText: string,
+    variables: { id: string; label: string; unit?: string }[],
+    taskName?: string
+): StructuredPrompt {
+    let system = calcTraceExtractionSystem;
+
+    if (taskName) {
+        system += `\n\n### KONTEXT DER AUFGABE:\nDie Aufgabe, die der Schüler beantwortet, heißt: "${taskName}".\nNutze diesen Kontext zwingend, um Mehrdeutigkeiten aufzulösen.\n`;
+    }
+
+    const variablesList = variables.map(v =>
+        `- ID: "${v.id}" (Label: "${v.label}", Einheit: "${v.unit || 'keine Vorgabe'}")`
+    ).join('\n');
+
+    const user = `Schülerantwort:\n"""\n${studentText}\n"""\n\nZu extrahierende Variablen:\n${variablesList}\n\nAntworte als reines JSON.`;
+
+    return {
+        system,
+        user,
+        options: { temperature: 0.0, topP: 0.1 }
+    };
+}
+
+// HMR Trigger: 2026-06-20T09:20:00 (Forces prompt recompilation)
+
 
 
 

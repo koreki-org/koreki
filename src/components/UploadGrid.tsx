@@ -20,6 +20,7 @@ interface UploadGridProps {
     settings?: AppSettings;
     appMode?: 'PURE' | 'STANDARD' | 'TRIAL';
     onGenerateGraph?: (taskIndex: number, taskText: string) => Promise<any>;
+    onGenerateCalcTrace?: (taskIndex: number, taskText: string, userNotes?: string) => Promise<any>;
 }
 
 const UploadGrid: React.FC<UploadGridProps> = ({
@@ -36,7 +37,8 @@ const UploadGrid: React.FC<UploadGridProps> = ({
     isLocked = false,
     settings,
     appMode,
-    onGenerateGraph
+    onGenerateGraph,
+    onGenerateCalcTrace
 }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch mb-8">
@@ -52,6 +54,7 @@ const UploadGrid: React.FC<UploadGridProps> = ({
                 settings={settings}
                 appMode={appMode}
                 onGenerateGraph={onGenerateGraph}
+                onGenerateCalcTrace={onGenerateCalcTrace}
             />
 
             {/* Schülerarbeiten Card */}

@@ -12,6 +12,7 @@ import { EditableMathArea } from '@/components/ui/EditableMathArea';
 import { cn } from '@/lib/utils';
 import { groupTasksByMain, splitTextByTasks, joinTaskSections } from '@/lib/task-utils';
 import { GradingGraphModal } from '../batch/GradingGraphModal';
+import { CalcTraceModal } from '../batch/CalcTraceModal';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { isDesktopTarget } from '@/lib/env-context';
@@ -33,6 +34,7 @@ interface ModelSolutionCardProps {
     settings?: AppSettings;
     appMode?: 'PURE' | 'STANDARD' | 'TRIAL';
     onGenerateGraph?: (taskIndex: number, taskText: string, userNotes?: string, disciplineOverride?: string) => Promise<any>;
+    onGenerateCalcTrace?: (taskIndex: number, taskText: string, userNotes?: string) => Promise<any>;
 }
 
 export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
@@ -45,7 +47,8 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
     isLocked = false,
     settings,
     appMode,
-    onGenerateGraph
+    onGenerateGraph,
+    onGenerateCalcTrace
 }) => {
     const [activeGroupName, setActiveGroupName] = useState<string>("");
     const [generatingGraphForTask, setGeneratingGraphForTask] = useState<number | null>(null);
@@ -122,17 +125,26 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
     const eligibleTaskIndices = useMemo(() => {
         return tasksLayout
             .map((t, idx) => ({ t, idx }))
-            .filter(({ t }) => t.suggestGraph && !t.gradingGraph)
+            .filter(({ t }) => t.suggestGraph && !t.gradingGraph && !t.calcTrace)
             .map(({ idx }) => idx);
     }, [tasksLayout]);
 
     const allSuggestedGraphsVerified = useMemo(() => {
         const suggestedTasks = tasksLayout.filter(t => t.suggestGraph);
         if (suggestedTasks.length === 0) return false;
-        return suggestedTasks.every(t => t.gradingGraph && (t.gradingGraph.validation?.isValid ?? true));
+        return suggestedTasks.every(t => {
+            const hasValidGraph = t.gradingGraph && (t.gradingGraph.validation?.isValid ?? true);
+            const hasValidTrace = t.calcTrace && ((t.calcTrace as any).validation?.isValid ?? true);
+            return hasValidGraph || hasValidTrace;
+        });
     }, [tasksLayout]);
 
-    const persistGraphAsSkill = useCallback(async (name: string, graph: any, taskIdx: number) => {
+    const persistSkillData = useCallback(async (
+        name: string,
+        newSkill: any,
+        taskIdx: number,
+        updateTaskLayout: (task: Task) => Task
+    ) => {
         const cleanNameForId = name
             .toLowerCase()
             .replace(/[^a-z0-9]+/g, '-')
@@ -178,17 +190,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         }
 
         const id = resolvedId || `custom-skill-${cleanNameForId}-${Date.now().toString().slice(-4)}`;
-        
-        const newSkill = {
-            id,
-            name,
-            category: 'graph-skills',
-            description: `Automatisch generierter Graph für ${name}.`,
-            promptSnippet: `KORREKTUR-DIREKTIVE FÜR GRAPH-BASIERTE BEWERTUNG:\nNutze den definierten Grading Graph zur mathematischen Prüfung und Folgefehler-Kompensation.`,
-            isCustom: true,
-            isGraphBased: true,
-            gradingGraph: graph
-        };
+        newSkill.id = id;
 
         customSkills[id] = newSkill;
         try {
@@ -216,9 +218,8 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
             const updated = [...prevTasks];
             if (updated[taskIdx]) {
                 updated[taskIdx] = {
-                    ...updated[taskIdx],
-                    taskType: id,
-                    gradingGraph: graph
+                    ...updateTaskLayout(updated[taskIdx]),
+                    taskType: id
                 };
             }
             return updated;
@@ -323,6 +324,35 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         return id;
     }, [onTasksChange, settings]);
 
+    const persistGraphAsSkill = useCallback(async (name: string, graph: any, taskIdx: number) => {
+        const newSkill = {
+            id: '',
+            name,
+            category: 'graph-skills',
+            description: `Automatisch generierter Graph für ${name}.`,
+            promptSnippet: `KORREKTUR-DIREKTIVE FÜR GRAPH-BASIERTE BEWERTUNG:\nNutze den definierten Grading Graph zur mathematischen Prüfung und Folgefehler-Kompensation.`,
+            isCustom: true,
+            isGraphBased: true,
+            gradingGraph: graph
+        };
+        return persistSkillData(name, newSkill, taskIdx, (task) => ({ ...task, gradingGraph: graph }));
+    }, [persistSkillData]);
+
+    const persistCalcTraceAsSkill = useCallback(async (name: string, trace: any, taskIdx: number) => {
+        const newSkill = {
+            id: '',
+            name,
+            category: 'calc-skills',
+            description: `Automatisch generierte Rechenkette für ${name}.`,
+            promptSnippet: `KORREKTUR-DIREKTIVE FÜR CALCTRACE-BEWERTUNG:\nNutze die definierte Rechenkette zur mathematischen Prüfung und Folgefehler-Kompensation.`,
+            isCustom: true,
+            isGraphBased: false,
+            isCalcTrace: true,
+            calcTrace: trace
+        };
+        return persistSkillData(name, newSkill, taskIdx, (task) => ({ ...task, calcTrace: trace }));
+    }, [persistSkillData]);
+
     const handleStartAutoPilot = useCallback(async (configs: Record<number, { discipline: 'standard' | 'vlsm'; disablePoints: boolean }>) => {
         if (eligibleTaskIndices.length === 0 || isBatchGenerating) return;
         
@@ -352,46 +382,72 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
 
                     const config = configs[idx] || { discipline: 'standard', disablePoints: true };
                     
-                    if (onGenerateGraph) {
-                        const mappedDiscipline = config.discipline === 'vlsm' ? 'skill-calc-vlsm' : 'default';
-                        
-                        onTasksChange?.(prevTasks => {
-                            const updated = [...prevTasks];
-                            if (updated[idx]) {
-                                updated[idx] = {
-                                    ...updated[idx],
-                                    taskType: mappedDiscipline
-                                };
-                            }
-                            return updated;
-                        });
-                        
-                        const note = `SPEZIFIKATION: Bitte erstelle einen Graphen für ein ${config.discipline === 'vlsm' ? 'Netzwerk-Plugin (VLSM)' : 'Mathematik-Plugin (Standard-Rechner)'}-Plugin. Die Bewertung soll ${config.disablePoints ? 'HYBRID (disablePoints = true)' : 'STRENG (disablePoints = false)'} sein.`;
-                        
-                        const generatedGraph = await onGenerateGraph(idx, content, note, mappedDiscipline);
-                        if (generatedGraph) {
-                            generatedGraph.disablePoints = config.disablePoints;
+                    const now = new Date();
+                    const yyyy = now.getFullYear();
+                    const mm = String(now.getMonth() + 1).padStart(2, '0');
+                    const dd = String(now.getDate()).padStart(2, '0');
+                    const hh = String(now.getHours()).padStart(2, '0');
+                    const min = String(now.getMinutes()).padStart(2, '0');
+                    
+                    const cleanTaskName = (task.name || `Aufgabe-${idx + 1}`)
+                        .replace(/[^a-zA-Z0-9_-]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
+                    
+                    const skillName = `Auto_${cleanTaskName}_${yyyy}-${mm}-${dd}_${hh}${min}`;
 
-                            const now = new Date();
-                            const yyyy = now.getFullYear();
-                            const mm = String(now.getMonth() + 1).padStart(2, '0');
-                            const dd = String(now.getDate()).padStart(2, '0');
-                            const hh = String(now.getHours()).padStart(2, '0');
-                            const min = String(now.getMinutes()).padStart(2, '0');
+                    if (config.discipline === 'vlsm') {
+                        if (onGenerateGraph) {
+                            const mappedDiscipline = 'skill-calc-vlsm';
                             
-                            const cleanTaskName = (task.name || `Aufgabe-${idx + 1}`)
-                                .replace(/[^a-zA-Z0-9_-]+/g, '-')
-                                .replace(/^-+|-+$/g, '');
+                            onTasksChange?.(prevTasks => {
+                                const updated = [...prevTasks];
+                                if (updated[idx]) {
+                                    updated[idx] = {
+                                        ...updated[idx],
+                                        taskType: mappedDiscipline
+                                    };
+                                }
+                                return updated;
+                            });
                             
-                            const skillName = `Auto_${cleanTaskName}_${yyyy}-${mm}-${dd}_${hh}${min}`;
+                            const note = `SPEZIFIKATION: Bitte erstelle einen Graphen für ein Netzwerk-Plugin (VLSM). Die Bewertung soll ${config.disablePoints ? 'HYBRID (disablePoints = true)' : 'STRENG (disablePoints = false)'} sein.`;
                             
-                            await persistGraphAsSkill(skillName, generatedGraph, idx);
-                            setBatchStatus(prev => ({ ...prev, [idx]: 'success' }));
+                            const generatedGraph = await onGenerateGraph(idx, content, note, mappedDiscipline);
+                            if (generatedGraph) {
+                                generatedGraph.disablePoints = config.disablePoints;
+                                await persistGraphAsSkill(skillName, generatedGraph, idx);
+                                setBatchStatus(prev => ({ ...prev, [idx]: 'success' }));
+                            } else {
+                                setBatchStatus(prev => ({ ...prev, [idx]: 'error' }));
+                            }
                         } else {
                             setBatchStatus(prev => ({ ...prev, [idx]: 'error' }));
                         }
                     } else {
-                        setBatchStatus(prev => ({ ...prev, [idx]: 'error' }));
+                        // CalcTrace Autopilot
+                        if (onGenerateCalcTrace) {
+                            onTasksChange?.(prevTasks => {
+                                const updated = [...prevTasks];
+                                if (updated[idx]) {
+                                    updated[idx] = {
+                                        ...updated[idx],
+                                        taskType: 'calc-trace'
+                                    };
+                                }
+                                return updated;
+                            });
+                            
+                            const note = `SPEZIFIKATION: Bitte erstelle eine flache Rechenkette (CalcTrace).`;
+                            const generatedTrace = await onGenerateCalcTrace(idx, content, note);
+                            if (generatedTrace) {
+                                await persistCalcTraceAsSkill(skillName, generatedTrace, idx);
+                                setBatchStatus(prev => ({ ...prev, [idx]: 'success' }));
+                            } else {
+                                setBatchStatus(prev => ({ ...prev, [idx]: 'error' }));
+                            }
+                        } else {
+                            setBatchStatus(prev => ({ ...prev, [idx]: 'error' }));
+                        }
                     }
                 } catch (taskErr) {
                     console.error(`Fehler bei der automatischen Generierung für Aufgabe Index ${idx}:`, taskErr);
@@ -403,7 +459,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         } finally {
             setIsBatchGenerating(false);
         }
-    }, [eligibleTaskIndices, onGenerateGraph, persistGraphAsSkill, isBatchGenerating]);
+    }, [eligibleTaskIndices, onGenerateGraph, onGenerateCalcTrace, persistGraphAsSkill, persistCalcTraceAsSkill, isBatchGenerating]);
 
 
 
@@ -617,9 +673,9 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                             <ShieldCheck size={18} />
                                         </div>
                                         <div>
-                                            <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-0.5">KI-Berechnungsgraphen erfolgreich erstellt</h4>
-                                            <p className="text-xs text-slate-600 leading-normal">
-                                                Alle Rechengraphen für eine deterministische Korrektur von Aufgaben wurden erfolgreich generiert und getestet.
+                                            <h4 className="text-xs font-black text-slate-800 uppercase tracking-wider mb-0.5 font-outfit">KI-Berechnungsstrukturen erfolgreich erstellt</h4>
+                                            <p className="text-xs text-slate-600 leading-normal font-medium">
+                                                Alle Rechengraphen / Rechenketten für eine deterministische Korrektur von Aufgaben wurden erfolgreich generiert und getestet.
                                             </p>
                                         </div>
                                     </div>
@@ -647,25 +703,19 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                 {activeGroupName && groupedTasks[activeGroupName]?.map((task) => {
                                     const originalIdx = tasksLayout.findIndex(t => t === task);
                                     const content = taskSections[originalIdx];
-                                    const isGraphTask = !!(
-                                        task.taskType && (
-                                            task.taskType === 'vlsm' || 
-                                            task.taskType === 'skill-calc-vlsm' ||
-                                            SKILL_REGISTRY[task.taskType]?.metadata?.isGraphBased ||
-                                            (settings?.customSkills && settings.customSkills[task.taskType]?.isGraphBased)
-                                        )
-                                    );
-                                    
                                     const isCustomSkill = !!(task.taskType && task.taskType.startsWith('custom-skill-'));
+                                    const customSkillData = isCustomSkill ? settings?.customSkills?.[task.taskType] : null;
+                                    const isCalcTrace = !!task.calcTrace || !!customSkillData?.isCalcTrace;
+
                                     const templateName = isCustomSkill 
-                                        ? settings?.customSkills?.[task.taskType]?.name || "Vorlage"
+                                        ? customSkillData?.name || "Vorlage"
                                         : null;
 
                                     const shouldSuggestGraph = !!task.suggestGraph;
 
                                     const batchState = batchStatus[originalIdx];
                                     const isGeneratingThisTask = generatingGraphForTask === originalIdx || batchState === 'generating';
-                                    const validation = task.gradingGraph?.validation;
+                                    const validation = task.gradingGraph?.validation || (task.calcTrace as any)?.validation;
                                     const isValid = validation?.isValid ?? true;
                                     const valError = validation?.error;
 
@@ -691,10 +741,15 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                 </div>
                                             );
                                         }
-                                        if (task.gradingGraph) {
+                                        if (task.gradingGraph || task.calcTrace) {
                                             if (isValid) {
                                                 return (
-                                                    <div className="h-7 w-7 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0" title="Verifiziert (Dry-Run bestanden)">
+                                                    <div className={cn(
+                                                        "h-7 w-7 rounded-lg flex items-center justify-center shrink-0 border",
+                                                        isCalcTrace 
+                                                            ? "bg-blue-50 border-blue-200 text-blue-600" 
+                                                            : "bg-emerald-50 border-emerald-200 text-emerald-600"
+                                                    )} title="Verifiziert (Dry-Run bestanden)">
                                                         <ShieldCheck size={14} />
                                                     </div>
                                                 );
@@ -723,7 +778,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                     const graphActionNode = (
                                         <div className={cn(
                                             "flex items-center gap-1.5 transition-all duration-300",
-                                            shouldSuggestGraph && !task.gradingGraph ? "opacity-95 scale-105" : "opacity-40 hover:opacity-100"
+                                            shouldSuggestGraph && !task.gradingGraph && !task.calcTrace ? "opacity-95 scale-105" : "opacity-40 hover:opacity-100"
                                         )}>
                                             {statusIcon}
                                             <button
@@ -734,33 +789,37 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                     setEditingGraphTaskIdx(originalIdx);
                                                 }}
                                                 title={isLocked 
-                                                    ? "Bewertungs-Graph ansehen (Schreibgeschützt, da bereits korrigierte Schülerarbeiten existieren)" 
-                                                    : (task.gradingGraph 
-                                                        ? (isCustomSkill ? `Vorlage "${templateName}" bearbeiten` : "Bewertungs-Graph bearbeiten") 
+                                                    ? (isCalcTrace ? "Rechenkette ansehen (Schreibgeschützt)" : "Bewertungs-Graph ansehen (Schreibgeschützt)") 
+                                                    : ((task.gradingGraph || task.calcTrace) 
+                                                        ? (isCustomSkill ? `Vorlage "${templateName}" bearbeiten` : (isCalcTrace ? "Rechenkette bearbeiten" : "Bewertungs-Graph bearbeiten")) 
                                                         : (shouldSuggestGraph 
-                                                            ? "Bewertungs-Graph erstellen oder zuweisen (KI-Empfehlung für deterministisches Ergebnis)" 
-                                                            : "Bewertungs-Graph erstellen oder zuweisen"))
+                                                            ? "Bewertungs-Struktur erstellen oder zuweisen (KI-Empfehlung)" 
+                                                            : "Bewertungs-Struktur erstellen oder zuweisen"))
                                                 }
                                                 className={cn(
                                                     "h-7 w-7 rounded-lg transition-all flex items-center justify-center shrink-0 border select-none cursor-pointer focus:outline-none relative",
-                                                    task.gradingGraph 
+                                                    (task.gradingGraph || task.calcTrace) 
                                                         ? (isCustomSkill 
-                                                            ? "bg-indigo-50/60 border-indigo-100/60 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200" 
-                                                            : "bg-emerald-50/60 border-emerald-100/60 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200")
+                                                            ? (isCalcTrace 
+                                                                ? "bg-blue-50/60 border-blue-100/60 text-blue-600 hover:bg-blue-50 hover:border-blue-200" 
+                                                                : "bg-indigo-50/60 border-indigo-100/60 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200") 
+                                                            : (isCalcTrace 
+                                                                ? "bg-blue-50/60 border-blue-100/60 text-blue-600 hover:bg-blue-50 hover:border-blue-200" 
+                                                                : "bg-emerald-50/60 border-emerald-100/60 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200"))
                                                         : (shouldSuggestGraph
                                                             ? "bg-indigo-50/40 border-indigo-200 text-indigo-500 hover:text-primary hover:border-primary/50 shadow-sm shadow-indigo-100/50"
                                                             : "border-dashed border-slate-200 text-slate-400 hover:text-primary hover:border-primary/50")
                                                 )}
                                             >
-                                                <Sparkles size={12} className={cn("shrink-0", (task.gradingGraph || shouldSuggestGraph) && "animate-pulse")} />
-                                                {shouldSuggestGraph && !task.gradingGraph && !isGeneratingThisTask && batchState !== 'waiting' && (
+                                                <Sparkles size={12} className={cn("shrink-0", (task.gradingGraph || task.calcTrace || shouldSuggestGraph) && "animate-pulse")} />
+                                                {shouldSuggestGraph && !task.gradingGraph && !task.calcTrace && !isGeneratingThisTask && batchState !== 'waiting' && (
                                                     <span className="absolute -top-1.5 -right-1.5 flex h-2.5 w-2.5">
                                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                                                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-indigo-500"></span>
                                                     </span>
                                                 )}
                                             </button>
-                                            {shouldSuggestGraph && !task.gradingGraph && !isGeneratingThisTask && (
+                                            {shouldSuggestGraph && !task.gradingGraph && !task.calcTrace && !isGeneratingThisTask && (
                                                 <button
                                                     type="button"
                                                     onClick={handleToggleSuggestGraph}
@@ -771,12 +830,12 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                     <ToggleRight size={12} />
                                                 </button>
                                             )}
-                                            {!shouldSuggestGraph && !task.gradingGraph && eligibleTaskIndices.length > 0 && (
+                                            {!shouldSuggestGraph && !task.gradingGraph && !task.calcTrace && eligibleTaskIndices.length > 0 && (
                                                 <button
                                                     type="button"
                                                     onClick={handleToggleSuggestGraph}
                                                     disabled={isLocked || isBatchGenerating}
-                                                    title="Zum Berechnungsgraph-Durchlauf hinzufügen"
+                                                    title="Zum Vorevaluierungs-Durchlauf hinzufügen"
                                                     className="h-6 w-6 rounded-md bg-slate-50/60 border border-dashed border-slate-200 text-slate-300 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-500 flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer focus:outline-none"
                                                 >
                                                     <ToggleLeft size={12} />
@@ -866,7 +925,95 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
             {editingGraphTaskIdx !== null && (() => {
                 const task = tasksLayout[editingGraphTaskIdx];
                 const content = taskSections[editingGraphTaskIdx] || "";
+                const isCalcTraceTask = !!task?.calcTrace || (task?.taskType && settings?.customSkills?.[task.taskType]?.isCalcTrace);
                 
+                if (isCalcTraceTask) {
+                    return (
+                        <CalcTraceModal
+                            isOpen={editingGraphTaskIdx !== null}
+                            onClose={() => setEditingGraphTaskIdx(null)}
+                            initialTrace={task?.calcTrace || settings?.customSkills?.[task.taskType]?.calcTrace}
+                            isLocked={isLocked}
+                            taskName={task?.name || `Aufgabe ${editingGraphTaskIdx + 1}`}
+                            taskContent={content && content.trim() ? content : (modelSolution || "")}
+                            taskType={task?.taskType}
+                            customSkills={settings?.customSkills}
+                            settings={settings}
+                            appMode={appMode}
+                            onEngineChange={(newEngine) => {
+                                const updatedTasks = [...tasksLayout];
+                                const currentTask = updatedTasks[editingGraphTaskIdx];
+                                
+                                if (newEngine === 'default') {
+                                    updatedTasks[editingGraphTaskIdx] = {
+                                        ...currentTask,
+                                        taskType: 'default',
+                                        calcTrace: undefined
+                                    };
+                                } else {
+                                    const selectedSkill = settings?.customSkills?.[newEngine];
+                                    updatedTasks[editingGraphTaskIdx] = {
+                                        ...currentTask,
+                                        taskType: newEngine,
+                                        calcTrace: selectedSkill?.calcTrace
+                                    };
+                                }
+                                onTasksChange?.(updatedTasks);
+                            }}
+                            onSaveCustomSkill={(name, trace) => {
+                                persistCalcTraceAsSkill(name, trace, editingGraphTaskIdx);
+                                alert(`Skill "${name}" erfolgreich im Skill Center gespeichert und dem active Skill-Profil hinzugefügt!`);
+                            }}
+                            isGenerating={generatingGraphForTask === editingGraphTaskIdx}
+                            onRegenerateCalcTrace={async (userNotes) => {
+                                if (onGenerateCalcTrace && content && content.trim().length > 10) {
+                                    setGeneratingGraphForTask(editingGraphTaskIdx);
+                                    try {
+                                        const generatedTrace = await onGenerateCalcTrace(editingGraphTaskIdx, content, userNotes);
+                                        if (generatedTrace) {
+                                            const updatedTasks = [...tasksLayout];
+                                            updatedTasks[editingGraphTaskIdx] = {
+                                                ...updatedTasks[editingGraphTaskIdx],
+                                                taskType: 'calc-trace',
+                                                calcTrace: generatedTrace
+                                            };
+                                            onTasksChange?.(updatedTasks);
+                                        }
+                                        return generatedTrace;
+                                    } catch (err) {
+                                        // Handled by parent
+                                    } finally {
+                                        setGeneratingGraphForTask(null);
+                                    }
+                                }
+                                return null;
+                            }}
+                            onDeleteCalcTrace={() => {
+                                const updatedTasks = [...tasksLayout];
+                                const currentTask = updatedTasks[editingGraphTaskIdx];
+                                updatedTasks[editingGraphTaskIdx] = {
+                                    ...currentTask,
+                                    taskType: 'default',
+                                    calcTrace: undefined,
+                                    calcTraceResult: undefined
+                                };
+                                onTasksChange?.(updatedTasks);
+                                setEditingGraphTaskIdx(null);
+                            }}
+                            onSave={(newTrace) => {
+                                const updatedTasks = [...tasksLayout];
+                                const currentTask = updatedTasks[editingGraphTaskIdx];
+                                updatedTasks[editingGraphTaskIdx] = {
+                                    ...currentTask,
+                                    calcTrace: newTrace
+                                };
+                                onTasksChange?.(updatedTasks);
+                                setEditingGraphTaskIdx(null);
+                            }}
+                        />
+                    );
+                }
+
                 return (
                     <GradingGraphModal
                         isOpen={editingGraphTaskIdx !== null}

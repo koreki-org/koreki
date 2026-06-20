@@ -8,13 +8,15 @@ import {
     buildAnonymizePrompt,
     buildSecondOpinionPrompt,
     buildVariableExtractionPrompt,
+    buildCalcTraceExtractionPrompt,
     StructuredPrompt 
 
 } from './prompt-builder';
 import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
+import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, VALIDATE_CALC_TRACE_TOOL, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
 
 export interface OpenAIRequestOptions {
     temperature?: number;
@@ -95,6 +97,12 @@ export async function executeOpenAIRequest(
             promptObj = buildGraphRefinementPrompt(payload.taskText, payload.currentGraph, payload.userInstruction, payload.discipline);
         } else if (action === 'variable-extraction') {
             promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions, payload.taskName);
+        } else if (action === 'generate-calc-trace') {
+            promptObj = buildCalcTraceGenerationPrompt(payload.taskText, payload.discipline, payload.userNotes);
+        } else if (action === 'refine-calc-trace') {
+            promptObj = buildCalcTraceRefinementPrompt(payload.taskText, payload.currentTrace, payload.userInstruction, payload.discipline);
+        } else if (action === 'calc-trace-extraction') {
+            promptObj = buildCalcTraceExtractionPrompt(payload.studentText, payload.expectedValues, payload.taskName);
         } else {
             throw new Error(`Unsupported action: ${action}`);
         }
@@ -109,7 +117,7 @@ export async function executeOpenAIRequest(
     // Thinking mode is only useful for reasoning/pedagogical tasks (correction, second-opinion, graph generation/refinement)
     // For extraction/cleaning tasks (clean-and-map, clean-and-analyze, variable-extraction, vision, anonymize),
     // thinking mode is unnecessary, slower, and can lead to unwanted "corrections" or hallucinations.
-    const reasoningActions: AIAction[] = ['correction', 'second-opinion', 'generate-graph', 'refine-graph'];
+    const reasoningActions: AIAction[] = ['correction', 'second-opinion', 'generate-graph', 'refine-graph', 'generate-calc-trace'];
     const isThinking = options.enableThinking ?? (reasoningActions.includes(action) ? true : false);
     
     // System-level cleaning/mapping actions where we want to enforce prompt-defined temperature (0.0) 
@@ -123,6 +131,12 @@ export async function executeOpenAIRequest(
         
     if (action === 'correction' && options.temperature === undefined) {
         targetTemp = isThinking ? 0.6 : 0.2;
+    }
+
+    // Clamp minimum temperature to 0.1 for Qwen models to prevent loops / hangs at 0.0
+    const isQwen = targetModel.toLowerCase().includes('qwen');
+    if (isQwen && targetTemp === 0.0) {
+        targetTemp = 0.1;
     }
 
     const targetTopP = isSystemAction
@@ -179,8 +193,12 @@ export async function executeOpenAIRequest(
     // We rely on the system prompt or native model behavior for reasoning instead.
     
     const isGraphAction = action === 'generate-graph' || action === 'refine-graph';
+    const isCalcTraceAction = action === 'generate-calc-trace' || action === 'refine-calc-trace';
     if (isGraphAction) {
         body.tools = [VALIDATE_GRAPH_TOOL];
+        body.tool_choice = "auto";
+    } else if (isCalcTraceAction) {
+        body.tools = [VALIDATE_CALC_TRACE_TOOL];
         body.tool_choice = "auto";
     }
 
@@ -280,6 +298,33 @@ export async function executeOpenAIRequest(
                 body.messages = messages; // Update the payload for the next request
                 toolRetryCount++;
                 continue;
+            } else if (toolCall.function.name === 'validate_calc_trace') {
+                const draftTraceJson = toolCall.function.arguments;
+                const draftTrace = parseGeneratedCalcTrace(draftTraceJson);
+                let toolResultString = "";
+
+                if (!draftTrace) {
+                    toolResultString = "Invalid JSON structure or missing fields. Ensure you match the CALC_TRACE_SCHEMA exactly.";
+                } else {
+                    const validation = validateCalcTraceDeterminism(draftTrace);
+                    if (validation.isValid) {
+                        return draftTrace;
+                    } else {
+                        toolResultString = `Mathematical validation failed: ${validation.error}. Please fix this and try again.`;
+                    }
+                }
+
+                messages.push(message);
+                messages.push({
+                    role: "tool",
+                    tool_call_id: toolCall.id,
+                    name: toolCall.function.name,
+                    content: toolResultString
+                });
+
+                body.messages = messages; // Update the payload for the next request
+                toolRetryCount++;
+                continue;
             }
         }
 
@@ -288,14 +333,22 @@ export async function executeOpenAIRequest(
         break;
     }
 
-    const content = responseContent;
+    if (toolRetryCount > maxToolRetries) {
+        throw new Error('Die KI konnte nach mehreren Versuchen keinen mathematisch validen Graphen generieren. Bitte passe den Aufgabentext an oder nutze ein leistungsstärkeres Modell.');
+    }
 
-    if (content === null || content === undefined) {
+    if (responseContent === null || responseContent === undefined) {
         throw new Error('Die KI hat eine leere Antwort (null) zurückgegeben. Dies kann passieren, wenn das Modell überlastet ist oder die Eingabe blockiert wurde.');
     }
 
+    let content = responseContent;
+
     // 4. Robust JSON Parsing
     if (action !== 'vision' && action !== 'second-opinion') {
+        const repairUnescapedBackslashes = (jsonStr: string): string => {
+            return jsonStr.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
+        };
+
         // [Industrial Hardening] 🛡️
         // We try the standard greedy extraction first to maintain backward compatibility.
         const standardJson = (() => {
@@ -305,7 +358,7 @@ export async function executeOpenAIRequest(
 
         try {
             return {
-                ...JSON.parse(standardJson),
+                ...JSON.parse(repairUnescapedBackslashes(standardJson)),
                 usage: responseUsage
             };
         } catch (e) {
@@ -322,7 +375,7 @@ export async function executeOpenAIRequest(
                 const hardenedJson = hardenedMatch ? hardenedMatch[0] : cleanContent;
                 
                 return {
-                    ...JSON.parse(hardenedJson),
+                    ...JSON.parse(repairUnescapedBackslashes(hardenedJson)),
                     usage: responseUsage
                 };
             } catch (e2) {

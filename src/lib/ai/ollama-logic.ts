@@ -8,14 +8,16 @@ import {
     buildAnonymizePrompt,
     buildSecondOpinionPrompt,
     buildVariableExtractionPrompt,
+    buildCalcTraceExtractionPrompt,
     StructuredPrompt
 
 } from './prompt-builder';
 import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
+import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, VALIDATE_CALC_TRACE_TOOL, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
 import { AppSettings } from '../../types';
 import { isDesktopTarget } from '@/lib/env-context';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction';
+export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
 
 /**
  * Helper to normalize Ollama URLs ensuring they have a protocol prefix.
@@ -130,13 +132,19 @@ export async function executeOllamaRequest(
         promptObj = buildGraphRefinementPrompt(payload.taskText, payload.currentGraph, payload.userInstruction, payload.discipline);
     } else if (action === 'variable-extraction') {
         promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions, payload.taskName);
+    } else if (action === 'generate-calc-trace') {
+        promptObj = buildCalcTraceGenerationPrompt(payload.taskText, payload.discipline, payload.userNotes);
+    } else if (action === 'refine-calc-trace') {
+        promptObj = buildCalcTraceRefinementPrompt(payload.taskText, payload.currentTrace, payload.userInstruction, payload.discipline);
+    } else if (action === 'calc-trace-extraction') {
+        promptObj = buildCalcTraceExtractionPrompt(payload.studentText, payload.expectedValues, payload.taskName);
     } else {
         throw new Error(`Unsupported action: ${action}`);
     }
 
     // 1.5. Dynamic Parameter & Context size Estimation (Industrial Standard)
     const modelLower = model.toLowerCase();
-    const isSystemAction = ['clean-and-analyze', 'clean-and-map', 'variable-extraction', 'generate-graph', 'refine-graph'].includes(action);
+    const isSystemAction = ['clean-and-analyze', 'clean-and-map', 'variable-extraction', 'generate-graph', 'refine-graph', 'generate-calc-trace', 'calc-trace-extraction'].includes(action);
 
     if (isSystemAction) {
         targetMaxTokens = Math.min(targetMaxTokens, 8192);
@@ -303,9 +311,12 @@ export async function executeOllamaRequest(
     }
 
     const isGraphAction = action === 'generate-graph' || action === 'refine-graph';
+    const isCalcTraceAction = action === 'generate-calc-trace' || action === 'refine-calc-trace';
     let tools: any[] | undefined = undefined;
     if (isGraphAction) {
         tools = [VALIDATE_GRAPH_TOOL];
+    } else if (isCalcTraceAction) {
+        tools = [VALIDATE_CALC_TRACE_TOOL];
     }
 
     let fullContent = '';
@@ -314,7 +325,7 @@ export async function executeOllamaRequest(
 
     while (toolRetryCount <= maxToolRetries) {
         // We disable streaming if we are using tools to safely capture the full tool_calls object.
-        const isStreaming = !isGraphAction;
+        const isStreaming = !isGraphAction && !isCalcTraceAction;
 
         // If tools are active, we CANNOT enforce a strict responseSchema! 
         // A tool call structure {"name": "...", "arguments": {...}} would violate the graph schema, 
@@ -447,6 +458,36 @@ export async function executeOllamaRequest(
 
                 toolRetryCount++;
                 continue;
+            } else if (toolCall.function.name === 'validate_calc_trace') {
+                const args = toolCall.function.arguments;
+                const draftTraceJson = typeof args === 'string' ? args : JSON.stringify(args);
+                const draftTrace = parseGeneratedCalcTrace(draftTraceJson);
+                let toolResultString = "";
+
+                if (!draftTrace) {
+                    toolResultString = "Invalid JSON structure or missing fields. Ensure you match the CALC_TRACE_SCHEMA exactly.";
+                } else {
+                    const validation = validateCalcTraceDeterminism(draftTrace);
+                    if (validation.isValid) {
+                        return draftTrace;
+                    } else {
+                        toolResultString = `Mathematical validation failed: ${validation.error}. Please fix this and try again.`;
+                    }
+                }
+
+                messages.push({
+                    role: "assistant",
+                    content: fullContent,
+                    tool_calls: toolCalls
+                });
+                messages.push({
+                    role: "tool",
+                    name: toolCall.function.name,
+                    content: toolResultString
+                });
+
+                toolRetryCount++;
+                continue;
             }
         }
 
@@ -518,8 +559,12 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
         return match ? match[0] : rawJson;
     })();
 
+    const repairUnescapedBackslashes = (jsonStr: string): string => {
+        return jsonStr.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
+    };
+
     try {
-        return validateOllamaResponse(JSON.parse(standardJson), action);
+        return validateOllamaResponse(JSON.parse(repairUnescapedBackslashes(standardJson)), action);
     } catch (e) {
         if (e instanceof Error && e.message.startsWith('Ungültige KI-Struktur')) {
             throw e;
@@ -540,7 +585,7 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
                 .replace(/,\s*([\]\}])/g, '$1') // Removes trailing commas before ] or }
                 .trim();
 
-            return validateOllamaResponse(JSON.parse(partiallyRepaired), action);
+            return validateOllamaResponse(JSON.parse(repairUnescapedBackslashes(partiallyRepaired)), action);
         } catch (e2) {
             if (e2 instanceof Error && e2.message.startsWith('Ungültige KI-Struktur')) {
                 throw e2;

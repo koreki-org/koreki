@@ -12,6 +12,8 @@ import { GradingGraph } from '../grading/types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { splitSkillSnippet } from './prompt-library';
 import { splitTextByTasks } from '../task-utils';
+import { evaluateCalcTrace, formatCalcTraceForPrompt } from '../grading/CalcTrace';
+import { extractCalcTraceValues } from '../grading/calc-trace-extraction';
 
 /**
  * Helper to determine whether deterministic PANG engine point awarding should be disabled (default true for custom tasks).
@@ -48,6 +50,53 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
         const mappedTasks = tasksLayout.map((layoutTask: any) => {
             // Find the AI task if it exists for extra pedagogical feedback
             const aiTask = (analysis.tasks || []).find((t: any) => t.name === layoutTask.name);
+
+            // --- DETECT DETERMINISTIC CALCTRACE-BASED TASKS & EVALUATE LOCALLY ---
+            if (layoutTask.calcTraceResult) {
+                const disablePointsActive = shouldDisablePoints(layoutTask.taskType, layoutTask.calcTrace);
+                let enginePoints: number;
+                if (disablePointsActive) {
+                    const aiPoints = aiTask && aiTask.pointsObtained !== undefined && aiTask.pointsObtained !== null
+                        ? Number(aiTask.pointsObtained)
+                        : NaN;
+                    enginePoints = !isNaN(aiPoints)
+                        ? aiPoints
+                        : Number(layoutTask.calcTraceResult.totalPoints ?? 0);
+                } else {
+                    enginePoints = Number(layoutTask.calcTraceResult.totalPoints ?? 0);
+                }
+                totalObtained += enginePoints;
+
+                const isAlreadyFormatted = aiTask && aiTask.feedback && (
+                    aiTask.feedback.includes('[📐 CalcTrace Engine - Mathematischer Abgleich]')
+                );
+
+                if (isAlreadyFormatted) {
+                    return {
+                        name: layoutTask.name,
+                        maxPoints: layoutTask.maxPoints,
+                        pointsObtained: enginePoints,
+                        feedback: aiTask.feedback,
+                        confidence: 95,
+                        content: aiTask.content || ''
+                    };
+                }
+
+                const stepFeedback = formatCalcTraceForPrompt(layoutTask.calcTraceResult);
+                const aiFeedbackText = aiTask ? (aiTask.feedback || aiTask.content || '') : '';
+                
+                let finalFeedback = `[📐 CalcTrace Engine - Mathematischer Abgleich]\n${stepFeedback}\n\n---\n\n`;
+                finalFeedback += `[KI-Pädagogische Einschätzung]\n${aiFeedbackText || 'Die mathematische Prüfung wurde vollautomatisch durch die CalcTrace-Engine validiert.'}`;
+
+                return {
+                    name: layoutTask.name,
+                    maxPoints: layoutTask.maxPoints,
+                    pointsObtained: enginePoints,
+                    feedback: finalFeedback,
+                    confidence: 95,
+                    content: aiTask ? (aiTask.content || '') : ''
+                };
+            }
 
             // --- DETECT DETERMINISTIC GRAPH-BASED TASKS & EVALUATE LOCALLY (PANG Architecture) ---
             if (layoutTask.gradingResult) {
@@ -427,7 +476,7 @@ export async function extractStudentAnswersWithLLM(
  * Orchestrates AI requests (Correction, Layout, Vision), choosing between direct Mistral API (PURE) or Koreki Backend (STANDARD).
  */
 export async function performAIRequest(
-    action: 'correction' | 'clean-and-analyze' | 'vision' | 'clean-and-map' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction',
+    action: 'correction' | 'clean-and-analyze' | 'vision' | 'clean-and-map' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'calc-trace-extraction',
     payload: any, // ARCH: any required because payload structure varies by action (Correction vs Layout)
     appMode: 'PURE' | 'STANDARD' | 'TRIAL' | undefined,
     settings: AppSettings,
@@ -455,6 +504,11 @@ export async function performAIRequest(
                 ))
             );
 
+            const hasAttachedCalcTrace = !!task.calcTrace;
+            const isCalcTraceSkill = task.taskType && (
+                customSkills[task.taskType]?.isCalcTrace
+            );
+
             if (hasAttachedGraph) {
                 try {
                     const studentTaskText = rawSplit[i] || "";
@@ -474,6 +528,25 @@ export async function performAIRequest(
                     }
                 } catch (err: any) {
                     logger.error('Error in client-side GraphRunner execution', err);
+                }
+            } else if (hasAttachedCalcTrace || isCalcTraceSkill) {
+                try {
+                    const studentTaskText = rawSplit[i] || "";
+                    const taskSpecificText = (studentTaskText && studentTaskText.trim().length > 0) ? studentTaskText : studentText;
+                    
+                    const trace = task.calcTrace || customSkills[task.taskType]?.calcTrace;
+                    
+                    const studentValues = await extractCalcTraceValues(taskSpecificText, trace, appMode, settings, task.name);
+                    const calcTraceResult = evaluateCalcTrace(trace, studentValues);
+                    
+                    task.calcTraceResult = calcTraceResult;
+                    const disablePointsActive = shouldDisablePoints(task.taskType, trace);
+                    if (!disablePointsActive) {
+                        task.pointsObtained = calcTraceResult.totalPoints;
+                    }
+                    task.maxPoints = calcTraceResult.maxPoints;
+                } catch (err: any) {
+                    logger.error('Error in client-side CalcTrace execution', err);
                 }
             }
         }
@@ -736,7 +809,9 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                         action === 'second-opinion' ? '/api/second-opinion' :
                             action === 'generate-graph' ? '/api/generate-graph' :
                                 action === 'refine-graph' ? '/api/refine-graph' :
-                                    '/api/extract-image';
+                                    action === 'generate-calc-trace' ? '/api/generate-calc-trace' :
+                                        action === 'calc-trace-extraction' ? '/api/calc-trace-extraction' :
+                                            '/api/extract-image';
 
         const res = await apiClient.post(endpoint, { 
             ...payload, 
