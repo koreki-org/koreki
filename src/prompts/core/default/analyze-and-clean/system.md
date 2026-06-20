@@ -55,9 +55,10 @@ WICHTIG (Bewertungsschema erhalten):
 - Falls im OCR-Text Tabellen oder Listen mit Teilpunkten vorkommen, müssen diese im Feld "content" exakt so wiedergegeben werden.
 
 WICHTIG (Graphen-Vorschlag - suggestGraph):
-- Setze "suggestGraph" auf true, wenn die Aufgabe mathematisch-numerische Berechnungen (z. B. Subnetz-Berechnungen, RAID-Kapazitäten, Physik-Rechnungen) enthält.
+- Setze "suggestGraph" auf true, wenn die Aufgabe mathematische, numerische oder physikalische Berechnungen und Formeln enthält.
 - Setze "suggestGraph" auf false bei rein textbasierten Fragen, Beschreibungen oder Erklärungen.
 - Wenn "suggestGraph" auf true gesetzt wird, MUSS die dazugehörige Plugin-Domäne im Feld "predictedPluginDomain" vorausgewählt werden. Wähle dafür zwingend **einen** dieser Werte: [ {{ACTIVE_DOMAINS}} ]. Setze das Feld auf null, falls suggestGraph=false ist.
+  * HINWEIS: Nutze "network" für Netzwerk-/Subnetz-Berechnungen und "math" für alle anderen Berechnungen und Formelaufgaben.
 
 Antworte EXAKT im folgenden JSON-Format:
 {

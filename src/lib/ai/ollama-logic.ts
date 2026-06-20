@@ -146,6 +146,12 @@ export async function executeOllamaRequest(
     const modelLower = model.toLowerCase();
     const isSystemAction = ['clean-and-analyze', 'clean-and-map', 'variable-extraction', 'generate-graph', 'refine-graph', 'generate-calc-trace', 'calc-trace-extraction'].includes(action);
 
+    const isReasoningModel = modelLower.includes('r1') || 
+                              modelLower.includes('qwq') || 
+                              modelLower.includes('reasoning');
+    const shouldIncludeThink = settings.enableThinking === true || isReasoningModel;
+    const thinkValue = (action === 'vision' || isSystemAction) ? false : (settings.enableThinking ?? false);
+
     if (isSystemAction) {
         targetMaxTokens = Math.min(targetMaxTokens, 8192);
     }
@@ -259,7 +265,7 @@ export async function executeOllamaRequest(
                 temperature: targetTemp,
                 topP: targetTopP,
                 numPredict: finalMaxTokens,
-                think: action === 'vision' ? false : (settings.enableThinking ?? false)
+                ...(shouldIncludeThink ? { think: thinkValue } : {})
             });
 
             let content: string;
@@ -352,7 +358,7 @@ export async function executeOllamaRequest(
                 stream: isStreaming,
                 tools,
                 format: formatParam,
-                think: (action === 'vision' || isSystemAction) ? false : (settings.enableThinking ?? false),
+                ...(shouldIncludeThink ? { think: thinkValue } : {}),
                 options: { 
                     num_ctx: numCtx,
                     temperature: targetTemp,

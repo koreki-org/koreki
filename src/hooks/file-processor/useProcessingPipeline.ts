@@ -86,11 +86,6 @@ export const useProcessingPipeline = (
     ) => {
         if (!textToMap || tasksLayout.length === 0) return;
  
-        // 🔍 DIAGNOSTIC: Log the raw OCR text that goes into the mapping
-        console.log(`[MAPPING-DEBUG] === Student #${index} - RAW OCR INPUT ===`);
-        console.log(textToMap);
-        console.log(`[MAPPING-DEBUG] === Tasks Layout: ${tasksLayout.map(t => t.name).join(', ')} ===`);
- 
         const cleanData = await performAIRequest('clean-and-map', {
             text: textToMap, 
             isInclusive: false, 
@@ -98,17 +93,6 @@ export const useProcessingPipeline = (
             pageCount,
             requestId: index // Scoped streaming
         }, userData?.appMode, settings, signal);
-
-        // 🔍 DIAGNOSTIC: Log the mapping result
-        console.log(`[MAPPING-DEBUG] === Student #${index} - MAPPING RESULT ===`);
-        if (cleanData?.tasks) {
-            cleanData.tasks.forEach((t: any) => {
-                const preview = (t.content || '').substring(0, 80);
-                console.log(`  → ${t.name}: "${preview}${(t.content || '').length > 80 ? '...' : ''}"`);
-            });
-        } else {
-            console.log('  → NO TASKS IN RESULT!', cleanData);
-        }
 
         if (cleanData?.tasks && cleanData.tasks.length > 0) {
             const structuredTasks = cleanData.tasks;
@@ -641,7 +625,7 @@ export const useProcessingPipeline = (
             if (data && Array.isArray(data.tasks)) {
                 data.tasks = data.tasks.map((task: any) => ({
                     ...task,
-                    taskType: 'default',
+                    taskType: task.predictedPluginDomain === 'math' ? 'calc-trace' : 'default',
                     gradingGraph: undefined
                 }));
             }

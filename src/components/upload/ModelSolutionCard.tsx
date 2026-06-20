@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { FileText, FileUp, RefreshCw, Sparkles, Loader2, Layers, Trash2, Link2Off, HelpCircle, AlertCircle, ShieldCheck, ShieldAlert, Clock, ToggleLeft, ToggleRight, Download } from 'lucide-react';
+import { FileText, FileUp, RefreshCw, Sparkles, Loader2, Layers, Trash2, Link2Off, HelpCircle, AlertCircle, ShieldCheck, ShieldAlert, Clock, ToggleLeft, ToggleRight, Download, X } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { Task, AppSettings } from '@/types';
 import { promisePool } from '../../lib/ai/promise-pool';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -54,6 +55,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
     const [generatingGraphForTask, setGeneratingGraphForTask] = useState<number | null>(null);
     const [editingGraphTaskIdx, setEditingGraphTaskIdx] = useState<number | null>(null);
     const [showAutoPilotConfig, setShowAutoPilotConfig] = useState<boolean>(false);
+    const [showEngineSelectionTaskIdx, setShowEngineSelectionTaskIdx] = useState<number | null>(null);
 
     const [isBatchGenerating, setIsBatchGenerating] = useState<boolean>(false);
     const [batchStatus, setBatchStatus] = useState<Record<number, 'waiting' | 'generating' | 'success' | 'error'>>({});
@@ -705,7 +707,10 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                     const content = taskSections[originalIdx];
                                     const isCustomSkill = !!(task.taskType && task.taskType.startsWith('custom-skill-'));
                                     const customSkillData = isCustomSkill ? settings?.customSkills?.[task.taskType] : null;
-                                    const isCalcTrace = !!task.calcTrace || !!customSkillData?.isCalcTrace;
+                                    const isCalcTrace = !!task.calcTrace || 
+                                                        !!customSkillData?.isCalcTrace || 
+                                                        task.taskType === 'calc-trace' || 
+                                                        (!task.gradingGraph && task.predictedPluginDomain === 'math');
 
                                     const templateName = isCustomSkill 
                                         ? customSkillData?.name || "Vorlage"
@@ -786,7 +791,11 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                 disabled={isGeneratingThisTask || batchState === 'waiting'}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setEditingGraphTaskIdx(originalIdx);
+                                                    if (task.gradingGraph || task.calcTrace) {
+                                                        setEditingGraphTaskIdx(originalIdx);
+                                                    } else {
+                                                        setShowEngineSelectionTaskIdx(originalIdx);
+                                                    }
                                                 }}
                                                 title={isLocked 
                                                     ? (isCalcTrace ? "Rechenkette ansehen (Schreibgeschützt)" : "Bewertungs-Graph ansehen (Schreibgeschützt)") 
@@ -925,7 +934,10 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
             {editingGraphTaskIdx !== null && (() => {
                 const task = tasksLayout[editingGraphTaskIdx];
                 const content = taskSections[editingGraphTaskIdx] || "";
-                const isCalcTraceTask = !!task?.calcTrace || (task?.taskType && settings?.customSkills?.[task.taskType]?.isCalcTrace);
+                const isCalcTraceTask = !!task?.calcTrace || 
+                                        (task?.taskType && settings?.customSkills?.[task.taskType]?.isCalcTrace) ||
+                                        task?.taskType === 'calc-trace' ||
+                                        (!task?.gradingGraph && task?.predictedPluginDomain === 'math');
                 
                 if (isCalcTraceTask) {
                     return (
@@ -1115,6 +1127,110 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 eligibleTaskIndices={eligibleTaskIndices}
                 tasksLayout={tasksLayout}
             />
+            {showEngineSelectionTaskIdx !== null && createPortal(
+                <div 
+                    className="fixed inset-0 z-[9000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in font-inter text-slate-700"
+                    onClick={() => setShowEngineSelectionTaskIdx(null)}
+                >
+                    <div 
+                        className="bg-white border border-slate-100 shadow-2xl rounded-2xl w-full max-w-lg overflow-hidden animate-zoom-in flex flex-col p-6 sm:p-8"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-black text-slate-900 font-outfit tracking-tight flex items-center gap-2">
+                                <Sparkles className="text-indigo-500 w-5 h-5 shrink-0" />
+                                Evaluierungs-Engine auswählen
+                            </h3>
+                            <button 
+                                onClick={() => setShowEngineSelectionTaskIdx(null)}
+                                className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full cursor-pointer focus:outline-none"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <p className="text-xs text-slate-400 font-medium mb-6">
+                            Wähle das passende Korrektur-Modell für diese Aufgabe aus, um die Kriterien-Erstellung zu konfigurieren.
+                        </p>
+
+                        {/* Grid */}
+                        <div className="grid grid-cols-1 gap-4 mb-6">
+                            {/* Option 1: PANG-Rechengraph */}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const taskIdx = showEngineSelectionTaskIdx;
+                                    onTasksChange?.(prevTasks => {
+                                        const updated = [...prevTasks];
+                                        if (updated[taskIdx]) {
+                                            updated[taskIdx] = {
+                                                ...updated[taskIdx],
+                                                taskType: 'default',
+                                                gradingGraph: { taskId: `task-${Date.now()}`, discipline: 'general', variables: [] }
+                                            };
+                                        }
+                                        return updated;
+                                    });
+                                    setEditingGraphTaskIdx(taskIdx);
+                                    setShowEngineSelectionTaskIdx(null);
+                                }}
+                                className="flex items-start gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50/30 hover:bg-emerald-50/20 hover:border-emerald-200 transition-all text-left group cursor-pointer focus:outline-none"
+                            >
+                                <div className="w-10 h-10 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0 group-hover:scale-105 transition-transform">
+                                    <Layers size={20} />
+                                </div>
+                                <div className="min-w-0">
+                                    <h4 className="text-sm font-bold text-slate-800 group-hover:text-emerald-700 font-outfit">Rechengraph (PANG)</h4>
+                                    <p className="text-xs text-slate-400 mt-1">Für strukturierte Netzwerke (z.B. VLSM), RAID oder grafisch vernetzte Variablen.</p>
+                                </div>
+                            </button>
+
+                            {/* Option 2: CalcTrace-Rechenkette */}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    const taskIdx = showEngineSelectionTaskIdx;
+                                    onTasksChange?.(prevTasks => {
+                                        const updated = [...prevTasks];
+                                        if (updated[taskIdx]) {
+                                            updated[taskIdx] = {
+                                                ...updated[taskIdx],
+                                                taskType: 'calc-trace',
+                                                calcTrace: { taskId: `task-${Date.now()}`, steps: [] }
+                                            };
+                                        }
+                                        return updated;
+                                    });
+                                    setEditingGraphTaskIdx(taskIdx);
+                                    setShowEngineSelectionTaskIdx(null);
+                                }}
+                                className="flex items-start gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50/30 hover:bg-blue-50/20 hover:border-blue-200 transition-all text-left group cursor-pointer focus:outline-none"
+                            >
+                                <div className="w-10 h-10 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0 group-hover:scale-105 transition-transform">
+                                    <Sparkles size={20} />
+                                </div>
+                                <div className="min-w-0">
+                                    <h4 className="text-sm font-bold text-slate-800 group-hover:text-blue-700 font-outfit">Rechenkette (CalcTrace)</h4>
+                                    <p className="text-xs text-slate-400 mt-1">Für mathematisch-numerische Aufgaben, Gleichungen und Schritt-für-Schritt-Rechnungen.</p>
+                                </div>
+                            </button>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex justify-end gap-3 mt-2">
+                            <Button 
+                                type="button"
+                                variant="ghost"
+                                onClick={() => setShowEngineSelectionTaskIdx(null)}
+                                className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-700 h-auto"
+                            >
+                                Abbrechen
+                            </Button>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
         </Card>
     );
 };

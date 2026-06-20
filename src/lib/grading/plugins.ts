@@ -282,16 +282,6 @@ export const PLUGIN_MANIFEST: Record<string, Record<string, { signature: string;
       description: "Berechnet die Gateway-IP (standardmäßig die letzte nutzbare IP)."
     }
   },
-  raid: {
-    calculateNetCapacity: {
-      signature: "raid.calculateNetCapacity(level, disks, size)",
-      description: "Berechnet die Netto-Kapazität in TB. Parameter: level (RAID-Level: 0, 1, 5, 6, 10), disks (Anzahl Platten), size (Kapazität einer Platte)."
-    },
-    calculateFaultTolerance: {
-      signature: "raid.calculateFaultTolerance(level, disks)",
-      description: "Berechnet die Anzahl der verkraftbaren Plattenausfälle. Parameter: level (RAID-Level: 0, 1, 5, 6, 10), disks (Anzahl Platten)."
-    }
-  },
   math: {
     add: {
       signature: "math.add(a, b)",
