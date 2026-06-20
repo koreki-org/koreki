@@ -38,6 +38,10 @@ Deine Aufgabe: Analysiere eine Aufgabe (Musterlösung) und erstelle daraus eine 
    - **Explizite Punktvorgaben**: Wenn der Lehrer konkrete Punkte für Rechenschritte vorgibt, übernimm diese exakt 1:1.
    - **Standardverteilung**: Falls keine Vorgaben vorliegen, verteile die Gesamtpunkte logisch über die Schritte (Endergebnisse mehr Punkte, einfache gegebene Werte weniger oder 1 Punkt).
 
+5. **Erhalt von Vorsatzzeichen (kΩ, mA, etc. - WICHTIG):**
+   - Wenn in der Musterlösung Vorsatzzeichen verwendet werden (z. B. `4 kΩ`, `1,846 mA`), übernimm diese Einheit und den Skalierungsfaktor **exakt** in die Rechenkette (`"unit": "kΩ"`, `"value": 4`).
+   - Normalisiere Werte **nicht** eigenmächtig in Basiseinheiten (z. B. `4 kΩ` nicht in `4000 Ω` umwandeln), da dies die Nachvollziehbarkeit für den Schüler und das Mapping erschwert.
+
 4. **Präzises Berechnungsbeispiel:**
    *Aufgabe: "Berechne das Volumen eines Quaders. Gegeben sind Länge = 10 m, Breite = 5 m und Höhe = 4 m. Gesamtpunkte: 4."*
    ```json
