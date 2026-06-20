@@ -1,8 +1,26 @@
 import { Task, GradingMemoryCase } from '../../types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
-import { shouldDisablePoints } from './ai-orchestrator';
 import { getAvailablePluginManifest } from '../grading/graph-generator';
+
+/**
+ * Helper to determine whether deterministic PANG engine point awarding should be disabled (default true for custom tasks).
+ * Enforces strict PANG scoring for system VLSM/RAID skills, unless explicitly overridden in the graph metadata.
+ */
+export function shouldDisablePoints(taskType?: string, gradingGraph?: any): boolean {
+    if (gradingGraph && typeof gradingGraph.disablePoints === 'boolean') {
+        return gradingGraph.disablePoints;
+    }
+    
+    if (
+        taskType === 'vlsm' || 
+        taskType === 'skill-calc-vlsm'
+    ) {
+        return false;
+    }
+    
+    return true;
+}
 
 // Centralized Default Templates
 import correctionSystemDefault from '../../prompts/core/default/correction/system.md';
@@ -471,7 +489,7 @@ export function buildCalcTraceExtractionPrompt(
     };
 }
 
-// HMR Trigger: 2026-06-20T09:20:00 (Forces prompt recompilation)
+// HMR Trigger: 2026-06-20T09:36:00 (Forces prompt recompilation)
 
 
 

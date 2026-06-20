@@ -410,9 +410,9 @@ export const useAiProfiles = (
     };
 
     useEffect(() => {
-        if (settings.provider === 'ollama') {
-            if (temperature < 0.1) setTemperature(0.1);
-            if (visionTemperature < 0.1) setVisionTemperature(0.1);
+        if (settings.provider === 'ollama' || settings.provider === 'openai-compatible') {
+            if (temperature < 0.2) setTemperature(0.2);
+            if (visionTemperature < 0.2) setVisionTemperature(0.2);
         }
     }, [settings.provider, temperature, visionTemperature]);
 

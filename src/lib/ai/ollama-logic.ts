@@ -189,7 +189,13 @@ export async function executeOllamaRequest(
             targetTemp = 0.4;
         }
     } else {
-        if (targetTemp === 0) {
+        if (isQwen) {
+            // Qwen models are extremely prone to infinite repetition loops in Ollama at very low temperatures (<= 0.1).
+            // Clamp targetTemp to at least 0.2 to prevent looping.
+            if (targetTemp < 0.2) {
+                targetTemp = 0.2;
+            }
+        } else if (targetTemp === 0) {
             targetTemp = 0.1;
         }
 
@@ -346,7 +352,7 @@ export async function executeOllamaRequest(
                 stream: isStreaming,
                 tools,
                 format: formatParam,
-                think: action === 'vision' ? false : (settings.enableThinking ?? false),
+                think: (action === 'vision' || isSystemAction) ? false : (settings.enableThinking ?? false),
                 options: { 
                     num_ctx: numCtx,
                     temperature: targetTemp,

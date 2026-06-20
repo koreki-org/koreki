@@ -3,7 +3,9 @@ import prisma from '@/lib/prisma';
 import { parseCorrectionResult, extractStudentAnswersWithLLM, shouldDisablePoints } from '@/lib/ai/ai-orchestrator';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
+import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
 import { CorrectionSchema } from '@/lib/validation';
+import { AppSettings } from '@/types';
 import { performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
 import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
@@ -157,11 +159,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const useOpenAI = settings.provider === 'openai-compatible' || (isComplex && !isLocalInstance() && settings.provider !== 'mistral');
 
         if (settings.provider === 'ollama') {
-            const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
             analysis = await executeOllamaRequest(
                 'correction',
                 { modelSolution, studentText, tasksLayout, expertProfileName, gradingMemory },
-                settings
+                settings as AppSettings
             );
         } else if (!useOpenAI) {
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;

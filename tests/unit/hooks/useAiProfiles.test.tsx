@@ -56,16 +56,20 @@ describe('useAiProfiles Hook 🧪🛡️', () => {
         expect(result.current.isDirty).toBe(false);
     });
 
-    it('should clamp temperature to 0.1 for Ollama provider', () => {
+    it('should clamp temperature to 0.2 for Ollama and OpenAI-Compatible providers', () => {
         mockSettings.provider = 'ollama';
         mockSettings.temperature = 0.0;
         mockSettings.visionTemperature = 0.0;
 
-        const { result } = renderHook(() => useAiProfiles(mockSettings, mockOnSave, mockOnClose));
+        const { result: resultOllama } = renderHook(() => useAiProfiles(mockSettings, mockOnSave, mockOnClose));
+        expect(resultOllama.current.temperature).toBe(0.2);
+        expect(resultOllama.current.visionTemperature).toBe(0.2);
 
-        // Clamping should trigger because provider is ollama and temp < 0.1
-        expect(result.current.temperature).toBe(0.1);
-        expect(result.current.visionTemperature).toBe(0.1);
+        // Reset and test with openai-compatible
+        mockSettings.provider = 'openai-compatible';
+        const { result: resultOpenAI } = renderHook(() => useAiProfiles(mockSettings, mockOnSave, mockOnClose));
+        expect(resultOpenAI.current.temperature).toBe(0.2);
+        expect(resultOpenAI.current.visionTemperature).toBe(0.2);
     });
 
     it('should NOT clamp temperature for other providers', () => {

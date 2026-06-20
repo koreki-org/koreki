@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma';
 import type { NextApiResponse } from 'next';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
+import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
 import { performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
 import { logger } from '@/lib/logger';
 import { promisePool } from '../../lib/ai/promise-pool';
@@ -137,7 +138,6 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         };
 
         const tryOllama = async (buffers: Buffer[]) => {
-            const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
 
             const pageResults = await promisePool(buffers, 1, async (b) => {
                 const result = await executeOllamaRequest(

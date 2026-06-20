@@ -65,9 +65,11 @@ In der **Community Edition** kann die KI-Infrastruktur auf zwei Ebenen konfiguri
 
 Koreki optimiert die Inferenz-Parameter automatisch, sobald der **Thinking Mode** (gesteuert über `enableThinking` im KI-Intelligenz-Modal) aktiviert wird, um die Reasoning-Qualität von Qwen 3.6 zu maximieren:
 
-1.  **Temperature Hardening:** 
+1.  **Temperature Hardening & Clamping:** 
     *   Standard (Thinking): `1.0`
     *   Korrektur-Modus (Thinking): `0.6` (Erhöht die Präzision bei Code- und Logikanalysen).
+    *   **UI-Clamping (Sicherheitsgrenze):** Sobald `ollama` oder `openai-compatible` als Provider ausgewählt ist, wird im KI-Intelligenz-Modal (React-Hook `useAiProfiles`) und den Slidern ein sicheres Minimum von **`0.2`** für Temperatur und Vision-Temperatur erzwungen. Dies verhindert, dass über system- oder nutzerdefinierte Profile (z. B. "Logik & Mathe" mit `0.0`) zu niedrige Temperaturen geladen werden, die bei Qwen-Inferenz-Engines zu unendlichen Generierungsschleifen führen.
+    *   **Backend-Sicherung (Inferenz-Sperre):** Bei Qwen-Modellen wird im Inferenz-Layer (`ollama-logic.ts` und `openai-provider.ts`) eine Temperatur kleiner als `0.2` im System- und Bewertungskontext automatisch auf mindestens `0.2` angehoben.
 2.  **Context Escalation:** Setzt `max_tokens` automatisch auf bis zu `32.768`, um Raum für die Reasoning-Kette zu schaffen.
 3.  **Response Sanitizing:** Der Provider bereinigt die Antwort chirurgisch von `<thinking>` Blöcken und Markdown-Fences, um die Datenintegrität für den nachgelagerten JSON-Parser zu gewährleisten.
 
@@ -96,7 +98,16 @@ Um die absolute Integrität von Schülerabgaben zu schützen und unerwünschte �
 
 ### Integrierte Vision- & Thinking-Governance
 * **Vision-Steuerung:** Die benutzerspezifischen Parameter aus dem Intelligenz-Modal (`settings.visionTemperature`, `settings.visionTopP`, etc.) werden nun über alle Schnittstellen (einschließlich des OCR-Endpunkts `extract-image.ts`) getreu berücksichtigt.
-* **Thinking-Governance:** Wird `enableThinking` im KI-Intelligenz-Modal deaktiviert, deaktiviert das System die Reasoning-Engine (`enable_thinking: false`) global für alle nachgelagerten Aufrufe, um maximale Kontrolle zu bieten.
+* **Thinking-Governance (Selektive Deaktivierung):**
+  * **Didaktische Aktionen (Thinking AN):** Der Thinking-Modus wird standardmäßig ausschließlich für didaktische Kernbereiche verwendet, die menschliche Bewertung und Freitext-Feedback erfordern. Dies betrifft die Aktionen `correction` und `second-opinion`.
+  * **Strukturelle Systemaktionen & Tool-Calling (Thinking AUS):** Um massive Latenz-Verzögerungen (z. B. bei Mittwald) und unvollständige JSON-Generierungen zu unterbinden, ist Thinking für alle rein strukturellen Aktionen standardmäßig global **deaktiviert** (sowohl bei Ollama als auch beim OpenAI-Provider). Dies betrifft `generate-graph`, `refine-graph`, `generate-calc-trace`, `refine-calc-trace`, `calc-trace-extraction` und `variable-extraction`. Diese Aktionen erzeugen direkt kompakte JSONs oder Tool-Calls in wenigen Sekunden.
+  * **vLLM-Konformität (Mittwald):** Da Mittwalds Inferenz-Engine auf **vLLM** basiert, wird das Deaktivieren/Aktivieren des Thinking-Modes im OpenAI-Provider nicht über das herkömmliche `enable_thinking` Flag geregelt (welches vLLM stillschweigend überliest), sondern über das vLLM-spezifische `chat_template_kwargs` Objekt im Request-Body:
+    ```json
+    "chat_template_kwargs": {
+        "enable_thinking": false
+    }
+    ```
+  * Wird `enableThinking` im KI-Intelligenz-Modal deaktiviert, überschreibt das System die Reasoning-Engine (`enable_thinking: false` bzw. `enable_thinking: false` in `chat_template_kwargs`) global für alle nachgelagerten Aufrufe, um maximale Kontrolle zu bieten.
 
 ---
 

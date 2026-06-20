@@ -14,25 +14,9 @@ import { splitSkillSnippet } from './prompt-library';
 import { splitTextByTasks } from '../task-utils';
 import { evaluateCalcTrace, formatCalcTraceForPrompt } from '../grading/CalcTrace';
 import { extractCalcTraceValues } from '../grading/calc-trace-extraction';
+import { shouldDisablePoints } from './prompt-builder';
 
-/**
- * Helper to determine whether deterministic PANG engine point awarding should be disabled (default true for custom tasks).
- * Enforces strict PANG scoring for system VLSM/RAID skills, unless explicitly overridden in the graph metadata.
- */
-export function shouldDisablePoints(taskType?: string, gradingGraph?: any): boolean {
-    if (gradingGraph && typeof gradingGraph.disablePoints === 'boolean') {
-        return gradingGraph.disablePoints;
-    }
-    
-    if (
-        taskType === 'vlsm' || 
-        taskType === 'skill-calc-vlsm'
-    ) {
-        return false;
-    }
-    
-    return true;
-}
+export { shouldDisablePoints };
 
 /**
  * Maps the AI raw JSON results back to the Koreki Task structure and calculates totals.
@@ -396,7 +380,6 @@ export async function extractStudentAnswersWithLLM(
             // Server-Side (STANDARD mode execution) - directly invoke provider (isomorphic optimization)
             if (typeof window === 'undefined') {
                 if (settings.provider === 'ollama') {
-                    const { executeOllamaRequest } = require('./ollama-logic');
                     extracted = await executeOllamaRequest('variable-extraction', payload, settings);
                 } else if (settings.provider === 'mistral') {
                     const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;

@@ -1,8 +1,10 @@
 import type { NextApiResponse } from 'next';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
+import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
 import { parseGeneratedCalcTrace, validateCalcTraceDeterminism, CALC_TRACE_SCHEMA } from '@/lib/grading/calc-trace-generator';
 import { logger } from '@/lib/logger';
+import { AppSettings } from '@/types';
 import { isLocalInstance } from '@/lib/env-context';
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 import { z } from 'zod';
@@ -40,11 +42,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         let rawResult: Record<string, unknown>;
 
         if (settings?.provider === 'ollama') {
-            const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
             rawResult = await executeOllamaRequest(
                 'generate-calc-trace',
                 { taskText, userNotes },
-                settings,
+                settings as AppSettings,
                 undefined,
                 { responseSchema: CALC_TRACE_SCHEMA }
             );
@@ -122,11 +123,10 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
 
             try {
                 if (settings?.provider === 'ollama') {
-                    const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
                     rawResult = await executeOllamaRequest(
                         'refine-calc-trace',
                         { taskText, currentTrace: trace, userInstruction },
-                        settings,
+                        settings as AppSettings,
                         undefined,
                         { responseSchema: CALC_TRACE_SCHEMA }
                     );

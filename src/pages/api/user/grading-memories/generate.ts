@@ -2,6 +2,7 @@ import type { NextApiResponse } from 'next';
 import { z } from 'zod';
 import { executeMistralRequest } from '../../../../lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '../../../../lib/ai/openai-provider';
+import { executeOllamaRequest } from '../../../../lib/ai/ollama-logic';
 import { logger } from '../../../../lib/logger';
 import { withSecurity, AuthenticatedRequest } from '../../../../lib/security';
 import { checkAndDeductCredits } from '../../../../lib/billing';
@@ -55,7 +56,6 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         let result: any;
 
         if (settings.provider === 'ollama') {
-            const { executeOllamaRequest } = require('../../../../lib/ai/ollama-logic');
             result = await executeOllamaRequest(
                 'student-simulator',
                 { modelSolution, tasksLayout, selectedTasks },

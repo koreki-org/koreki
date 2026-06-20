@@ -431,7 +431,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{temperature.toFixed(1)}</span>
                                 </div>
                                 <input
-                                    type="range" min={provider === 'ollama' ? "0.1" : "0.0"} max="2.0" step="0.1" value={temperature}
+                                    type="range" min={(provider === 'ollama' || provider === 'openai-compatible') ? "0.2" : "0.0"} max="2.0" step="0.1" value={temperature}
                                     onChange={(e) => setTemperature(parseFloat(e.target.value))}
                                     className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
                                 />
@@ -537,7 +537,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                     <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{visionTemperature.toFixed(1)}</span>
                                 </div>
                                 <input
-                                    type="range" min={provider === 'ollama' ? "0.1" : "0.0"} max="2.0" step="0.1" value={visionTemperature}
+                                    type="range" min={(provider === 'ollama' || provider === 'openai-compatible') ? "0.2" : "0.0"} max="2.0" step="0.1" value={visionTemperature}
                                     onChange={(e) => setVisionTemperature(parseFloat(e.target.value))}
                                     className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
                                 />

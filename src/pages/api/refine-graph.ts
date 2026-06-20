@@ -1,8 +1,10 @@
 import type { NextApiResponse } from 'next';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
+import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
 import { parseGeneratedGraph, validateGraphDeterminism, GRADING_GRAPH_SCHEMA } from '@/lib/grading/graph-generator';
 import { logger } from '@/lib/logger';
+import { AppSettings } from '@/types';
 import { isLocalInstance } from '@/lib/env-context';
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 import { z } from 'zod';
@@ -55,11 +57,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const presencePenalty = 0.0;
 
         if (settings?.provider === 'ollama') {
-            const { executeOllamaRequest } = require('../../lib/ai/ollama-logic');
             rawResult = await executeOllamaRequest(
                 'refine-graph',
                 { taskText, currentGraph, userInstruction, discipline },
-                settings,
+                settings as AppSettings,
                 undefined,
                 { responseSchema: GRADING_GRAPH_SCHEMA }
             );

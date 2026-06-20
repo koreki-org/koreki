@@ -117,7 +117,7 @@ export async function executeOpenAIRequest(
     // Thinking mode is only useful for reasoning/pedagogical tasks (correction, second-opinion, graph generation/refinement)
     // For extraction/cleaning tasks (clean-and-map, clean-and-analyze, variable-extraction, vision, anonymize),
     // thinking mode is unnecessary, slower, and can lead to unwanted "corrections" or hallucinations.
-    const reasoningActions: AIAction[] = ['correction', 'second-opinion', 'generate-graph', 'refine-graph', 'generate-calc-trace'];
+    const reasoningActions: AIAction[] = ['correction', 'second-opinion'];
     const isThinking = options.enableThinking ?? (reasoningActions.includes(action) ? true : false);
     
     // System-level cleaning/mapping actions where we want to enforce prompt-defined temperature (0.0) 
@@ -133,10 +133,10 @@ export async function executeOpenAIRequest(
         targetTemp = isThinking ? 0.6 : 0.2;
     }
 
-    // Clamp minimum temperature to 0.1 for Qwen models to prevent loops / hangs at 0.0
+    // Clamp minimum temperature to 0.2 for Qwen models to prevent loops / hangs
     const isQwen = targetModel.toLowerCase().includes('qwen');
-    if (isQwen && targetTemp === 0.0) {
-        targetTemp = 0.1;
+    if (isQwen && targetTemp < 0.2) {
+        targetTemp = 0.2;
     }
 
     const targetTopP = isSystemAction
@@ -182,9 +182,10 @@ export async function executeOpenAIRequest(
         body.response_format = { type: 'json_object' };
     }
 
-    if (isThinking) {
-        body.enable_thinking = true;
-    }
+    // Enable/disable thinking mode for vLLM / Mittwald AI hosting via chat_template_kwargs
+    body.chat_template_kwargs = {
+        enable_thinking: isThinking
+    };
 
     // Specific Qwen/OpenAI-compat Extra Params
     // [Industrial Alert] 🛡️

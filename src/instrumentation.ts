@@ -6,6 +6,19 @@ export async function register() {
     // Only run in the Node.js runtime (not Edge)
     if (process.env.NEXT_RUNTIME === 'nodejs') {
         try {
+            // Configure Undici global dispatcher to prevent 30s HeadersTimeoutError on slow LLMs
+            try {
+                const { Agent, setGlobalDispatcher } = await import('undici');
+                setGlobalDispatcher(new Agent({
+                    headersTimeout: 300000, // 5 minutes
+                    bodyTimeout: 300000,    // 5 minutes
+                    connectTimeout: 60000   // 1 minute
+                }));
+                console.log('[INSTRUMENTATION] Undici global dispatcher configured with 5-minute timeouts.');
+            } catch (err: any) {
+                console.warn('[INSTRUMENTATION WARNING] Failed to set global undici dispatcher:', err.message);
+            }
+
             const cron = await import('node-cron');
             const { cleanupLogs } = await import('../prisma/scripts/cleanup-logs.js');
             const { default: prisma } = await import('./lib/prisma');
