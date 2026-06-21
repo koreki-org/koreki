@@ -1344,7 +1344,7 @@ const handleSaveActiveMemoryChanges = async () => {
                             </div>
                             <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2 font-outfit">Erfahrungsschatz erfolgreich kalibriert!</h3>
                             <p className="text-slate-500 text-xs md:text-sm max-w-[500px] mb-6 font-medium">
-                                Der neue Erfahrungsschatz <strong>"{profileName}"</strong> wurde sicher gespeichert und ist ab sofort als aktives Few-Shot-Modul für deine Korrekturen vorausgewählt!
+                                Der neue Erfahrungsschatz <strong>&quot;{profileName}&quot;</strong> wurde sicher gespeichert und ist ab sofort als aktives Few-Shot-Modul für deine Korrekturen vorausgewählt!
                             </p>
                             <Button 
                                 onClick={onClose}

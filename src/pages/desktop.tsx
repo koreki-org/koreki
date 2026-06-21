@@ -36,7 +36,7 @@ export default function DesktopOnboarding() {
                     <div className="flex flex-col gap-6 animate-fade-up lg:pt-4">
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 w-fit">
                             <Monitor size={14} />
-                            <span className="text-[9px] font-black uppercase tracking-wider">Desktop Edition</span>
+                            <span className="text-xs font-black uppercase tracking-wider">Desktop Edition</span>
                         </div>
                         
                         <div className="space-y-3">
@@ -57,7 +57,7 @@ export default function DesktopOnboarding() {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-slate-900 text-sm">Flexible Anbindung</h3>
-                                    <p className="text-[13px] text-slate-500 leading-normal">Wählen Sie zwischen Cloud-Komfort (Mistral) oder lokaler Autonomie (Ollama).</p>
+                                    <p className="text-sm text-slate-500 leading-normal">Wählen Sie zwischen Cloud-Komfort (Mistral) oder lokaler Autonomie (Ollama).</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4 p-3 rounded-xl transition-all hover:bg-white group">
@@ -66,7 +66,7 @@ export default function DesktopOnboarding() {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-slate-900 text-sm">Native Performance</h3>
-                                    <p className="text-[13px] text-slate-500 leading-normal">Optimiert für lokale Hardware-Beschleunigung und nahtlose Integration.</p>
+                                    <p className="text-sm text-slate-500 leading-normal">Optimiert für lokale Hardware-Beschleunigung und nahtlose Integration.</p>
                                 </div>
                             </div>
                             <div className="flex items-start gap-4 p-3 rounded-xl transition-all hover:bg-white group">
@@ -75,20 +75,20 @@ export default function DesktopOnboarding() {
                                 </div>
                                 <div>
                                     <h3 className="font-bold text-slate-900 text-sm">Windows & Linux</h3>
-                                    <p className="text-[13px] text-slate-500 leading-normal">Native Unterstützung für Windows 10/11 und Ubuntu Desktop (macOS coming soon).</p>
+                                    <p className="text-sm text-slate-500 leading-normal">Native Unterstützung für Windows 10/11 und Ubuntu Desktop (macOS coming soon).</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="animate-fade-up delay-150">
-                        <Card className="border-white/60 shadow-xl relative overflow-hidden group rounded-[24px]">
+                        <Card className="border-white/60 shadow-xl relative overflow-hidden group rounded-2xl">
                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
                            <CardContent className="p-6 md:p-8 relative z-10">
                                <div className="flex items-start gap-3 mb-6 text-amber-700 bg-amber-50 p-4 rounded-xl border border-amber-200/50">
                                    <ShieldAlert size={24} className="shrink-0 mt-0.5" />
                                    <div>
-                                       <h4 className="font-black uppercase text-[9px] tracking-widest mb-1">Datenschutz & Verantwortung</h4>
+                                       <h4 className="font-black uppercase text-xs tracking-widest mb-1">Datenschutz & Verantwortung</h4>
                                        <p className="font-bold text-xs leading-snug">Bitte beachten Sie die Datenschutzrichtlinien Ihrer Schule.</p>
                                    </div>
                                </div>
@@ -97,8 +97,8 @@ export default function DesktopOnboarding() {
                                    <p>
                                        Stellen Sie sicher, dass Ihr System vor unbefugtem Zugriff geschützt ist. Details zur Anbindung finden Sie im Guide.
                                    </p>
-                                   <div className="text-[10px] bg-slate-100/50 p-4 rounded-xl border border-slate-200 mt-4 leading-normal">
-                                        <strong className="text-slate-700 block mb-1 uppercase tracking-tighter font-black text-[10px]">Haftungsausschluss</strong> 
+                                   <div className="text-xs bg-slate-100/50 p-4 rounded-xl border border-slate-200 mt-4 leading-normal">
+                                        <strong className="text-slate-700 block mb-1 uppercase tracking-tighter font-black text-xs">Haftungsausschluss</strong> 
                                         Die Nutzung der Software erfolgt auf eigene Gefahr. Der Entwickler übernimmt keine Haftung für Schäden, Datenverlust oder Inkompatibilitäten, die durch die Installation oder Nutzung der Desktop Edition entstehen.
                                     </div>
                                </div>
@@ -134,7 +134,7 @@ export default function DesktopOnboarding() {
                                             </div>
                                             <div className="text-left flex-grow">
                                                 <h4 className="font-bold text-slate-900 text-xs text-gradient">Einrichtung noch nicht fertig?</h4>
-                                                <p className="text-[10px] text-slate-500 font-black uppercase tracking-wider">Setup Guide: Mistral oder Ollama</p>
+                                                <p className="text-xs text-slate-500 font-black uppercase tracking-wider">Setup Guide: Mistral oder Ollama</p>
                                             </div>
                                             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm border border-blue-100 group-hover/setup:bg-primary group-hover/setup:text-white transition-all">
                                                 <ArrowRight size={14} className="group-hover/setup:translate-x-0.5 transition-transform" />
@@ -143,7 +143,7 @@ export default function DesktopOnboarding() {
                                    </div>
                                </div>
 
-                               <div className="mt-6 flex items-center justify-center gap-2 text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                               <div className="mt-6 flex items-center justify-center gap-2 text-xs font-black text-slate-400 uppercase tracking-[0.2em]">
                                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                                    Koreki V1.0 Desktop Build
                                </div>
@@ -154,7 +154,7 @@ export default function DesktopOnboarding() {
 
                 {isLocalInstance() && (
                     <div className="mt-8 text-center animate-fade-in delay-500">
-                        <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em] px-6">
+                        <p className="text-xs text-slate-400 font-black uppercase tracking-[0.3em] px-6">
                             &copy; {new Date().getFullYear()} Koreki – Premium AI Correction Architecture
                         </p>
                     </div>

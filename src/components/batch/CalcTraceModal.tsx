@@ -703,7 +703,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                 {/* Footer */}
                 <div className="px-4 sm:px-8 py-4 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-4 justify-between items-center shrink-0">
                     <p className="text-xs text-slate-400 font-inter text-center sm:text-left leading-normal">
-                        * Die Schritt ID wird beim Parsen von Schülerlösungen automatisch gematcht (z. B. "step_1").
+                        * Die Schritt ID wird beim Parsen von Schülerlösungen automatisch gematcht (z. B. &quot;step_1&quot;).
                     </p>
                     <div className="flex gap-3 w-full sm:w-auto justify-stretch sm:justify-end">
                         <Button 

@@ -33,7 +33,7 @@ export const ShowroomCard: React.FC<ShowroomCardProps> = ({
         <>
             <Link 
                 href={href}
-                className={`group relative flex flex-col md:flex-row items-center gap-12 p-8 md:p-12 rounded-[2.5rem] bg-white/40 border border-white/40 backdrop-blur-2xl shadow-glass transition-all duration-700 hover:shadow-2xl hover:bg-white/60 hover:-translate-y-1 overflow-hidden ${className}`}
+                className={`group relative flex flex-col md:flex-row items-center gap-12 p-8 md:p-12 rounded-hero bg-white/40 border border-white/40 backdrop-blur-2xl shadow-glass transition-all duration-700 hover:shadow-2xl hover:bg-white/60 hover:-translate-y-1 overflow-hidden ${className}`}
             >
                 {/* Ambient Background Glow */}
                 <div className={`absolute top-0 right-0 w-[400px] h-[400px] ${accentColor} opacity-0 blur-[120px] group-hover:opacity-10 transition-opacity duration-1000 -mr-40 -mt-40 pointer-events-none`} />

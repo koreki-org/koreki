@@ -128,7 +128,7 @@ export const AnonymizeModal: React.FC<AnonymizeModalProps> = ({
                             />
                             <div className="bg-muted/30 p-3 rounded-lg border border-border text-xs text-muted-foreground leading-relaxed font-inter">
                                 <div className="font-bold text-foreground mb-1">Originaltext:</div>
-                                <div className="italic font-inter">"{originalText}"</div>
+                                <div className="italic font-inter">&quot;{originalText}&quot;</div>
                             </div>
                         </div>
                     )}

@@ -4,6 +4,7 @@ import { CheckCircle2, XCircle, AlertCircle, ShieldCheck, GraduationCap, Calenda
 import { decodeFeedback, FeedbackData, parseStatus } from '@/lib/distribution';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import Logo from '@/components/Logo';
 
 export default function StudentFeedbackView() {
@@ -146,7 +147,7 @@ export default function StudentFeedbackView() {
                 <div className="mb-8 text-center animate-fade-up">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full mb-4">
                         <Logo size={14} />
-                        <span className="text-[10px] font-extrabold uppercase tracking-widest">Digitales Feedback</span>
+                        <span className="text-xs font-extrabold uppercase tracking-widest">Digitales Feedback</span>
                     </div>
                     <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
                         Koreki<span className="text-primary">.</span>
@@ -203,7 +204,7 @@ export default function StudentFeedbackView() {
                                             <div>
                                                 <h4 className="font-bold text-slate-900">{task.id}</h4>
                                                 {task.points !== undefined && task.maxPoints !== undefined && (
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mt-0.5">
+                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">
                                                         Erreicht: <span className="text-primary">{task.points} / {task.maxPoints} Pkt.</span>
                                                     </p>
                                                 )}
@@ -214,7 +215,7 @@ export default function StudentFeedbackView() {
                                                 {status === 'Ff' && <Badge className="bg-orange-50 text-orange-700 border-orange-100 font-bold px-2 py-0.5 whitespace-nowrap"><AlertCircle size={12} className="mr-1" /> Folgefehler</Badge>}
                                             </div>
                                         </div>
-                                        <p className="text-slate-600 text-[15px] leading-relaxed">{cleanText}</p>
+                                        <p className="text-slate-600 text-sm leading-relaxed">{cleanText}</p>
                                     </CardContent>
                                 </div>
                             </Card>
@@ -225,24 +226,24 @@ export default function StudentFeedbackView() {
                 {/* Print Button & Privacy Footer */}
                 <div className="text-center px-8 animate-fade-up">
                     <div className="flex flex-col items-center gap-6 mb-8 print:hidden">
-                        <button 
+                        <Button 
                             onClick={() => window.print()}
-                            className="flex items-center gap-2 bg-white text-slate-700 px-8 py-3 rounded-2xl font-bold shadow-xl border border-slate-100 hover:bg-slate-50 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            className="flex items-center gap-2 bg-white hover:bg-slate-50 text-slate-700 px-8 py-3 rounded-2xl font-bold shadow-xl border border-slate-100 hover:scale-[1.02] active:scale-[0.98] transition-all"
                         >
                             <Printer size={18} /> Feedback drucken
-                        </button>
+                        </Button>
                     </div>
 
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-100 mb-4 shadow-sm">
                         <ShieldCheck size={18} />
-                        <span className="text-xs font-bold">100% Sicher & Privat</span>
+                        <span className="text-sm font-bold">100% Sicher & Privat</span>
                     </div>
-                    <p className="text-[11px] text-slate-400 leading-relaxed">
+                    <p className="text-sm text-slate-400 leading-relaxed">
                         Dieses Feedback wurde lokal auf deinem Gerät entschlüsselt.<br />
                         Deine Daten wurden nicht auf Koreki-Servern gespeichert.
                     </p>
                     <div className="mt-8 pt-8 border-t border-slate-200/50">
-                        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-[0.2em]">Powered by Koreki.org</p>
+                        <p className="text-xs font-bold text-slate-300 uppercase tracking-[0.2em]">Powered by Koreki.org</p>
                     </div>
                 </div>
             </div>

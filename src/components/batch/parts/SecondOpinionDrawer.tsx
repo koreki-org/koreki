@@ -223,7 +223,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                             <div className="pt-2 border-t border-border/30">
                                 <span className="text-xs font-bold text-slate-400 uppercase tracking-widest font-outfit block mb-1">Schülerantwort (Auszug)</span>
                                 <p className="text-sm text-slate-600 dark:text-slate-400 font-inter italic line-clamp-3 leading-relaxed">
-                                    "{studentText}"
+                                    &quot;{studentText}&quot;
                                 </p>
                             </div>
                         </div>

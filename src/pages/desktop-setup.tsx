@@ -96,13 +96,13 @@ export default function DesktopSetup() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-10">
                     {/* Ollama Card */}
-                    <Card className="border-blue-100 shadow-lg hover:shadow-xl transition-all duration-500 group animate-fade-up bg-blue-50/20 rounded-[24px] overflow-hidden">
+                    <Card className="border-blue-100 shadow-lg hover:shadow-xl transition-all duration-500 group animate-fade-up bg-blue-50/20 rounded-2xl overflow-hidden">
                         <CardHeader className="p-6 pb-2">
                             <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 mb-4 flex items-center justify-center group-hover:scale-110 transition-transform border border-blue-100">
                                 <Cpu size={24} />
                             </div>
                             <CardTitle className="text-2xl font-black tracking-tight text-slate-900">Ollama Lokal</CardTitle>
-                            <p className="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">Eigene Infrastruktur</p>
+                            <p className="text-xs text-blue-600 font-black uppercase tracking-widest mt-1">Eigene Infrastruktur</p>
                         </CardHeader>
                         <CardContent className="p-6 pt-0 space-y-4">
                             <ul className="space-y-3">
@@ -114,7 +114,7 @@ export default function DesktopSetup() {
                                     <CheckCircle2 size={16} className="text-blue-500 shrink-0 mt-0.5" />
                                     <span>Vollständige Datensouveränität</span>
                                 </li>
-                                <li className="flex items-start gap-3 text-amber-600 text-[13px] font-bold leading-tight bg-amber-50/50 p-2 rounded-lg border border-amber-100/50">
+                                <li className="flex items-start gap-3 text-amber-600 text-xs font-bold leading-tight bg-amber-50/50 p-2 rounded-lg border border-amber-100/50">
                                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
                                     <span>Bitte beachten Sie die Datenschutzrichtlinien Ihrer Schule</span>
                                 </li>
@@ -131,13 +131,13 @@ export default function DesktopSetup() {
                     </Card>
 
                     {/* Mistral Card */}
-                    <Card className="border-white/60 shadow-lg hover:shadow-xl transition-all duration-500 group animate-fade-up delay-100 rounded-[24px] overflow-hidden">
+                    <Card className="border-white/60 shadow-lg hover:shadow-xl transition-all duration-500 group animate-fade-up delay-100 rounded-2xl overflow-hidden">
                         <CardHeader className="p-6 pb-2">
                             <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 mb-4 flex items-center justify-center group-hover:scale-110 transition-transform border border-orange-100">
                                 <Cloud size={24} />
                             </div>
                             <CardTitle className="text-2xl font-black tracking-tight text-slate-900">KI-Cloud (API)</CardTitle>
-                            <p className="text-[10px] text-orange-600 font-black uppercase tracking-widest mt-1">Mistral AI / OpenAI-kompatibel</p>
+                            <p className="text-xs text-orange-600 font-black uppercase tracking-widest mt-1">Mistral AI / OpenAI-kompatibel</p>
                         </CardHeader>
                         <CardContent className="p-6 pt-0 space-y-4">
                             <ul className="space-y-3">
@@ -149,7 +149,7 @@ export default function DesktopSetup() {
                                     <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
                                     <span>Anonymisierte Übertragung (Cloud EU)</span>
                                 </li>
-                                <li className="flex items-start gap-3 text-amber-600 text-[13px] font-bold leading-tight bg-amber-50/50 p-2 rounded-lg border border-amber-100/50">
+                                <li className="flex items-start gap-3 text-amber-600 text-xs font-bold leading-tight bg-amber-50/50 p-2 rounded-lg border border-amber-100/50">
                                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
                                     <span>Bitte beachten Sie die Datenschutzrichtlinien Ihrer Schule</span>
                                 </li>
@@ -182,7 +182,7 @@ export default function DesktopSetup() {
                             {setupPhases.map((phase, idx) => (
                                 <Card 
                                     key={idx} 
-                                    className="border-white/60 shadow-sm rounded-[16px] bg-white overflow-hidden flex group hover:shadow-md transition-all duration-300 cursor-zoom-in"
+                                    className="border-white/60 shadow-sm rounded-2xl bg-white overflow-hidden flex group hover:shadow-md transition-all duration-300 cursor-zoom-in"
                                     onClick={() => setZoomedImage(phase.img)}
                                 >
                                     <div className="w-32 bg-slate-50 relative overflow-hidden p-2 flex items-center justify-center shrink-0 border-r border-slate-100">
@@ -191,13 +191,13 @@ export default function DesktopSetup() {
                                             alt={phase.title} 
                                             className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                                         />
-                                        <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-primary text-white text-[8px] font-black flex items-center justify-center">
+                                        <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-primary text-white text-xs font-black flex items-center justify-center">
                                             {idx + 1}
                                         </div>
                                     </div>
                                     <CardContent className="p-4 flex-grow">
                                         <h4 className="font-bold text-slate-900 text-xs mb-1">{phase.title}</h4>
-                                        <p className="text-[10px] text-slate-500 font-medium leading-normal">{phase.desc}</p>
+                                        <p className="text-xs text-slate-500 font-medium leading-normal">{phase.desc}</p>
                                     </CardContent>
                                 </Card>
                             ))}
@@ -213,7 +213,7 @@ export default function DesktopSetup() {
                             {mistralPhases.map((phase, idx) => (
                                 <Card 
                                     key={idx} 
-                                    className="border-white/60 shadow-sm rounded-[16px] bg-white overflow-hidden flex group hover:shadow-md transition-all duration-300 cursor-zoom-in"
+                                    className="border-white/60 shadow-sm rounded-2xl bg-white overflow-hidden flex group hover:shadow-md transition-all duration-300 cursor-zoom-in"
                                     onClick={() => setZoomedImage(phase.img)}
                                 >
                                     <div className="w-32 bg-slate-50 relative overflow-hidden p-2 flex items-center justify-center shrink-0 border-r border-slate-100">
@@ -222,13 +222,13 @@ export default function DesktopSetup() {
                                             alt={phase.title} 
                                             className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
                                         />
-                                        <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-orange-500 text-white text-[8px] font-black flex items-center justify-center shadow-sm">
+                                        <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-orange-500 text-white text-xs font-black flex items-center justify-center shadow-sm">
                                             {idx + 1}
                                         </div>
                                     </div>
                                     <CardContent className="p-4 flex-grow">
                                         <h4 className="font-bold text-slate-900 text-xs mb-1">{phase.title}</h4>
-                                        <p className="text-[10px] text-slate-500 font-medium leading-normal">{phase.desc}</p>
+                                        <p className="text-xs text-slate-500 font-medium leading-normal">{phase.desc}</p>
                                     </CardContent>
                                 </Card>
                             ))}

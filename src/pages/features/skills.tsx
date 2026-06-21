@@ -5,16 +5,16 @@ import { Badge } from '@/components/ui/Badge';
 
 import { FeatureSubNav } from '@/components/marketing/FeatureSubNav';
 import { ImageLightbox } from '@/components/marketing/ImageLightbox';
-import { Brain, CheckCircle } from 'lucide-react';
+import { Sparkles, CheckCircle } from 'lucide-react';
 
-export default function IntelligenceFeature() {
+export default function SkillsFeature() {
     const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
     return (
         <MarketingLayout>
             <Head>
-                <title>Koreki Intelligenz | KI-Parameter-Center & LLMs</title>
-                <meta name="description" content="Steuern Sie die künstliche Intelligenz nach Ihren Wünschen. LLM-Auswahl, Temperatur und Parameter anpassen." />
+                <title>Koreki Skills | Kriterienkataloge & Profile</title>
+                <meta name="description" content="Modulare Kriterienkataloge für jede Aufgabe. Strukturieren Sie die Bewertung präzise." />
             </Head>
 
             {zoomedImage && (
@@ -32,27 +32,27 @@ export default function IntelligenceFeature() {
                 <section className="px-8 pt-12 pb-16 max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 relative z-10 animate-fade-up">
                     <div className="flex-1 space-y-8 text-center lg:text-left">
                         <Badge variant="light" className="mb-4">
-                            Pillar: Intelligenz
+                            Pillar: Skills
                         </Badge>
                         <h1 className="text-6xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9]">
-                            KI-Parameter-Center. <br />
-                            <span className="text-gradient">Volle Kontrolle.</span>
+                            Modulare Skills. <br />
+                            <span className="text-gradient">Präzise Kriterien.</span>
                         </h1>
                         <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-xl mx-auto lg:ml-0">
-                            Steuern Sie die Rechenleistung und das Verhalten der künstlichen Intelligenz nach Ihren eigenen Vorgaben. Passen Sie Parameter wie Temperatur, Top-P und die LLM-Modellauswahl flexibel an Ihre Anforderungen an.
+                            Strukturieren Sie Ihre Korrektur mit dem Skill-Center. Legen Sie pro Aufgabe spezifische Kompetenzbereiche (Skills) fest. So erhalten Sie extrem differenzierte Auswertungen für jeden Schüler.
                         </p>
                     </div>
                     
                     <div className="flex-1 w-full animate-fade-in delay-300">
                         <div 
                             className="relative group cursor-zoom-in"
-                            onClick={() => setZoomedImage("/screenshots/4d_koreki_ai-parameter_center.png")}
+                            onClick={() => setZoomedImage("/screenshots/4b_koreki_skill_center.png")}
                         >
                             <div className="absolute -inset-4 bg-primary/5 blur-3xl rounded-hero opacity-50 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                             <div className="relative rounded-hero overflow-hidden border border-white/60 bg-white/20 p-3 lg:p-6 shadow-glass transition-all duration-300 hover:scale-[1.01]">
                                 <img 
-                                    src="/screenshots/4d_koreki_ai-parameter_center.png" 
-                                    alt="Koreki AI-Parameter-Center Interface"
+                                    src="/screenshots/4b_koreki_skill_center.png" 
+                                    alt="Koreki Skill-Center Interface"
                                     className="w-full h-auto rounded-xl shadow-md border border-slate-200"
                                 />
                             </div>
@@ -65,19 +65,19 @@ export default function IntelligenceFeature() {
                     <div className="max-w-7xl mx-auto">
                         <div className="glass-morphism p-12 rounded-hero border border-white bg-white/60 shadow-xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
-                                <Brain size={160} />
+                                <Sparkles size={160} />
                             </div>
                             <div className="max-w-2xl relative z-10">
-                                <h2 className="text-4xl font-black mb-6 tracking-tight text-slate-900">Das AI-Parameter-Center</h2>
+                                <h2 className="text-4xl font-black mb-6 tracking-tight text-slate-900">Das Skill-Center</h2>
                                 <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed">
-                                    Konfigurieren Sie die KI exakt für Ihre spezifische Aufgabe. Nutzen Sie moderne Cloud-Modelle oder betreiben Sie Koreki komplett lokal.
+                                    Definieren Sie wiederverwendbare Kriterienprofile und verknüpfen Sie diese mit Aufgaben. Für strukturierte Einschätzungen.
                                 </p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     {[
-                                        { t: 'Freie Modellauswahl (OpenAI, Mistral, Ollama)', i: CheckCircle },
-                                        { t: 'Temperatur- & Top-P-Regler für Kreativität/Präzision', i: CheckCircle },
-                                        { t: 'Custom System-Prompts für maßgeschneiderte Korrekturen', i: CheckCircle },
-                                        { t: 'Vollständiger Datenschutz durch lokale Ausführung', i: CheckCircle }
+                                        { t: 'Wiederverwendbare Kompetenz-Bibliothek', i: CheckCircle },
+                                        { t: 'Freie Zuordnung zu einzelnen Aufgaben', i: CheckCircle },
+                                        { t: 'Feingranulare Rückmeldungen je Kriterium', i: CheckCircle },
+                                        { t: 'Automatisierte Aggregation der Ergebnisse', i: CheckCircle }
                                     ].map((f, i) => (
                                         <div key={i} className="flex items-center gap-4 text-sm font-black text-slate-700">
                                             <div className="bg-primary/10 text-primary p-2 rounded-lg">

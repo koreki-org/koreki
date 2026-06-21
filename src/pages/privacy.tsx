@@ -91,7 +91,7 @@ export default function Privacy() {
                             <div className="inline-flex p-3 bg-slate-100 text-slate-600 rounded-xl mb-6"><Database size={24} /></div>
                             <h2 className="text-2xl font-bold text-slate-800 mb-6">§2 Welche Daten fallen an?</h2>
                             <p className="leading-relaxed text-slate-600 mb-4">Da dies ein privates Projekt ist, sammeln wir nur das absolute Minimum:</p>
-                            <p className="leading-relaxed text-slate-400 mb-6 text-[11px] italic uppercase tracking-wider">
+                            <p className="leading-relaxed text-slate-400 mb-6 text-xs italic uppercase tracking-wider">
                                 Hosting: Diese Website wird auf einem virtuellen Server der IONOS SE, Elgendorfer Str. 57, 56410 Montabaur gehostet.
                             </p>
                             <ul className="list-disc leading-relaxed text-slate-600 pl-6 mb-6 flex flex-col gap-3">

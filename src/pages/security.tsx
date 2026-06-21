@@ -1,7 +1,7 @@
 import React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Shield, Lock, ShieldCheck, Database, CreditCard, Clock, EyeOff, Server, HardDrive, Cpu, AlertTriangle, Sparkles, Brain, Monitor, LayoutGrid, Zap, Github } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Shield, Lock, ShieldCheck, Database, CreditCard, Clock, EyeOff, Server, HardDrive, Cpu, AlertTriangle, Sparkles, Brain, Monitor, LayoutGrid, Zap } from 'lucide-react';
 import MarketingLayout from '../layouts/MarketingLayout';
 import { Badge } from '@/components/ui/Badge';
 import { LEGAL_CONFIG } from '@/config/legal-contact';
@@ -183,32 +183,7 @@ export default function Security() {
                     </div>
                 </section>
 
-                {/* Community & Open Source CTA */}
-                <section className="py-24 px-8 bg-slate-50 text-slate-900 text-center relative overflow-hidden mt-12 mb-0 border-t border-slate-200/50">
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent" />
-                    <div className="max-w-[800px] mx-auto relative z-10">
-                        <Badge variant="subtle" className="mb-8">
-                            <ArrowRight size={14} className="mr-2" />
-                            Let&apos;s talk Security
-                        </Badge>
-                        <h2 className="text-4xl md:text-6xl font-black mb-8 tracking-tighter leading-[0.9]">
-                            Koreki ist <span className="text-primary">Open Source.</span>
-                        </h2>
-                        <p className="text-slate-500 font-medium text-lg mb-12 leading-relaxed max-w-2xl mx-auto">
-                            Wir glauben an Transparenz und Souveränität in der Bildung. Der Quellcode von Koreki ist offen zugänglich – für maximale Kontrolle, Sicherheit und gemeinschaftliche Weiterentwicklung.
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <a 
-                                href="https://github.com/koreki-org/koreki"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 bg-primary text-white px-10 py-5 rounded-full font-bold text-xs uppercase tracking-widest shadow-xl shadow-primary/20 transition-all hover:bg-primary/90 hover:-translate-y-1 w-full sm:w-auto"
-                            >
-                                Zum GitHub Repository <Github size={18} />
-                            </a>
-                        </div>
-                    </div>
-                </section>
+
             </div>
         </MarketingLayout>
     );

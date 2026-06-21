@@ -1,17 +1,18 @@
 import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Brain, FileSpreadsheet, Layers, ShieldCheck, LayoutGrid } from 'lucide-react';
+import { Brain, FileSpreadsheet, ShieldCheck, Sparkles, Database } from 'lucide-react';
 
 export const FeatureSubNav: React.FC = () => {
     const router = useRouter();
     const currentPath = router.pathname;
 
     const navItems = [
-        { name: 'Hub', href: '/features', icon: <LayoutGrid size={16} /> },
-        { name: 'Intelligenz', href: '/features/intelligence', icon: <Brain size={16} /> },
         { name: 'Workflow', href: '/features/workflow', icon: <FileSpreadsheet size={16} /> },
-        { name: 'Effizienz', href: '/features/efficiency', icon: <Layers size={16} /> },
+        { name: 'Expertise', href: '/features/expertise', icon: <ShieldCheck size={16} /> },
+        { name: 'Skills', href: '/features/skills', icon: <Sparkles size={16} /> },
+        { name: 'Memory', href: '/features/memory', icon: <Database size={16} /> },
+        { name: 'Intelligenz', href: '/features/intelligence', icon: <Brain size={16} /> },
     ];
 
     return (

@@ -41,7 +41,7 @@ export const FeatureIconGrid: React.FC = () => {
                             item.highlight 
                             ? "bg-indigo-600 text-white" 
                             : "bg-white text-slate-900 border-slate-200"
-                        } rounded-[2.5rem] p-8 border shadow-xl shadow-slate-200/40 hover:shadow-2xl transition-all group overflow-hidden relative`}
+                        } rounded-hero p-8 border shadow-xl shadow-slate-200/40 hover:shadow-2xl transition-all group overflow-hidden relative`}
                     >
                         {item.icon}
                         <h3 className="text-lg font-black mb-2 tracking-tight">{item.title}</h3>

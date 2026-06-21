@@ -30,7 +30,7 @@ export default function Register() {
             </Head>
 
             <div className="flex-grow flex items-center justify-center p-6 text-center">
-                <div className="bg-white w-full max-w-[400px] p-10 rounded-[24px] border border-slate-200 shadow-sm animate-fade-up">
+                <div className="bg-white w-full max-w-[400px] p-10 rounded-2xl border border-slate-200 shadow-sm animate-fade-up">
                 <Link href="/">
                     <Logo
                         showText

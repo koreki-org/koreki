@@ -711,7 +711,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     </div>
                                                     <p className="text-xs font-bold text-slate-600">Keine Chat-Historie</p>
                                                     <p className="text-xs leading-relaxed font-medium px-2 text-slate-400">
-                                                        Gib unten eine Anweisung ein, z.B. <em>"Setze die Toleranz von subnetA_mask auf 0.1"</em>.
+                                                        Gib unten eine Anweisung ein, z.B. <em>&quot;Setze die Toleranz von subnetA_mask auf 0.1&quot;</em>.
                                                     </p>
                                                 </div>
                                             ) : (
@@ -1410,7 +1410,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                 {/* Footer */}
                 <div className="px-4 sm:px-8 py-4 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-4 justify-between items-center shrink-0">
                     <p className="text-xs text-slate-400 font-inter text-center sm:text-left leading-normal">
-                        * Die Variablen ID wird beim Parsen von Schülerlösungen automatisch gematcht (z. B. "subnetA_hosts").
+                        * Die Variablen ID wird beim Parsen von Schülerlösungen automatisch gematcht (z. B. &quot;subnetA_hosts&quot;).
                     </p>
                     <div className="flex gap-3 w-full sm:w-auto justify-stretch sm:justify-end">
                         <Button 

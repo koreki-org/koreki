@@ -156,7 +156,7 @@ export default function OrgAdminDashboard() {
                                             </p>
                                             
                                             {workspace?.avvAccepted && (
-                                                <div className="mt-3 flex items-center gap-2 text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
+                                                <div className="mt-3 flex items-center gap-2 text-xs font-bold text-emerald-600 uppercase tracking-wider">
                                                     <CheckCircle size={14} /> Audit-Log Status: Verifiziert
                                                 </div>
                                             )}

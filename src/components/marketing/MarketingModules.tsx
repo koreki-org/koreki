@@ -60,7 +60,7 @@ export const FeatureFAQ: React.FC = () => {
 export const FeatureCTA: React.FC = () => {
     return (
         <section className="py-24 px-8 bg-slate-50 text-center">
-            <div className="max-w-[800px] mx-auto bg-white rounded-[3rem] p-16 shadow-2xl relative overflow-hidden border border-slate-100">
+            <div className="max-w-[800px] mx-auto bg-white rounded-hero p-16 shadow-2xl relative overflow-hidden border border-slate-100">
                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5" />
                 <div className="relative z-10">
                     <h2 className="text-4xl font-black text-slate-900 mb-6 tracking-tight">Koreki gehört der Community.</h2>

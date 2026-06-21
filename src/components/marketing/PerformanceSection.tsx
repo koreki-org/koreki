@@ -43,7 +43,7 @@ export const PerformanceSection: React.FC = () => {
                 <p className="text-lg text-slate-500 max-w-2xl mx-auto font-medium leading-relaxed">
                     Messbare Zeitersparnis für Ihren Schulalltag. Koreki liefert Ergebnisse in Sekunden, nicht in Stunden.
                 </p>
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-6 bg-slate-50 inline-block px-4 py-2 rounded-full border border-slate-100">
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-6 bg-slate-50 inline-block px-4 py-2 rounded-full border border-slate-100">
                     * Basis: Kleine Klassenarbeit (5 Aufgaben) pro Schüler
                 </p>
             </div>
@@ -55,7 +55,7 @@ export const PerformanceSection: React.FC = () => {
                 {scenarios.map((s, idx) => (
                     <div 
                         key={idx}
-                        className={`group relative bg-white rounded-[32px] p-8 shadow-glass border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl animate-fade-up ${
+                        className={`group relative bg-white rounded-hero p-8 shadow-glass border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl animate-fade-up ${
                             s.warning ? 'border-slate-100 opacity-80' : 'border-slate-100 hover:border-primary/20'
                         }`}
                         style={{ animationDelay: `${idx * 150}ms` }}
@@ -66,7 +66,7 @@ export const PerformanceSection: React.FC = () => {
 
                         <div className="mb-8">
                             <h3 className="text-xl font-black text-slate-900 mb-1 tracking-tight">{s.name}</h3>
-                            <p className={`text-[10px] font-black text-${s.color}-600 uppercase tracking-widest`}>{s.fokus}</p>
+                            <p className={`text-xs font-black text-${s.color}-600 uppercase tracking-widest`}>{s.fokus}</p>
                         </div>
 
                         <div className="space-y-4 mb-8">
@@ -74,7 +74,7 @@ export const PerformanceSection: React.FC = () => {
                                 <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Ø Zeit / Korrektur</span>
                                 <span className={`text-2xl font-black tracking-tighter ${s.warning ? 'text-slate-400' : 'text-slate-800'}`}>~{s.time}</span>
                             </div>
-                            <div className="text-[10px] text-slate-400 font-bold italic">
+                            <div className="text-xs text-slate-400 font-bold italic">
                                 {s.details}
                             </div>
                         </div>
@@ -82,12 +82,12 @@ export const PerformanceSection: React.FC = () => {
                         <div className={`p-4 rounded-2xl border transition-all duration-500 ${
                             s.warning ? 'bg-slate-50 border-slate-100' : 'bg-slate-50 border-slate-100 group-hover:bg-primary group-hover:text-white'
                         }`}>
-                            <p className="text-[10px] font-black uppercase tracking-tight opacity-60 mb-1">Empfehlung</p>
+                            <p className="text-xs font-black uppercase tracking-tight opacity-60 mb-1">Empfehlung</p>
                             <p className="text-xs font-bold leading-tight">{s.bestFor}</p>
                         </div>
                         
                         {s.warning && (
-                            <div className="mt-4 flex items-center gap-2 text-amber-600 text-[9px] font-bold uppercase tracking-tight">
+                            <div className="mt-4 flex items-center gap-2 text-amber-600 text-xs font-bold uppercase tracking-tight">
                                 <AlertCircle size={12} /> GPU dringend empfohlen
                             </div>
                         )}
@@ -99,13 +99,13 @@ export const PerformanceSection: React.FC = () => {
             {/* RAM Warning Note */}
 
             {/* RAM Warning Note */}
-            <div className="mt-8 p-6 bg-rose-50/50 rounded-[32px] border border-rose-100 flex flex-col md:flex-row items-center gap-6 animate-fade-up">
+            <div className="mt-8 p-6 bg-rose-50/50 rounded-hero border border-rose-100 flex flex-col md:flex-row items-center gap-6 animate-fade-up">
                 <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
                     <AlertCircle size={24} />
                 </div>
                 <div className="text-center md:text-left">
                     <h5 className="text-sm font-black text-rose-900 uppercase tracking-tight mb-1">Achtung: Die RAM-Falle</h5>
-                    <p className="text-[11px] text-rose-700 font-medium leading-relaxed">
+                    <p className="text-xs text-rose-700 font-medium leading-relaxed">
                         Wenn der verfügbare Arbeitsspeicher (RAM/VRAM) nicht ausreicht, um das KI-Modell vollständig zu laden, bricht die Performance massiv ein (Disk-Swapping). 
                         In unseren Tests stiegen die Antwortzeiten in diesem Fall auf über <span className="font-black">1737 Sekunden (~29 Minuten)</span> pro Korrektur an. 
                         Wir empfehlen mindestens 16GB RAM für den lokalen Betrieb.

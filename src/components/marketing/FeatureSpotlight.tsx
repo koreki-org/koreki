@@ -44,10 +44,10 @@ export const FeatureSpotlight: React.FC<FeatureSpotlightProps> = ({
                         onClick={() => setShowLightbox(true)}
                     >
                         {/* Decorative Background Blob */}
-                        <div className="absolute -inset-4 bg-gradient-to-tr from-primary/10 to-transparent blur-2xl rounded-[3rem] opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+                        <div className="absolute -inset-4 bg-gradient-to-tr from-primary/10 to-transparent blur-2xl rounded-hero opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
                         
                         {/* Image Container */}
-                        <div className="relative rounded-[2rem] overflow-hidden border border-white/60 shadow-glass backdrop-blur-3xl bg-white/20 p-2 lg:p-4 transition-all duration-700 group-hover:shadow-2xl group-hover:-translate-y-2">
+                        <div className="relative rounded-hero overflow-hidden border border-white/60 shadow-glass backdrop-blur-3xl bg-white/20 p-2 lg:p-4 transition-all duration-700 group-hover:shadow-2xl group-hover:-translate-y-2">
                             <img 
                                 src={imageSrc} 
                                 alt={imageAlt}

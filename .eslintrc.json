@@ -12,6 +12,22 @@
       "rules": {
         "max-lines": ["warn", 300]
       }
+    },
+    {
+      "files": ["src/pages/**/*.tsx", "src/components/marketing/**/*.tsx"],
+      "rules": {
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "JSXAttribute[name.name='className'] > Literal[value=/rounded-\\[/]",
+            "message": "Arbitrary border-radius values (rounded-[...]) are prohibited. Use standard classes like rounded-xl, rounded-2xl or rounded-[var(--radius)] / rounded-hero instead."
+          },
+          {
+            "selector": "JSXAttribute[name.name='className'] > Literal[value=/text-\\[[^\\]]*px\\]/]",
+            "message": "Arbitrary micro-typography/sizing (text-[...px]) is prohibited. Use standard Tailwind font-size utilities (text-xs, text-sm, etc.) instead."
+          }
+        ]
+      }
     }
   ]
 }

@@ -43,7 +43,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({ src, alt, onClose 
                     <img 
                         src={src} 
                         alt={alt || "Vergrößerte Ansicht"} 
-                        className="max-w-full max-h-[90vh] object-contain rounded-[2rem] shadow-[0_0_80px_rgba(0,0,0,0.5)] border border-white/10 animate-in zoom-in-95 duration-500"
+                        className="max-w-full max-h-[90vh] object-contain rounded-hero shadow-[0_0_80px_rgba(0,0,0,0.5)] border border-white/10 animate-in zoom-in-95 duration-500"
                     />
                     
                     {/* Industrial Close Button */}
@@ -57,7 +57,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({ src, alt, onClose 
                 </div>
 
                 {/* Info Tip */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/40 text-[10px] font-black uppercase tracking-[0.3em] flex items-center gap-2 pointer-events-none">
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/40 text-xs font-black uppercase tracking-[0.3em] flex items-center gap-2 pointer-events-none">
                     <ArrowRight size={12} className="rotate-[-45deg]" />
                     Zum Schließen klicken oder ESC drücken
                 </div>
