@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Sparkles, FileText, CheckCircle, Zap, ShieldCheck, MessageSquare, TrendingUp, Clock, Monitor, ArrowRight } from 'lucide-react';
+import { Sparkles, FileText, CheckCircle, Zap, ShieldCheck, MessageSquare, TrendingUp, Clock, ArrowRight } from 'lucide-react';
 import MarketingLayout from '../layouts/MarketingLayout';
 import { Badge } from '@/components/ui/Badge';
 import { isDesktopTarget, getKorekiMode } from '@/lib/env-context';
 import { WorkflowVisual } from '@/components/marketing/WorkflowVisual';
 import { PerformanceSection } from '@/components/marketing/PerformanceSection';
 import { ImageLightbox } from '@/components/marketing/ImageLightbox';
+import { useAuth } from '../hooks/useAuth';
 
 export default function LandingPage() {
     const router = useRouter();
     const mode = getKorekiMode();
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const { userData, authLoading } = useAuth();
 
     useEffect(() => {
         if (isDesktopTarget()) {
@@ -42,14 +44,14 @@ export default function LandingPage() {
 
                     <div className="mb-6">
                         {mode === 'community' ? (
-                            <Link href="/app" className="relative bg-gradient-to-br from-indigo-600 to-blue-700 text-white px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest inline-flex items-center gap-3 transition-all duration-300 shadow-[0_10px_30px_-5px_rgba(79,70,229,0.4)] hover:shadow-[0_20px_40px_-5px_rgba(79,70,229,0.5)] hover:-translate-y-1 group overflow-hidden">
+                            <Link href={(!authLoading && userData) ? "/app" : "/login"} className="relative bg-gradient-to-br from-indigo-600 to-blue-700 text-white px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest inline-flex items-center gap-3 transition-all duration-300 shadow-[0_10px_30px_-5px_rgba(79,70,229,0.4)] hover:shadow-[0_20px_40px_-5px_rgba(79,70,229,0.5)] hover:-translate-y-1 group overflow-hidden">
                                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-[200%] transition-transform duration-700"></span>
                                 Korrektur starten <ArrowRight size={18} />
                             </Link>
                         ) : (
-                            <Link href="/register" className="relative bg-gradient-to-br from-blue-600 to-indigo-600 text-white px-9 py-4 rounded-full font-black text-sm uppercase tracking-widest inline-flex items-center gap-3 transition-all duration-300 shadow-[0_10px_30px_-5px_rgba(37,99,235,0.4)] hover:shadow-[0_20px_40px_-5px_rgba(37,99,235,0.5)] hover:-translate-y-1 group overflow-hidden">
+                            <Link href={(!authLoading && userData) ? "/app" : "/register"} className="relative bg-gradient-to-br from-blue-600 to-indigo-600 text-white px-9 py-4 rounded-full font-black text-sm uppercase tracking-widest inline-flex items-center gap-3 transition-all duration-300 shadow-[0_10px_30px_-5px_rgba(37,99,235,0.4)] hover:shadow-[0_20px_40px_-5px_rgba(37,99,235,0.5)] hover:-translate-y-1 group overflow-hidden">
                                     <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-[200%] transition-transform duration-700"></span>
-                                    Jetzt testen <ArrowRight size={18} />
+                                    {(!authLoading && userData) ? "Zum Dashboard" : "Jetzt testen"} <ArrowRight size={18} />
                             </Link>
                         )}
                     </div>
@@ -115,29 +117,7 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {mode === 'saas' && (
-                <section className="px-[5%] py-8 max-w-7xl mx-auto animate-fade-up">
-                    <div className="bg-slate-50 border border-slate-200/60 rounded-hero p-8 md:p-10 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                            <Monitor size={80} className="text-primary" />
-                        </div>
-                        <div className="relative z-10 flex flex-col md:flex-row items-center gap-8 justify-between">
-                            <div className="max-w-xl text-center md:text-left">
-                                <Badge variant="subtle" className="mb-4">
-                                    Desktop Edition
-                                </Badge>
-                                <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-3 tracking-tight">Koreki für Windows & Linux</h2>
-                                <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                                    Maximale Datensouveränität durch lokale KI-Instanzen. Nutzen Sie Koreki direkt auf Ihrer Hardware (macOS coming soon) – ohne Kompromisse beim Datenschutz.
-                                </p>
-                            </div>
-                            <Link href="/desktop" className="bg-primary text-white px-8 py-4 rounded-2xl font-black text-sm hover:bg-primary/90 transition-all flex items-center gap-2 shrink-0 shadow-xl shadow-primary/20 group">
-                                Jetzt entdecken <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                            </Link>
-                        </div>
-                    </div>
-                </section>
-            )}
+
 
 
             {isLightboxOpen && (

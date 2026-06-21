@@ -48,10 +48,16 @@ export const useAuth = () => {
             if (isKeycloakAuth()) {
                 await handleOidcCallback();
                 const oidcUser = await getOidcUser();
-                if (!oidcUser) return null; // Triggers redirect in AuthGuard
+                if (!oidcUser) {
+                    window.localStorage.removeItem('koreki_user_sub');
+                    window.localStorage.removeItem('koreki_user_roles');
+                    return null; // Triggers redirect in AuthGuard
+                }
 
-                // Persist sub for backend identification
+                // Persist sub and roles for backend identification
                 window.localStorage.setItem('koreki_user_sub', oidcUser.profile.sub);
+                const roles = (oidcUser.profile as any).roles || [];
+                window.localStorage.setItem('koreki_user_roles', JSON.stringify(roles));
             }
 
             // Standard Path: Fetch user data from backend (SaaS or Community Multi-User)

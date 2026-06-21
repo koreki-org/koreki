@@ -6,8 +6,7 @@ import Logo from '../Logo';
 import { Button, buttonVariants } from '../ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { cn } from '@/lib/utils';
-import { signinOidc } from '@/lib/auth-keycloak';
-import { isKeycloakAuth, getKorekiMode } from '@/lib/env-context';
+import { getKorekiMode } from '@/lib/env-context';
 
 const MarketingHeader: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
@@ -18,13 +17,6 @@ const MarketingHeader: React.FC = () => {
     useEffect(() => {
         setMode(getKorekiMode());
     }, []);
-
-    const handleLogin = (e: React.MouseEvent) => {
-        if (isKeycloakAuth()) {
-            e.preventDefault();
-            signinOidc();
-        }
-    };
 
     return (
         <>
@@ -69,7 +61,6 @@ const MarketingHeader: React.FC = () => {
                     ) : (
                         <Link 
                             href="/login" 
-                            onClick={handleLogin}
                             className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), "text-primary bg-primary/5 border-primary/10 rounded-full px-5 font-bold shadow-sm hover:shadow-md transition-all")}
                         >
                             Einloggen
@@ -125,7 +116,7 @@ const MarketingHeader: React.FC = () => {
                     ) : (
                         <Link 
                             href="/login" 
-                            onClick={(e) => { setIsMenuOpen(false); handleLogin(e); }}
+                            onClick={() => setIsMenuOpen(false)}
                             className="text-xs font-black uppercase tracking-[0.2em] text-primary-foreground bg-primary px-10 py-4 rounded-full shadow-2xl shadow-primary/40 transition-all hover:scale-105 active:scale-95"
                         >
                             Einloggen

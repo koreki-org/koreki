@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { LogIn, ArrowLeft } from 'lucide-react';
+import { LogIn, ArrowLeft, AlertTriangle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { useAuth } from '../hooks/useAuth';
 import Logo from '../components/Logo';
@@ -13,6 +13,7 @@ import { isKeycloakAuth } from '../lib/env-context';
 export default function Login() {
   const router = useRouter();
   const { userData, authLoading } = useAuth();
+  const [isSecure, setIsSecure] = useState(true);
  
   // --- REDIRECT GUARD: If already logged in, go to App ---
   useEffect(() => {
@@ -21,8 +22,17 @@ export default function Login() {
     }
   }, [userData, authLoading, router]);
 
+  // Check secure context for crypto APIs (required by Keycloak OIDC/PKCE)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hasCrypto = !!(window.crypto && window.crypto.subtle);
+      setIsSecure(window.isSecureContext && hasCrypto);
+    }
+  }, []);
+
   const handleLogin = () => {
     if (isKeycloakAuth()) {
+      if (!isSecure) return;
       signinOidc();
     } else {
       window.location.href = '/api/logto/sign-in?redirectTo=/app';
@@ -51,9 +61,22 @@ export default function Login() {
           Willkommen zurück! Bitte verwenden Sie Ihren sicheren Account zum Anmelden.
         </p>
 
+        {isKeycloakAuth() && !isSecure && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-left text-xs text-amber-800 flex gap-3 animate-fade-up">
+            <AlertTriangle size={24} className="shrink-0 text-amber-500" />
+            <div>
+              <p className="font-bold mb-1">Verbindung nicht sicher</p>
+              <p className="leading-relaxed">
+                Das Keycloak-Anmeldeverfahren erfordert eine sichere Verbindung. Bitte rufen Sie die Seite über HTTPS oder localhost auf, da der Browser andernfalls die Krypto-Funktionen blockiert.
+              </p>
+            </div>
+          </div>
+        )}
+
         <Button
           onClick={handleLogin}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 h-auto rounded-xl text-base font-bold flex items-center justify-center gap-3 transition-all hover:-translate-y-0.5"
+          disabled={isKeycloakAuth() && !isSecure}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 h-auto rounded-xl text-base font-bold flex items-center justify-center gap-3 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none"
         >
           <LogIn size={20} />
           Mit Account anmelden

@@ -77,12 +77,11 @@ export const signinOidc = async () => {
     }
 };
 
-/**
- * Initiates the Keycloak Logout Flow.
- */
 export const signoutOidc = async () => {
     const mgr = getOidcManager();
     if (mgr) {
+        window.localStorage.removeItem('koreki_user_sub');
+        window.localStorage.removeItem('koreki_user_roles');
         await mgr.signoutRedirect();
     }
 };

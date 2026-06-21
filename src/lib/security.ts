@@ -6,7 +6,7 @@ import { logSecurityEvent } from './audit-service';
 import { logger } from './logger';
 import prisma from './prisma';
 import { UserService } from './services/user-service';
-import { isLocalInstance } from './env-context';
+import { isLocalInstance, isKeycloakAuth } from './env-context';
 
 export type SecurityOptions = {
     isAi?: boolean;
@@ -63,13 +63,36 @@ export function withSecurity(
             // 🏮 INDUSTRIAL MULTI-USER BYPASS
             // Try to extract user ID from header if provided (Community Multi-User)
             const headerUserId = req.headers['x-koreki-user-id'] as string;
+            
+            if (isKeycloakAuth() && !headerUserId) {
+                if (allowAnonymous) {
+                    req.user = {
+                        isAuthenticated: false,
+                        claims: {} as any
+                    };
+                    return await handler(req, res);
+                }
+                return res.status(401).json({ error: 'Nicht angemeldet.' });
+            }
+
             const finalUserId = headerUserId || 'local-desktop-user';
+            
+            // Extract roles passed from the client in Keycloak mode, fallback to ADMIN for Desktop
+            let roles = ['ADMIN'];
+            const headerUserRoles = req.headers['x-koreki-user-roles'] as string;
+            if (headerUserRoles) {
+                try {
+                    roles = JSON.parse(headerUserRoles);
+                } catch (e) {
+                    logger.error('Failed to parse x-koreki-user-roles header', { headerUserRoles });
+                }
+            }
 
             req.user = {
                 isAuthenticated: true,
                 claims: {
                     sub: finalUserId,
-                    roles: ['ADMIN'],
+                    roles: roles,
                     iss: 'koreki-local',
                     aud: 'koreki',
                     exp: Math.floor(Date.now() / 1000) + 3600,

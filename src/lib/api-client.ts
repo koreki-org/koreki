@@ -53,7 +53,10 @@ export const apiClient = {
         // Industrial Identity Injection 🏮🛡️
         const headers = {
             ...options?.headers,
-            ...(typeof window !== 'undefined' ? { 'x-koreki-user-id': window.localStorage.getItem('koreki_user_sub') || '' } : {}),
+            ...(typeof window !== 'undefined' ? { 
+                'x-koreki-user-id': window.localStorage.getItem('koreki_user_sub') || '',
+                'x-koreki-user-roles': window.localStorage.getItem('koreki_user_roles') || ''
+            } : {}),
         };
 
         return fetch(url, { ...options, headers });
