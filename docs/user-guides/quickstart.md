@@ -64,6 +64,9 @@ Im **Expert Center** (oben rechts in der Menüleiste) stellst du die drei tragen
 ### 5. Musterlösung hinterlegen
 Erstelle eine neue Sitzung und lade deine **Musterlösung** hoch (PDF, Bild oder Text). Dies ist die absolute Referenz, an der die KI alle Schülerarbeiten misst.
 
+> [!TIP]
+> **Rechengraphen für mathematische Aufgaben:** Nach dem Upload der Musterlösung kannst du für Rechenaufgaben optional Rechengraphen erstellen lassen. Dies erlaubt es, den Rechenweg deterministisch nachzurechnen, um Folgefehler exakt zu erkennen.
+
 ---
 
 ### 6. Klassenarbeitsstapel hochladen

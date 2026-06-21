@@ -49,7 +49,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                             <div className="space-y-0">
                                 <h3 className="font-bold text-slate-900 text-[12px]">1. Vorbereitung</h3>
                                 <p className="text-[10px] text-muted-foreground leading-snug">
-                                    Musterlösung laden. Die KI erkennt Aufgaben, Punkte und Lösungsvorschläge vollautomatisch.
+                                    Musterlösung laden (KI erkennt Aufgaben/Punkte automatisch). Für Rechenaufgaben können optional Rechengraphen zur präzisen Erkennung von Folgefehler-Pfaden erstellt werden.
                                 </p>
                             </div>
                         </div>
