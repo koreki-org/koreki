@@ -30,6 +30,13 @@ export default function Login() {
     }
   }, []);
 
+  // Auto-redirect to Keycloak if active and context is secure
+  useEffect(() => {
+    if (isKeycloakAuth() && isSecure && !authLoading && !userData) {
+      signinOidc();
+    }
+  }, [isSecure, authLoading, userData]);
+
   const handleLogin = () => {
     if (isKeycloakAuth()) {
       if (!isSecure) return;
