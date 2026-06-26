@@ -22,13 +22,15 @@ const AiSetupModal: React.FC<AiSetupModalProps> = ({
 }) => {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300">
-            <div className="relative w-full max-w-lg bg-white rounded-[32px] shadow-glass border border-border max-h-[90vh] md:max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 text-foreground">
-                <button 
+            <div className="relative w-full max-w-lg bg-white rounded-hero shadow-glass border border-border max-h-[90vh] md:max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 text-foreground">
+                <Button 
+                    variant="ghost"
+                    size="icon"
                     onClick={onClose}
-                    className="absolute right-6 top-6 p-2 rounded-full hover:bg-slate-100 text-slate-400 transition-colors z-10"
+                    className="absolute right-6 top-6 h-10 w-10 rounded-full text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors z-10 border-none shadow-none"
                 >
                     <X size={20} />
-                </button>
+                </Button>
 
                 <div className="text-center space-y-3 mb-6 shrink-0 pt-8 px-8">
                     <div className="inline-flex p-3 bg-primary/10 rounded-2xl text-primary mb-2">

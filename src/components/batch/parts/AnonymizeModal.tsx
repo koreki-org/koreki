@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { ShieldCheck, X, Sparkles, Copy, Loader2, AlertCircle, RefreshCw, Check } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { Textarea } from '@/components/ui/Textarea';
 
 interface AnonymizeModalProps {
     isOpen: boolean;
@@ -120,7 +121,7 @@ export const AnonymizeModal: React.FC<AnonymizeModalProps> = ({
                         </div>
                     ) : (
                         <div className="flex-1 flex flex-col gap-3 min-h-[180px]">
-                            <textarea
+                            <Textarea
                                 value={anonymizedText}
                                 onChange={(e) => setAnonymizedText(e.target.value)}
                                 className="w-full h-32 p-4 rounded-xl border border-primary/20 bg-background text-xs text-foreground/90 font-inter leading-relaxed focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-hidden resize-none"

@@ -2,6 +2,7 @@ import React from 'react';
 import { Wrench, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Download, Sparkles, BookOpen, Calculator, Settings, GraduationCap, Loader2, Layers, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/Badge';
 import { FloatingActions } from '@/components/ui/FloatingActions';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
@@ -835,7 +836,7 @@ ${skill.prompt || ''}`;
                                     {/* Permanently visible task text input for graph skills */}
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black text-primary uppercase tracking-widest">Aufgabentext für KI-Analyse & PANG-Kompensation</label>
-                                        <textarea
+                                        <Textarea
                                             value={editingSkillData.taskText || ''}
                                             onChange={e => {
                                                 const val = e.target.value;
@@ -897,7 +898,7 @@ ${skill.prompt || ''}`;
 
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Aufgabentext für KI-Analyse & CalcTrace-Kompensation</label>
-                                        <textarea
+                                        <Textarea
                                             value={editingSkillData.taskText || ''}
                                             onChange={e => {
                                                 const val = e.target.value;
@@ -927,7 +928,7 @@ ${skill.prompt || ''}`;
 
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kurzbeschreibung</label>
-                                <textarea 
+                                <Textarea 
                                     value={editingSkillData.description}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, description: e.target.value })}
                                     placeholder="Beschreibe kurz, worauf die KI achten soll und in welchem Fach."
@@ -938,7 +939,7 @@ ${skill.prompt || ''}`;
 
                             <div className="space-y-1.5">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">KI-Anweisung (Prompt Snippet)</label>
-                                <textarea 
+                                <Textarea 
                                     value={editingSkillData.promptSnippet}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, promptSnippet: e.target.value })}
                                     placeholder="Gib hier die genaue systemische Korrektur-Anweisung für das LLM an. Beispiel:&#10;FOLGEFEHLER BEI BERECHNUNGEN:&#10;- Wenn der Schüler ein falsches Zwischenergebnis verwendet, aber die darauffolgenden Rechenschritte mathematisch korrekt ausführt, ziehe nur einmalig für den ersten Fehler Punkte ab."

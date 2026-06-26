@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { X, Sparkles, Sliders, Save, CheckCircle, ArrowRight, Bot, ShieldCheck, AlertCircle, Trash2, Check, HelpCircle, BookOpen, Upload, Download, PlusCircle, Pencil } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import { Textarea } from '../ui/Textarea';
 import { FloatingActions } from '../ui/FloatingActions';
 import { PointInput } from '../ui/PointInput';
 import { AppSettings, GradingMemory, GradingMemoryCase, Task } from '../../types';
@@ -1031,17 +1032,17 @@ const handleSaveActiveMemoryChanges = async () => {
                                                                  </div>
                                                              </div>
  
-                                                             <div className="space-y-1">
-                                                                 <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Schülerantwort (Simuliert / Editierbar):</span>
-                                                                 <textarea 
-                                                                     rows={3}
-                                                                     value={c.studentText}
-                                                                     disabled={isImportedAndUnsaved}
-                                                                     onChange={e => handleUpdateCaseField(c.id, 'studentText', e.target.value)}
-                                                                     className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-sm resize-y disabled:bg-slate-100/55 disabled:text-slate-500 disabled:cursor-not-allowed"
-                                                                     placeholder="Simulierter Schülertext..."
-                                                                 />
-                                                             </div>
+                                                            <div className="space-y-1">
+                                                                <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Schülerantwort (Simuliert / Editierbar):</span>
+                                                                <Textarea 
+                                                                    rows={3}
+                                                                    value={c.studentText}
+                                                                    disabled={isImportedAndUnsaved}
+                                                                    onChange={e => handleUpdateCaseField(c.id, 'studentText', e.target.value)}
+                                                                    className="w-full p-2.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 shadow-sm resize-y disabled:bg-slate-100/55 disabled:text-slate-500 disabled:cursor-not-allowed"
+                                                                    placeholder="Simulierter Schülertext..."
+                                                                />
+                                                            </div>
  
                                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                                                                  <div className="space-y-1">
@@ -1056,22 +1057,22 @@ const handleSaveActiveMemoryChanges = async () => {
                                                                        />
                                                                  </div>
  
-                                                                 <div className="space-y-1">
-                                                                     <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Feedback an Schüler:</span>
-                                                                     <input 
-                                                                         type="text"
-                                                                         value={c.expectedCorrection.feedback || ''}
-                                                                         disabled={isImportedAndUnsaved}
-                                                                         onChange={e => handleUpdateCaseField(c.id, 'feedback', e.target.value)}
-                                                                         className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm disabled:bg-slate-100/55 disabled:text-slate-500 disabled:cursor-not-allowed"
-                                                                         placeholder="Optionales Feedback..."
-                                                                     />
-                                                                 </div>
+                                                                <div className="space-y-1">
+                                                                    <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Feedback an Schüler:</span>
+                                                                    <Input 
+                                                                        type="text"
+                                                                        value={c.expectedCorrection.feedback || ''}
+                                                                        disabled={isImportedAndUnsaved}
+                                                                        onChange={e => handleUpdateCaseField(c.id, 'feedback', e.target.value)}
+                                                                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm disabled:bg-slate-100/55 disabled:text-slate-500 disabled:cursor-not-allowed"
+                                                                        placeholder="Optionales Feedback..."
+                                                                    />
+                                                                </div>
                                                              </div>
  
                                                              <div className="space-y-1">
                                                                  <span className="text-[9px] font-bold uppercase tracking-wide text-slate-400">Pädagogische Begründung:</span>
-                                                                 <textarea 
+                                                                 <Textarea 
                                                                      rows={2}
                                                                      value={c.expectedCorrection.correctionNotes}
                                                                      disabled={isImportedAndUnsaved}
@@ -1116,7 +1117,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                          <div className="bg-slate-50/50 border border-slate-150 p-5 rounded-2xl flex flex-col gap-4 mt-2">
                                              <div>
                                                  <label className="block text-xs font-bold uppercase tracking-wider text-indigo-600 mb-1.5">Name des neuen Profils:</label>
-                                                 <input 
+                                                 <Input 
                                                       type="text" 
                                                       value={profileName} 
                                                       onChange={e => setProfileName(e.target.value)}
@@ -1274,7 +1275,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                             <span className="text-[10px] text-slate-400 font-bold uppercase">Abgabe editieren</span>
                                         </div>
 
-                                        <textarea 
+                                        <Textarea 
                                             value={activeCase.text || ''}
                                             onChange={(e) => {
                                                 const newText = e.target.value;
@@ -1327,14 +1328,14 @@ const handleSaveActiveMemoryChanges = async () => {
                                                 </select>
                                             ) : (
                                                 <div className="flex gap-2">
-                                                    <input 
+                                                    <Input 
                                                         type="text" 
                                                         value={cal.taskName} 
                                                         onChange={e => handleUpdateCalibration(activeKey, { taskName: e.target.value })}
                                                         placeholder="z.B. Aufgabe 1a"
                                                         className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold shadow-sm"
                                                     />
-                                                    <input 
+                                                    <Input 
                                                         type="number" 
                                                         min="1"
                                                         value={cal.maxPoints} 
@@ -1381,7 +1382,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                             <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
                                                 Korrekturbegründung (correctionNotes):
                                             </label>
-                                            <textarea 
+                                            <Textarea 
                                                 rows={4}
                                                 value={cal.correctionNotes}
                                                 onChange={e => handleUpdateCalibration(activeKey, { correctionNotes: e.target.value })}
@@ -1395,7 +1396,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                             <label className="block text-xs font-black uppercase tracking-wider text-slate-400">
                                                 Feedback an Schüler (Optional):
                                             </label>
-                                            <input 
+                                            <Input 
                                                 type="text"
                                                 value={cal.feedback}
                                                 onChange={e => handleUpdateCalibration(activeKey, { feedback: e.target.value })}

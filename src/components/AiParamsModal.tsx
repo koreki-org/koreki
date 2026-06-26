@@ -123,7 +123,7 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                         </div>
                         <div className="min-w-0">
                             <h2 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight truncate">Inferenz Parameter-Center</h2>
-                            <p className="text-[10px] sm:text-sm text-slate-500 font-medium italic truncate">Modelliere das Antwortverhalten der KI im Detail</p>
+                            <p className="text-xxs sm:text-sm text-slate-500 font-medium italic truncate">Modelliere das Antwortverhalten der KI im Detail</p>
                         </div>
                     </div>
                     <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100 shrink-0" onClick={onClose}>

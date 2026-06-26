@@ -13,7 +13,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
     const [trialAgreement, setTrialAgreement] = React.useState(false);
     return (
         <div className="fixed inset-0 z-[9999] bg-background/80 backdrop-blur-xl flex items-center justify-center p-2 md:p-8 overflow-y-auto">
-            <div className="bg-white max-w-[800px] w-full p-5 md:p-8 rounded-[32px] shadow-glass border border-border text-center animate-in zoom-in-95 duration-500 my-auto max-h-[95vh] overflow-y-auto scrollbar-thin">
+            <div className="bg-white max-w-[800px] w-full p-5 md:p-8 rounded-hero shadow-glass border border-border text-center animate-in zoom-in-95 duration-500 my-auto max-h-[95vh] overflow-y-auto scrollbar-thin">
                 <div className="mb-6">
                     <Badge variant="outline" className="mb-3 px-3 py-0.5 bg-primary/5 text-primary border-primary/20 font-bold uppercase tracking-wider text-[0.6rem]">
                         Welcome to Koreki
@@ -26,7 +26,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
 
                 <div className="grid grid-cols-1 gap-4 mb-4">
                     <div
-                        className="group relative bg-amber-50/30 border-2 border-amber-200 rounded-[24px] p-5 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-amber-400 hover:shadow-xl hover:shadow-amber-100/50"
+                        className="group relative bg-amber-50/30 border-2 border-amber-200 rounded-3xl p-5 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-amber-400 hover:shadow-xl hover:shadow-amber-100/50"
                         onClick={() => {
                             if (trialAgreement) onSelectMode('TRIAL', trialAgreement);
                             else alert("Bitte bestätigen Sie die Nutzung ohne echte Schülerdaten.");
@@ -86,7 +86,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div
                         className={cn(
-                            "group bg-white border-2 border-border rounded-[24px] p-5 text-left cursor-pointer transition-all flex flex-col relative overflow-hidden",
+                            "group bg-white border-2 border-border rounded-3xl p-5 text-left cursor-pointer transition-all flex flex-col relative overflow-hidden",
                             !isPaidModesEnabled() ? "opacity-60 grayscale pointer-events-none" : "hover:-translate-y-1 hover:border-primary hover:shadow-2xl hover:shadow-primary/10"
                         )}
                         onClick={() => onSelectMode('STANDARD')}
@@ -121,7 +121,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
 
                     <div
                         className={cn(
-                            "group bg-white border-2 border-border rounded-[24px] p-5 text-left cursor-pointer transition-all flex flex-col relative overflow-hidden",
+                            "group bg-white border-2 border-border rounded-3xl p-5 text-left cursor-pointer transition-all flex flex-col relative overflow-hidden",
                             !isPaidModesEnabled() ? "opacity-60 grayscale pointer-events-none" : "hover:-translate-y-1 hover:border-emerald-600 hover:shadow-2xl hover:shadow-emerald-100"
                         )}
                         onClick={() => onSelectMode('PURE')}

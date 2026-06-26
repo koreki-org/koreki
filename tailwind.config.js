@@ -34,6 +34,9 @@ module.exports = {
                     foreground: "hsl(var(--accent-foreground) / <alpha-value>)",
                 },
             },
+            fontSize: {
+                xxs: "0.625rem", // 10px
+            },
             borderRadius: {
                 hero: "var(--radius-hero)",
                 lg: "var(--radius)",

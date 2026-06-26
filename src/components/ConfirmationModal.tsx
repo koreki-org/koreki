@@ -38,7 +38,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             onClick={onCancel}
         >
             <div
-                className="relative w-full max-w-[500px] bg-white rounded-[24px] p-8 shadow-glass border border-border animate-in zoom-in-95 duration-500 overflow-hidden"
+                className="relative w-full max-w-[500px] bg-white rounded-3xl p-8 shadow-glass border border-border animate-in zoom-in-95 duration-500 overflow-hidden"
                 onClick={e => e.stopPropagation()}
             >
                 <div className="flex items-center gap-4 mb-6 text-blue-600">

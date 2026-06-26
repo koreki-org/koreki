@@ -48,7 +48,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300">
-            <div className="relative w-full max-w-[550px] bg-white rounded-[32px] shadow-glass border border-border max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 text-foreground">
+            <div className="relative w-full max-w-[550px] bg-white rounded-hero shadow-glass border border-border max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 text-foreground">
                 {/* Header - Fixed */}
                 <div className="flex justify-between items-center p-8 pb-4">
                     <h2 className="text-2xl font-bold tracking-tight text-slate-900">Einstellungen</h2>

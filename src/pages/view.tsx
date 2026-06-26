@@ -101,12 +101,12 @@ export default function StudentFeedbackView() {
                                         Falscher PIN. Bitte prüfe die Angabe auf deinem Slip.
                                     </p>
                                 )}
-                                <button 
+                                <Button 
                                     type="submit"
-                                    className="w-full bg-primary text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                                    className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary/20 border-none transition-all"
                                 >
                                     Feedback anzeigen
-                                </button>
+                                </Button>
                             </form>
                         </CardContent>
                     </Card>
@@ -118,12 +118,12 @@ export default function StudentFeedbackView() {
                         <CardContent className="p-8 text-center">
                             <h1 className="text-xl font-bold text-slate-900 mb-2">Hoppla!</h1>
                             <p className="text-slate-600 mb-6">{error}</p>
-                            <button 
+                            <Button 
                                 onClick={() => window.location.reload()}
-                                className="bg-primary text-white px-6 py-2 rounded-xl font-bold shadow-sm hover:bg-primary/90 transition-all"
+                                className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-xl font-bold shadow-sm border-none transition-all active:scale-95"
                             >
                                 Erneut versuchen
-                            </button>
+                            </Button>
                         </CardContent>
                     </Card>
                 )}

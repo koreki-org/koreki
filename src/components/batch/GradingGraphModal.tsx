@@ -10,6 +10,7 @@ import { evaluateExpression } from '../../lib/grading/plugins';
 import { GraphRunner } from '../../lib/grading/GraphRunner';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import { Textarea } from '../ui/Textarea';
 import { Badge } from '../ui/Badge';
 import { cn } from '@/lib/utils';
 import { AppSettings } from '../../types';
@@ -634,7 +635,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                                         {/* Input Box at the bottom */}
                                         <div className="px-4 sm:px-8 py-5 border-t border-slate-100 flex flex-col gap-4 bg-white shrink-0">
-                                            <textarea
+                                            <Textarea
                                                 value={initialUserNotes}
                                                 disabled={isLocked}
                                                 onChange={(e) => setInitialUserNotes(e.target.value)}
@@ -747,7 +748,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                                         {/* Chat Input Bar */}
                                         <div className="flex items-end gap-2 shrink-0 pt-2 border-t border-slate-100">
-                                            <textarea
+                                            <Textarea
                                                 value={chatInput}
                                                 disabled={isRefining || isLocked}
                                                 onChange={(e) => setChatInput(e.target.value)}
@@ -1119,7 +1120,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                         <Badge className="bg-red-50 text-red-600 text-[8px] py-0 px-1 border-red-100 rounded">Error ⚠️</Badge>
                                                     )}
                                                 </div>
-                                                <textarea
+                                                <Textarea
                                                     value={selectedVar.expression || ''}
                                                     disabled={isLocked}
                                                     onChange={(e) => handleUpdateVariable(selectedVar.id, { expression: e.target.value })}
@@ -1391,7 +1392,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                     </span>
                                 )}
                             </div>
-                            <textarea
+                            <Textarea
                                 value={jsonText}
                                 readOnly={isLocked}
                                 onChange={(e) => handleJsonChange(e.target.value)}

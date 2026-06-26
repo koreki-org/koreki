@@ -141,7 +141,7 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
                     )}
                 </Button>
                 
-                <p className="text-[10px] text-slate-400 font-medium tracking-tighter">
+                <p className="text-xxs text-slate-400 font-medium tracking-tighter">
                     Ihre Zustimmung wird kryptografisch (SHA-256) im Audit-Log archiviert.
                 </p>
             </div>

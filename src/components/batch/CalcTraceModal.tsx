@@ -5,6 +5,7 @@ import { CalcTrace, CalcStep } from '../../lib/grading/calc-trace-types';
 import { evaluateCalcTrace } from '../../lib/grading/CalcTrace';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
+import { Textarea } from '../ui/Textarea';
 import { Badge } from '../ui/Badge';
 import { cn } from '@/lib/utils';
 import { AppSettings } from '../../types';
@@ -364,7 +365,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                             KI-Unterstützung
                                         </h4>
                                         <div className="space-y-1.5">
-                                            <textarea
+                                            <Textarea
                                                 value={userNotes}
                                                 onChange={(e) => setUserNotes(e.target.value)}
                                                 placeholder="Optionale Hinweise für die KI (z.B. 'Toleranz für Schritt x auf 5% setzen')...."

@@ -17,7 +17,7 @@ const PureKeyModal: React.FC<PureKeyModalProps> = ({ onSave, onClose }) => {
             onClick={onClose}
         >
             <div
-                className="relative w-full max-w-[500px] bg-white rounded-[24px] p-8 shadow-glass border border-border animate-in slide-in-from-bottom-4 duration-300"
+                className="relative w-full max-w-[500px] bg-white rounded-3xl p-8 shadow-glass border border-border animate-in slide-in-from-bottom-4 duration-300"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Close Button */}

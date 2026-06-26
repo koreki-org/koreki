@@ -157,7 +157,7 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
 
     return (
         <div className="fixed inset-0 z-[2100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300">
-            <div className="relative w-full max-w-[550px] max-h-[90vh] md:max-h-[85vh] bg-white rounded-[24px] p-8 shadow-glass border border-border animate-in zoom-in-95 duration-500 overflow-hidden flex flex-col">
+            <div className="relative w-full max-w-[550px] max-h-[90vh] md:max-h-[85vh] bg-white rounded-3xl p-8 shadow-glass border border-border animate-in zoom-in-95 duration-500 overflow-hidden flex flex-col">
                 <div className="flex justify-between items-center mb-6 shrink-0">
                     <h2 className="text-xl font-bold text-slate-900 tracking-tight">PDF Aufteilen</h2>
                     <Button variant="ghost" size="icon" className="h-auto p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors" onClick={onClose}>
