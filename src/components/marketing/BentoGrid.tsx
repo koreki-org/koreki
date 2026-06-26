@@ -17,7 +17,7 @@ interface BentoItemProps {
 const BentoItem: React.FC<BentoItemProps> = ({ className, title, description, icon, href, badge, accentColor = 'bg-primary', visual }) => (
     <Link 
         href={href}
-        className={`${className} group relative overflow-hidden rounded-hero border border-white bg-white/60 backdrop-blur-xl p-8 shadow-xl shadow-slate-900/5 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-indigo-100 flex flex-col justify-between`}
+        className={`${className} group relative overflow-hidden rounded-hero border border-white bg-white/60 backdrop-blur-xl p-4 md:p-card-padding-sm shadow-xl shadow-slate-900/5 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-indigo-100 flex flex-col justify-between`}
     >
         <div className="relative z-10">
             <div className="flex items-center justify-between mb-6">
@@ -53,7 +53,7 @@ const BentoItem: React.FC<BentoItemProps> = ({ className, title, description, ic
 
 export const BentoGrid: React.FC = () => {
     return (
-        <section className="py-12 px-8 max-w-7xl mx-auto">
+        <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* 1. Intelligence */}
                 <BentoItem 

@@ -455,6 +455,33 @@ export default function Home() {
                             if (/^Schüler #\d+$/.test(f.name) && f.originalName) return f.originalName;
                             return f.name || f.originalName || 'Unbekannt';
                         };
+                        const mapToStudentResult = (f: any) => {
+                            const fullName = getExportName(f);
+                            let fName = f.studentFirstName;
+                            let lName = f.studentLastName;
+                            if (!fName && !lName && fullName && fullName !== 'Unbekannt') {
+                                if (fullName.includes(',')) {
+                                    const parts = fullName.split(',');
+                                    lName = parts[0].trim();
+                                    fName = parts[1].trim();
+                                } else {
+                                    const parts = fullName.split(/\s+/);
+                                    if (parts.length > 1) {
+                                        fName = parts[0].trim();
+                                        lName = parts.slice(1).join(' ').trim();
+                                    } else {
+                                        lName = fullName;
+                                    }
+                                }
+                            }
+                            return {
+                                studentFirstName: fName,
+                                studentLastName: lName,
+                                studentName: fullName,
+                                analysis: f.result!,
+                                grade: f.grade
+                            };
+                        };
                         return (
                             <BatchProcessor
                                 batchFiles={fileProcessor.batchFiles}
@@ -464,16 +491,16 @@ export default function Home() {
                                 onProcess={() => fileProcessor.processBatch(aiStatus)}
                                 onExtractOCR={() => fileProcessor.handleExtractOCR(fileProcessor.batchFiles)}
                                 onExportTeacher={() => exportTeacherList(
-                                    fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(f => ({ studentName: getExportName(f), analysis: f.result!, grade: f.grade })),
+                                    fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult),
                                     {
                                         expertise: sessionProfileName,
                                         gradingMemory: activeGradingMemoryName || 'Inaktiv / Keine',
                                         aiModel: sessionAiProfileName
                                     }
                                 )}
-                                onExportStudents={() => exportStudentSummaries(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(f => ({ studentName: getExportName(f), analysis: f.result!, grade: f.grade })))}
-                                onExportIndividual={() => exportIndividualFeedbacks(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(f => ({ studentName: getExportName(f), analysis: f.result!, grade: f.grade })))}
-                                onExportPDFs={() => exportIndividualPDFs(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(f => ({ studentName: getExportName(f), analysis: f.result!, grade: f.grade })))}
+                                onExportStudents={() => exportStudentSummaries(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult))}
+                                onExportIndividual={() => exportIndividualFeedbacks(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult))}
+                                onExportPDFs={() => exportIndividualPDFs(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult))}
                                 onExportKoreki={() => {
                                     let cases = undefined;
                                     try {

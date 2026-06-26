@@ -9,6 +9,17 @@ const targetDirs = [
 // File extension filter
 const validExtensions = ['.ts', '.tsx', '.js', '.jsx'];
 
+// List of files to exclude from the UI audit (internal app dashboards and Tauri onboarding)
+const excludedFiles = [
+    'src/pages/app.tsx',
+    'src/pages/admin.tsx',
+    'src/pages/org-admin.tsx',
+    'src/pages/view.tsx',
+    'src/pages/_app.tsx',
+    'src/pages/desktop.tsx',
+    'src/pages/desktop-setup.tsx'
+];
+
 // Prohibited styling patterns
 const checks = [
     {
@@ -23,6 +34,10 @@ const checks = [
         // Custom search to find raw black/slate buttons on marketing pages.
         regex: /className=.*bg-(slate-900|black|gray-900).*group/g,
         message: '🚨 Verbotener Button-Hintergrund (bg-slate-900/black/gray-900) gefunden. Koreki nutzt keine rein schwarzen/grauen Standardbuttons auf Marketingseiten.'
+    },
+    {
+        regex: /p[xy]-\[[^\]]*\]/g,
+        message: '🚨 Beliebige Sektionsabstände / Paddings gefunden (px-[...]/py-[...]). Bitte nutze die standardisierten Spacing-Tokens wie px-page-inline, py-section-vertical, p-card-padding oder Micro-Spacings.'
     }
 ];
 
@@ -49,6 +64,10 @@ let totalViolations = 0;
 for (const dir of targetDirs) {
     const files = getFiles(dir);
     for (const file of files) {
+        const relPath = path.relative(path.join(__dirname, '..'), file).replace(/\\/g, '/');
+        if (excludedFiles.includes(relPath)) {
+            continue; // Skip excluded desktop and application pages
+        }
         const content = fs.readFileSync(file, 'utf-8');
         const lines = content.split('\n');
         

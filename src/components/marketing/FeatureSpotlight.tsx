@@ -24,7 +24,7 @@ export const FeatureSpotlight: React.FC<FeatureSpotlightProps> = ({
 
     return (
         <>
-            <div className={`flex flex-col ${reverse ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-16 py-8`}>
+            <div className={`flex flex-col ${reverse ? 'lg:flex-row-reverse' : 'lg:flex-row'} items-center gap-16 pb-12 md:pb-section-vertical px-6 md:px-page-inline`}>
                 <div className="flex-1 space-y-6">
                     {badge && (
                         <Badge variant="light">

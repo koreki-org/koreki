@@ -32,7 +32,7 @@ export const FeatureIconGrid: React.FC = () => {
     ];
 
     return (
-        <section className="py-16 px-8 max-w-[1200px] mx-auto">
+        <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline max-w-[1200px] mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {highlights.map((item, idx) => (
                     <div 
@@ -41,7 +41,7 @@ export const FeatureIconGrid: React.FC = () => {
                             item.highlight 
                             ? "bg-indigo-600 text-white" 
                             : "bg-white text-slate-900 border-slate-200"
-                        } rounded-hero p-8 border shadow-xl shadow-slate-200/40 hover:shadow-2xl transition-all group overflow-hidden relative`}
+                        } rounded-hero p-4 md:p-card-padding-sm border shadow-xl shadow-slate-200/40 hover:shadow-2xl transition-all group overflow-hidden relative`}
                     >
                         {item.icon}
                         <h3 className="text-lg font-black mb-2 tracking-tight">{item.title}</h3>

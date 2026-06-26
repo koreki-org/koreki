@@ -13,7 +13,8 @@ export const generateStudentWorkbook = (r: StudentResult): XLSX.WorkBook => {
 
     if (!analysis.tasks || analysis.tasks.length === 0) {
         data.push({
-            'Schülername': r.studentName || 'Unbekannt',
+            'Nachname': r.studentLastName || 'Unbekannt',
+            'Vorname': r.studentFirstName || '',
             'KI-Expertise': analysis.expertProfile || 'Standard',
             'Gesamtfeedback': analysis.overallFeedback || '',
             'Aufgabe': '-',
@@ -22,7 +23,8 @@ export const generateStudentWorkbook = (r: StudentResult): XLSX.WorkBook => {
     } else {
         analysis.tasks.forEach((task, index) => {
             data.push({
-                'Schülername': index === 0 ? (r.studentName || 'Unbekannt') : '',
+                'Nachname': index === 0 ? (r.studentLastName || 'Unbekannt') : '',
+                'Vorname': index === 0 ? (r.studentFirstName || '') : '',
                 'KI-Expertise': index === 0 ? (analysis.expertProfile || 'Standard') : '',
                 'Gesamtfeedback': index === 0 ? (analysis.overallFeedback || '') : '',
                 'Aufgabe': task.name || `Aufgabe ${index + 1}`,
@@ -32,7 +34,7 @@ export const generateStudentWorkbook = (r: StudentResult): XLSX.WorkBook => {
     }
 
     const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{ wch: 25 }, { wch: 20 }, { wch: 50 }, { wch: 20 }, { wch: 60 }];
+    ws['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 50 }, { wch: 20 }, { wch: 60 }];
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Feedback");
@@ -89,7 +91,8 @@ export const exportTeacherList = (
         });
 
         const row: any = {
-            'Schülername': r.studentName || 'Unbekannt',
+            'Nachname': r.studentLastName || 'Unbekannt',
+            'Vorname': r.studentFirstName || '',
             [`Erreichte Punkte (von ${totalExamMaxPoints} P)`]: totalStudentPoints,
             'Gesamt (%)': analysis.overallMatchPercentage ? Math.round(analysis.overallMatchPercentage) : 0,
             'Einschätzung': r.grade || '-'
@@ -120,7 +123,7 @@ export const exportTeacherList = (
         ws = XLSX.utils.json_to_sheet(data);
     }
 
-    const cols = [{ wch: 25 }, { wch: 25 }, { wch: 15 }, { wch: 15 }];
+    const cols = [{ wch: 20 }, { wch: 20 }, { wch: 25 }, { wch: 15 }, { wch: 15 }];
     parentTaskOrder.forEach(() => cols.push({ wch: 18 }));
     ws['!cols'] = cols;
 
@@ -142,7 +145,8 @@ export const exportStudentSummaries = (results: StudentResult[]): void => {
         const analysis = r.analysis || {};
         if (!analysis.tasks || analysis.tasks.length === 0) {
             data.push({
-                'Schülername': r.studentName || 'Unbekannt',
+                'Nachname': r.studentLastName || 'Unbekannt',
+                'Vorname': r.studentFirstName || '',
                 'KI-Expertise': analysis.expertProfile || 'Standard',
                 'Gesamtfeedback': analysis.overallFeedback || '',
                 'Aufgabe': '-',
@@ -151,7 +155,8 @@ export const exportStudentSummaries = (results: StudentResult[]): void => {
         } else {
             analysis.tasks.forEach((task, index) => {
                 data.push({
-                    'Schülername': index === 0 ? (r.studentName || 'Unbekannt') : '',
+                    'Nachname': index === 0 ? (r.studentLastName || 'Unbekannt') : '',
+                    'Vorname': index === 0 ? (r.studentFirstName || '') : '',
                     'KI-Expertise': index === 0 ? (analysis.expertProfile || 'Standard') : '',
                     'Gesamtfeedback': index === 0 ? (analysis.overallFeedback || '') : '',
                     'Aufgabe': task.name || `Aufgabe ${index + 1}`,
@@ -163,7 +168,7 @@ export const exportStudentSummaries = (results: StudentResult[]): void => {
     });
 
     const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{ wch: 25 }, { wch: 20 }, { wch: 50 }, { wch: 20 }, { wch: 60 }];
+    ws['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 50 }, { wch: 20 }, { wch: 60 }];
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Schüler Feedback");

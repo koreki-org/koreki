@@ -37,7 +37,7 @@ export const FeaturePillar: React.FC<FeaturePillarProps> = ({
     accentColor = "text-blue-600"
 }) => {
     return (
-        <section className={`py-24 px-8 ${bgColor} overflow-hidden`}>
+        <section className={`pb-12 md:pb-section-vertical px-6 md:px-page-inline ${bgColor} overflow-hidden`}>
             <div className={`max-w-[1200px] mx-auto flex flex-col ${reversed ? 'md:flex-row-reverse' : 'md:flex-row'} items-center gap-16`}>
                 <div className="flex-1">
                     <div className={`flex items-center gap-4 ${accentColor} font-black uppercase tracking-widest text-xs mb-4`}>

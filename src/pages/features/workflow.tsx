@@ -83,7 +83,7 @@ export default function WorkflowFeature() {
                 <FeatureSubNav />
 
                 {/* Hero Section */}
-                <section className="px-8 pt-12 pb-16 max-w-4xl mx-auto text-center animate-fade-up">
+                <section className="px-6 md:px-page-inline pt-4 pb-12 md:pt-6 md:pb-hero-bottom max-w-4xl mx-auto text-center animate-fade-up">
                     <Badge variant="light" className="mb-4">
                         Workflow & Logistics
                     </Badge>
@@ -97,7 +97,7 @@ export default function WorkflowFeature() {
                 </section>
 
                 {/* Vertical Timeline Steps */}
-                <section className="px-8 max-w-5xl mx-auto space-y-16 pb-20">
+                <section className="px-6 md:px-page-inline max-w-5xl mx-auto space-y-16 pb-12 md:pb-section-vertical">
                     {steps.map((step, index) => {
                         const isEven = index % 2 === 0;
                         return (
@@ -146,9 +146,9 @@ export default function WorkflowFeature() {
                 </section>
 
                 {/* Native Moodle Spotlight */}
-                <section className="py-12 px-8 bg-slate-50/50 border-y border-slate-200/50 relative">
+                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-slate-50/50 border-y border-slate-200/50 relative">
                     <div className="max-w-7xl mx-auto flex flex-col gap-16">
-                        <div className="glass-morphism p-12 rounded-hero border border-white bg-white/60 shadow-xl relative overflow-hidden group">
+                        <div className="glass-morphism p-6 md:p-card-padding rounded-hero border border-white bg-white/60 shadow-xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                                 <FileSpreadsheet size={160} />
                             </div>

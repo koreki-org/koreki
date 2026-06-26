@@ -5,7 +5,8 @@ import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 
 interface StudentConfig {
-    name: string;
+    firstName: string;
+    lastName: string;
     pageCount: number;
 }
 
@@ -13,21 +14,21 @@ interface PDFSplitModalProps {
     fileName: string;
     totalPageCount: number;
     onClose: () => void;
-    onSplit: (students: StudentConfig[], autoRedact: boolean) => void;
+    onSplit: (students: any[], autoRedact: boolean) => void;
 }
 
 const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount, onClose, onSplit }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [autoRedact, setAutoRedact] = useState(false);
     const [students, setStudents] = useState<StudentConfig[]>([
-        { name: 'Schüler #1', pageCount: totalPageCount }
+        { firstName: '', lastName: 'Schüler #1', pageCount: totalPageCount }
     ]);
 
     const assignedPages = students.reduce((sum, s) => sum + s.pageCount, 0);
     const unassignedPages = totalPageCount - assignedPages;
 
     const addStudent = () => {
-        setStudents([...students, { name: `Schüler #${students.length + 1}`, pageCount: 0 }]);
+        setStudents([...students, { firstName: '', lastName: `Schüler #${students.length + 1}`, pageCount: 0 }]);
     };
 
     const removeStudent = (index: number) => {
@@ -39,7 +40,7 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
 
     const updateStudent = (index: number, field: keyof StudentConfig, value: string | number) => {
         const newStudents = [...students];
-        newStudents[index] = { ...newStudents[index], [field]: value };
+        newStudents[index] = { ...newStudents[index], [field]: value } as StudentConfig;
         setStudents(newStudents);
     };
 
@@ -56,33 +57,84 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                 const ws = wb.Sheets[wsname];
                 const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
 
-                // Extract non-empty strings from the first column or first sheet
-                const importedNames: string[] = [];
+                // Extract students from Excel rows
+                const imported: { firstName: string, lastName: string, pageCount?: number }[] = [];
                 data.forEach(row => {
-                    if (row && row[0] && typeof row[0] === 'string' && row[0].trim().length > 0) {
-                        const name = row[0].trim();
-                        // Basic check to skip typical headers if they are "Name" or "Schüler"
-                        if (name.toLowerCase() !== 'name' && name.toLowerCase() !== 'schüler') {
-                            importedNames.push(name);
+                    if (!row) return;
+                    
+                    let colA = row[0] != null ? String(row[0]).trim() : '';
+                    let colB = row[1] != null ? String(row[1]).trim() : '';
+                    let colC = row[2] != null ? String(row[2]).trim() : '';
+                    
+                    // Skip header rows
+                    const lowerA = colA.toLowerCase();
+                    const lowerB = colB.toLowerCase();
+                    if (lowerA === 'name' || lowerA === 'schüler' || lowerA === 'nachname' || lowerA === 'lastname' || lowerA === 'surname' ||
+                        lowerB === 'vorname' || lowerB === 'firstname') {
+                        return;
+                    }
+
+                    if (colA.length > 0) {
+                        let lName = colA;
+                        let fName = colB;
+                        
+                        // Fallback: If Col B is empty, try to split Col A
+                        if (fName.length === 0) {
+                            if (colA.includes(',')) {
+                                // Format "Mustermann, Max"
+                                const parts = colA.split(',');
+                                lName = parts[0].trim();
+                                fName = parts[1].trim();
+                            } else if (colA.includes(' ')) {
+                                // Format "Max Mustermann"
+                                const parts = colA.split(/\s+/);
+                                if (parts.length > 1) {
+                                    fName = parts[0].trim();
+                                    lName = parts.slice(1).join(' ').trim();
+                                }
+                            }
                         }
-                    } else if (row && typeof row[1] === 'string' && row[1].trim().length > 0) {
-                        // Fallback to second column if first one is empty (e.g. index column)
-                        const name = row[1].trim();
-                        if (name.toLowerCase() !== 'name' && name.toLowerCase() !== 'schüler') {
-                            importedNames.push(name);
+
+                        let pCount: number | undefined = undefined;
+                        if (colC.length > 0) {
+                            const parsed = parseInt(colC, 10);
+                            if (!isNaN(parsed) && parsed >= 0) {
+                                pCount = parsed;
+                            }
                         }
+
+                        imported.push({
+                            firstName: fName,
+                            lastName: lName,
+                            pageCount: pCount
+                        });
                     }
                 });
 
-                if (importedNames.length > 0) {
-                    const count = importedNames.length;
-                    const basePages = Math.floor(totalPageCount / count);
-                    const extraPages = totalPageCount % count;
+                if (imported.length > 0) {
+                    const count = imported.length;
                     
-                    const newStudents = importedNames.map((name, i) => ({
-                        name,
-                        pageCount: Math.max(1, basePages + (i < extraPages ? 1 : 0))
-                    }));
+                    // Sum up defined pages to see how many pages are left
+                    const definedPagesSum = imported.reduce((sum, s) => sum + (s.pageCount !== undefined ? s.pageCount : 0), 0);
+                    const studentsWithoutPages = imported.filter(s => s.pageCount === undefined);
+                    const remainingPages = Math.max(0, totalPageCount - definedPagesSum);
+                    
+                    const basePages = studentsWithoutPages.length > 0 ? Math.floor(remainingPages / studentsWithoutPages.length) : 0;
+                    const extraPages = studentsWithoutPages.length > 0 ? remainingPages % studentsWithoutPages.length : 0;
+                    
+                    let extraIndex = 0;
+                    const newStudents = imported.map((s) => {
+                        let pCount = s.pageCount;
+                        if (pCount === undefined) {
+                            pCount = Math.max(1, basePages + (extraIndex < extraPages ? 1 : 0));
+                            extraIndex++;
+                        }
+                        return {
+                            firstName: s.firstName,
+                            lastName: s.lastName,
+                            pageCount: pCount
+                        };
+                    });
                     setStudents(newStudents);
                 } else {
                     alert("Keine gültigen Namen in der Excel-Datei gefunden.");
@@ -141,20 +193,28 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-[1fr_80px_40px] gap-4 px-2 text-xs font-bold text-slate-500 uppercase mb-2">
-                        <span>Name für Export (Klarname)</span>
+                    <div className="grid grid-cols-[1fr_1fr_80px_40px] gap-3 px-2 text-xs font-bold text-slate-500 uppercase mb-2">
+                        <span>Nachname</span>
+                        <span>Vorname</span>
                         <span className="text-center">Seiten</span>
                         <span></span>
                     </div>
 
                     <div className="max-h-[250px] overflow-y-auto mb-4 flex flex-col gap-3 pr-2 scrollbar-thin">
                         {students.map((student, idx) => (
-                            <div key={idx} className="grid grid-cols-[1fr_80px_40px] gap-4 items-center">
+                            <div key={idx} className="grid grid-cols-[1fr_1fr_80px_40px] gap-3 items-center">
                                 <Input
                                     type="text"
-                                    value={student.name}
-                                    placeholder="Name eingeben..."
-                                    onChange={(e) => updateStudent(idx, 'name', e.target.value)}
+                                    value={student.lastName}
+                                    placeholder="Nachname..."
+                                    onChange={(e) => updateStudent(idx, 'lastName', e.target.value)}
+                                    className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                />
+                                <Input
+                                    type="text"
+                                    value={student.firstName}
+                                    placeholder="Vorname..."
+                                    onChange={(e) => updateStudent(idx, 'firstName', e.target.value)}
                                     className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                 />
                                 <Input

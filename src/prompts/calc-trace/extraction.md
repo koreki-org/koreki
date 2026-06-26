@@ -22,6 +22,11 @@ Deine Aufgabe ist es, aus einer Schülerantwort die konkreten Werte (Zahlen, Tex
        - Schreibt der Schüler `0,001846 mA` und die Ziel-Einheit ist `mA`, dann extrahiere exakt `0.001846`. Rechne es NICHT um, als hätte er `A` geschrieben! Der Schüler hat sich hier um den Faktor 1000 verrechnet und das muss als Fehler gewertet werden.
        - Nur wenn der Schüler eine physikalisch andere, aber *korrekte* Einheit verwendet hat (z. B. `0,001846 A` bei Ziel-Einheit `mA`), rechnest du den Wert in die Ziel-Einheit um (also `1.846`).
      - **C) Digitale Datenmengen-Präfixe (Faktor 1024):** Falls die Einheit `KiB`, `MiB`, `GiB` ist, rechne den Schülerwert entsprechend um (z. B. 1 MiB = 1024 KiB).
+7. **SUMMEN, LISTEN & WIEDERHOLTE TERME (IMPLIZITE ANZAHLEN):**
+   - Wenn der Schüler eine Summe gleicher Werte aufschreibt (z.B. `600W + 600W` oder `600W+600W+150W+120W+80W`), um eine Anzahl von Komponenten darzustellen:
+     - **Zähle die Wiederholungen** für die Anzahl-Variable: Wenn der Wert `600W` zweimal in der Summe steht, entspricht dies der Anzahl-Variable (z. B. `anzahl_nodes` = 2).
+     - **Extrahiere den Einzelwert** für die Wert-Variable (z. B. `leistung_pro_node` = 600).
+   - Ordne unbeschriftete Summanden in einer Rechnung (z.B. `150W`, `120W`, `80W`) der Reihe nach den angeforderten Variablen zu, sofern sie mit den Einheiten und der logischen Struktur der Aufgabe übereinstimmen.
 
 ### KORREKTES BEISPIEL:
 Anzugebende Variablen:

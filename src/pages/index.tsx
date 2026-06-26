@@ -28,9 +28,12 @@ export default function LandingPage() {
     return (
         <MarketingLayout>
 
-            <div className="pt-4 pb-4 px-12 text-center animate-fade-down" />
+            <div className="py-4 px-6 md:px-page-inline text-center animate-fade-down" />
 
-            <main className="max-w-7xl mx-auto px-12 pt-0 pb-4 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center min-h-[calc(100vh-100px)]">
+            {/* Viewport-Centered Hero: pt-0 pb-4 / py-4 ist eine bewusste Designentscheidung zur 
+               Vermeidung von vertikalen Scrollbalken "above the fold" auf kleineren Displays.
+               Ausgenommen vom Standard-Hero-Spacing-Token (pt-hero-top pb-hero-bottom). */}
+            <main className="max-w-7xl mx-auto px-6 md:px-page-inline pt-0 pb-12 md:pb-section-vertical grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center min-h-[calc(100vh-100px)]">
                 <div className="lg:col-span-5 flex flex-col items-center lg:items-start z-10 animate-fade-up">
                     <h1 className="text-[3rem] sm:text-[4.5rem] font-black text-slate-900 mb-6 tracking-tighter leading-[1.05]">
                         Präzise <br />
@@ -88,8 +91,8 @@ export default function LandingPage() {
             <PerformanceSection />
 
             {/* --- LATEST HIGHLIGHT: MOODLE IMPORT (Now at the end) --- */}
-            <section className="px-8 py-8 md:py-12 max-w-7xl mx-auto mb-8 animate-fade-up">
-                <div className="glass-morphism bg-white/60 rounded-hero pt-0 pb-8 md:pt-0 md:pb-10 px-10 md:px-14 relative overflow-hidden group shadow-xl border border-white font-outfit transition-all hover:shadow-2xl hover:bg-white/80">
+            <section className="px-6 md:px-page-inline pb-12 md:pb-section-vertical max-w-7xl mx-auto mb-8 animate-fade-up">
+                <div className="glass-morphism bg-white/60 rounded-hero pt-0 pb-6 px-6 md:pb-card-padding md:px-card-padding relative overflow-hidden group shadow-xl border border-white font-outfit transition-all hover:shadow-2xl hover:bg-white/80">
                     <div className="absolute -right-20 -top-20 w-80 h-80 bg-primary/5 rounded-full blur-[100px] group-hover:bg-primary/10 transition-all duration-700" />
                     
                     <div className="relative z-10 flex flex-col lg:flex-row items-start justify-between gap-12 pt-6 md:pt-8">

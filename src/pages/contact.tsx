@@ -83,7 +83,7 @@ export default function Contact() {
                 <meta name="description" content="Haben Sie Fragen oder Feedback zu Koreki? Kontaktieren Sie uns über unser Formular." />
             </Head>
 
-            <div className="max-w-4xl mx-auto px-8 pt-6 pb-12 md:pt-12 md:pb-24 animate-fade-in">
+            <div className="max-w-4xl mx-auto px-6 md:px-page-inline pt-10 pb-12 md:pt-14 md:pb-hero-bottom animate-fade-in">
                 <div className="text-center mb-16">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider mb-4 border border-primary/10">
                         <Mail className="w-4 h-4" /> Kontakt
@@ -99,7 +99,7 @@ export default function Contact() {
                 <div className="grid md:grid-cols-5 gap-12 items-start">
                     {/* Contact Form */}
                     <div className="md:col-span-3">
-                        <div className="bg-background rounded-2xl p-8 md:p-10 border border-border shadow-glass relative overflow-hidden transition-all duration-300">
+                        <div className="bg-background rounded-2xl p-6 md:p-card-padding border border-border shadow-glass relative overflow-hidden transition-all duration-300">
                             {/* Subtle Decoration */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-8 -mt-8 -z-0" />
                             
@@ -201,7 +201,7 @@ export default function Contact() {
 
                     {/* Sidebar Info */}
                     <div className="md:col-span-2 space-y-8 animate-fade-in" style={{ animationDelay: '200ms' }}>
-                        <div className="bg-muted/30 rounded-2xl p-8 border border-border">
+                        <div className="bg-muted/30 rounded-2xl p-4 md:p-card-padding-sm border border-border">
                             <h3 className="text-lg font-bold text-foreground mb-4 font-outfit">Warum uns kontaktieren?</h3>
                             <ul className="space-y-4">
                                 {[
@@ -222,7 +222,7 @@ export default function Contact() {
                             </ul>
                         </div>
 
-                        <div className="bg-primary rounded-2xl p-8 text-primary-foreground shadow-xl shadow-primary/20 transition-all duration-300 hover:scale-[1.02]">
+                        <div className="bg-primary rounded-2xl p-4 md:p-card-padding-sm text-primary-foreground shadow-xl shadow-primary/20 transition-all duration-300 hover:scale-[1.02]">
                             <h3 className="text-lg font-bold mb-2 font-outfit">Lieber direkt?</h3>
                             <p className="text-primary-foreground/80 text-sm mb-6">Wir antworten normalerweise innerhalb von 24 Stunden.</p>
                             <a href={`mailto:${LEGAL_CONFIG.contact.email}`} className="flex items-center gap-3 font-bold hover:opacity-80 transition-all duration-300">

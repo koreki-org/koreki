@@ -29,14 +29,17 @@ Dieses Dokument definiert das Erscheinungsbild und die Interaktionsstandards fü
 - **Component LOC Limit**: UI-Komponenten sollten primär **< 300 Zeilen** Code umfassen. Grow-Buster: Komplexe Logik MUSS in Hooks extrahiert werden, Sub-Layouts in eigene Komponenten.
 - **Next.js 15 Link Compliance**: Nutze niemals verschachtelte `<a>` Tags innerhalb von `<Link>`, es sei denn, `legacyBehavior` ist explizit gefordert. Styles gehören direkt auf die `Link`-Komponente.
 
-## 6. Global Stacking Context (Z-Index)
+## Global Stacking Context (Z-Index)
 Um visuelle Überlagerungen (Clipping) zu verhindern, folgt Koreki einer strikten Hierarchie:
 - **Z-0**: Footer / Hintergrund-Elemente.
 - **Z-10**: Main Content Shell.
 - **Z-20**: Active Layout Content (Navigation / Cards).
 - **Z-9999**: Modals & Overlays (stets via Portals am Body).
 
-## 7. Responsive First
+## Responsive First
+- **Mobile First Spacing**: Richte Abstände primär mobil-first aus (z. B. `px-6`) und füge die Desktop-Tokens mit dem standardmäßigen Tailwind-Präfix `md:` hinzu (z. B. `md:px-page-inline`).
+- **Standard-Raster**: Vermeide es, responsive Layout-Sonderregeln direkt über eigene Media-Queries in den CSS-Dateien zu deklarieren. Nutze stattdessen Tailwinds integrierte Breakpoint-Präfixe (`md:`, `lg:`).
+
 ---
 
 # Koreki – Agent Coding Rules
@@ -69,6 +72,15 @@ Alle UI-Elemente MÜSSEN aus `@/components/ui/` stammen. Niemals raw HTML-Elemen
 
 Farben und Abstände kommen aus CSS-Variablen, nicht aus hardcodierten Werten.
 
+### Spacing (Layouts & Sektionen)
+Nutze die standardisierten Spacing-Tokens für ein konsistentes Raster. Für Responsivität kombiniere sie mit Tailwind-Präfixen:
+- **`px-6 md:px-page-inline`**: Horizontaler Seitenabstand (32px Desktop, 24px Mobile).
+- **`pb-12 md:pb-section-vertical`**: Standardmäßiger vertikaler Sektionsabstand. Wird nur einseitig angewendet (Bottom-Padding), um eine Verdopplung des Abstands zwischen aufeinanderfolgenden Sektionen zu vermeiden.
+- **`py-12 md:py-section-vertical`**: Nur nutzen, wenn eine Sektion komplett isoliert steht und beidseitig Padding benötigt.
+- **`p-6 md:p-card-padding`**: Innenabstand für Standard- und große Karten/Highlightboxen (40px Desktop, 24px Mobile).
+- **`p-4 md:p-card-padding-sm`**: Innenabstand für kompakte Info-Zellen/Bento-Karten (24px Desktop, 16px Mobile).
+- **`pt-16 pb-12 md:pt-hero-top md:pb-hero-bottom`**: Vertikales Hero-Padding für Standard-Unterseiten.
+
 ### Farben (HSL via CSS-Variables)
 Nutze die HSL-Variablen aus `globals.css` via Tailwind:
 ```
@@ -78,6 +90,7 @@ bg-secondary, text-secondary-foreground
 bg-muted, text-muted-foreground
 bg-destructive, text-destructive-foreground
 border-border
+```
 
 ### Typografie (Branding & UI)
 - **font-outfit**: Standard für Branding, Überschriften und UI-Elemente (Korrektur-Modus).
@@ -237,10 +250,7 @@ Das Branding von Koreki folgt strikten typografischen Regeln:
 ```
 
 ---
-
-```
-
-## 11. Industrial Maintenance Protocol 🏮
+## Industrial Maintenance Protocol 🏮
 1. **Consistency First**: Neue Komponenten müssen das bestehende Design-Vokabular (Rundungen, Schatten, HSL) von Koreki nutzen.
 2. **Refactor-Trigger**: Fällt eine Komponente durch das LOC-Limit (> 300 Zeilen), wird sie unmittelbar modularisiert.
 3. **No-Bypass**: Manuelle z-index Vergaben außerhalb der globalen Strategie sind untersagt.

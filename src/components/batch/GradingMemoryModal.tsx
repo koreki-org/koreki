@@ -115,6 +115,9 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
         }
     }
 
+    const savedActiveMemory = hookMemories.find(m => m.id === activeMemoryId) || null;
+    const hasChanges = isImportedAndUnsaved || (JSON.stringify(activeMemory) !== JSON.stringify(savedActiveMemory));
+
     // Auto-persist resolved legacy fields (taskName & maxPoints) back into memories state
     useEffect(() => {
         if (!activeMemoryId || !tasksLayout || tasksLayout.length === 0) return;
@@ -492,6 +495,82 @@ const handleSaveActiveMemoryChanges = async () => {
         }
     };
 
+    const handleCreateEmptyMemory = async () => {
+        if (!profileName.trim()) {
+            setError('Bitte gib dem Erfahrungsschatz einen aussagekräftigen Namen.');
+            return;
+        }
+
+        const existing = memories.find(m => m.name.toLowerCase() === profileName.trim().toLowerCase());
+        if (existing) {
+            const proceed = window.confirm(`Ein Erfahrungsschatz mit dem Namen "${profileName}" existiert bereits. Möchtest du ihn wirklich überschreiben oder einen neuen Eintrag mit dem gleichen Namen erstellen?`);
+            if (!proceed) {
+                return;
+            }
+        }
+
+        setIsSaving(true);
+        setError(null);
+        try {
+            const cases: GradingMemoryCase[] = [];
+
+            if (isDesktopTarget()) {
+                const localMemory: GradingMemory = {
+                    id: `local-grading-memory-${Date.now()}`,
+                    name: profileName,
+                    cases,
+                    userId: null,
+                    createdAt: new Date().toISOString()
+                };
+                addLocalMemory(localMemory);
+                setStep('start');
+                return;
+            }
+
+            const response = await apiClient.post('/api/user/grading-memories', {
+                name: profileName,
+                cases
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                throw new Error(err.message || 'Fehler beim Erstellen des leeren Erfahrungsschatzes.');
+            }
+
+            const savedMemory = await response.json();
+            addLocalMemory(savedMemory);
+            setStep('start');
+        } catch (err: any) {
+            setError(err.message || 'Fehler beim Sichern des leeren Profils.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const handleAddCaseManually = () => {
+        if (!activeMemoryId) return;
+
+        const newCase: GradingMemoryCase = {
+            id: `case-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+            studentText: 'Beispiel Schülerantwort...',
+            taskName: tasksLayout && tasksLayout.length > 0 ? tasksLayout[0].name : 'Aufgabe 1',
+            expectedCorrection: {
+                pointsObtained: 0,
+                maxPoints: tasksLayout && tasksLayout.length > 0 ? Number(tasksLayout[0].maxPoints) : 5,
+                correctionNotes: 'Begründung für die Korrektur...',
+                feedback: ''
+            }
+        };
+
+        setMemories(prev => prev.map(m => {
+            if (m.id !== activeMemoryId) return m;
+            return {
+                ...m,
+                cases: [...(m.cases || []), newCase]
+            };
+        }));
+    };
+
     const handleSkip = () => {
         if (!syntheticAnswers || syntheticAnswers.length === 0) return;
         
@@ -500,15 +579,20 @@ const handleSaveActiveMemoryChanges = async () => {
         setSyntheticAnswers(newAnswers);
         
         if (newAnswers.length === 0) {
-            setStep('start');
-            setError('Alle Fälle wurden übersprungen. Es wurde kein Erfahrungsschatz erstellt.');
+            const proceed = window.confirm("Alle fiktiven Schülerabgaben wurden übersprungen. Möchtest du den Erfahrungsschatz trotzdem als leeres Profil erstellen?");
+            if (proceed) {
+                handleSave([]);
+            } else {
+                setStep('start');
+            }
         } else if (activeCaseIndex >= newAnswers.length) {
             setActiveCaseIndex(newAnswers.length - 1);
         }
         // Bleibt auf dem gleichen Index, zeigt aber den nächsten (nachgerückten) Fall
     };
 
-    const handleSave = async () => {
+    const handleSave = async (answersToSave?: any) => {
+        const actualAnswers = Array.isArray(answersToSave) ? answersToSave : syntheticAnswers;
         if (!profileName.trim()) {
             setError('Bitte gib dem Erfahrungsschatz einen aussagekräftigen Namen.');
             return;
@@ -526,7 +610,7 @@ const handleSaveActiveMemoryChanges = async () => {
         setIsSaving(true);
         setError(null);
         try {
-            const cases: GradingMemoryCase[] = syntheticAnswers.map((ans) => {
+            const cases: GradingMemoryCase[] = actualAnswers.map((ans: any) => {
                 const key = ans.uid;
                 const cal = calibrations[key];
                 return {
@@ -834,10 +918,10 @@ const handleSaveActiveMemoryChanges = async () => {
                                                 </Button>
                                                 <Button 
                                                      onClick={isImportedAndUnsaved ? () => handleSaveImportedMemory(activeMemory!) : handleSaveActiveMemoryChanges}
-                                                     disabled={isSaving}
+                                                     disabled={!hasChanges || isSaving}
                                                      className={cn(
-                                                         "h-9 px-4 text-[10px] font-black uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0",
-                                                         true 
+                                                         "h-9 px-4 text-xs font-black uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0",
+                                                         hasChanges 
                                                              ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100" 
                                                              : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
                                                      )}
@@ -881,10 +965,21 @@ const handleSaveActiveMemoryChanges = async () => {
 
                                              {/* List of Cases to view/edit */}
                                              <div className="space-y-3.5">
-                                                 <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                                                     <BookOpen size={12} className="text-indigo-500" />
-                                                     Enthaltene Fallbeispiele ({activeMemory?.cases?.length || 0}):
-                                                 </h4>
+                                                 <div className="flex justify-between items-center pb-1">
+                                                     <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                                                         <BookOpen size={12} className="text-indigo-500" />
+                                                         Enthaltene Fallbeispiele ({activeMemory?.cases?.length || 0}):
+                                                     </h4>
+                                                     <Button 
+                                                         variant="ghost"
+                                                         size="sm"
+                                                         onClick={handleAddCaseManually}
+                                                         disabled={isImportedAndUnsaved}
+                                                         className="h-8 rounded-full text-xs font-black uppercase text-indigo-600 hover:bg-indigo-50 transition-all flex items-center gap-1.5"
+                                                     >
+                                                         <PlusCircle size={14} /> Fallbeispiel hinzufügen
+                                                     </Button>
+                                                 </div>
  
                                                  <div className="space-y-4 pr-1">
                                                      {activeMemory?.cases?.map((c, index) => {
@@ -1017,64 +1112,92 @@ const handleSaveActiveMemoryChanges = async () => {
                                          <p className="text-slate-600 text-xs md:text-sm leading-relaxed font-medium">
                                              KI-Modelle überlesen häufig kritische Zeichenabweichungen (z. B. IP-Adressen oder Ports). Mit <strong>GradingMemory</strong> trainierst du die KI interaktiv: Ein virtueller Schüler simuliert typische Fehlerbilder basierend auf deiner Musterlösung. Du benotest diese fiktiven Fälle einmalig und die KI nutzt diese fortan als exakte Few-Shot-Richtlinie.
                                          </p>
- 
-                                         {modelSolution && modelSolution.trim() ? (
-                                             <div className="bg-slate-50/50 border border-slate-150 p-5 rounded-2xl flex flex-col gap-4 mt-2">
-                                                 <div>
-                                                     <label className="block text-[10px] font-bold uppercase tracking-wider text-indigo-600 mb-1.5">Name des neuen Profils:</label>
-                                                     <input 
-                                                         type="text" 
-                                                         value={profileName} 
-                                                         onChange={e => setProfileName(e.target.value)}
-                                                         placeholder="z.B. IT-Systeme USV & Logfiles"
-                                                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs md:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold shadow-sm"
-                                                     />
-                                                 </div>
 
-                                                  {tasksLayout && tasksLayout.length > 0 && (
-                                                      <div>
-                                                          <label className="block text-[10px] font-bold uppercase tracking-wider text-indigo-600 mb-1.5">
-                                                              Zu simulierende Aufgaben auswählen:
-                                                          </label>
-                                                          <div className="bg-white border border-slate-200 rounded-xl p-3.5 max-h-36 overflow-y-auto space-y-2.5 shadow-sm">
-                                                              {tasksLayout.map((task) => {
-                                                                  const isChecked = selectedTasks.includes(task.name);
-                                                                  return (
-                                                                      <label key={task.name} className="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer hover:text-indigo-600 transition-colors">
-                                                                          <input 
-                                                                              type="checkbox"
-                                                                              checked={isChecked}
-                                                                              onChange={() => {
-                                                                                  if (isChecked) {
-                                                                                      setSelectedTasks(prev => prev.filter(name => name !== task.name));
-                                                                                  } else {
-                                                                                      setSelectedTasks(prev => [...prev, task.name]);
-                                                                                  }
-                                                                              }}
-                                                                              className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 transition-all"
-                                                                          />
-                                                                          <span>{task.name} <span className="text-[10px] text-slate-400 font-bold">({task.maxPoints} P)</span></span>
-                                                                      </label>
-                                                                  );
-                                                              })}
+                                         <div className="bg-slate-50/50 border border-slate-150 p-5 rounded-2xl flex flex-col gap-4 mt-2">
+                                             <div>
+                                                 <label className="block text-xs font-bold uppercase tracking-wider text-indigo-600 mb-1.5">Name des neuen Profils:</label>
+                                                 <input 
+                                                      type="text" 
+                                                      value={profileName} 
+                                                      onChange={e => setProfileName(e.target.value)}
+                                                      placeholder="z.B. IT-Systeme USV & Logfiles"
+                                                      className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-xs md:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all font-bold shadow-sm"
+                                                 />
+                                             </div>
+
+                                             <Button 
+                                                 onClick={handleCreateEmptyMemory}
+                                                 disabled={isSaving}
+                                                 variant="outline"
+                                                 className="w-full py-3 h-12 border-slate-200 hover:bg-slate-50 text-slate-700 font-extrabold rounded-xl flex items-center justify-center gap-2 text-xs md:text-sm shrink-0 transition-all"
+                                             >
+                                                 {isSaving ? (
+                                                     <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-slate-500 border-t-transparent" />
+                                                 ) : (
+                                                     <PlusCircle size={18} className="text-slate-500" />
+                                                 )}
+                                                 Leeren Erfahrungsschatz erstellen
+                                             </Button>
+
+                                             <div className="relative flex py-2 items-center">
+                                                 <div className="flex-grow border-t border-slate-200"></div>
+                                                 <span className="flex-shrink mx-4 text-xs text-slate-400 font-bold uppercase tracking-wider">Oder virtuell simulieren</span>
+                                                 <div className="flex-grow border-t border-slate-200"></div>
+                                             </div>
+
+                                             {modelSolution && modelSolution.trim() ? (
+                                                 <div className="flex flex-col gap-4">
+                                                      {tasksLayout && tasksLayout.length > 0 && (
+                                                          <div>
+                                                              <label className="block text-xs font-bold uppercase tracking-wider text-indigo-600 mb-1.5">
+                                                                  Zu simulierende Aufgaben auswählen:
+                                                              </label>
+                                                              <div className="bg-white border border-slate-200 rounded-xl p-3.5 max-h-36 overflow-y-auto space-y-2.5 shadow-sm">
+                                                                  {tasksLayout.map((task) => {
+                                                                      const isChecked = selectedTasks.includes(task.name);
+                                                                      return (
+                                                                          <label key={task.name} className="flex items-center gap-2.5 text-xs font-bold text-slate-700 cursor-pointer hover:text-indigo-600 transition-colors">
+                                                                              <input 
+                                                                                  type="checkbox"
+                                                                                  checked={isChecked}
+                                                                                  onChange={() => {
+                                                                                      if (isChecked) {
+                                                                                          setSelectedTasks(prev => prev.filter(name => name !== task.name));
+                                                                                      } else {
+                                                                                          setSelectedTasks(prev => [...prev, task.name]);
+                                                                                      }
+                                                                                  }}
+                                                                                  className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500 transition-all"
+                                                                              />
+                                                                              <span>{task.name} <span className="text-xs text-slate-400 font-bold">({task.maxPoints} P)</span></span>
+                                                                          </label>
+                                                                      );
+                                                                  })}
+                                                              </div>
                                                           </div>
-                                                      </div>
-                                                  )}
- 
-                                                 <Button 
-                                                     onClick={handleGenerate}
-                                                     className="w-full py-3 h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 group text-xs md:text-sm shrink-0 border-0 transition-all"
-                                                 >
-                                                     <Bot size={18} className="group-hover:scale-115 transition-transform" />
-                                                     Virtuelle Schülerabgaben generieren (1 Credit)
-                                                     <ArrowRight size={14} />
-                                                 </Button>
-                                             </div>
-                                         ) : (
-                                             <div className="mt-2 p-5 bg-slate-50/50 border border-dashed border-slate-200 rounded-2xl text-center text-slate-500 text-xs font-semibold leading-relaxed">
-                                                 ⚠️ Keine Musterlösung geladen. Um neue Schülerantworten für die Kalibrierung zu simulieren, lade bitte zuerst eine Musterlösung im Dashboard hoch.
-                                             </div>
-                                         )}
+                                                      )}
+     
+                                                     <Button 
+                                                         onClick={handleGenerate}
+                                                         disabled={isGenerating}
+                                                         className="w-full py-3 h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-indigo-100 group text-xs md:text-sm shrink-0 border-0 transition-all"
+                                                     >
+                                                         {isGenerating ? (
+                                                             <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-white border-t-transparent" />
+                                                         ) : (
+                                                             <Bot size={18} className="group-hover:scale-115 transition-transform" />
+                                                         )}
+                                                         Virtuelle Schülerabgaben generieren (1 Credit)
+                                                         <ArrowRight size={14} />
+                                                     </Button>
+                                                 </div>
+                                             ) : (
+                                                 <div className="p-4 bg-amber-50/50 border border-amber-200/50 rounded-xl text-center text-amber-800 text-xs font-semibold leading-relaxed flex items-center gap-2 justify-center">
+                                                     <AlertCircle size={16} className="text-amber-600 shrink-0" />
+                                                     Keine Musterlösung geladen. Simulation nicht verfügbar.
+                                                 </div>
+                                             )}
+                                         </div>
                                      </div>
                                  )}
                             </div>

@@ -18,7 +18,7 @@ export default function SelfHosting() {
 
             <div className="relative pt-0">
                 {/* Hero Section */}
-                <section className="pt-12 pb-4 px-8 text-center relative overflow-hidden">
+                <section className="pt-10 pb-12 md:pt-14 md:pb-hero-bottom px-6 md:px-page-inline text-center relative overflow-hidden">
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-indigo-500/5 rounded-full blur-[120px] -z-10" />
                     <div className="max-w-4xl mx-auto relative text-center space-y-8 animate-fade-up">
                         <Badge variant="light" className="mb-4">
@@ -36,7 +36,7 @@ export default function SelfHosting() {
                 </section>
 
                 {/* Deployment Modes Section */}
-                <section className="py-12 px-8 max-w-[1200px] mx-auto">
+                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline max-w-[1200px] mx-auto">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl font-extrabold text-slate-900 mb-4 tracking-tight">Souveränität nach Maß</h2>
                         <p className="text-slate-500 font-medium text-lg">Wählen Sie das Deployment-Modell, das perfekt zu Ihren Anforderungen passt.</p>
@@ -44,7 +44,7 @@ export default function SelfHosting() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Single-User Card */}
-                        <div className="glass-morphism p-12 rounded-3xl border border-white bg-white/60 shadow-xl transition-all hover:bg-white hover:shadow-2xl hover:-translate-y-1 group">
+                        <div className="glass-morphism p-6 md:p-card-padding rounded-3xl border border-white bg-white/60 shadow-xl transition-all hover:bg-white hover:shadow-2xl hover:-translate-y-1 group">
                             <div className="flex items-center gap-5 mb-8">
                                 <div className="bg-emerald-500/10 text-emerald-600 p-5 rounded-2xl shadow-sm border border-emerald-500/10">
                                     <Monitor size={32} />
@@ -73,7 +73,7 @@ export default function SelfHosting() {
                         </div>
 
                         {/* Multi-User Card */}
-                        <div className="glass-morphism p-12 rounded-3xl border border-white bg-white/60 shadow-xl relative overflow-hidden group hover:shadow-2xl hover:bg-white/80 hover:-translate-y-2 transition-all">
+                        <div className="glass-morphism p-6 md:p-card-padding rounded-3xl border border-white bg-white/60 shadow-xl relative overflow-hidden group hover:shadow-2xl hover:bg-white/80 hover:-translate-y-2 transition-all">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-indigo-500/10 transition-all duration-1000" />
                             <div className="relative z-10">
                                 <div className="flex items-center gap-5 mb-8">
@@ -117,7 +117,7 @@ export default function SelfHosting() {
                 </section>
 
                 {/* Tech Bento Grid */}
-                <section className="py-24 px-8 overflow-hidden bg-slate-50/50 border-y border-slate-200/60">
+                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline overflow-hidden bg-slate-50/50 border-y border-slate-200/60">
                     <div className="max-w-[1200px] mx-auto relative">
                         <div className="text-center mb-16">
                             <h2 className="text-3xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight leading-tight">Technologie ohne <br />Kompromisse.</h2>
@@ -125,19 +125,19 @@ export default function SelfHosting() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="glass-morphism rounded-3xl p-10 border border-white bg-white/60 hover:bg-white hover:shadow-xl transition-all group">
+                            <div className="glass-morphism rounded-3xl p-4 md:p-card-padding-sm border border-white bg-white/60 hover:bg-white hover:shadow-xl transition-all group">
                                 <div className="bg-primary text-white p-4 rounded-2xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><Terminal size={28} /></div>
                                 <h4 className="text-xl font-black text-slate-900 mb-3 tracking-tight">Docker Native</h4>
                                 <p className="text-slate-500 font-medium leading-relaxed">Vorkonfigurierte Images für Koreki, Keycloak und PostgreSQL. Deployment via Docker-Compose in Sekunden.</p>
                             </div>
 
-                            <div className="glass-morphism rounded-3xl p-10 border border-white bg-indigo-500/5 hover:bg-white hover:shadow-xl transition-all group">
+                            <div className="glass-morphism rounded-3xl p-4 md:p-card-padding-sm border border-white bg-indigo-50/5 hover:bg-white hover:shadow-xl transition-all group">
                                 <div className="bg-indigo-600 text-white p-4 rounded-2xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><Cpu size={28} /></div>
                                 <h4 className="text-xl font-black text-indigo-900 mb-3 tracking-tight">Local LLM Ready</h4>
                                 <p className="text-slate-500 font-medium leading-relaxed">Nahtlose Integration von Ollama. Nutzen Sie Ihre eigene GPU-Power für eine 100% private KI-Inferenz ohne Internet-Zwang.</p>
                             </div>
 
-                            <div className="glass-morphism rounded-3xl p-10 border border-white bg-white/60 hover:bg-white hover:shadow-xl transition-all group">
+                            <div className="glass-morphism rounded-3xl p-4 md:p-card-padding-sm border border-white bg-white/60 hover:bg-white hover:shadow-xl transition-all group">
                                 <div className="bg-primary text-white p-4 rounded-2xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><Github size={28} /></div>
                                 <h4 className="text-xl font-black text-slate-900 mb-3 tracking-tight">Open Source</h4>
                                 <p className="text-slate-500 font-medium leading-relaxed">Volle Transparenz unter der Polyform Shield Lizenz. Auditieren, modifizieren und erweitern Sie den Quellcode nach Ihren Wünschen.</p>

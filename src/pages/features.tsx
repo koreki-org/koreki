@@ -207,7 +207,7 @@ export default function Features() {
                 <FeatureSubNav />
 
                 {/* --- 🦸‍♂️ Hero: The Promise --- */}
-                <section className="pt-12 pb-12 px-8 text-center relative overflow-hidden">
+                <section className="pt-4 pb-12 md:pt-6 md:pb-hero-bottom px-6 md:px-page-inline text-center relative overflow-hidden">
                     <div className="max-w-4xl mx-auto relative z-10 animate-fade-up">
                         <Badge variant="light" className="mb-8">
                             Features & Pillars
@@ -225,7 +225,7 @@ export default function Features() {
                 </section>
 
                 {/* --- 🏭 Modern Interactive Pillar Showcase --- */}
-                <section className="pb-20 px-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-10 items-start animate-fade-up">
+                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline max-w-7xl mx-auto flex flex-col lg:flex-row gap-10 items-start animate-fade-up">
                     {/* Left: Tab Selectors */}
                     <div className="w-full lg:w-1/3 flex flex-col gap-3 lg:sticky lg:top-32 h-fit">
                         {pillars.map((pillar) => {
@@ -287,7 +287,7 @@ export default function Features() {
                     </div>
 
                     {/* Right: Display Panel */}
-                    <div className="w-full lg:w-2/3 flex flex-col justify-between p-6 md:p-8 bg-white/60 border border-white rounded-hero shadow-xl relative overflow-hidden">
+                    <div className="w-full lg:w-2/3 flex flex-col justify-between p-6 md:p-card-padding bg-white/60 border border-white rounded-hero shadow-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
                             {activePillar.icon}
                         </div>

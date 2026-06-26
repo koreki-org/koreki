@@ -40,6 +40,14 @@ module.exports = {
                 md: "calc(var(--radius) - 2px)",
                 sm: "calc(var(--radius) - 4px)",
             },
+            spacing: {
+                'page-inline': 'var(--spacing-page-inline)',
+                'section-vertical': 'var(--spacing-section-vertical)',
+                'card-padding': 'var(--spacing-card-padding)',
+                'card-padding-sm': 'var(--spacing-card-padding-sm)',
+                'hero-top': 'var(--spacing-hero-top)',
+                'hero-bottom': 'var(--spacing-hero-bottom)',
+            },
             backdropBlur: {
                 xs: "2px",
                 glass: "12px",

@@ -14,7 +14,7 @@ export const useGradingMemories = (userData?: any) => {
     const [activeMemoryId, setActiveMemoryId] = useState<string | null>(null);
     const queryClient = useQueryClient();
 
-    const fetchMemories = useCallback(async () => {
+    const fetchMemories = useCallback(async (shouldNotify = true) => {
         setLoading(true);
         if (isDesktopTarget()) {
             const stored = localStorage.getItem('koreki_local_grading_memories');
@@ -38,6 +38,9 @@ export const useGradingMemories = (userData?: any) => {
                 }
             }
             setLoading(false);
+            if (shouldNotify) {
+                window.dispatchEvent(new CustomEvent('koreki-grading-memories-changed', { detail: { origin: 'fetchMemories' } }));
+            }
             return;
         }
 
@@ -62,6 +65,9 @@ export const useGradingMemories = (userData?: any) => {
             console.error('[useGradingMemories] Error fetching memories', err);
         } finally {
             setLoading(false);
+            if (shouldNotify) {
+                window.dispatchEvent(new CustomEvent('koreki-grading-memories-changed', { detail: { origin: 'fetchMemories' } }));
+            }
         }
     }, [userData?.activeGradingMemoryId]);
 
@@ -72,6 +78,18 @@ export const useGradingMemories = (userData?: any) => {
             : localStorage.getItem('koreki_active_grading_memory_id');
         if (savedId) setActiveMemoryId(savedId);
     }, [fetchMemories, userData?.activeGradingMemoryId]);
+
+    useEffect(() => {
+        const handleMemoriesChanged = () => {
+            fetchMemories(false);
+            const savedId = localStorage.getItem('koreki_active_grading_memory_id');
+            setActiveMemoryId(savedId);
+        };
+        window.addEventListener('koreki-grading-memories-changed', handleMemoriesChanged);
+        return () => {
+            window.removeEventListener('koreki-grading-memories-changed', handleMemoriesChanged);
+        };
+    }, [fetchMemories]);
 
     const selectMemory = (id: string | null) => {
         setActiveMemoryId(id);
@@ -98,6 +116,8 @@ export const useGradingMemories = (userData?: any) => {
                 })
                 .catch(err => console.error('[useGradingMemories] Failed to sync active grading memory to database', err));
         }
+
+        window.dispatchEvent(new CustomEvent('koreki-grading-memories-changed', { detail: { origin: 'selectMemory' } }));
     };
 
     const deleteMemory = async (id: string) => {
@@ -112,6 +132,7 @@ export const useGradingMemories = (userData?: any) => {
                     localStorage.setItem('koreki_local_grading_memories', JSON.stringify(list));
                     setMemories(list);
                     if (activeMemoryId === id) selectMemory(null);
+                    window.dispatchEvent(new CustomEvent('koreki-grading-memories-changed', { detail: { origin: 'deleteMemory' } }));
                 } catch (e) {}
             }
             return;
@@ -120,7 +141,7 @@ export const useGradingMemories = (userData?: any) => {
         try {
             const res = await apiClient.fetch(`/api/user/grading-memories?id=${id}`, { method: 'DELETE' });
             if (res.ok) {
-                await fetchMemories();
+                await fetchMemories(true);
                 if (activeMemoryId === id) selectMemory(null);
             }
         } catch (err) {
@@ -144,10 +165,11 @@ export const useGradingMemories = (userData?: any) => {
             localStorage.setItem('koreki_local_grading_memories', JSON.stringify(list));
             setMemories(list);
             selectMemory(memory.id || null);
+            window.dispatchEvent(new CustomEvent('koreki-grading-memories-changed', { detail: { origin: 'addLocalMemory' } }));
             return;
         }
         
-        fetchMemories();
+        fetchMemories(true);
         selectMemory(memory.id || null);
     };
 

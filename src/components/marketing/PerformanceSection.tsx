@@ -34,7 +34,7 @@ export const PerformanceSection: React.FC = () => {
     ];
 
     return (
-        <section className="py-6 px-6 max-w-7xl mx-auto overflow-hidden">
+        <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline max-w-7xl mx-auto overflow-hidden">
             <div className="text-center mb-10 animate-fade-up">
                 <h2 className="text-[3rem] md:text-[4rem] font-black text-slate-900 tracking-tighter leading-none mb-6">
                     Intelligenz trifft <br />
@@ -55,7 +55,7 @@ export const PerformanceSection: React.FC = () => {
                 {scenarios.map((s, idx) => (
                     <div 
                         key={idx}
-                        className={`group relative bg-white rounded-hero p-8 shadow-glass border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl animate-fade-up ${
+                        className={`group relative bg-white rounded-hero p-4 md:p-card-padding-sm shadow-glass border transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl animate-fade-up ${
                             s.warning ? 'border-slate-100 opacity-80' : 'border-slate-100 hover:border-primary/20'
                         }`}
                         style={{ animationDelay: `${idx * 150}ms` }}

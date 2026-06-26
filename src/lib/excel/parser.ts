@@ -42,6 +42,8 @@ export const parseMoodleExcel = async (file: File): Promise<Partial<BatchFile>[]
                     return {
                         name: `Schüler #${idx + 1}`,
                         originalName: fullName || `Moodle-Schüler #${idx + 1}`,
+                        studentFirstName: firstName || undefined,
+                        studentLastName: lastName || undefined,
                         status: 'pending',
                         fileText: consolidatedText,
                         ocrDone: false,

@@ -9,6 +9,8 @@ export interface Analysis {
 }
 
 export interface StudentResult {
+    studentFirstName?: string;
+    studentLastName?: string;
     studentName: string;
     analysis: Analysis;
     grade?: string;

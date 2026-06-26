@@ -29,13 +29,13 @@ export default function MemoryFeature() {
                 <FeatureSubNav />
 
                 {/* Hero Section */}
-                <section className="px-8 pt-12 pb-16 max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 relative z-10 animate-fade-up">
-                    <div className="flex-1 space-y-8 text-center lg:text-left">
+                <section className="px-6 md:px-page-inline pt-4 pb-12 md:pt-6 md:pb-hero-bottom max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 relative z-10 animate-fade-up">
+                    <div className="w-full lg:w-[42%] xl:w-[38%] lg:flex-shrink-0 space-y-8 text-center lg:text-left">
                         <Badge variant="light" className="mb-4">
                             Pillar: Memory
                         </Badge>
                         <h1 className="text-6xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9]">
-                            Einschätzungsgedächtnis. <br />
+                            Einschätzungs-<br />gedächtnis. <br />
                             <span className="text-gradient">Absolute Konsistenz.</span>
                         </h1>
                         <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-xl mx-auto lg:ml-0">
@@ -43,13 +43,13 @@ export default function MemoryFeature() {
                         </p>
                     </div>
                     
-                    <div className="flex-1 w-full animate-fade-in delay-300">
+                    <div className="w-full lg:w-[58%] xl:w-[62%] lg:flex-grow animate-fade-in delay-300">
                         <div 
                             className="relative group cursor-zoom-in"
                             onClick={() => setZoomedImage("/screenshots/4c_koreki_grading-memory_center.png")}
                         >
                             <div className="absolute -inset-4 bg-primary/5 blur-3xl rounded-hero opacity-50 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                            <div className="relative rounded-hero overflow-hidden border border-white/60 bg-white/20 p-3 lg:p-6 shadow-glass transition-all duration-300 hover:scale-[1.01]">
+                            <div className="relative rounded-hero overflow-hidden border border-white/60 bg-white/20 p-2 md:p-3 lg:p-4 shadow-glass transition-all duration-300 hover:scale-[1.01]">
                                 <img 
                                     src="/screenshots/4c_koreki_grading-memory_center.png" 
                                     alt="Koreki Grading-Memory Interface"
@@ -61,9 +61,9 @@ export default function MemoryFeature() {
                 </section>
 
                 {/* Highlight Section */}
-                <section className="py-12 px-8 bg-slate-50/50 border-y border-slate-200/50 relative">
+                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-slate-50/50 border-y border-slate-200/60 relative">
                     <div className="max-w-7xl mx-auto">
-                        <div className="glass-morphism p-12 rounded-hero border border-white bg-white/60 shadow-xl relative overflow-hidden group">
+                        <div className="glass-morphism p-6 md:p-card-padding rounded-hero border border-white bg-white/60 shadow-xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                                 <Database size={160} />
                             </div>

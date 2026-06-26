@@ -112,6 +112,8 @@ export interface BatchFile {
     files?: File[];
     name: string;
     originalName?: string;
+    studentFirstName?: string;
+    studentLastName?: string;
     status: 'pending' | 'processing' | 'done' | 'error';
     result: Analysis | null;
     error: string | null;

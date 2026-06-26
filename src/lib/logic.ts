@@ -88,7 +88,7 @@ export function reindexBatchFiles(files: any[]): any[] {
  */
 export function generateSplitBatchItems(
     originalFile: any,
-    splits: { name: string, pageCount: number }[],
+    splits: { firstName?: string, lastName?: string, name?: string, pageCount: number }[],
     baseIdx: number,
     autoRedact: boolean = false
 ): any[] {
@@ -97,12 +97,18 @@ export function generateSplitBatchItems(
     let currentStartPage = 1;
     return splits.map((s, idx) => {
         const defaultName = `Schüler #${baseIdx + idx + 1}`;
-        const realNameProvided = s.name && !/^Schüler #\d+$/.test(s.name);
+        
+        const fName = s.firstName?.trim() || '';
+        const lName = s.lastName?.trim() || '';
+        const combined = `${fName} ${lName}`.trim() || s.name || '';
+        const realNameProvided = combined && !/^Schüler #\d+$/.test(combined);
 
         const item = {
             ...originalFile,
             name: defaultName,
-            originalName: realNameProvided ? s.name : undefined,
+            originalName: realNameProvided ? combined : undefined,
+            studentFirstName: fName || undefined,
+            studentLastName: lName || undefined,
             status: 'pending',
             result: null,
             error: null,
