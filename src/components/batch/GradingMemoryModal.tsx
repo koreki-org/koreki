@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Sparkles, Sliders, Save, CheckCircle, ArrowRight, Bot, ShieldCheck, AlertCircle, Trash2, Check, HelpCircle, BookOpen, Upload, Download, PlusCircle, Pencil } from 'lucide-react';
+import { X, Sparkles, Sliders, Save, CheckCircle, ArrowRight, Bot, ShieldCheck, AlertCircle, Trash2, Check, HelpCircle, BookOpen, Upload, Download, PlusCircle, Pencil, RefreshCcw } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
@@ -699,35 +699,33 @@ const handleSaveActiveMemoryChanges = async () => {
     if (!isOpen || !mounted) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in" onClick={onClose}>
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
             <div 
-                className="relative w-full md:max-w-[1250px] h-full md:h-[92vh] bg-white border-none md:border md:border-slate-100 rounded-none md:rounded-2xl shadow-2xl p-5 md:p-8 text-slate-800 flex flex-col overflow-hidden animate-zoom-in text-left font-sans"
+                className="relative w-full md:max-w-[1200px] h-full md:h-[88vh] bg-white border-none md:border md:border-white rounded-none md:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-fade-in text-foreground text-left"
                 onClick={e => e.stopPropagation()}
             >
-                {/* Close Button */}
-                <button 
-                    type="button"
-                    onClick={onClose}
-                    className="absolute top-5 right-5 p-2 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors z-20"
-                >
-                    <X size={22} />
-                </button>
-
                 {/* Header Section */}
-                <div className="flex items-start gap-4 mb-5 pb-4 border-b border-slate-100 shrink-0">
-                    <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shadow-md shadow-indigo-100 shrink-0 rotate-1">
-                        <Sparkles size={24} className="animate-pulse" />
+                <div className="px-4 sm:px-8 py-4 sm:pt-8 sm:pb-4 flex justify-between items-center border-b border-slate-100 bg-white/50 backdrop-blur shrink-0">
+                    <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg border border-slate-100 overflow-hidden shrink-0">
+                            <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="min-w-0">
+                            <h2 className="text-lg sm:text-2xl font-black font-outfit text-slate-900 tracking-tight truncate">
+                                GradingMemory Center
+                            </h2>
+                            <p className="text-xxs sm:text-sm text-slate-500 font-medium italic truncate">
+                                Kalibrierung von Few-Shot Beispielen
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h2 className="text-xl md:text-2xl font-black font-outfit text-slate-900 tracking-tight flex items-center gap-2">
-                            GradingMemory™ Expert Center
-                        </h2>
-                        <p className="text-[10px] md:text-xs text-slate-400 font-bold tracking-wider uppercase">Pädagogische Best Practices & Few-Shot-Modulkalibrierung</p>
-                    </div>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100 shrink-0" onClick={onClose}>
+                        <X size={24} />
+                    </Button>
                 </div>
 
                 {/* Main Content Areas */}
-                <div className="flex-1 flex flex-col min-h-0 overflow-hidden pr-2">
+                <div className="flex-1 flex flex-col min-h-0 overflow-hidden px-4 sm:px-8 py-4 sm:py-6">
                     
                     {error && (
                         <div className="mb-4 p-3.5 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 text-xs md:text-sm flex items-center gap-2.5 shrink-0 animate-pulse">
@@ -910,13 +908,11 @@ const handleSaveActiveMemoryChanges = async () => {
                                              </div>
                                              <div className="flex items-center gap-2">
                                                 <Button 
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={handleImportClick}
-                                                    className="h-8 rounded-full text-[10px] font-black uppercase text-indigo-600 hover:bg-indigo-50 transition-all flex items-center gap-1.5"
-                                                >
-                                                    <Upload size={14} /> Import
-                                                </Button>
+                                                     onClick={handleImportClick}
+                                                     className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-1.5 px-3 sm:px-4 transition-all"
+                                                 >
+                                                     <RefreshCcw size={14} /> Import
+                                                 </Button>
                                                 <Button 
                                                      onClick={isImportedAndUnsaved ? () => handleSaveImportedMemory(activeMemory!) : handleSaveActiveMemoryChanges}
                                                      disabled={!hasChanges || isSaving}
@@ -1086,25 +1082,25 @@ const handleSaveActiveMemoryChanges = async () => {
                                                  </div>
                                              </div>
                                          </div>
- 
-                                         {/* Footer Action Bar */}
-                                         <div className="px-4 sm:px-8 py-4 sm:py-6 bg-white border-t border-slate-100 flex justify-end items-center shrink-0 mt-auto">
-                                             <div className="flex gap-2 sm:gap-4 w-full sm:w-auto">
-                                                 <Button variant="ghost" onClick={onClose} className="flex-1 sm:flex-none px-4 sm:px-6 h-10 sm:h-12 font-bold text-slate-400 hover:text-slate-900">
-                                                     Abbrechen
-                                                 </Button>
-                                                 <Button
-                                                     onClick={onClose}
-                                                     className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl sm:rounded-2xl shadow-xl shadow-indigo-100 transition-all"
-                                                 >
-                                                     Zuweisen
-                                                 </Button>
-                                             </div>
-                                         </div>
+
+                                        {/* Footer Action Bar */}
+                                        <div className="px-4 sm:px-8 py-4 sm:py-6 bg-white border-t border-slate-100 flex justify-end items-center shrink-0 mt-auto">
+                                            <div className="flex gap-2 sm:gap-4 w-full sm:w-auto">
+                                                <Button variant="ghost" onClick={onClose} className="flex-1 sm:flex-none px-4 sm:px-6 h-10 sm:h-12 font-bold text-slate-400 hover:text-slate-900">
+                                                    Abbrechen
+                                                </Button>
+                                                <Button
+                                                    onClick={onClose}
+                                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl sm:rounded-2xl shadow-xl shadow-indigo-100 transition-all"
+                                                >
+                                                    Zuweisen
+                                                </Button>
+                                            </div>
+                                        </div>
                                      </div>
                                  ) : (
                                      // 🧙‍♂️ WIZARD: CREATE NEW CALIBRATION
-                                     <div className="flex flex-col gap-4">
+                                     <div className="flex-grow overflow-y-auto custom-scrollbar pr-1 flex flex-col gap-4 min-h-0">
                                          <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                                              <Sparkles size={14} className="text-indigo-400" />
                                              Neuen Erfahrungsschatz kalibrieren
@@ -1481,12 +1477,6 @@ const handleSaveActiveMemoryChanges = async () => {
 
                 </div>
 
-                {/* Footer Credits */}
-                <div className="mt-4 pt-3 border-t border-slate-100 text-center shrink-0">
-                    <p className="text-[8px] md:text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">
-                        Koreki GradingMemory™ | Active Calibration Node
-                    </p>
-                </div>
             </div>
         </div>,
         document.body

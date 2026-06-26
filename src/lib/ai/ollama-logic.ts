@@ -627,14 +627,24 @@ export async function pingOllama(baseUrl: string): Promise<{ success: boolean; i
         }
     }
 
+    let timeoutId: any;
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        timeoutId = setTimeout(() => {
+            try {
+                controller.abort();
+            } catch (err) {
+                // Ignore errors inside setTimeout during abort
+            }
+        }, 3000);
         const res = await fetch(`${url}/api/tags`, { method: 'GET', signal: controller.signal });
-        clearTimeout(timeoutId);
         return { success: res.ok, isSelfSigned: false, version: '' };
     } catch (e) {
         return { success: false, isSelfSigned: false, version: '' };
+    } finally {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
     }
 }
 /**
@@ -655,11 +665,17 @@ export async function fetchOllamaModels(baseUrl: string): Promise<{ models: stri
         }
     }
 
+    let timeoutId: any;
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        timeoutId = setTimeout(() => {
+            try {
+                controller.abort();
+            } catch (err) {
+                // Ignore errors inside setTimeout during abort
+            }
+        }, 3000);
         const res = await fetch(`${url}/api/tags`, { signal: controller.signal });
-        clearTimeout(timeoutId);
         if (!res.ok) return { models: [], isSelfSigned: false, version: '' };
         const data = await res.json();
         const models = Array.isArray(data?.models) ? data.models.map((m: any) => m.name) : [];
@@ -667,6 +683,10 @@ export async function fetchOllamaModels(baseUrl: string): Promise<{ models: stri
     } catch (e) {
         logger.error("Community Model Fetch Error:", e);
         return { models: [], isSelfSigned: false, version: '' };
+    } finally {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
+        }
     }
 }
 
