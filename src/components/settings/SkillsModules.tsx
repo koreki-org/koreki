@@ -10,6 +10,7 @@ import { downloadFile } from '@/lib/file-utils';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { GradingGraphModal } from '../batch/GradingGraphModal';
 import { CalcTraceModal } from '../batch/CalcTraceModal';
+import { cn } from '@/lib/utils';
 
 
 interface SkillsSidebarProps {
@@ -536,12 +537,15 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                     </Button>
 
                     <Button 
-                        variant="outline" 
-                        size="sm" 
                         disabled={saving || (isSystemSelected && !isDirty)} 
                         onClick={onSaveToDB} 
                         title={isSystemSelected ? "System-Vorlagen können nicht direkt bearbeitet werden. Erstelle eine Kopie." : ""}
-                        className={`h-8 sm:h-9 rounded-full text-xxs whitespace-nowrap font-bold uppercase gap-2 px-3 sm:px-4 transition-all ${isDirty && !isSystemSelected ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse font-bold' : 'border-slate-100 text-slate-300'}`}
+                        className={cn(
+                            "h-9 px-4 text-xxs whitespace-nowrap font-bold uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0",
+                            (isDirty && !isSystemSelected)
+                                ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100"
+                                : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+                        )}
                     >
                         <Check size={14} /> Speichern
                     </Button>

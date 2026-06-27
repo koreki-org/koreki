@@ -115,7 +115,7 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
             {/* User Profiles */}
             {profiles.filter(p => !p.isSystem).length > 0 && (
                 <div className="space-y-2">
-                    <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">Eigene Experten-Profile</label>
+                    <label className="text-xxs uppercase font-bold text-slate-400 tracking-widest px-2">Eigene Experten-Profile</label>
                     {profiles.filter(p => !p.isSystem).map(p => (
                         <div
                             key={p.id}
@@ -179,7 +179,7 @@ ${p.correctionPrompt || p.prompt}`;
             )}
             {/* System Templates */}
             <div className="space-y-2">
-                <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">Standard-Experten-Profile</label>
+                <label className="text-xxs uppercase font-bold text-slate-400 tracking-widest px-2">Standard-Experten-Profile</label>
                 {profiles.filter(p => p.isSystem).map(p => (
                     <div
                         key={p.name}
@@ -280,7 +280,7 @@ ${correctionPrompt}`;
     <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 overflow-y-auto p-4 sm:p-8">
         <div className="flex justify-between items-end gap-6">
             <div className="flex-1 space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest">
                     {isCreatingNew ? 'Name des neuen Experten-Profils' : 'Gewähltes Experten-Profil'}
                 </label>
                 {isCreatingNew ? (
@@ -291,14 +291,14 @@ ${correctionPrompt}`;
                 ) : (
                     <h3 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-3">
                         {selectedProfile}
-                        {isSystemSelected && <Badge variant="outline" className="text-[7px] sm:text-[10px] bg-slate-100 text-slate-500 px-3 py-1 rounded-full border-transparent">SYSTEM</Badge>}
+                        {isSystemSelected && <Badge variant="outline" className="text-xxs bg-slate-100 text-slate-500 px-3 py-1 rounded-full border-transparent font-bold">SYSTEM</Badge>}
                     </h3>
                 )}
             </div>
             {isDirty && !isCreatingNew && !isSystemSelected && (
                 <div className="flex items-center gap-2 text-amber-500 animate-pulse pb-2 shrink-0">
                     <RefreshCcw size={16} />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Ungespeichertes</span>
+                    <span className="text-xxs font-bold uppercase tracking-widest">Ungespeichertes</span>
                 </div>
             )}
         </div>
@@ -337,7 +337,7 @@ ${correctionPrompt}`;
                             onClick={onSaveToDB}
                             disabled={saving || !isDirty}
                             className={cn(
-                                "h-9 px-4 text-[10px] font-black uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0",
+                                "h-9 px-4 text-xxs whitespace-nowrap font-bold uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0",
                                 isDirty 
                                     ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100" 
                                     : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"

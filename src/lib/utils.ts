@@ -5,11 +5,9 @@ import { BatchFile } from '../types';
 import { downloadFile } from './file-utils';
 
 const customTwMerge = extendTailwindMerge({
-    extend: {
-        classGroups: {
-            'font-size': ['text-xxs'],
-            'rounded': ['rounded-hero'],
-        },
+    classGroups: {
+        'font-size': [{ text: ['xxs'] }],
+        'rounded': [{ rounded: ['hero'] }],
     },
 });
 
