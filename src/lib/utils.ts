@@ -8,6 +8,7 @@ const customTwMerge = extendTailwindMerge({
     extend: {
         classGroups: {
             'font-size': ['text-xxs'],
+            'rounded': ['rounded-hero'],
         },
     },
 });

@@ -122,7 +122,7 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                 {/* User Profiles */}
                 {profiles.filter(p => !p.isSystem).length > 0 && (
                     <div className="space-y-2">
-                        <label className="text-xxs uppercase font-black text-slate-400 tracking-widest px-2">Eigene Profile</label>
+                        <label className="text-xxs uppercase font-bold text-slate-400 tracking-widest px-2">Eigene Profile</label>
                         {profiles.filter(p => !p.isSystem).map(p => (
                             <div
                                 key={p.id}
@@ -185,7 +185,7 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                 )}
                 {/* System Templates */}
                 <div className="space-y-2">
-                    <label className="text-xxs uppercase font-black text-slate-400 tracking-widest px-2">System-Vorlagen</label>
+                    <label className="text-xxs uppercase font-bold text-slate-400 tracking-widest px-2">System-Vorlagen</label>
                     {profiles.filter(p => p.isSystem).map(p => (
                         <div
                             key={p.name}
@@ -295,7 +295,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
         <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 overflow-y-auto p-4 sm:p-8">
             <div className="flex justify-between items-center gap-6">
                 <div className="flex-1 space-y-2">
-                    <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
+                    <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest">
                         {isCreatingNew ? 'Name für neues KI-Profil' : 'Gewähltes KI-Profil'}
                     </label>
                     {isCreatingNew ? (
@@ -314,14 +314,14 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                     {isDirty && !isCreatingNew && !isSystemSelected && (
                         <div className="flex items-center gap-2 text-amber-500 animate-pulse px-2 hidden sm:flex">
                             <RefreshCcw size={14} />
-                            <span className="text-xxs font-black uppercase tracking-widest">Ungespeichert</span>
+                            <span className="text-xxs font-bold uppercase tracking-widest">Ungespeichert</span>
                         </div>
                     )}
                     {!isSystemSelected && (
                         <Button 
                             onClick={onSaveToDB} 
                             disabled={!isDirty || saving}
-                            className="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xxs whitespace-nowrap font-black uppercase rounded-full flex items-center gap-1.5 shadow-md shadow-indigo-100 transition-all border-0"
+                            className="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xxs whitespace-nowrap font-bold uppercase rounded-full flex items-center gap-1.5 shadow-md shadow-indigo-100 transition-all border-0"
                         >
                             {saving ? (
                                 <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
