@@ -2,6 +2,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 import { Sparkles, X, Check, Loader2, HelpCircle, Award, MessageSquare, Send, Scale, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { ChatMessage } from '@/types';
 import { cn } from '@/lib/utils';
 import { MathMarkdown } from '@/components/ui/MathMarkdown';
@@ -169,11 +170,11 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
     const isFollowUp = messages.filter(m => m.role === 'user').length >= 1;
 
     return createPortal(
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
 
 
-            {/* Backdrop */}
-            <div className="absolute inset-0" onClick={() => !loading && onClose()} />
+            {/* Backdrop (Accidental close protection) */}
+            <div className="absolute inset-0" />
 
             {/* Modal Body Panel */}
             <div className={cn(
@@ -197,13 +198,15 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                 <p className="text-xs text-muted-foreground font-inter">Diskutiere Korrekturfälle, kläre Folgefehler und optimiere das Feedback im Dialog</p>
                             </div>
                         </div>
-                        <button
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={onClose}
-                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg h-9 w-9 border-0 bg-transparent flex items-center justify-center"
                             disabled={loading}
                         >
                             <X size={18} />
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
@@ -344,12 +347,12 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                         {/* Message Input Form */}
                         <form onSubmit={handleSendMessage} className="border-t border-border/60 p-4 bg-slate-50/30 dark:bg-slate-900/20 flex flex-col gap-2">
                             <div className="flex gap-2 items-center">
-                                <input
+                                <Input
                                     type="text"
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     placeholder="Mit Koreki besprechen..."
-                                    className="flex-1 bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground/90 font-inter focus:border-indigo-600 focus:outline-hidden focus:ring-1 focus:ring-indigo-600/20 transition-all"
+                                    className="flex-1 bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground/90 font-inter focus:border-indigo-600 focus:outline-hidden focus:ring-1 focus:ring-indigo-600/20 transition-all h-10"
                                     disabled={loading}
                                 />
                                 <Button
