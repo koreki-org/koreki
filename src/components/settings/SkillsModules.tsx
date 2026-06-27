@@ -86,21 +86,21 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
 
     return (
         <div 
-            className={`flex-1 flex flex-col overflow-hidden relative transition-all duration-200 h-full ${isDragging ? 'bg-indigo-50/80 ring-2 ring-inset ring-indigo-500' : ''}`}
+            className={`flex-1 flex flex-col overflow-hidden relative transition-all duration-200 h-full ${isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
             onDragOver={handleDragOver}
             onDragEnter={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
         >
             {isDragging && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-indigo-50/80 backdrop-blur-sm border-2 border-dashed border-indigo-500 rounded-2xl m-2 pointer-events-none">
-                    <div className="flex flex-col items-center text-indigo-600 font-bold gap-2">
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-primary/5 backdrop-blur-sm border-2 border-dashed border-primary rounded-2xl m-2 pointer-events-none">
+                    <div className="flex flex-col items-center text-primary font-bold gap-2">
                         <RefreshCcw size={32} className="animate-spin-slow" />
                         <p>Skill-Profil hier loslassen!</p>
                     </div>
                 </div>
             )}
-            <div className="p-4 border-b border-slate-100 space-y-2 relative z-10 shrink-0">
+            <div className="p-4 border-b border-border space-y-2 relative z-10 shrink-0">
                 <Button onClick={() => onStartNew()} className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-2xl shadow-md gap-2 transition-all">
                     <PlusCircle size={18} /> Neues Skill-Set
                 </Button>
@@ -119,24 +119,24 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                 {/* Custom User Profiles */}
                 {profiles.filter(p => !p.isSystem).length > 0 && (
                     <div className="space-y-2">
-                        <label className="text-xxs uppercase font-bold text-slate-400 tracking-widest px-2">Eigene Skill-Sets</label>
+                        <label className="text-xxs uppercase font-bold text-muted-foreground tracking-widest px-2">Eigene Skill-Sets</label>
                         {profiles.filter(p => !p.isSystem).map(p => (
                             <div
                                 key={p.id}
                                 onClick={() => onSelectProfile(p)}
-                                className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
+                                className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
                             >
                                 <div className="flex items-center gap-3 flex-1 min-w-0 relative pr-2">
-                                    <Wrench size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
+                                    <Wrench size={18} className={selectedProfile === p.name ? 'text-primary' : 'text-muted-foreground'} />
                                     {editingProfileId === p.id ? (
                                         <Input 
                                             autoFocus value={editingName} onChange={(e) => setEditingName(e.target.value)}
-                                            className="h-8 text-xs font-bold border-indigo-200" onClick={(e) => e.stopPropagation()}
+                                            className="h-8 text-xs font-bold border-primary/20" onClick={(e) => e.stopPropagation()}
                                             onBlur={onConfirmRename} onKeyDown={(e) => e.key === 'Enter' && onConfirmRename()}
                                         />
                                     ) : (
                                         <span 
-                                            className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'} group-hover:pr-[110px]`}
+                                            className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-primary' : 'text-foreground'} group-hover:pr-[110px]`}
                                             title={p.name}
                                         >
                                             {p.name}
@@ -146,21 +146,21 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                     {/* Unified Floating Actions - Custom Profiles */}
                                     <FloatingActions className="-top-2 -right-2" onClick={(e) => e.stopPropagation()}>
                                         {editingProfileId === p.id ? (
-                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-indigo-600" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-primary" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
                                                 <Check size={14} />
                                             </Button>
                                         ) : (
                                             <>
-                                                <Button variant="ghost" size="icon" title="Skill-Set kopieren" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}>
+                                                <Button variant="ghost" size="icon" title="Skill-Set kopieren" className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors" onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}>
                                                     <PlusCircle size={14} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" title="Skill-Set exportieren" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}>
+                                                <Button variant="ghost" size="icon" title="Skill-Set exportieren" className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors" onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}>
                                                     <Download size={14} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" title="Umbenennen" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => { e.stopPropagation(); onStartRename(e, p); }}>
+                                                <Button variant="ghost" size="icon" title="Umbenennen" className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors" onClick={(e) => { e.stopPropagation(); onStartRename(e, p); }}>
                                                     <Pencil size={14} />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-600 hover:text-red-500 transition-colors" onClick={(e) => { e.stopPropagation(); onDeleteProfile(p.id, e); }}>
+                                                <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-muted-foreground hover:text-destructive transition-colors" onClick={(e) => { e.stopPropagation(); onDeleteProfile(p.id, e); }}>
                                                     <Trash2 size={14} />
                                                 </Button>
                                             </>
@@ -174,17 +174,17 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                 
                 {/* System Default Presets */}
                 <div className="space-y-2">
-                    <label className="text-xxs uppercase font-bold text-slate-400 tracking-widest px-2">System-Vorlagen</label>
+                    <label className="text-xxs uppercase font-bold text-muted-foreground tracking-widest px-2">System-Vorlagen</label>
                     {profiles.filter(p => p.isSystem).map(p => (
                         <div
                             key={p.name}
                             onClick={() => onSelectProfile(p)}
-                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
+                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
                         >
                             <div className="flex items-center gap-3 flex-1 min-w-0 relative pr-2">
-                                <Wrench size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
+                                <Wrench size={18} className={selectedProfile === p.name ? 'text-primary' : 'text-muted-foreground'} />
                                 <span 
-                                    className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'} group-hover:pr-[60px]`}
+                                    className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-primary' : 'text-foreground'} group-hover:pr-[60px]`}
                                     title={p.name}
                                 >
                                     {p.name}
@@ -196,7 +196,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                         variant="ghost" 
                                         size="icon" 
                                         title="Skill-Set kopieren"
-                                        className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors" 
+                                        className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors" 
                                         onClick={(e) => { e.stopPropagation(); onStartNew(p.activeSkillIds || [], `Kopie von ${p.name}`); }}
                                     >
                                         <PlusCircle size={14} />
@@ -205,7 +205,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                                         variant="ghost" 
                                         size="icon" 
                                         title="Skill-Set exportieren"
-                                        className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors"
+                                        className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors"
                                         onClick={(e) => { e.stopPropagation(); onExportProfile(p); }}
                                     >
                                         <Download size={14} />
@@ -221,12 +221,12 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
 };
 
 const CATEGORIES = [
-    { id: 'math-science', label: 'MINT-Fächer', icon: <Calculator size={16} className="text-indigo-500" /> },
+    { id: 'math-science', label: 'MINT-Fächer', icon: <Calculator size={16} className="text-primary" /> },
     { id: 'graph-skills', label: 'Graph-basierte Skills (PANG)', icon: <Layers size={16} className="text-emerald-500" /> },
     { id: 'calc-skills', label: 'Rechenketten-Skills (CalcTrace)', icon: <Layers size={16} className="text-blue-500" /> },
     { id: 'languages', label: 'Sprachen & Textästhetik', icon: <BookOpen size={16} className="text-blue-500" /> },
-    { id: 'standards', label: 'Korrekturzeichen & Bundesländer', icon: <Settings size={16} className="text-indigo-600" /> },
-    { id: 'feedback', label: 'Pädagogisches Feedback', icon: <GraduationCap size={16} className="text-indigo-500" /> }
+    { id: 'standards', label: 'Korrekturzeichen & Bundesländer', icon: <Settings size={16} className="text-primary" /> },
+    { id: 'feedback', label: 'Pädagogisches Feedback', icon: <GraduationCap size={16} className="text-primary" /> }
 ] as const;
 
 interface SkillsEditorProps {
@@ -475,20 +475,20 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
             {/* Upper Info Section */}
             <div className="flex justify-between items-end gap-6 shrink-0">
                 <div className="flex-1 space-y-2">
-                    <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest">
+                    <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">
                         {isCreatingNew ? 'Name für neues Skill-Set' : 'Gewähltes Skill-Set'}
                     </label>
                     {isCreatingNew ? (
                         <Input
                             autoFocus value={newProfileName} onChange={e => setNewProfileName(e.target.value)}
-                            placeholder="z.B. Bayern Realschule Physik" className="text-lg sm:text-xl font-black border-indigo-200 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
+                            placeholder="z.B. Bayern Realschule Physik" className="text-lg sm:text-xl font-black border-primary/20 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
                         />
                     ) : (
                         <div className="flex items-center gap-3 flex-wrap">
-                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-3">
+                            <h3 className="text-xl sm:text-2xl font-black text-foreground flex items-center gap-3">
                                 {selectedProfile}
                             </h3>
-                            {isSystemSelected && <Badge variant="outline" className="text-xxs bg-slate-100 text-slate-500 px-3 py-1 rounded-full border-transparent font-bold">SYSTEM PRESET</Badge>}
+                            {isSystemSelected && <Badge variant="outline" className="text-xxs bg-muted text-muted-foreground px-3 py-1 rounded-full border-transparent font-bold">SYSTEM PRESET</Badge>}
                         </div>
                     )}
                 </div>
@@ -501,9 +501,9 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
             </div>
 
             {/* Middle Controls */}
-            <div className="flex justify-between items-center border-b border-slate-100 pb-3 shrink-0">
-                <span className="text-xs sm:text-sm font-black text-slate-800 flex items-center gap-2">
-                    <Sparkles size={16} className="text-indigo-500" /> Skills konfigurieren
+            <div className="flex justify-between items-center border-b border-border pb-3 shrink-0">
+                <span className="text-xs sm:text-sm font-black text-foreground flex items-center gap-2">
+                    <Sparkles size={16} className="text-primary" /> Skills konfigurieren
                 </span>
                 <div className="flex gap-2 items-center">
                     <Button 
@@ -542,7 +542,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                         className="h-9 px-4 text-xxs whitespace-nowrap font-bold uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0"
                     >
                         {saving ? (
-                            <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
+                            <div className="animate-spin rounded-full h-3 w-3 border-2 border-primary-foreground border-t-transparent" />
                         ) : (
                             <Save size={14} />
                         )}
@@ -581,16 +581,16 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                             <button
                                 type="button"
                                 onClick={() => toggleCategory(category.id)}
-                                className="flex items-center justify-between w-full text-left py-2 px-3 hover:bg-slate-50/50 rounded-xl transition-all duration-200 group/header"
+                                className="flex items-center justify-between w-full text-left py-2 px-3 hover:bg-muted/50 rounded-xl transition-all duration-200 group/header"
                             >
-                                <div className="flex items-center gap-2 text-xs font-bold text-slate-500 tracking-wider uppercase">
+                                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground tracking-wider uppercase">
                                     {category.icon}
                                     <span>{category.label}</span>
-                                    <Badge className="bg-slate-100 group-hover/header:bg-slate-200 text-slate-600 font-bold px-1.5 py-0.5 text-xxs rounded-full transition-all">
+                                    <Badge className="bg-muted group-hover/header:bg-muted/80 text-muted-foreground font-bold px-1.5 py-0.5 text-xxs rounded-full transition-all">
                                         {activeCount} / {categorySkills.length}
                                     </Badge>
                                 </div>
-                                <div className="text-slate-400 group-hover/header:text-slate-600 transition-all">
+                                <div className="text-muted-foreground group-hover/header:text-foreground transition-all">
                                     <ChevronDown size={16} className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
                                 </div>
                             </button>
@@ -612,7 +612,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         setActiveSkillIds([...activeSkillIds, skill.id]);
                                                     }
                                                 }}
-                                                className={`p-5 rounded-3xl border-2 transition-all flex items-start gap-4 select-none relative group ${isDisabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'} ${isChecked ? 'bg-gradient-to-br from-indigo-50/40 to-blue-50/10 border-indigo-200/80 shadow-md shadow-indigo-50/20 ring-1 ring-indigo-500/10' : 'bg-slate-50/20 border-slate-100 hover:border-slate-200/80 hover:bg-slate-50/30'}`}
+                                                className={`p-5 rounded-3xl border-2 transition-all flex items-start gap-4 select-none relative group ${isDisabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'} ${isChecked ? 'bg-gradient-to-br from-primary/5 to-primary/3 border-primary/20 shadow-md shadow-primary/5 ring-1 ring-primary/10' : 'bg-muted/10 border-border hover:border-border/80 hover:bg-muted/20'}`}
                                             >
                                                 <div className="pt-0.5 shrink-0">
                                                     <input 
@@ -620,19 +620,19 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         checked={isChecked}
                                                         disabled={isDisabled}
                                                         onChange={() => {}} // Controlled click via parent div
-                                                        className={`w-5 h-5 text-indigo-600 rounded-md border-slate-300 focus:ring-indigo-500 focus:ring-offset-slate-50 cursor-pointer transition-all ${isDisabled ? 'cursor-not-allowed' : ''}`}
+                                                        className={`w-5 h-5 text-primary rounded-md border-border focus:ring-primary focus:ring-offset-background cursor-pointer transition-all ${isDisabled ? 'cursor-not-allowed' : ''}`}
                                                     />
                                                 </div>
                                                 <div className="flex-1 space-y-1 min-w-0">
                                                     <div className="flex items-center gap-2">
-                                                        <h4 className={`text-sm font-black tracking-tight leading-tight ${isChecked ? 'text-indigo-950' : 'text-slate-800'}`}>
+                                                        <h4 className={`text-sm font-black tracking-tight leading-tight ${isChecked ? 'text-foreground' : 'text-foreground'}`}>
                                                             {skill.name}
                                                         </h4>
-                                                        {skill.isCustom && <Badge className="text-xxs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 font-bold hover:bg-indigo-100 rounded">EIGEN</Badge>}
+                                                        {skill.isCustom && <Badge className="text-xxs bg-primary/10 text-primary px-1.5 py-0.5 font-bold hover:bg-primary/10 rounded">EIGEN</Badge>}
                                                         {skill.isGraphBased && <Badge className="text-xxs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 font-bold hover:bg-emerald-100 rounded flex items-center gap-0.5">⚙️ GRAPH</Badge>}
                                                         {skill.isCalcTrace && <Badge className="text-xxs bg-blue-100 text-blue-700 px-1.5 py-0.5 font-bold hover:bg-blue-100 rounded flex items-center gap-0.5">📐 CALC</Badge>}
                                                     </div>
-                                                    <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                                                    <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                                                         {skill.description}
                                                     </p>
                                                     {/* Meta details if any */}
@@ -658,7 +658,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         variant="ghost" 
                                                         size="icon" 
                                                         title="Skill kopieren"
-                                                        className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" 
+                                                        className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-muted/80" 
                                                         onClick={() => onStartNew([skill.id])}
                                                     >
                                                         <PlusCircle size={14} />
@@ -667,7 +667,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         variant="ghost" 
                                                         size="icon" 
                                                         title="Skill als .md exportieren"
-                                                        className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" 
+                                                        className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-muted/80" 
                                                         onClick={() => {
                                                             const markdown = `---
 name: "${skill.name}"
@@ -686,10 +686,10 @@ ${skill.prompt || ''}`;
 
                                                     {skill.isCustom && (
                                                         <>
-                                                            <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-slate-600 hover:text-indigo-600 transition-colors rounded-lg hover:bg-slate-100/80" onClick={() => handleEditSkillClick(skill)}>
+                                                            <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-muted/80" onClick={() => handleEditSkillClick(skill)}>
                                                                 <Pencil size={14} />
                                                             </Button>
-                                                            <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-slate-600 hover:text-red-500 transition-colors rounded-lg hover:bg-slate-100/80" onClick={() => { if (confirm(`Möchtest du den Skill "${skill.name}" wirklich löschen?`)) onDeleteCustomSkill(skill.id); }}>
+                                                            <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-muted/80" onClick={() => { if (confirm(`Möchtest du den Skill "${skill.name}" wirklich löschen?`)) onDeleteCustomSkill(skill.id); }}>
                                                                 <Trash2 size={14} />
                                                             </Button>
                                                         </>
@@ -707,32 +707,32 @@ ${skill.prompt || ''}`;
 
             {/* Inline Dialog Overlay for Creating/Editing Custom Skill */}
             {isEditingSkill && editingSkillData && (
-                <div className="fixed inset-0 z-[2200] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4">
-                    <div className="bg-white w-full max-w-xl rounded-hero shadow-2xl border border-slate-100 p-6 sm:p-8 space-y-6 flex flex-col max-h-[90vh] overflow-hidden animate-fade-in text-slate-800">
-                        <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                            <h3 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
-                                <Sparkles className="text-indigo-500 animate-pulse" size={20} />
+                <div className="fixed inset-0 z-[2200] flex items-center justify-center bg-foreground/40 backdrop-blur-md p-4">
+                    <div className="bg-background w-full max-w-xl rounded-hero shadow-2xl border border-border p-6 sm:p-8 space-y-6 flex flex-col max-h-[90vh] overflow-hidden animate-fade-in text-foreground">
+                        <div className="flex justify-between items-center pb-2 border-b border-border">
+                            <h3 className="text-lg sm:text-xl font-black text-foreground flex items-center gap-2">
+                                <Sparkles className="text-primary animate-pulse" size={20} />
                                 {editingSkillData.id ? 'Eigenen Skill bearbeiten' : 'Eigenen Skill erstellen'}
                             </h3>
                         </div>
                         
                         <div className="space-y-4 flex-1 overflow-y-auto pr-1 pb-4">
                             <div className="space-y-1.5">
-                                <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest">Name des Skills</label>
+                                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">Name des Skills</label>
                                 <Input 
                                     value={editingSkillData.name}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, name: e.target.value })}
                                     placeholder="z.B. Folgefehler-Kompensation Physik"
-                                    className="h-11 rounded-xl border-slate-200 focus:ring-indigo-500 focus:border-indigo-500"
+                                    className="h-11 rounded-xl border-border focus:ring-primary focus:border-primary"
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest">Kategorie</label>
+                                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">Kategorie</label>
                                 <select
                                     value={editingSkillData.category}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, category: e.target.value as any })}
-                                    className="w-full h-11 px-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer"
+                                    className="w-full h-11 px-3 rounded-xl border border-border text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-background cursor-pointer"
                                 >
                                     <option value="math-science">MINT-Fächer</option>
                                     <option value="graph-skills">Graph-basierte Skills (PANG)</option>
@@ -767,9 +767,9 @@ ${skill.prompt || ''}`;
                                             }) : undefined
                                         });
                                     }}
-                                    className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                                    className="w-4 h-4 text-primary rounded border-border focus:ring-primary cursor-pointer"
                                 />
-                                <label htmlFor="is-graph-based" className="text-xs font-bold text-slate-700 cursor-pointer">
+                                <label htmlFor="is-graph-based" className="text-xs font-bold text-foreground cursor-pointer">
                                     Graph-basierter Skill (PANG Engine)
                                 </label>
                             </div>
@@ -797,9 +797,9 @@ ${skill.prompt || ''}`;
                                             }) : undefined
                                         });
                                     }}
-                                    className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                                    className="w-4 h-4 text-primary rounded border-border focus:ring-primary cursor-pointer"
                                 />
-                                <label htmlFor="is-calc-trace" className="text-xs font-bold text-slate-700 cursor-pointer">
+                                <label htmlFor="is-calc-trace" className="text-xs font-bold text-foreground cursor-pointer">
                                     MINT Rechenkette (CalcTrace Engine)
                                 </label>
                             </div>
@@ -829,7 +829,7 @@ ${skill.prompt || ''}`;
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => setIsGraphModalOpen(true)}
-                                                className="h-8 text-xs font-bold border-primary/20 text-primary bg-white hover:bg-primary/5 rounded-lg px-3 transition-all duration-300"
+                                                className="h-8 text-xs font-bold border-primary/20 text-primary bg-background hover:bg-primary/5 rounded-lg px-3 transition-all duration-300"
                                             >
                                                 Graph bearbeiten ⚙️
                                             </Button>
@@ -848,7 +848,7 @@ ${skill.prompt || ''}`;
                                             }}
                                             placeholder="Füge hier den Aufgabentext ein, aus dem die KI Variablen und Formeln extrahieren soll..."
                                             rows={4}
-                                            className="w-full p-3 rounded-xl border border-primary/10 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-white"
+                                            className="w-full p-3 rounded-xl border border-primary/10 text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-background"
                                         />
                                     </div>
 
@@ -892,7 +892,7 @@ ${skill.prompt || ''}`;
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => setIsCalcTraceModalOpen(true)}
-                                                className="h-8 text-xs font-bold border-blue-200 text-blue-700 bg-white hover:bg-blue-50/50 rounded-lg px-3 transition-all duration-300"
+                                                className="h-8 text-xs font-bold border-blue-200 text-blue-700 bg-background hover:bg-blue-50/50 rounded-lg px-3 transition-all duration-300"
                                             >
                                                 Kette bearbeiten 📐
                                             </Button>
@@ -910,7 +910,7 @@ ${skill.prompt || ''}`;
                                             }}
                                             placeholder="Füge hier den Aufgabentext ein, aus dem die KI Rechenschritte extrahieren soll..."
                                             rows={4}
-                                            className="w-full p-3 rounded-xl border border-blue-100 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-blue-100 focus:border-transparent outline-none bg-white resize-none"
+                                            className="w-full p-3 rounded-xl border border-blue-100 text-xs font-semibold text-foreground focus:ring-2 focus:ring-blue-100 focus:border-transparent outline-none bg-background resize-none"
                                         />
                                     </div>
 
@@ -930,33 +930,33 @@ ${skill.prompt || ''}`;
                             )}
 
                             <div className="space-y-1.5">
-                                <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest">Kurzbeschreibung</label>
+                                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">Kurzbeschreibung</label>
                                 <Textarea 
                                     value={editingSkillData.description}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, description: e.target.value })}
                                     placeholder="Beschreibe kurz, worauf die KI achten soll und in welchem Fach."
                                     rows={2}
-                                    className="w-full p-3 rounded-xl border border-slate-200 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none resize-none"
+                                    className="w-full p-3 rounded-xl border border-border text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest">KI-Anweisung (Prompt Snippet)</label>
+                                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">KI-Anweisung (Prompt Snippet)</label>
                                 <Textarea 
                                     value={editingSkillData.promptSnippet}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, promptSnippet: e.target.value })}
                                     placeholder="Gib hier die genaue systemische Korrektur-Anweisung für das LLM an. Beispiel:&#10;FOLGEFEHLER BEI BERECHNUNGEN:&#10;- Wenn der Schüler ein falsches Zwischenergebnis verwendet, aber die darauffolgenden Rechenschritte mathematisch korrekt ausführt, ziehe nur einmalig für den ersten Fehler Punkte ab."
                                     rows={6}
-                                    className="w-full p-3 rounded-xl border border-slate-200 text-xs font-mono text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-slate-50/50"
+                                    className="w-full p-3 rounded-xl border border-border text-xs font-mono text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-muted/30"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 shrink-0">
+                        <div className="flex justify-end gap-3 pt-4 border-t border-border shrink-0">
                             <Button 
                                 variant="ghost" 
                                 onClick={() => { setIsEditingSkill(false); setEditingSkillData(null); }}
-                                className="h-10 rounded-xl px-4 font-bold text-slate-500 hover:bg-slate-50"
+                                className="h-10 rounded-xl px-4 font-bold text-muted-foreground hover:bg-muted"
                             >
                                 Abbrechen
                             </Button>

@@ -89,21 +89,21 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
 
     return (
         <div 
-            className={`flex-1 flex flex-col overflow-hidden relative transition-all duration-200 ${isDragging ? 'bg-indigo-50/80 ring-2 ring-inset ring-indigo-500' : ''}`}
+            className={`flex-1 flex flex-col overflow-hidden relative transition-all duration-200 ${isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
             onDragOver={handleDragOver}
             onDragEnter={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
         >
             {isDragging && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-indigo-50/80 backdrop-blur-sm border-2 border-dashed border-indigo-500 rounded-2xl m-2 pointer-events-none">
-                    <div className="flex flex-col items-center text-indigo-600 font-bold gap-2">
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-primary/5 backdrop-blur-sm border-2 border-dashed border-primary rounded-2xl m-2 pointer-events-none">
+                    <div className="flex flex-col items-center text-primary font-bold gap-2">
                         <RefreshCcw size={32} className="animate-spin-slow" />
                         <p>KI-Profil hier loslassen!</p>
                     </div>
                 </div>
             )}
-            <div className="p-4 border-b border-slate-100 space-y-2">
+            <div className="p-4 border-b border-border space-y-2">
                 <Button onClick={onStartNew} className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-2xl shadow-md gap-2">
                     <PlusCircle size={18} /> Neues Profil
                 </Button>
@@ -122,29 +122,29 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                 {/* User Profiles */}
                 {profiles.filter(p => !p.isSystem).length > 0 && (
                     <div className="space-y-2">
-                        <label className="text-xxs uppercase font-bold text-slate-400 tracking-widest px-2">Eigene Profile</label>
+                        <label className="text-xxs uppercase font-bold text-muted-foreground tracking-widest px-2">Eigene Profile</label>
                         {profiles.filter(p => !p.isSystem).map(p => (
                             <div
                                 key={p.id}
                                 onClick={() => onSelectProfile(p)}
-                                className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
+                                className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${selectedProfile === p.name ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
                             >
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <SlidersHorizontal size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
+                                    <SlidersHorizontal size={18} className={selectedProfile === p.name ? 'text-primary' : 'text-muted-foreground'} />
                                     {editingProfileId === p.id ? (
                                         <Input 
                                             autoFocus value={editingName} onChange={(e) => setEditingName(e.target.value)}
-                                            className="h-8 text-xs font-bold border-indigo-200" onClick={(e) => e.stopPropagation()}
+                                            className="h-8 text-xs font-bold border-primary/20" onClick={(e) => e.stopPropagation()}
                                             onBlur={onConfirmRename} onKeyDown={(e) => e.key === 'Enter' && onConfirmRename()}
                                         />
                                     ) : (
-                                        <span className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'} group-hover:pr-[80px]`}>{p.name}</span>
+                                        <span className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-primary' : 'text-foreground'} group-hover:pr-[80px]`}>{p.name}</span>
                                     )}
                                 </div>
                                 
                                 <FloatingActions className="-top-2 -right-2">
                                     {editingProfileId === p.id ? (
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-indigo-600" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={(e) => { e.stopPropagation(); onConfirmRename(); }}>
                                             <Check size={14} />
                                         </Button>
                                     ) : (
@@ -153,7 +153,7 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                                                 variant="ghost" 
                                                 size="icon" 
                                                 title="Profil kopieren"
-                                                className="h-8 w-8 text-slate-600 hover:text-indigo-600 transition-colors"
+                                                className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     onStartNew(p);
@@ -164,16 +164,16 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                                             <Button 
                                                 variant="ghost" 
                                                 size="icon" 
-                                                className="h-8 w-8 text-slate-600 hover:text-indigo-600 transition-colors" 
+                                                className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors" 
                                                 onClick={(e) => onExportProfile(p, e)} 
                                                 title="Profil exportieren (.json)"
                                             >
                                                 <Download size={14} />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:text-indigo-600 transition-colors" onClick={(e) => onStartRename(e, p)} title="Umbenennen">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors" onClick={(e) => onStartRename(e, p)} title="Umbenennen">
                                                 <Pencil size={14} />
                                             </Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-600 hover:text-red-500 transition-colors" onClick={(e) => onDeleteProfile(p.id, e)} title="Löschen">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive transition-colors" onClick={(e) => onDeleteProfile(p.id, e)} title="Löschen">
                                                 <Trash2 size={14} />
                                             </Button>
                                         </>
@@ -185,23 +185,23 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                 )}
                 {/* System Templates */}
                 <div className="space-y-2">
-                    <label className="text-xxs uppercase font-bold text-slate-400 tracking-widest px-2">System-Vorlagen</label>
+                    <label className="text-xxs uppercase font-bold text-muted-foreground tracking-widest px-2">System-Vorlagen</label>
                     {profiles.filter(p => p.isSystem).map(p => (
                         <div
                             key={p.name}
                             onClick={() => onSelectProfile(p)}
-                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${selectedProfile === p.name ? 'bg-white border-indigo-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-white/50'}`}
+                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${selectedProfile === p.name ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
                         >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <SlidersHorizontal size={18} className={selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-400'} />
-                                <span className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-indigo-600' : 'text-slate-700'} group-hover:pr-[40px]`}>{p.name}</span>
+                                <SlidersHorizontal size={18} className={selectedProfile === p.name ? 'text-primary' : 'text-muted-foreground'} />
+                                <span className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-primary' : 'text-foreground'} group-hover:pr-[40px]`}>{p.name}</span>
                             </div>
                             <FloatingActions className="-top-2 -right-2">
                                 <Button 
                                     variant="ghost" 
                                     size="icon" 
                                     title="Als Vorlage verwenden (Kopieren)"
-                                    className="h-8 w-8 text-slate-600 hover:text-indigo-600 transition-colors"
+                                    className="h-8 w-8 text-muted-foreground hover:text-primary transition-colors"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         onStartNew(p);
@@ -295,18 +295,18 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
         <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 overflow-y-auto p-4 sm:p-8">
             <div className="flex justify-between items-center gap-6">
                 <div className="flex-1 space-y-2">
-                    <label className="text-xxs font-bold text-slate-400 uppercase tracking-widest">
+                    <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">
                         {isCreatingNew ? 'Name für neues KI-Profil' : 'Gewähltes KI-Profil'}
                     </label>
                     {isCreatingNew ? (
                         <Input
                             autoFocus value={newProfileName} onChange={e => setNewProfileName(e.target.value)}
-                            placeholder="z.B. Kalt & Präzise" className="text-lg sm:text-xl font-black border-indigo-200 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
+                            placeholder="z.B. Kalt & Präzise" className="text-lg sm:text-xl font-black border-primary/20 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
                         />
                     ) : (
-                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-3 truncate">
+                        <h3 className="text-xl sm:text-2xl font-black text-foreground flex items-center gap-3 truncate">
                             {selectedProfile}
-                            {isSystemSelected && <Badge variant="outline" className="text-xxs bg-slate-100 text-slate-500 px-3 py-1 rounded-full border-transparent">SYSTEM</Badge>}
+                            {isSystemSelected && <Badge variant="outline" className="text-xxs bg-muted text-muted-foreground px-3 py-1 rounded-full border-transparent">SYSTEM</Badge>}
                         </h3>
                     )}
                 </div>
@@ -324,7 +324,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             className="h-9 px-4 text-xxs whitespace-nowrap font-bold uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0"
                         >
                             {saving ? (
-                                <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
+                                <div className="animate-spin rounded-full h-3 w-3 border-2 border-primary-foreground border-t-transparent" />
                             ) : (
                                 <Save size={14} />
                             )}
@@ -335,29 +335,29 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
             </div>
 
             {/* Tabs Navigation */}
-            <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200/50">
+            <div className="flex bg-muted p-1 rounded-xl border border-border/50">
                 <button
                     onClick={() => setActiveTab('correction')}
                     className={cn(
                         "flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all duration-200",
                         activeTab === 'correction'
-                            ? "bg-white text-slate-900 shadow-sm"
-                            : "text-slate-500 hover:text-slate-700"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
                     )}
                 >
-                    <Brain size={14} className={activeTab === 'correction' ? "text-indigo-500" : "text-slate-400"} />
-                    Korrektur & Analyse
+                    <Brain size={14} className={activeTab === 'correction' ? "text-primary" : "text-muted-foreground"} />
+                    Korrektur &amp; Analyse
                 </button>
                 <button
                     onClick={() => setActiveTab('vision')}
                     className={cn(
                         "flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold rounded-lg transition-all duration-200",
                         activeTab === 'vision'
-                            ? "bg-white text-slate-900 shadow-sm"
-                            : "text-slate-500 hover:text-slate-700"
+                            ? "bg-background text-foreground shadow-sm"
+                            : "text-muted-foreground hover:text-foreground"
                     )}
                 >
-                    <Eye size={14} className={activeTab === 'vision' ? "text-emerald-500" : "text-slate-400"} />
+                    <Eye size={14} className={activeTab === 'vision' ? "text-emerald-500" : "text-muted-foreground"} />
                     Handschriften-OCR (Vision)
                 </button>
             </div>
@@ -365,8 +365,8 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
             {/* Sliders and Toggles form */}
             <div className="flex-1 flex flex-col space-y-6">
                 <div className="flex justify-between items-center">
-                    <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                        <SlidersHorizontal size={18} className="text-indigo-600" /> Parameter-Feintuning
+                    <label className="text-sm font-bold text-foreground flex items-center gap-2">
+                        <SlidersHorizontal size={18} className="text-primary" /> Parameter-Feintuning
                     </label>
                 </div>
 
@@ -374,15 +374,15 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                     {activeTab === 'correction' ? (
                         <>
                             {/* Toggle for Deep Reasoning */}
-                            <div className="p-4 bg-indigo-50/20 border border-indigo-100/50 rounded-2xl space-y-2">
+                            <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl space-y-2">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <div className={cn("p-1.5 rounded-lg transition-colors", enableThinking ? "bg-indigo-500 text-white" : "bg-slate-100 text-slate-400")}>
+                                        <div className={cn("p-1.5 rounded-lg transition-colors", enableThinking ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
                                             <Brain size={14} />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-black uppercase tracking-tight text-slate-700">Deep Reasoning</p>
-                                            <p className="text-xxs text-slate-500 font-medium">Aktiviert tiefere Überlegungen vor Notenerteilung</p>
+                                            <p className="text-xs font-black uppercase tracking-tight text-foreground">Deep Reasoning</p>
+                                            <p className="text-xxs text-muted-foreground font-medium">Aktiviert tiefere Überlegungen vor Notenerteilung</p>
                                         </div>
                                     </div>
                                     <button
@@ -402,7 +402,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                         }}
                                         className={cn(
                                             "relative inline-flex h-5 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                                            enableThinking ? "bg-indigo-500" : "bg-slate-200"
+                                            enableThinking ? "bg-primary" : "bg-muted"
                                         )}
                                     >
                                         <span
@@ -419,7 +419,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             <div className="space-y-1.5">
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Temperatur (Kreativität)</label>
+                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Temperatur (Kreativität)</label>
                                         <KorekiTooltip 
                                             title="Temperatur" 
                                             content="Steuert die Kreativität des Modells. 0.0 ist maximal deterministisch (präzise). Höhere Werte erlauben kreativeres und abwechslungsreicheres Feedback."
@@ -428,16 +428,16 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                             align="left"
                                         />
                                     </div>
-                                    <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{temperature.toFixed(1)}</span>
+                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{temperature.toFixed(1)}</span>
                                 </div>
                                 <input
                                     type="range" min={(provider === 'ollama' || provider === 'openai-compatible') ? "0.2" : "0.0"} max="2.0" step="0.1" value={temperature}
                                     onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                                    className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
+                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
                                 />
-                                <div className="flex justify-between items-center text-xxs text-slate-500 font-semibold leading-relaxed">
+                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold leading-relaxed">
                                     <span>{getTempDescription(temperature, 'correction')}</span>
-                                    <span className="text-xxs text-slate-400 font-medium">Standard: {enableThinking ? "0.6" : "0.7"}</span>
+                                    <span className="text-xxs text-muted-foreground font-medium">Standard: {enableThinking ? "0.6" : "0.7"}</span>
                                 </div>
                             </div>
 
@@ -445,7 +445,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             <div className="space-y-1.5">
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Top P (Nucleus Sampling)</label>
+                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Top P (Nucleus Sampling)</label>
                                         <KorekiTooltip 
                                             title="Top P" 
                                             content="Eingrenzung des Wortschatzes. 0.95 bedeutet, dass nur die obersten 95% der wahrscheinlichsten Wörter berücksichtigt werden, um Ausreißer zu vermeiden."
@@ -454,16 +454,16 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                             align="left"
                                         />
                                     </div>
-                                    <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{topP.toFixed(2)}</span>
+                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{topP.toFixed(2)}</span>
                                 </div>
                                 <input
                                     type="range" min="0.0" max="1.0" step="0.05" value={topP}
                                     onChange={(e) => setTopP(parseFloat(e.target.value))}
-                                    className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
+                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
                                 />
-                                <div className="flex justify-between items-center text-xxs text-slate-500 font-semibold">
+                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold">
                                     <span>Beschränkt den Token-Auswahlpool</span>
-                                    <span className="text-xxs text-slate-400 font-medium">Standard: {enableThinking ? "0.95" : "0.80"}</span>
+                                    <span className="text-xxs text-muted-foreground font-medium">Standard: {enableThinking ? "0.95" : "0.80"}</span>
                                 </div>
                             </div>
 
@@ -471,7 +471,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             <div className="space-y-1.5">
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Max Tokens (num_predict)</label>
+                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Max Tokens (num_predict)</label>
                                         <KorekiTooltip 
                                             title="Max Tokens" 
                                             content="Die absolute Obergrenze für die Länge der KI-Generierung. Verhindert unendliche Textschleifen. System-Aktionen (z. B. Mapping) werden im Backend automatisch auf 8.192 gedeckelt, um Kontextüberläufe zu verhindern."
@@ -480,16 +480,16 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                             align="left"
                                         />
                                     </div>
-                                    <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{maxTokens.toLocaleString()}</span>
+                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{maxTokens.toLocaleString()}</span>
                                 </div>
                                 <input
                                     type="range" min="2048" max="32768" step="1024" value={maxTokens}
                                     onChange={(e) => setMaxTokens(parseInt(e.target.value))}
-                                    className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
+                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
                                 />
-                                <div className="flex justify-between items-center text-xxs text-slate-500 font-semibold">
+                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold">
                                     <span>Maximale Länge des KI-Antworttexts</span>
-                                    <span className="text-xxs text-slate-400 font-medium">Standard: 32.768</span>
+                                    <span className="text-xxs text-muted-foreground font-medium">Standard: 32.768</span>
                                 </div>
                             </div>
 
@@ -497,7 +497,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             <div className="space-y-1.5">
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Presence Penalty</label>
+                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Presence Penalty</label>
                                         <KorekiTooltip 
                                             title="Presence Penalty" 
                                             content="Bestraft die wiederholte Verwendung gleicher Wörter. Ein Wert von 0.0 ist empfohlen für mathematische Aufgaben und präzise Tabellen-Mappings, um Auslassungen von Aufgabenbezeichnern zu vermeiden."
@@ -506,16 +506,16 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                             align="left"
                                         />
                                     </div>
-                                    <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{presencePenalty.toFixed(1)}</span>
+                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{presencePenalty.toFixed(1)}</span>
                                 </div>
                                 <input
                                     type="range" min="-2.0" max="2.0" step="0.1" value={presencePenalty}
                                     onChange={(e) => setPresencePenalty(parseFloat(e.target.value))}
-                                    className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
+                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
                                 />
-                                <div className="flex justify-between items-center text-xxs text-slate-500 font-semibold">
+                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold">
                                     <span>Bestraft Wortwiederholungen im Fließtext</span>
-                                    <span className="text-xxs text-slate-400 font-medium">Standard: 0.0</span>
+                                    <span className="text-xxs text-muted-foreground font-medium">Standard: 0.0</span>
                                 </div>
                             </div>
                         </>
@@ -525,7 +525,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             <div className="space-y-1.5">
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Vision Temperatur</label>
+                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Vision Temperatur</label>
                                         <KorekiTooltip 
                                             title="Vision Temperatur" 
                                             content="Steuert die Temperatur speziell für die Handschriften-Erkennung (OCR). Werte nahe 0.4 werden erzwungen, um lokale Schleifen bei unklaren Schriftzeichen zu verhindern."
@@ -534,16 +534,16 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                             align="left"
                                         />
                                     </div>
-                                    <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{visionTemperature.toFixed(1)}</span>
+                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{visionTemperature.toFixed(1)}</span>
                                 </div>
                                 <input
                                     type="range" min={(provider === 'ollama' || provider === 'openai-compatible') ? "0.2" : "0.0"} max="2.0" step="0.1" value={visionTemperature}
                                     onChange={(e) => setVisionTemperature(parseFloat(e.target.value))}
-                                    className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
+                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
                                 />
-                                <div className="flex justify-between items-center text-xxs text-slate-500 font-semibold leading-relaxed">
+                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold leading-relaxed">
                                     <span>{getTempDescription(visionTemperature, 'vision')}</span>
-                                    <span className="text-xxs text-slate-400 font-medium">Standard: 0.2</span>
+                                    <span className="text-xxs text-muted-foreground font-medium">Standard: 0.2</span>
                                 </div>
                             </div>
 
@@ -551,7 +551,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             <div className="space-y-1.5">
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Vision Top P</label>
+                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Vision Top P</label>
                                         <KorekiTooltip 
                                             title="Vision Top P" 
                                             content="Begrenzung des Wortschatzes bei der OCR. Hilft dem Vision-Modell, sich auf wahrscheinliche Zeichenkombinationen zu fokussieren."
@@ -560,16 +560,16 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                             align="left"
                                         />
                                     </div>
-                                    <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{visionTopP.toFixed(2)}</span>
+                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{visionTopP.toFixed(2)}</span>
                                 </div>
                                 <input
                                     type="range" min="0.0" max="1.0" step="0.05" value={visionTopP}
                                     onChange={(e) => setVisionTopP(parseFloat(e.target.value))}
-                                    className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
+                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
                                 />
-                                <div className="flex justify-between items-center text-xxs text-slate-500 font-semibold">
+                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold">
                                     <span>Vokabularbegrenzung bei der Texterkennung</span>
-                                    <span className="text-xxs text-slate-400 font-medium">Standard: 0.80</span>
+                                    <span className="text-xxs text-muted-foreground font-medium">Standard: 0.80</span>
                                 </div>
                             </div>
 
@@ -577,7 +577,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             <div className="space-y-1.5">
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Vision Max Tokens (num_predict)</label>
+                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Vision Max Tokens (num_predict)</label>
                                         <KorekiTooltip 
                                             title="Vision Max Tokens" 
                                             content="Die maximale Token-Länge für die OCR-Erkennung pro Seite. Standardmäßig auf 16.000 begrenzt."
@@ -586,16 +586,16 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                             align="left"
                                         />
                                     </div>
-                                    <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{visionMaxTokens.toLocaleString()}</span>
+                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{visionMaxTokens.toLocaleString()}</span>
                                 </div>
                                 <input
                                     type="range" min="1024" max="32768" step="1024" value={visionMaxTokens}
                                     onChange={(e) => setVisionMaxTokens(parseInt(e.target.value))}
-                                    className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
+                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
                                 />
-                                <div className="flex justify-between items-center text-xxs text-slate-500 font-semibold">
+                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold">
                                     <span>Maximale Länge des extrahierten Texts</span>
-                                    <span className="text-xxs text-slate-400 font-medium">Standard: 16.000</span>
+                                    <span className="text-xxs text-muted-foreground font-medium">Standard: 16.000</span>
                                 </div>
                             </div>
 
@@ -603,7 +603,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             <div className="space-y-1.5">
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Vision Presence Penalty</label>
+                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Vision Presence Penalty</label>
                                         <KorekiTooltip 
                                             title="Vision Presence Penalty" 
                                             content="Bestrafung wiederholter Wörter beim OCR-Durchlauf. Empfohlener Standard ist 0.0."
@@ -612,16 +612,16 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                             align="left"
                                         />
                                     </div>
-                                    <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">{visionPresencePenalty.toFixed(1)}</span>
+                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{visionPresencePenalty.toFixed(1)}</span>
                                 </div>
                                 <input
                                     type="range" min="-2.0" max="2.0" step="0.1" value={visionPresencePenalty}
                                     onChange={(e) => setVisionPresencePenalty(parseFloat(e.target.value))}
-                                    className="w-full accent-indigo-600 bg-slate-100 h-1.5 rounded-lg cursor-pointer"
+                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
                                 />
-                                <div className="flex justify-between items-center text-xxs text-slate-500 font-semibold">
+                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold">
                                     <span>Steuert Wortwiederholungs-Bestrafung bei OCR</span>
-                                    <span className="text-xxs text-slate-400 font-medium">Standard: 0.0</span>
+                                    <span className="text-xxs text-muted-foreground font-medium">Standard: 0.0</span>
                                 </div>
                             </div>
                         </>
@@ -629,10 +629,10 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
 
                     {/* Kontext-Größe (num_ctx) - Desktop / Local Inference only */}
                     {provider === 'ollama' && (
-                        <div className="pt-4 border-t border-slate-100 space-y-3">
+                        <div className="pt-4 border-t border-border space-y-3">
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-1">
-                                    <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                                    <label className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
                                         Kontext-Größe (num_ctx)
                                     </label>
                                     <KorekiTooltip 
@@ -643,12 +643,12 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                         align="left"
                                     />
                                 </div>
-                                <span className="text-xs font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md text-slate-800">
+                                <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">
                                     {!ollamaNumCtx || ollamaNumCtx === 0 ? 'Automatisch' : `${ollamaNumCtx.toLocaleString()}`}
                                 </span>
                             </div>
 
-                            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 p-2.5 rounded-xl hover:bg-slate-100/70 transition-all cursor-pointer" onClick={() => {
+                            <div className="flex items-center gap-2 bg-muted border border-border p-2.5 rounded-xl hover:bg-muted/70 transition-all cursor-pointer" onClick={() => {
                                 if (ollamaNumCtx === 0) {
                                     setOllamaNumCtx(16384);
                                 } else {
@@ -662,13 +662,13 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                     onChange={(e) => {
                                         setOllamaNumCtx(e.target.checked ? 0 : 16384);
                                     }}
-                                    className="h-4 w-4 rounded border-slate-350 text-indigo-600 focus:ring-indigo-500/30 transition-all cursor-pointer"
+                                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary/30 transition-all cursor-pointer"
                                 />
                                 <div className="flex-1 cursor-pointer select-none">
-                                    <label htmlFor="ollamaNumCtxAuto" className="text-xs font-bold text-slate-700 block cursor-pointer">
+                                    <label htmlFor="ollamaNumCtxAuto" className="text-xs font-bold text-foreground block cursor-pointer">
                                         Automatische Kontext-Skalierung (Empfohlen)
                                     </label>
-                                    <span className="text-xxs text-slate-400 block leading-tight">
+                                    <span className="text-xxs text-muted-foreground block leading-tight">
                                         Skaliert das Kontextfenster dynamisch je nach Dokumenten- und Bildgröße, um Grafikspeicher (VRAM) zu sparen.
                                     </span>
                                 </div>
@@ -684,7 +684,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                                 setOllamaNumCtx(Number(val));
                                             }
                                         }}
-                                        className="rounded-xl border-2 border-slate-200 focus:border-primary/50 bg-white px-3 py-2 text-xs font-bold text-slate-700 outline-none transition-all"
+                                        className="rounded-xl border-2 border-border focus:border-primary/50 bg-background px-3 py-2 text-xs font-bold text-foreground outline-none transition-all"
                                     >
                                         <option value={8192}>8k (8192)</option>
                                         <option value={16384}>16k (16384)</option>
@@ -708,7 +708,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                 </div>
                             )}
                             {ollamaNumCtx > 0 && (
-                                <p className="text-xxs text-slate-400 font-medium">
+                                <p className="text-xxs text-muted-foreground font-medium">
                                     Größere manuelle Werte ermöglichen die Verarbeitung extrem großer Dokumente, verbrauchen aber dauerhaft viel Grafikspeicher (VRAM).
                                 </p>
                             )}
