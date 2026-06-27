@@ -118,7 +118,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                 {/* Custom User Profiles */}
                 {profiles.filter(p => !p.isSystem).length > 0 && (
                     <div className="space-y-2">
-                        <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">Eigene Skill-Sets</label>
+                        <label className="text-xxs uppercase font-black text-slate-400 tracking-widest px-2">Eigene Skill-Sets</label>
                         {profiles.filter(p => !p.isSystem).map(p => (
                             <div
                                 key={p.id}
@@ -173,7 +173,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                 
                 {/* System Default Presets */}
                 <div className="space-y-2">
-                    <label className="text-[10px] uppercase font-black text-slate-400 tracking-widest px-2">System-Vorlagen</label>
+                    <label className="text-xxs uppercase font-black text-slate-400 tracking-widest px-2">System-Vorlagen</label>
                     {profiles.filter(p => p.isSystem).map(p => (
                         <div
                             key={p.name}
@@ -474,7 +474,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
             {/* Upper Info Section */}
             <div className="flex justify-between items-end gap-6 shrink-0">
                 <div className="flex-1 space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">
                         {isCreatingNew ? 'Name für neues Skill-Set' : 'Gewähltes Skill-Set'}
                     </label>
                     {isCreatingNew ? (
@@ -487,14 +487,14 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                             <h3 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-3">
                                 {selectedProfile}
                             </h3>
-                            {isSystemSelected && <Badge variant="outline" className="text-[7px] sm:text-[10px] bg-slate-100 text-slate-500 px-3 py-1 rounded-full border-transparent font-black">SYSTEM PRESET</Badge>}
+                            {isSystemSelected && <Badge variant="outline" className="text-xxs bg-slate-100 text-slate-500 px-3 py-1 rounded-full border-transparent font-black">SYSTEM PRESET</Badge>}
                         </div>
                     )}
                 </div>
                 {isDirty && !isCreatingNew && !isSystemSelected && (
                     <div className="flex items-center gap-2 text-amber-500 animate-pulse pb-2 shrink-0">
                         <RefreshCcw size={16} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Ungespeichertes</span>
+                        <span className="text-xxs font-black uppercase tracking-widest">Ungespeichertes</span>
                     </div>
                 )}
             </div>
@@ -521,7 +521,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                             };
                             input.click();
                         }}
-                        className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-1.5 px-3 sm:px-4 transition-all"
+                        className="h-8 sm:h-9 rounded-full text-xxs font-black uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-1.5 px-3 sm:px-4 transition-all"
                         title="Einzelnen Skill importieren (.md)"
                     >
                         <RefreshCcw size={14} /> Skill Import
@@ -530,7 +530,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                         variant="outline" 
                         size="sm" 
                         onClick={handleCreateSkillClick}
-                        className="h-8 sm:h-9 rounded-full text-[10px] font-black uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-2 px-3 sm:px-4 transition-all"
+                        className="h-8 sm:h-9 rounded-full text-xxs font-black uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-2 px-3 sm:px-4 transition-all"
                     >
                         <PlusCircle size={14} /> Skill hinzufügen
                     </Button>
@@ -541,7 +541,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                         disabled={saving || (isSystemSelected && !isDirty)} 
                         onClick={onSaveToDB} 
                         title={isSystemSelected ? "System-Vorlagen können nicht direkt bearbeitet werden. Erstelle eine Kopie." : ""}
-                        className={`h-8 sm:h-9 rounded-full text-[10px] font-black uppercase gap-2 px-3 sm:px-4 transition-all ${isDirty && !isSystemSelected ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse font-bold' : 'border-slate-100 text-slate-300'}`}
+                        className={`h-8 sm:h-9 rounded-full text-xxs font-black uppercase gap-2 px-3 sm:px-4 transition-all ${isDirty && !isSystemSelected ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse font-bold' : 'border-slate-100 text-slate-300'}`}
                     >
                         <Check size={14} /> Speichern
                     </Button>
@@ -583,7 +583,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                 <div className="flex items-center gap-2 text-xs font-black text-slate-500 tracking-wider uppercase">
                                     {category.icon}
                                     <span>{category.label}</span>
-                                    <Badge className="bg-slate-100 group-hover/header:bg-slate-200 text-slate-600 font-bold px-1.5 py-0.5 text-[9px] rounded-full transition-all">
+                                    <Badge className="bg-slate-100 group-hover/header:bg-slate-200 text-slate-600 font-bold px-1.5 py-0.5 text-xxs rounded-full transition-all">
                                         {activeCount} / {categorySkills.length}
                                     </Badge>
                                 </div>
@@ -625,9 +625,9 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         <h4 className={`text-sm font-black tracking-tight leading-tight ${isChecked ? 'text-indigo-950' : 'text-slate-800'}`}>
                                                             {skill.name}
                                                         </h4>
-                                                        {skill.isCustom && <Badge className="text-[7px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 font-bold hover:bg-indigo-100 rounded">EIGEN</Badge>}
-                                                        {skill.isGraphBased && <Badge className="text-[7px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 font-bold hover:bg-emerald-100 rounded flex items-center gap-0.5">⚙️ GRAPH</Badge>}
-                                                        {skill.isCalcTrace && <Badge className="text-[7px] bg-blue-100 text-blue-700 px-1.5 py-0.5 font-bold hover:bg-blue-100 rounded flex items-center gap-0.5">📐 CALC</Badge>}
+                                                        {skill.isCustom && <Badge className="text-xxs bg-indigo-100 text-indigo-700 px-1.5 py-0.5 font-bold hover:bg-indigo-100 rounded">EIGEN</Badge>}
+                                                        {skill.isGraphBased && <Badge className="text-xxs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 font-bold hover:bg-emerald-100 rounded flex items-center gap-0.5">⚙️ GRAPH</Badge>}
+                                                        {skill.isCalcTrace && <Badge className="text-xxs bg-blue-100 text-blue-700 px-1.5 py-0.5 font-bold hover:bg-blue-100 rounded flex items-center gap-0.5">📐 CALC</Badge>}
                                                     </div>
                                                     <p className="text-xs text-slate-500 font-medium leading-relaxed">
                                                         {skill.description}
@@ -636,12 +636,12 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                     {(skill.requires || skill.conflictsWith) && (
                                                         <div className="flex flex-wrap gap-1.5 pt-2">
                                                             {skill.requires && (typeof skill.requires === 'string' ? skill.requires.split(',') : skill.requires).map((reqId: string) => (
-                                                                <Badge key={reqId} variant="outline" className="text-[8px] px-2 py-0 bg-amber-50 text-amber-700 border-amber-100 rounded-full font-bold">
+                                                                <Badge key={reqId} variant="outline" className="text-xxs px-2 py-0 bg-amber-50 text-amber-700 border-amber-100 rounded-full font-bold">
                                                                     Benötigt: {SKILL_REGISTRY[reqId.trim()]?.metadata.name || customSkills?.[reqId.trim()]?.name || reqId}
                                                                 </Badge>
                                                             ))}
                                                             {skill.conflictsWith && (typeof skill.conflictsWith === 'string' ? skill.conflictsWith.split(',') : skill.conflictsWith).map((confId: string) => (
-                                                                <Badge key={confId} variant="outline" className="text-[8px] px-2 py-0 bg-red-50 text-red-600 border-red-100 rounded-full font-bold">
+                                                                <Badge key={confId} variant="outline" className="text-xxs px-2 py-0 bg-red-50 text-red-600 border-red-100 rounded-full font-bold">
                                                                     Schließt aus: {SKILL_REGISTRY[confId.trim()]?.metadata.name || customSkills?.[confId.trim()]?.name || confId}
                                                                 </Badge>
                                                             ))}
@@ -715,7 +715,7 @@ ${skill.prompt || ''}`;
                         
                         <div className="space-y-4 flex-1 overflow-y-auto pr-1 pb-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Name des Skills</label>
+                                <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">Name des Skills</label>
                                 <Input 
                                     value={editingSkillData.name}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, name: e.target.value })}
@@ -725,7 +725,7 @@ ${skill.prompt || ''}`;
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kategorie</label>
+                                <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">Kategorie</label>
                                 <select
                                     value={editingSkillData.category}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, category: e.target.value as any })}
@@ -835,7 +835,7 @@ ${skill.prompt || ''}`;
 
                                     {/* Permanently visible task text input for graph skills */}
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-primary uppercase tracking-widest">Aufgabentext für KI-Analyse & PANG-Kompensation</label>
+                                        <label className="text-xxs font-black text-primary uppercase tracking-widest">Aufgabentext für KI-Analyse & PANG-Kompensation</label>
                                         <Textarea
                                             value={editingSkillData.taskText || ''}
                                             onChange={e => {
@@ -897,7 +897,7 @@ ${skill.prompt || ''}`;
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Aufgabentext für KI-Analyse & CalcTrace-Kompensation</label>
+                                        <label className="text-xxs font-black text-blue-600 uppercase tracking-widest">Aufgabentext für KI-Analyse & CalcTrace-Kompensation</label>
                                         <Textarea
                                             value={editingSkillData.taskText || ''}
                                             onChange={e => {
@@ -927,7 +927,7 @@ ${skill.prompt || ''}`;
                             )}
 
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Kurzbeschreibung</label>
+                                <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">Kurzbeschreibung</label>
                                 <Textarea 
                                     value={editingSkillData.description}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, description: e.target.value })}
@@ -938,7 +938,7 @@ ${skill.prompt || ''}`;
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">KI-Anweisung (Prompt Snippet)</label>
+                                <label className="text-xxs font-black text-slate-400 uppercase tracking-widest">KI-Anweisung (Prompt Snippet)</label>
                                 <Textarea 
                                     value={editingSkillData.promptSnippet}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, promptSnippet: e.target.value })}
