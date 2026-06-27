@@ -629,6 +629,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                             {skill.name}
                                                         </h4>
                                                         {skill.isCustom && <Badge className="text-xxs bg-primary/10 text-primary px-1.5 py-0.5 font-bold hover:bg-primary/10 rounded">EIGEN</Badge>}
+                                                        {/* Intentional semantic type colors: emerald=GRAPH-Engine, blue=CalcTrace-Engine — must remain visually distinct from each other and from primary */}
                                                         {skill.isGraphBased && <Badge className="text-xxs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 font-bold hover:bg-emerald-100 rounded flex items-center gap-0.5">⚙️ GRAPH</Badge>}
                                                         {skill.isCalcTrace && <Badge className="text-xxs bg-blue-100 text-blue-700 px-1.5 py-0.5 font-bold hover:bg-blue-100 rounded flex items-center gap-0.5">📐 CALC</Badge>}
                                                     </div>
@@ -638,6 +639,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                     {/* Meta details if any */}
                                                     {(skill.requires || skill.conflictsWith) && (
                                                         <div className="flex flex-wrap gap-1.5 pt-2">
+                                                            {/* Intentional semantic badge colors: amber=dependency-warning, red=conflict/exclusion */}
                                                             {skill.requires && (typeof skill.requires === 'string' ? skill.requires.split(',') : skill.requires).map((reqId: string) => (
                                                                 <Badge key={reqId} variant="outline" className="text-xxs px-2 py-0 bg-amber-50 text-amber-700 border-amber-100 rounded-full font-bold">
                                                                     Benötigt: {SKILL_REGISTRY[reqId.trim()]?.metadata.name || customSkills?.[reqId.trim()]?.name || reqId}
@@ -869,6 +871,7 @@ ${skill.prompt || ''}`;
 
                             {editingSkillData.isCalcTrace && (
                                 <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex flex-col gap-3">
+                                    {/* Intentional semantic color: blue = CalcTrace-Engine, intentionally distinct from GRAPH box (primary) */}
                                     <div className="flex justify-between items-center">
                                         <span className="text-xs font-black text-blue-700 uppercase tracking-widest">MINT Rechenkette (CalcTrace)</span>
                                         <div className="flex gap-2">
