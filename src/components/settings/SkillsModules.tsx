@@ -521,7 +521,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                             };
                             input.click();
                         }}
-                        className="h-8 sm:h-9 rounded-full !text-xxs whitespace-nowrap font-black uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-1.5 px-3 sm:px-4 transition-all"
+                        className="h-8 sm:h-9 rounded-full text-xxs whitespace-nowrap font-black uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-1.5 px-3 sm:px-4 transition-all"
                         title="Einzelnen Skill importieren (.md)"
                     >
                         <RefreshCcw size={14} /> Skill Import
@@ -530,7 +530,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                         variant="outline" 
                         size="sm" 
                         onClick={handleCreateSkillClick}
-                        className="h-8 sm:h-9 rounded-full !text-xxs whitespace-nowrap font-black uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-2 px-3 sm:px-4 transition-all"
+                        className="h-8 sm:h-9 rounded-full text-xxs whitespace-nowrap font-black uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-2 px-3 sm:px-4 transition-all"
                     >
                         <PlusCircle size={14} /> Skill hinzufügen
                     </Button>
@@ -541,7 +541,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                         disabled={saving || (isSystemSelected && !isDirty)} 
                         onClick={onSaveToDB} 
                         title={isSystemSelected ? "System-Vorlagen können nicht direkt bearbeitet werden. Erstelle eine Kopie." : ""}
-                        className={`h-8 sm:h-9 rounded-full !text-xxs whitespace-nowrap font-black uppercase gap-2 px-3 sm:px-4 transition-all ${isDirty && !isSystemSelected ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse font-bold' : 'border-slate-100 text-slate-300'}`}
+                        className={`h-8 sm:h-9 rounded-full text-xxs whitespace-nowrap font-black uppercase gap-2 px-3 sm:px-4 transition-all ${isDirty && !isSystemSelected ? 'border-indigo-600 bg-indigo-50 text-indigo-600 animate-pulse font-bold' : 'border-slate-100 text-slate-300'}`}
                     >
                         <Check size={14} /> Speichern
                     </Button>
