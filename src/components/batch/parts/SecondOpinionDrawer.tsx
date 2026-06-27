@@ -170,7 +170,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
     const isFollowUp = messages.filter(m => m.role === 'user').length >= 1;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-foreground/60 backdrop-blur-md animate-in fade-in duration-300">
 
 
             {/* Backdrop (Accidental close protection) */}
@@ -182,22 +182,22 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                 "animate-in zoom-in-95 duration-300"
             )}>
                 {/* Header Section */}
-                <div className="px-4 sm:px-8 py-4 sm:pt-8 sm:pb-4 flex justify-between items-center border-b border-slate-100 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur shrink-0">
+                <div className="px-4 sm:px-8 py-4 sm:pt-8 sm:pb-4 flex justify-between items-center border-b border-border/50 bg-background/50 backdrop-blur shrink-0">
                     <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg border border-slate-100 overflow-hidden shrink-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-background rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg border border-border overflow-hidden shrink-0">
                             <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0 text-left">
-                            <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate font-outfit flex items-center gap-2">
+                            <h2 className="text-lg sm:text-2xl font-black text-foreground tracking-tight truncate font-outfit flex items-center gap-2">
                                 Mit Koreki besprechen
-                                <span className="hidden sm:inline-block text-xs font-bold bg-indigo-600/10 text-indigo-600 border border-indigo-600/20 rounded-full px-2.5 py-0.5 uppercase tracking-wider">
+                                <span className="hidden sm:inline-block text-xs font-bold bg-primary/10 text-primary border border-primary/20 rounded-full px-2.5 py-0.5 uppercase tracking-wider">
                                     Copilot
                                 </span>
                             </h2>
-                            <p className="text-xxs sm:text-sm text-slate-500 font-medium italic truncate">Dialogische Zweitmeinung & Feedback-Optimierung</p>
+                            <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">Dialogische Zweitmeinung &amp; Feedback-Optimierung</p>
                         </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100 shrink-0" onClick={onClose} disabled={loading}>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted shrink-0" onClick={onClose} disabled={loading}>
                         <X size={24} />
                     </Button>
                 </div>
@@ -206,18 +206,18 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden h-[65vh]">
                     
                     {/* Left Column: Context & live suggestions (5 columns) */}
-                    <div className="lg:col-span-5 border-r border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/30 p-5 flex flex-col gap-4 overflow-y-auto">
+                    <div className="lg:col-span-5 border-r border-border/50 bg-muted/20 p-5 flex flex-col gap-4 overflow-y-auto">
                         
                         {/* Task info card */}
                         <div className="bg-background border border-border/50 rounded-xl p-4 space-y-3 shadow-xs">
                             <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest font-outfit">Kompakter Kontext</span>
                             <div className="space-y-1">
                                 <p className="text-sm font-black text-foreground font-outfit leading-tight">{taskName}</p>
-                                <p className="text-xs text-indigo-600 dark:text-indigo-400 font-bold">Maximal {maxPoints} P. | Aktuell: {currentPoints} P.</p>
+                                <p className="text-xs text-primary font-bold">Maximal {maxPoints} P. | Aktuell: {currentPoints} P.</p>
                             </div>
                             <div className="pt-2 border-t border-border/30">
-                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest font-outfit block mb-1">Schülerantwort (Auszug)</span>
-                                <p className="text-sm text-slate-600 dark:text-slate-400 font-inter italic line-clamp-3 leading-relaxed">
+                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest font-outfit block mb-1">Schülerantwort (Auszug)</span>
+                                <p className="text-sm text-muted-foreground font-inter italic line-clamp-3 leading-relaxed">
                                     &quot;{studentText}&quot;
                                 </p>
                             </div>
@@ -228,24 +228,24 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                             <div className={cn(
                                 "flex-1 rounded-xl border p-5 flex flex-col justify-between gap-4 transition-all duration-300",
                                 activeProposal 
-                                    ? "border-indigo-200 bg-indigo-50/10 dark:border-indigo-950/40 dark:bg-indigo-950/5 shadow-xs" 
+                                    ? "border-primary/20 bg-primary/5 shadow-xs" 
                                     : "border-dashed border-border/60 bg-transparent justify-center items-center text-center p-8"
                             )}>
                                 {activeProposal ? (
                                     <div className="flex flex-col h-full justify-between gap-4 animate-in fade-in duration-500">
                                         <div className="space-y-3.5">
-                                            <div className="flex items-center justify-between pb-2 border-b border-indigo-100 dark:border-indigo-900/30">
-                                                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest font-outfit flex items-center gap-1.5">
+                                            <div className="flex items-center justify-between pb-2 border-b border-primary/10">
+                                                <span className="text-xs font-bold text-primary uppercase tracking-widest font-outfit flex items-center gap-1.5">
                                                     <Award size={14} /> Aktueller Vorschlag
                                                 </span>
-                                                <span className="text-sm font-black bg-indigo-600 text-white rounded-lg px-2.5 py-0.5 font-outfit">
+                                                <span className="text-sm font-black bg-primary text-primary-foreground rounded-lg px-2.5 py-0.5 font-outfit">
                                                     {activeProposal.points} / {maxPoints} P.
                                                 </span>
                                             </div>
                                             
                                             <div className="space-y-1.5">
-                                                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest font-outfit block">Empfohlenes Feedback:</span>
-                                                <div className="text-sm text-slate-700 dark:text-slate-300 font-inter leading-relaxed whitespace-pre-wrap max-h-[160px] overflow-y-auto bg-background/50 p-3.5 rounded-lg border border-border/40">
+                                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest font-outfit block">Empfohlenes Feedback:</span>
+                                                <div className="text-sm text-foreground font-inter leading-relaxed whitespace-pre-wrap max-h-[160px] overflow-y-auto bg-background/50 p-3.5 rounded-lg border border-border/40">
                                                     {activeProposal.feedback}
                                                 </div>
                                             </div>
@@ -256,7 +256,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                                 onApply(activeProposal.points, activeProposal.feedback);
                                                 onClose();
                                             }}
-                                            className="w-full font-black bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-3 shadow-md text-sm flex items-center justify-center gap-1.5 transition-all"
+                                            className="w-full font-black bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl py-3 shadow-md text-sm flex items-center justify-center gap-1.5 transition-all"
                                         >
                                             <Check size={14} />
                                             Vorschlag übernehmen
@@ -264,7 +264,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                     </div>
                                 ) : (
                                     <div className="space-y-3 max-w-[220px]">
-                                        <div className="mx-auto w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400">
+                                        <div className="mx-auto w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
                                             <Scale size={20} />
                                         </div>
                                         <div className="space-y-1">
@@ -293,21 +293,21 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                         msg.role === 'user' ? "ml-auto items-end" : "items-start"
                                     )}
                                 >
-                                    <span className="text-xs text-slate-400 font-bold font-outfit mb-1 px-1">
+                                    <span className="text-xs text-muted-foreground font-bold font-outfit mb-1 px-1">
                                         {msg.role === 'user' ? 'Du' : 'Koreki'}
                                     </span>
                                     <div
                                         className={cn(
-                                            "p-3.5 rounded-2xl text-sm font-inter leading-relaxed leading-normal",
+                                            "p-3.5 rounded-2xl text-sm font-inter leading-relaxed",
                                             msg.role === 'user'
-                                                ? "bg-indigo-600 text-white rounded-tr-none shadow-xs whitespace-pre-wrap"
-                                                : "bg-slate-100/80 border border-slate-200/40 text-foreground dark:bg-slate-900/60 dark:border-slate-800/50 rounded-tl-none"
+                                                ? "bg-primary text-primary-foreground rounded-tr-none shadow-xs whitespace-pre-wrap"
+                                                : "bg-muted/60 border border-border/40 text-foreground rounded-tl-none"
                                         )}
                                     >
                                         {msg.role === 'user' ? (
                                             renderFormattedText(msg.cleanContent)
                                         ) : (
-                                            <MathMarkdown content={msg.cleanContent} className="text-sm text-foreground dark:text-slate-200" />
+                                            <MathMarkdown content={msg.cleanContent} className="text-sm text-foreground" />
                                         )}
                                     </div>
                                 </div>
@@ -316,13 +316,13 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                             {/* Loading / ChatGPT-style pulsing dots */}
                             {loading && (
                                 <div className="flex flex-col items-start max-w-[85%] animate-in fade-in duration-300">
-                                    <span className="text-xs text-slate-400 font-bold font-outfit mb-1 px-1">
+                                    <span className="text-xs text-muted-foreground font-bold font-outfit mb-1 px-1">
                                         Koreki schreibt...
                                     </span>
-                                    <div className="bg-slate-100/80 border border-slate-200/40 text-foreground dark:bg-slate-900/60 dark:border-slate-800/50 rounded-2xl rounded-tl-none py-3 px-4 flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full chatgpt-dot" style={{ animationDelay: '0ms' }} />
-                                        <span className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full chatgpt-dot" style={{ animationDelay: '150ms' }} />
-                                        <span className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full chatgpt-dot" style={{ animationDelay: '300ms' }} />
+                                    <div className="bg-muted/60 border border-border/40 text-foreground rounded-2xl rounded-tl-none py-3 px-4 flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 bg-primary rounded-full chatgpt-dot" style={{ animationDelay: '0ms' }} />
+                                        <span className="w-1.5 h-1.5 bg-primary rounded-full chatgpt-dot" style={{ animationDelay: '150ms' }} />
+                                        <span className="w-1.5 h-1.5 bg-primary rounded-full chatgpt-dot" style={{ animationDelay: '300ms' }} />
                                     </div>
                                 </div>
                             )}
@@ -337,28 +337,28 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                         </div>
 
                         {/* Message Input Form */}
-                        <form onSubmit={handleSendMessage} className="border-t border-border/60 p-4 bg-slate-50/30 dark:bg-slate-900/20 flex flex-col gap-2">
+                        <form onSubmit={handleSendMessage} className="border-t border-border/60 p-4 bg-muted/20 flex flex-col gap-2">
                             <div className="flex gap-2 items-center">
                                 <Input
                                     type="text"
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     placeholder="Mit Koreki besprechen..."
-                                    className="flex-1 bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground/90 font-inter focus:border-indigo-600 focus:outline-hidden focus:ring-1 focus:ring-indigo-600/20 transition-all h-10"
+                                    className="flex-1 bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground/90 font-inter focus:border-primary focus:outline-hidden focus:ring-1 focus:ring-primary/20 transition-all h-10"
                                     disabled={loading}
                                 />
                                 <Button
                                     type="submit"
                                     size="sm"
                                     disabled={loading || !input.trim()}
-                                    className="rounded-xl h-[34px] w-[34px] p-0 bg-indigo-600 hover:bg-indigo-700 text-white shrink-0 shadow-xs flex items-center justify-center transition-all disabled:opacity-50"
+                                    className="rounded-xl h-[34px] w-[34px] p-0 bg-primary hover:bg-primary/90 text-primary-foreground shrink-0 shadow-xs flex items-center justify-center transition-all disabled:opacity-50"
                                 >
                                     <Send size={14} />
                                 </Button>
                             </div>
                             
                             {/* Billing & disclaimer info */}
-                            <div className="flex items-center justify-between text-xs text-slate-400 font-inter px-1">
+                            <div className="flex items-center justify-between text-xs text-muted-foreground font-inter px-1">
                                 <span>
                                     {isSaaSService ? (
                                         isFollowUp ? (

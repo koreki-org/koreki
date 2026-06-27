@@ -177,39 +177,39 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
     const validation = (trace as any).validation;
 
     return createPortal(
-        <div className="fixed inset-0 z-[2300] flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in font-inter text-slate-700">
-            <div className="bg-white border border-slate-100 shadow-2xl rounded-none sm:rounded-[var(--radius)] w-full max-w-7xl lg:max-w-[1360px] h-[100dvh] sm:h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
+        <div className="fixed inset-0 z-[2300] flex items-center justify-center p-0 sm:p-4 bg-foreground/60 backdrop-blur-md animate-fade-in font-inter text-foreground">
+            <div className="bg-background border border-border shadow-2xl rounded-none sm:rounded-[var(--radius)] w-full max-w-7xl lg:max-w-[1360px] h-[100dvh] sm:h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
                 
                 {/* Header */}
-                <div className="px-4 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row gap-4 lg:gap-3 justify-between items-start lg:items-center shrink-0">
+                <div className="px-4 py-4 sm:px-8 sm:py-5 border-b border-border bg-muted/30 flex flex-col lg:flex-row gap-4 lg:gap-3 justify-between items-start lg:items-center shrink-0">
                     <div className="flex items-center justify-between w-full lg:w-auto gap-3">
                         <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md border border-slate-100 overflow-hidden shrink-0">
+                            <div className="w-10 h-10 bg-background rounded-xl flex items-center justify-center shadow-md border border-border overflow-hidden shrink-0">
                                 <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                             </div>
                             <div className="min-w-0">
-                                <h3 className="text-sm sm:text-lg font-black text-slate-900 font-outfit tracking-tight">
+                                <h3 className="text-sm sm:text-lg font-black text-foreground font-outfit tracking-tight">
                                     MINT Rechenketten Designer
                                 </h3>
-                                <p className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">{taskName} (Schritte, Formeln & Folgefehler-Kompensation)</p>
+                                <p className="text-[10px] sm:text-xs text-muted-foreground font-medium truncate">{taskName} (Schritte, Formeln &amp; Folgefehler-Kompensation)</p>
                             </div>
                         </div>
                         <Button 
                             variant="ghost"
                             size="icon"
                             onClick={onClose}
-                            className="lg:hidden text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full shrink-0 h-8 w-8 flex items-center justify-center border-0 bg-transparent"
+                            className="lg:hidden text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-muted rounded-full shrink-0 h-8 w-8 flex items-center justify-center border-0 bg-transparent"
                         >
                             <X size={20} />
                         </Button>
                     </div>
 
                     {/* Mode selector tab */}
-                    <div className="flex w-full lg:w-auto overflow-x-auto max-w-full min-w-0 no-scrollbar scrollbar-none bg-slate-200/50 p-1 rounded-xl gap-1 shrink-0 lg:ml-auto lg:mr-6">
+                    <div className="flex w-full lg:w-auto overflow-x-auto max-w-full min-w-0 no-scrollbar scrollbar-none bg-muted/50 p-1 rounded-xl gap-1 shrink-0 lg:ml-auto lg:mr-6">
                         <button 
                             type="button"
                             onClick={() => setActiveTab('editor')}
-                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'editor' ? "bg-white text-blue-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'editor' ? "bg-background text-blue-600 shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
                         >
                             <Layers size={12} className={cn(activeTab === 'editor' && "text-blue-600")} />
                             Ketten-Editor 📐
@@ -217,7 +217,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                         <button 
                             type="button"
                             onClick={() => { setActiveTab('testing'); handleRunPlayground(); }}
-                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'testing' ? "bg-white text-blue-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'testing' ? "bg-background text-blue-600 shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
                         >
                             <Eye size={12} className={cn(activeTab === 'testing' && "text-blue-600")} />
                             Kette testen 🧪
@@ -228,7 +228,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={onClose}
-                        className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full hidden lg:flex h-8 w-8 items-center justify-center border-0 bg-transparent"
+                        className="text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-muted rounded-full hidden lg:flex h-8 w-8 items-center justify-center border-0 bg-transparent"
                     >
                         <X size={20} />
                     </Button>
@@ -242,16 +242,16 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                 )}
 
                 {/* Subheader/Actions Panel Toolbar */}
-                <div className="px-4 sm:px-8 py-3 bg-slate-50/20 border-b border-slate-100/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 font-inter">
+                <div className="px-4 sm:px-8 py-3 bg-muted/10 border-b border-border/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0 font-inter">
                     <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
                         {/* 1. Assign Existing Skill */}
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                            <span className="text-xs font-black uppercase text-slate-400 tracking-wider text-left block">Bestehender Skill:</span>
+                            <span className="text-xs font-black uppercase text-muted-foreground tracking-wider text-left block">Bestehender Skill:</span>
                             <select
                                 value={taskType || 'default'}
                                 disabled={isLocked}
                                 onChange={(e) => onEngineChange?.(e.target.value)}
-                                className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-border bg-background text-foreground hover:border-border/80 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 <option value="default">-- Kein Kettenskill aktiv (Standard) --</option>
                                 {Object.entries(customSkills || {})
@@ -265,11 +265,11 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                         </div>
 
                         {/* Divider line */}
-                        <div className="hidden md:block h-6 w-px bg-slate-200"></div>
+                        <div className="hidden md:block h-6 w-px bg-border"></div>
 
                         {/* 1b. Bewertung Mode Dropdown */}
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                            <span className="text-xs font-black uppercase text-slate-400 tracking-wider text-left block">Bewertung:</span>
+                            <span className="text-xs font-black uppercase text-muted-foreground tracking-wider text-left block">Bewertung:</span>
                             <select
                                 value={isPointsDisabled ? 'hybrid' : 'strict'}
                                 disabled={isLocked}
@@ -279,7 +279,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                         disablePoints: e.target.value === 'hybrid'
                                     }));
                                 }}
-                                className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed font-inter"
+                                className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-border bg-background text-foreground hover:border-border/80 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed font-inter"
                                 title={isPointsDisabled 
                                     ? "Hybrid-Grading aktiv: CalcTrace prüft nur die mathematische Korrektheit. Die finale Punktevergabe erfolgt didaktisch flexibel durch das LLM." 
                                     : "Strenge Punktevergabe aktiv: CalcTrace bestimmt die Punkte absolut starr und mathematisch exakt."
@@ -291,18 +291,18 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                         </div>
 
                         {/* Divider line */}
-                        <div className="hidden md:block h-6 w-px bg-slate-200"></div>
+                        <div className="hidden md:block h-6 w-px bg-border"></div>
 
                         {/* 2. Name & Save Custom Skill */}
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                            <span className="text-xs font-black uppercase text-slate-400 tracking-wider text-left block">Skill Name:</span>
+                            <span className="text-xs font-black uppercase text-muted-foreground tracking-wider text-left block">Skill Name:</span>
                             <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
                                 <Input 
                                     value={skillName}
                                     disabled={isLocked}
                                     onChange={(e) => setSkillName(e.target.value)}
                                     placeholder="z.B. Widerstands-Kette"
-                                    className="h-8 w-full sm:w-44 rounded-xl border border-slate-200 text-xs font-bold px-2.5 focus:border-indigo-500 bg-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="h-8 w-full sm:w-44 rounded-xl border border-border text-xs font-bold px-2.5 focus:border-primary bg-background disabled:opacity-60 disabled:cursor-not-allowed"
                                 />
                                 <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                                     {(onSaveCustomSkill || onSave) && !isLocked && (
@@ -347,7 +347,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                 </div>
 
                 {/* Body Content */}
-                <div className="flex-grow flex flex-col overflow-hidden min-h-0 bg-slate-50/30">
+                <div className="flex-grow flex flex-col overflow-hidden min-h-0 bg-muted/20">
                     
                     {/* Tab 1: Editor */}
                     {activeTab === 'editor' && (
@@ -355,8 +355,8 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                             {/* Left Pane: Task Text & AI prompt */}
                             <div className="w-full lg:w-1/3 flex flex-col gap-4 shrink-0">
                                 <div className="flex-1 flex flex-col min-h-[150px]">
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Aufgabentext</label>
-                                    <div className="flex-1 p-4 bg-white border border-slate-100 shadow-sm rounded-2xl text-xs font-medium text-slate-600 leading-relaxed overflow-y-auto whitespace-pre-wrap select-text">
+                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Aufgabentext</label>
+                                    <div className="flex-1 p-4 bg-background border border-border shadow-sm rounded-2xl text-xs font-medium text-muted-foreground leading-relaxed overflow-y-auto whitespace-pre-wrap select-text">
                                         {taskContent || "Kein Aufgabentext vorhanden."}
                                     </div>
                                 </div>
@@ -396,7 +396,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                             {/* Right Pane: Table Editor */}
                             <div className="flex-1 flex flex-col gap-4 min-h-[300px] overflow-hidden">
                                 <div className="flex justify-between items-center shrink-0">
-                                    <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Rechenschritte</span>
+                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Rechenschritte</span>
                                     {!isLocked && (
                                         <Button
                                             variant="outline"
@@ -429,11 +429,11 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                     </div>
                                 )}
 
-                                <div className="flex-grow border border-slate-100 rounded-2xl overflow-hidden bg-white shadow-sm flex flex-col min-h-0">
+                                <div className="flex-grow border border-border rounded-2xl overflow-hidden bg-background shadow-sm flex flex-col min-h-0">
                                     <div className="flex-grow overflow-auto custom-scrollbar">
                                         <table className="w-full text-left border-collapse min-w-[1000px]">
                                             <thead>
-                                                <tr className="border-b border-slate-100 bg-slate-50 text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                                                <tr className="border-b border-border bg-muted/30 text-[10px] font-black uppercase text-muted-foreground tracking-wider">
                                                     <th className="py-2.5 px-3 w-32 min-w-[128px]">ID</th>
                                                     <th className="py-2.5 px-3 min-w-[160px]">Bezeichnung</th>
                                                     <th className="py-2.5 px-3 w-28 min-w-[112px]">Typ</th>
@@ -445,22 +445,22 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                     {!isLocked && <th className="py-2.5 px-3 w-12 text-center"></th>}
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-slate-100 font-inter text-xs">
+                                            <tbody className="divide-y divide-border font-inter text-xs">
                                                 {trace.steps.length === 0 ? (
                                                     <tr>
-                                                        <td colSpan={isLocked ? 8 : 9} className="py-8 text-center text-slate-400 font-medium">
+                                                        <td colSpan={isLocked ? 8 : 9} className="py-8 text-center text-muted-foreground font-medium">
                                                             Keine Rechenschritte vorhanden. Nutze die KI-Generierung oder füge Schritte hinzu.
                                                         </td>
                                                     </tr>
                                                 ) : (
                                                     trace.steps.map((step) => (
-                                                        <tr key={step.id} className="hover:bg-slate-100/30 transition-all">
+                                                        <tr key={step.id} className="hover:bg-muted/30 transition-all">
                                                             <td className="p-2">
                                                                 <input
                                                                     value={step.id}
                                                                     onChange={(e) => handleUpdateStep(step.id, { id: e.target.value.replace(/[^a-zA-Z0-9_]/g, '') })}
                                                                     disabled={isLocked}
-                                                                    className="w-full px-2 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs font-mono font-bold text-slate-700 outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                                    className="w-full px-2 py-1 bg-muted/30 border border-border rounded-lg text-xs font-mono font-bold text-foreground outline-none focus:ring-1 focus:ring-primary focus:bg-background"
                                                                 />
                                                             </td>
                                                             <td className="p-2">
@@ -468,7 +468,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                                     value={step.label}
                                                                     onChange={(e) => handleUpdateStep(step.id, { label: e.target.value })}
                                                                     disabled={isLocked}
-                                                                    className="w-full px-2 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                                    className="w-full px-2 py-1 bg-muted/30 border border-border rounded-lg text-xs font-bold text-foreground outline-none focus:ring-1 focus:ring-primary focus:bg-background"
                                                                 />
                                                             </td>
                                                             <td className="p-2">
@@ -476,7 +476,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                                     value={step.type}
                                                                     onChange={(e) => handleUpdateStep(step.id, { type: e.target.value as 'given' | 'calc' })}
                                                                     disabled={isLocked}
-                                                                    className="w-full px-1.5 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer focus:bg-white font-inter"
+                                                                    className="w-full px-1.5 py-1 bg-muted/30 border border-border rounded-lg text-xs font-semibold text-foreground outline-none focus:ring-1 focus:ring-primary cursor-pointer focus:bg-background font-inter"
                                                                 >
                                                                     <option value="given">Gegeben</option>
                                                                     <option value="calc">Formel</option>
@@ -489,7 +489,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                                     value={step.value}
                                                                     onChange={(e) => handleUpdateStep(step.id, { value: parseFloat(e.target.value) || 0 })}
                                                                     disabled={isLocked}
-                                                                    className="w-full px-2 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                                    className="w-full px-2 py-1 bg-muted/30 border border-border rounded-lg text-xs font-semibold text-foreground outline-none focus:ring-1 focus:ring-primary focus:bg-background"
                                                                 />
                                                             </td>
                                                             <td className="p-2">
@@ -499,8 +499,8 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                                     onChange={(e) => handleUpdateStep(step.id, { formula: e.target.value })}
                                                                     disabled={isLocked || step.type === 'given'}
                                                                     className={cn(
-                                                                        "w-full px-2 py-1 border rounded-lg text-xs font-mono font-medium outline-none focus:ring-1 focus:ring-blue-500",
-                                                                        step.type === 'given' ? "bg-slate-100 border-slate-100 text-slate-400 select-none" : "bg-slate-50/50 border-slate-200 text-slate-700 focus:bg-white"
+                                                                        "w-full px-2 py-1 border rounded-lg text-xs font-mono font-medium outline-none focus:ring-1 focus:ring-primary",
+                                                                        step.type === 'given' ? "bg-muted border-border text-muted-foreground select-none" : "bg-muted/30 border-border text-foreground focus:bg-background"
                                                                     )}
                                                                 />
                                                             </td>
@@ -512,7 +512,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                                     placeholder="0.01"
                                                                     onChange={(e) => handleUpdateStep(step.id, { tolerance: e.target.value ? parseFloat(e.target.value) : undefined })}
                                                                     disabled={isLocked}
-                                                                    className="w-full px-2 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                                    className="w-full px-2 py-1 bg-muted/30 border border-border rounded-lg text-xs font-semibold text-foreground outline-none focus:ring-1 focus:ring-primary focus:bg-background"
                                                                 />
                                                             </td>
                                                             <td className="p-2">
@@ -521,7 +521,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                                     placeholder="z.B. kOhm"
                                                                     onChange={(e) => handleUpdateStep(step.id, { unit: e.target.value || undefined })}
                                                                     disabled={isLocked}
-                                                                    className="w-full px-2 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                                    className="w-full px-2 py-1 bg-muted/30 border border-border rounded-lg text-xs font-semibold text-foreground outline-none focus:ring-1 focus:ring-primary focus:bg-background"
                                                                 />
                                                             </td>
                                                             <td className="p-2">
@@ -531,7 +531,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                                     placeholder="1"
                                                                     onChange={(e) => handleUpdateStep(step.id, { points: e.target.value ? parseInt(e.target.value, 10) : undefined })}
                                                                     disabled={isLocked}
-                                                                    className="w-full px-2 py-1 bg-slate-50/50 border border-slate-200 rounded-lg text-xs font-bold text-slate-700 outline-none focus:ring-1 focus:ring-blue-500 focus:bg-white"
+                                                                    className="w-full px-2 py-1 bg-muted/30 border border-border rounded-lg text-xs font-bold text-foreground outline-none focus:ring-1 focus:ring-primary focus:bg-background"
                                                                 />
                                                             </td>
                                                             {!isLocked && (
@@ -559,11 +559,11 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                     {activeTab === 'testing' && (
                         <div className="flex-grow flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden p-4 lg:p-6 gap-6 min-h-0">
                             {/* Left Panel: Inputs (45%) */}
-                            <div className="w-full lg:w-[45%] flex flex-col shrink-0 bg-white border border-slate-100 shadow-glass rounded-hero h-auto lg:h-full overflow-hidden">
-                                <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
+                            <div className="w-full lg:w-[45%] flex flex-col shrink-0 bg-background border border-border shadow-glass rounded-hero h-auto lg:h-full overflow-hidden">
+                                <div className="px-6 py-4 border-b border-border bg-muted/30 flex justify-between items-center shrink-0">
                                     <div>
-                                        <h4 className="text-xs font-black uppercase text-slate-800 font-outfit">Schüler-Eingaben</h4>
-                                        <p className="text-xs text-slate-400 font-medium font-inter">Simulationswerte zum Testen</p>
+                                        <h4 className="text-xs font-black uppercase text-foreground font-outfit">Schüler-Eingaben</h4>
+                                        <p className="text-xs text-muted-foreground font-medium font-inter">Simulationswerte zum Testen</p>
                                     </div>
                                     <div className="flex gap-2">
                                         <Button 
@@ -586,14 +586,14 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
                                 <div className="flex-grow lg:flex-1 lg:overflow-y-auto p-6 space-y-4 custom-scrollbar">
                                     {trace.steps.length === 0 ? (
-                                        <p className="text-xs text-slate-400 py-4 font-medium text-center">Keine Schritte deklariert. Erstelle zuerst Schritte im Editor.</p>
+                                        <p className="text-xs text-muted-foreground py-4 font-medium text-center">Keine Schritte deklariert. Erstelle zuerst Schritte im Editor.</p>
                                     ) : (
                                         <div className="space-y-3.5">
                                             {trace.steps.map(s => (
                                                 <div key={s.id} className="flex flex-col gap-1">
                                                     <div className="flex justify-between items-center">
-                                                        <label className="text-xs font-bold text-slate-500 font-mono truncate">{s.id}</label>
-                                                        <span className="text-[10px] text-slate-400 font-bold">{s.label}</span>
+                                                        <label className="text-xs font-bold text-muted-foreground font-mono truncate">{s.id}</label>
+                                                        <span className="text-[10px] text-muted-foreground/60 font-bold">{s.label}</span>
                                                     </div>
                                                     <div className="relative">
                                                         <Input
@@ -604,7 +604,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                                 setPlaygroundInputs(updated);
                                                             }}
                                                             placeholder={`Erwartet: ${s.value} ${s.unit || ''}`}
-                                                            className="w-full text-xs font-semibold font-mono border border-slate-200 rounded-xl px-3 py-2 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-0 focus:outline-hidden transition-all text-slate-800"
+                                                            className="w-full text-xs font-semibold font-mono border border-border rounded-xl px-3 py-2 bg-muted/20 focus:bg-background focus:border-blue-500 focus:ring-0 focus:outline-hidden transition-all text-foreground"
                                                         />
                                                     </div>
                                                 </div>
@@ -615,13 +615,13 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                             </div>
 
                             {/* Right Panel: Simulation Results (55%) */}
-                            <div className="w-full lg:w-[55%] flex flex-col min-h-0 bg-white border border-slate-100 shadow-glass rounded-hero h-auto lg:h-full overflow-hidden shrink-0">
+                            <div className="w-full lg:w-[55%] flex flex-col min-h-0 bg-background border border-border shadow-glass rounded-hero h-auto lg:h-full overflow-hidden shrink-0">
                                 {playgroundResult ? (
                                     <div className="flex flex-col h-full overflow-hidden font-inter">
-                                        <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
+                                        <div className="px-6 py-4 border-b border-border bg-muted/30 flex justify-between items-center shrink-0">
                                             <div className="text-left">
-                                                <h4 className="text-xs font-black uppercase text-slate-800 font-outfit">Simulations-Ergebnis</h4>
-                                                <p className="text-xs text-slate-400 font-medium font-inter">Ketten-Diagnose & Folgefehler</p>
+                                                <h4 className="text-xs font-black uppercase text-foreground font-outfit">Simulations-Ergebnis</h4>
+                                                <p className="text-xs text-muted-foreground font-medium font-inter">Ketten-Diagnose & Folgefehler</p>
                                             </div>
                                             {isPointsDisabled ? (
                                                 <Badge className="bg-blue-50 border-blue-100 text-blue-700 font-black px-3 py-1 text-xs rounded-full">
@@ -686,13 +686,13 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="flex-grow lg:flex-1 flex flex-col items-center justify-center p-8 text-center text-slate-400 gap-4 select-none min-h-[250px] lg:min-h-0">
+                                    <div className="flex-grow lg:flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground gap-4 select-none min-h-[250px] lg:min-h-0">
                                         <div className="w-16 h-16 bg-blue-50 border border-blue-100 rounded-3xl flex items-center justify-center text-blue-500 mb-2">
                                             <Eye size={28} className="animate-pulse" />
                                         </div>
                                         <div className="max-w-xs space-y-1.5">
-                                            <h4 className="font-extrabold text-slate-800 text-sm font-outfit leading-none mb-1">Bereit zum Testen 🧪</h4>
-                                            <p className="text-xs text-slate-400 leading-relaxed font-medium font-inter">
+                                            <h4 className="font-extrabold text-foreground text-sm font-outfit leading-none mb-1">Bereit zum Testen 🧪</h4>
+                                            <p className="text-xs text-muted-foreground leading-relaxed font-medium font-inter">
                                                 Fülle die Musterlösung aus, verändere Werte absichtlich, um Fehler zu simulieren, und klicke auf <strong>Berechnen</strong>, um die Folgefehler-Diagnose live zu prüfen.
                                             </p>
                                         </div>
@@ -705,15 +705,15 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="px-4 sm:px-8 py-4 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-4 justify-between items-center shrink-0">
-                    <p className="text-xs text-slate-400 font-inter text-center sm:text-left leading-normal">
+                <div className="px-4 sm:px-8 py-4 sm:py-5 border-t border-border bg-muted/30 flex flex-col sm:flex-row gap-4 justify-between items-center shrink-0">
+                    <p className="text-xs text-muted-foreground font-inter text-center sm:text-left leading-normal">
                         * Die Schritt ID wird beim Parsen von Schülerlösungen automatisch gematcht (z. B. &quot;step_1&quot;).
                     </p>
                     <div className="flex gap-3 w-full sm:w-auto justify-stretch sm:justify-end">
                         <Button 
                             variant="ghost" 
                             onClick={onClose}
-                            className="h-10 flex-1 sm:flex-initial rounded-xl px-5 font-bold text-slate-500 hover:bg-slate-100 text-xs"
+                            className="h-10 flex-1 sm:flex-initial rounded-xl px-5 font-bold text-muted-foreground hover:bg-muted text-xs"
                         >
                             {isLocked ? "Schließen" : "Abbrechen"}
                         </Button>
