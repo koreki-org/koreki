@@ -188,9 +188,8 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                 <Layers size={20} className="text-blue-600 animate-pulse" />
                             </div>
                             <div className="min-w-0">
-                                <h3 className="text-sm sm:text-lg font-black text-slate-900 font-outfit tracking-tight flex items-center gap-2 flex-wrap">
+                                <h3 className="text-sm sm:text-lg font-black text-slate-900 font-outfit tracking-tight">
                                     MINT Rechenketten Designer
-                                    <Badge className="bg-blue-600 text-white font-bold py-0.5 px-2.5 text-xs rounded-full uppercase">CalcTrace</Badge>
                                 </h3>
                                 <p className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">{taskName} (Schritte, Formeln & Folgefehler-Kompensation)</p>
                             </div>

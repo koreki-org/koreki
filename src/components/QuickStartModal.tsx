@@ -37,7 +37,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                         />
                         <div className="space-y-0.5">
                             <p className="text-lg font-black text-foreground tracking-tight">Willkommen bei Koreki!</p>
-                            <p className="text-[11px] text-muted-foreground font-medium">In nur **sechs** einfachen Schritten zum Ziel.</p>
+                            <p className="text-xs text-muted-foreground font-medium">In nur <strong className="font-extrabold text-foreground">sechs</strong> einfachen Schritten zum Ziel.</p>
                         </div>
                     </div>
 
@@ -47,8 +47,8 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                                 <FileText size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-[12px]">1. Vorbereitung</h3>
-                                <p className="text-[10px] text-muted-foreground leading-snug">
+                                <h3 className="font-bold text-slate-900 text-xs">1. Vorbereitung</h3>
+                                <p className="text-xxs text-muted-foreground leading-snug">
                                     Musterlösung laden (KI erkennt Aufgaben/Punkte automatisch). Für Rechenaufgaben können optional Rechengraphen zur präzisen Erkennung von Folgefehler-Pfaden erstellt werden.
                                 </p>
                             </div>
@@ -59,9 +59,9 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                                 <Wrench size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-[12px]">2. Didaktik & KI-Kalibrierung</h3>
-                                <p className="text-[10px] text-muted-foreground leading-snug">
-                                    Konfiguriere im Header deine **Expertise** (Fach-Prompts), aktiviere modulare **Skills** (z. B. mathematische Äquivalenz), trainiere den **Erfahrungsschatz** (Präzedenzfälle) oder wähle die passende **Intelligenz** (Denktiefe der KI).
+                                <h3 className="font-bold text-slate-900 text-xs">2. Didaktik & KI-Kalibrierung</h3>
+                                <p className="text-xxs text-muted-foreground leading-snug">
+                                    Konfiguriere im Header deine <strong className="font-extrabold text-foreground">Expertise</strong> (Fach-Prompts), aktiviere modulare <strong className="font-extrabold text-foreground">Skills</strong> (z. B. mathematische Äquivalenz), trainiere den <strong className="font-extrabold text-foreground">Erfahrungsschatz</strong> (Präzedenzfälle) oder wähle die passende <strong className="font-extrabold text-foreground">Intelligenz</strong> (Denktiefe der KI).
                                 </p>
                             </div>
                         </div>
@@ -71,8 +71,8 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                                 <FolderOpen size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-[12px]">3. Import & Moodle</h3>
-                                <p className="text-[10px] text-muted-foreground leading-snug">
+                                <h3 className="font-bold text-slate-900 text-xs">3. Import & Moodle</h3>
+                                <p className="text-xxs text-muted-foreground leading-snug">
                                     Schülerarbeiten als PDF oder Scans hochladen. Moodle XLSX-Exporte werden voll unterstützt.
                                 </p>
                             </div>
@@ -83,8 +83,8 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                                 <ShieldCheck size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-[12px]">4. Anonymisierung</h3>
-                                <p className="text-[10px] text-muted-foreground leading-snug">
+                                <h3 className="font-bold text-slate-900 text-xs">4. Anonymisierung</h3>
+                                <p className="text-xxs text-muted-foreground leading-snug">
                                     Namen schützen. Handschriften, Namen und personenbezogene Daten bei Bedarf direkt im Scan schwärzen.
                                 </p>
                             </div>
@@ -95,8 +95,8 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                                 <Languages size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-[12px]">5. Texterkennung (OCR)</h3>
-                                <p className="text-[10px] text-muted-foreground leading-snug">
+                                <h3 className="font-bold text-slate-900 text-xs">5. Texterkennung (OCR)</h3>
+                                <p className="text-xxs text-muted-foreground leading-snug">
                                     Handschriften digitalisieren. Die KI liest gedruckte und geschriebene Schülertexte zuverlässig aus.
                                 </p>
                             </div>
@@ -107,8 +107,8 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                                 <Sparkles size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-[12px]">6. Auswertung & Export</h3>
-                                <p className="text-[10px] text-muted-foreground leading-snug">
+                                <h3 className="font-bold text-slate-900 text-xs">6. Auswertung & Export</h3>
+                                <p className="text-xxs text-muted-foreground leading-snug">
                                     Korrekturen und automatische Korrekturzeichen prüfen, Schüler-Feedback ansehen und Statistiken exportieren.
                                 </p>
                             </div>

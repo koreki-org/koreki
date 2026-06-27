@@ -420,9 +420,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                 <Layers size={20} className="text-indigo-600 animate-pulse" />
                             </div>
                             <div className="min-w-0">
-                                <h3 className="text-sm sm:text-lg font-black text-slate-900 font-outfit tracking-tight flex items-center gap-2 flex-wrap">
+                                <h3 className="text-sm sm:text-lg font-black text-slate-900 font-outfit tracking-tight">
                                     Grading Graph Designer
-                                    <Badge className="bg-indigo-600 text-white font-bold py-0.5 px-2.5 text-xs rounded-full uppercase">PANG engine</Badge>
                                 </h3>
                                 <p className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">{taskName} (Variable Beziehungen, Toleranzen & Folgefehler-Pfade)</p>
                             </div>
