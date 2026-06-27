@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wrench, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Download, Sparkles, BookOpen, Calculator, Settings, GraduationCap, Loader2, Layers, ChevronDown } from 'lucide-react';
+import { Wrench, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Download, Sparkles, BookOpen, Calculator, Settings, GraduationCap, Loader2, Layers, ChevronDown, Save } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
@@ -535,9 +535,8 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                     >
                         <PlusCircle size={14} /> Skill hinzufügen
                     </Button>
-
                     <Button 
-                        disabled={saving || (isSystemSelected && !isDirty)} 
+                        disabled={saving || isSystemSelected || !isDirty} 
                         onClick={onSaveToDB} 
                         title={isSystemSelected ? "System-Vorlagen können nicht direkt bearbeitet werden. Erstelle eine Kopie." : ""}
                         className={cn(
@@ -547,7 +546,12 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                 : "bg-muted text-muted-foreground cursor-not-allowed shadow-none"
                         )}
                     >
-                        <Check size={14} /> Speichern
+                        {saving ? (
+                            <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
+                        ) : (
+                            <Save size={14} />
+                        )}
+                        Speichern
                     </Button>
                 </div>
             </div>
