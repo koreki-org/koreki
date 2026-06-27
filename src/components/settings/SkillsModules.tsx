@@ -223,8 +223,8 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
 const CATEGORIES = [
     { id: 'math-science', label: 'MINT-Fächer', icon: <Calculator size={16} className="text-primary" /> },
     { id: 'graph-skills', label: 'Graph-basierte Skills (PANG)', icon: <Layers size={16} className="text-emerald-500" /> },
-    { id: 'calc-skills', label: 'Rechenketten-Skills (CalcTrace)', icon: <Layers size={16} className="text-blue-500" /> },
-    { id: 'languages', label: 'Sprachen & Textästhetik', icon: <BookOpen size={16} className="text-blue-500" /> },
+    { id: 'calc-skills', label: 'Rechenketten-Skills (CalcTrace)', icon: <Layers size={16} className="text-primary" /> },
+    { id: 'languages', label: 'Sprachen & Textästhetik', icon: <BookOpen size={16} className="text-primary" /> },
     { id: 'standards', label: 'Korrekturzeichen & Bundesländer', icon: <Settings size={16} className="text-primary" /> },
     { id: 'feedback', label: 'Pädagogisches Feedback', icon: <GraduationCap size={16} className="text-primary" /> }
 ] as const;
@@ -629,9 +629,9 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                             {skill.name}
                                                         </h4>
                                                         {skill.isCustom && <Badge className="text-xxs bg-primary/10 text-primary px-1.5 py-0.5 font-bold hover:bg-primary/10 rounded">EIGEN</Badge>}
-                                                        {/* Intentional semantic type colors: emerald=GRAPH-Engine, blue=CalcTrace-Engine — must remain visually distinct from each other and from primary */}
+                                                        {/* Intentional semantic type colors: emerald=GRAPH-Engine, primary=CalcTrace-Engine — must remain visually distinct from each other and from primary */}
                                                         {skill.isGraphBased && <Badge className="text-xxs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 font-bold hover:bg-emerald-100 rounded flex items-center gap-0.5">⚙️ GRAPH</Badge>}
-                                                        {skill.isCalcTrace && <Badge className="text-xxs bg-blue-100 text-blue-700 px-1.5 py-0.5 font-bold hover:bg-blue-100 rounded flex items-center gap-0.5">📐 CALC</Badge>}
+                                                        {skill.isCalcTrace && <Badge className="text-xxs bg-primary/10 text-primary px-1.5 py-0.5 font-bold hover:bg-primary/10 rounded flex items-center gap-0.5">⚡ CALC</Badge>}
                                                     </div>
                                                     <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                                                         {skill.description}
@@ -870,10 +870,9 @@ ${skill.prompt || ''}`;
                             )}
 
                             {editingSkillData.isCalcTrace && (
-                                <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex flex-col gap-3">
-                                    {/* Intentional semantic color: blue = CalcTrace-Engine, intentionally distinct from GRAPH box (primary) */}
+                                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/20 flex flex-col gap-3">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-xs font-black text-blue-700 uppercase tracking-widest">MINT Rechenkette (CalcTrace)</span>
+                                        <span className="text-xs font-black text-primary uppercase tracking-widest">MINT Rechenkette (CalcTrace)</span>
                                         <div className="flex gap-2">
                                             {onGenerateCalcTrace && (
                                                 <Button
@@ -881,7 +880,7 @@ ${skill.prompt || ''}`;
                                                     size="sm"
                                                     disabled={isGeneratingTrace || !editingSkillData.taskText?.trim()}
                                                     onClick={handleAICalcTraceGenerate}
-                                                    className="h-8 text-xs font-bold border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100/50 rounded-lg px-3 gap-1.5 transition-all duration-300"
+                                                    className="h-8 text-xs font-bold border-border text-primary bg-primary/5 hover:bg-primary/10 rounded-lg px-3 gap-1.5 transition-all duration-300"
                                                 >
                                                     {isGeneratingTrace ? (
                                                         <Loader2 size={13} className="animate-spin" />
@@ -895,7 +894,7 @@ ${skill.prompt || ''}`;
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => setIsCalcTraceModalOpen(true)}
-                                                className="h-8 text-xs font-bold border-blue-200 text-blue-700 bg-background hover:bg-blue-50/50 rounded-lg px-3 transition-all duration-300"
+                                                className="h-8 text-xs font-bold border-border text-primary bg-background hover:bg-primary/5 rounded-lg px-3 transition-all duration-300"
                                             >
                                                 Kette bearbeiten 📐
                                             </Button>
@@ -903,7 +902,7 @@ ${skill.prompt || ''}`;
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xxs font-bold text-blue-600 uppercase tracking-widest">Aufgabentext für KI-Analyse & CalcTrace-Kompensation</label>
+                                        <label className="text-xxs font-bold text-primary uppercase tracking-widest">Aufgabentext für KI-Analyse & CalcTrace-Kompensation</label>
                                         <Textarea
                                             value={editingSkillData.taskText || ''}
                                             onChange={e => {
@@ -913,7 +912,7 @@ ${skill.prompt || ''}`;
                                             }}
                                             placeholder="Füge hier den Aufgabentext ein, aus dem die KI Rechenschritte extrahieren soll..."
                                             rows={4}
-                                            className="w-full p-3 rounded-xl border border-blue-100 text-xs font-semibold text-foreground focus:ring-2 focus:ring-blue-100 focus:border-transparent outline-none bg-background resize-none"
+                                            className="w-full p-3 rounded-xl border border-border text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-background resize-none"
                                         />
                                     </div>
 

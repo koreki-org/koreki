@@ -374,12 +374,12 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                 placeholder="Optionale Hinweise für die KI (z.B. 'Toleranz für Schritt x auf 5% setzen')...."
                                                 rows={3}
                                                 disabled={isGenerating}
-                                                className="w-full p-2.5 rounded-xl border border-blue-100/50 text-xs font-semibold text-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-transparent outline-none bg-white placeholder-slate-400 resize-none"
+                                                className="w-full p-2.5 rounded-xl border border-border/50 text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-background placeholder:text-muted-foreground resize-none"
                                             />
                                             <Button
                                                 onClick={handleRegenerate}
                                                 disabled={isGenerating}
-                                                className="w-full h-9 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-blue-100 transition-all"
+                                                className="w-full h-9 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-primary/20 transition-all"
                                             >
                                                 {isGenerating ? (
                                                     <RefreshCw size={13} className="animate-spin" />
@@ -402,7 +402,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                             variant="outline"
                                             size="sm"
                                             onClick={handleAddStep}
-                                            className="h-8 text-xs font-bold border-blue-200 text-blue-700 bg-blue-50/50 hover:bg-blue-100/50 rounded-xl px-3 gap-1 transition-all"
+                                            className="h-8 text-xs font-bold border-border text-primary bg-primary/5 hover:bg-primary/10 rounded-xl px-3 gap-1 transition-all"
                                         >
                                             <Plus size={14} /> Schritt hinzufügen
                                         </Button>
@@ -570,14 +570,14 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                             variant="outline" 
                                             size="sm" 
                                             onClick={handleFillPerfectPlayground}
-                                            className="h-8 text-xs font-bold border-blue-200 text-blue-600 bg-blue-50/50 hover:bg-blue-100 rounded-lg px-2.5"
+                                            className="h-8 text-xs font-bold border-border text-primary bg-primary/5 hover:bg-primary/10 rounded-lg px-2.5"
                                         >
                                             Musterlösung
                                         </Button>
                                         <Button 
                                             size="sm" 
                                             onClick={() => handleRunPlayground(trace)}
-                                            className="h-8 text-xs font-black bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-3.5 shadow-md shadow-blue-100"
+                                            className="h-8 text-xs font-black bg-primary hover:bg-primary/90 text-primary-foreground rounded-lg px-3.5 shadow-md shadow-primary/20"
                                         >
                                             Berechnen
                                         </Button>
@@ -604,7 +604,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                                 setPlaygroundInputs(updated);
                                                             }}
                                                             placeholder={`Erwartet: ${s.value} ${s.unit || ''}`}
-                                                            className="w-full text-xs font-semibold font-mono border border-border rounded-xl px-3 py-2 bg-muted/20 focus:bg-background focus:border-blue-500 focus:ring-0 focus:outline-hidden transition-all text-foreground"
+                                                            className="w-full text-xs font-semibold font-mono border border-border rounded-xl px-3 py-2 bg-muted/20 focus:bg-background focus:border-primary focus:ring-0 focus:outline-hidden transition-all text-foreground"
                                                         />
                                                     </div>
                                                 </div>
@@ -624,11 +624,11 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                 <p className="text-xs text-muted-foreground font-medium font-inter">Ketten-Diagnose & Folgefehler</p>
                                             </div>
                                             {isPointsDisabled ? (
-                                                <Badge className="bg-blue-50 border-blue-100 text-blue-700 font-black px-3 py-1 text-xs rounded-full">
+                                                <Badge className="bg-primary/10 border-primary/20 text-primary font-black px-3 py-1 text-xs rounded-full">
                                                     Schritte: {playgroundResult.results.filter((r: any) => r.status === 'correct' || r.status === 'consecutive').length} / {playgroundResult.results.length} korrekt
                                                 </Badge>
                                             ) : (
-                                                <Badge className="bg-blue-50 border-blue-100 text-blue-700 font-black px-3 py-1 text-xs rounded-full">
+                                                <Badge className="bg-primary/10 border-primary/20 text-primary font-black px-3 py-1 text-xs rounded-full">
                                                     Gesamtpunkte: {playgroundResult.totalPoints} / {playgroundResult.maxPoints} P
                                                 </Badge>
                                             )}
@@ -641,7 +641,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                     className={cn(
                                                         "p-3 rounded-2xl border flex items-center justify-between text-xs transition-all gap-4",
                                                         r.status === 'correct' ? "bg-emerald-50/50 border-emerald-100 text-emerald-800" :
-                                                        r.status === 'consecutive' ? "bg-blue-50/50 border-blue-100 text-blue-800" :
+                                                        r.status === 'consecutive' ? "bg-primary/5 border-primary/20 text-primary" :
                                                         "bg-red-50/50 border-red-100 text-red-800"
                                                     )}
                                                 >
@@ -651,7 +651,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                             <Badge className={cn(
                                                                 "text-[8px] py-0 px-1.5 rounded font-black uppercase border shrink-0",
                                                                 r.status === 'correct' ? "bg-emerald-100 border-emerald-200 text-emerald-700" :
-                                                                r.status === 'consecutive' ? "bg-blue-100 border-blue-200 text-blue-700" :
+                                                                r.status === 'consecutive' ? "bg-primary/15 border-primary/30 text-primary" :
                                                                 r.status === 'omission' ? "bg-amber-100 border-amber-200 text-amber-700" :
                                                                 "bg-red-100 border-red-200 text-red-700"
                                                             )}>
@@ -687,7 +687,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                     </div>
                                 ) : (
                                     <div className="flex-grow lg:flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground gap-4 select-none min-h-[250px] lg:min-h-0">
-                                        <div className="w-16 h-16 bg-blue-50 border border-blue-100 rounded-3xl flex items-center justify-center text-blue-500 mb-2">
+                                        <div className="w-16 h-16 bg-primary/10 border border-primary/20 rounded-3xl flex items-center justify-center text-primary mb-2">
                                             <Eye size={28} className="animate-pulse" />
                                         </div>
                                         <div className="max-w-xs space-y-1.5">
@@ -720,7 +720,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                         {!isLocked && (
                             <Button 
                                 onClick={() => { onSave(trace); onClose(); }}
-                                className="h-10 flex-1 sm:flex-initial rounded-xl px-6 bg-blue-600 hover:bg-blue-700 text-white font-black shadow-lg shadow-blue-100 transition-all text-xs"
+                                className="h-10 flex-1 sm:flex-initial rounded-xl px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-black shadow-lg shadow-primary/20 transition-all text-xs"
                             >
                                 Speichern & Zuweisen
                             </Button>
