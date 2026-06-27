@@ -184,8 +184,8 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                 <div className="px-4 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row gap-4 lg:gap-3 justify-between items-start lg:items-center shrink-0">
                     <div className="flex items-center justify-between w-full lg:w-auto gap-3">
                         <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100 shrink-0">
-                                <Layers size={20} className="text-blue-600 animate-pulse" />
+                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md border border-slate-100 overflow-hidden shrink-0">
+                                <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                             </div>
                             <div className="min-w-0">
                                 <h3 className="text-sm sm:text-lg font-black text-slate-900 font-outfit tracking-tight">
