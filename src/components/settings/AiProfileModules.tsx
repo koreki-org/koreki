@@ -321,7 +321,12 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                         <Button 
                             onClick={onSaveToDB} 
                             disabled={!isDirty || saving}
-                            className="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-xxs whitespace-nowrap font-bold uppercase rounded-full flex items-center gap-1.5 shadow-md shadow-indigo-100 transition-all border-0"
+                            className={cn(
+                                "h-9 px-4 text-xxs whitespace-nowrap font-bold uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0",
+                                isDirty 
+                                    ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
+                                    : "bg-muted text-muted-foreground cursor-not-allowed shadow-none"
+                            )}
                         >
                             {saving ? (
                                 <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />

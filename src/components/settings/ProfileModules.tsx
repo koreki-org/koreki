@@ -339,8 +339,8 @@ ${correctionPrompt}`;
                             className={cn(
                                 "h-9 px-4 text-xxs whitespace-nowrap font-bold uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0",
                                 isDirty 
-                                    ? "bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-100" 
-                                    : "bg-slate-100 text-slate-400 cursor-not-allowed shadow-none"
+                                    ? "bg-primary hover:bg-primary/90 text-primary-foreground" 
+                                    : "bg-muted text-muted-foreground cursor-not-allowed shadow-none"
                             )}
                         >
                             {saving ? (
