@@ -743,7 +743,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                 <div className="p-4 border-b border-slate-100 space-y-2 relative z-10">
                                     <Button 
                                         onClick={() => selectMemory(null)} 
-                                        className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md gap-2"
+                                        className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md gap-2"
                                     >
                                         <PlusCircle size={18} /> Neuer Erfahrungsschatz
                                     </Button>
@@ -887,7 +887,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                         ))}
 
                                     {memories.length === 0 && (
-                                        <div className="text-center py-6 text-slate-400 border border-dashed border-slate-150 rounded-2xl text-xs font-semibold">
+                                        <div className="text-center py-6 text-slate-400 border border-dashed border-slate-150 rounded-xl text-xs font-semibold">
                                             Noch keine kalibrierten Erfahrungsschätze vorhanden.
                                         </div>
                                     )}
@@ -938,7 +938,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                              
                                              {/* SAVE IMPORTED MEMORY BANNER */}
                                              {isImportedAndUnsaved && activeMemory && (
-                                                 <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-2xl flex items-center justify-between gap-4 shadow-sm">
+                                                 <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between gap-4 shadow-sm">
                                                      <div className="space-y-1">
                                                          <h4 className="text-xs font-black text-indigo-900 uppercase tracking-wide">Importierter Erfahrungsschatz</h4>
                                                          <p className="text-[10px] text-indigo-700 font-bold leading-normal">
@@ -1091,7 +1091,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                                 </Button>
                                                 <Button
                                                     onClick={onClose}
-                                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl sm:rounded-2xl shadow-xl shadow-indigo-100 transition-all"
+                                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-indigo-600 hover:bg-indigo-700 text-white font-black rounded-xl shadow-xl shadow-indigo-100 transition-all"
                                                 >
                                                     Zuweisen
                                                 </Button>
@@ -1110,7 +1110,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                              KI-Modelle überlesen häufig kritische Zeichenabweichungen (z. B. IP-Adressen oder Ports). Mit <strong>GradingMemory</strong> trainierst du die KI interaktiv: Ein virtueller Schüler simuliert typische Fehlerbilder basierend auf deiner Musterlösung. Du benotest diese fiktiven Fälle einmalig und die KI nutzt diese fortan als exakte Few-Shot-Richtlinie.
                                          </p>
 
-                                         <div className="bg-slate-50/50 border border-slate-150 p-5 rounded-2xl flex flex-col gap-4 mt-2">
+                                         <div className="bg-slate-50/50 border border-slate-150 p-5 rounded-xl flex flex-col gap-4 mt-2">
                                              <div>
                                                  <label className="block text-xs font-bold uppercase tracking-wider text-indigo-600 mb-1.5">Name des neuen Profils:</label>
                                                  <Input 
@@ -1226,7 +1226,7 @@ const handleSaveActiveMemoryChanges = async () => {
                             <div className="flex-1 flex flex-col gap-5 min-h-0">
                                 
                                 {/* Wizard Progress Indicator */}
-                                <div className="bg-slate-50 border border-slate-150 rounded-2xl p-4 shrink-0 flex items-center justify-between">
+                                <div className="bg-slate-50 border border-slate-150 rounded-xl p-4 shrink-0 flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-black text-xs">
                                             {activeCaseIndex + 1}
@@ -1258,7 +1258,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                 <div className="flex-1 flex flex-col lg:flex-row gap-6 min-h-0 overflow-hidden">
                                     
                                     {/* Left Column: Spacious Student Answer Text */}
-                                    <div className="w-full lg:w-1/2 flex flex-col bg-slate-50/50 border border-slate-150 rounded-2xl p-5 md:p-6 min-h-[220px] lg:h-full overflow-hidden">
+                                    <div className="w-full lg:w-1/2 flex flex-col bg-slate-50/50 border border-slate-150 rounded-xl p-5 md:p-6 min-h-[220px] lg:h-full overflow-hidden">
                                         <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-100 shrink-0">
                                             <div className="flex items-center gap-2">
                                                 <span className={`text-xs font-black uppercase px-2.5 py-0.5 rounded-full ${getCharacterBadgeStyle(activeCase.character)}`}>
@@ -1283,7 +1283,7 @@ const handleSaveActiveMemoryChanges = async () => {
                                     </div>
 
                                     {/* Right Column: Calibration Form Cockpit */}
-                                    <div className="w-full lg:w-1/2 flex flex-col bg-white border border-slate-150 rounded-2xl p-5 md:p-6 lg:h-full overflow-y-auto custom-scrollbar gap-5">
+                                    <div className="w-full lg:w-1/2 flex flex-col bg-white border border-slate-150 rounded-xl p-5 md:p-6 lg:h-full overflow-y-auto custom-scrollbar gap-5">
                                         <div className="border-b border-slate-100 pb-3 shrink-0 flex items-center justify-between">
                                             <h4 className="text-sm font-black text-slate-800 uppercase tracking-wider flex items-center gap-2 font-outfit">
                                                 <BookOpen size={16} className="text-indigo-500" />
