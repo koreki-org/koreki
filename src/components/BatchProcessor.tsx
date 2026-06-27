@@ -105,7 +105,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                 <span className="text-sm font-medium">Namen wurden für die KI pseudonymisiert. Der Export erfolgt automatisch mit Klarnamen.</span>
             </div>
 
-            <Card className="transition-all duration-500 overflow-visible relative border border-white bg-white/70 backdrop-blur-xl shadow-2xl shadow-slate-900/5 rounded-[2rem]">
+            <Card className="transition-all duration-500 overflow-visible relative border border-white bg-white/70 backdrop-blur-xl shadow-2xl shadow-slate-900/5 rounded-hero">
                 {/* Privacy Confirmation System */}
                 <ConfirmationModal
                     isOpen={showConfirm !== null}

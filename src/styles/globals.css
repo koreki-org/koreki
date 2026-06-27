@@ -29,8 +29,8 @@
   --input: 220 13% 91%;
   --ring: 239 84% 67%;
 
-  --radius: 0.85rem;
-  --radius-hero: 2rem;
+  --radius: 0.5rem;
+  --radius-hero: 1.0rem;
 
   /* Spacing Tokens */
   --spacing-page-inline: 2rem;

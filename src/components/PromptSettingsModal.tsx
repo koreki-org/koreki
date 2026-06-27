@@ -55,7 +55,7 @@ const PromptSettingsModal: React.FC<PromptSettingsModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
-            <div className="relative w-full md:max-w-[1000px] h-full md:h-[85vh] bg-white rounded-none md:rounded-[2.5rem] shadow-2xl border-none md:border md:border-white flex flex-col overflow-hidden animate-fade-in text-foreground">
+            <div className="relative w-full md:max-w-[1000px] h-full md:h-[85vh] bg-white rounded-none md:rounded-hero shadow-2xl border-none md:border md:border-white flex flex-col overflow-hidden animate-fade-in text-foreground">
                 
                 {/* Header Section */}
                 <div className="px-4 sm:px-8 py-4 sm:pt-8 sm:pb-4 flex justify-between items-center border-b border-slate-100 bg-white/50 backdrop-blur shrink-0">

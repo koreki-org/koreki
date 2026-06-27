@@ -21,7 +21,7 @@ Dieses Dokument definiert das Erscheinungsbild und die Interaktionsstandards fü
 - **Global Registry**: Alle funktionalen Animationen (z.B. `animate-loading-bar`, `animate-scan`) müssen in `globals.css` zentralisiert sein.
 
 ## 4. Component Guidelines
-- **Modals**: Konsistente Nutzung von Radien (`rounded-lg`) und Standard-Abständen (`p-6`).
+- **Modals**: Konsistente Nutzung von Radien (`rounded-hero`) und Standard-Abständen (`p-6`).
 - **Icons**: Verwende ausschließlich **Lucide Icons** mit einer Standard-Größe von `w-5 h-5` oder `w-6 h-6`.
 - **Formulare**: Textareas und Inputs sollten Fokus-Ringe in der Primärfarbe besitzen.
 
@@ -96,7 +96,13 @@ border-border
 - **font-outfit**: Standard für Branding, Überschriften und UI-Elemente (Korrektur-Modus).
 - **font-inter / font-sans**: Standard für Fließtext und Datentabellen.
 - **font-mono**: Ausschließlich für Code-Blöcke oder Diff-Ansichten.
-```
+
+### Eckenradien (Border-Radius)
+Nutze ausschließlich die standardisierten Radien-Klassen. Willkürliche Eckenrundungen (wie `rounded-[2.5rem]`, `rounded-[40px]`, `rounded-3xl` etc.) sind strengstens untersagt:
+- **`rounded-hero` (16px / `1.0rem` via `--radius-hero`):** Einheitlicher Standard für alle Modals, Drawers, Popups und primäre Sektionskarten (z.B. Haupt-Card der Stapelverarbeitung).
+- **`rounded-xl` (12px):** Für verschachtelte Kind-Elemente innerhalb von `rounded-hero`-Karten (z.B. Listenzeilen/Schülerzeilen in der Stapelverarbeitung), um eine harmonische Ecken-Nestung zu gewährleisten ($R_{outer} > R_{inner}$).
+- **`rounded-lg` (8px / `0.5rem` via `--radius`):** Standard für normale App-Karten, Widgets und Infoboxen.
+- **`rounded-md` (~6px):** Standard-Radius für interaktive Kontrollelemente (Buttons, Inputs). Wird direkt aus den UI-Kit-Komponenten (`Button`, `Input`) vererbt.
 
 ---
 

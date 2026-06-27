@@ -556,7 +556,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                     {activeTab === 'testing' && (
                         <div className="flex-grow flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden p-4 lg:p-6 gap-6 min-h-0">
                             {/* Left Panel: Inputs (45%) */}
-                            <div className="w-full lg:w-[45%] flex flex-col shrink-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] h-auto lg:h-full overflow-hidden">
+                            <div className="w-full lg:w-[45%] flex flex-col shrink-0 bg-white border border-slate-100 shadow-glass rounded-hero h-auto lg:h-full overflow-hidden">
                                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
                                     <div>
                                         <h4 className="text-xs font-black uppercase text-slate-800 font-outfit">Schüler-Eingaben</h4>
@@ -612,7 +612,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                             </div>
 
                             {/* Right Panel: Simulation Results (55%) */}
-                            <div className="w-full lg:w-[55%] flex flex-col min-h-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] h-auto lg:h-full overflow-hidden shrink-0">
+                            <div className="w-full lg:w-[55%] flex flex-col min-h-0 bg-white border border-slate-100 shadow-glass rounded-hero h-auto lg:h-full overflow-hidden shrink-0">
                                 {playgroundResult ? (
                                     <div className="flex flex-col h-full overflow-hidden font-inter">
                                         <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">

@@ -77,7 +77,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center sm:p-4 bg-background/70 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose}>
-            <div className="relative w-full max-w-[900px] h-full sm:h-auto sm:max-h-[90vh] flex flex-col bg-white sm:rounded-3xl rounded-none p-4 sm:p-8 shadow-2xl border border-border animate-in zoom-in-95 duration-500 mb-0" onClick={e => e.stopPropagation()}>
+            <div className="relative w-full max-w-[900px] h-full sm:h-auto sm:max-h-[90vh] flex flex-col bg-white sm:rounded-hero rounded-none p-4 sm:p-8 shadow-2xl border border-border animate-in zoom-in-95 duration-500 mb-0" onClick={e => e.stopPropagation()}>
 
                 <div className="flex justify-between items-center mb-4 sm:mb-6 w-full">
                     <div className="flex items-center gap-3 sm:gap-4">

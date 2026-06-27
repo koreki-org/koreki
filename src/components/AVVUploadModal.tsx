@@ -31,7 +31,7 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-2 md:p-4 bg-background/80 backdrop-blur-glass overflow-y-auto">
-            <div className="relative w-full max-w-[500px] my-auto bg-white rounded-[40px] p-8 md:p-10 shadow-2xl border border-border flex flex-col items-center animate-in zoom-in-95 duration-500 overflow-hidden text-center">
+            <div className="relative w-full max-w-[500px] my-auto bg-white rounded-hero p-8 md:p-10 shadow-2xl border border-border flex flex-col items-center animate-in zoom-in-95 duration-500 overflow-hidden text-center">
                 
                 {!isTeacherView && (
                     <Button

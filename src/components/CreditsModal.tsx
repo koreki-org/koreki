@@ -62,7 +62,7 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, onSelect, upgradin
             onClick={onClose}
         >
             <div
-                className="relative w-full max-w-[1000px] max-h-[95vh] bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl border border-white flex flex-col items-center animate-in zoom-in-95 duration-500 overflow-y-auto custom-scrollbar"
+                className="relative w-full max-w-[1000px] max-h-[95vh] bg-white rounded-hero p-8 md:p-12 shadow-2xl border border-white flex flex-col items-center animate-in zoom-in-95 duration-500 overflow-y-auto custom-scrollbar"
                 onClick={e => e.stopPropagation()}
             >
                 <Button
@@ -122,7 +122,7 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, onSelect, upgradin
                             key={plan.id}
                             onClick={() => !isTrial && acceptedTerms && onSelect(plan.id)}
                             className={cn(
-                                "relative group p-8 rounded-[2rem] border-2 transition-all duration-500 cursor-pointer flex flex-col items-center text-center",
+                                "relative group p-8 rounded-hero border-2 transition-all duration-500 cursor-pointer flex flex-col items-center text-center",
                                 plan.isMain
                                     ? "bg-white border-blue-600 shadow-xl shadow-blue-500/10 scale-105 z-10"
                                     : "bg-slate-50/50 border-slate-100 hover:border-blue-200 hover:bg-white hover:shadow-lg"

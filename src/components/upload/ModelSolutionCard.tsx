@@ -537,7 +537,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
     };
 
     return (
-        <Card className="flex flex-col border-white/50 bg-white/60 backdrop-blur-xl shadow-xl shadow-slate-200/50 rounded-[2rem] overflow-hidden">
+        <Card className="flex flex-col border-white/50 bg-white/60 backdrop-blur-xl shadow-xl shadow-slate-200/50 rounded-hero overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100/50">
                 <CardTitle className="text-xl font-bold flex items-center gap-3">
                     <FileText className="text-primary" size={24} />

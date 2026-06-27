@@ -24,7 +24,7 @@ export const StepDownload: React.FC<StepDownloadProps> = ({ isOrganization, onNe
                 href="/app/compliance/avv" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="group flex items-center gap-4 p-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[24px] decoration-transparent hover:border-blue-600 hover:bg-blue-50 transition-all duration-300 mb-8"
+                className="group flex items-center gap-4 p-6 bg-slate-50 border-2 border-dashed border-slate-200 rounded-hero decoration-transparent hover:border-blue-600 hover:bg-blue-50 transition-all duration-300 mb-8"
             >
                 <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-slate-400 group-hover:text-blue-600 group-hover:shadow-md transition-all">
                     <FileText size={24} />

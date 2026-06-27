@@ -879,7 +879,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                     )}
 
                                     {Object.keys(groupedVariables).length === 0 ? (
-                                        <div className="bg-white border-2 border-dashed border-slate-200 rounded-[2rem] p-12 text-center max-w-xl mx-auto flex flex-col items-center justify-center gap-4 shadow-lg shadow-slate-100/50 mt-8 animate-in fade-in zoom-in-95 duration-500">
+                                        <div className="bg-white border-2 border-dashed border-slate-200 rounded-hero p-12 text-center max-w-xl mx-auto flex flex-col items-center justify-center gap-4 shadow-lg shadow-slate-100/50 mt-8 animate-in fade-in zoom-in-95 duration-500">
                                             <div className="w-12 h-12 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400">
                                                 <Sparkles size={24} className="text-indigo-600 animate-pulse" />
                                             </div>
@@ -1242,7 +1242,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                     {activeTab === 'testing' && (
                         <div className="flex-grow flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden min-h-0 bg-slate-50/30 p-4 lg:p-8 gap-4 lg:gap-8">
                             {/* Left Panel: Inputs (45% width) */}
-                            <div className="w-full lg:w-[45%] flex flex-col shrink-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] h-auto lg:h-full overflow-visible lg:overflow-hidden">
+                            <div className="w-full lg:w-[45%] flex flex-col shrink-0 bg-white border border-slate-100 shadow-glass rounded-hero h-auto lg:h-full overflow-visible lg:overflow-hidden">
                                 {/* Sticky Header with Actions */}
                                 <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center shrink-0">
                                     <div>
@@ -1294,7 +1294,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             </div>
 
                             {/* Right Panel: Simulation Results (55% width) */}
-                            <div className="w-full lg:w-[55%] flex flex-col min-h-0 bg-white border border-slate-100 shadow-glass rounded-[2rem] h-auto lg:h-full overflow-visible lg:overflow-hidden shrink-0">
+                            <div className="w-full lg:w-[55%] flex flex-col min-h-0 bg-white border border-slate-100 shadow-glass rounded-hero h-auto lg:h-full overflow-visible lg:overflow-hidden shrink-0">
                                 {playgroundResult ? (
                                     <div className="flex flex-col h-full overflow-hidden">
                                         {/* Sticky Score Header */}

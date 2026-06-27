@@ -705,7 +705,7 @@ ${skill.prompt || ''}`;
             {/* Inline Dialog Overlay for Creating/Editing Custom Skill */}
             {isEditingSkill && editingSkillData && (
                 <div className="fixed inset-0 z-[2200] flex items-center justify-center bg-slate-900/40 backdrop-blur-md p-4">
-                    <div className="bg-white w-full max-w-xl rounded-[2.2rem] shadow-2xl border border-slate-100 p-6 sm:p-8 space-y-6 flex flex-col max-h-[90vh] overflow-hidden animate-fade-in text-slate-800">
+                    <div className="bg-white w-full max-w-xl rounded-hero shadow-2xl border border-slate-100 p-6 sm:p-8 space-y-6 flex flex-col max-h-[90vh] overflow-hidden animate-fade-in text-slate-800">
                         <div className="flex justify-between items-center pb-2 border-b border-slate-100">
                             <h3 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
                                 <Sparkles className="text-indigo-500 animate-pulse" size={20} />

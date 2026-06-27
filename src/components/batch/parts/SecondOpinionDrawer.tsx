@@ -178,7 +178,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
 
             {/* Modal Body Panel */}
             <div className={cn(
-                "relative bg-background border border-border/80 shadow-2xl rounded-2xl max-w-5xl w-full flex flex-col max-h-[90vh] overflow-hidden",
+                "relative bg-background border border-border/80 shadow-2xl rounded-hero max-w-5xl w-full flex flex-col max-h-[90vh] overflow-hidden",
                 "animate-in zoom-in-95 duration-300"
             )}>
                 {/* Header */}

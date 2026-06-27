@@ -701,7 +701,7 @@ const handleSaveActiveMemoryChanges = async () => {
     return createPortal(
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
             <div 
-                className="relative w-full md:max-w-[1200px] h-full md:h-[88vh] bg-white border-none md:border md:border-white rounded-none md:rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden animate-fade-in text-foreground text-left"
+                className="relative w-full md:max-w-[1200px] h-full md:h-[88vh] bg-white border-none md:border md:border-white rounded-none md:rounded-hero shadow-2xl flex flex-col overflow-hidden animate-fade-in text-foreground text-left"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header Section */}

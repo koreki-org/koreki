@@ -71,7 +71,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
 
     return (
         <div className={cn(
-            "group rounded-2xl border transition-all duration-300",
+            "group rounded-xl border transition-all duration-300",
             idx === currentProcessingIndex ? "bg-primary/5 border-primary/20 ring-2 ring-primary/10 shadow-md" : (isDone ? "bg-emerald-50/10 border-emerald-100 hover:border-emerald-200 hover:shadow-md" : "bg-background/80 border-border hover:border-primary/20 hover:shadow-md"),
             isExpanded ? "shadow-lg bg-background" : "",
             (itemHasWarnings || (warnings && warnings.length > 0)) && "border-orange-300 bg-orange-50/20 ring-1 ring-orange-100 shadow-sm"
