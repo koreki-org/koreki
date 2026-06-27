@@ -181,40 +181,32 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                 "relative bg-background border border-border/80 shadow-2xl rounded-hero max-w-5xl w-full flex flex-col max-h-[90vh] overflow-hidden",
                 "animate-in zoom-in-95 duration-300"
             )}>
-                {/* Header */}
-                <div className="relative overflow-hidden border-b border-border/60 px-6 py-4 bg-gradient-to-r from-indigo-50/20 via-primary/5 to-purple-50/10 dark:from-indigo-950/10 dark:via-primary/5 dark:to-purple-950/10">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2.5">
-                            <div className="p-2 rounded-xl bg-indigo-600/10 text-indigo-600 dark:text-indigo-400 animate-pulse">
-                                <Sparkles size={20} />
-                            </div>
-                            <div>
-                                <h2 className="text-base font-black text-foreground font-outfit tracking-tight flex items-center gap-2">
-                                    Mit Koreki besprechen
-                                    <span className="text-xs font-bold bg-indigo-600/10 text-indigo-600 border border-indigo-600/20 rounded-full px-2.5 py-0.5 uppercase tracking-wider">
-                                        Copilot
-                                    </span>
-                                </h2>
-                                <p className="text-xs text-muted-foreground font-inter">Diskutiere Korrekturfälle, kläre Folgefehler und optimiere das Feedback im Dialog</p>
-                            </div>
+                {/* Header Section */}
+                <div className="px-4 sm:px-8 py-4 sm:pt-8 sm:pb-4 flex justify-between items-center border-b border-slate-100 dark:border-slate-800/50 bg-white/50 dark:bg-slate-900/50 backdrop-blur shrink-0">
+                    <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg border border-slate-100 overflow-hidden shrink-0">
+                            <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                         </div>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={onClose}
-                            className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg h-9 w-9 border-0 bg-transparent flex items-center justify-center"
-                            disabled={loading}
-                        >
-                            <X size={18} />
-                        </Button>
+                        <div className="min-w-0 text-left">
+                            <h2 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight truncate font-outfit flex items-center gap-2">
+                                Mit Koreki besprechen
+                                <span className="hidden sm:inline-block text-xs font-bold bg-indigo-600/10 text-indigo-600 border border-indigo-600/20 rounded-full px-2.5 py-0.5 uppercase tracking-wider">
+                                    Copilot
+                                </span>
+                            </h2>
+                            <p className="text-xxs sm:text-sm text-slate-500 font-medium italic truncate">Dialogische Zweitmeinung & Feedback-Optimierung</p>
+                        </div>
                     </div>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100 shrink-0" onClick={onClose} disabled={loading}>
+                        <X size={24} />
+                    </Button>
                 </div>
 
                 {/* Main Interactive Grid */}
                 <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden h-[65vh]">
                     
                     {/* Left Column: Context & live suggestions (5 columns) */}
-                    <div className="lg:col-span-5 border-r border-border/60 bg-slate-50/20 dark:bg-slate-900/10 p-5 flex flex-col gap-4 overflow-y-auto">
+                    <div className="lg:col-span-5 border-r border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/30 p-5 flex flex-col gap-4 overflow-y-auto">
                         
                         {/* Task info card */}
                         <div className="bg-background border border-border/50 rounded-xl p-4 space-y-3 shadow-xs">
