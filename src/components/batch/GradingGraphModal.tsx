@@ -427,12 +427,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                 <p className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">{taskName} (Variable Beziehungen, Toleranzen & Folgefehler-Pfade)</p>
                             </div>
                         </div>
-                        <button 
+                        <Button 
+                            variant="ghost"
+                            size="icon"
                             onClick={onClose}
-                            className="lg:hidden text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full shrink-0"
+                            className="lg:hidden text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full shrink-0 h-8 w-8 flex items-center justify-center border-0 bg-transparent"
                         >
                             <X size={20} />
-                        </button>
+                        </Button>
                     </div>
 
                     {/* Mode selector tab */}
@@ -471,12 +473,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         </button>
                     </div>
 
-                    <button 
+                    <Button 
+                        variant="ghost"
+                        size="icon"
                         onClick={onClose}
-                        className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full hidden lg:block"
+                        className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full hidden lg:flex h-8 w-8 items-center justify-center border-0 bg-transparent"
                     >
                         <X size={20} />
-                    </button>
+                    </Button>
                 </div>
 
                 {isLocked && (
