@@ -101,10 +101,10 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                 </div>
             )}
             <div className="p-4 border-b border-slate-100 space-y-2 relative z-10 shrink-0">
-                <Button onClick={() => onStartNew()} className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md gap-2 transition-all">
+                <Button onClick={() => onStartNew()} className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-2xl shadow-md gap-2 transition-all">
                     <PlusCircle size={18} /> Neues Skill-Set
                 </Button>
-                <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full h-10 border-dashed border-indigo-200 text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 gap-2 transition-all">
+                <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full h-10 border-dashed border-primary/20 text-primary font-bold rounded-xl hover:bg-primary/5 gap-2 transition-all">
                     <RefreshCcw size={16} /> .md Skill-Set Importieren
                 </Button>
                 <input 
@@ -522,7 +522,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                             };
                             input.click();
                         }}
-                        className="h-8 sm:h-9 rounded-full text-xxs whitespace-nowrap font-bold uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-1.5 px-3 sm:px-4 transition-all"
+                        className="h-8 sm:h-9 rounded-full text-xxs whitespace-nowrap font-bold uppercase border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 gap-1.5 px-3 sm:px-4 transition-all"
                         title="Einzelnen Skill importieren (.md)"
                     >
                         <RefreshCcw size={14} /> Skill Import
@@ -531,7 +531,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                         variant="outline" 
                         size="sm" 
                         onClick={handleCreateSkillClick}
-                        className="h-8 sm:h-9 rounded-full text-xxs whitespace-nowrap font-bold uppercase border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-2 px-3 sm:px-4 transition-all"
+                        className="h-8 sm:h-9 rounded-full text-xxs whitespace-nowrap font-bold uppercase border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 gap-2 px-3 sm:px-4 transition-all"
                     >
                         <PlusCircle size={14} /> Skill hinzufügen
                     </Button>
@@ -962,7 +962,7 @@ ${skill.prompt || ''}`;
                             </Button>
                             <Button 
                                 onClick={handleSaveCustomSkillClick}
-                                className="h-10 rounded-xl px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md transition-all"
+                                className="h-10 rounded-xl px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md transition-all"
                             >
                                 Speichern
                             </Button>

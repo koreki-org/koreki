@@ -97,10 +97,10 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
             </div>
         )}
         <div className="p-4 border-b border-slate-100 space-y-2 relative z-10 shrink-0">
-            <Button onClick={() => onStartNew()} className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl shadow-md gap-2">
+            <Button onClick={() => onStartNew()} className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-2xl shadow-md gap-2">
                 <PlusCircle size={18} /> Neues Experten-Profil
             </Button>
-            <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full h-10 border-dashed border-indigo-200 text-indigo-600 font-bold rounded-xl hover:bg-indigo-50 gap-2">
+            <Button onClick={() => fileInputRef.current?.click()} variant="outline" className="w-full h-10 border-dashed border-primary/20 text-primary font-bold rounded-xl hover:bg-primary/5 gap-2">
                 <RefreshCcw size={16} /> .md Experten-Profil Importieren
             </Button>
             <input 
