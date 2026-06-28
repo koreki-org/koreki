@@ -81,10 +81,10 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
             {/* 1. Connection Header */}
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+            <div className="p-4 bg-muted/30 rounded-2xl border border-border space-y-4">
                 <div className="flex gap-2">
                     <div className="flex-1">
-                        <label htmlFor="ollama-url" className="block text-xs font-bold text-slate-700 mb-2">Ollama Adresse (URL)</label>
+                        <label htmlFor="ollama-url" className="block text-xs font-bold text-foreground mb-2">Ollama Adresse (URL)</label>
                         <Input 
                             id="ollama-url"
                             placeholder="http://127.0.0.1:11434" 
@@ -100,7 +100,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                             disabled={isChecking}
                             className={`h-10 px-4 rounded-xl border-2 font-bold text-xs transition-all ${
                                 checkStatus === 'ok' ? 'border-emerald-500 text-emerald-600 bg-emerald-50' :
-                                checkStatus === 'error' ? 'border-rose-500 text-rose-600 bg-rose-50' : 'border-slate-200'
+                                checkStatus === 'error' ? 'border-rose-500 text-rose-600 bg-rose-50' : 'border-border'
                             }`}
                         >
                             {isChecking ? <Loader2 size={16} className="animate-spin" /> : 'Verbindung prüfen'}
@@ -109,7 +109,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                 </div>
                 
                 {checkStatus === 'ok' && (
-                    <div className="flex items-center justify-between text-[10px] text-emerald-600 font-bold bg-emerald-50/30 p-2.5 rounded-xl border border-emerald-100/50 animate-in fade-in slide-in-from-left-2">
+                    <div className="flex items-center justify-between text-xxs text-emerald-600 font-bold bg-emerald-50/30 p-2.5 rounded-xl border border-emerald-100/50 animate-in fade-in slide-in-from-left-2">
                         <div className="flex items-center gap-2">
                             <CheckCircle2 size={14} />
                             <span>Ollama {ollamaVersion ? `v${ollamaVersion}` : ''} bereit</span>
@@ -118,7 +118,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                         <div className="flex items-center gap-3">
                             {(settings.ollamaUrl || '').startsWith('https') ? (
                                 isSelfSigned ? (
-                                    <div className="flex items-center gap-1 text-blue-600/70" title="Selbstsigniertes Zertifikat aktiv">
+                                    <div className="flex items-center gap-1 text-primary/70" title="Selbstsigniertes Zertifikat aktiv">
                                         <Shield size={12} strokeWidth={3} />
                                         <span className="uppercase tracking-tighter">Self-Signed</span>
                                     </div>
@@ -129,7 +129,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                                     </div>
                                 )
                             ) : (
-                                <div className="flex items-center gap-1 text-slate-400/70" title="Lokale unverschlüsselte Verbindung">
+                                <div className="flex items-center gap-1 text-muted-foreground/70" title="Lokale unverschlüsselte Verbindung">
                                     <Server size={12} strokeWidth={3} />
                                     <span className="uppercase tracking-tighter">Lokal</span>
                                 </div>
@@ -139,7 +139,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                 )}
                 
                 {checkStatus === 'error' && hasAttempted && (
-                    <div className="flex items-center gap-2 text-[10px] text-rose-600 font-bold bg-rose-50/50 p-2.5 rounded-xl border border-rose-100/50 animate-shake">
+                    <div className="flex items-center gap-2 text-xxs text-rose-600 font-bold bg-rose-50/50 p-2.5 rounded-xl border border-rose-100/50 animate-shake">
                         <Info size={14} />
                         <span>Ollama konnte nicht erreicht werden. Läuft die App?</span>
                     </div>
@@ -148,7 +148,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
 
             {/* 2. Model Selection */}
             <div className="space-y-3">
-                <label className="block text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">Modell wählen</label>
+                <label className="block text-xxs font-black uppercase text-muted-foreground tracking-widest ml-1">Modell wählen</label>
                 <div className="grid grid-cols-1 gap-2">
                     {[
                         { id: 'qwen3.6:35b', name: 'Qwen 3.6', desc: 'Empfohlen (High Reasoning)' },
@@ -171,12 +171,12 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                                     onSave({ ollamaModel: targetModel });
                                 }}
                                 className={`h-auto py-3.5 px-4 justify-between rounded-xl border-2 transition-all duration-300 ${
-                                    isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'bg-white hover:border-slate-300'
+                                    isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'bg-background hover:border-border/80'
                                 }`}
                             >
                                 <div className="text-left">
-                                    <div className="text-xs font-bold text-slate-900">{p.name}</div>
-                                    <div className="text-[10px] text-slate-500 font-medium">{p.desc}</div>
+                                    <div className="text-xs font-bold text-foreground">{p.name}</div>
+                                    <div className="text-xxs text-muted-foreground font-medium">{p.desc}</div>
                                 </div>
                                 {isSelected && <CheckCircle2 size={18} className="text-primary animate-in zoom-in duration-300" />}
                             </Button>
@@ -199,14 +199,14 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                             }
                         }}
                         className={`h-auto py-3.5 px-4 justify-between rounded-xl border-2 transition-all duration-300 ${
-                            isCustomMode ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'bg-white hover:border-slate-300'
+                            isCustomMode ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'bg-background hover:border-border/80'
                         }`}
                     >
                         <div className="text-left flex items-center gap-3">
-                            <Cpu size={18} className={isCustomMode ? 'text-primary' : 'text-slate-400'} />
+                            <Cpu size={18} className={isCustomMode ? 'text-primary' : 'text-muted-foreground'} />
                             <div>
-                                <div className="text-xs font-bold text-slate-900">Eigene Modell-Konfiguration</div>
-                                <div className="text-[10px] text-slate-500 font-medium">Manuelle Eingabe eines beliebigen Modell-Tags</div>
+                                <div className="text-xs font-bold text-foreground">Eigene Modell-Konfiguration</div>
+                                <div className="text-xxs text-muted-foreground font-medium">Manuelle Eingabe eines beliebigen Modell-Tags</div>
                             </div>
                         </div>
                         {isCustomMode && <CheckCircle2 size={18} className="text-primary animate-in zoom-in duration-300" />}
@@ -215,16 +215,16 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                     {/* 3. Dynamic Manual Override (Only visible in Custom Mode) */}
                     {isCustomMode && (
                         <div className="pt-2 animate-in slide-in-from-top-2 duration-300">
-                            <label htmlFor="ollama-model-manual" className="block text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1 mb-2">Manueller Modell-Tag</label>
+                            <label htmlFor="ollama-model-manual" className="block text-xxs font-black uppercase text-muted-foreground tracking-widest ml-1 mb-2">Manueller Modell-Tag</label>
                             <div className="relative group">
                                 <Input 
                                     id="ollama-model-manual"
                                     placeholder="z.B. llama3:latest" 
                                     value={settings.ollamaModel || ''} 
                                     onChange={e => onSave({ ollamaModel: e.target.value })}
-                                    className="h-10 rounded-xl text-xs font-mono bg-slate-50/50 border-2 group-hover:border-slate-300 transition-colors"
+                                    className="h-10 rounded-xl text-xs font-mono bg-muted/20 border-2 group-hover:border-border/80 transition-colors"
                                 />
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-300 uppercase tracking-tighter">Custom</div>
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xxs font-black text-muted-foreground/50 uppercase tracking-tighter">Custom</div>
                             </div>
                         </div>
                     )}
@@ -233,28 +233,28 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                     {!isCustomMode && (checkStatus === 'ok' || isMapped) && settings.ollamaModel && (
                         <div className={`p-4 rounded-2xl border-2 transition-all duration-300 animate-in slide-in-from-top-2 ${
                             isExactMatch ? 'border-emerald-100 bg-emerald-50/50 text-emerald-700' :
-                            isMapped ? 'border-indigo-100 bg-indigo-50/50 text-indigo-700' :
+                            isMapped ? 'border-primary/20 bg-primary/5 text-primary' :
                             availableModels.length > 0 ? 'border-amber-100 bg-amber-50/50 text-amber-700' :
-                            'border-slate-100 bg-slate-50 text-slate-500'
+                            'border-border bg-muted/20 text-muted-foreground'
                         }`}>
                             <div className="flex items-center gap-3">
                                 <div className={`p-2 rounded-xl ${
                                     isExactMatch ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-200' :
-                                    isMapped ? 'bg-indigo-500 text-white shadow-sm shadow-indigo-200' :
+                                    isMapped ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20' :
                                     availableModels.length > 0 ? 'bg-amber-500 text-white shadow-sm shadow-amber-200' :
-                                    'bg-slate-300 text-white'
+                                    'bg-muted text-muted-foreground'
                                 }`}>
                                     {isExactMatch ? <CheckCircle2 size={14} /> : <Info size={14} />}
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[10px] font-black uppercase tracking-widest leading-none mb-1 opacity-70">
+                                    <span className="text-xxs font-black uppercase tracking-widest leading-none mb-1 opacity-70">
                                         {isExactMatch ? 'Modell Bereit' : isMapped ? 'Automatisches Mapping' : 'Modell fehlt'}
                                     </span>
-                                    <div className="text-[11px] font-bold leading-tight">
+                                    <div className="text-xxs font-bold leading-tight">
                                         {isExactMatch ? (
                                             <span>Die KI <span className="font-mono text-emerald-600">{settings.ollamaModel}</span> ist lokal einsatzbereit.</span>
                                         ) : isMapped ? (
-                                            <span>Preset wird lokal ersetzt durch: <span className="font-mono text-indigo-600 bg-white px-1.5 py-0.5 rounded border border-indigo-100">{resolvedModel}</span></span>
+                                            <span>Preset wird lokal ersetzt durch: <span className="font-mono text-primary bg-background px-1.5 py-0.5 rounded border border-border">{resolvedModel}</span></span>
                                         ) : availableModels.length > 0 ? (
                                             <span>Das gewählte Modell ist nicht installiert. Bitte manuell nachladen.</span>
                                         ) : (
