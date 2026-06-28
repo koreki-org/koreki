@@ -33,12 +33,12 @@ export const MistralConfigSection: React.FC<MistralConfigSectionProps> = ({
                 </div>
                 
                 {isCommunity && !mistralKey ? (
-                    <div className="flex items-center gap-2 text-sky-600 bg-sky-50/50 p-3 rounded-xl border border-sky-100 mt-2">
+                    <div className="flex items-center gap-2 text-primary bg-primary/5 p-3 rounded-xl border border-primary/20 mt-2">
                         <Info size={16} />
                         <p className="text-xs font-bold italic">Nutzt den zentralen API-Key des Servers.</p>
                     </div>
                 ) : (
-                    <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50/50 p-3 rounded-xl border border-emerald-100 mt-2">
+                    <div className="flex items-center gap-2 text-success bg-success/5 p-3 rounded-xl border border-success/20 mt-2">
                         <Shield size={16} />
                         <p className="text-xs font-bold italic">
                             {isDesktopTarget() 

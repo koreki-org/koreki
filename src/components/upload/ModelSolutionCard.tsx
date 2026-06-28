@@ -669,9 +669,9 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             )}
 
                             {allSuggestedGraphsVerified && (
-                                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-50/80 via-teal-50/40 to-cyan-50/30 border border-emerald-100 p-4 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="relative overflow-hidden rounded-2xl bg-success/5 border border-success/20 p-4 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="flex items-center gap-3">
-                                        <div className="bg-gradient-to-tr from-emerald-500 to-teal-600 text-white p-2.5 rounded-xl shadow-md shadow-emerald-100">
+                                        <div className="bg-success text-success-foreground p-2.5 rounded-xl shadow-sm">
                                             <ShieldCheck size={18} />
                                         </div>
                                         <div>
@@ -741,7 +741,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                         }
                                         if (batchState === 'error') {
                                             return (
-                                                <div className="h-7 w-7 rounded-lg bg-rose-50 border border-rose-200 text-rose-500 flex items-center justify-center shrink-0" title="Fehler bei der Generierung">
+                                                <div className="h-7 w-7 rounded-lg bg-destructive/5 border border-destructive/20 text-destructive flex items-center justify-center shrink-0" title="Fehler bei der Generierung">
                                                     <AlertCircle size={12} className="animate-bounce" />
                                                 </div>
                                             );
@@ -753,14 +753,14 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                         "h-7 w-7 rounded-lg flex items-center justify-center shrink-0 border",
                                                             isCalcTrace 
                                                                 ? "bg-primary/10 border-primary/20 text-primary" 
-                                                            : "bg-emerald-50 border-emerald-200 text-emerald-600"
+                                                            : "bg-success/5 border border-success/20 text-success"
                                                     )} title="Verifiziert (Dry-Run bestanden)">
                                                         <ShieldCheck size={14} />
                                                     </div>
                                                 );
                                             } else {
                                                 return (
-                                                    <div className="h-7 w-7 rounded-lg bg-rose-50 border border-rose-200 text-rose-500 flex items-center justify-center shrink-0" title={`Dry-Run Validierungsfehler: ${valError || 'Fehler'}`}>
+                                                    <div className="h-7 w-7 rounded-lg bg-destructive/5 border border-destructive/20 text-destructive flex items-center justify-center shrink-0" title={`Dry-Run Validierungsfehler: ${valError || 'Fehler'}`}>
                                                         <ShieldAlert size={14} />
                                                     </div>
                                                 );
@@ -812,7 +812,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                             ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 hover:border-primary/30" 
                                                             : (isCalcTrace 
                                                                 ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 hover:border-primary/30" 
-                                                                : "bg-emerald-50/60 border-emerald-100/60 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200"))
+                                                                : "bg-success/5 border border-success/20 text-success hover:bg-success/10 hover:border-success/30"))
                                                         : (shouldSuggestGraph
                                                             ? "bg-primary/5 border-primary/20 text-primary hover:text-primary hover:border-primary/50 shadow-sm shadow-primary/10"
                                                             : "border-dashed border-border text-muted-foreground hover:text-primary hover:border-primary/50")
@@ -1172,13 +1172,13 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                     setEditingGraphTaskIdx(taskIdx);
                                     setShowEngineSelectionTaskIdx(null);
                                 }}
-                                className="flex items-start gap-4 p-4 rounded-xl border border-border bg-muted/20 hover:bg-emerald-50/20 hover:border-emerald-200 transition-all text-left group cursor-pointer focus:outline-none"
+                                className="flex items-start gap-4 p-4 rounded-xl border border-border bg-muted/20 hover:bg-success/5 hover:border-success/20 transition-all text-left group cursor-pointer focus:outline-none"
                             >
-                                <div className="p-2 rounded-lg bg-emerald-100/60">
-                                    <Layers size={18} className="text-emerald-600" />
+                                <div className="p-2 rounded-lg bg-success/10">
+                                    <Layers size={18} className="text-success" />
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-bold text-foreground group-hover:text-emerald-700 font-outfit">Rechengraph (PANG)</h4>
+                                    <h4 className="text-sm font-bold text-foreground group-hover:text-success font-outfit">Rechengraph (PANG)</h4>
                                     <p className="text-xs text-muted-foreground mt-1">Für strukturierte Netzwerke (z.B. VLSM), RAID oder grafisch vernetzte Variablen.</p>
                                 </div>
                             </button>

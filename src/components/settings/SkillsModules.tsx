@@ -222,7 +222,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
 
 const CATEGORIES = [
     { id: 'math-science', label: 'MINT-Fächer', icon: <Calculator size={16} className="text-primary" /> },
-    { id: 'graph-skills', label: 'Graph-basierte Skills (PANG)', icon: <Layers size={16} className="text-emerald-500" /> },
+    { id: 'graph-skills', label: 'Graph-basierte Skills (PANG)', icon: <Layers size={16} className="text-success" /> },
     { id: 'calc-skills', label: 'Rechenketten-Skills (CalcTrace)', icon: <Layers size={16} className="text-primary" /> },
     { id: 'languages', label: 'Sprachen & Textästhetik', icon: <BookOpen size={16} className="text-primary" /> },
     { id: 'standards', label: 'Korrekturzeichen & Bundesländer', icon: <Settings size={16} className="text-primary" /> },
@@ -630,7 +630,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         </h4>
                                                         {skill.isCustom && <Badge className="text-xxs bg-primary/10 text-primary px-1.5 py-0.5 font-bold hover:bg-primary/10 rounded">EIGEN</Badge>}
                                                         {/* Intentional semantic type colors: emerald=GRAPH-Engine, primary=CalcTrace-Engine — must remain visually distinct from each other and from primary */}
-                                                        {skill.isGraphBased && <Badge className="text-xxs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 font-bold hover:bg-emerald-100 rounded flex items-center gap-0.5">⚙️ GRAPH</Badge>}
+                                                        {skill.isGraphBased && <Badge className="text-xxs bg-success/10 text-success px-1.5 py-0.5 font-bold hover:bg-success/10 rounded flex items-center gap-0.5">⚙️ GRAPH</Badge>}
                                                         {skill.isCalcTrace && <Badge className="text-xxs bg-primary/10 text-primary px-1.5 py-0.5 font-bold hover:bg-primary/10 rounded flex items-center gap-0.5">⚡ CALC</Badge>}
                                                     </div>
                                                     <p className="text-xs text-muted-foreground font-medium leading-relaxed">
@@ -646,7 +646,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                                 </Badge>
                                                             ))}
                                                             {skill.conflictsWith && (typeof skill.conflictsWith === 'string' ? skill.conflictsWith.split(',') : skill.conflictsWith).map((confId: string) => (
-                                                                <Badge key={confId} variant="outline" className="text-xxs px-2 py-0 bg-red-50 text-red-600 border-red-100 rounded-full font-bold">
+                                                                <Badge key={confId} variant="outline" className="text-xxs px-2 py-0 bg-destructive/5 text-destructive border-destructive/20 rounded-full font-bold">
                                                                     Schließt aus: {SKILL_REGISTRY[confId.trim()]?.metadata.name || customSkills?.[confId.trim()]?.name || confId}
                                                                 </Badge>
                                                             ))}

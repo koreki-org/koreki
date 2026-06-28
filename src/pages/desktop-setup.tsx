@@ -76,7 +76,7 @@ export default function DesktopSetup() {
                         variant="ghost" 
                         size="sm"
                         onClick={() => router.push('/desktop')}
-                        className="text-slate-500 hover:text-primary font-bold flex items-center gap-1.5 group h-9"
+                        className="text-muted-foreground hover:text-primary font-bold flex items-center gap-1.5 group h-9"
                     >
                         <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                         Zurück
@@ -86,43 +86,43 @@ export default function DesktopSetup() {
                 </div>
 
                 <div className="text-center mb-10 animate-fade-down">
-                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight">
+                    <h1 className="text-3xl md:text-4xl font-black text-foreground mb-4 tracking-tight">
                         Wählen Sie Ihre <span className="text-gradient">KI-Strategie.</span>
                     </h1>
-                    <p className="text-sm text-slate-500 max-w-2xl mx-auto font-medium leading-relaxed">
+                    <p className="text-sm text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
                         Entscheiden Sie sich für cloud-basierte Performance (Mistral) oder lokale Datensouveränität (Ollama).
                     </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-10">
                     {/* Ollama Card */}
-                    <Card className="border-blue-100 shadow-lg hover:shadow-xl transition-all duration-500 group animate-fade-up bg-blue-50/20 rounded-2xl overflow-hidden">
+                    <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-all duration-500 group animate-fade-up bg-primary/10/20 rounded-2xl overflow-hidden">
                         <CardHeader className="p-6 pb-2">
-                            <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 mb-4 flex items-center justify-center group-hover:scale-110 transition-transform border border-blue-100">
+                            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary mb-4 flex items-center justify-center group-hover:scale-110 transition-transform border border-primary/20">
                                 <Cpu size={24} />
                             </div>
-                            <CardTitle className="text-2xl font-black tracking-tight text-slate-900">Ollama Lokal</CardTitle>
-                            <p className="text-xs text-blue-600 font-black uppercase tracking-widest mt-1">Eigene Infrastruktur</p>
+                            <CardTitle className="text-2xl font-black tracking-tight text-foreground">Ollama Lokal</CardTitle>
+                            <p className="text-xs text-primary font-black uppercase tracking-widest mt-1">Eigene Infrastruktur</p>
                         </CardHeader>
                         <CardContent className="p-6 pt-0 space-y-4">
                             <ul className="space-y-3">
-                                <li className="flex items-start gap-3 text-slate-600 text-sm font-medium leading-tight">
-                                    <CheckCircle2 size={16} className="text-blue-500 shrink-0 mt-0.5" />
+                                <li className="flex items-start gap-3 text-muted-foreground text-sm font-medium leading-tight">
+                                    <CheckCircle2 size={16} className="text-primary shrink-0 mt-0.5" />
                                     <span>Eigene Hardware (Lokaler Betrieb)</span>
                                 </li>
-                                <li className="flex items-start gap-3 text-slate-600 text-sm font-medium leading-tight">
-                                    <CheckCircle2 size={16} className="text-blue-500 shrink-0 mt-0.5" />
-                                    <span>Vollständige Datensouveränität</span>
+                                <li className="flex items-start gap-3 text-muted-foreground text-sm font-medium leading-tight">
+                                    <CheckCircle2 size={16} className="text-success shrink-0 mt-0.5" />
+                                    <span>Vollständige offline-Verarbeitung</span>
                                 </li>
                                 <li className="flex items-start gap-3 text-warning text-xs font-bold leading-tight bg-warning/5 p-2 rounded-lg border border-warning/20">
                                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
                                     <span>Bitte beachten Sie die Datenschutzrichtlinien Ihrer Schule</span>
                                 </li>
                             </ul>
-                            <div className="pt-4 border-t border-slate-100">
+                            <div className="pt-4 border-t border-border/50">
                                 <button 
                                     onClick={() => openExternal('https://ollama.com/download')}
-                                    className="inline-flex items-center gap-1.5 text-blue-600 font-bold text-xs hover:underline"
+                                    className="inline-flex items-center gap-1.5 text-primary font-bold text-xs hover:underline"
                                 >
                                     Ollama Download <ExternalLink size={12} />
                                 </button>
@@ -133,20 +133,20 @@ export default function DesktopSetup() {
                     {/* Mistral Card */}
                     <Card className="border-white/60 shadow-lg hover:shadow-xl transition-all duration-500 group animate-fade-up delay-100 rounded-2xl overflow-hidden">
                         <CardHeader className="p-6 pb-2">
-                            <div className="w-12 h-12 rounded-xl bg-orange-50 text-orange-600 mb-4 flex items-center justify-center group-hover:scale-110 transition-transform border border-orange-100">
+                            <div className="w-12 h-12 rounded-xl bg-primary/5 text-primary mb-4 flex items-center justify-center group-hover:scale-110 transition-transform border border-primary/20">
                                 <Cloud size={24} />
                             </div>
-                            <CardTitle className="text-2xl font-black tracking-tight text-slate-900">KI-Cloud (API)</CardTitle>
-                            <p className="text-xs text-orange-600 font-black uppercase tracking-widest mt-1">Mistral AI / OpenAI-kompatibel</p>
+                            <CardTitle className="text-2xl font-black tracking-tight text-foreground">KI-Cloud (API)</CardTitle>
+                            <p className="text-xs text-primary font-black uppercase tracking-widest mt-1">Mistral AI / OpenAI-kompatibel</p>
                         </CardHeader>
                         <CardContent className="p-6 pt-0 space-y-4">
                             <ul className="space-y-3">
-                                <li className="flex items-start gap-3 text-slate-600 text-sm font-medium leading-tight">
-                                    <Zap size={16} className="text-orange-500 shrink-0 mt-0.5" />
+                                <li className="flex items-start gap-3 text-muted-foreground text-sm font-medium leading-tight">
+                                    <Zap size={16} className="text-primary shrink-0 mt-0.5" />
                                     <span>Sofort einsatzbereit (Nur API-Key nötig)</span>
                                 </li>
-                                <li className="flex items-start gap-3 text-slate-600 text-sm font-medium leading-tight">
-                                    <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
+                                <li className="flex items-start gap-3 text-muted-foreground text-sm font-medium leading-tight">
+                                    <CheckCircle2 size={16} className="text-success shrink-0 mt-0.5" />
                                     <span>Anonymisierte Übertragung (Cloud EU)</span>
                                 </li>
                                 <li className="flex items-start gap-3 text-warning text-xs font-bold leading-tight bg-warning/5 p-2 rounded-lg border border-warning/20">
@@ -154,16 +154,16 @@ export default function DesktopSetup() {
                                     <span>Bitte beachten Sie die Datenschutzrichtlinien Ihrer Schule</span>
                                 </li>
                             </ul>
-                            <div className="pt-4 border-t border-slate-100 flex flex-wrap gap-x-6 gap-y-2">
+                            <div className="pt-4 border-t border-border/50 flex flex-wrap gap-x-6 gap-y-2">
                                 <button 
                                     onClick={() => openExternal('https://console.mistral.ai')}
-                                    className="inline-flex items-center gap-1.5 text-orange-600 font-bold text-xs hover:underline"
+                                    className="inline-flex items-center gap-1.5 text-primary font-bold text-xs hover:underline"
                                 >
                                     Mistral Studio <ExternalLink size={12} />
                                 </button>
                                 <button 
                                     onClick={() => openExternal('https://www.mittwald.de/mstudio/ai-hosting')}
-                                    className="inline-flex items-center gap-1.5 text-orange-600 font-bold text-xs hover:underline"
+                                    className="inline-flex items-center gap-1.5 text-primary font-bold text-xs hover:underline"
                                 >
                                     Mittwald KI (DE Hosting) <ExternalLink size={12} />
                                 </button>
@@ -175,8 +175,8 @@ export default function DesktopSetup() {
                 <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10">
                     <div className="animate-fade-up">
                         <div className="text-left mb-6">
-                            <h2 className="text-xl font-black text-slate-900 mb-2 tracking-tight">Ollama Einrichtungs-Guide</h2>
-                            <div className="w-12 h-1 bg-blue-500 rounded-full" />
+                            <h2 className="text-xl font-black text-foreground mb-2 tracking-tight">Ollama Einrichtungs-Guide</h2>
+                            <div className="w-12 h-1 bg-primary/100 rounded-full" />
                         </div>
                         <div className="grid grid-cols-1 gap-4 text-left">
                             {setupPhases.map((phase, idx) => (
@@ -185,7 +185,7 @@ export default function DesktopSetup() {
                                     className="border-white/60 shadow-sm rounded-2xl bg-white overflow-hidden flex group hover:shadow-md transition-all duration-300 cursor-zoom-in"
                                     onClick={() => setZoomedImage(phase.img)}
                                 >
-                                    <div className="w-32 bg-slate-50 relative overflow-hidden p-2 flex items-center justify-center shrink-0 border-r border-slate-100">
+                                    <div className="w-32 bg-background relative overflow-hidden p-2 flex items-center justify-center shrink-0 border-r border-border/50">
                                         <img 
                                             src={phase.img} 
                                             alt={phase.title} 
@@ -196,8 +196,8 @@ export default function DesktopSetup() {
                                         </div>
                                     </div>
                                     <CardContent className="p-4 flex-grow">
-                                        <h4 className="font-bold text-slate-900 text-xs mb-1">{phase.title}</h4>
-                                        <p className="text-xs text-slate-500 font-medium leading-normal">{phase.desc}</p>
+                                        <h4 className="font-bold text-foreground text-xs mb-1">{phase.title}</h4>
+                                        <p className="text-xs text-muted-foreground font-medium leading-normal">{phase.desc}</p>
                                     </CardContent>
                                 </Card>
                             ))}
@@ -206,7 +206,7 @@ export default function DesktopSetup() {
 
                     <div className="animate-fade-up delay-100">
                         <div className="text-left mb-6">
-                            <h2 className="text-xl font-black text-slate-900 mb-2 tracking-tight">Cloud-API Einrichtungs-Guide</h2>
+                            <h2 className="text-xl font-black text-foreground mb-2 tracking-tight">Cloud-API Einrichtungs-Guide</h2>
                             <div className="w-12 h-1 bg-orange-400 rounded-full" />
                         </div>
                         <div className="grid grid-cols-1 gap-4">
@@ -216,19 +216,19 @@ export default function DesktopSetup() {
                                     className="border-white/60 shadow-sm rounded-2xl bg-white overflow-hidden flex group hover:shadow-md transition-all duration-300 cursor-zoom-in"
                                     onClick={() => setZoomedImage(phase.img)}
                                 >
-                                    <div className="w-32 bg-slate-50 relative overflow-hidden p-2 flex items-center justify-center shrink-0 border-r border-slate-100">
+                                    <div className="w-32 bg-background relative overflow-hidden p-2 flex items-center justify-center shrink-0 border-r border-border/50">
                                         <img 
                                             src={phase.img} 
                                             alt={phase.title} 
                                             className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
                                         />
-                                        <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-orange-500 text-white text-xs font-black flex items-center justify-center shadow-sm">
+                                        <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-primary/50 text-white text-xs font-black flex items-center justify-center shadow-sm">
                                             {idx + 1}
                                         </div>
                                     </div>
                                     <CardContent className="p-4 flex-grow">
-                                        <h4 className="font-bold text-slate-900 text-xs mb-1">{phase.title}</h4>
-                                        <p className="text-xs text-slate-500 font-medium leading-normal">{phase.desc}</p>
+                                        <h4 className="font-bold text-foreground text-xs mb-1">{phase.title}</h4>
+                                        <p className="text-xs text-muted-foreground font-medium leading-normal">{phase.desc}</p>
                                     </CardContent>
                                 </Card>
                             ))}

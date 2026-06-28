@@ -20,8 +20,8 @@ export const PrivacySection: React.FC<PrivacySectionProps> = ({
     onSave 
 }) => {
     return (
-        <div className="mb-6 pb-4 border-b border-slate-100">
-            <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Modus & Datenschutz</h3>
+        <div className="mb-6 pb-4 border-b border-border">
+            <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">Modus & Datenschutz</h3>
             {!isLocalInstance() && (
                 <div className="grid grid-cols-3 gap-3 mb-6">
                     {['STANDARD', 'PURE', 'TRIAL'].map((mode) => {
@@ -29,18 +29,18 @@ export const PrivacySection: React.FC<PrivacySectionProps> = ({
                         return (
                             <div
                                 key={mode}
-                                className={`flex flex-col p-4 border-2 rounded-xl transition-all duration-200 relative overflow-hidden ${isDisabled ? 'opacity-40 grayscale cursor-not-allowed' : 'cursor-pointer'} ${appMode === mode ? 'border-primary bg-primary/5 shadow-sm' : isDisabled ? 'border-slate-100 bg-slate-50' : 'border-slate-100 hover:border-slate-300 bg-white'}`}
+                                className={`flex flex-col p-4 border-2 rounded-xl transition-all duration-200 relative overflow-hidden ${isDisabled ? 'opacity-40 grayscale cursor-not-allowed' : 'cursor-pointer'} ${appMode === mode ? 'border-primary bg-primary/5 shadow-sm' : isDisabled ? 'border-border bg-muted/20' : 'border-border hover:border-border/80 bg-background'}`}
                                 onClick={() => !isDisabled && onModeChange(mode)}
                             >
-                                <span className={`font-bold text-sm mb-1 ${appMode === mode ? 'text-primary' : isDisabled ? 'text-slate-400' : 'text-slate-700'}`}>
+                                <span className={`font-bold text-sm mb-1 ${appMode === mode ? 'text-primary' : isDisabled ? 'text-muted-foreground/50' : 'text-foreground'}`}>
                                     {mode.charAt(0) + mode.slice(1).toLowerCase()}
                                 </span>
-                                <span className="text-xs text-slate-500">
+                                <span className="text-xs text-muted-foreground">
                                     {isDisabled ? 'In Kürze verfügbar' : (mode === 'STANDARD' ? 'Managed (3 Credits)' : mode === 'PURE' ? 'Privacy (1 Credit)' : 'Test (Kostenlos)')}
                                 </span>
                                 {isDisabled && (
                                     <div className="absolute top-1 right-1">
-                                        <span className="text-[7px] font-black uppercase text-slate-400 bg-slate-200/50 px-1 rounded">Soon</span>
+                                        <span className="text-xxs font-black uppercase text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">Soon</span>
                                     </div>
                                 )}
                             </div>
@@ -57,7 +57,7 @@ export const PrivacySection: React.FC<PrivacySectionProps> = ({
 
             {appMode === 'STANDARD' && !isLocalInstance() && (
                 <div className="space-y-3">
-                    <div className={`px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 border ${avvAccepted ? 'bg-green-50 text-green-800 border-green-200' : 'bg-red-50 text-red-800 border-red-200'}`}>
+                    <div className={`px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2 border ${avvAccepted ? 'bg-success/5 text-success border-success/20' : 'bg-destructive/5 text-destructive border-destructive/20'}`}>
                         <span>{avvAccepted ? '✅' : '❌'}</span>
                         {avvAccepted ? 'AVV hinterlegt & gültig' : 'AVV fehlt (Standard-Modus blockiert)'}
                     </div>
@@ -66,14 +66,14 @@ export const PrivacySection: React.FC<PrivacySectionProps> = ({
 
             {!isLocalInstance() && appMode === 'PURE' && (
                 <div className="mt-4 space-y-4">
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">Mistral API Key (Lokal)</label>
+                    <div className="bg-muted/20 p-4 rounded-xl border border-border">
+                        <label className="block text-sm font-semibold text-foreground mb-2">Mistral API Key (Lokal)</label>
                         <input
                             type="password"
                             placeholder="sk-..."
                             defaultValue={settings.mistralKey || ''}
                             onBlur={(e) => onSave({ mistralKey: e.target.value })}
-                            className="h-10 w-full rounded-lg text-sm border-slate-200 px-3"
+                            className="h-10 w-full rounded-lg text-sm border-border bg-background px-3"
                         />
                     </div>
                 </div>

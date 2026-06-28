@@ -37,7 +37,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
     if (isSaaS && mode === 'USER_SETUP') {
         // ... SaaS card logic remains same ...
         const LocationBadge = ({ location }: { location: string }) => (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-[10px] font-black text-emerald-600 uppercase tracking-tight border border-emerald-100">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/5 text-xxs font-black text-success uppercase tracking-tight border border-success/20">
                 <Zap size={10} /> {location}
             </span>
         );
@@ -48,17 +48,17 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                     <button
                         onClick={() => updateSettings({ provider: 'mistral' })}
                         className={`group relative p-5 rounded-3xl border-2 transition-all duration-300 text-left ${
-                            settings.provider === 'mistral' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-slate-100 bg-white'
+                            settings.provider === 'mistral' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-border bg-background'
                         }`}
                     >
                         <div className="flex justify-between items-start mb-3">
-                            <div className={`p-2.5 rounded-2xl ${settings.provider === 'mistral' ? 'bg-primary text-white' : 'bg-slate-100 text-slate-500'}`}>
+                            <div className={`p-2.5 rounded-2xl ${settings.provider === 'mistral' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                                 <Globe size={20} />
                             </div>
                             <LocationBadge location="Frankreich (EU)" />
                         </div>
-                        <h4 className="font-black text-slate-900 tracking-tight">Mistral AI Standard</h4>
-                        <p className="text-xs text-slate-500 font-medium">Bewährte Performance, DSGVO-konform gehostet in der EU.</p>
+                        <h4 className="font-black text-foreground tracking-tight">Mistral AI Standard</h4>
+                        <p className="text-xs text-muted-foreground font-medium">Bewährte Performance, DSGVO-konform gehostet in der EU.</p>
                     </button>
 
                     <button
@@ -69,20 +69,20 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                             enableThinking: true
                         })}
                         className={`group relative p-5 rounded-3xl border-2 transition-all duration-300 text-left ${
-                            settings.provider === 'openai-compatible' ? 'border-indigo-500 bg-indigo-50/30 ring-4 ring-indigo-500/10' : 'border-slate-100 bg-white'
+                            settings.provider === 'openai-compatible' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-border bg-background'
                         }`}
                     >
                         <div className="flex justify-between items-start mb-3">
-                            <div className={`p-2.5 rounded-2xl ${settings.provider === 'openai-compatible' ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                            <div className={`p-2.5 rounded-2xl ${settings.provider === 'openai-compatible' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                                 <Zap size={20} />
                             </div>
                             <LocationBadge location="Deutschland (DE)" />
                         </div>
                         <div className="flex items-center gap-2">
-                            <h4 className="font-black text-slate-900 tracking-tight">Mittwald AI API (Qwen)</h4>
-                            <span className="px-1.5 py-0.5 rounded-md bg-indigo-100 text-[10px] font-bold text-indigo-600 uppercase">Pro</span>
+                            <h4 className="font-black text-foreground tracking-tight">Mittwald AI API (Qwen)</h4>
+                            <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-xxs font-bold text-primary uppercase">Pro</span>
                         </div>
-                        <p className="text-xs text-slate-500 font-medium">Maximale Präzision durch High-Performance AI, gehostet in Deutschland.</p>
+                        <p className="text-xs text-muted-foreground font-medium">Maximale Präzision durch High-Performance AI, gehostet in Deutschland.</p>
                     </button>
                 </div>
             </div>
@@ -93,7 +93,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
     return (
         <div className="space-y-6">
             <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">KI Engine / Provider</label>
+                <label className="text-xxs font-black uppercase text-muted-foreground tracking-widest ml-1">KI Engine / Provider</label>
                 <div className="grid grid-cols-3 gap-2">
                     {[
                         { id: 'mistral', label: 'Mistral API', icon: Globe },
@@ -105,11 +105,11 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                             variant="outline"
                             onClick={() => updateSettings({ provider: p.id as any })}
                             className={`h-auto py-3 flex flex-col items-center gap-1.5 rounded-2xl transition-all duration-300 border-2 ${
-                                settings.provider === p.id ? 'border-primary bg-primary/5' : 'bg-white'
+                                settings.provider === p.id ? 'border-primary bg-primary/5' : 'bg-background'
                             }`}
                         >
-                            <p.icon size={16} className={settings.provider === p.id ? 'text-primary' : 'text-slate-400'} />
-                            <span className={`text-[10px] font-bold ${settings.provider === p.id ? 'text-primary' : 'text-slate-500'}`}>{p.label}</span>
+                            <p.icon size={16} className={settings.provider === p.id ? 'text-primary' : 'text-muted-foreground/50'} />
+                            <span className={`text-xxs font-bold ${settings.provider === p.id ? 'text-primary' : 'text-muted-foreground'}`}>{p.label}</span>
                         </Button>
                     ))}
                 </div>

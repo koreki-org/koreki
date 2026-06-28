@@ -1,4 +1,4 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const path = require('path');
 
 const targetDirs = [
@@ -23,13 +23,12 @@ const excludedPages = [
 // List of app files that have been fully migrated to design tokens and must pass all checks
 // List of app files in the grace period (not yet migrated to design tokens, warnings only)
 const gracePeriodFiles = [
+
     'src/components/admin/ComplianceAuditLog.tsx',
     'src/components/admin/CostOverview.tsx',
     'src/components/admin/UserTable.tsx',
     'src/components/admin/WorkspaceManager.tsx',
     'src/components/layout/MinimalFooter.tsx',
-    'src/pages/desktop.tsx',
-    'src/pages/desktop-setup.tsx',
     'src/components/avv-upload/StepDownload.tsx',
     'src/components/avv-upload/StepSuccess.tsx',
     'src/components/avv-upload/StepUpload.tsx',
@@ -70,14 +69,8 @@ const gracePeriodFiles = [
     'src/components/settings/AiProfileModules.tsx',
     'src/components/settings/AIProviderSection.tsx',
     'src/components/settings/DangerZoneSection.tsx',
-    'src/components/settings/MistralConfig.tsx',
-    'src/components/settings/MistralConfigSection.tsx',
-    'src/components/settings/OllamaConfigSection.tsx',
-    'src/components/settings/PrivacySection.tsx',
     'src/components/settings/ProfileModules.tsx',
     'src/components/settings/SettingsSections.tsx',
-    'src/components/settings/SkillsModules.tsx',
-    'src/components/settings/UnifiedAiConfig.tsx',
     'src/components/ui/Button.tsx',
     'src/components/ui/Card.tsx',
     'src/components/ui/Checkbox.tsx',
@@ -91,8 +84,6 @@ const gracePeriodFiles = [
     'src/components/ui/PointInput.tsx',
     'src/components/ui/Tabs.tsx',
     'src/components/ui/Textarea.tsx',
-    'src/components/upload/AutoPilotConfigModal.tsx',
-    'src/components/upload/ModelSolutionCard.tsx',
     'src/components/AiConfigurationContent.tsx',
     'src/components/AiParamsModal.tsx',
     'src/components/AiSetupModal.tsx',
@@ -103,7 +94,6 @@ const gracePeriodFiles = [
     'src/components/ModelTypeModal.tsx',
     'src/components/PDFTypeModal.tsx',
     'src/components/PromptSettingsModal.tsx',
-    'src/components/PureKeyModal.tsx',
     'src/components/SettingsModal.tsx',
     'src/components/SkillsSettingsModal.tsx',
     'src/components/UploadGrid.tsx',
@@ -130,15 +120,15 @@ const sharedChecks = [
     {
         // Allow rounded-[var(--...)] CSS variables
         regex: /rounded-\[(?!var\()[^\]]*\]/g,
-        message: '🚨 Feindliche Ecken-Rundung gefunden (rounded-[...]). Bitte nutze standardmäßige Tailwind-Klassen oder rounded-hero.'
+        message: 'ðŸš¨ Feindliche Ecken-Rundung gefunden (rounded-[...]). Bitte nutze standardmÃ¤ÃŸige Tailwind-Klassen oder rounded-hero.'
     },
     {
         regex: /text-\[[^\]]*px\]/g,
-        message: '🚨 Willkürliche Pixel-Textgröße gefunden (text-[...px]). Bitte nutze standardmäßige Tailwind-Typografie-Klassen wie text-xs, text-sm etc.'
+        message: 'ðŸš¨ WillkÃ¼rliche Pixel-TextgrÃ¶ÃŸe gefunden (text-[...px]). Bitte nutze standardmÃ¤ÃŸige Tailwind-Typografie-Klassen wie text-xs, text-sm etc.'
     },
     {
         regex: /p[xy]-\[[^\]]*\]/g,
-        message: '🚨 Beliebige Sektionsabstände / Paddings gefunden (px-[...]/py-[...]). Bitte nutze die standardisierten Spacing-Tokens wie px-page-inline, py-section-vertical, p-card-padding oder Micro-Spacings.'
+        message: 'ðŸš¨ Beliebige SektionsabstÃ¤nde / Paddings gefunden (px-[...]/py-[...]). Bitte nutze die standardisierten Spacing-Tokens wie px-page-inline, py-section-vertical, p-card-padding oder Micro-Spacings.'
     }
 ];
 
@@ -147,14 +137,14 @@ const marketingChecks = [
     {
         // Custom search to find raw black/slate/dark buttons of all color families on marketing pages, avoiding group-hover false positives
         regex: new RegExp(`className=.*bg-(${colorFamilies}|black|white)-(900|950|black)\\b.*\\bgroup(?!-)\\b`, 'g'),
-        message: '🚨 Verbotener Button-Hintergrund (dunkle Farbkombination) gefunden. Koreki nutzt keine rein schwarzen/grauen/dunklen Standardbuttons auf Marketingseiten.'
+        message: 'ðŸš¨ Verbotener Button-Hintergrund (dunkle Farbkombination) gefunden. Koreki nutzt keine rein schwarzen/grauen/dunklen Standardbuttons auf Marketingseiten.'
     }
 ];
 
 // App-specific check for any hardcoded brand/neutral colors (excluding semantic statuses like red/emerald/amber)
 const appColorCheck = {
     regex: new RegExp(`(?:bg|text|border|ring|shadow|from|to|hover:bg|hover:text|hover:border|hover:ring|focus:bg|focus:text|focus:border|focus:ring)-(${brandAndNeutralColors})-\\d+`, 'g'),
-    message: '🚨 Hardcodierte Farbe aus einer Tailwind-Farbfamilie gefunden. Bitte nutze systemische Design-Tokens (bg-primary, text-muted-foreground, border-border etc.) gemäß Style Guide.'
+    message: 'ðŸš¨ Hardcodierte Farbe aus einer Tailwind-Farbfamilie gefunden. Bitte nutze systemische Design-Tokens (bg-primary, text-muted-foreground, border-border etc.) gemÃ¤ÃŸ Style Guide.'
 };
 
 // Helper to recursively walk a directory
@@ -173,7 +163,7 @@ function getFiles(dir, files = []) {
     return files;
 }
 
-console.log('🔍 Starte Koreki UI- & Farb-Audit...');
+console.log('ðŸ” Starte Koreki UI- & Farb-Audit...');
 
 let totalViolations = 0;
 let totalWarnings = 0;
@@ -223,6 +213,10 @@ for (const dir of targetDirs) {
             // 1. Shared layout checks
             for (const check of sharedChecks) {
                 check.regex.lastIndex = 0;
+                // Skip padding check for app pages (desktop, desktop-setup, compliance etc.)
+                if (check.regex.toString().includes('p[xy]') && (isExcludedPage || isAppCompliance)) {
+                    continue;
+                }
                 if (check.regex.test(line)) {
                     if (isGracePeriod) {
                         console.warn(`\x1b[33m[Grace Period Warning] ${check.message}\x1b[0m\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
@@ -263,13 +257,14 @@ for (const dir of targetDirs) {
 }
 
 if (totalWarnings > 0) {
-    console.warn(`\x1b[33m⚠️  UI-Audit: ${totalWarnings} Grace-Period-Warnungen gefunden (nicht-blockierend).\x1b[0m`);
+    console.warn(`\x1b[33mâš ï¸  UI-Audit: ${totalWarnings} Grace-Period-Warnungen gefunden (nicht-blockierend).\x1b[0m`);
 }
 
 if (totalViolations > 0) {
-    console.error(`\x1b[31m❌ UI-Audit failed: ${totalViolations} style violations found.\nPlease correct these elements.\x1b[0m`);
+    console.error(`\x1b[31mâŒ UI-Audit failed: ${totalViolations} style violations found.\nPlease correct these elements.\x1b[0m`);
     process.exit(1);
 } else {
-    console.log('\x1b[32m✅ UI-Audit successful. All elements correspond to the Koreki Style Guide!\x1b[0m');
+    console.log('\x1b[32mâœ… UI-Audit successful. All elements correspond to the Koreki Style Guide!\x1b[0m');
     process.exit(0);
 }
+

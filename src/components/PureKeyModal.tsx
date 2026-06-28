@@ -31,32 +31,32 @@ const PureKeyModal: React.FC<PureKeyModalProps> = ({ onSave, onClose }) => {
                 </Button>
 
                 <div className="text-center mb-8">
-                    <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <div className="w-16 h-16 bg-success/5 border border-success/20 text-success rounded-2xl flex items-center justify-center mx-auto mb-4">
                         <ShieldCheck size={32} />
                     </div>
                     <h2 className="text-2xl font-bold tracking-tight text-foreground mb-1">Koreki Pure Aktiv</h2>
                     <p className="text-sm text-muted-foreground">Maximale Privatsphäre: Ihre Daten verlassen nie Ihren Browser.</p>
                 </div>
 
-                <div className="bg-emerald-50/50 border border-emerald-100/50 text-emerald-900 p-4 rounded-xl text-sm leading-relaxed mb-6">
-                    <p>Im <strong className="text-emerald-950">Pure-Modus</strong> kommuniziert Ihr Browser direkt mit Mistral AI. Ihr API-Key wird <strong>nur im Arbeitsspeicher (RAM)</strong> gehalten und niemals auf unseren Server übertragen oder dauerhaft gespeichert.</p>
+                <div className="bg-success/5 border border-success/20 text-success p-4 rounded-xl text-sm leading-relaxed mb-6">
+                    <p>Im <strong className="text-success font-black">Pure-Modus</strong> kommuniziert Ihr Browser direkt mit Mistral AI. Ihr API-Key wird <strong>nur im Arbeitsspeicher (RAM)</strong> gehalten und niemals auf unseren Server übertragen oder dauerhaft gespeichert.</p>
                 </div>
 
                 <div className="space-y-4 mb-8">
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-foreground ml-1">Mistral API Key eingeben</label>
                         <div className="relative group">
-                            <Key size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-emerald-600 transition-colors" />
+                            <Key size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
                             <Input
                                 type="password"
                                 placeholder="sk-..."
                                 value={key}
                                 onChange={(e) => setKey(e.target.value)}
-                                className="pl-11 h-12 font-mono focus:border-emerald-600 focus:ring-emerald-600/10"
+                                className="pl-11 h-12 font-mono focus:border-primary/50 focus:ring-primary/10"
                             />
                         </div>
-                        <p className="text-[0.75rem] text-muted-foreground ml-1">
-                            Den Key finden Sie in Ihrer <a href="https://console.mistral.ai/" target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline">Mistral Console</a>.
+                        <p className="text-xxs text-muted-foreground ml-1">
+                            Den Key finden Sie in Ihrer <a href="https://console.mistral.ai/" target="_blank" rel="noreferrer" className="text-primary hover:underline">Mistral Console</a>.
                         </p>
                     </div>
 
@@ -79,7 +79,7 @@ const PureKeyModal: React.FC<PureKeyModalProps> = ({ onSave, onClose }) => {
                     <Button
                         disabled={!key}
                         onClick={() => onSave(key)}
-                        className="flex-[2] bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200 border-none"
+                        className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 border-none"
                     >
                         Sitzung starten
                     </Button>

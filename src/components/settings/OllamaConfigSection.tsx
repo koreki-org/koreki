@@ -51,7 +51,7 @@ export const OllamaConfigSection: React.FC<OllamaConfigSectionProps> = ({
                     </Button>
                 </div>
                 {pingStatus === 'ok' && (
-                    <div className="flex items-center justify-between text-xs text-emerald-600 font-bold bg-emerald-50/50 p-2 rounded-xl border border-emerald-100 animate-fade-in">
+                    <div className="flex items-center justify-between text-xs text-success font-bold bg-success/5 p-2 rounded-xl border border-success/20 animate-fade-in">
                         <div className="flex items-center gap-2">
                             <Check size={14} />
                             <span>Ollama {ollamaVersion ? `v${ollamaVersion}` : ''} bereit</span>
@@ -60,20 +60,20 @@ export const OllamaConfigSection: React.FC<OllamaConfigSectionProps> = ({
                         <div className="flex items-center gap-1.5">
                             {ollamaUrl.startsWith('https') ? (
                                 isSelfSigned ? (
-                                    <div className="flex items-center gap-1 text-blue-600/70" title="Selbstsigniertes Zertifikat aktiv">
+                                    <div className="flex items-center gap-1 text-primary/70" title="Selbstsigniertes Zertifikat aktiv">
                                         <Shield size={12} strokeWidth={3} />
-                                        <span className="text-[10px] uppercase tracking-tighter">Self-Signed</span>
+                                        <span className="text-xxs uppercase tracking-tighter">Self-Signed</span>
                                     </div>
                                 ) : (
-                                    <div className="flex items-center gap-1 text-emerald-600/70" title="Verbindung über CA-Zertifikat gesichert">
+                                    <div className="flex items-center gap-1 text-success/70" title="Verbindung über CA-Zertifikat gesichert">
                                         <Lock size={12} strokeWidth={3} />
-                                        <span className="text-[10px] uppercase tracking-tighter">Sicher</span>
+                                        <span className="text-xxs uppercase tracking-tighter">Sicher</span>
                                     </div>
                                 )
                             ) : (
-                                <div className="flex items-center gap-1 text-slate-400/70" title="Unverschlüsselte lokale Verbindung">
+                                <div className="flex items-center gap-1 text-muted-foreground/50" title="Unverschlüsselte lokale Verbindung">
                                     <Info size={12} strokeWidth={3} />
-                                    <span className="text-[10px] uppercase tracking-tighter">Lokal</span>
+                                    <span className="text-xxs uppercase tracking-tighter">Lokal</span>
                                 </div>
                             )}
                         </div>
@@ -93,11 +93,11 @@ export const OllamaConfigSection: React.FC<OllamaConfigSectionProps> = ({
                             key={p.id}
                             variant="outline"
                             onClick={() => onSelectPreset(p.id)}
-                            className={`h-auto py-3 px-4 justify-between rounded-xl border-2 transition-all duration-300 ${!showCustomInput && lastSelectedPreset === p.id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'bg-white'}`}
+                            className={`h-auto py-3 px-4 justify-between rounded-xl border-2 transition-all duration-300 ${!showCustomInput && lastSelectedPreset === p.id ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'bg-background'}`}
                         >
                             <div className="text-left">
                                 <div className="text-xs font-bold text-foreground">{p.name}</div>
-                                <div className="text-[11px] text-muted-foreground font-medium">{p.desc}</div>
+                                <div className="text-xxs text-muted-foreground font-medium">{p.desc}</div>
                             </div>
                             {!showCustomInput && lastSelectedPreset === p.id && <Check size={16} className="text-primary" />}
                         </Button>
@@ -106,13 +106,13 @@ export const OllamaConfigSection: React.FC<OllamaConfigSectionProps> = ({
                     <Button
                         variant="outline"
                         onClick={() => setShowCustomInput(true)}
-                        className={`h-auto py-3 px-4 justify-between rounded-xl border-2 transition-all duration-300 ${showCustomInput ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'bg-white'}`}
+                        className={`h-auto py-3 px-4 justify-between rounded-xl border-2 transition-all duration-300 ${showCustomInput ? 'border-primary bg-primary/5 ring-1 ring-primary/20' : 'bg-background'}`}
                     >
                         <div className="flex items-center gap-3">
                             <Settings2 size={18} className="text-muted-foreground" />
                             <div className="text-left">
                                 <div className="text-xs font-bold text-foreground">Eigene Modell-Konfiguration</div>
-                                <div className="text-[11px] text-muted-foreground font-medium">Manuelle Eingabe oder Tags</div>
+                                <div className="text-xxs text-muted-foreground font-medium">Manuelle Eingabe oder Tags</div>
                             </div>
                         </div>
                         {showCustomInput && <Check size={16} className="text-primary" />}
@@ -120,8 +120,8 @@ export const OllamaConfigSection: React.FC<OllamaConfigSectionProps> = ({
                 </div>
 
                 {!showCustomInput && (
-                    <div className={`p-3 rounded-xl border transition-colors ${availableModels.length > 0 ? (resolvedFromPreset ? 'bg-primary/5 border-primary/20' : (availableModels.includes(ollamaModel) ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-warning/5 border-warning/20')) : 'bg-muted border-border'}`}>
-                        <div className={`flex items-center gap-2 text-xs font-bold ${availableModels.length > 0 ? (resolvedFromPreset ? 'text-primary' : (availableModels.includes(ollamaModel) ? 'text-emerald-600' : 'text-warning')) : 'text-muted-foreground'}`}>
+                    <div className={`p-3 rounded-xl border transition-colors ${availableModels.length > 0 ? (resolvedFromPreset ? 'bg-primary/5 border-primary/20' : (availableModels.includes(ollamaModel) ? 'bg-success/5 border-success/20' : 'bg-warning/5 border-warning/20')) : 'bg-muted border-border'}`}>
+                        <div className={`flex items-center gap-2 text-xs font-bold ${availableModels.length > 0 ? (resolvedFromPreset ? 'text-primary' : (availableModels.includes(ollamaModel) ? 'text-success' : 'text-warning')) : 'text-muted-foreground'}`}>
                             <AlertCircle size={14} />
                             {availableModels.length > 0 ? (
                                 resolvedFromPreset ? (
@@ -154,7 +154,7 @@ export const OllamaConfigSection: React.FC<OllamaConfigSectionProps> = ({
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => setCustomModel(m)}
-                                        className={`h-7 px-2 text-[10px] font-mono border ${customModel === m ? 'bg-primary/10 border-primary text-primary' : 'bg-white border-border text-muted-foreground'}`}
+                                        className={`h-7 px-2 text-xxs font-mono border ${customModel === m ? 'bg-primary/10 border-primary text-primary' : 'bg-background border-border text-muted-foreground'}`}
                                     >
                                         {m}
                                     </Button>
