@@ -66,15 +66,15 @@ const UserTable: React.FC<UserTableProps> = ({
                         
                         if (u.role === 'ADMIN') {
                             roleLabel = "System-Admin 👑";
-                            badgeStyles = "bg-amber-500/10 text-amber-700 border-amber-500/20";
+                            badgeStyles = "bg-warning/10 text-warning border-warning/20";
                         } else if (u.role === 'EXPERTE') {
                             roleLabel = "Privat-Experte 💎";
-                            badgeStyles = "bg-purple-500/10 text-purple-700 border-purple-500/20";
+                            badgeStyles = "bg-primary/15 text-primary border-primary/30";
                         } else if (hasOrgMembership) {
                             const role = orgMembership.role;
                             if (role === 'ADMIN' || role === 'OWNER') {
                                 roleLabel = "Org-Verwalter 🏢⚙️";
-                                badgeStyles = "bg-blue-600/10 text-blue-700 border-blue-600/20";
+                                badgeStyles = "bg-primary/10 text-primary border-primary/20";
                             } else {
                                 roleLabel = "Lehrkraft 🏫";
                                 badgeStyles = "bg-primary/5 text-primary/80 border-primary/10";
@@ -112,9 +112,9 @@ const UserTable: React.FC<UserTableProps> = ({
                                 <td className="px-8 py-4 text-center">
                                     <Badge variant="outline" className={cn(
                                         "text-[10px] uppercase font-bold px-2 py-0.5",
-                                        u.appMode === 'PURE' && "bg-indigo-500/10 text-indigo-700",
-                                        u.appMode === 'STANDARD' && "bg-emerald-500/10 text-emerald-700",
-                                        u.appMode === 'TRIAL' && "bg-amber-500/10 text-amber-700"
+                                        u.appMode === 'PURE' && "bg-primary/10 text-primary",
+                                        u.appMode === 'STANDARD' && "bg-primary/10 text-primary",
+                                        u.appMode === 'TRIAL' && "bg-warning/10 text-warning"
                                     )}>
                                         {u.appMode}
                                     </Badge>

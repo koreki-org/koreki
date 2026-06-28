@@ -296,7 +296,7 @@ ${correctionPrompt}`;
                 )}
             </div>
             {isDirty && !isCreatingNew && !isSystemSelected && (
-                <div className="flex items-center gap-2 text-amber-500 animate-pulse pb-2 shrink-0">
+                <div className="flex items-center gap-2 text-warning animate-pulse pb-2 shrink-0">
                     <RefreshCcw size={16} />
                     <span className="text-xxs font-bold uppercase tracking-widest">Ungespeichertes</span>
                 </div>

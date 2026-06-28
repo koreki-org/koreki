@@ -87,7 +87,7 @@ export const PerformanceSection: React.FC = () => {
                         </div>
                         
                         {s.warning && (
-                            <div className="mt-4 flex items-center gap-2 text-amber-600 text-xs font-bold uppercase tracking-tight">
+                            <div className="mt-4 flex items-center gap-2 text-warning text-xs font-bold uppercase tracking-tight">
                                 <AlertCircle size={12} /> GPU dringend empfohlen
                             </div>
                         )}

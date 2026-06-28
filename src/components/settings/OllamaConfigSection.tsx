@@ -120,8 +120,8 @@ export const OllamaConfigSection: React.FC<OllamaConfigSectionProps> = ({
                 </div>
 
                 {!showCustomInput && (
-                    <div className={`p-3 rounded-xl border transition-colors ${availableModels.length > 0 ? (resolvedFromPreset ? 'bg-primary/5 border-primary/20' : (availableModels.includes(ollamaModel) ? 'bg-emerald-50 border-emerald-100' : 'bg-amber-50 border-amber-100')) : 'bg-muted border-border'}`}>
-                        <div className={`flex items-center gap-2 text-xs font-bold ${availableModels.length > 0 ? (resolvedFromPreset ? 'text-primary' : (availableModels.includes(ollamaModel) ? 'text-emerald-600' : 'text-amber-600')) : 'text-muted-foreground'}`}>
+                    <div className={`p-3 rounded-xl border transition-colors ${availableModels.length > 0 ? (resolvedFromPreset ? 'bg-primary/5 border-primary/20' : (availableModels.includes(ollamaModel) ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-warning/5 border-warning/20')) : 'bg-muted border-border'}`}>
+                        <div className={`flex items-center gap-2 text-xs font-bold ${availableModels.length > 0 ? (resolvedFromPreset ? 'text-primary' : (availableModels.includes(ollamaModel) ? 'text-emerald-600' : 'text-warning')) : 'text-muted-foreground'}`}>
                             <AlertCircle size={14} />
                             {availableModels.length > 0 ? (
                                 resolvedFromPreset ? (

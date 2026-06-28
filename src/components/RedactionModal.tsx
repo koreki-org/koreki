@@ -81,7 +81,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
 
                 <div className="flex justify-between items-center mb-4 sm:mb-6 w-full">
                     <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-500/10 text-amber-600 rounded-xl flex items-center justify-center text-lg sm:text-xl shadow-inner">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-warning/10 text-warning rounded-xl flex items-center justify-center text-lg sm:text-xl shadow-inner">
                             🖋️
                         </div>
                         <div>

@@ -114,7 +114,7 @@ export default function DesktopSetup() {
                                     <CheckCircle2 size={16} className="text-blue-500 shrink-0 mt-0.5" />
                                     <span>Vollständige Datensouveränität</span>
                                 </li>
-                                <li className="flex items-start gap-3 text-amber-600 text-xs font-bold leading-tight bg-amber-50/50 p-2 rounded-lg border border-amber-100/50">
+                                <li className="flex items-start gap-3 text-warning text-xs font-bold leading-tight bg-warning/5 p-2 rounded-lg border border-warning/20">
                                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
                                     <span>Bitte beachten Sie die Datenschutzrichtlinien Ihrer Schule</span>
                                 </li>
@@ -149,7 +149,7 @@ export default function DesktopSetup() {
                                     <CheckCircle2 size={16} className="text-emerald-500 shrink-0 mt-0.5" />
                                     <span>Anonymisierte Übertragung (Cloud EU)</span>
                                 </li>
-                                <li className="flex items-start gap-3 text-amber-600 text-xs font-bold leading-tight bg-amber-50/50 p-2 rounded-lg border border-amber-100/50">
+                                <li className="flex items-start gap-3 text-warning text-xs font-bold leading-tight bg-warning/5 p-2 rounded-lg border border-warning/20">
                                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
                                     <span>Bitte beachten Sie die Datenschutzrichtlinien Ihrer Schule</span>
                                 </li>

@@ -92,8 +92,8 @@ export default function AGB() {
                             <p className="leading-relaxed text-slate-600">Koreki richtet sich an Lehrkräfte und Bildungseinrichtungen als Open-Source-Hilfsmittel zur KI-gestützten Korrektur und Einschätzung von Aufgaben.</p>
                         </section>
 
-                        <section id="liability" className="bg-white rounded-3xl p-10 border border-amber-200 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-amber-50/30 to-white">
-                            <div className="inline-flex p-3 bg-amber-100 text-amber-600 rounded-xl mb-6"><Scale size={24} /></div>
+                        <section id="liability" className="bg-white rounded-3xl p-10 border border-warning/20 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-warning/5 to-white">
+                            <div className="inline-flex p-3 bg-warning/10 text-warning rounded-xl mb-6"><Scale size={24} /></div>
                             <h2 className="text-2xl font-bold text-slate-800 mb-6">§2 Leistungsumfang und KI-Haftungsausschluss</h2>
                             <p className="leading-relaxed text-slate-600 mb-4">Koreki bietet Werkzeuge zur Textextraktion (OCR) und Analyse mittels Künstlicher Intelligenz (KI). Die KI generiert Einschätzungen und Bepunktungsvorschläge basierend auf den von der Lehrkraft bereitgestellten Musterlösungen.</p>
                             <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-2xl my-6">

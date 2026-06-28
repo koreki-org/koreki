@@ -85,7 +85,7 @@ export default function DesktopOnboarding() {
                         <Card className="border-white/60 shadow-xl relative overflow-hidden group rounded-2xl">
                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
                            <CardContent className="p-6 md:p-8 relative z-10">
-                               <div className="flex items-start gap-3 mb-6 text-amber-700 bg-amber-50 p-4 rounded-xl border border-amber-200/50">
+                               <div className="flex items-start gap-3 mb-6 text-warning bg-warning/5 p-4 rounded-xl border border-warning/20">
                                    <ShieldAlert size={24} className="shrink-0 mt-0.5" />
                                    <div>
                                        <h4 className="font-black uppercase text-xs tracking-widest mb-1">Datenschutz & Verantwortung</h4>

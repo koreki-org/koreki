@@ -104,13 +104,13 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
             {((userData?.role === 'ADMIN' && !isLocalInstance()) || 
               (userData?.role !== 'ADMIN' && userData?.activeWorkspaceType === 'ORGANIZATION' && 
                (userData?.activeMembershipRole === 'ADMIN' || userData?.activeMembershipRole === 'OWNER'))) && (
-                <div className="flex items-center gap-1 border-l border-slate-200 ml-1 pl-2">
+                <div className="flex items-center gap-1 border-l border-border ml-1 pl-2">
                     {userData?.role === 'ADMIN' && !isLocalInstance() && (
                         <Button
                             variant="outline"
                             size="icon"
                             onClick={() => router.push('/admin')}
-                            className="bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-500 hover:text-white rounded-xl shadow-sm h-8 w-8 transition-all shrink-0"
+                            className="bg-warning/10 border-warning/20 text-warning hover:bg-warning hover:text-white rounded-xl shadow-sm h-8 w-8 transition-all shrink-0"
                             title="System-Administration (GLOBAL)"
                         >
                             <Shield size={16} />

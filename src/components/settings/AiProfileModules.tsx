@@ -312,7 +312,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                     {isDirty && !isCreatingNew && !isSystemSelected && (
-                        <div className="flex items-center gap-2 text-amber-500 animate-pulse px-2 hidden sm:flex">
+                        <div className="flex items-center gap-2 text-warning animate-pulse px-2 hidden sm:flex">
                             <RefreshCcw size={14} />
                             <span className="text-xxs font-bold uppercase tracking-widest">Ungespeichert</span>
                         </div>

@@ -69,8 +69,8 @@ export default function Login() {
         </p>
 
         {isKeycloakAuth() && !isSecure && (
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl text-left text-xs text-amber-800 flex gap-3 animate-fade-up">
-            <AlertTriangle size={24} className="shrink-0 text-amber-500" />
+          <div className="mb-6 p-4 bg-warning/5 border border-warning/20 rounded-xl text-left text-xs text-warning flex gap-3 animate-fade-up">
+            <AlertTriangle size={24} className="shrink-0 text-warning" />
             <div>
               <p className="font-bold mb-1">Verbindung nicht sicher</p>
               <p className="leading-relaxed">

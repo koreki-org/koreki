@@ -130,7 +130,7 @@ export const CorrectionAnalytics: React.FC<CorrectionAnalyticsProps> = ({ batchF
                                     <div 
                                         className={`h-full transition-all duration-1000 ease-out rounded-full ${
                                             task.percentage > 75 ? 'bg-emerald-500' : 
-                                            task.percentage > 40 ? 'bg-amber-500' : 'bg-destructive'
+                                            task.percentage > 40 ? 'bg-warning' : 'bg-destructive'
                                         }`}
                                         style={{ width: `${task.percentage}%` }}
                                     />

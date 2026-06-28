@@ -50,7 +50,7 @@ export const PrivacySection: React.FC<PrivacySectionProps> = ({
             )}
 
             {appMode === 'TRIAL' && (
-                <div className="bg-amber-50 text-amber-800 border border-amber-200 px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2">
+                <div className="bg-warning/5 text-warning border border-warning/20 px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2">
                     <span>🧪</span> Trial Modus aktiv (Keine echten Daten)
                 </div>
             )}

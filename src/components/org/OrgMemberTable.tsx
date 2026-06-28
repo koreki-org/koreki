@@ -53,9 +53,9 @@ export const OrgMemberTable: React.FC<OrgMemberTableProps> = ({
                                         variant="outline" 
                                         className={cn(
                                             "font-bold text-xs px-2.5 py-0.5 rounded-lg border-none",
-                                            m.appMode === 'STANDARD' ? "bg-emerald-500/10 text-emerald-600" : 
+                                            m.appMode === 'STANDARD' ? "bg-primary/10 text-primary" : 
                                             m.appMode === 'PURE' ? "bg-primary/10 text-primary" :
-                                            "bg-amber-500/10 text-amber-600"
+                                            "bg-warning/10 text-warning"
                                         )}
                                     >
                                         {m.appMode}

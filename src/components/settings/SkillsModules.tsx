@@ -493,7 +493,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                     )}
                 </div>
                 {isDirty && !isCreatingNew && !isSystemSelected && (
-                    <div className="flex items-center gap-2 text-amber-500 animate-pulse pb-2 shrink-0">
+                    <div className="flex items-center gap-2 text-warning animate-pulse pb-2 shrink-0">
                         <RefreshCcw size={16} />
                         <span className="text-xxs font-bold uppercase tracking-widest">Ungespeichertes</span>
                     </div>
@@ -641,7 +641,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         <div className="flex flex-wrap gap-1.5 pt-2">
                                                             {/* Intentional semantic badge colors: amber=dependency-warning, red=conflict/exclusion */}
                                                             {skill.requires && (typeof skill.requires === 'string' ? skill.requires.split(',') : skill.requires).map((reqId: string) => (
-                                                                <Badge key={reqId} variant="outline" className="text-xxs px-2 py-0 bg-amber-50 text-amber-700 border-amber-100 rounded-full font-bold">
+                                                                <Badge key={reqId} variant="outline" className="text-xxs px-2 py-0 bg-warning/10 text-warning border-warning/20 rounded-full font-bold">
                                                                     Benötigt: {SKILL_REGISTRY[reqId.trim()]?.metadata.name || customSkills?.[reqId.trim()]?.name || reqId}
                                                                 </Badge>
                                                             ))}

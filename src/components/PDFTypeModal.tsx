@@ -87,7 +87,7 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                         className="group flex h-auto flex-col items-center text-center p-5 sm:p-6 bg-white border-2 border-border rounded-2xl hover:border-primary hover:bg-primary/[0.02] transition-all duration-200"
                         onClick={() => onSelect('scanned', applyToAll)}
                     >
-                        <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                        <div className="w-14 h-14 bg-warning/10 text-warning rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                             <Camera size={24} />
                         </div>
                         <span className="font-semibold text-foreground">Scan / Bilder / Handschrift</span>
