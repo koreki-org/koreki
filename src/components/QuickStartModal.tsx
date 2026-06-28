@@ -67,7 +67,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                         </div>
 
                         <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
-                            <div className="w-10 h-10 bg-emerald-500/10 text-emerald-600 rounded-lg flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                                 <FolderOpen size={18} />
                             </div>
                             <div className="space-y-0">
@@ -91,7 +91,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                         </div>
 
                         <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
-                            <div className="w-10 h-10 bg-orange-500/10 text-orange-600 rounded-lg flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                                 <Languages size={18} />
                             </div>
                             <div className="space-y-0">
@@ -103,7 +103,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                         </div>
 
                         <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
-                            <div className="w-10 h-10 bg-amber-500/10 text-amber-600 rounded-lg flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                                 <Sparkles size={18} />
                             </div>
                             <div className="space-y-0">

@@ -22,49 +22,47 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
                     <p className="text-sm md:text-base text-muted-foreground max-w-[500px] mx-auto leading-relaxed">
                         Wie möchten Sie Ihre Korrekturen durchführen?
                     </p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 mb-4">
+                </div>                <div className="grid grid-cols-1 gap-4 mb-4">
                     <div
-                        className="group relative bg-amber-500/5 border-2 border-amber-500/10 rounded-3xl p-5 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-amber-500 hover:shadow-xl hover:shadow-amber-500/10"
+                        className="group relative bg-primary/5 border-2 border-primary/10 rounded-3xl p-5 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5"
                         onClick={() => {
                             if (trialAgreement) onSelectMode('TRIAL', trialAgreement);
                             else alert("Bitte bestätigen Sie die Nutzung ohne echte Schülerdaten.");
                         }}
                     >
                         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-                            <div className="w-12 h-12 bg-amber-500/10 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
+                            <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
                                 <Zap size={24} />
                             </div>
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-1">
                                     <h2 className="text-lg font-bold text-foreground">Koreki Trial</h2>
-                                    <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-none font-bold text-xxs">Kostenlos testen</Badge>
+                                    <Badge variant="secondary" className="bg-primary/10 text-primary border-none font-bold text-xxs">Kostenlos testen</Badge>
                                 </div>
                                 <p className="text-xs text-muted-foreground mb-3 leading-snug">Alle Standard-Funktionen gratis testen mit Ihren 20 Start-Credits. Perfekt für den ersten Eindruck!</p>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                                     <div className="flex items-center gap-2 text-xs text-foreground">
-                                        <CheckCircle size={14} className="text-amber-600" />
+                                        <CheckCircle size={14} className="text-primary" />
                                         <span>Alle Funktionen von Standard</span>
                                     </div>
-                                    <div className="flex items-center gap-2 text-xs text-emerald-600 font-semibold">
+                                    <div className="flex items-center gap-2 text-xs text-primary font-semibold">
                                         <CheckCircle size={14} />
                                         <span>Kein AVV nötig (nur Demo-Daten)</span>
                                     </div>
                                 </div>
                                 <div className="flex flex-col sm:flex-row items-center gap-4">
                                     <div
-                                        className="w-full sm:flex-1 bg-white border border-amber-500/10 p-3 rounded-xl flex items-center gap-3 cursor-pointer select-none"
+                                        className="w-full sm:flex-1 bg-white border border-primary/10 p-3 rounded-xl flex items-center gap-3 cursor-pointer select-none"
                                         onClick={(e) => { e.stopPropagation(); setTrialAgreement(!trialAgreement); }}
                                     >
                                         <div className={cn(
                                             "w-4 h-4 border-2 rounded shrink-0 transition-all",
-                                            trialAgreement ? "bg-amber-600 border-amber-600" : "bg-white border-amber-500/10"
+                                            trialAgreement ? "bg-primary border-primary" : "bg-white border-primary/10"
                                         )}>
                                             {trialAgreement && <CheckCircle size={10} className="text-white" />}
                                         </div>
-                                        <span className="text-xxs text-amber-600 font-medium leading-tight">
+                                        <span className="text-xxs text-primary font-medium leading-tight">
                                             Ich bestätige, dass ich <b>keine echten Schülerdaten</b> verwende.
                                         </span>
                                     </div>
@@ -72,7 +70,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
                                     <Button
                                         className={cn(
                                             "w-full sm:w-auto px-6 py-5 rounded-xl font-bold text-sm border-none shadow-lg transition-all",
-                                            trialAgreement ? "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/20" : "bg-muted text-muted-foreground shadow-none grayscale opacity-50 cursor-not-allowed"
+                                            trialAgreement ? "bg-primary hover:bg-primary/90 text-white shadow-primary/20" : "bg-muted text-muted-foreground shadow-none grayscale opacity-50 cursor-not-allowed"
                                         )}
                                     >
                                         Trial starten <ChevronRight size={18} className="ml-2" />
@@ -122,7 +120,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
                     <div
                         className={cn(
                             "group bg-white border-2 border-border rounded-3xl p-5 text-left cursor-pointer transition-all flex flex-col relative overflow-hidden",
-                            !isPaidModesEnabled() ? "opacity-60 grayscale pointer-events-none" : "hover:-translate-y-1 hover:border-emerald-600 hover:shadow-2xl hover:shadow-emerald-100"
+                            !isPaidModesEnabled() ? "opacity-60 grayscale pointer-events-none" : "hover:-translate-y-1 hover:border-primary hover:shadow-2xl hover:shadow-primary/10"
                         )}
                         onClick={() => onSelectMode('PURE')}
                     >
@@ -131,25 +129,25 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
                                 <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-bold text-xxs uppercase">Demnächst</Badge>
                             </div>
                         )}
-                        <div className="w-12 h-12 bg-emerald-500/10 text-emerald-600 rounded-xl flex items-center justify-center mb-3">
+                        <div className="w-12 h-12 bg-primary/5 text-primary rounded-xl flex items-center justify-center mb-3">
                             <Zap size={24} />
                         </div>
                         <h2 className="text-lg font-bold text-foreground mb-0.5">Koreki Pure</h2>
-                        <Badge variant="secondary" className="w-fit mb-2 bg-emerald-500/10 text-emerald-600 border-none font-bold text-xxs">Privacy-First (BYOK)</Badge>
+                        <Badge variant="secondary" className="w-fit mb-2 bg-primary/10 text-primary border-none font-bold text-xxs">Privacy-First (BYOK)</Badge>
                         <p className="text-xs text-muted-foreground mb-4 flex-grow leading-snug">Maximale Privatsphäre. Daten bleiben lokal.</p>
 
                         <div className="space-y-1.5 mb-6">
                             <div className="flex items-center gap-2 text-xxs text-foreground">
-                                <CheckCircle size={12} className="text-emerald-600" />
+                                <CheckCircle size={12} className="text-primary" />
                                 <span>Eigener Mistral Key</span>
                             </div>
-                            <div className="flex items-center gap-2 text-xxs text-emerald-600 font-semibold">
+                            <div className="flex items-center gap-2 text-xxs text-primary font-semibold">
                                 <CheckCircle size={12} />
                                 <span>Kein AVV mit uns nötig</span>
                             </div>
                         </div>
 
-                        <Button className="w-full py-4 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-700 text-white border-none shadow-xl shadow-emerald-200 group-hover:scale-[1.01] transition-transform">
+                        <Button className="w-full py-4 rounded-xl font-bold text-sm bg-primary hover:bg-primary/90 text-white border-none shadow-xl shadow-primary/20 group-hover:scale-[1.01] transition-transform">
                             {isPaidModesEnabled() ? 'Pure wählen' : 'In Kürze verfügbar'} <ChevronRight size={16} className="ml-2" />
                         </Button>
                     </div>

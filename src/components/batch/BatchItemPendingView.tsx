@@ -73,7 +73,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                                     )}
                                 >
                                     {name}
-                                    {groupHasWarnings && <AlertCircle size={12} className="text-orange-400 animate-pulse" />}
+                                    {groupHasWarnings && <AlertCircle size={12} className="text-destructive animate-pulse" />}
                                 </Button>
                             );
                         })}
@@ -91,7 +91,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                                         <div className="flex items-center gap-2 overflow-hidden">
                                             <span className="text-xs font-bold text-foreground truncate font-outfit">{task.name}</span>
                                             {sectionHasUncertainty && (
-                                                <Badge className="bg-orange-50 text-orange-600 border border-orange-100/50 text-xs font-bold h-5 px-2 shadow-none gap-1 shrink-0 animate-pulse font-outfit">
+                                                <Badge className="bg-destructive/10 text-destructive border border-destructive/20 text-xs font-bold h-5 px-2 shadow-none gap-1 shrink-0 animate-pulse font-outfit">
                                                     <AlertCircle size={10} /> OCR prüfen!
                                                 </Badge>
                                             )}
