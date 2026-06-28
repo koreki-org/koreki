@@ -122,35 +122,35 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-sm animate-in fade-in duration-300">
             <div className="bg-white rounded-hero shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col border border-white/20">
                 {/* Header */}
-                <div className="p-8 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                <div className="p-8 border-b border-border flex items-center justify-between bg-muted/30">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center border border-slate-100">
+                        <div className="w-12 h-12 bg-background rounded-2xl shadow-sm flex items-center justify-center border border-border">
                             <Logo size={24} />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold text-slate-900">Digitale Rückgabe-Slips</h2>
-                            <p className="text-sm text-slate-500 font-medium">Bereit zum PDF-Export (mit Klarnamen)</p>
+                            <h2 className="text-xl font-bold text-foreground">Digitale Rückgabe-Slips</h2>
+                            <p className="text-sm text-muted-foreground font-medium">Bereit zum PDF-Export (mit Klarnamen)</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" onClick={handleDownloadPDF} className="gap-2 font-bold text-slate-700 bg-white shadow-sm hover:bg-slate-50 border-slate-200">
+                        <Button variant="outline" onClick={handleDownloadPDF} className="gap-2 font-bold text-foreground bg-background shadow-sm hover:bg-muted border-border">
                             <Download size={18} /> PDF Export
                         </Button>
-                        <button onClick={onClose} className="p-2 hover:bg-slate-200 rounded-full transition-colors ml-2">
-                            <X size={20} className="text-slate-500" />
+                        <button onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors ml-2">
+                            <X size={20} className="text-muted-foreground" />
                         </button>
                     </div>
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50/30">
+                <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-muted/10">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {completedFiles.length === 0 ? (
                             <div className="col-span-full py-20 text-center">
-                                <p className="text-slate-400 font-medium">Keine fertigen Korrekturen zum Exportieren gefunden.</p>
+                                <p className="text-muted-foreground font-medium">Keine fertigen Korrekturen zum Exportieren gefunden.</p>
                             </div>
                         ) : (
                             completedFiles.map((file, idx) => {
@@ -190,21 +190,21 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
 
                                 return (
                                     <div 
-                                        key={idx} 
-                                        className="slip-card bg-white border-2 border-dashed border-slate-200 rounded-2xl p-6 flex flex-col gap-4 relative hover:border-slate-300 transition-colors"
+                                        key={idx}
+                                        className="slip-card bg-background border-2 border-dashed border-border rounded-2xl p-6 flex flex-col gap-4 relative hover:border-border/80 transition-colors"
                                     >
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1">
-                                                <h3 className="text-2xl font-black text-slate-900 leading-tight">{file.name}</h3>
+                                                <h3 className="text-2xl font-black text-foreground leading-tight">{file.name}</h3>
                                                 <p className="text-sm font-bold text-primary uppercase tracking-wider">{points} / {maxPoints} Punkte</p>
-                                                <div className="flex items-center gap-1.5 mt-4 text-slate-400">
+                                                <div className="flex items-center gap-1.5 mt-4 text-muted-foreground">
                                                     <Logo size={14} />
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest">Feedback Slip</span>
+                                                    <span className="text-xxs font-bold uppercase tracking-widest">Feedback Slip</span>
                                                 </div>
                                             </div>
-                                            <div className="bg-white p-2 rounded-xl border border-slate-100 flex items-center justify-center min-w-[120px] min-h-[120px]">
+                                            <div className="bg-background p-2 rounded-xl border border-border flex items-center justify-center min-w-[120px] min-h-[120px]">
                                                 {isTooLong ? (
-                                                    <div className="text-[10px] text-red-500 font-bold text-center leading-tight p-2">
+                                                    <div className="text-xxs text-destructive font-bold text-center leading-tight p-2">
                                                         <X className="mx-auto mb-1" size={16} />
                                                         Feedback zu lang<br/>für QR-Code
                                                     </div>
@@ -222,10 +222,10 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
 
                                         <div className="flex items-end justify-between mt-auto">
                                             <div className="space-y-1">
-                                                <p className="text-[9px] text-slate-400 font-medium uppercase tracking-tighter">Zugangscode</p>
-                                                <p className="text-lg font-mono font-black text-slate-900 tracking-widest">PIN: {pin}</p>
+                                                <p className="text-xxs text-muted-foreground font-medium uppercase tracking-tighter">Zugangscode</p>
+                                                <p className="text-lg font-mono font-black text-foreground tracking-widest">PIN: {pin}</p>
                                             </div>
-                                            <div className="flex items-center gap-1 text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-lg">
+                                            <div className="flex items-center gap-1 text-xxs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-lg">
                                                 <ShieldCheck size={12} /> Verschlüsselt
                                             </div>
                                         </div>
@@ -237,12 +237,12 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                 </div>
 
                 {/* Footer Info */}
-                <div className="p-6 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-slate-500 print:hidden">
+                <div className="p-6 bg-muted/30 border-t border-border flex items-center justify-between text-muted-foreground print:hidden">
                     <div className="flex items-center gap-2 text-xs font-medium">
                         <Sparkles size={14} className="text-primary" />
                         <span>Tipp: Der PDF-Export ist am zuverlässigsten für den Druck.</span>
                     </div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest opacity-50">
+                    <div className="text-xxs font-bold uppercase tracking-widest opacity-50">
                         koreki.org distribution system
                     </div>
                 </div>

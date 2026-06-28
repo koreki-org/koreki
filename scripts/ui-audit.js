@@ -27,7 +27,8 @@ const migratedAppFiles = [
     'src/components/settings/OllamaConfig.tsx',
     'src/components/PDFSplitModal.tsx',
     'src/components/settings/OpenAICompatibleConfig.tsx',
-    'src/components/CreditsModal.tsx'
+    'src/components/CreditsModal.tsx',
+    'src/components/batch/DigitalSlipsModal.tsx'
 ];
 
 // 21 Tailwind Color Families
