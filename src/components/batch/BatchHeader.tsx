@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, PenLine, Brain, Download } from 'lucide-react';
+import { Loader2, PenLine, Brain, Download, Info } from 'lucide-react';
 import { CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { cn } from '@/lib/utils';
@@ -26,6 +26,7 @@ interface BatchHeaderProps {
     totalPossibleCredits?: number;
     isPureMode?: boolean;
     onExportSL?: () => void;
+    onExportKoreki?: () => void;
     hasPendingOcr?: boolean;
 }
 
@@ -47,6 +48,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
     totalPossibleCredits = 0,
     isPureMode = false,
     onExportSL,
+    onExportKoreki,
     hasPendingOcr = false
 }) => {
     const lockStrategy = loading || isStrategyLocked;
@@ -67,15 +69,15 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                 {/* OCR Strategy Toggle (Mistral -> Qwen Override for High Accuracy / Slower Correction) */}
                 {settings?.provider === 'mistral' && setOcrStrategy && (
                     <div className={cn(
-                        "flex items-center gap-2.5 px-3 py-1.5 bg-slate-50 border border-slate-200/60 rounded-xl shadow-xs transition-all duration-300",
+                        "flex items-center gap-2.5 px-3 py-1.5 bg-muted/30 border border-border rounded-xl shadow-xs transition-all duration-300",
                         lockStrategy && "opacity-50 pointer-events-none"
                     )}>
                         <div className="flex items-center gap-1.5">
                             <Brain size={14} className={cn(
                                 "transition-colors duration-300",
-                                ocrStrategy === 'handwriting' ? "text-primary animate-pulse" : "text-slate-400"
+                                ocrStrategy === 'handwriting' ? "text-primary animate-pulse" : "text-muted-foreground"
                             )} />
-                            <span className="text-xs font-bold text-slate-600 select-none">Hohe Genauigkeit (langsamer)</span>
+                            <span className="text-xs font-bold text-muted-foreground select-none">Hohe Genauigkeit (langsamer)</span>
                         </div>
                         <button
                             type="button"
@@ -85,7 +87,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                             disabled={lockStrategy}
                             className={cn(
                                 "relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none",
-                                ocrStrategy === 'handwriting' ? "bg-primary" : "bg-slate-200"
+                                ocrStrategy === 'handwriting' ? "bg-primary" : "bg-muted"
                             )}
                         >
                             <span
@@ -101,14 +103,14 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                             content={(
                                 <div className="space-y-3">
                                     <div>
-                                        <p className="text-xs font-bold text-slate-900 mb-1">Normale Korrektur (Aus)</p>
-                                        <p className="text-[0.7rem] text-slate-500 leading-relaxed">
+                                        <p className="text-xs font-bold text-foreground mb-1">Normale Korrektur (Aus)</p>
+                                        <p className="text-xxs text-muted-foreground leading-relaxed">
                                             Nutzt standardmäßig Mistral für eine schnelle, ressourcenschonende Erkennung und Korrektur. Ideal für digitale Texte und saubere Dokumente.
                                         </p>
                                     </div>
-                                    <div className="pt-2 border-t border-slate-100">
-                                        <p className="text-xs font-bold text-slate-900 mb-1">Hohe Genauigkeit (An)</p>
-                                        <p className="text-[0.7rem] text-slate-500 leading-relaxed">
+                                    <div className="pt-2 border-t border-border">
+                                        <p className="text-xs font-bold text-foreground mb-1">Hohe Genauigkeit (An)</p>
+                                        <p className="text-xxs text-muted-foreground leading-relaxed">
                                             {isPureMode 
                                                 ? 'Aktiviert eine tiefere Analyse und kognitive Vision-Erweiterung für komplexe Handschriften.' 
                                                 : 'Nutzt das leistungsstärkere Modell Qwen3.6 für maximale logische Präzision bei der Korrektur. Die Ausführung dauert dafür etwas länger.'
@@ -126,14 +128,14 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
 
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end sm:items-center">
                 {activeBatchController ? (
                     <Button
                         variant="outline"
                         onClick={abortBatch}
-                        className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all rounded-xl w-full sm:w-auto flex items-center justify-center gap-2 font-bold"
+                        className="border-destructive/20 text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-all rounded-xl w-full sm:w-auto flex items-center justify-center gap-2 font-bold"
                     >
-                        <Loader2 size={16} className="animate-spin text-red-600 mr-2" />
+                        <Loader2 size={16} className="animate-spin text-destructive mr-2" />
                         {ocrCreditsRequired > 0 ? "Erkennung abbrechen" : "Korrektur abbrechen"}
                     </Button>
                 ) : (
@@ -150,10 +152,10 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                 Bilderkennung ({ocrCreditsRequired} Credits)
                             </Button>
                         )}
-                        {onExportSL && !isReCorrectionMode && !hasPendingOcr && (
+                        {onExportSL && !hasFinishedFiles && !hasPendingOcr && (
                             <Button
                                 variant="outline"
-                                className="border border-emerald-500/10 bg-emerald-500/5 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all rounded-xl w-full sm:w-auto flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider h-10 sm:h-auto py-2 px-4"
+                                className="border border-border bg-muted/30 text-muted-foreground hover:bg-muted hover:text-foreground transition-all rounded-xl w-full sm:w-auto flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider h-10 px-4"
                                 onClick={onExportSL}
                                 disabled={loading}
                                 title="Schülerlösung als Zwischenstand exportieren (.koreki)"
@@ -162,13 +164,33 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                 <span>Exportieren</span>
                             </Button>
                         )}
+                        {onExportKoreki && hasFinishedFiles && (
+                            <div className="relative group flex items-center w-full sm:w-auto">
+                                <Button
+                                    variant="outline"
+                                    onClick={onExportKoreki}
+                                    disabled={loading}
+                                    className="h-10 px-4 gap-2 text-xs font-bold bg-primary/5 text-primary border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all rounded-xl shadow-sm whitespace-nowrap shrink-0 w-full sm:w-auto flex items-center justify-center"
+                                >
+                                    <Download size={14} />
+                                    <span>Korrektur exportieren</span>
+                                    <Info size={14} className="opacity-60 group-hover:text-primary-foreground/80 transition-colors shrink-0" />
+                                </Button>
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 hidden group-hover:flex flex-col items-center z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                    <div className="bg-white/95 backdrop-blur-md border border-border px-3.5 py-2 rounded-2xl shadow-xl whitespace-nowrap text-xs font-bold text-primary font-outfit">
+                                        Ohne PDFs (beim Import nachladbar)
+                                    </div>
+                                    <div className="w-2.5 h-2.5 bg-white/95 border-r border-b border-border rotate-45 -mt-1.5 z-40"></div>
+                                </div>
+                            </div>
+                        )}
                         <Button
                             onClick={() => isReCorrectionMode ? onShowConfirm('reset') : onShowConfirm('process')}
                             disabled={loading || (pendingCount === 0 && !hasFinishedFiles) || (pendingCount > 0 && credits < totalPendingCredits) || ocrCreditsRequired > 0 || !avvAccepted}
                             title={!avvAccepted ? "AVV-Zustimmung erforderlich" : ""}
                             className={cn(
                                 "shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all rounded-xl w-full sm:w-auto",
-                                pendingCount === 0 && !hasFinishedFiles ? "bg-emerald-500 hover:bg-emerald-600 border-none text-white" : "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white border-0"
+                                pendingCount === 0 && !hasFinishedFiles ? "bg-primary hover:bg-primary/90 border-none text-white animate-pulse" : "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white border-0"
                             )}
                         >
                             {loading && ocrCreditsRequired === 0 ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
