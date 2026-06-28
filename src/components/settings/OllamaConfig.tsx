@@ -234,14 +234,14 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                         <div className={`p-4 rounded-2xl border-2 transition-all duration-300 animate-in slide-in-from-top-2 ${
                             isExactMatch ? 'border-emerald-100 bg-emerald-50/50 text-emerald-700' :
                             isMapped ? 'border-primary/20 bg-primary/5 text-primary' :
-                            availableModels.length > 0 ? 'border-amber-100 bg-amber-50/50 text-amber-700' :
+                            availableModels.length > 0 ? 'border-warning/20 bg-warning/5 text-warning' :
                             'border-border bg-muted/20 text-muted-foreground'
                         }`}>
                             <div className="flex items-center gap-3">
                                 <div className={`p-2 rounded-xl ${
                                     isExactMatch ? 'bg-emerald-500 text-white shadow-sm shadow-emerald-200' :
                                     isMapped ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20' :
-                                    availableModels.length > 0 ? 'bg-amber-500 text-white shadow-sm shadow-amber-200' :
+                                    availableModels.length > 0 ? 'bg-warning text-white shadow-sm shadow-warning/20' :
                                     'bg-muted text-muted-foreground'
                                 }`}>
                                     {isExactMatch ? <CheckCircle2 size={14} /> : <Info size={14} />}

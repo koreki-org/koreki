@@ -83,9 +83,9 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, onSelect, upgradin
 
                 <div className={cn(
                     "w-full max-w-2xl flex items-start gap-4 p-5 rounded-2xl mb-8 border transition-all duration-300",
-                    isTrial ? 'bg-amber-500/10 border-amber-500/20 text-amber-600' : 'bg-primary/5 border-primary/10 text-primary'
+                    isTrial ? 'bg-warning/10 border-warning/20 text-warning' : 'bg-primary/5 border-primary/10 text-primary'
                 )}>
-                    <Shield size={24} className={cn("shrink-0 mt-0.5", isTrial ? 'text-amber-500' : 'text-primary')} />
+                    <Shield size={24} className={cn("shrink-0 mt-0.5", isTrial ? 'text-warning' : 'text-primary')} />
                     <div className="text-sm leading-relaxed">
                         {isTrial
                             ? <strong className="font-bold">Im Trial-Modus können keine Credits gekauft werden. Die kostenpflichtigen Modi (Standard & Pure) sind aktuell noch in Vorbereitung und in Kürze verfügbar.</strong>

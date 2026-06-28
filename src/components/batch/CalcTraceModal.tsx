@@ -235,8 +235,8 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                 </div>
 
                 {isLocked && (
-                    <div className="bg-amber-50 border-b border-amber-200 text-amber-800 px-4 sm:px-8 py-3 flex items-center gap-2 text-xs font-semibold shrink-0">
-                        <AlertCircle size={16} className="text-amber-600 shrink-0" />
+                    <div className="bg-warning/5 border-b border-warning/20 text-warning px-4 sm:px-8 py-3 flex items-center gap-2 text-xs font-semibold shrink-0">
+                        <AlertCircle size={16} className="text-warning shrink-0" />
                         <span>Die Rechenkette befindet sich im schreibgeschützten Modus (Read-Only), da bereits korrigierte Schülerarbeiten vorliegen. Änderungen sind deaktiviert.</span>
                     </div>
                 )}
@@ -652,7 +652,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                                 "text-xxs py-0 px-1.5 rounded font-black uppercase border shrink-0",
                                                                 r.status === 'correct' ? "bg-emerald-100 border-emerald-200 text-emerald-700" :
                                                                 r.status === 'consecutive' ? "bg-primary/15 border-primary/30 text-primary" :
-                                                                r.status === 'omission' ? "bg-amber-100 border-amber-200 text-amber-700" :
+                                                                r.status === 'omission' ? "bg-warning/10 border-warning/20 text-warning" :
                                                                 "bg-red-100 border-red-200 text-red-700"
                                                             )}>
                                                                 {r.status === 'correct' ? 'KORREKT' :

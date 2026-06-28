@@ -113,7 +113,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                     message={
                         <>
                             {unredactedScansCount > 0 && (
-                                <div className="mb-4 p-4 bg-amber-50 border border-amber-100 rounded-xl text-amber-800 text-sm flex items-start gap-3">
+                                <div className="mb-4 p-4 bg-warning/5 border border-warning/20 rounded-xl text-warning text-sm flex items-start gap-3">
                                     <Info size={18} className="mt-0.5 shrink-0" />
                                     <div>
                                         <p className="font-bold mb-1">Hinweis zur Anonymisierung</p>

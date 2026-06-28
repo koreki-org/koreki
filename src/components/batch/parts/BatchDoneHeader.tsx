@@ -80,8 +80,8 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
                 {/* RIGHT SIDE: Specific Review Recommendation */}
                 {lowConfidenceTasks.length > 0 && (
                     <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-700 shrink-0 border-l border-border pl-4 h-8">
-                        <Badge variant="secondary" className="hidden lg:flex bg-amber-100 text-amber-700 border-amber-200 h-8 px-3 text-[11px] font-black uppercase tracking-tight gap-1.5 shadow-sm rounded-lg">
-                            <AlertTriangle size={12} className="text-amber-600" /> Review empfohlen!
+                        <Badge variant="secondary" className="hidden lg:flex bg-warning/10 text-warning border-warning/20 h-8 px-3 text-xxs font-black uppercase tracking-tight gap-1.5 shadow-sm rounded-lg">
+                            <AlertTriangle size={12} className="text-warning" /> Review empfohlen!
                         </Badge>
                         {/* RESTORATION: Specifically linkable task button */}
                         {lowConfidenceTasks.slice(0, 1).map(t => (
@@ -102,7 +102,7 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
                                         if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                     }, 100);
                                 }}
-                                className="h-8 px-4 text-xs font-bold text-muted-foreground border-border hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200 transition-all rounded-lg"
+                                className="h-8 px-4 text-xs font-bold text-muted-foreground border-border hover:bg-warning/10 hover:text-warning hover:border-warning/20 transition-all rounded-lg"
                             >
                                 {t.name}
                             </Button>

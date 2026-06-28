@@ -255,7 +255,7 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                             </span>
                         </div>
                         {unassignedPages > 0 && (
-                            <div className="flex justify-between text-xs text-amber-600 font-medium mt-1">
+                            <div className="flex justify-between text-xs text-warning font-medium mt-1">
                                 <span>Noch verfügbar:</span>
                                 <span>{unassignedPages} Seiten</span>
                             </div>

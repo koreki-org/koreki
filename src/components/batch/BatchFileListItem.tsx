@@ -156,8 +156,8 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                     {isDone && (
                         <div className="flex items-center gap-2">
                             {reviewRecommended && (
-                                <Badge className="hidden sm:flex bg-amber-50 text-amber-700 border-amber-200 h-7 px-3 text-[10px] font-black uppercase tracking-tight gap-1.5 shadow-sm animate-pulse rounded-lg">
-                                    <AlertTriangle size={12} className="text-amber-600" /> Review
+                                <Badge className="hidden sm:flex bg-warning/10 text-warning border-warning/20 h-7 px-3 text-[10px] font-black uppercase tracking-tight gap-1.5 shadow-sm animate-pulse rounded-lg">
+                                    <AlertTriangle size={12} className="text-warning" /> Review
                                 </Badge>
                             )}
                             <div className="flex items-center gap-3">

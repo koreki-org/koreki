@@ -60,9 +60,9 @@ const PureKeyModal: React.FC<PureKeyModalProps> = ({ onSave, onClose }) => {
                         </p>
                     </div>
 
-                    <div className="flex gap-3 items-center p-3 bg-amber-50 border border-amber-100 rounded-xl">
-                        <AlertTriangle size={18} className="text-amber-600 shrink-0" />
-                        <p className="text-[0.8rem] text-amber-900 leading-tight">
+                    <div className="flex gap-3 items-center p-3 bg-warning/5 border border-warning/20 rounded-xl">
+                        <AlertTriangle size={18} className="text-warning shrink-0" />
+                        <p className="text-xxs text-warning leading-tight">
                             <strong>Hinweis:</strong> Beim Neuladen der Seite muss der Key erneut eingegeben werden.
                         </p>
                     </div>

@@ -89,6 +89,7 @@ bg-primary, text-primary, text-primary-foreground
 bg-secondary, text-secondary-foreground
 bg-muted, text-muted-foreground
 bg-destructive, text-destructive-foreground
+bg-warning, text-warning, text-warning-foreground
 border-border
 ```
 
