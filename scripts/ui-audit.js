@@ -33,7 +33,8 @@ const migratedAppFiles = [
     'src/components/RedactionModal.tsx',
     'src/components/QuickStartModal.tsx',
     'src/components/OnboardingModal.tsx',
-    'src/components/upload/StudentWorkCard.tsx'
+    'src/components/upload/StudentWorkCard.tsx',
+    'src/components/layout/AppHeader.tsx'
 ];
 
 // 21 Tailwind Color Families

@@ -63,18 +63,18 @@ const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({
             className={cn(
                 "relative rounded-xl px-0 md:px-3.5 py-1.5 h-9 text-xs font-bold shadow-sm flex items-center justify-center md:justify-start gap-1.5 transition-all w-9 h-9 md:w-[210px] overflow-visible shrink-0",
                 isActive 
-                    ? "bg-indigo-50/80 hover:bg-indigo-100/60 text-indigo-700 border-indigo-200 shadow-sm" 
-                    : "bg-slate-50/30 hover:bg-slate-100/50 text-slate-600 border-slate-200/60 hover:border-slate-300"
+                    ? "bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 shadow-sm" 
+                    : "bg-muted/30 hover:bg-muted/50 text-muted-foreground border-border hover:border-muted-foreground/30"
             )}
             title={title}
         >
-            <span className={cn("shrink-0 transition-colors", isActive ? "text-indigo-600" : "text-slate-400")}>
+            <span className={cn("shrink-0 transition-colors", isActive ? "text-primary" : "text-muted-foreground")}>
                 {icon}
             </span>
-            <span className={cn("hidden md:inline font-medium transition-colors", isActive ? "text-slate-500" : "text-slate-400")}>
+            <span className={cn("hidden md:inline font-medium transition-colors", isActive ? "text-muted-foreground" : "text-muted-foreground")}>
                 {label}:
             </span>
-            <span className={cn("hidden md:inline truncate max-w-[110px] transition-colors font-bold", isActive ? "text-indigo-700" : "text-slate-600")}>
+            <span className={cn("hidden md:inline truncate max-w-[110px] transition-colors font-bold", isActive ? "text-primary" : "text-muted-foreground")}>
                 {value}
             </span>
             
@@ -121,7 +121,7 @@ const Header: React.FC<HeaderProps> = ({
                 size="icon" 
                 onClick={onShowHelp} 
                 title="Hilfe & Infos" 
-                className="border-0 bg-transparent text-slate-500 hover:bg-white hover:text-slate-900 rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
+                className="border-0 bg-transparent text-muted-foreground hover:bg-background hover:text-foreground rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
             >
                 <HelpCircle size={16} />
             </Button>
@@ -132,7 +132,7 @@ const Header: React.FC<HeaderProps> = ({
                     size="icon" 
                     onClick={onShowSettings} 
                     title="System-Einstellungen" 
-                    className="border-0 bg-transparent text-slate-500 hover:bg-white hover:text-slate-900 rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
+                    className="border-0 bg-transparent text-muted-foreground hover:bg-background hover:text-foreground rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
                 >
                     <Settings size={16} />
                 </Button>
@@ -140,13 +140,13 @@ const Header: React.FC<HeaderProps> = ({
             
             {(!isLocalInstance() || isKeycloakAuth()) && (
                 <>
-                    <div className="w-px h-5 bg-slate-200 mx-0.5 shrink-0" />
+                    <div className="w-px h-5 bg-border mx-0.5 shrink-0" />
                     <Button 
                         variant="outline" 
                         size="icon" 
                         onClick={onLogout} 
                         title="Abmelden" 
-                        className="border-0 bg-transparent text-slate-400 hover:bg-red-50 hover:text-red-500 rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
+                        className="border-0 bg-transparent text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
                     >
                         <LogOut size={16} />
                     </Button>
@@ -158,7 +158,7 @@ const Header: React.FC<HeaderProps> = ({
     return (
         <header className="mb-4 md:mb-5 flex flex-col gap-4 w-full animate-in fade-in duration-500">
             {/* Strictly Single-Row Navigation Bar */}
-            <div className="w-full bg-white/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl sm:rounded-[1.25rem] border border-white shadow-xl shadow-slate-200/30 ring-1 ring-slate-900/[0.02] flex flex-row items-center justify-between gap-3 transition-all duration-300">
+            <div className="w-full bg-background/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 flex flex-row items-center justify-between gap-3 transition-all duration-300">
                 
                 {/* Left Side: Badges & Profile Config Buttons */}
                 <div className="flex flex-row items-center gap-2 sm:gap-3 w-auto">
@@ -169,11 +169,11 @@ const Header: React.FC<HeaderProps> = ({
                         onUnlockExpert={onUnlockExpert}
                     />
 
-                    <div className="h-4 w-px bg-slate-200 hidden lg:block shrink-0" />
+                    <div className="h-4 w-px bg-border hidden lg:block shrink-0" />
 
                     {/* Classic Labeled Configuration Pill Row - strictly horizontal on desktop */}
                     {(isLocalInstance() || userData?.canEditPrompts) && (
-                        <div className="flex flex-row flex-nowrap shrink-0 items-center justify-start gap-1.5 sm:gap-2 w-auto bg-white/70 backdrop-blur-xl p-1.5 rounded-[1.25rem] border border-white shadow-xl shadow-slate-200/50 ring-1 ring-slate-900/[0.03] md:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none md:border-0 md:shadow-none md:ring-0">
+                        <div className="flex flex-row flex-nowrap shrink-0 items-center justify-start gap-1.5 sm:gap-2 w-auto bg-background/70 backdrop-blur-xl p-1.5 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 md:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none md:border-0 md:shadow-none md:ring-0">
                             <ProfileConfigButton 
                                 icon={<GraduationCap size={14} />} 
                                 label="Expertise"
@@ -229,7 +229,7 @@ const Header: React.FC<HeaderProps> = ({
                         variant="outline"
                         size="lg"
                         onClick={onLoadDemo}
-                        className="flex-1 rounded-full px-2 sm:px-4 bg-white/50 backdrop-blur-sm border-slate-200 text-slate-600 hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-[10px] sm:text-xs"
+                        className="flex-1 rounded-full px-2 sm:px-4 bg-background/50 backdrop-blur-sm border-border text-muted-foreground hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-xxs sm:text-xs"
                     >
                         <Sparkles size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Demo
                     </Button>
@@ -238,7 +238,7 @@ const Header: React.FC<HeaderProps> = ({
                         variant="default"
                         size="lg"
                         onClick={onReset}
-                        className="flex-1 rounded-full px-2 sm:px-4 bg-primary text-primary-foreground hover:shadow-lg hover:-translate-y-0.5 transition-all h-10 font-bold text-[10px] sm:text-xs whitespace-nowrap"
+                        className="flex-1 rounded-full px-2 sm:px-4 bg-primary text-primary-foreground hover:shadow-lg hover:-translate-y-0.5 transition-all h-10 font-bold text-xxs sm:text-xs whitespace-nowrap"
                     >
                         <PlusCircle size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Neue Korrektur
                     </Button>
@@ -247,7 +247,7 @@ const Header: React.FC<HeaderProps> = ({
                         variant="outline"
                         size="lg"
                         onClick={actions.triggerImport}
-                        className="flex-1 rounded-full px-2 sm:px-4 bg-white/50 backdrop-blur-sm border-slate-200 text-slate-600 hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-[10px] sm:text-xs"
+                        className="flex-1 rounded-full px-2 sm:px-4 bg-background/50 backdrop-blur-sm border-border text-muted-foreground hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-xxs sm:text-xs"
                     >
                         <FileUp size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Importieren
                     </Button>
@@ -256,19 +256,19 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* Contextual Warning: Missing Files */}
             {isImportedSession && hasMissingFiles && (
-                <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 p-4 bg-indigo-50/50 border border-indigo-100/50 rounded-2xl animate-in fade-in slide-in-from-top-2 shadow-sm max-w-[800px] mx-auto w-full">
+                <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 p-4 bg-primary/5 border border-primary/10 rounded-2xl animate-in fade-in slide-in-from-top-2 shadow-sm max-w-[800px] mx-auto w-full">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-white rounded-xl shadow-sm">
-                            <Camera size={18} className="text-indigo-600" />
+                        <div className="p-2 bg-background rounded-xl shadow-sm">
+                            <Camera size={18} className="text-primary" />
                         </div>
-                        <span className="text-[10px] sm:text-sm font-semibold text-indigo-700 text-left">
+                        <span className="text-xxs sm:text-sm font-semibold text-primary text-left">
                             Vorschau vervollständigen: Lade die Original-PDFs nach, um Dokumente im Split-Screen zu sehen.
                         </span>
                     </div>
                     <div className="shrink-0 ml-auto sm:ml-0">
                         <Button
                             variant="default"
-                            className="px-4 py-1.5 h-auto text-xs font-black uppercase tracking-wider rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition-all shadow-lg hover:shadow-indigo-200 hover:-translate-y-0.5"
+                            className="px-4 py-1.5 h-auto text-xs font-black uppercase tracking-wider rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5"
                             onClick={actions.triggerRelink}
                         >
                             Dateien verknüpfen
