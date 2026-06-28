@@ -43,14 +43,14 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
         <div className="space-y-8 animate-fade-in">
             {/* 1. Global Rates Section */}
             <Card className="border-border/50 shadow-glass backdrop-blur-glass overflow-hidden">
-                <CardHeader className="bg-slate-50/50 border-b border-border/40 pb-4">
+                <CardHeader className="bg-muted/30 border-b border-border/40 pb-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <div className="p-2 bg-primary/10 rounded-lg">
                                 <Shield className="text-primary w-5 h-5" />
                             </div>
                             <div>
-                                <CardTitle className="text-base font-outfit font-bold">Abrechnung & Budgets</CardTitle>
+                                <CardTitle className="text-base font-outfit font-bold">Abrechnung &amp; Budgets</CardTitle>
                                 <p className="text-xs text-muted-foreground">Konfiguration der Token-Preise und monatlichen Limits</p>
                             </div>
                         </div>
@@ -61,14 +61,14 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         {/* OCR Pricing */}
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-widest">
+                            <div className="flex items-center gap-2 text-xs font-black text-muted-foreground uppercase tracking-widest">
                                 <span>OCR-Modul (Tokens)</span>
-                                <div className="h-px flex-1 bg-slate-100" />
+                                <div className="h-px flex-1 bg-border" />
                             </div>
                             
-                            <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <div className="grid grid-cols-2 gap-3 p-3 bg-muted/30 rounded-xl border border-border">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Input Preis / 1M (€)</label>
+                                    <label className="block text-xxs font-bold text-muted-foreground uppercase mb-1">Input Preis / 1M (€)</label>
                                     <Input 
                                         type="text"
                                         placeholder="0.00"
@@ -77,7 +77,7 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Output Preis / 1M (€)</label>
+                                    <label className="block text-xxs font-bold text-muted-foreground uppercase mb-1">Output Preis / 1M (€)</label>
                                     <Input 
                                         type="text"
                                         placeholder="0.00"
@@ -88,7 +88,7 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Monatliches OCR-Budget (€)</label>
+                                <label className="block text-xs font-semibold text-foreground mb-1.5">Monatliches OCR-Budget (€)</label>
                                 <Input 
                                     type="text"
                                     placeholder="100"
@@ -100,14 +100,14 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
 
                         {/* KI Pricing */}
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-widest">
+                            <div className="flex items-center gap-2 text-xs font-black text-muted-foreground uppercase tracking-widest">
                                 <span>KI-Korrektur (Tokens)</span>
-                                <div className="h-px flex-1 bg-slate-100" />
+                                <div className="h-px flex-1 bg-border" />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                            <div className="grid grid-cols-2 gap-3 p-3 bg-muted/30 rounded-xl border border-border">
                                 <div>
-                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Input Preis / 1M (€)</label>
+                                    <label className="block text-xxs font-bold text-muted-foreground uppercase mb-1">Input Preis / 1M (€)</label>
                                     <Input 
                                         type="text"
                                         placeholder="0.00"
@@ -116,7 +116,7 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Output Preis / 1M (€)</label>
+                                    <label className="block text-xxs font-bold text-muted-foreground uppercase mb-1">Output Preis / 1M (€)</label>
                                     <Input 
                                         type="text"
                                         placeholder="0.00"
@@ -127,7 +127,7 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                             </div>
 
                             <div>
-                                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Monatliches KI-Budget (€)</label>
+                                <label className="block text-xs font-semibold text-foreground mb-1.5">Monatliches KI-Budget (€)</label>
                                 <Input 
                                     type="text"
                                     placeholder="100"
@@ -140,7 +140,7 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
 
                     <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 flex items-start gap-3">
                         <Info className="text-primary w-5 h-5 shrink-0 mt-0.5" />
-                        <div className="text-xs text-slate-600 leading-relaxed">
+                        <div className="text-xs text-muted-foreground leading-relaxed">
                             <span className="font-bold text-primary uppercase mr-1">Hinweis:</span> 
                             Die Kosten werden in Echtzeit berechnet. Wenn die Preise auf 0 stehen, werden in der Analyse unten keine Kosten ausgewiesen, auch wenn Tokens verbraucht wurden.
                         </div>
@@ -150,18 +150,18 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
 
             {/* 2. User Analysis Section */}
             <Card className="border-border/50 shadow-glass backdrop-blur-glass overflow-hidden">
-                <CardHeader className="bg-slate-50/50 border-b border-border/40 pb-4">
+                <CardHeader className="bg-muted/30 border-b border-border/40 pb-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <div className="p-2 bg-blue-500/10 rounded-lg">
-                                <Users className="text-blue-500 w-5 h-5" />
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                                <Users className="text-primary w-5 h-5" />
                             </div>
                             <div>
                                 <CardTitle className="text-base font-outfit font-bold">Nutzer-Kosten-Analyse</CardTitle>
                                 <p className="text-xs text-muted-foreground">Individuelle Verbrauchsdaten und Kostenäquivalente</p>
                             </div>
                         </div>
-                        <Badge variant="secondary" className="bg-blue-50 text-blue-600 border-blue-100">
+                        <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                             System Gesamt: {formatEuro(systemCosts.total)}
                         </Badge>
                     </div>
@@ -170,7 +170,7 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/30 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-border/40">
+                                <tr className="bg-muted/20 text-xxs font-black text-muted-foreground uppercase tracking-widest border-b border-border/40">
                                     <th className="px-6 py-4 font-black">Nutzer</th>
                                     <th className="px-4 py-4 font-black text-right">OCR (Euro)</th>
                                     <th className="px-4 py-4 font-black text-right">KI (Euro)</th>
@@ -180,7 +180,7 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                             <tbody className="divide-y divide-border/30">
                                 {users.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-10 text-center text-sm text-slate-400 font-medium italic">
+                                        <td colSpan={4} className="px-6 py-10 text-center text-sm text-muted-foreground font-medium italic">
                                             Keine Nutzerdaten verfügbar
                                         </td>
                                     </tr>
@@ -188,47 +188,47 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                                     users.map(user => {
                                         const costs = calculateUserCost(user, settings);
                                         return (
-                                            <tr key={user.id} className="hover:bg-slate-50/50 transition-colors duration-200 group">
+                                            <tr key={user.id} className="hover:bg-muted/30 transition-colors duration-200 group">
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-bold text-slate-700 group-hover:text-primary transition-colors">
+                                                        <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">
                                                             {user.username || user.email || 'Unbekannt'}
                                                         </span>
-                                                        <span className="text-[10px] text-slate-400 font-mono">
+                                                        <span className="text-xxs text-muted-foreground font-mono">
                                                             ID: {user.id.slice(-8)}
                                                         </span>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-4 text-right">
                                                     <div className="flex flex-col items-end">
-                                                        <span className="text-xs font-bold text-slate-700">{formatEuro(costs.ocr)}</span>
-                                                        <div className="text-[9px] text-slate-500 font-medium flex flex-col items-end gap-0.5 mt-1">
+                                                        <span className="text-xs font-bold text-foreground">{formatEuro(costs.ocr)}</span>
+                                                        <div className="text-xxs text-muted-foreground font-medium flex flex-col items-end gap-0.5 mt-1">
                                                             <div className="flex items-center gap-1">
-                                                                <span className="text-slate-400">In:</span> 
+                                                                <span className="text-muted-foreground/60">In:</span> 
                                                                 <span>{formatEuro(costs.ocrInput)}</span>
-                                                                <span className="text-slate-300">({(user.ocrInputTokens / 1000).toFixed(1)}k)</span>
+                                                                <span className="text-muted-foreground/40">({(user.ocrInputTokens / 1000).toFixed(1)}k)</span>
                                                             </div>
                                                             <div className="flex items-center gap-1">
-                                                                <span className="text-slate-400">Out:</span> 
+                                                                <span className="text-muted-foreground/60">Out:</span> 
                                                                 <span>{formatEuro(costs.ocrOutput)}</span>
-                                                                <span className="text-slate-300">({(user.ocrOutputTokens / 1000).toFixed(1)}k)</span>
+                                                                <span className="text-muted-foreground/40">({(user.ocrOutputTokens / 1000).toFixed(1)}k)</span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-4 text-right">
                                                     <div className="flex flex-col items-end">
-                                                        <span className="text-xs font-bold text-slate-700">{formatEuro(costs.ki)}</span>
-                                                        <div className="text-[9px] text-slate-500 font-medium flex flex-col items-end gap-0.5 mt-1">
+                                                        <span className="text-xs font-bold text-foreground">{formatEuro(costs.ki)}</span>
+                                                        <div className="text-xxs text-muted-foreground font-medium flex flex-col items-end gap-0.5 mt-1">
                                                             <div className="flex items-center gap-1">
-                                                                <span className="text-slate-400">In:</span> 
+                                                                <span className="text-muted-foreground/60">In:</span> 
                                                                 <span>{formatEuro(costs.kiInput)}</span>
-                                                                <span className="text-slate-300">({(user.correctionInputTokens / 1000).toFixed(1)}k)</span>
+                                                                <span className="text-muted-foreground/40">({(user.correctionInputTokens / 1000).toFixed(1)}k)</span>
                                                             </div>
                                                             <div className="flex items-center gap-1">
-                                                                <span className="text-slate-400">Out:</span> 
+                                                                <span className="text-muted-foreground/60">Out:</span> 
                                                                 <span>{formatEuro(costs.kiOutput)}</span>
-                                                                <span className="text-slate-300">({(user.correctionOutputTokens / 1000).toFixed(1)}k)</span>
+                                                                <span className="text-muted-foreground/40">({(user.correctionOutputTokens / 1000).toFixed(1)}k)</span>
                                                             </div>
                                                         </div>
                                                     </div>

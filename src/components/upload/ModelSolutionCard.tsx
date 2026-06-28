@@ -550,7 +550,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-8 px-3 flex items-center gap-2 bg-primary/5 text-primary text-[10px] font-bold uppercase tracking-wider rounded-lg border border-primary/10 hover:bg-primary hover:text-white transition-all"
+                                className="h-8 px-3 flex items-center gap-2 bg-primary/5 text-primary text-xxs font-bold uppercase tracking-wider rounded-lg border border-primary/10 hover:bg-primary hover:text-white transition-all"
                                 onClick={() => modelInputRef.current?.click()}
                             >
                                 <RefreshCw size={12} className={extractingLayout ? "animate-spin" : ""} />
@@ -560,7 +560,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-8 px-3 flex items-center gap-2 bg-emerald-500/5 text-emerald-600 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-emerald-500/10 hover:bg-emerald-600 hover:text-white transition-all animate-fade-in"
+                                className="h-8 px-3 flex items-center gap-2 bg-emerald-500/5 text-emerald-600 text-xxs font-bold uppercase tracking-wider rounded-lg border border-emerald-500/10 hover:bg-emerald-600 hover:text-white transition-all animate-fade-in"
                                 onClick={handleExportModelSolution}
                                 title="Musterlösung als Zwischenstand exportieren (.koreki)"
                             >
@@ -581,7 +581,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 {!hasModel ? (
                     <div 
                         onClick={() => modelInputRef.current?.click()}
-                        className="flex-1 border-2 border-dashed border-border/60 rounded-[1.8rem] bg-muted/20 hover:bg-background/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
+                        className="flex-1 border-2 border-dashed border-border/60 rounded-hero bg-muted/20 hover:bg-background/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
                     >
                         <input type="file" accept=".pdf,.txt,.jpg,.jpeg,.png" ref={modelInputRef} onChange={onModelUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
                         <div className="bg-background p-4 rounded-2xl shadow-sm border border-border mb-4 group-hover/dropzone:scale-110 group-hover/dropzone:-translate-y-1 group-hover/dropzone:shadow-md transition-all duration-300">
@@ -592,13 +592,13 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 ) : hasTaskStructure ? (
                     <div className="space-y-6">
                         <div className="flex flex-col gap-4">
-                            <p className="text-[0.65rem] font-black uppercase tracking-[0.2em] text-muted-foreground px-1">Aufgabenstruktur</p>
+                            <p className="text-xxs font-black uppercase tracking-[0.2em] text-muted-foreground px-1">Aufgabenstruktur</p>
 
                             {(eligibleTaskIndices.length > 0 || isBatchGenerating) && (
                                 <div className="flex items-center justify-between gap-3 rounded-xl bg-primary/5 border border-primary/10 px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-200">
                                     <div className="flex items-center gap-2 min-w-0">
                                         <Sparkles size={13} className="text-primary shrink-0 animate-pulse" />
-                                        <p className="text-[0.7rem] text-foreground truncate">
+                                        <p className="text-xxs text-foreground truncate">
                                             {isBatchGenerating ? (
                                                 <>
                                                     <strong className="text-primary">Berechnungsgraphen werden generiert</strong>
@@ -631,7 +631,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                         onClick={() => setShowAutoPilotConfig(true)}
                                         size="sm"
                                         className={cn(
-                                            "rounded-lg px-3 py-1 h-7 text-[0.65rem] font-bold tracking-wide text-primary-foreground uppercase flex items-center gap-1.5 shrink-0 transition-all duration-200",
+                                            "rounded-lg px-3 py-1 h-7 text-xxs font-bold tracking-wide text-primary-foreground uppercase flex items-center gap-1.5 shrink-0 transition-all duration-200",
                                             isBatchGenerating 
                                                 ? "bg-muted-foreground/40 cursor-not-allowed" 
                                                 : "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-sm shadow-primary/20"
@@ -646,7 +646,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                             <>
                                                 <Sparkles size={11} />
                                                 <span>GO</span>
-                                                <span className="bg-white/20 rounded px-1 text-[0.6rem] font-black leading-none py-0.5">{eligibleTaskIndices.length} C</span>
+                                                <span className="bg-white/20 rounded px-1 text-xxs font-black leading-none py-0.5">{eligibleTaskIndices.length} C</span>
                                             </>
                                         ) : (
                                             <>
@@ -751,8 +751,8 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                 return (
                                                     <div className={cn(
                                                         "h-7 w-7 rounded-lg flex items-center justify-center shrink-0 border",
-                                                        isCalcTrace 
-                                                            ? "bg-blue-50 border-blue-200 text-blue-600" 
+                                                            isCalcTrace 
+                                                                ? "bg-primary/10 border-primary/20 text-primary" 
                                                             : "bg-emerald-50 border-emerald-200 text-emerald-600"
                                                     )} title="Verifiziert (Dry-Run bestanden)">
                                                         <ShieldCheck size={14} />
@@ -810,10 +810,9 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                     (task.gradingGraph || task.calcTrace) 
                                                         ? (isCustomSkill 
                                                             ? (isCalcTrace 
-                                                                ? "bg-blue-50/60 border-blue-100/60 text-blue-600 hover:bg-blue-50 hover:border-blue-200" 
-                                                                : "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 hover:border-primary/30") 
+                                                                ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 hover:border-primary/30") 
                                                             : (isCalcTrace 
-                                                                ? "bg-blue-50/60 border-blue-100/60 text-blue-600 hover:bg-blue-50 hover:border-blue-200" 
+                                                                ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 hover:border-primary/30" 
                                                                 : "bg-emerald-50/60 border-emerald-100/60 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200"))
                                                         : (shouldSuggestGraph
                                                             ? "bg-primary/5 border-primary/20 text-primary hover:text-primary hover:border-primary/50 shadow-sm shadow-primary/10"
@@ -902,11 +901,11 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         <div className="mt-8 pt-6 border-t border-border/40 flex items-center justify-between bg-background/40 p-4 rounded-2xl">
                             <div className="flex items-center gap-6">
                                 <div className="flex flex-col">
-                                    <span className="text-[0.6rem] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">Aufgaben</span>
+                                    <span className="text-xxs font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">Aufgaben</span>
                                     <span className="text-lg font-black text-foreground">{tasksLayout.length}</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-[0.6rem] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">Max. Punkte</span>
+                                    <span className="text-xxs font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">Max. Punkte</span>
                                     <span className="text-lg font-black text-primary">{totalMaxPoints}</span>
                                 </div>
                             </div>
@@ -915,7 +914,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 ) : (
                     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest px-1">
+                            <span className="text-xxs font-bold text-muted-foreground uppercase tracking-widest px-1">
                                 {extractingLayout ? "Extraktion läuft..." : "Extrahiertes Dokument"}
                             </span>
                         </div>
@@ -923,7 +922,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             value={modelSolution}
                             onChange={(e) => onModelSolutionChange && onModelSolutionChange(e.target.value)}
                             className={cn(
-                                "flex-1 min-h-[350px] p-5 rounded-[1.5rem] bg-background/50 border-border shadow-inner font-mono text-sm resize-none",
+                                "flex-1 min-h-[350px] p-5 rounded-2xl bg-background/50 border-border shadow-inner font-mono text-sm resize-none",
                                 extractingLayout && "opacity-50 pointer-events-none"
                             )}
                             placeholder={extractingLayout ? "Lese Inhalt..." : "Inhalt der Musterlösung hier bearbeiten..."}
@@ -1204,13 +1203,13 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                     setEditingGraphTaskIdx(taskIdx);
                                     setShowEngineSelectionTaskIdx(null);
                                 }}
-                                className="flex items-start gap-4 p-4 rounded-xl border border-border bg-muted/20 hover:bg-blue-50/20 hover:border-blue-200 transition-all text-left group cursor-pointer focus:outline-none"
+                                className="flex items-start gap-4 p-4 rounded-xl border border-border bg-muted/20 hover:bg-primary/5 hover:border-primary/20 transition-all text-left group cursor-pointer focus:outline-none"
                             >
-                                <div className="p-2 rounded-lg bg-blue-100/60">
-                                    <Sparkles size={18} className="text-blue-600" />
+                                <div className="p-2 rounded-lg bg-primary/10">
+                                    <Sparkles size={18} className="text-primary" />
                                 </div>
                                 <div>
-                                    <h4 className="text-sm font-bold text-foreground group-hover:text-blue-700 font-outfit">Rechenkette (CalcTrace)</h4>
+                                    <h4 className="text-sm font-bold text-foreground group-hover:text-primary font-outfit">Rechenkette (CalcTrace)</h4>
                                     <p className="text-xs text-muted-foreground mt-1">Für mathematisch-numerische Aufgaben, Gleichungen und Schritt-für-Schritt-Rechnungen.</p>
                                 </div>
                             </button>
