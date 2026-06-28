@@ -15,7 +15,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
         <div className="fixed inset-0 z-[9999] bg-background/80 backdrop-blur-xl flex items-center justify-center p-2 md:p-8 overflow-y-auto">
             <div className="bg-white max-w-[800px] w-full p-5 md:p-8 rounded-hero shadow-glass border border-border text-center animate-in zoom-in-95 duration-500 my-auto max-h-[95vh] overflow-y-auto scrollbar-thin">
                 <div className="mb-6">
-                    <Badge variant="outline" className="mb-3 px-3 py-0.5 bg-primary/5 text-primary border-primary/20 font-bold uppercase tracking-wider text-[0.6rem]">
+                    <Badge variant="outline" className="mb-3 px-3 py-0.5 bg-primary/5 text-primary border-primary/20 font-bold uppercase tracking-wider text-xxs">
                         Welcome to Koreki
                     </Badge>
                     <h1 className="text-2xl md:text-3xl font-black text-foreground mb-2 tracking-tight">Korrektur-Modus wählen</h1>
@@ -26,26 +26,26 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
 
                 <div className="grid grid-cols-1 gap-4 mb-4">
                     <div
-                        className="group relative bg-amber-50/30 border-2 border-amber-200 rounded-3xl p-5 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-amber-400 hover:shadow-xl hover:shadow-amber-100/50"
+                        className="group relative bg-amber-500/5 border-2 border-amber-500/10 rounded-3xl p-5 text-left cursor-pointer transition-all hover:-translate-y-1 hover:border-amber-500 hover:shadow-xl hover:shadow-amber-500/10"
                         onClick={() => {
                             if (trialAgreement) onSelectMode('TRIAL', trialAgreement);
                             else alert("Bitte bestätigen Sie die Nutzung ohne echte Schülerdaten.");
                         }}
                     >
                         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-                            <div className="w-12 h-12 bg-amber-100 text-amber-500 rounded-xl flex items-center justify-center shrink-0">
+                            <div className="w-12 h-12 bg-amber-500/10 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
                                 <Zap size={24} />
                             </div>
                             <div className="flex-1">
                                 <div className="flex items-center gap-3 mb-1">
                                     <h2 className="text-lg font-bold text-foreground">Koreki Trial</h2>
-                                    <Badge variant="secondary" className="bg-amber-100 text-amber-900 border-none font-bold text-[9px]">Kostenlos testen</Badge>
+                                    <Badge variant="secondary" className="bg-amber-500/10 text-amber-600 border-none font-bold text-xxs">Kostenlos testen</Badge>
                                 </div>
-                                <p className="text-[12px] text-muted-foreground mb-3 leading-snug">Alle Standard-Funktionen gratis testen mit Ihren 20 Start-Credits. Perfekt für den ersten Eindruck!</p>
+                                <p className="text-xs text-muted-foreground mb-3 leading-snug">Alle Standard-Funktionen gratis testen mit Ihren 20 Start-Credits. Perfekt für den ersten Eindruck!</p>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                                     <div className="flex items-center gap-2 text-xs text-foreground">
-                                        <CheckCircle size={14} className="text-amber-500" />
+                                        <CheckCircle size={14} className="text-amber-600" />
                                         <span>Alle Funktionen von Standard</span>
                                     </div>
                                     <div className="flex items-center gap-2 text-xs text-emerald-600 font-semibold">
@@ -55,16 +55,16 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
                                 </div>
                                 <div className="flex flex-col sm:flex-row items-center gap-4">
                                     <div
-                                        className="w-full sm:flex-1 bg-white border border-amber-200 p-3 rounded-xl flex items-center gap-3 cursor-pointer select-none"
+                                        className="w-full sm:flex-1 bg-white border border-amber-500/10 p-3 rounded-xl flex items-center gap-3 cursor-pointer select-none"
                                         onClick={(e) => { e.stopPropagation(); setTrialAgreement(!trialAgreement); }}
                                     >
                                         <div className={cn(
                                             "w-4 h-4 border-2 rounded shrink-0 transition-all",
-                                            trialAgreement ? "bg-amber-500 border-amber-500" : "bg-white border-amber-200"
+                                            trialAgreement ? "bg-amber-600 border-amber-600" : "bg-white border-amber-500/10"
                                         )}>
                                             {trialAgreement && <CheckCircle size={10} className="text-white" />}
                                         </div>
-                                        <span className="text-[10px] text-amber-900 font-medium leading-tight">
+                                        <span className="text-xxs text-amber-600 font-medium leading-tight">
                                             Ich bestätige, dass ich <b>keine echten Schülerdaten</b> verwende.
                                         </span>
                                     </div>
@@ -72,7 +72,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
                                     <Button
                                         className={cn(
                                             "w-full sm:w-auto px-6 py-5 rounded-xl font-bold text-sm border-none shadow-lg transition-all",
-                                            trialAgreement ? "bg-amber-500 hover:bg-amber-600 text-white shadow-amber-200" : "bg-muted text-muted-foreground shadow-none grayscale opacity-50 cursor-not-allowed"
+                                            trialAgreement ? "bg-amber-600 hover:bg-amber-700 text-white shadow-amber-600/20" : "bg-muted text-muted-foreground shadow-none grayscale opacity-50 cursor-not-allowed"
                                         )}
                                     >
                                         Trial starten <ChevronRight size={18} className="ml-2" />
@@ -93,22 +93,22 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
                     >
                         {!isPaidModesEnabled() && (
                             <div className="absolute top-4 right-4 z-10">
-                                <Badge variant="secondary" className="bg-slate-200 text-slate-600 border-none font-bold text-[8px] uppercase">Demnächst</Badge>
+                                <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-bold text-xxs uppercase">Demnächst</Badge>
                             </div>
                         )}
                         <div className="w-12 h-12 bg-primary/5 text-primary rounded-xl flex items-center justify-center mb-3">
                             <Shield size={24} />
                         </div>
                         <h2 className="text-lg font-bold text-foreground mb-0.5">Koreki Standard</h2>
-                        <Badge variant="secondary" className="w-fit mb-2 bg-primary/10 text-primary border-none font-bold text-[9px]">Managed & Bequem</Badge>
-                        <p className="text-[12px] text-muted-foreground mb-4 flex-grow leading-snug">Das Rundum-Sorglos-Paket. Wir kümmern uns um die KI-Power.</p>
+                        <Badge variant="secondary" className="w-fit mb-2 bg-primary/10 text-primary border-none font-bold text-xxs">Managed & Bequem</Badge>
+                        <p className="text-xs text-muted-foreground mb-4 flex-grow leading-snug">Das Rundum-Sorglos-Paket. Wir kümmern uns um die KI-Power.</p>
 
                         <div className="space-y-1.5 mb-6">
-                            <div className="flex items-center gap-2 text-[11px] text-foreground">
+                            <div className="flex items-center gap-2 text-xxs text-foreground">
                                 <CheckCircle size={12} className="text-primary" />
                                 <span>Kein technisches Setup</span>
                             </div>
-                            <div className="flex items-center gap-2 text-[11px] text-destructive font-semibold">
+                            <div className="flex items-center gap-2 text-xxs text-destructive font-semibold">
                                 <Info size={12} />
                                 <span>AVV-Abschluss nötig</span>
                             </div>
@@ -128,22 +128,22 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
                     >
                         {!isPaidModesEnabled() && (
                             <div className="absolute top-4 right-4 z-10">
-                                <Badge variant="secondary" className="bg-slate-200 text-slate-600 border-none font-bold text-[8px] uppercase">Demnächst</Badge>
+                                <Badge variant="secondary" className="bg-muted text-muted-foreground border-none font-bold text-xxs uppercase">Demnächst</Badge>
                             </div>
                         )}
-                        <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center mb-3">
+                        <div className="w-12 h-12 bg-emerald-500/10 text-emerald-600 rounded-xl flex items-center justify-center mb-3">
                             <Zap size={24} />
                         </div>
                         <h2 className="text-lg font-bold text-foreground mb-0.5">Koreki Pure</h2>
-                        <Badge variant="secondary" className="w-fit mb-2 bg-emerald-100 text-emerald-800 border-none font-bold text-[9px]">Privacy-First (BYOK)</Badge>
-                        <p className="text-[12px] text-muted-foreground mb-4 flex-grow leading-snug">Maximale Privatsphäre. Daten bleiben lokal.</p>
+                        <Badge variant="secondary" className="w-fit mb-2 bg-emerald-500/10 text-emerald-600 border-none font-bold text-xxs">Privacy-First (BYOK)</Badge>
+                        <p className="text-xs text-muted-foreground mb-4 flex-grow leading-snug">Maximale Privatsphäre. Daten bleiben lokal.</p>
 
                         <div className="space-y-1.5 mb-6">
-                            <div className="flex items-center gap-2 text-[11px] text-foreground">
+                            <div className="flex items-center gap-2 text-xxs text-foreground">
                                 <CheckCircle size={12} className="text-emerald-600" />
                                 <span>Eigener Mistral Key</span>
                             </div>
-                            <div className="flex items-center gap-2 text-[11px] text-emerald-600 font-semibold">
+                            <div className="flex items-center gap-2 text-xxs text-emerald-600 font-semibold">
                                 <CheckCircle size={12} />
                                 <span>Kein AVV mit uns nötig</span>
                             </div>
