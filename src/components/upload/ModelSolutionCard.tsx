@@ -548,9 +548,9 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         <>
                             <input type="file" accept=".pdf,.txt,.jpg,.jpeg,.png" ref={modelInputRef} onChange={onModelUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
                             <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-3 flex items-center gap-2 bg-primary/5 text-primary text-xxs font-bold uppercase tracking-wider rounded-lg border border-primary/10 hover:bg-primary hover:text-white transition-all"
+                                variant="chip"
+                                size="xs"
+                                className="flex items-center gap-2 transition-all"
                                 onClick={() => modelInputRef.current?.click()}
                             >
                                 <RefreshCw size={12} className={extractingLayout ? "animate-spin" : ""} />
@@ -558,9 +558,9 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             </Button>
                             
                             <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-3 flex items-center gap-2 bg-emerald-500/5 text-emerald-600 text-xxs font-bold uppercase tracking-wider rounded-lg border border-emerald-500/10 hover:bg-emerald-600 hover:text-white transition-all animate-fade-in"
+                                variant="chip"
+                                size="xs"
+                                className="flex items-center gap-2 transition-all animate-fade-in"
                                 onClick={handleExportModelSolution}
                                 title="Musterlösung als Zwischenstand exportieren (.koreki)"
                             >
