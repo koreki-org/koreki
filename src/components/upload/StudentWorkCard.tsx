@@ -28,10 +28,10 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
     const hasStudents = batchFilesCount > 0;
 
     return (
-        <Card className="flex flex-col min-h-[320px] bg-white/60 backdrop-blur-xl border border-white hover:border-indigo-100/50 hover:shadow-2xl hover:shadow-indigo-900/5 transition-all duration-500 overflow-hidden relative rounded-3xl group">
+        <Card className="flex flex-col min-h-[320px] bg-background/60 backdrop-blur-xl border border-border hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 overflow-hidden relative rounded-3xl group">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-20">
                 <CardTitle className="text-lg font-bold flex items-center gap-3">
-                    <div className="p-2 bg-indigo-50 rounded-xl text-indigo-600">
+                    <div className="p-2 bg-primary/10 rounded-xl text-primary">
                         <FolderOpen size={18} />
                     </div>
                     Schülerarbeiten
@@ -43,7 +43,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-8 px-3 flex items-center gap-2 bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-wider rounded-lg border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all font-outfit"
+                                className="h-8 px-3 flex items-center gap-2 bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider rounded-lg border border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all font-outfit"
                                 onClick={() => studentInputRef.current?.click()}
                             >
                                 <RefreshCw size={12} />
@@ -63,7 +63,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                 {!hasStudents ? (
                     <div 
                         onClick={() => studentInputRef.current?.click()}
-                        className="flex-1 border-2 border-dashed border-slate-200/80 rounded-[1.8rem] bg-slate-50/30 hover:bg-white/80 hover:border-indigo-400/50 hover:shadow-lg hover:shadow-indigo-500/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
+                        className="flex-1 border-2 border-dashed border-border rounded-hero bg-muted/10 hover:bg-background/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
                     >
                         <input
                             type="file"
@@ -74,21 +74,21 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                             onClick={(e) => (e.target as HTMLInputElement).value = ''}
                             hidden
                         />
-                        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 mb-4 group-hover/dropzone:scale-110 group-hover/dropzone:-translate-y-1 group-hover/dropzone:shadow-md transition-all duration-300">
-                            <Users size={36} className="text-indigo-600" />
+                        <div className="bg-background p-4 rounded-2xl shadow-sm border border-border mb-4 group-hover/dropzone:scale-110 group-hover/dropzone:-translate-y-1 group-hover/dropzone:shadow-md transition-all duration-300">
+                            <Users size={36} className="text-primary" />
                         </div>
-                        <p className="font-semibold text-slate-700 group-hover/dropzone:text-indigo-600 transition-colors">
+                        <p className="font-semibold text-muted-foreground group-hover/dropzone:text-primary transition-colors">
                             Arbeiten auswählen (Excel/Moodle, Text (.txt), PDF, Bilder)
                         </p>
                     </div>
                 ) : (
                     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="bg-indigo-50/30 border border-indigo-100/50 rounded-[1.5rem] p-6 flex flex-col items-center justify-center text-center mb-6">
-                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-indigo-600 shadow-sm mb-3">
+                        <div className="bg-primary/5 border border-primary/10 rounded-3xl p-6 flex flex-col items-center justify-center text-center mb-6">
+                            <div className="w-12 h-12 bg-background rounded-full flex items-center justify-center text-primary shadow-sm mb-3">
                                 <Users size={24} />
                             </div>
-                            <h4 className="font-black text-slate-900 leading-tight mb-1">{batchFilesCount} Schüler gefunden</h4>
-                            <p className="text-xs text-slate-500 font-medium">Bereit für die Analyse</p>
+                            <h4 className="font-black text-foreground leading-tight mb-1">{batchFilesCount} Schüler gefunden</h4>
+                            <p className="text-xs text-muted-foreground font-medium">Bereit für die Analyse</p>
                         </div>
 
                         {tasksLayout.length > 0 && (
@@ -102,7 +102,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                                                 size="sm"
                                                 onClick={onReExtractLayout}
                                                 disabled={extractingLayout || isLocked}
-                                                className="h-auto p-0 text-xs text-indigo-600 font-bold uppercase tracking-wide flex items-center gap-1 font-outfit hover:text-indigo-700 transition-colors"
+                                                className="h-auto p-0 text-xs text-primary font-bold uppercase tracking-wide flex items-center gap-1 font-outfit hover:text-primary/90 transition-colors"
                                             >
                                                 <RefreshCw size={10} className={extractingLayout ? "animate-spin" : ""} />
                                                 Update
@@ -116,20 +116,20 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                                                 buttonClassName="h-6 w-6"
                                                 footer={(
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kosten</span>
-                                                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">1 Credit / Seite</span>
+                                                        <span className="text-xxs font-bold text-muted-foreground uppercase tracking-wider">Kosten</span>
+                                                        <span className="text-xxs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">1 Credit / Seite</span>
                                                     </div>
                                                 )}
                                             />
                                         </div>
-                                        <span className="text-[9px] font-bold text-indigo-400/60 uppercase tracking-tight font-outfit bg-indigo-50/30 px-1.5 py-0.5 rounded-md border border-indigo-100/30">
+                                        <span className="text-xxs font-bold text-primary/70 uppercase tracking-tight font-outfit bg-primary/5 px-1.5 py-0.5 rounded-md border border-primary/20">
                                             1 Credit / Seite
                                         </span>
                                     </div>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {tasksLayout.map((t, i) => (
-                                        <Badge key={i} variant="outline" className="bg-white/50 border-slate-200 font-bold px-3 py-1.5 text-xs text-slate-700 shadow-sm rounded-lg hover:border-indigo-200 transition-colors font-outfit">
+                                        <Badge key={i} variant="outline" className="bg-background/50 border-border font-bold px-3 py-1.5 text-xs text-foreground shadow-sm rounded-lg hover:border-primary/40 transition-colors font-outfit">
                                             {t.name} <span className="ml-1 opacity-40 font-medium">{t.maxPoints}P</span>
                                         </Badge>
                                     ))}
