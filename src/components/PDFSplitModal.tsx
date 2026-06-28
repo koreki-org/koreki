@@ -159,23 +159,24 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
         <div className="fixed inset-0 z-[2100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300">
             <div className="relative w-full max-w-[550px] max-h-[90vh] md:max-h-[85vh] bg-white rounded-hero p-8 shadow-glass border border-border animate-in zoom-in-95 duration-500 overflow-hidden flex flex-col">
                 <div className="flex justify-between items-center mb-6 shrink-0">
-                    <h2 className="text-xl font-bold text-slate-900 tracking-tight">PDF Aufteilen</h2>
-                    <Button variant="ghost" size="icon" className="h-auto p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors" onClick={onClose}>
+                    <h2 className="text-xl font-bold text-foreground tracking-tight">PDF Aufteilen</h2>
+                    <Button variant="ghost" size="icon" className="h-auto p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors" onClick={onClose}>
                         <X size={24} />
                     </Button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin mb-6">
                     <div className="flex justify-between items-start gap-4 mb-4">
-                        <p className="text-slate-500 text-sm m-0">
-                            Datei: <strong className="text-slate-800">{fileName}</strong> ({totalPageCount} Seiten)
+                        <p className="text-muted-foreground text-sm m-0">
+                            Datei: <strong className="text-foreground">{fileName}</strong> ({totalPageCount} Seiten)
                         </p>
                         <Button
-                            variant="ghost"
-                            className="flex h-auto items-center gap-2 bg-green-50 text-green-700 border border-green-200 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-100 hover:border-green-300 transition-all shadow-sm"
+                            variant="chip"
+                            size="xs"
+                            className="flex items-center gap-2 transition-all shadow-xs"
                             onClick={() => fileInputRef.current?.click()}
                         >
-                            <FileSpreadsheet size={16} /> Excel Import
+                            <FileSpreadsheet size={14} /> Excel Import
                         </Button>
                         <input
                             type="file"
@@ -186,14 +187,14 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                         />
                     </div>
 
-                    <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 flex gap-3 mb-6">
-                        <Info size={20} className="text-blue-500 shrink-0 mt-0.5" />
-                        <p className="text-sm text-blue-900 leading-relaxed m-0">
+                    <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 flex gap-3 mb-6">
+                        <Info size={20} className="text-primary shrink-0 mt-0.5" />
+                        <p className="text-sm text-primary leading-relaxed m-0">
                             Ordnen Sie die Seiten den jeweiligen Schülern zu. Sie können Namen direkt eingeben oder per Excel importieren.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-[1fr_1fr_80px_40px] gap-3 px-2 text-xs font-bold text-slate-500 uppercase mb-2">
+                    <div className="grid grid-cols-[1fr_1fr_80px_40px] gap-3 px-2 text-xs font-bold text-muted-foreground uppercase mb-2">
                         <span>Nachname</span>
                         <span>Vorname</span>
                         <span className="text-center">Seiten</span>
@@ -203,19 +204,14 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                     <div className="max-h-[250px] overflow-y-auto mb-4 flex flex-col gap-3 pr-2 scrollbar-thin">
                         {students.map((student, idx) => (
                             <div key={idx} className="grid grid-cols-[1fr_1fr_80px_40px] gap-3 items-center">
-                                <Input
-                                    type="text"
-                                    value={student.lastName}
-                                    placeholder="Nachname..."
-                                    onChange={(e) => updateStudent(idx, 'lastName', e.target.value)}
-                                    className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    className="px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                 />
                                 <Input
                                     type="text"
                                     value={student.firstName}
                                     placeholder="Vorname..."
                                     onChange={(e) => updateStudent(idx, 'firstName', e.target.value)}
-                                    className="px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    className="px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                 />
                                 <Input
                                     type="number"
@@ -223,12 +219,12 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                                     max={totalPageCount}
                                     value={student.pageCount}
                                     onChange={(e) => updateStudent(idx, 'pageCount', Math.max(0, parseInt(e.target.value) || 0))}
-                                    className="px-3 py-2 rounded-xl border border-slate-200 text-sm text-center font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                    className="px-3 py-2 rounded-xl border border-border text-sm text-center font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                 />
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="text-slate-400 hover:text-red-500 disabled:opacity-30 disabled:hover:text-slate-400 disabled:cursor-not-allowed flex h-auto p-2 justify-center rounded-lg hover:bg-red-50 transition-colors"
+                                    className="text-muted-foreground hover:text-destructive disabled:opacity-30 disabled:hover:text-muted-foreground disabled:cursor-not-allowed flex h-auto p-2 justify-center rounded-lg hover:bg-destructive/10 transition-colors"
                                     onClick={() => removeStudent(idx)}
                                     disabled={students.length <= 1}
                                 >
@@ -240,16 +236,16 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
 
                     <Button
                         variant="ghost"
-                        className="w-full h-auto bg-slate-50 border-2 border-dashed border-slate-200 text-slate-600 p-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-slate-100 hover:border-slate-300 hover:text-slate-800 transition-all mb-6"
+                        className="w-full h-auto bg-muted/20 border-2 border-dashed border-border text-muted-foreground p-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-muted/40 hover:border-border hover:text-foreground transition-all mb-6"
                         onClick={addStudent}
                     >
                         <Plus size={18} /> Schüler hinzufügen
                     </Button>
 
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4">
+                    <div className="bg-muted/20 p-4 rounded-xl border border-border mb-4">
                         <div className="flex justify-between text-sm mb-1">
-                            <span className="text-slate-600 font-medium">Zugeordnete Seiten:</span>
-                            <span className={`font-bold ${assignedPages > totalPageCount ? 'text-red-500' : 'text-blue-600'}`}>
+                            <span className="text-muted-foreground font-medium">Zugeordnete Seiten:</span>
+                            <span className={`font-bold ${assignedPages > totalPageCount ? 'text-destructive' : 'text-primary'}`}>
                                 {assignedPages} / {totalPageCount}
                             </span>
                         </div>
@@ -260,29 +256,29 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                             </div>
                         )}
                         {assignedPages > totalPageCount && (
-                            <div className="text-red-500 text-xs font-bold mt-2 text-center bg-red-50 py-1.5 rounded-md border border-red-100">
+                            <div className="text-destructive text-xs font-bold mt-2 text-center bg-destructive/10 py-1.5 rounded-md border border-destructive/20">
                                 ⚠️ Zu viele Seiten zugeordnet!
                             </div>
                         )}
                     </div>
 
-                    <label className="flex items-center gap-3 p-3 bg-slate-50 hover:bg-slate-100/80 rounded-xl border border-slate-200 cursor-pointer transition-all">
+                    <label className="flex items-center gap-3 p-3 bg-muted/20 hover:bg-muted/40 rounded-xl border border-border cursor-pointer transition-all">
                         <input
                             type="checkbox"
                             checked={autoRedact}
                             onChange={(e) => setAutoRedact(e.target.checked)}
-                            className="w-4 h-4 rounded text-primary focus:ring-primary/20 border-slate-300 transition-all cursor-pointer"
+                            className="w-4 h-4 rounded text-primary focus:ring-primary/20 border-border transition-all cursor-pointer"
                         />
                         <div className="flex flex-col">
-                            <span className="text-sm font-bold text-slate-800">Automatische Schwärzung</span>
-                            <span className="text-[11px] text-slate-500 font-medium leading-normal">
+                            <span className="text-sm font-bold text-foreground">Automatische Schwärzung</span>
+                            <span className="text-xxs text-muted-foreground font-medium leading-normal">
                                 Obere 2 cm auf allen Seiten automatisch mit einem schwarzen Balken schwärzen.
                             </span>
                         </div>
                     </label>
                 </div>
 
-                <div className="flex gap-4 mt-auto pt-4 border-t border-slate-100 shrink-0">
+                <div className="flex gap-4 mt-auto pt-4 border-t border-border shrink-0">
                     <Button variant="outline" onClick={onClose} className="flex-1 font-semibold">
                         Abbrechen
                     </Button>

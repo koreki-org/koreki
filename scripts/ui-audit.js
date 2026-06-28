@@ -24,7 +24,8 @@ const excludedPages = [
 const migratedAppFiles = [
     'src/components/settings/GlobalBillingSettings.tsx',
     'src/components/batch/CalcTraceModal.tsx',
-    'src/components/settings/OllamaConfig.tsx'
+    'src/components/settings/OllamaConfig.tsx',
+    'src/components/PDFSplitModal.tsx'
 ];
 
 // 21 Tailwind Color Families
