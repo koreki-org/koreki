@@ -809,8 +809,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                     "h-7 w-7 rounded-lg transition-all flex items-center justify-center shrink-0 border select-none cursor-pointer focus:outline-none relative",
                                                     (task.gradingGraph || task.calcTrace) 
                                                         ? (isCustomSkill 
-                                                            ? (isCalcTrace 
-                                                                ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 hover:border-primary/30") 
+                                                            ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 hover:border-primary/30" 
                                                             : (isCalcTrace 
                                                                 ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 hover:border-primary/30" 
                                                                 : "bg-emerald-50/60 border-emerald-100/60 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200"))
