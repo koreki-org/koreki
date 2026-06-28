@@ -59,13 +59,13 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
             {/* Case 1: Community / SaaS Standard (Server Managed) */}
             {(isCommunity || (isSaaS && !isPure)) && (
                 <div className="space-y-4">
-                    <div className="p-5 bg-indigo-50/50 rounded-3xl border-2 border-indigo-100 flex flex-col items-center text-center gap-3">
-                        <div className="p-3 bg-indigo-500 text-white rounded-2xl shadow-lg shadow-indigo-200">
+                    <div className="p-5 bg-primary/5 rounded-3xl border-2 border-primary/10 flex flex-col items-center text-center gap-3">
+                        <div className="p-3 bg-primary text-primary-foreground rounded-2xl shadow-lg shadow-primary/20">
                             <ShieldCheck size={24} />
                         </div>
                         <div>
-                            <h4 className="text-sm font-black text-indigo-900 uppercase tracking-tight">Mittwald AI API aktiv</h4>
-                            <p className="text-[11px] text-indigo-700 font-medium leading-relaxed max-w-[250px] mx-auto mt-1">
+                            <h4 className="text-sm font-black text-primary uppercase tracking-tight">Mittwald AI API aktiv</h4>
+                            <p className="text-xxs text-primary font-medium leading-relaxed max-w-[250px] mx-auto mt-1">
                                 Dein Institut stellt diesen Dienst (Qwen) zentral zur Verfügung. Die Konfiguration erfolgt sicher über die Administration.
                             </p>
                         </div>
@@ -75,28 +75,28 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
 
             {/* Case 2: Desktop or SaaS Pure (Local Vault / Manual) */}
             {(isDesktop || (isSaaS && isPure)) && (
-                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+                <div className="p-4 bg-muted/30 rounded-2xl border border-border space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Server size={16} className="text-primary/60" />
-                            <label className="text-xs font-bold text-slate-700 uppercase tracking-tight">Eigene Endpunkt-Konfiguration</label>
+                            <label className="text-xs font-bold text-foreground uppercase tracking-tight">Eigene Endpunkt-Konfiguration</label>
                         </div>
                         {settings.openaiKey && (
                             <Button 
                                 variant="ghost" 
                                 size="sm" 
                                 onClick={handleClearKey}
-                                className="h-7 px-2 text-rose-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg gap-1.5"
+                                className="h-7 px-2 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg gap-1.5"
                             >
                                 <Trash2 size={12} />
-                                <span className="text-[10px] font-bold uppercase">Daten löschen</span>
+                                <span className="text-xxs font-bold uppercase">Daten löschen</span>
                             </Button>
                         )}
                     </div>
 
                     <div className="space-y-3">
                         <div>
-                            <label htmlFor="openai-url" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5">Base URL</label>
+                            <label htmlFor="openai-url" className="block text-xxs font-black text-muted-foreground uppercase tracking-widest ml-1 mb-1.5">Base URL</label>
                             <Input 
                                 id="openai-url"
                                 placeholder="https://llm.aihosting.mittwald.de/v1" 
@@ -106,7 +106,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                             />
                         </div>
                         <div>
-                            <label htmlFor="openai-key" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5">API Key</label>
+                            <label htmlFor="openai-key" className="block text-xxs font-black text-muted-foreground uppercase tracking-widest ml-1 mb-1.5">API Key</label>
                             <div className="flex gap-2">
                                 <div className="relative flex-1 group">
                                     <Input 
@@ -118,7 +118,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                                         className="rounded-xl border-2 focus:border-primary/50 transition-all pr-12"
                                     />
                                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                        <ShieldCheck size={16} className={localKey ? "text-emerald-500" : "text-slate-300"} />
+                                        <ShieldCheck size={16} className={localKey ? "text-emerald-500" : "text-muted-foreground/50"} />
                                     </div>
                                 </div>
                                 <Button 
@@ -131,7 +131,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                             </div>
                         </div>
                         <div>
-                            <label htmlFor="openai-model" className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 mb-1.5">Modell</label>
+                            <label htmlFor="openai-model" className="block text-xxs font-black text-muted-foreground uppercase tracking-widest ml-1 mb-1.5">Modell</label>
                             <Input 
                                 id="openai-model"
                                 placeholder="Qwen3.6-35B-A3B-FP8" 
@@ -146,48 +146,48 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                             <button
                                 onClick={() => onSave({ enableThinking: !settings.enableThinking })}
                                 className={`w-full p-3 rounded-xl border-2 transition-all flex items-center justify-between group ${
-                                    settings.enableThinking 
-                                        ? 'border-indigo-500 bg-indigo-50/50' 
-                                        : 'border-slate-100 bg-white hover:border-slate-200'
-                                }`}
-                            >
-                                <div className="flex items-center gap-3">
-                                    <div className={`p-2 rounded-lg transition-colors ${
-                                        settings.enableThinking ? 'bg-indigo-500 text-white' : 'bg-slate-100 text-slate-400'
-                                    }`}>
-                                        <Zap size={14} className={settings.enableThinking ? 'animate-pulse' : ''} />
-                                    </div>
-                                    <div className="text-left">
-                                        <p className={`text-[11px] font-black uppercase tracking-tight ${
-                                            settings.enableThinking ? 'text-indigo-900' : 'text-slate-600'
-                                        }`}>Deep Reasoning</p>
-                                        <p className="text-[9px] text-slate-500 font-medium">Aktiviert den &quot;Thinking&quot;-Modus (z.B. für Qwen)</p>
-                                    </div>
-                                </div>
-                                <div className={`w-10 h-5 rounded-full relative transition-colors ${
-                                    settings.enableThinking ? 'bg-indigo-500' : 'bg-slate-200'
+                                settings.enableThinking 
+                                    ? 'border-primary bg-primary/5' 
+                                    : 'border-border bg-background hover:border-border/80'
+                            }`}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-lg transition-colors ${
+                                    settings.enableThinking ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                                 }`}>
-                                    <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${
-                                        settings.enableThinking ? 'left-6' : 'left-1'
-                                    }`} />
+                                    <Zap size={14} className={settings.enableThinking ? 'animate-pulse' : ''} />
+                                </div>
+                                <div className="text-left">
+                                    <p className={`text-xxs font-black uppercase tracking-tight ${
+                                        settings.enableThinking ? 'text-primary' : 'text-muted-foreground'
+                                    }`}>Deep Reasoning</p>
+                                    <p className="text-xxs text-muted-foreground font-medium">Aktiviert den &quot;Thinking&quot;-Modus (z.B. für Qwen)</p>
+                                </div>
+                            </div>
+                            <div className={`w-10 h-5 rounded-full relative transition-colors ${
+                                settings.enableThinking ? 'bg-primary' : 'bg-muted'
+                            }`}>
+                                <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${
+                                    settings.enableThinking ? 'left-6' : 'left-1'
+                                }`} />
                                 </div>
                             </button>
                         </div>
                     </div>
 
-                    <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 flex items-start gap-2">
-                        <Info size={14} className="text-indigo-500 mt-0.5" />
-                        <div className="space-y-1">
-                            <p className="text-[10px] text-indigo-700 font-medium leading-tight">
-                                {isDesktop 
-                                    ? "Deine Zugangsdaten werden sicher im Tresor deines Betriebssystems verwaltet."
-                                    : "Direkte Browser-Verbindung (Pure Mode). Aus DSGVO-Gründen werden Daten nicht über Koreki-Server geproxt."}
+                <div className="p-3 bg-primary/5 rounded-xl border border-primary/10 flex items-start gap-2">
+                    <Info size={14} className="text-primary mt-0.5" />
+                    <div className="space-y-1">
+                        <p className="text-xxs text-primary font-medium leading-tight">
+                            {isDesktop 
+                                ? "Deine Zugangsdaten werden sicher im Tresor deines Betriebssystems verwaltet."
+                                : "Direkte Browser-Verbindung (Pure Mode). Aus DSGVO-Gründen werden Daten nicht über Koreki-Server geproxt."}
+                        </p>
+                        {!isDesktop && (
+                            <p className="text-xxs text-primary italic leading-tight">
+                                Hinweis: Ihr Provider muss CORS für koreki.org unterstützen.
                             </p>
-                            {!isDesktop && (
-                                <p className="text-[9px] text-indigo-500 italic leading-tight">
-                                    Hinweis: Ihr Provider muss CORS für koreki.org unterstützen.
-                                </p>
-                            )}
+                        )}
                         </div>
                     </div>
                 </div>
