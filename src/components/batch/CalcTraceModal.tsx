@@ -191,7 +191,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                 <h3 className="text-sm sm:text-lg font-black text-foreground font-outfit tracking-tight">
                                     MINT Rechenketten Designer
                                 </h3>
-                                <p className="text-[10px] sm:text-xs text-muted-foreground font-medium truncate">{taskName} (Schritte, Formeln &amp; Folgefehler-Kompensation)</p>
+                                <p className="text-xxs sm:text-xs text-muted-foreground font-medium truncate">{taskName} (Schritte, Formeln &amp; Folgefehler-Kompensation)</p>
                             </div>
                         </div>
                         <Button 
@@ -209,17 +209,17 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                         <button 
                             type="button"
                             onClick={() => setActiveTab('editor')}
-                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'editor' ? "bg-background text-blue-600 shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'editor' ? "bg-background text-primary shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
                         >
-                            <Layers size={12} className={cn(activeTab === 'editor' && "text-blue-600")} />
+                            <Layers size={12} className={cn(activeTab === 'editor' && "text-primary")} />
                             Ketten-Editor 📐
                         </button>
                         <button 
                             type="button"
                             onClick={() => { setActiveTab('testing'); handleRunPlayground(); }}
-                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'testing' ? "bg-background text-blue-600 shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'testing' ? "bg-background text-primary shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
                         >
-                            <Eye size={12} className={cn(activeTab === 'testing' && "text-blue-600")} />
+                            <Eye size={12} className={cn(activeTab === 'testing' && "text-primary")} />
                             Kette testen 🧪
                         </button>
                     </div>
@@ -319,7 +319,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                     alert(`Änderungen an der Rechenkette wurden in den Skill "${skillName.trim()}" übernommen. Klicke gleich im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern!`);
                                                 }
                                             }}
-                                            className="flex-1 sm:flex-initial h-8 rounded-full text-xs font-black uppercase border border-blue-200 text-blue-600 bg-blue-50/50 hover:bg-blue-100 gap-1.5 px-4 transition-all flex items-center justify-center shrink-0 shadow-xs duration-300 active:scale-95"
+                                            className="flex-1 sm:flex-initial h-8 rounded-full text-xs font-black uppercase border border-border text-primary bg-primary/5 hover:bg-primary/10 gap-1.5 px-4 transition-all flex items-center justify-center shrink-0 shadow-xs duration-300 active:scale-95"
                                             title="Als wiederverwendbaren Custom Skill im Skill Center speichern bzw. übernehmen"
                                         >
                                             <Check size={14} /> Speichern
@@ -355,16 +355,16 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                             {/* Left Pane: Task Text & AI prompt */}
                             <div className="w-full lg:w-1/3 flex flex-col gap-4 shrink-0">
                                 <div className="flex-1 flex flex-col min-h-[150px]">
-                                    <label className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1.5">Aufgabentext</label>
+                                    <label className="text-xxs font-black text-muted-foreground uppercase tracking-widest mb-1.5">Aufgabentext</label>
                                     <div className="flex-1 p-4 bg-background border border-border shadow-sm rounded-2xl text-xs font-medium text-muted-foreground leading-relaxed overflow-y-auto whitespace-pre-wrap select-text">
                                         {taskContent || "Kein Aufgabentext vorhanden."}
                                     </div>
                                 </div>
 
                                 {onRegenerateCalcTrace && !isLocked && (
-                                    <div className="p-4 bg-blue-50/40 border border-blue-100 rounded-2xl space-y-3">
-                                        <h4 className="text-xs font-bold text-blue-800 flex items-center gap-1.5">
-                                            <Sparkles size={14} className="text-blue-500 animate-pulse" />
+                                    <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl space-y-3">
+                                        <h4 className="text-xs font-bold text-primary flex items-center gap-1.5">
+                                            <Sparkles size={14} className="text-primary animate-pulse" />
                                             KI-Unterstützung
                                         </h4>
                                         <div className="space-y-1.5">
@@ -396,7 +396,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                             {/* Right Pane: Table Editor */}
                             <div className="flex-1 flex flex-col gap-4 min-h-[300px] overflow-hidden">
                                 <div className="flex justify-between items-center shrink-0">
-                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Rechenschritte</span>
+                                    <span className="text-xxs font-black text-muted-foreground uppercase tracking-widest">Rechenschritte</span>
                                     {!isLocked && (
                                         <Button
                                             variant="outline"
@@ -433,7 +433,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                     <div className="flex-grow overflow-auto custom-scrollbar">
                                         <table className="w-full text-left border-collapse min-w-[1000px]">
                                             <thead>
-                                                <tr className="border-b border-border bg-muted/30 text-[10px] font-black uppercase text-muted-foreground tracking-wider">
+                                                <tr className="border-b border-border bg-muted/30 text-xxs font-black uppercase text-muted-foreground tracking-wider">
                                                     <th className="py-2.5 px-3 w-32 min-w-[128px]">ID</th>
                                                     <th className="py-2.5 px-3 min-w-[160px]">Bezeichnung</th>
                                                     <th className="py-2.5 px-3 w-28 min-w-[112px]">Typ</th>
@@ -593,7 +593,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                 <div key={s.id} className="flex flex-col gap-1">
                                                     <div className="flex justify-between items-center">
                                                         <label className="text-xs font-bold text-muted-foreground font-mono truncate">{s.id}</label>
-                                                        <span className="text-[10px] text-muted-foreground/60 font-bold">{s.label}</span>
+                                                        <span className="text-xxs text-muted-foreground/60 font-bold">{s.label}</span>
                                                     </div>
                                                     <div className="relative">
                                                         <Input
@@ -649,7 +649,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                         <div className="flex items-center gap-2">
                                                             <span className="font-mono font-bold truncate">{r.id}</span>
                                                             <Badge className={cn(
-                                                                "text-[8px] py-0 px-1.5 rounded font-black uppercase border shrink-0",
+                                                                "text-xxs py-0 px-1.5 rounded font-black uppercase border shrink-0",
                                                                 r.status === 'correct' ? "bg-emerald-100 border-emerald-200 text-emerald-700" :
                                                                 r.status === 'consecutive' ? "bg-primary/15 border-primary/30 text-primary" :
                                                                 r.status === 'omission' ? "bg-amber-100 border-amber-200 text-amber-700" :
