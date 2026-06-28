@@ -30,7 +30,8 @@ const migratedAppFiles = [
     'src/components/CreditsModal.tsx',
     'src/components/batch/DigitalSlipsModal.tsx',
     'src/components/batch/BatchItemPendingView.tsx',
-    'src/components/RedactionModal.tsx'
+    'src/components/RedactionModal.tsx',
+    'src/components/QuickStartModal.tsx'
 ];
 
 // 21 Tailwind Color Families

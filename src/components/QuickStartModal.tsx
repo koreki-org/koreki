@@ -42,72 +42,72 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                     </div>
 
                     <div className="space-y-2 mb-8">
-                        <div className="group flex items-center gap-4 p-3 bg-slate-50/50 border border-slate-100 rounded-xl hover:bg-white hover:border-primary/30 transition-all duration-300">
-                            <div className="w-10 h-10 bg-sky-100 text-sky-600 rounded-lg flex items-center justify-center shrink-0">
+                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
+                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                                 <FileText size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-xs">1. Vorbereitung</h3>
+                                <h3 className="font-bold text-foreground text-xs">1. Vorbereitung</h3>
                                 <p className="text-xxs text-muted-foreground leading-snug">
                                     Musterlösung laden (KI erkennt Aufgaben/Punkte automatisch). Für Rechenaufgaben können optional Rechengraphen zur präzisen Erkennung von Folgefehler-Pfaden erstellt werden.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="group flex items-center gap-4 p-3 bg-slate-50/50 border border-slate-100 rounded-xl hover:bg-white hover:border-indigo-200 transition-all duration-300">
-                            <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center shrink-0">
+                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
+                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                                 <Wrench size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-xs">2. Didaktik & KI-Kalibrierung</h3>
+                                <h3 className="font-bold text-foreground text-xs">2. Didaktik & KI-Kalibrierung</h3>
                                 <p className="text-xxs text-muted-foreground leading-snug">
                                     Konfiguriere im Header deine <strong className="font-extrabold text-foreground">Expertise</strong> (Fach-Prompts), aktiviere modulare <strong className="font-extrabold text-foreground">Skills</strong> (z. B. mathematische Äquivalenz), trainiere den <strong className="font-extrabold text-foreground">Erfahrungsschatz</strong> (Präzedenzfälle) oder wähle die passende <strong className="font-extrabold text-foreground">Intelligenz</strong> (Denktiefe der KI).
                                 </p>
                             </div>
                         </div>
 
-                        <div className="group flex items-center gap-4 p-3 bg-slate-50/50 border border-slate-100 rounded-xl hover:bg-white hover:border-emerald-200 transition-all duration-300">
-                            <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center shrink-0">
+                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
+                            <div className="w-10 h-10 bg-emerald-500/10 text-emerald-600 rounded-lg flex items-center justify-center shrink-0">
                                 <FolderOpen size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-xs">3. Import & Moodle</h3>
+                                <h3 className="font-bold text-foreground text-xs">3. Import & Moodle</h3>
                                 <p className="text-xxs text-muted-foreground leading-snug">
                                     Schülerarbeiten als PDF oder Scans hochladen. Moodle XLSX-Exporte werden voll unterstützt.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="group flex items-center gap-4 p-3 bg-slate-50/50 border border-slate-100 rounded-xl hover:bg-white hover:border-blue-200 transition-all duration-300">
-                            <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shrink-0">
+                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
+                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                                 <ShieldCheck size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-xs">4. Anonymisierung</h3>
+                                <h3 className="font-bold text-foreground text-xs">4. Anonymisierung</h3>
                                 <p className="text-xxs text-muted-foreground leading-snug">
                                     Namen schützen. Handschriften, Namen und personenbezogene Daten bei Bedarf direkt im Scan schwärzen.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="group flex items-center gap-4 p-3 bg-slate-50/50 border border-slate-100 rounded-xl hover:bg-white hover:border-orange-200 transition-all duration-300">
-                            <div className="w-10 h-10 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center shrink-0">
+                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
+                            <div className="w-10 h-10 bg-orange-500/10 text-orange-600 rounded-lg flex items-center justify-center shrink-0">
                                 <Languages size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-xs">5. Texterkennung (OCR)</h3>
+                                <h3 className="font-bold text-foreground text-xs">5. Texterkennung (OCR)</h3>
                                 <p className="text-xxs text-muted-foreground leading-snug">
                                     Handschriften digitalisieren. Die KI liest gedruckte und geschriebene Schülertexte zuverlässig aus.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="group flex items-center gap-4 p-3 bg-slate-50/50 border border-slate-100 rounded-xl hover:bg-white hover:border-amber-200 transition-all duration-300">
-                            <div className="w-10 h-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center shrink-0">
+                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
+                            <div className="w-10 h-10 bg-amber-500/10 text-amber-600 rounded-lg flex items-center justify-center shrink-0">
                                 <Sparkles size={18} />
                             </div>
                             <div className="space-y-0">
-                                <h3 className="font-bold text-slate-900 text-xs">6. Auswertung & Export</h3>
+                                <h3 className="font-bold text-foreground text-xs">6. Auswertung & Export</h3>
                                 <p className="text-xxs text-muted-foreground leading-snug">
                                     Korrekturen und automatische Korrekturzeichen prüfen, Schüler-Feedback ansehen und Statistiken exportieren.
                                 </p>
