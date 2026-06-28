@@ -29,7 +29,8 @@ const migratedAppFiles = [
     'src/components/settings/OpenAICompatibleConfig.tsx',
     'src/components/CreditsModal.tsx',
     'src/components/batch/DigitalSlipsModal.tsx',
-    'src/components/batch/BatchItemPendingView.tsx'
+    'src/components/batch/BatchItemPendingView.tsx',
+    'src/components/RedactionModal.tsx'
 ];
 
 // 21 Tailwind Color Families
