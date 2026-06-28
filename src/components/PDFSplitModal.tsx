@@ -204,6 +204,11 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                     <div className="max-h-[250px] overflow-y-auto mb-4 flex flex-col gap-3 pr-2 scrollbar-thin">
                         {students.map((student, idx) => (
                             <div key={idx} className="grid grid-cols-[1fr_1fr_80px_40px] gap-3 items-center">
+                                <Input
+                                    type="text"
+                                    value={student.lastName}
+                                    placeholder="Nachname..."
+                                    onChange={(e) => updateStudent(idx, 'lastName', e.target.value)}
                                     className="px-3 py-2 rounded-xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                 />
                                 <Input
