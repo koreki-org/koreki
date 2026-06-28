@@ -147,6 +147,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                     totalPossibleCredits={totalPossibleCredits}
                     isPureMode={isPureMode}
                     onExportSL={onExportSL}
+                    onExportKoreki={onExportKoreki}
                     hasPendingOcr={hasPendingOcr}
                 />
 
@@ -158,7 +159,6 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                             onExportStudents={onExportStudents}
                             onExportIndividual={onExportIndividual}
                             onExportPDFs={onExportPDFs}
-                            onExportKoreki={onExportKoreki}
                             onExportDigitalSlips={() => setShowDigitalSlips(true)}
                             onToggleAnalytics={() => setShowAnalytics(!showAnalytics)}
                             isAnalyticsOpen={showAnalytics}
