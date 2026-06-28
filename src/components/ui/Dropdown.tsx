@@ -51,25 +51,25 @@ const Dropdown: React.FC<DropdownProps> = ({
                 disabled={disabled}
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "flex h-12 w-full items-center justify-between rounded-full border bg-white px-5 py-2 text-sm font-bold text-slate-700 shadow-sm transition-all outline-none",
+                    "flex h-12 w-full items-center justify-between rounded-full border bg-white px-5 py-2 text-sm font-bold text-foreground shadow-sm transition-all outline-none",
                     isOpen 
-                        ? "border-blue-500 ring-4 ring-blue-500/10" // Weicher, blauer Fokus-Ring
-                        : "border-slate-200 hover:border-slate-300 hover:bg-slate-50",
+                        ? "border-primary ring-4 ring-primary/10" // Weicher, blauer Fokus-Ring
+                        : "border-border hover:border-border/80 hover:bg-muted/50",
                     disabled && "cursor-not-allowed opacity-50"
                 )}
             >
                 <div className="flex items-center gap-2 truncate">
                     {selectedOption?.icon && (
-                        <span className="text-slate-400">{selectedOption.icon}</span>
+                        <span className="text-muted-foreground">{selectedOption.icon}</span>
                     )}
-                    <span className={cn("truncate tracking-wide", !selectedOption && "text-slate-400 font-medium")}>
+                    <span className={cn("truncate tracking-wide", !selectedOption && "text-muted-foreground font-medium")}>
                         {selectedOption ? selectedOption.label : placeholder}
                     </span>
                 </div>
                 <ChevronDown 
                     className={cn(
-                        "ml-3 h-4 w-4 shrink-0 text-slate-400 transition-transform duration-300", 
-                        isOpen && "rotate-180 text-blue-500"
+                        "ml-3 h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-300", 
+                        isOpen && "rotate-180 text-primary"
                     )} 
                 />
             </button>
@@ -85,7 +85,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                     )}
                 >
                     {options.length === 0 ? (
-                        <div className="px-4 py-3 text-center text-xs font-medium text-slate-400">
+                        <div className="px-4 py-3 text-center text-xs font-medium text-muted-foreground">
                             Keine Optionen verfügbar
                         </div>
                     ) : (
@@ -103,19 +103,19 @@ const Dropdown: React.FC<DropdownProps> = ({
                                         // Die einzelnen Optionen sind jetzt auch leicht abgerundet (rounded-xl)
                                         "flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-bold transition-all",
                                         isSelected 
-                                            ? "bg-blue-50 text-blue-700" 
-                                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                                            ? "bg-primary/10 text-primary" 
+                                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
                                     )}
                                 >
                                     <div className="flex items-center gap-2 truncate">
                                         {option.icon && (
-                                            <span className={cn("shrink-0", isSelected ? "text-blue-500" : "text-slate-400")}>
+                                            <span className={cn("shrink-0", isSelected ? "text-primary" : "text-muted-foreground")}>
                                                 {option.icon}
                                             </span>
                                         )}
                                         <span className="truncate">{option.label}</span>
                                     </div>
-                                    {isSelected && <Check className="h-4 w-4 shrink-0 text-blue-600" />}
+                                    {isSelected && <Check className="h-4 w-4 shrink-0 text-primary" />}
                                 </button>
                             );
                         })

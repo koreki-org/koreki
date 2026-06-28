@@ -90,13 +90,13 @@ const UserTable: React.FC<UserTableProps> = ({
                                         </div>
                                         <div>
                                             <span>{u.username}</span>
-                                            <span className="block text-[10px] text-muted-foreground font-mono">{u.id.substring(0, 8)}</span>
+                                            <span className="block text-xxs text-muted-foreground font-mono">{u.id.substring(0, 8)}</span>
                                         </div>
                                     </div>
                                 </td>
                                 <td className="px-8 py-4">
                                     {u.role === 'ADMIN' ? (
-                                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground/40 italic">Global Governance</span>
+                                        <span className="text-xxs uppercase tracking-widest text-muted-foreground/40 italic">Global Governance</span>
                                     ) : (
                                         <div className="relative">
                                             <Dropdown
@@ -111,7 +111,7 @@ const UserTable: React.FC<UserTableProps> = ({
                                 </td>
                                 <td className="px-8 py-4 text-center">
                                     <Badge variant="outline" className={cn(
-                                        "text-[10px] uppercase font-bold px-2 py-0.5",
+                                        "text-xxs uppercase font-bold px-2 py-0.5",
                                         u.appMode === 'PURE' && "bg-primary/10 text-primary",
                                         u.appMode === 'STANDARD' && "bg-primary/10 text-primary",
                                         u.appMode === 'TRIAL' && "bg-warning/10 text-warning"
@@ -120,7 +120,7 @@ const UserTable: React.FC<UserTableProps> = ({
                                     </Badge>
                                 </td>
                                 <td className="px-8 py-4 text-center">
-                                    <Badge variant="outline" className={cn("text-[10px] uppercase font-bold px-2 py-1 flex items-center justify-center gap-1 min-w-[120px] rounded-full border-none", badgeStyles)}>
+                                    <Badge variant="outline" className={cn("text-xxs uppercase font-bold px-2 py-1 flex items-center justify-center gap-1 min-w-[120px] rounded-full border-none", badgeStyles)}>
                                         {roleLabel}
                                     </Badge>
                                 </td>
@@ -133,7 +133,7 @@ const UserTable: React.FC<UserTableProps> = ({
                                             </Button>
                                         )}
                                         {u.role !== 'ADMIN' && activeWs?.type === 'PERSONAL' && (
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-purple-600" onClick={() => onSetRole(u.id, u.role === 'EXPERTE' ? 'USER' : 'EXPERTE')}>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => onSetRole(u.id, u.role === 'EXPERTE' ? 'USER' : 'EXPERTE')}>
                                                 <Gem size={16} />
                                             </Button>
                                         )}

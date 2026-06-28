@@ -26,9 +26,7 @@ const gracePeriodFiles = [
 
     'src/components/admin/ComplianceAuditLog.tsx',
     'src/components/admin/CostOverview.tsx',
-    'src/components/admin/UserTable.tsx',
     'src/components/admin/WorkspaceManager.tsx',
-    'src/components/layout/MinimalFooter.tsx',
     'src/components/avv-upload/StepDownload.tsx',
     'src/components/avv-upload/StepSuccess.tsx',
     'src/components/avv-upload/StepUpload.tsx',
@@ -74,15 +72,8 @@ const gracePeriodFiles = [
     'src/components/ui/Button.tsx',
     'src/components/ui/Card.tsx',
     'src/components/ui/Checkbox.tsx',
-    'src/components/ui/Dropdown.tsx',
-    'src/components/ui/EditableMathArea.tsx',
-    'src/components/ui/FloatingActions.tsx',
     'src/components/ui/HighlightableTextArea.tsx',
     'src/components/ui/Input.tsx',
-    'src/components/ui/KorekiTooltip.tsx',
-    'src/components/ui/MathMarkdown.tsx',
-    'src/components/ui/PointInput.tsx',
-    'src/components/ui/Tabs.tsx',
     'src/components/ui/Textarea.tsx',
     'src/components/AiConfigurationContent.tsx',
     'src/components/AiParamsModal.tsx',
@@ -120,15 +111,15 @@ const sharedChecks = [
     {
         // Allow rounded-[var(--...)] CSS variables
         regex: /rounded-\[(?!var\()[^\]]*\]/g,
-        message: 'ðŸš¨ Feindliche Ecken-Rundung gefunden (rounded-[...]). Bitte nutze standardmÃ¤ÃŸige Tailwind-Klassen oder rounded-hero.'
+        message: 'Ã°Å¸Å¡Â¨ Feindliche Ecken-Rundung gefunden (rounded-[...]). Bitte nutze standardmÃƒÂ¤ÃƒÅ¸ige Tailwind-Klassen oder rounded-hero.'
     },
     {
         regex: /text-\[[^\]]*px\]/g,
-        message: 'ðŸš¨ WillkÃ¼rliche Pixel-TextgrÃ¶ÃŸe gefunden (text-[...px]). Bitte nutze standardmÃ¤ÃŸige Tailwind-Typografie-Klassen wie text-xs, text-sm etc.'
+        message: 'Ã°Å¸Å¡Â¨ WillkÃƒÂ¼rliche Pixel-TextgrÃƒÂ¶ÃƒÅ¸e gefunden (text-[...px]). Bitte nutze standardmÃƒÂ¤ÃƒÅ¸ige Tailwind-Typografie-Klassen wie text-xs, text-sm etc.'
     },
     {
         regex: /p[xy]-\[[^\]]*\]/g,
-        message: 'ðŸš¨ Beliebige SektionsabstÃ¤nde / Paddings gefunden (px-[...]/py-[...]). Bitte nutze die standardisierten Spacing-Tokens wie px-page-inline, py-section-vertical, p-card-padding oder Micro-Spacings.'
+        message: 'Ã°Å¸Å¡Â¨ Beliebige SektionsabstÃƒÂ¤nde / Paddings gefunden (px-[...]/py-[...]). Bitte nutze die standardisierten Spacing-Tokens wie px-page-inline, py-section-vertical, p-card-padding oder Micro-Spacings.'
     }
 ];
 
@@ -137,14 +128,14 @@ const marketingChecks = [
     {
         // Custom search to find raw black/slate/dark buttons of all color families on marketing pages, avoiding group-hover false positives
         regex: new RegExp(`className=.*bg-(${colorFamilies}|black|white)-(900|950|black)\\b.*\\bgroup(?!-)\\b`, 'g'),
-        message: 'ðŸš¨ Verbotener Button-Hintergrund (dunkle Farbkombination) gefunden. Koreki nutzt keine rein schwarzen/grauen/dunklen Standardbuttons auf Marketingseiten.'
+        message: 'Ã°Å¸Å¡Â¨ Verbotener Button-Hintergrund (dunkle Farbkombination) gefunden. Koreki nutzt keine rein schwarzen/grauen/dunklen Standardbuttons auf Marketingseiten.'
     }
 ];
 
 // App-specific check for any hardcoded brand/neutral colors (excluding semantic statuses like red/emerald/amber)
 const appColorCheck = {
     regex: new RegExp(`(?:bg|text|border|ring|shadow|from|to|hover:bg|hover:text|hover:border|hover:ring|focus:bg|focus:text|focus:border|focus:ring)-(${brandAndNeutralColors})-\\d+`, 'g'),
-    message: 'ðŸš¨ Hardcodierte Farbe aus einer Tailwind-Farbfamilie gefunden. Bitte nutze systemische Design-Tokens (bg-primary, text-muted-foreground, border-border etc.) gemÃ¤ÃŸ Style Guide.'
+    message: 'Ã°Å¸Å¡Â¨ Hardcodierte Farbe aus einer Tailwind-Farbfamilie gefunden. Bitte nutze systemische Design-Tokens (bg-primary, text-muted-foreground, border-border etc.) gemÃƒÂ¤ÃƒÅ¸ Style Guide.'
 };
 
 // Helper to recursively walk a directory
@@ -163,7 +154,7 @@ function getFiles(dir, files = []) {
     return files;
 }
 
-console.log('ðŸ” Starte Koreki UI- & Farb-Audit...');
+console.log('Ã°Å¸â€Â Starte Koreki UI- & Farb-Audit...');
 
 let totalViolations = 0;
 let totalWarnings = 0;
@@ -257,14 +248,15 @@ for (const dir of targetDirs) {
 }
 
 if (totalWarnings > 0) {
-    console.warn(`\x1b[33mâš ï¸  UI-Audit: ${totalWarnings} Grace-Period-Warnungen gefunden (nicht-blockierend).\x1b[0m`);
+    console.warn(`\x1b[33mÃ¢Å¡Â Ã¯Â¸Â  UI-Audit: ${totalWarnings} Grace-Period-Warnungen gefunden (nicht-blockierend).\x1b[0m`);
 }
 
 if (totalViolations > 0) {
-    console.error(`\x1b[31mâŒ UI-Audit failed: ${totalViolations} style violations found.\nPlease correct these elements.\x1b[0m`);
+    console.error(`\x1b[31mÃ¢ÂÅ’ UI-Audit failed: ${totalViolations} style violations found.\nPlease correct these elements.\x1b[0m`);
     process.exit(1);
 } else {
-    console.log('\x1b[32mâœ… UI-Audit successful. All elements correspond to the Koreki Style Guide!\x1b[0m');
+    console.log('\x1b[32mÃ¢Å“â€¦ UI-Audit successful. All elements correspond to the Koreki Style Guide!\x1b[0m');
     process.exit(0);
 }
+
 

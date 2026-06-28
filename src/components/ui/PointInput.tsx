@@ -36,7 +36,7 @@ export const PointInput: React.FC<PointInputProps> = ({
         <div className={cn(
             "flex items-center gap-2 bg-muted/40 p-1.5 rounded-xl border border-border/40 transition-all duration-300",
             !disabled && "focus-within:bg-primary/5 focus-within:border-primary/20 hover:border-border/60 shadow-sm",
-            disabled && "opacity-60 bg-slate-100/50 border-slate-200 grayscale-[0.2]",
+            disabled && "opacity-60 bg-muted/50 border-border grayscale-[0.2]",
             className
         )}>
             <div className="flex items-center gap-1.5 shrink-0 order-1">

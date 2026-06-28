@@ -52,26 +52,26 @@ export const KorekiTooltip: React.FC<KorekiTooltipProps> = ({
                 onMouseEnter={() => setIsVisible(true)}
                 onMouseLeave={() => setIsVisible(false)}
                 onClick={() => setIsVisible(!isVisible)}
-                className={cn("h-8 w-8 text-muted-foreground hover:text-indigo-600 transition-colors p-0", buttonClassName)}
+                className={cn("h-8 w-8 text-muted-foreground hover:text-primary transition-colors p-0", buttonClassName)}
             >
                 <HelpCircle size={iconSize} />
             </Button>
             
             {isVisible && (
                 <div className={cn(
-                    "absolute bg-white/95 backdrop-blur-md border border-indigo-200 p-4 rounded-[1.5rem] shadow-2xl z-[100] text-sm animate-in fade-in duration-200",
+                    "absolute bg-white/95 backdrop-blur-md border border-border/50 p-4 rounded-2xl shadow-2xl z-[100] text-sm animate-in fade-in duration-200",
                     alignClasses,
                     widthClass,
                     positionClasses
                 )}>
-                    <p className="text-indigo-600 font-bold text-[10px] uppercase tracking-widest mb-2 font-outfit">
+                    <p className="text-primary font-bold text-xxs uppercase tracking-widest mb-2 font-outfit">
                         {title}
                     </p>
-                    <div className="text-slate-600 leading-relaxed text-[11px]">
+                    <div className="text-muted-foreground leading-relaxed text-xs">
                         {content}
                     </div>
                     {footer && (
-                        <div className="mt-3 pt-2 border-t border-indigo-100/50">
+                        <div className="mt-3 pt-2 border-t border-border/30">
                             {footer}
                         </div>
                     )}

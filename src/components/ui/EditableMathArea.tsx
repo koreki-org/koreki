@@ -140,17 +140,17 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
                         {value.trim() ? (
                             <>
                                 {technical && (
-                                    <details className="group border border-indigo-100 dark:border-indigo-950/40 rounded-xl bg-indigo-50/20 dark:bg-indigo-950/5 overflow-hidden transition-all duration-300 mb-4">
-                                        <summary className="flex items-center justify-between p-3.5 cursor-pointer list-none select-none text-xs font-bold text-indigo-700 dark:text-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-950/20 transition-all [&::-webkit-details-marker]:hidden">
+                                    <details className="group border border-primary/20 dark:border-primary/20 rounded-xl bg-primary/5 dark:bg-primary/5 overflow-hidden transition-all duration-300 mb-4">
+                                        <summary className="flex items-center justify-between p-3.5 cursor-pointer list-none select-none text-xs font-bold text-primary dark:text-primary hover:bg-primary/10 dark:hover:bg-primary/10 transition-all [&::-webkit-details-marker]:hidden">
                                             <div className="flex items-center gap-2.5">
-                                                <div className="flex items-center justify-center w-5 h-5 rounded-md bg-indigo-100/80 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+                                                <div className="flex items-center justify-center w-5 h-5 rounded-md bg-primary/15 dark:bg-primary/15 text-primary dark:text-primary">
                                                     <Settings size={12} className="transition-transform duration-500 group-open:rotate-90" />
                                                 </div>
                                                 <span>Technische PANG-Detailanalyse einblenden</span>
                                             </div>
-                                            <ChevronDown size={14} className="text-indigo-400 dark:text-indigo-500 transition-transform duration-300 group-open:rotate-180" />
+                                            <ChevronDown size={14} className="text-primary dark:text-primary transition-transform duration-300 group-open:rotate-180" />
                                         </summary>
-                                        <div className="border-t border-indigo-100/50 dark:border-indigo-950/30 p-4 bg-background/30 text-xs leading-relaxed font-mono">
+                                        <div className="border-t border-primary/10 dark:border-primary/10 p-4 bg-background/30 text-xs leading-relaxed font-mono">
                                             <MathMarkdown content={technical} />
                                         </div>
                                     </details>
