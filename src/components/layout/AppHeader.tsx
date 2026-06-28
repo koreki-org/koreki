@@ -71,7 +71,7 @@ const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({
             <span className={cn("shrink-0 transition-colors", isActive ? "text-primary" : "text-muted-foreground")}>
                 {icon}
             </span>
-            <span className={cn("hidden md:inline font-medium transition-colors", isActive ? "text-muted-foreground" : "text-muted-foreground")}>
+            <span className={cn("hidden md:inline font-medium transition-colors", isActive ? "text-primary/70" : "text-muted-foreground")}>
                 {label}:
             </span>
             <span className={cn("hidden md:inline truncate max-w-[110px] transition-colors font-bold", isActive ? "text-primary" : "text-muted-foreground")}>
