@@ -47,11 +47,11 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                 <div className="flex-1 space-y-4 w-full flex flex-col min-h-0">
                     {/* RESTORATION: Image 2 Header Title */}
                     <div className="flex items-center gap-2 mb-3 px-1 pt-4 shrink-0">
-                        <FileText size={14} className="text-slate-400" />
-                        <span className="text-xs font-black text-slate-400 uppercase tracking-widest font-outfit">OCR Verifizierung</span>
+                        <FileText size={14} className="text-muted-foreground" />
+                        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest font-outfit">OCR Verifizierung</span>
                     </div>
 
-                    <div className="flex gap-2 overflow-x-auto px-2 py-1.5 -mx-2 no-scrollbar border-b border-slate-100/50 mb-4 w-full max-w-full shrink-0">
+                    <div className="flex gap-2 overflow-x-auto px-2 py-1.5 -mx-2 no-scrollbar border-b border-border/50 mb-4 w-full max-w-full shrink-0">
                         {groupNames.map(name => {
                             const subtasks = groupedTasks[name];
                             const groupHasWarnings = subtasks.some(task => {
@@ -69,7 +69,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                                     }}
                                     className={cn(
                                         "rounded-xl px-4 py-2 h-auto text-xs font-bold transition-all shrink-0 border border-transparent gap-2 font-outfit",
-                                        activeGroupName === name ? "bg-primary text-white shadow-md scale-105" : "bg-white text-slate-500 hover:bg-slate-50 border-slate-100"
+                                        activeGroupName === name ? "bg-primary text-white shadow-md scale-105" : "bg-background text-muted-foreground hover:bg-muted border-border"
                                     )}
                                 >
                                     {name}
@@ -86,10 +86,10 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                             const sectionHasUncertainty = hasOcrWarnings(sectionText);
 
                             return (
-                                <div key={task.name} className="rounded-2xl border border-slate-200/50 bg-white overflow-hidden shadow-sm group">
-                                    <div className="flex items-center justify-between px-3 py-2 bg-slate-50/50 group-focus-within:bg-indigo-50/30 transition-colors">
+                                <div key={task.name} className="rounded-2xl border border-border bg-background overflow-hidden shadow-sm group">
+                                    <div className="flex items-center justify-between px-3 py-2 bg-muted/30 group-focus-within:bg-primary/5 transition-colors">
                                         <div className="flex items-center gap-2 overflow-hidden">
-                                            <span className="text-xs font-bold text-slate-800 truncate font-outfit">{task.name}</span>
+                                            <span className="text-xs font-bold text-foreground truncate font-outfit">{task.name}</span>
                                             {sectionHasUncertainty && (
                                                 <Badge className="bg-orange-50 text-orange-600 border border-orange-100/50 text-xs font-bold h-5 px-2 shadow-none gap-1 shrink-0 animate-pulse font-outfit">
                                                     <AlertCircle size={10} /> OCR prüfen!
@@ -97,7 +97,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                                             )}
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Badge className="bg-indigo-50/50 text-indigo-600 border-none text-xs font-black h-5 px-2 rounded-lg shrink-0 font-outfit">
+                                            <Badge className="bg-primary/10 text-primary border-none text-xs font-black h-5 px-2 rounded-lg shrink-0 font-outfit">
                                                 {task.maxPoints} P
                                             </Badge>
                                         </div>
@@ -128,25 +128,25 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
             {/* Scan column (Pending) */}
             {item.documentType === 'scanned' && (
                 <div className={cn(
-                    "border border-slate-200 rounded-2xl bg-slate-100 overflow-hidden relative group/img h-[80vh] md:h-[600px] shadow-inner",
+                    "border border-border rounded-2xl bg-muted/20 overflow-hidden relative group/img h-[80vh] md:h-[600px] shadow-inner",
                     mobileViewMode === 'text' ? "hidden md:block" : "block", "md:block"
                 )}>
-                    <div className="w-full h-full overflow-auto custom-scrollbar bg-slate-200/50 flex flex-col items-center">
+                    <div className="w-full h-full overflow-auto custom-scrollbar bg-muted/10 flex flex-col items-center">
                         {item.isRedacted && item.redactedDataUrls && item.redactedDataUrls.length > 0 ? (
                             item.redactedDataUrls.map((url, pIdx) => (
-                                <img key={pIdx} src={url} alt={`Geschwärzter Scan Seite ${pIdx + 1}`} className="w-full h-auto object-contain p-1 border-b border-slate-300 last:border-0 shadow-sm" />
+                                <img key={pIdx} src={url} alt={`Geschwärzter Scan Seite ${pIdx + 1}`} className="w-full h-auto object-contain p-1 border-b border-border last:border-0 shadow-sm" />
                             ))
                         ) : item.previewDataUrls && item.previewDataUrls.length > 0 ? (
                             item.previewDataUrls.map((url, pIdx) => (
-                                <img key={pIdx} src={url} alt={`Seite ${pIdx + 1}`} className="w-full h-auto object-contain p-1 border-b border-slate-300 last:border-0 shadow-sm" />
+                                <img key={pIdx} src={url} alt={`Seite ${pIdx + 1}`} className="w-full h-auto object-contain p-1 border-b border-border last:border-0 shadow-sm" />
                             ))
                         ) : previewUrl ? (
                             <img src={previewUrl} alt="Scan Vorschau" className="min-w-full object-contain p-1" />
                         ) : (
-                            <div className="flex flex-col items-center justify-center p-8 text-slate-400 text-sm text-center h-full w-full max-w-xs m-auto space-y-2">
-                                <FileText size={40} className="stroke-1 opacity-60 text-slate-400" />
-                                <span className="font-semibold text-slate-500">Keine Scan-Vorschau aktiv</span>
-                                <span className="text-xs text-slate-400">Du kannst deine Scans jederzeit nachträglich über den „Dateien verknüpfen“-Button ganz oben erneut laden.</span>
+                            <div className="flex flex-col items-center justify-center p-8 text-muted-foreground text-sm text-center h-full w-full max-w-xs m-auto space-y-2">
+                                <FileText size={40} className="stroke-1 opacity-60 text-muted-foreground" />
+                                <span className="font-semibold text-muted-foreground">Keine Scan-Vorschau aktiv</span>
+                                <span className="text-xs text-muted-foreground">Du kannst deine Scans jederzeit nachträglich über den „Dateien verknüpfen“-Button ganz oben erneut laden.</span>
                             </div>
                         )}
                     </div>
