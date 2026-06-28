@@ -21,22 +21,102 @@ const excludedPages = [
 ];
 
 // List of app files that have been fully migrated to design tokens and must pass all checks
-const migratedAppFiles = [
-    'src/components/settings/GlobalBillingSettings.tsx',
-    'src/components/batch/CalcTraceModal.tsx',
-    'src/components/settings/OllamaConfig.tsx',
-    'src/components/PDFSplitModal.tsx',
-    'src/components/settings/OpenAICompatibleConfig.tsx',
-    'src/components/CreditsModal.tsx',
-    'src/components/batch/DigitalSlipsModal.tsx',
-    'src/components/batch/BatchItemPendingView.tsx',
-    'src/components/RedactionModal.tsx',
-    'src/components/QuickStartModal.tsx',
-    'src/components/OnboardingModal.tsx',
-    'src/components/upload/StudentWorkCard.tsx',
-    'src/components/layout/AppHeader.tsx',
-    'src/components/batch/parts/BatchDoneHeader.tsx',
-    'src/components/batch/BatchHeader.tsx'
+// List of app files in the grace period (not yet migrated to design tokens, warnings only)
+const gracePeriodFiles = [
+    'src/components/admin/ComplianceAuditLog.tsx',
+    'src/components/admin/CostOverview.tsx',
+    'src/components/admin/UserTable.tsx',
+    'src/components/admin/WorkspaceManager.tsx',
+    'src/components/layout/MinimalFooter.tsx',
+    'src/pages/desktop.tsx',
+    'src/pages/desktop-setup.tsx',
+    'src/components/avv-upload/StepDownload.tsx',
+    'src/components/avv-upload/StepSuccess.tsx',
+    'src/components/avv-upload/StepUpload.tsx',
+    'src/components/avv-upload/TeacherViewInfo.tsx',
+    'src/components/batch/parts/AnonymizeModal.tsx',
+    'src/components/batch/parts/BatchItemStatusSummary.tsx',
+    'src/components/batch/parts/BatchSolutionPanel.tsx',
+    'src/components/batch/parts/BatchTaskAnalysisCard.tsx',
+    'src/components/batch/parts/MobileViewSelector.tsx',
+    'src/components/batch/parts/SecondOpinionDrawer.tsx',
+    'src/components/batch/AnalyticsModal.tsx',
+    'src/components/batch/BatchFileListItem.tsx',
+    'src/components/batch/BatchHelpContent.tsx',
+    'src/components/batch/BatchItemDoneView.tsx',
+    'src/components/batch/CorrectionAnalytics.tsx',
+    'src/components/batch/ExportToolbar.tsx',
+    'src/components/dashboard/DashboardModals.tsx',
+    'src/components/guards/AuthGuard.tsx',
+    'src/components/layout/AdminHeader.tsx',
+    'src/components/layout/BackgroundGradients.tsx',
+    'src/components/layout/HeaderBadges.tsx',
+    'src/components/marketing/BentoGrid.tsx',
+    'src/components/marketing/FeatureHero.tsx',
+    'src/components/marketing/FeatureIconGrid.tsx',
+    'src/components/marketing/FeaturePillar.tsx',
+    'src/components/marketing/FeatureSpotlight.tsx',
+    'src/components/marketing/FeatureSubNav.tsx',
+    'src/components/marketing/ImageLightbox.tsx',
+    'src/components/marketing/MarketingModules.tsx',
+    'src/components/marketing/ModelProfiles.tsx',
+    'src/components/marketing/PerformanceSection.tsx',
+    'src/components/marketing/ShowroomCard.tsx',
+    'src/components/marketing/WorkflowVisual.tsx',
+    'src/components/org/OrgMemberTable.tsx',
+    'src/components/org/OrgModals.tsx',
+    'src/components/org/OrgStats.tsx',
+    'src/components/settings/AccountSection.tsx',
+    'src/components/settings/AiProfileModules.tsx',
+    'src/components/settings/AIProviderSection.tsx',
+    'src/components/settings/DangerZoneSection.tsx',
+    'src/components/settings/MistralConfig.tsx',
+    'src/components/settings/MistralConfigSection.tsx',
+    'src/components/settings/OllamaConfigSection.tsx',
+    'src/components/settings/PrivacySection.tsx',
+    'src/components/settings/ProfileModules.tsx',
+    'src/components/settings/SettingsSections.tsx',
+    'src/components/settings/SkillsModules.tsx',
+    'src/components/settings/UnifiedAiConfig.tsx',
+    'src/components/ui/Button.tsx',
+    'src/components/ui/Card.tsx',
+    'src/components/ui/Checkbox.tsx',
+    'src/components/ui/Dropdown.tsx',
+    'src/components/ui/EditableMathArea.tsx',
+    'src/components/ui/FloatingActions.tsx',
+    'src/components/ui/HighlightableTextArea.tsx',
+    'src/components/ui/Input.tsx',
+    'src/components/ui/KorekiTooltip.tsx',
+    'src/components/ui/MathMarkdown.tsx',
+    'src/components/ui/PointInput.tsx',
+    'src/components/ui/Tabs.tsx',
+    'src/components/ui/Textarea.tsx',
+    'src/components/upload/AutoPilotConfigModal.tsx',
+    'src/components/upload/ModelSolutionCard.tsx',
+    'src/components/AiConfigurationContent.tsx',
+    'src/components/AiParamsModal.tsx',
+    'src/components/AiSetupModal.tsx',
+    'src/components/AVVUploadModal.tsx',
+    'src/components/BatchProcessor.tsx',
+    'src/components/ConfirmationModal.tsx',
+    'src/components/Logo.tsx',
+    'src/components/ModelTypeModal.tsx',
+    'src/components/PDFTypeModal.tsx',
+    'src/components/PromptSettingsModal.tsx',
+    'src/components/PureKeyModal.tsx',
+    'src/components/SettingsModal.tsx',
+    'src/components/SkillsSettingsModal.tsx',
+    'src/components/UploadGrid.tsx',
+    // Excluded pages & App compliance pages
+    'src/pages/app.tsx',
+    'src/pages/admin.tsx',
+    'src/pages/org-admin.tsx',
+    'src/pages/view.tsx',
+    'src/pages/_app.tsx',
+    'src/pages/app/compliance/agb.tsx',
+    'src/pages/app/compliance/avv.tsx',
+    'src/pages/app/compliance/manual.tsx',
+    'src/pages/app/compliance/tom.tsx'
 ];
 
 // 21 Tailwind Color Families
@@ -96,6 +176,7 @@ function getFiles(dir, files = []) {
 console.log('🔍 Starte Koreki UI- & Farb-Audit...');
 
 let totalViolations = 0;
+let totalWarnings = 0;
 const processedFiles = new Set();
 
 for (const dir of targetDirs) {
@@ -111,6 +192,11 @@ for (const dir of targetDirs) {
             continue;
         }
 
+        // Skip LOC-limit modals entirely
+        if (relPath === 'src/components/batch/GradingGraphModal.tsx' || relPath === 'src/components/batch/GradingMemoryModal.tsx') {
+            continue;
+        }
+
         // Classification
         const isMarketingLayout = relPath.startsWith('src/components/marketing/');
 
@@ -123,10 +209,7 @@ for (const dir of targetDirs) {
             isAppCompliance
         );
 
-        // Skip app files unless they are explicitly marked as fully migrated
-        if (isAppFile && !migratedAppFiles.includes(relPath)) {
-            continue;
-        }
+        const isGracePeriod = isAppFile && gracePeriodFiles.includes(relPath);
 
         const content = fs.readFileSync(file, 'utf-8');
         const lines = content.split('\n');
@@ -141,8 +224,13 @@ for (const dir of targetDirs) {
             for (const check of sharedChecks) {
                 check.regex.lastIndex = 0;
                 if (check.regex.test(line)) {
-                    console.error(`${check.message}\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
-                    totalViolations++;
+                    if (isGracePeriod) {
+                        console.warn(`\x1b[33m[Grace Period Warning] ${check.message}\x1b[0m\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
+                        totalWarnings++;
+                    } else {
+                        console.error(`\x1b[31m${check.message}\x1b[0m\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
+                        totalViolations++;
+                    }
                 }
             }
 
@@ -151,7 +239,7 @@ for (const dir of targetDirs) {
                 for (const check of marketingChecks) {
                     check.regex.lastIndex = 0;
                     if (check.regex.test(line)) {
-                        console.error(`${check.message}\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
+                        console.error(`\x1b[31m${check.message}\x1b[0m\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
                         totalViolations++;
                     }
                 }
@@ -161,18 +249,27 @@ for (const dir of targetDirs) {
             if (isAppFile) {
                 appColorCheck.regex.lastIndex = 0;
                 if (appColorCheck.regex.test(line)) {
-                    console.error(`${appColorCheck.message}\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
-                    totalViolations++;
+                    if (isGracePeriod) {
+                        console.warn(`\x1b[33m[Grace Period Warning] ${appColorCheck.message}\x1b[0m\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
+                        totalWarnings++;
+                    } else {
+                        console.error(`\x1b[31m${appColorCheck.message}\x1b[0m\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
+                        totalViolations++;
+                    }
                 }
             }
         });
     }
 }
 
+if (totalWarnings > 0) {
+    console.warn(`\x1b[33m⚠️  UI-Audit: ${totalWarnings} Grace-Period-Warnungen gefunden (nicht-blockierend).\x1b[0m`);
+}
+
 if (totalViolations > 0) {
-    console.error(`❌ UI-Audit failed: ${totalViolations} style violations found.\nPlease correct these elements.`);
+    console.error(`\x1b[31m❌ UI-Audit failed: ${totalViolations} style violations found.\nPlease correct these elements.\x1b[0m`);
     process.exit(1);
 } else {
-    console.log('✅ UI-Audit successful. All elements correspond to the Koreki Style Guide!');
+    console.log('\x1b[32m✅ UI-Audit successful. All elements correspond to the Koreki Style Guide!\x1b[0m');
     process.exit(0);
 }
