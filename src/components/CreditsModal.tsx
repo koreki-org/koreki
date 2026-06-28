@@ -141,7 +141,7 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, onSelect, upgradin
                             <ul className="space-y-3 mb-8 w-full">
                                 {plan.features.map((feature, fidx) => (
                                     <li key={fidx} className="flex items-center justify-center gap-2 text-xxs font-medium text-muted-foreground">
-                                        <CheckCircle size={14} className="text-emerald-500 shrink-0" />
+                                        <CheckCircle size={14} className="text-success shrink-0" />
                                         <span>{feature}</span>
                                     </li>
                                 ))}

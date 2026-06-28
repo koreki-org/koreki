@@ -43,7 +43,7 @@ const migratedAppFiles = [
 const colorFamilies = 'slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose';
 
 // Brand and Neutral Color Families that must be tokenized in the app
-const brandAndNeutralColors = 'slate|gray|zinc|neutral|stone|blue|indigo|violet|purple|fuchsia|pink';
+const brandAndNeutralColors = 'slate|gray|zinc|neutral|stone|blue|indigo|violet|purple|fuchsia|pink|amber|emerald|green|red|rose';
 
 // Shared structural/layout checks (apply to all UI files)
 const sharedChecks = [

@@ -90,6 +90,7 @@ bg-secondary, text-secondary-foreground
 bg-muted, text-muted-foreground
 bg-destructive, text-destructive-foreground
 bg-warning, text-warning, text-warning-foreground
+bg-success, text-success, text-success-foreground
 border-border
 ```
 

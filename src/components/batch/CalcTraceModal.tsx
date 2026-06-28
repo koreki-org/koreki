@@ -333,7 +333,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                     onDeleteCalcTrace();
                                                 }
                                             }}
-                                            className="flex-1 sm:flex-initial h-8 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all text-xs font-bold gap-1 px-3 flex items-center justify-center shrink-0"
+                                            className="flex-1 sm:flex-initial h-8 rounded-xl border border-destructive/20 bg-destructive/5 text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-all text-xs font-bold gap-1 px-3 flex items-center justify-center shrink-0"
                                             title="Rechenkette löschen und Aufgabe zurücksetzen"
                                         >
                                             <Trash2 size={13} />
@@ -413,14 +413,14 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                 {validation?.dryRunChecked && (
                                     <div className={cn(
                                         "relative overflow-hidden rounded-2xl border px-4 py-3 shrink-0 flex items-start gap-3 shadow-xs transition-all animate-fade-in",
-                                        validation.isValid ? "bg-emerald-50/50 border-emerald-100/60" : "bg-rose-50/50 border-rose-100/60"
+                                        validation.isValid ? "bg-success/5 border-success/20" : "bg-destructive/5 border-destructive/20"
                                     )}>
                                         <span className="text-xl shrink-0 mt-0.5">{validation.isValid ? "🛡️" : "⚠️"}</span>
                                         <div>
-                                            <p className={cn("font-extrabold leading-none", validation.isValid ? "text-emerald-900" : "text-rose-950")}>
+                                            <p className={cn("font-extrabold leading-none", validation.isValid ? "text-success" : "text-destructive")}>
                                                 {validation.isValid ? "Plausibilität verifiziert!" : "Simulationsfehler erkannt"}
                                             </p>
-                                            <p className={cn("text-xs leading-normal mt-1", validation.isValid ? "text-emerald-800" : "text-rose-800")}>
+                                            <p className={cn("text-xs leading-normal mt-1", validation.isValid ? "text-success" : "text-destructive")}>
                                                 {validation.isValid 
                                                     ? `Diese Rechenkette wurde mathematisch fehlerfrei simuliert. Alle Formeln werten korrekt aus. ${validation.retriesUsed ? `(Selbst-Korrektur aktiv: ${validation.retriesUsed}x)` : ""}`
                                                     : `Fehler: ${validation.error || "Unbekannter Fehler während der Berechnung."}`}
@@ -538,7 +538,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                                 <td className="p-2 text-center">
                                                                     <button
                                                                         onClick={() => handleDeleteStep(step.id)}
-                                                                        className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all"
+                                                                        className="p-1.5 text-destructive hover:text-destructive/80 hover:bg-destructive/10 rounded-lg transition-all"
                                                                     >
                                                                         <Trash2 size={14} />
                                                                     </button>
@@ -640,9 +640,9 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                     key={r.id} 
                                                     className={cn(
                                                         "p-3 rounded-2xl border flex items-center justify-between text-xs transition-all gap-4",
-                                                        r.status === 'correct' ? "bg-emerald-50/50 border-emerald-100 text-emerald-800" :
+                                                        r.status === 'correct' ? "bg-success/5 border-success/20 text-success" :
                                                         r.status === 'consecutive' ? "bg-primary/5 border-primary/20 text-primary" :
-                                                        "bg-red-50/50 border-red-100 text-red-800"
+                                                        "bg-destructive/5 border-destructive/20 text-destructive"
                                                     )}
                                                 >
                                                     <div className="space-y-0.5 min-w-0">
@@ -650,10 +650,10 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                             <span className="font-mono font-bold truncate">{r.id}</span>
                                                             <Badge className={cn(
                                                                 "text-xxs py-0 px-1.5 rounded font-black uppercase border shrink-0",
-                                                                r.status === 'correct' ? "bg-emerald-100 border-emerald-200 text-emerald-700" :
+                                                                r.status === 'correct' ? "bg-success/10 border-success/20 text-success" :
                                                                 r.status === 'consecutive' ? "bg-primary/15 border-primary/30 text-primary" :
                                                                 r.status === 'omission' ? "bg-warning/10 border-warning/20 text-warning" :
-                                                                "bg-red-100 border-red-200 text-red-700"
+                                                                "bg-destructive/10 border-destructive/20 text-destructive"
                                                             )}>
                                                                 {r.status === 'correct' ? 'KORREKT' :
                                                                  r.status === 'consecutive' ? 'FOLGEFEHLER OK' :

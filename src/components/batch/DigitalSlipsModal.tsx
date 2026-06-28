@@ -225,7 +225,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                                                 <p className="text-xxs text-muted-foreground font-medium uppercase tracking-tighter">Zugangscode</p>
                                                 <p className="text-lg font-mono font-black text-foreground tracking-widest">PIN: {pin}</p>
                                             </div>
-                                            <div className="flex items-center gap-1 text-xxs text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-lg">
+                                             <div className="flex items-center gap-1 text-xxs text-success font-bold bg-success/5 border border-success/20 px-2 py-1 rounded-lg">
                                                 <ShieldCheck size={12} /> Verschlüsselt
                                             </div>
                                         </div>

@@ -118,7 +118,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                                         className="rounded-xl border-2 focus:border-primary/50 transition-all pr-12"
                                     />
                                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                        <ShieldCheck size={16} className={localKey ? "text-emerald-500" : "text-muted-foreground/50"} />
+                                        <ShieldCheck size={16} className={localKey ? "text-success" : "text-muted-foreground/50"} />
                                     </div>
                                 </div>
                                 <Button 
