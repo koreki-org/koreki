@@ -41,16 +41,16 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 className="relative w-full max-w-[500px] bg-white rounded-hero p-8 shadow-glass border border-border animate-in zoom-in-95 duration-500 overflow-hidden"
                 onClick={e => e.stopPropagation()}
             >
-                <div className="flex items-center gap-4 mb-6 text-blue-600">
-                    <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-4 mb-6 text-primary">
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
                         <ShieldCheck size={28} />
                     </div>
-                    <h2 className="text-xl font-bold tracking-tight text-slate-900">{title}</h2>
+                    <h2 className="text-xl font-bold tracking-tight text-foreground">{title}</h2>
                 </div>
 
-                <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 mb-8 flex items-start gap-4">
-                    <AlertTriangle size={24} className="text-blue-500 shrink-0 mt-0.5" />
-                    <div className="text-sm font-medium text-blue-900 leading-relaxed">
+                <div className="bg-primary/5 p-5 rounded-2xl border border-primary/20 mb-8 flex items-start gap-4">
+                    <AlertTriangle size={24} className="text-primary shrink-0 mt-0.5" />
+                    <div className="text-sm font-medium text-foreground leading-relaxed">
                         {message}
                     </div>
                 </div>

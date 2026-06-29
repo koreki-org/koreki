@@ -58,10 +58,10 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false })
                         <Logo size={72} className="relative z-10" />
                     </div>
                     <div className="flex flex-col items-center gap-2">
-                        <span className="font-extrabold text-3xl tracking-tighter text-slate-900 leading-none">Koreki<span className="text-primary">.</span></span>
-                        <p className="text-slate-400 text-sm font-medium tracking-wide">Wird geladen …</p>
+                        <span className="font-extrabold text-3xl tracking-tighter text-foreground leading-none">Koreki<span className="text-primary">.</span></span>
+                        <p className="text-muted-foreground text-sm font-medium tracking-wide">Wird geladen …</p>
                     </div>
-                    <div className="w-48 h-1 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="w-48 h-1 bg-muted rounded-full overflow-hidden">
                         <div className="h-full bg-gradient-to-r from-primary via-indigo-500 to-primary rounded-full animate-loading-bar"></div>
                     </div>
                 </div>

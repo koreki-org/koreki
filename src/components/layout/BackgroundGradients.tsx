@@ -9,9 +9,9 @@ import React from 'react';
 const BackgroundGradients: React.FC = () => {
     return (
         <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-            <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-indigo-500/10 blur-[120px] rounded-full mix-blend-multiply"></div>
-            <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-blue-500/10 blur-[120px] rounded-full mix-blend-multiply"></div>
-            <div className="absolute top-[40%] left-[60%] w-[30vw] h-[30vw] max-w-[400px] max-h-[400px] bg-purple-500/5 blur-[100px] rounded-full mix-blend-multiply"></div>
+            <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-primary/10 blur-[120px] rounded-full mix-blend-multiply"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] bg-primary/10 blur-[120px] rounded-full mix-blend-multiply"></div>
+            <div className="absolute top-[40%] left-[60%] w-[30vw] h-[30vw] max-w-[400px] max-h-[400px] bg-primary/5 blur-[100px] rounded-full mix-blend-multiply"></div>
         </div>
     );
 };

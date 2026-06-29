@@ -350,7 +350,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                 {onToggleFocus && (
                     <button
                         onClick={() => onToggleFocus(focusedPanel === 'right' ? null : 'right')}
-                        className="hidden md:inline-flex p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-muted-foreground hover:text-primary transition-all duration-200"
+                        className="hidden md:inline-flex p-1.5 rounded-lg hover:bg-muted  text-muted-foreground hover:text-primary transition-all duration-200"
                         title={focusedPanel === 'right' ? "Fokus beenden" : "Panel maximieren"}
                     >
                         {focusedPanel === 'right' ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
@@ -381,9 +381,9 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                                     <span className="hidden sm:inline">{task.name}</span>
                                 </span>
                                 <div className={cn(
-                                    "flex items-center gap-1.5 px-2 py-1 rounded-full border text-[11px] font-black uppercase tracking-tight whitespace-nowrap",
-                                    confidence >= 90 ? "bg-emerald-50 text-emerald-600 border-emerald-200" :
-                                    confidence >= 50 ? "bg-orange-50 text-orange-600 border-orange-200" :
+                                    "flex items-center gap-1.5 px-2 py-1 rounded-full border text-xs font-black uppercase tracking-tight whitespace-nowrap",
+                                    confidence >= 90 ? "bg-success/10 text-success border-success/20" :
+                                    confidence >= 50 ? "bg-warning/10 text-warning border-warning/20" :
                                     "bg-destructive/10 text-destructive border-destructive/20"
                                 )}>
                                     <div className={cn("w-2 h-2 rounded-full", getConfidenceColor(confidence))}></div>

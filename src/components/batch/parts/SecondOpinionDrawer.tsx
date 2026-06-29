@@ -362,7 +362,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                 <span>
                                     {isSaaSService ? (
                                         isFollowUp ? (
-                                            <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-0.5">
+                                            <span className="text-success font-bold flex items-center gap-0.5">
                                                 <ChevronRight size={12} /> Folgefrage kostenlos (0 Credits)
                                             </span>
                                         ) : (

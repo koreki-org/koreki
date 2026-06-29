@@ -20,7 +20,7 @@ export const MobileViewSelector: React.FC<MobileViewSelectorProps> = ({
             <Button 
                 variant="ghost" 
                 onClick={() => onSetMobileViewMode('text')} 
-                className={cn("flex-1 h-auto py-2 text-[10px] font-black rounded-lg transition-all", 
+                className={cn("flex-1 h-auto py-2 text-xxs font-black rounded-lg transition-all", 
                     mobileViewMode === 'text' ? "bg-background text-primary shadow-sm" : "text-muted-foreground")}
             >
                 {isDone ? "TEXT" : "TEXT"}
@@ -28,7 +28,7 @@ export const MobileViewSelector: React.FC<MobileViewSelectorProps> = ({
             <Button 
                 variant="ghost" 
                 onClick={() => onSetMobileViewMode('image')} 
-                className={cn("flex-1 h-auto py-2 text-[10px] font-black rounded-lg transition-all", 
+                className={cn("flex-1 h-auto py-2 text-xxs font-black rounded-lg transition-all", 
                     mobileViewMode === 'image' ? "bg-background text-primary shadow-sm" : "text-muted-foreground")}
             >
                 {isDone ? "KORREKTUR" : "SCAN"}

@@ -31,18 +31,13 @@ const gracePeriodFiles = [
     'src/components/batch/parts/AnonymizeModal.tsx',
     'src/components/batch/parts/BatchItemStatusSummary.tsx',
     'src/components/batch/parts/BatchSolutionPanel.tsx',
-    'src/components/batch/parts/BatchTaskAnalysisCard.tsx',
-    'src/components/batch/parts/MobileViewSelector.tsx',
-    'src/components/batch/parts/SecondOpinionDrawer.tsx',
     'src/components/batch/BatchFileListItem.tsx',
     'src/components/batch/BatchHelpContent.tsx',
     'src/components/batch/BatchItemDoneView.tsx',
     'src/components/batch/CorrectionAnalytics.tsx',
     'src/components/batch/ExportToolbar.tsx',
     'src/components/dashboard/DashboardModals.tsx',
-    'src/components/guards/AuthGuard.tsx',
     'src/components/layout/AdminHeader.tsx',
-    'src/components/layout/BackgroundGradients.tsx',
     'src/components/marketing/BentoGrid.tsx',
     'src/components/marketing/FeatureHero.tsx',
     'src/components/marketing/FeatureIconGrid.tsx',
@@ -69,8 +64,6 @@ const gracePeriodFiles = [
     'src/components/ui/Textarea.tsx',
     'src/components/AiConfigurationContent.tsx',
     'src/components/AiSetupModal.tsx',
-    'src/components/BatchProcessor.tsx',
-    'src/components/ConfirmationModal.tsx',
     'src/components/Logo.tsx',
     'src/components/ModelTypeModal.tsx',
     'src/components/PDFTypeModal.tsx',
@@ -245,6 +238,7 @@ if (totalViolations > 0) {
     console.log('\x1b[32mÃ¢Å“â€¦ UI-Audit successful. All elements correspond to the Koreki Style Guide!\x1b[0m');
     process.exit(0);
 }
+
 
 
 
