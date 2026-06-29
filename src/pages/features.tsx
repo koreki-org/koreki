@@ -16,49 +16,49 @@ const InteractiveWorkflowVisual: React.FC = () => {
             title: 'Musterlösung',
             desc: 'Klausurenraster automatisch festlegen',
             icon: <FileSpreadsheet className="w-5 h-5" />,
-            color: 'from-blue-500/10 to-indigo-500/10 text-blue-600 border-blue-100'
+            color: 'from-accent-1-500/10 to-accent-2-500/10 text-accent-1-600 border-accent-1-100'
         },
         {
             number: 2,
             title: 'Schülerarbeiten',
             desc: 'Stapel parallel hochladen',
             icon: <Upload className="w-5 h-5" />,
-            color: 'from-purple-500/10 to-indigo-500/10 text-purple-600 border-purple-100'
+            color: 'from-accent-4-500/10 to-accent-2-500/10 text-accent-4-600 border-accent-4-100'
         },
         {
             number: 3,
             title: 'Stapel-Splitting',
             desc: 'Seiten trennen & anonymisieren',
             icon: <Scissors className="w-5 h-5" />,
-            color: 'from-pink-500/10 to-purple-500/10 text-pink-600 border-pink-100'
+            color: 'from-accent-4-500/10 to-accent-4-500/10 text-accent-4-600 border-accent-4-100'
         },
         {
             number: 4,
             title: 'OCR-Analyse',
             desc: 'Handschriften & Plausibilität prüfen',
             icon: <Cpu className="w-5 h-5" />,
-            color: 'from-amber-500/10 to-orange-500/10 text-amber-600 border-amber-100'
+            color: 'from-accent-2-500/10 to-accent-2-500/10 text-accent-2-600 border-accent-2-100'
         },
         {
             number: 5,
             title: 'Stapelverarbeitung',
             desc: 'Validierung & Vertrauenslevel ermitteln',
             icon: <Brain className="w-5 h-5" />,
-            color: 'from-emerald-500/10 to-teal-500/10 text-emerald-600 border-emerald-100'
+            color: 'from-accent-3-500/10 to-accent-3-500/10 text-accent-3-600 border-accent-3-100'
         },
         {
             number: 6,
             title: 'Einschätzungsliste',
             desc: 'Kontrolle & XLSX/PDF-Export',
             icon: <FileCheck className="w-5 h-5" />,
-            color: 'from-sky-500/10 to-blue-500/10 text-sky-600 border-sky-100'
+            color: 'from-accent-1-500/10 to-accent-1-500/10 text-accent-1-600 border-accent-1-100'
         }
     ];
 
     const [activeStep, setActiveStep] = useState<number | null>(null);
 
     return (
-        <div className="w-full bg-slate-50/50 rounded-2xl border border-slate-200/50 p-6 font-outfit relative overflow-hidden">
+        <div className="w-full bg-muted/50 rounded-2xl border border-border/50 p-6 font-outfit relative overflow-hidden">
             <div className="absolute inset-0 bg-radial-gradient-glass pointer-events-none opacity-40" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
                 {steps.map((step) => {
@@ -72,13 +72,13 @@ const InteractiveWorkflowVisual: React.FC = () => {
                                 "flex flex-col gap-3 p-4 rounded-xl border bg-white transition-all duration-300",
                                 isHovered 
                                     ? "shadow-md border-primary scale-[1.02] bg-gradient-to-b"
-                                    : "border-slate-100 shadow-sm"
+                                    : "border-border shadow-sm"
                             )}
                         >
                             <div className="flex items-center justify-between">
                                 <span className={cn(
                                     "flex items-center justify-center w-7 h-7 rounded-full text-xs font-black",
-                                    isHovered ? "bg-primary text-primary-foreground" : "bg-slate-100 text-slate-500"
+                                    isHovered ? "bg-primary text-primary-foreground" : "bg-muted/80 text-muted-foreground"
                                 )}>
                                     {step.number}
                                 </span>
@@ -90,15 +90,15 @@ const InteractiveWorkflowVisual: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <h4 className="font-bold text-sm text-slate-800 leading-tight mb-1">{step.title}</h4>
-                                <p className="text-slate-500 text-xs font-medium leading-snug">{step.desc}</p>
+                                <h4 className="font-bold text-sm text-foreground leading-tight mb-1">{step.title}</h4>
+                                <p className="text-muted-foreground text-xs font-medium leading-snug">{step.desc}</p>
                             </div>
                         </div>
                     );
                 })}
             </div>
             
-            <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-slate-400 font-medium">
+            <div className="mt-4 flex items-center justify-center gap-1.5 text-xs text-muted-foreground font-medium">
                 <span className="w-2 h-2 rounded-full bg-primary/40 animate-ping" />
                 <span>Interaktiver Workflow von Musterlösung bis Export</span>
             </div>
@@ -130,7 +130,7 @@ export default function Features() {
             icon: <FileSpreadsheet className="w-6 h-6" />,
             href: '/features/workflow',
             screenshot: '/screenshots/11_Koreki_Stapelverarbeitung_Ende.png',
-            accentColor: 'indigo',
+            accentColor: 'accent-2',
             badge: 'Logistics'
         },
         {
@@ -142,7 +142,7 @@ export default function Features() {
             icon: <ShieldCheck className="w-6 h-6" />,
             href: '/features/expertise',
             screenshot: '/screenshots/4a_koreki_expert_center.png',
-            accentColor: 'blue',
+            accentColor: 'accent-1',
             badge: 'Control'
         },
         {
@@ -154,7 +154,7 @@ export default function Features() {
             icon: <Sparkles className="w-6 h-6" />,
             href: '/features/skills',
             screenshot: '/screenshots/4b_koreki_skill_center.png',
-            accentColor: 'purple',
+            accentColor: 'accent-4',
             badge: 'Modularity'
         },
         {
@@ -166,7 +166,7 @@ export default function Features() {
             icon: <Database className="w-6 h-6" />,
             href: '/features/memory',
             screenshot: '/screenshots/4c_koreki_grading-memory_center.png',
-            accentColor: 'emerald',
+            accentColor: 'accent-3',
             badge: 'Consistency'
         },
         {
@@ -212,11 +212,11 @@ export default function Features() {
                         <Badge variant="light" className="mb-8">
                             Features & Pillars
                         </Badge>
-                        <h1 className="text-6xl md:text-8xl font-black text-slate-900 mb-8 tracking-tighter leading-[0.9]">
+                        <h1 className="text-6xl md:text-8xl font-black text-foreground mb-8 tracking-tighter leading-[0.9]">
                             Intelligenz trifft <br />
                             <span className="text-gradient">Souveränität.</span>
                         </h1>
-                        <p className="text-xl md:text-2xl text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto">
+                        <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-relaxed max-w-2xl mx-auto">
                             Koreki ist kein einfaches Werkzeug. Es ist das Nervenzentrum für die fortschrittlichste Korrektur-Assistenz.
                         </p>
                     </div>
@@ -231,27 +231,27 @@ export default function Features() {
                         {pillars.map((pillar) => {
                             const isActive = activeTab === pillar.id;
                             const colors: Record<string, string> = {
-                                indigo: 'hover:border-indigo-200 hover:bg-indigo-50/20 text-indigo-600',
-                                blue: 'hover:border-blue-200 hover:bg-blue-50/20 text-blue-600',
-                                purple: 'hover:border-purple-200 hover:bg-purple-50/20 text-purple-600',
-                                emerald: 'hover:border-emerald-200 hover:bg-emerald-50/20 text-emerald-600',
-                                sky: 'hover:border-sky-200 hover:bg-sky-50/20 text-sky-600'
+                                'accent-2': 'hover:border-accent-2-200 hover:bg-accent-2-50/20 text-accent-2-600',
+                                'accent-1': 'hover:border-accent-1-200 hover:bg-accent-1-50/20 text-accent-1-600',
+                                'accent-4': 'hover:border-accent-4-200 hover:bg-accent-4-50/20 text-accent-4-600',
+                                'accent-3': 'hover:border-accent-3-200 hover:bg-accent-3-50/20 text-accent-3-600',
+                                sky: 'hover:border-accent-1-200 hover:bg-accent-1-50/20 text-accent-1-600'
                             };
 
                             const activeBgColors: Record<string, string> = {
-                                indigo: 'bg-indigo-50/80 border-indigo-200 text-indigo-900 shadow-indigo-100/50',
-                                blue: 'bg-blue-50/80 border-blue-200 text-blue-900 shadow-blue-100/50',
-                                purple: 'bg-purple-50/80 border-purple-200 text-purple-900 shadow-purple-100/50',
-                                emerald: 'bg-emerald-50/80 border-emerald-200 text-emerald-900 shadow-emerald-100/50',
-                                sky: 'bg-sky-50/80 border-sky-200 text-sky-900 shadow-sky-100/50'
+                                'accent-2': 'bg-accent-2-50/80 border-accent-2-200 text-accent-2-900 shadow-accent-2-100/50',
+                                'accent-1': 'bg-accent-1-50/80 border-accent-1-200 text-accent-1-900 shadow-accent-1-100/50',
+                                'accent-4': 'bg-accent-4-50/80 border-accent-4-200 text-accent-4-900 shadow-accent-4-100/50',
+                                'accent-3': 'bg-accent-3-50/80 border-accent-3-200 text-accent-3-900 shadow-accent-3-100/50',
+                                sky: 'bg-accent-1-50/80 border-accent-1-200 text-accent-1-900 shadow-accent-1-100/50'
                             };
 
                             const activeAccentLine: Record<string, string> = {
-                                indigo: 'bg-indigo-600',
-                                blue: 'bg-blue-600',
-                                purple: 'bg-purple-600',
-                                emerald: 'bg-emerald-600',
-                                sky: 'bg-sky-600'
+                                'accent-2': 'bg-accent-2-600',
+                                'accent-1': 'bg-accent-1-600',
+                                'accent-4': 'bg-accent-4-600',
+                                'accent-3': 'bg-accent-3-600',
+                                sky: 'bg-accent-1-600'
                             };
 
                             return (
@@ -262,7 +262,7 @@ export default function Features() {
                                         "w-full text-left p-5 rounded-2xl border transition-all duration-300 flex items-start gap-4 font-outfit shadow-sm relative overflow-hidden",
                                         isActive 
                                             ? cn("shadow-md", activeBgColors[pillar.accentColor]) 
-                                            : cn("bg-white/60 border-slate-100 text-slate-600", colors[pillar.accentColor])
+                                            : cn("bg-white/60 border-border text-muted-foreground", colors[pillar.accentColor])
                                     )}
                                 >
                                     {isActive && (
@@ -273,13 +273,13 @@ export default function Features() {
                                     )}
                                     <div className={cn(
                                         "p-2.5 rounded-xl transition-colors relative z-10",
-                                        isActive ? "bg-white text-primary shadow-sm" : "bg-slate-50 text-slate-400"
+                                        isActive ? "bg-white text-primary shadow-sm" : "bg-muted text-muted-foreground"
                                     )}>
                                         {pillar.icon}
                                     </div>
                                     <div className="flex flex-col relative z-10">
                                         <span className="font-bold text-base leading-none mb-1">{pillar.tabLabel}</span>
-                                        <span className="text-xs text-slate-500 font-medium">{pillar.tabDesc}</span>
+                                        <span className="text-xs text-muted-foreground font-medium">{pillar.tabDesc}</span>
                                     </div>
                                 </button>
                             );
@@ -298,10 +298,10 @@ export default function Features() {
                                     {activePillar.badge}
                                 </Badge>
                             </div>
-                            <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">
+                            <h2 className="text-3xl font-black text-foreground tracking-tight leading-tight">
                                 {activePillar.title}
                             </h2>
-                            <p className="text-slate-500 font-medium text-base leading-relaxed max-w-2xl">
+                            <p className="text-muted-foreground font-medium text-base leading-relaxed max-w-2xl">
                                 {activePillar.description}
                             </p>
                         </div>
@@ -316,7 +316,7 @@ export default function Features() {
                                     onClick={() => setZoomedImage(activePillar.screenshot)}
                                 >
                                     <div className="absolute -inset-4 bg-primary/5 blur-3xl rounded-hero opacity-50 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                                    <div className="relative rounded-xl overflow-hidden border border-black/5 bg-slate-50 shadow-md transition-all duration-300 hover:shadow-lg">
+                                    <div className="relative rounded-xl overflow-hidden border border-black/5 bg-muted shadow-md transition-all duration-300 hover:shadow-lg">
                                         <img 
                                             src={activePillar.screenshot} 
                                             alt={activePillar.title}

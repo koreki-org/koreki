@@ -65,7 +65,7 @@ const MarketingFooter: React.FC = () => {
                 <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-muted-foreground text-[10px] font-bold uppercase tracking-[0.2em]">
                     <p>&copy; {new Date().getFullYear()} Koreki<span className="text-primary">.</span> Made in Germany.</p>
                     <div className="flex items-center gap-6">
-                        <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-emerald-500" /> Datenschutz-Fokus</span>
+                        <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-success" /> Datenschutz-Fokus</span>
                     </div>
                 </div>
             </div>

@@ -28,7 +28,7 @@ export const FeatureSubNav: React.FC = () => {
                                 flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-black uppercase tracking-widest transition-all duration-300
                                 ${isActive 
                                     ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105' 
-                                    : 'text-slate-500 hover:text-slate-900 hover:bg-white/40'
+                                    : 'text-muted-foreground hover:text-foreground hover:bg-white/40'
                                 }
                             `}
                         >

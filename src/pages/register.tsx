@@ -30,7 +30,7 @@ export default function Register() {
             </Head>
 
             <div className="flex-grow flex items-center justify-center p-6 text-center">
-                <div className="bg-white w-full max-w-[400px] p-10 rounded-2xl border border-slate-200 shadow-sm animate-fade-up">
+                <div className="bg-white w-full max-w-[400px] p-10 rounded-2xl border border-border shadow-sm animate-fade-up">
                 <Link href="/">
                     <Logo
                         showText
@@ -41,20 +41,20 @@ export default function Register() {
                     />
                 </Link>
 
-                <p className="mb-8 text-slate-500 text-sm">
+                <p className="mb-8 text-muted-foreground text-sm">
                     Erstellen Sie jetzt Ihr sicheres Konto und starten Sie mit der automatischen Korrektur.
                 </p>
 
                 <Button
                     onClick={handleLogtoSignUp}
-                    className="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 h-auto rounded-xl text-base font-bold flex items-center justify-center gap-3 transition-all hover:-translate-y-0.5"
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-white p-4 h-auto rounded-xl text-base font-bold flex items-center justify-center gap-3 transition-all hover:-translate-y-0.5"
                 >
                     <UserPlus size={20} />
                     Jetzt Registrieren
                 </Button>
 
                 <div className="mt-8">
-                    <Link href="/" className="text-xs text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-1">
+                    <Link href="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1">
                         <ArrowLeft size={12} /> Zurück zur Startseite
                     </Link>
                 </div>

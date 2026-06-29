@@ -41,6 +41,10 @@ module.exports = {
                     DEFAULT: "hsl(var(--accent) / <alpha-value>)",
                     foreground: "hsl(var(--accent-foreground) / <alpha-value>)",
                 },
+                "accent-1": "hsl(var(--accent-1) / <alpha-value>)",
+                "accent-2": "hsl(var(--accent-2) / <alpha-value>)",
+                "accent-3": "hsl(var(--accent-3) / <alpha-value>)",
+                "accent-4": "hsl(var(--accent-4) / <alpha-value>)",
             },
             fontSize: {
                 xxs: "0.625rem", // 10px

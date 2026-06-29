@@ -35,24 +35,24 @@ export default function LandingPage() {
                Ausgenommen vom Standard-Hero-Spacing-Token (pt-hero-top pb-hero-bottom). */}
             <main className="max-w-7xl mx-auto px-6 md:px-page-inline pt-0 pb-12 md:pb-section-vertical grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-center min-h-[calc(100vh-100px)]">
                 <div className="lg:col-span-5 flex flex-col items-center lg:items-start z-10 animate-fade-up">
-                    <h1 className="text-[3rem] sm:text-[4.5rem] font-black text-slate-900 mb-6 tracking-tighter leading-[1.05]">
+                    <h1 className="text-[3rem] sm:text-[4.5rem] font-black text-foreground mb-6 tracking-tighter leading-[1.05]">
                         Präzise <br />
                         Korrektur.<br />
                         <span className="text-gradient pr-2">Individuelles</span> <br />
                         <span className="text-gradient pr-2">Feedback.</span>
                     </h1>
-                    <p className="text-xl leading-relaxed text-slate-500 mb-10 max-w-[90%] font-medium">
+                    <p className="text-xl leading-relaxed text-muted-foreground mb-10 max-w-[90%] font-medium">
                         Koreki nutzt modernste KI, um deine Korrekturzeit deutlich zu senken. Objektive Bewertungen und persönliche Rückmeldungen helfen deinen Schülern, schneller zu lernen – während du entlastet wirst.
                     </p>
 
                     <div className="mb-6">
                         {mode === 'community' ? (
-                            <Link href={(!authLoading && userData) ? "/app" : "/login"} className="relative bg-gradient-to-br from-indigo-600 to-blue-700 text-white px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest inline-flex items-center gap-3 transition-all duration-300 shadow-[0_10px_30px_-5px_rgba(79,70,229,0.4)] hover:shadow-[0_20px_40px_-5px_rgba(79,70,229,0.5)] hover:-translate-y-1 group overflow-hidden">
+                            <Link href={(!authLoading && userData) ? "/app" : "/login"} className="relative bg-primary hover:bg-primary/90 text-primary-foreground px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest inline-flex items-center gap-3 transition-all duration-300 shadow-[0_10px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:shadow-[0_20px_40px_-5px_rgba(var(--primary-rgb),0.5)] hover:-translate-y-1 group overflow-hidden">
                                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-[200%] transition-transform duration-700"></span>
                                 Korrektur starten <ArrowRight size={18} />
                             </Link>
                         ) : (
-                            <Link href={(!authLoading && userData) ? "/app" : "/register"} className="relative bg-gradient-to-br from-blue-600 to-indigo-600 text-white px-9 py-4 rounded-full font-black text-sm uppercase tracking-widest inline-flex items-center gap-3 transition-all duration-300 shadow-[0_10px_30px_-5px_rgba(37,99,235,0.4)] hover:shadow-[0_20px_40px_-5px_rgba(37,99,235,0.5)] hover:-translate-y-1 group overflow-hidden">
+                            <Link href={(!authLoading && userData) ? "/app" : "/register"} className="relative bg-primary hover:bg-primary/90 text-primary-foreground px-9 py-4 rounded-full font-black text-sm uppercase tracking-widest inline-flex items-center gap-3 transition-all duration-300 shadow-[0_10px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:shadow-[0_20px_40px_-5px_rgba(var(--primary-rgb),0.5)] hover:-translate-y-1 group overflow-hidden">
                                     <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-[200%] transition-transform duration-700"></span>
                                     {(!authLoading && userData) ? "Zum Dashboard" : "Jetzt testen"} <ArrowRight size={18} />
                             </Link>
@@ -60,12 +60,12 @@ export default function LandingPage() {
                     </div>
 
                     <div className="flex gap-6 mt-6 flex-wrap justify-center lg:justify-start">
-                        <div className="flex items-center gap-2 text-sm font-bold text-slate-700">
-                            <CheckCircle size={20} className="text-indigo-500" />
+                        <div className="flex items-center gap-2 text-sm font-bold text-foreground/80">
+                            <CheckCircle size={20} className="text-primary" />
                             <span>DSGVO-optimiert</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm font-bold text-slate-700">
-                            <CheckCircle size={20} className="text-indigo-500" />
+                        <div className="flex items-center gap-2 text-sm font-bold text-foreground/80">
+                            <CheckCircle size={20} className="text-primary" />
                             <span>Deutsches Engineering</span>
                         </div>
                     </div>
@@ -101,11 +101,11 @@ export default function LandingPage() {
                                 <Sparkles size={14} className="mr-2 animate-pulse" />
                                 Erweiterte Integration
                             </Badge>
-                            <h2 className="text-3xl md:text-5xl font-black mb-1 tracking-tight leading-none uppercase text-slate-900 mt-4">
+                            <h2 className="text-3xl md:text-5xl font-black mb-1 tracking-tight leading-none uppercase text-foreground mt-4">
                                 Digital Native:<br />
                                 Moodle Tests direkt korrigieren.
                             </h2>
-                            <p className="text-slate-500 text-lg font-medium leading-relaxed mb-10 mt-4">
+                            <p className="text-muted-foreground text-lg font-medium leading-relaxed mb-10 mt-4">
                                 Beenden Sie den Umweg über Papier und OCR. Importieren Sie die Bewertung von Freitextfragen direkt aus Moodle XLSX-Exporten. Höchste Präzision bei der Schülermeldung.
                             </p>
                             <Link href="/features/workflow" className="bg-primary text-white px-10 py-5 rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-primary/20 transition-all hover:-translate-y-1 hover:bg-primary/90 flex items-center gap-3 w-fit mx-auto lg:ml-0 group">

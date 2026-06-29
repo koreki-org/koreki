@@ -17,7 +17,7 @@ interface BentoItemProps {
 const BentoItem: React.FC<BentoItemProps> = ({ className, title, description, icon, href, badge, accentColor = 'bg-primary', visual }) => (
     <Link 
         href={href}
-        className={`${className} group relative overflow-hidden rounded-hero border border-white bg-white/60 backdrop-blur-xl p-4 md:p-card-padding-sm shadow-xl shadow-slate-900/5 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-indigo-100 flex flex-col justify-between`}
+        className={`${className} group relative overflow-hidden rounded-hero border border-white bg-white/60 backdrop-blur-xl p-4 md:p-card-padding-sm shadow-xl shadow-md/5 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:border-accent-2/20 flex flex-col justify-between`}
     >
         <div className="relative z-10">
             <div className="flex items-center justify-between mb-6">
@@ -25,13 +25,13 @@ const BentoItem: React.FC<BentoItemProps> = ({ className, title, description, ic
                     {icon}
                 </div>
                 {badge && (
-                    <Badge variant="secondary" className="bg-slate-100 text-slate-500 border-slate-200">
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground border-border">
                         {badge}
                     </Badge>
                 )}
             </div>
-            <h3 className="text-2xl font-black text-slate-900 mb-3 tracking-tight">{title}</h3>
-            <p className="text-slate-500 font-medium text-sm leading-relaxed max-w-xs">{description}</p>
+            <h3 className="text-2xl font-black text-foreground mb-3 tracking-tight">{title}</h3>
+            <p className="text-muted-foreground font-medium text-sm leading-relaxed max-w-xs">{description}</p>
         </div>
 
         <div className="mt-8 flex items-center justify-between relative z-10">
@@ -62,7 +62,7 @@ export const BentoGrid: React.FC = () => {
                     icon={<Brain size={24} />}
                     href="/features/intelligence"
                     badge="Logic Core"
-                    accentColor="bg-indigo-600"
+                    accentColor="bg-accent-2 text-accent-foreground"
                 />
  
                 {/* 2. Workflow */}
@@ -72,7 +72,7 @@ export const BentoGrid: React.FC = () => {
                     icon={<FileSpreadsheet size={24} />}
                     href="/features/workflow"
                     badge="Moodle Native"
-                    accentColor="bg-blue-500"
+                    accentColor="bg-accent-1/100"
                 />
  
                 {/* 3. Efficiency */}
@@ -82,7 +82,7 @@ export const BentoGrid: React.FC = () => {
                     icon={<Layers size={24} />}
                     href="/features/efficiency"
                     badge="Hohe Zuverlässigkeit"
-                    accentColor="bg-emerald-600"
+                    accentColor="bg-accent-3 text-accent-foreground"
                 />
             </div>
         </section>

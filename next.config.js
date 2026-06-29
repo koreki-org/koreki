@@ -6,9 +6,8 @@ const nextConfig = {
             test: /\.md$/,
             type: 'asset/source',
         });
-        if (dev) {
-            config.cache = false;
-        }
+        // Removed config.cache = false as it disables Webpack caching in dev mode, 
+        // leading to massive performance and RAM issues.
         return config;
     },
     reactStrictMode: true,

@@ -53,7 +53,7 @@ export default function Login() {
       </Head>
 
       <div className="flex-grow flex items-center justify-center p-6 text-center">
-        <div className="bg-white w-full max-w-[400px] p-10 rounded-2xl border border-slate-200 shadow-sm animate-fade-up">
+        <div className="bg-white w-full max-w-[400px] p-10 rounded-2xl border border-border shadow-sm animate-fade-up">
         <Link href="/">
           <Logo
             showText
@@ -64,7 +64,7 @@ export default function Login() {
           />
         </Link>
 
-        <p className="mb-8 text-slate-500 text-sm">
+        <p className="mb-8 text-muted-foreground text-sm">
           Willkommen zurück! Bitte verwenden Sie Ihren sicheren Account zum Anmelden.
         </p>
 
@@ -83,7 +83,7 @@ export default function Login() {
         <Button
           onClick={handleLogin}
           disabled={isKeycloakAuth() && !isSecure}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white p-4 h-auto rounded-xl text-base font-bold flex items-center justify-center gap-3 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none"
+          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 text-white p-4 h-auto rounded-xl text-base font-bold flex items-center justify-center gap-3 transition-all hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none"
         >
           <LogIn size={20} />
           Mit Account anmelden
@@ -93,25 +93,25 @@ export default function Login() {
           <Button
             variant="link"
             onClick={() => window.location.href = '/api/logto/forgot-password'}
-            className="text-slate-400 hover:text-blue-600 transition-colors text-xs p-0 h-auto"
+            className="text-muted-foreground hover:text-primary transition-colors text-xs p-0 h-auto"
           >
             Passwort vergessen?
           </Button>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-slate-100">
-          <p className="text-sm text-slate-500 mb-4">Noch keinen Account?</p>
+        <div className="mt-8 pt-8 border-t border-border">
+          <p className="text-sm text-muted-foreground mb-4">Noch keinen Account?</p>
           <Button
             variant="link"
             onClick={() => router.push('/register')}
-            className="text-blue-600 font-bold hover:text-blue-700 transition-colors p-0 h-auto"
+            className="text-primary font-bold hover:text-primary/90 transition-colors p-0 h-auto"
           >
             Hier kostenlos registrieren
           </Button>
         </div>
 
         <div className="mt-6">
-          <Link href="/" className="text-xs text-slate-400 hover:text-slate-600 transition-colors flex items-center justify-center gap-1">
+          <Link href="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1">
             <ArrowLeft size={12} /> Zurück zur Startseite
           </Link>
         </div>

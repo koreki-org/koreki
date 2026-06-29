@@ -40,8 +40,8 @@ export default function Privacy() {
 
             <div className="max-w-[1200px] mx-auto px-8 pt-0 pb-24 flex flex-col md:flex-row gap-12 items-start">
                 <aside className="w-full md:w-[300px] flex-shrink-0 sticky top-24">
-                    <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <h3 className="mt-0 mb-4 text-[0.75rem] uppercase tracking-widest font-bold text-slate-500">Inhalt</h3>
+                    <div className="bg-white rounded-2xl p-6 border border-border shadow-sm">
+                        <h3 className="mt-0 mb-4 text-[0.75rem] uppercase tracking-widest font-bold text-muted-foreground">Inhalt</h3>
                         <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
                             {[
                                 { id: 'intro', label: '§1 Einleitung & Transparenz' },
@@ -54,8 +54,8 @@ export default function Privacy() {
                                     <Button
                                         variant="ghost"
                                         className={`w-full justify-start text-left px-3 py-2 rounded-lg text-sm transition-all h-auto ${activeSection === sec.id
-                                                ? 'bg-blue-50 text-blue-700 font-bold hover:bg-blue-100 hover:text-blue-800'
-                                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                                ? 'bg-accent-1-50 text-accent-1-700 font-bold hover:bg-accent-1-100 hover:text-accent-1-800'
+                                                : 'text-muted-foreground hover:bg-muted hover:text-accent-1-600'
                                             }`}
                                         onClick={() => scrollToSection(sec.id)}
                                     >
@@ -69,32 +69,32 @@ export default function Privacy() {
 
                 <main className="flex-grow max-w-[800px]">
                     <header className="mb-12">
-                        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-2 tracking-tight">Datenschutzerklärung</h1>
-                        <p className="text-slate-500 text-base">Stand: April 2026</p>
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-2 tracking-tight">Datenschutzerklärung</h1>
+                        <p className="text-muted-foreground text-base">Stand: April 2026</p>
                     </header>
 
                     <div className="flex flex-col gap-8">
-                        <section id="intro" className="bg-white rounded-3xl p-10 border border-slate-200 shadow-sm relative scroll-mt-24">
-                            <div className="inline-flex p-3 bg-slate-100 text-slate-600 rounded-xl mb-6"><Shield size={24} /></div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-6">§1 Einleitung & Transparenz</h2>
-                            <p className="leading-relaxed text-slate-600 mb-4">Koreki ist ein <strong>privates Open-Source-Projekt</strong>. Diese Website (koreki.org) dient ausschließlich als technische Demonstration. Es gibt keine kommerziellen Absichten und keine Gewinnerzielungsabsicht.</p>
+                        <section id="intro" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                            <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><Shield size={24} /></div>
+                            <h2 className="text-2xl font-bold text-foreground mb-6">§1 Einleitung & Transparenz</h2>
+                            <p className="leading-relaxed text-muted-foreground mb-4">Koreki ist ein <strong>privates Open-Source-Projekt</strong>. Diese Website (koreki.org) dient ausschließlich als technische Demonstration. Es gibt keine kommerziellen Absichten und keine Gewinnerzielungsabsicht.</p>
                             
-                            <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-2xl my-6">
-                                <strong className="text-red-700 block mb-2 font-bold">WICHTIG: Keine echten Schülerdaten</strong>
-                                <p className="text-red-900 text-sm leading-relaxed m-0">Auf dieser Demo-Instanz dürfen keine echten personenbezogenen Daten von Schülern verarbeitet werden. Bitte nutzen Sie ausschließlich fiktive Testdaten.</p>
+                            <div className="bg-destructive/10 border-l-4 border-destructive p-6 rounded-r-2xl my-6">
+                                <strong className="text-destructive block mb-2 font-bold">WICHTIG: Keine echten Schülerdaten</strong>
+                                <p className="text-destructive text-sm leading-relaxed m-0">Auf dieser Demo-Instanz dürfen keine echten personenbezogenen Daten von Schülern verarbeitet werden. Bitte nutzen Sie ausschließlich fiktive Testdaten.</p>
                             </div>
 
-                            <p className="leading-relaxed text-slate-600 mb-4">Verantwortlicher im Sinne der DSGVO: {LEGAL_CONFIG.controller.name}, {LEGAL_CONFIG.controller.address}.</p>
+                            <p className="leading-relaxed text-muted-foreground mb-4">Verantwortlicher im Sinne der DSGVO: {LEGAL_CONFIG.controller.name}, {LEGAL_CONFIG.controller.address}.</p>
                         </section>
 
-                        <section id="data" className="bg-white rounded-3xl p-10 border border-slate-200 shadow-sm relative scroll-mt-24">
-                            <div className="inline-flex p-3 bg-slate-100 text-slate-600 rounded-xl mb-6"><Database size={24} /></div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-6">§2 Welche Daten fallen an?</h2>
-                            <p className="leading-relaxed text-slate-600 mb-4">Da dies ein privates Projekt ist, sammeln wir nur das absolute Minimum:</p>
-                            <p className="leading-relaxed text-slate-400 mb-6 text-xs italic uppercase tracking-wider">
+                        <section id="data" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                            <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><Database size={24} /></div>
+                            <h2 className="text-2xl font-bold text-foreground mb-6">§2 Welche Daten fallen an?</h2>
+                            <p className="leading-relaxed text-muted-foreground mb-4">Da dies ein privates Projekt ist, sammeln wir nur das absolute Minimum:</p>
+                            <p className="leading-relaxed text-muted-foreground mb-6 text-xs italic uppercase tracking-wider">
                                 Hosting: Diese Website wird auf einem virtuellen Server der IONOS SE, Elgendorfer Str. 57, 56410 Montabaur gehostet.
                             </p>
-                            <ul className="list-disc leading-relaxed text-slate-600 pl-6 mb-6 flex flex-col gap-3">
+                            <ul className="list-disc leading-relaxed text-muted-foreground pl-6 mb-6 flex flex-col gap-3">
                                 <li><strong>Server-Logs:</strong> Beim Aufruf der Seite speichert unser Hoster (IONOS) kurzzeitig Verbindungsdaten (IP-Adresse, Zeitstempel), um den Betrieb sicherzustellen und Angriffe abzuwehren. Diese werden nach 7 Tagen gelöscht.</li>
                                 <li><strong>KI-Analyse:</strong> Die von Ihnen eingegebenen Texte/Bilder werden zur Analyse an die API von <strong>Mistral AI</strong> (Standort: EU/Frankreich) gesendet.</li>
                                 <li><strong>Login:</strong> Wir nutzen Logto zur Authentifizierung. Es wird lediglich Ihre E-Mail-Adresse gespeichert, um Ihnen Zugang zur Demo zu ermöglichen.</li>
@@ -103,34 +103,34 @@ export default function Privacy() {
                             </ul>
                         </section>
 
-                        <section id="retention" className="bg-white rounded-3xl p-10 border border-slate-200 shadow-sm relative scroll-mt-24">
-                            <div className="inline-flex p-3 bg-slate-100 text-slate-600 rounded-xl mb-6"><RefreshCw size={24} /></div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-6">§3 Automatische Löschung (Pillar 6)</h2>
-                            <p className="leading-relaxed text-slate-600 mb-4">
+                        <section id="retention" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                            <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><RefreshCw size={24} /></div>
+                            <h2 className="text-2xl font-bold text-foreground mb-6">§3 Automatische Löschung (Pillar 6)</h2>
+                            <p className="leading-relaxed text-muted-foreground mb-4">
                                 Koreki folgt dem Prinzip der Datensparsamkeit durch technisches Design (Privacy by Design). Wir haben eine <strong>automatisierte Datenaufbewahrungs-Richtlinie</strong> implementiert:
                             </p>
-                            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-start gap-4">
-                                <div className="text-blue-600 mt-1"><Database size={20} /></div>
+                            <div className="bg-muted p-6 rounded-2xl border border-border flex items-start gap-4">
+                                <div className="text-accent-1-600 mt-1"><Database size={20} /></div>
                                 <div>
-                                    <strong className="text-slate-800 block mb-1">90-Tage-Löschzyklus</strong>
-                                    <p className="text-slate-600 text-sm leading-relaxed m-0">Alle temporären Nutzungsdaten, Sicherheits-Events und Compliance-Audit-Logs werden nach spätestens 90 Tagen unwiderruflich von unseren Systemen gelöscht. Es erfolgt keine Langzeit-Speicherung personenbezogener Daten.</p>
+                                    <strong className="text-foreground block mb-1">90-Tage-Löschzyklus</strong>
+                                    <p className="text-muted-foreground text-sm leading-relaxed m-0">Alle temporären Nutzungsdaten, Sicherheits-Events und Compliance-Audit-Logs werden nach spätestens 90 Tagen unwiderruflich von unseren Systemen gelöscht. Es erfolgt keine Langzeit-Speicherung personenbezogener Daten.</p>
                                 </div>
                             </div>
                         </section>
 
-                        <section id="privacy" className="bg-white rounded-3xl p-10 border border-emerald-200 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-emerald-50/30 to-white">
-                            <div className="inline-flex p-3 bg-emerald-100 text-emerald-600 rounded-xl mb-6"><Lock size={24} /></div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-6">§4 Empfehlung für maximale Privatsphäre</h2>
-                            <p className="leading-relaxed text-slate-600 mb-4">Wenn Sie Koreki mit echten Daten nutzen möchten, empfehlen wir:</p>
-                            <div className="bg-emerald-50 border-l-4 border-emerald-500 p-6 rounded-r-2xl my-6">
-                                <strong className="text-emerald-700 block mb-2 font-bold">Self-Hosting & Lokale Nutzung</strong>
-                                <p className="text-emerald-900 text-sm leading-relaxed m-0">Laden Sie den Quellcode auf GitHub herunter und betreiben Sie Koreki auf Ihrem eigenen Rechner oder Server. Nur so haben Sie die volle Kontrolle über den Datenfluss.</p>
+                        <section id="privacy" className="bg-white rounded-3xl p-10 border border-accent-3-200 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-accent-3-50/30 to-white">
+                            <div className="inline-flex p-3 bg-accent-3-100 text-accent-3-600 rounded-xl mb-6"><Lock size={24} /></div>
+                            <h2 className="text-2xl font-bold text-foreground mb-6">§4 Empfehlung für maximale Privatsphäre</h2>
+                            <p className="leading-relaxed text-muted-foreground mb-4">Wenn Sie Koreki mit echten Daten nutzen möchten, empfehlen wir:</p>
+                            <div className="bg-accent-3-50 border-l-4 border-accent-3-500 p-6 rounded-r-2xl my-6">
+                                <strong className="text-accent-3-700 block mb-2 font-bold">Self-Hosting & Lokale Nutzung</strong>
+                                <p className="text-accent-3-900 text-sm leading-relaxed m-0">Laden Sie den Quellcode auf GitHub herunter und betreiben Sie Koreki auf Ihrem eigenen Rechner oder Server. Nur so haben Sie die volle Kontrolle über den Datenfluss.</p>
                             </div>
                         </section>
 
-                        <section id="rights" className="bg-white rounded-3xl p-10 border border-slate-200 shadow-sm relative scroll-mt-24">
-                            <h2 className="text-2xl font-bold text-slate-800 mb-6">§5 Ihre Rechte</h2>
-                            <p className="leading-relaxed text-slate-600 mb-4">Sie haben jederzeit das Recht auf Auskunft über Ihre gespeicherten Daten (E-Mail) oder deren Löschung. Schreiben Sie mir dazu einfach eine E-Mail an {LEGAL_CONFIG.contact.email}.</p>
+                        <section id="rights" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                            <h2 className="text-2xl font-bold text-foreground mb-6">§5 Ihre Rechte</h2>
+                            <p className="leading-relaxed text-muted-foreground mb-4">Sie haben jederzeit das Recht auf Auskunft über Ihre gespeicherten Daten (E-Mail) oder deren Löschung. Schreiben Sie mir dazu einfach eine E-Mail an {LEGAL_CONFIG.contact.email}.</p>
                         </section>
                     </div>
                 </main>

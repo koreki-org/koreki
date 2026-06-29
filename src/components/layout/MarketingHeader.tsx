@@ -45,7 +45,7 @@ const MarketingHeader: React.FC = () => {
                                         "px-4 rounded-full transition-all duration-300 font-semibold tracking-tight text-[15px]",
                                         isActive 
                                             ? "text-primary bg-primary/5 hover:bg-primary/10 shadow-sm" 
-                                            : "text-muted-foreground hover:text-primary hover:bg-slate-50/50"
+                                            : "text-muted-foreground hover:text-primary hover:bg-muted/50"
                                     )}
                                 >
                                     {item.name}

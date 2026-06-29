@@ -87,11 +87,11 @@ export default function WorkflowFeature() {
                     <Badge variant="light" className="mb-4">
                         Workflow & Logistics
                     </Badge>
-                    <h1 className="text-6xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9]">
+                    <h1 className="text-6xl md:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
                         Der gesamte Workflow. <br />
                         <span className="text-gradient">Schritt für Schritt.</span>
                     </h1>
-                    <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-2xl mx-auto mt-6">
+                    <p className="text-xl text-muted-foreground font-medium leading-relaxed max-w-2xl mx-auto mt-6">
                         Erfahren Sie, wie einfach Koreki den Korrekturalltag strukturiert. Ein sauberer, automatisierter Weg von der Vorlage bis zum fertigen Feedback.
                     </p>
                 </section>
@@ -116,10 +116,10 @@ export default function WorkflowFeature() {
                                         </span>
                                         <Badge variant="subtle">{step.badge}</Badge>
                                     </div>
-                                    <h2 className="text-3xl font-black text-slate-900 tracking-tight leading-none uppercase">
+                                    <h2 className="text-3xl font-black text-foreground tracking-tight leading-none uppercase">
                                         {step.title}
                                     </h2>
-                                    <p className="text-slate-500 text-sm md:text-base font-semibold leading-relaxed">
+                                    <p className="text-muted-foreground text-sm md:text-base font-semibold leading-relaxed">
                                         {step.description}
                                     </p>
                                 </div>
@@ -135,7 +135,7 @@ export default function WorkflowFeature() {
                                             <img 
                                                 src={step.screenshot} 
                                                 alt={step.title}
-                                                className="w-full h-auto rounded-xl shadow-md border border-slate-200"
+                                                className="w-full h-auto rounded-xl shadow-md border border-border"
                                             />
                                         </div>
                                     </div>
@@ -146,15 +146,15 @@ export default function WorkflowFeature() {
                 </section>
 
                 {/* Native Moodle Spotlight */}
-                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-slate-50/50 border-y border-slate-200/50 relative">
+                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-muted/50 border-y border-border/50 relative">
                     <div className="max-w-7xl mx-auto flex flex-col gap-16">
                         <div className="glass-morphism p-6 md:p-card-padding rounded-hero border border-white bg-white/60 shadow-xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                                 <FileSpreadsheet size={160} />
                             </div>
                             <div className="max-w-2xl relative z-10">
-                                <h2 className="text-4xl font-black mb-6 tracking-tight text-slate-900">Direct Moodle XLSX Import</h2>
-                                <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed">
+                                <h2 className="text-4xl font-black mb-6 tracking-tight text-foreground">Direct Moodle XLSX Import</h2>
+                                <p className="text-lg text-muted-foreground font-medium mb-10 leading-relaxed">
                                     Wenn Sie Moodle nutzen, können Sie den Papier-Umweg komplett umgehen. Laden Sie XLSX-Exporte direkt in Koreki hoch.
                                 </p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -164,7 +164,7 @@ export default function WorkflowFeature() {
                                         { t: 'Direkter KI-Transfer ohne OCR', i: CheckCircle },
                                         { t: 'Erhalt der Original-Dateinamen', i: CheckCircle }
                                     ].map((f, i) => (
-                                        <div key={i} className="flex items-center gap-4 text-sm font-black text-slate-700">
+                                        <div key={i} className="flex items-center gap-4 text-sm font-black text-foreground">
                                             <div className="bg-primary/10 text-primary p-2 rounded-lg">
                                                 <f.i size={20} />
                                             </div>

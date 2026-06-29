@@ -31,10 +31,10 @@ export const FeatureSpotlight: React.FC<FeatureSpotlightProps> = ({
                             {badge}
                         </Badge>
                     )}
-                    <h3 className="text-4xl font-black text-slate-900 tracking-tight leading-tight">
+                    <h3 className="text-4xl font-black text-foreground tracking-tight leading-tight">
                         {title}
                     </h3>
-                    <p className="text-lg text-slate-500 font-medium leading-relaxed">
+                    <p className="text-lg text-muted-foreground font-medium leading-relaxed">
                         {description}
                     </p>
                 </div>
@@ -51,7 +51,7 @@ export const FeatureSpotlight: React.FC<FeatureSpotlightProps> = ({
                             <img 
                                 src={imageSrc} 
                                 alt={imageAlt}
-                                className="w-full h-auto rounded-2xl shadow-inner border border-slate-200"
+                                className="w-full h-auto rounded-2xl shadow-inner border border-border"
                             />
                             
                             {/* Reflection Overlay */}

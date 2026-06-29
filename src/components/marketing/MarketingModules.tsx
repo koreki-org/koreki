@@ -28,13 +28,13 @@ export const FeatureFAQ: React.FC = () => {
     ];
 
     return (
-        <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-slate-50 text-slate-900 overflow-hidden relative border-y border-slate-200/50">
+        <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-muted text-foreground overflow-hidden relative border-y border-border/50">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
             <div className="max-w-[1200px] mx-auto relative z-10">
                 <div className="text-center mb-16">
                     <Badge variant="light" className="mb-6">FAQ</Badge>
                     <h2 className="text-4xl md:text-5xl font-black mb-6 tracking-tight leading-tight">Antworten auf Ihre <span className="text-primary">Fragen.</span></h2>
-                    <p className="text-slate-500 font-medium text-lg">Alles, was Sie über die Open-Source-Nutzung von Koreki wissen müssen.</p>
+                    <p className="text-muted-foreground font-medium text-lg">Alles, was Sie über die Open-Source-Nutzung von Koreki wissen müssen.</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-10">
                     {faqs.map((faq, i) => (
@@ -43,7 +43,7 @@ export const FeatureFAQ: React.FC = () => {
                                 <HelpCircle size={20} className="text-primary" />
                                 {faq.q}
                             </h3>
-                            <p className="text-slate-500 font-medium leading-relaxed">{faq.a}</p>
+                            <p className="text-muted-foreground font-medium leading-relaxed">{faq.a}</p>
                         </div>
                     ))}
                 </div>
@@ -59,12 +59,12 @@ export const FeatureFAQ: React.FC = () => {
  */
 export const FeatureCTA: React.FC = () => {
     return (
-        <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-slate-50 text-center">
-            <div className="max-w-[800px] mx-auto bg-white rounded-hero p-6 md:p-card-padding shadow-2xl relative overflow-hidden border border-slate-100">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5" />
+        <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-muted text-center">
+            <div className="max-w-[800px] mx-auto bg-white rounded-hero p-6 md:p-card-padding shadow-2xl relative overflow-hidden border border-border">
+                <div className="absolute inset-0 bg-gradient-to-br from-accent-2/5 to-accent-4/5" />
                 <div className="relative z-10">
-                    <h2 className="text-4xl font-black text-slate-900 mb-6 tracking-tight">Koreki gehört der Community.</h2>
-                    <p className="text-slate-500 font-medium text-lg mb-10 leading-relaxed">Nutzen Sie die Freiheit von Open Source kombiniert mit der Power moderner KI-Didaktik.</p>
+                    <h2 className="text-4xl font-black text-foreground mb-6 tracking-tight">Koreki gehört der Community.</h2>
+                    <p className="text-muted-foreground font-medium text-lg mb-10 leading-relaxed">Nutzen Sie die Freiheit von Open Source kombiniert mit der Power moderner KI-Didaktik.</p>
                     <Link 
                         href="https://github.com/koreki-org/koreki"
                         target="_blank"

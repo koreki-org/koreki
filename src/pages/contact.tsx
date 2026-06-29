@@ -60,7 +60,7 @@ export default function Contact() {
         return (
             <MarketingLayout>
                 <div className="max-w-4xl mx-auto px-8 py-24 text-center">
-                    <div className="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto mb-8">
+                    <div className="w-20 h-20 bg-warning/20 text-warning rounded-full flex items-center justify-center mx-auto mb-8">
                         <ShieldAlert className="w-10 h-10" />
                     </div>
                     <h1 className="text-4xl font-extrabold text-foreground mb-4 font-outfit">Kontaktformular deaktiviert</h1>
@@ -105,7 +105,7 @@ export default function Contact() {
                             
                             {status === 'success' ? (
                                 <div className="text-center py-12 relative z-10 animate-fade-up">
-                                    <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <div className="w-20 h-20 bg-success/20 text-success rounded-full flex items-center justify-center mx-auto mb-6">
                                         <CheckCircle2 className="w-10 h-10" />
                                     </div>
                                     <h2 className="text-2xl font-bold text-foreground mb-2">Nachricht gesendet!</h2>

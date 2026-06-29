@@ -9,23 +9,23 @@ import { Brain, Shield, PenTool, Layers } from 'lucide-react';
 export const FeatureIconGrid: React.FC = () => {
     const highlights = [
         {
-            icon: <PenTool size={32} className="text-blue-600 mb-4" />,
+            icon: <PenTool size={32} className="text-accent-1 mb-4" />,
             title: "Digitalisierung",
             desc: "Präzise Handschrift-OCR und automatisches Splitting von Sammel-PDFs."
         },
         {
-            icon: <Brain size={32} className="text-indigo-600 mb-4" />,
+            icon: <Brain size={32} className="text-accent-2 mb-4" />,
             title: "Managed AI",
             desc: "Automatisierte Korrektur-Logik basierend auf Ihren Musterlösungen."
         },
         {
-            icon: <Shield size={32} className="text-indigo-100 mb-4" />,
+            icon: <Shield size={32} className="text-accent-2/30 mb-4" />,
             title: "Expert Mode",
             desc: "Eigene Prompt-Profile für maximale Kontrolle und Fach-Präzision.",
             highlight: true
         },
         {
-            icon: <Layers size={32} className="text-emerald-600 mb-4" />,
+            icon: <Layers size={32} className="text-accent-3 mb-4" />,
             title: "Effizienz",
             desc: "Batch-Verarbeitung ganzer Klassen und nahtloser Excel-Export."
         }
@@ -39,13 +39,13 @@ export const FeatureIconGrid: React.FC = () => {
                         key={idx}
                         className={`${
                             item.highlight 
-                            ? "bg-indigo-600 text-white" 
-                            : "bg-white text-slate-900 border-slate-200"
-                        } rounded-hero p-4 md:p-card-padding-sm border shadow-xl shadow-slate-200/40 hover:shadow-2xl transition-all group overflow-hidden relative`}
+                            ? "bg-accent-2 text-accent-foreground text-white" 
+                            : "bg-white text-foreground border-border"
+                        } rounded-hero p-4 md:p-card-padding-sm border shadow-xl shadow-sm/40 hover:shadow-2xl transition-all group overflow-hidden relative`}
                     >
                         {item.icon}
                         <h3 className="text-lg font-black mb-2 tracking-tight">{item.title}</h3>
-                        <p className={`text-xs font-medium leading-relaxed ${item.highlight ? "text-indigo-50/70" : "text-slate-500"}`}>
+                        <p className={`text-xs font-medium leading-relaxed ${item.highlight ? "text-accent-2/20/70" : "text-muted-foreground"}`}>
                             {item.desc}
                         </p>
                     </div>

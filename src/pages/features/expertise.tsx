@@ -34,11 +34,11 @@ export default function ExpertiseFeature() {
                         <Badge variant="light" className="mb-4">
                             Pillar: Expertise
                         </Badge>
-                        <h1 className="text-6xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9]">
+                        <h1 className="text-6xl md:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
                             Fachliche Hoheit. <br />
                             <span className="text-gradient">Unter Ihrer Kontrolle.</span>
                         </h1>
-                        <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-xl mx-auto lg:ml-0">
+                        <p className="text-xl text-muted-foreground font-medium leading-relaxed max-w-xl mx-auto lg:ml-0">
                             Koreki ist kein unkontrollierbarer Algorithmus. Im Expert-Center legen Sie fest, nach welchen Kriterien und fachlichen Vorgaben korrigiert wird. Sie bleiben der alleinige Entscheider.
                         </p>
                     </div>
@@ -53,7 +53,7 @@ export default function ExpertiseFeature() {
                                 <img 
                                     src="/screenshots/4a_koreki_expert_center.png" 
                                     alt="Koreki Expert-Center Interface"
-                                    className="w-full h-auto rounded-xl shadow-md border border-slate-200"
+                                    className="w-full h-auto rounded-xl shadow-md border border-border"
                                 />
                             </div>
                         </div>
@@ -61,15 +61,15 @@ export default function ExpertiseFeature() {
                 </section>
 
                 {/* Highlight Section */}
-                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-slate-50/50 border-y border-slate-200/50 relative">
+                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-muted/50 border-y border-border/50 relative">
                     <div className="max-w-7xl mx-auto">
                         <div className="glass-morphism p-6 md:p-card-padding rounded-hero border border-white bg-white/60 shadow-xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                                 <ShieldCheck size={160} />
                             </div>
                             <div className="max-w-2xl relative z-10">
-                                <h2 className="text-4xl font-black mb-6 tracking-tight text-slate-900">Das Expert-Center</h2>
-                                <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed">
+                                <h2 className="text-4xl font-black mb-6 tracking-tight text-foreground">Das Expert-Center</h2>
+                                <p className="text-lg text-muted-foreground font-medium mb-10 leading-relaxed">
                                     Die KI folgt Ihren Anweisungen und Vorgaben atomar. Sie bestimmen den Rahmen der sprachlichen Kulanz und die Gewichtung von Argumenten.
                                 </p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -79,7 +79,7 @@ export default function ExpertiseFeature() {
                                         { t: 'Manuelles Überschreiben jederzeit möglich', i: CheckCircle },
                                         { t: 'Einhaltung Ihrer pädagogischen Linie', i: CheckCircle }
                                     ].map((f, i) => (
-                                        <div key={i} className="flex items-center gap-4 text-sm font-black text-slate-700">
+                                        <div key={i} className="flex items-center gap-4 text-sm font-black text-foreground">
                                             <div className="bg-primary/10 text-primary p-2 rounded-lg">
                                                 <f.i size={20} />
                                             </div>

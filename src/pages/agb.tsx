@@ -45,8 +45,8 @@ export default function AGB() {
 
             <div className="max-w-[1200px] mx-auto px-8 pt-0 pb-24 flex flex-col md:flex-row gap-12 items-start">
                 <aside className="w-full md:w-[250px] flex-shrink-0 sticky top-24">
-                    <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-                        <h3 className="mt-0 mb-4 text-[0.75rem] uppercase tracking-widest font-bold text-slate-500">Inhalt</h3>
+                    <div className="bg-white rounded-2xl p-6 border border-border shadow-sm">
+                        <h3 className="mt-0 mb-4 text-[0.75rem] uppercase tracking-widest font-bold text-muted-foreground">Inhalt</h3>
                         <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
                             {[
                                 { id: 'scope', label: '§1 Geltungsbereich' },
@@ -61,8 +61,8 @@ export default function AGB() {
                                     <Button
                                         variant="ghost"
                                         className={`w-full justify-start text-left px-3 py-2 rounded-lg text-sm transition-all h-auto ${activeSection === sec.id
-                                                ? 'bg-blue-50 text-blue-700 font-bold hover:bg-blue-100 hover:text-blue-800'
-                                                : 'text-slate-600 hover:bg-slate-50 hover:text-blue-600'
+                                                ? 'bg-accent-1-50 text-accent-1-700 font-bold hover:bg-accent-1-100 hover:text-accent-1-800'
+                                                : 'text-muted-foreground hover:bg-muted hover:text-accent-1-600'
                                             }`}
                                         onClick={() => scrollToSection(sec.id)}
                                     >
@@ -76,38 +76,38 @@ export default function AGB() {
 
                 <main className="flex-grow max-w-[800px]">
                     <header className="mb-12">
-                        <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-2 tracking-tight">Allgemeine Geschäftsbedingungen</h1>
-                        <p className="text-slate-500 text-base">Stand: März 2026</p>
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-2 tracking-tight">Allgemeine Geschäftsbedingungen</h1>
+                        <p className="text-muted-foreground text-base">Stand: März 2026</p>
                     </header>
 
                     <div className="flex flex-col gap-8">
-                        <section id="scope" className="bg-white rounded-3xl p-10 border border-slate-200 shadow-sm relative scroll-mt-24">
-                            <div className="inline-flex p-3 bg-slate-100 text-slate-600 rounded-xl mb-6"><Book size={24} /></div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-6">§1 Geltungsbereich und Zweck</h2>
-                            <p className="leading-relaxed text-slate-600 mb-4">Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für die Nutzung der unter koreki.org bereitgestellten Instanz der Koreki-Software. Davon unberührt bleibt die Lizenzierung des Quellcodes der Software, welcher als Open-Source-Projekt separat lizenziert wird.</p>
-                            <div className="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-2xl my-6">
-                                <strong className="text-blue-700 block mb-2 font-bold">REINER TESTBETRIEB:</strong>
-                                <p className="text-blue-900 text-sm leading-relaxed m-0">Die Instanz auf <strong>koreki.org dient ausschließlich zu Test- und Demonstrationszwecken</strong>. Die Verarbeitung von realen, personenbezogenen Schülerdaten ist auf dieser öffentlichen Test-Instanz untersagt. Nutzer sind verpflichtet, ausschließlich Demo-Daten oder vollständig anonymisierte Texte zu verwenden.</p>
+                        <section id="scope" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                            <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><Book size={24} /></div>
+                            <h2 className="text-2xl font-bold text-foreground mb-6">§1 Geltungsbereich und Zweck</h2>
+                            <p className="leading-relaxed text-muted-foreground mb-4">Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für die Nutzung der unter koreki.org bereitgestellten Instanz der Koreki-Software. Davon unberührt bleibt die Lizenzierung des Quellcodes der Software, welcher als Open-Source-Projekt separat lizenziert wird.</p>
+                            <div className="bg-accent-1-50 border-l-4 border-accent-1-500 p-6 rounded-r-2xl my-6">
+                                <strong className="text-accent-1-700 block mb-2 font-bold">REINER TESTBETRIEB:</strong>
+                                <p className="text-accent-1-900 text-sm leading-relaxed m-0">Die Instanz auf <strong>koreki.org dient ausschließlich zu Test- und Demonstrationszwecken</strong>. Die Verarbeitung von realen, personenbezogenen Schülerdaten ist auf dieser öffentlichen Test-Instanz untersagt. Nutzer sind verpflichtet, ausschließlich Demo-Daten oder vollständig anonymisierte Texte zu verwenden.</p>
                             </div>
-                            <p className="leading-relaxed text-slate-600">Koreki richtet sich an Lehrkräfte und Bildungseinrichtungen als Open-Source-Hilfsmittel zur KI-gestützten Korrektur und Einschätzung von Aufgaben.</p>
+                            <p className="leading-relaxed text-muted-foreground">Koreki richtet sich an Lehrkräfte und Bildungseinrichtungen als Open-Source-Hilfsmittel zur KI-gestützten Korrektur und Einschätzung von Aufgaben.</p>
                         </section>
 
                         <section id="liability" className="bg-white rounded-3xl p-10 border border-warning/20 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-warning/5 to-white">
                             <div className="inline-flex p-3 bg-warning/10 text-warning rounded-xl mb-6"><Scale size={24} /></div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-6">§2 Leistungsumfang und KI-Haftungsausschluss</h2>
-                            <p className="leading-relaxed text-slate-600 mb-4">Koreki bietet Werkzeuge zur Textextraktion (OCR) und Analyse mittels Künstlicher Intelligenz (KI). Die KI generiert Einschätzungen und Bepunktungsvorschläge basierend auf den von der Lehrkraft bereitgestellten Musterlösungen.</p>
-                            <div className="bg-red-50 border-l-4 border-red-500 p-6 rounded-r-2xl my-6">
-                                <strong className="text-red-700 block mb-2 font-bold">WICHTIGER HINWEIS:</strong>
-                                <p className="text-red-900 text-sm leading-relaxed m-0">Die von der KI generierten Ergebnisse sind <strong>ausschließlich als Vorschläge und Einschätzungen</strong> zu verstehen. Die finale pädagogische, fachliche und rechtliche Verantwortung für die endgültige Benotung liegt <strong>immer und vollumfänglich bei der Lehrkraft</strong>.</p>
+                            <h2 className="text-2xl font-bold text-foreground mb-6">§2 Leistungsumfang und KI-Haftungsausschluss</h2>
+                            <p className="leading-relaxed text-muted-foreground mb-4">Koreki bietet Werkzeuge zur Textextraktion (OCR) und Analyse mittels Künstlicher Intelligenz (KI). Die KI generiert Einschätzungen und Bepunktungsvorschläge basierend auf den von der Lehrkraft bereitgestellten Musterlösungen.</p>
+                            <div className="bg-destructive/10 border-l-4 border-destructive p-6 rounded-r-2xl my-6">
+                                <strong className="text-destructive block mb-2 font-bold">WICHTIGER HINWEIS:</strong>
+                                <p className="text-destructive text-sm leading-relaxed m-0">Die von der KI generierten Ergebnisse sind <strong>ausschließlich als Vorschläge und Einschätzungen</strong> zu verstehen. Die finale pädagogische, fachliche und rechtliche Verantwortung für die endgültige Benotung liegt <strong>immer und vollumfänglich bei der Lehrkraft</strong>.</p>
                             </div>
-                            <p className="leading-relaxed text-slate-600">Koreki übernimmt keine Haftung für fehlerhafte Textauslesungen, inkorrekte KI-Bewertungen, &quot;Halluzinationen&quot; der KI oder daraus resultierende ungerechtfertigte Benotungen. Der Nutzer ist verpflichtet, die generierten Vorschläge vor der Übernahme kritisch zu prüfen.</p>
+                            <p className="leading-relaxed text-muted-foreground">Koreki übernimmt keine Haftung für fehlerhafte Textauslesungen, inkorrekte KI-Bewertungen, &quot;Halluzinationen&quot; der KI oder daraus resultierende ungerechtfertigte Benotungen. Der Nutzer ist verpflichtet, die generierten Vorschläge vor der Übernahme kritisch zu prüfen.</p>
                         </section>
 
-                        <section id="credits" className="bg-white rounded-3xl p-10 border border-slate-200 shadow-sm relative scroll-mt-24">
-                            <div className="inline-flex p-3 bg-slate-100 text-slate-600 rounded-xl mb-6"><CreditCard size={24} /></div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-6">§3 Credit-System und Zahlungen</h2>
-                            <p className="leading-relaxed text-slate-600 mb-4">Die Nutzung kostenpflichtiger KI-Dienste (wie OCR und Textanalyse) erfolgt über ein Prepaid-Credit-System.</p>
-                            <ul className="list-disc leading-relaxed text-slate-600 pl-6 mb-6 flex flex-col gap-3">
+                        <section id="credits" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                            <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><CreditCard size={24} /></div>
+                            <h2 className="text-2xl font-bold text-foreground mb-6">§3 Credit-System und Zahlungen</h2>
+                            <p className="leading-relaxed text-muted-foreground mb-4">Die Nutzung kostenpflichtiger KI-Dienste (wie OCR und Textanalyse) erfolgt über ein Prepaid-Credit-System.</p>
+                            <ul className="list-disc leading-relaxed text-muted-foreground pl-6 mb-6 flex flex-col gap-3">
                                 <li><strong>Preise:</strong> Die aktuellen Credit-Kosten pro Analyse-Typ (z.B. Handschrift vs. digitales PDF) sind transparent im Kontobereich der App (&quot;Credit-Aufladung&quot;) einsehbar.</li>
                                 <li><strong>Kauf:</strong> Credits werden über den Zahlungsdienstleister Stripe erworben. Ein Rückabwicklung von bereits genutzten Credits ist ausgeschlossen.</li>
                                 <li><strong>Verfall:</strong> Erworbene Credits verfallen nicht, solange das Nutzerkonto aktiv ist. Bei Löschung des Kontos verfällt eventuell vorhandenes Restguthaben ohne Anspruch auf Auszahlung.</li>
@@ -115,34 +115,34 @@ export default function AGB() {
                             </ul>
                         </section>
 
-                        <section id="privacy" className="bg-white rounded-3xl p-10 border border-slate-200 shadow-sm relative scroll-mt-24">
-                            <div className="inline-flex p-3 bg-slate-100 text-slate-600 rounded-xl mb-6"><Shield size={24} /></div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-6">§4 Datenschutz (AVV und &quot;PURE Mode&quot;)</h2>
-                            <p className="leading-relaxed text-slate-600 mb-4">Der Schutz sensibler Schülerdaten hat höchste Priorität.</p>
-                            <ul className="list-disc leading-relaxed text-slate-600 pl-6 mb-6 flex flex-col gap-3">
+                        <section id="privacy" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                            <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><Shield size={24} /></div>
+                            <h2 className="text-2xl font-bold text-foreground mb-6">§4 Datenschutz (AVV und &quot;PURE Mode&quot;)</h2>
+                            <p className="leading-relaxed text-muted-foreground mb-4">Der Schutz sensibler Schülerdaten hat höchste Priorität.</p>
+                            <ul className="list-disc leading-relaxed text-muted-foreground pl-6 mb-6 flex flex-col gap-3">
                                 <li><strong>Datenminimierung:</strong> Koreki anonymisiert/pseudonymisiert Dokumententitel standardmäßig im Browser, bevor Daten verarbeitet werden. Optional können Bildbereiche manuell geschwärzt werden.</li>
                                 <li><strong>Standard-Mode:</strong> Für die serverseitige Verarbeitung kann ein Vertrag zur Auftragsverarbeitung (AVV) gemäß Art. 28 DSGVO abgeschlossen werden. Ein Mustervertrag steht im Kontobereich zur Verfügung.</li>
                                 <li><strong>PURE-Mode:</strong> Nutzer des &quot;PURE-Mode&quot; stimmen zu, dass die Datenkommunikation direkt zwischen dem Endgerät des Nutzers (Browser) und dem API-Schnittstellen-Anbieter (Mistral, EU-Server) stattfindet, ohne Zwischenspeicherung auf Koreki-Servern. </li>
                             </ul>
-                            <p className="leading-relaxed text-slate-600">Weitere Details regelt die <Link href="/privacy" className="text-blue-600 hover:underline">Datenschutzerklärung</Link>.</p>
+                            <p className="leading-relaxed text-muted-foreground">Weitere Details regelt die <Link href="/privacy" className="text-accent-1-600 hover:underline">Datenschutzerklärung</Link>.</p>
                         </section>
 
-                        <section id="duties" className="bg-white rounded-3xl p-10 border border-slate-200 shadow-sm relative scroll-mt-24">
-                            <div className="inline-flex p-3 bg-slate-100 text-slate-600 rounded-xl mb-6"><CheckCircle size={24} /></div>
-                            <h2 className="text-2xl font-bold text-slate-800 mb-6">§5 Pflichten des Nutzers</h2>
-                            <p className="leading-relaxed text-slate-600 mb-4">Der Nutzer sichert zu, dass er berechtigt ist, die hochgeladenen Dokumente (Schülerarbeiten) im Rahmen der KI-gestützten Analyse zu verarbeiten. Er holt notwendige Einwilligungen gemäß den Vorgaben seiner Bildungseinrichtung bzw. des geltenden Schulrechts selbstständig ein.</p>
-                            <p className="leading-relaxed text-slate-600">Eine missbräuchliche Nutzung der Plattform (z.B. automatisierte Massenabfragen per Bot, Reverse-Engineering der API) ist untersagt und führt zur Sperrung des Kontos.</p>
+                        <section id="duties" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                            <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><CheckCircle size={24} /></div>
+                            <h2 className="text-2xl font-bold text-foreground mb-6">§5 Pflichten des Nutzers</h2>
+                            <p className="leading-relaxed text-muted-foreground mb-4">Der Nutzer sichert zu, dass er berechtigt ist, die hochgeladenen Dokumente (Schülerarbeiten) im Rahmen der KI-gestützten Analyse zu verarbeiten. Er holt notwendige Einwilligungen gemäß den Vorgaben seiner Bildungseinrichtung bzw. des geltenden Schulrechts selbstständig ein.</p>
+                            <p className="leading-relaxed text-muted-foreground">Eine missbräuchliche Nutzung der Plattform (z.B. automatisierte Massenabfragen per Bot, Reverse-Engineering der API) ist untersagt und führt zur Sperrung des Kontos.</p>
                         </section>
 
-                        <section id="revocation" className="bg-white rounded-3xl p-10 border border-slate-200 shadow-sm relative scroll-mt-24">
-                            <h2 className="text-2xl font-bold text-slate-800 mb-6">§6 Widerrufsrecht</h2>
-                            <p className="leading-relaxed text-slate-600">Nutzer, die als Verbraucher handeln, haben grundsätzlich ein Widerrufsrecht für den Kauf von Credits. Dieses Recht erlischt jedoch vorzeitig, sobald der Nutzer nach dem Kauf aktiv eine KI-Analyse startet und damit in die unmittelbare Ausführung der Dienstleistung einwilligt.</p>
+                        <section id="revocation" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                            <h2 className="text-2xl font-bold text-foreground mb-6">§6 Widerrufsrecht</h2>
+                            <p className="leading-relaxed text-muted-foreground">Nutzer, die als Verbraucher handeln, haben grundsätzlich ein Widerrufsrecht für den Kauf von Credits. Dieses Recht erlischt jedoch vorzeitig, sobald der Nutzer nach dem Kauf aktiv eine KI-Analyse startet und damit in die unmittelbare Ausführung der Dienstleistung einwilligt.</p>
                         </section>
 
-                        <section id="final" className="bg-white rounded-3xl p-10 border border-slate-200 shadow-sm relative scroll-mt-24">
-                            <h2 className="text-2xl font-bold text-slate-800 mb-6">§7 Schlussbestimmungen</h2>
-                            <p className="leading-relaxed text-slate-600 mb-4">Es gilt das Recht der Bundesrepublik Deutschland.</p>
-                            <p className="leading-relaxed text-slate-600">Sollten einzelne Bestimmungen dieser AGB unwirksam sein, bleibt der Vertrag im Übrigen wirksam. An die Stelle der unwirksamen Bestimmung treten die gesetzlichen Vorschriften.</p>
+                        <section id="final" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                            <h2 className="text-2xl font-bold text-foreground mb-6">§7 Schlussbestimmungen</h2>
+                            <p className="leading-relaxed text-muted-foreground mb-4">Es gilt das Recht der Bundesrepublik Deutschland.</p>
+                            <p className="leading-relaxed text-muted-foreground">Sollten einzelne Bestimmungen dieser AGB unwirksam sein, bleibt der Vertrag im Übrigen wirksam. An die Stelle der unwirksamen Bestimmung treten die gesetzlichen Vorschriften.</p>
                         </section>
                     </div>
                 </main>

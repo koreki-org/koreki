@@ -94,6 +94,10 @@ bg-success, text-success, text-success-foreground
 border-border
 ```
 
+**Accent Tokens (Marketing Pages)**
+- `--accent-1` bis `--accent-4` (sowie `-foreground` Varianten)
+- **Wichtig:** Diese Tokens dienen *ausschließlich* zur rein visuellen Unterscheidung gleichwertiger Karten oder Optionen (z. B. auf Marketing-Seiten). Sie haben im Gegensatz zu `--success` oder `--warning` bewusst **keine** semantische oder inhaltliche Bedeutung. Versuch niemals, sie konzeptionell zuzuordnen (z.B. "Accent-1 ist immer Cloud").
+
 ### Typografie (Branding & UI)
 - **font-outfit**: Standard für Branding, Überschriften und UI-Elemente (Korrektur-Modus).
 - **font-inter / font-sans**: Standard für Fließtext und Datentabellen.

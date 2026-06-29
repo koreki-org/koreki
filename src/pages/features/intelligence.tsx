@@ -34,11 +34,11 @@ export default function IntelligenceFeature() {
                         <Badge variant="light" className="mb-4">
                             Pillar: Intelligenz
                         </Badge>
-                        <h1 className="text-6xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9]">
+                        <h1 className="text-6xl md:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
                             KI-Parameter-Center. <br />
                             <span className="text-gradient">Volle Kontrolle.</span>
                         </h1>
-                        <p className="text-xl text-slate-500 font-medium leading-relaxed max-w-xl mx-auto lg:ml-0">
+                        <p className="text-xl text-muted-foreground font-medium leading-relaxed max-w-xl mx-auto lg:ml-0">
                             Steuern Sie die Rechenleistung und das Verhalten der künstlichen Intelligenz nach Ihren eigenen Vorgaben. Passen Sie Parameter wie Temperatur, Top-P und die LLM-Modellauswahl flexibel an Ihre Anforderungen an.
                         </p>
                     </div>
@@ -53,7 +53,7 @@ export default function IntelligenceFeature() {
                                 <img 
                                     src="/screenshots/4d_koreki_ai-parameter_center.png" 
                                     alt="Koreki AI-Parameter-Center Interface"
-                                    className="w-full h-auto rounded-xl shadow-md border border-slate-200"
+                                    className="w-full h-auto rounded-xl shadow-md border border-border"
                                 />
                             </div>
                         </div>
@@ -61,15 +61,15 @@ export default function IntelligenceFeature() {
                 </section>
 
                 {/* Highlight Section */}
-                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-slate-50/50 border-y border-slate-200/50 relative">
+                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-muted/50 border-y border-border/50 relative">
                     <div className="max-w-7xl mx-auto">
                         <div className="glass-morphism p-6 md:p-card-padding rounded-hero border border-white bg-white/60 shadow-xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
                                 <Brain size={160} />
                             </div>
                             <div className="max-w-2xl relative z-10">
-                                <h2 className="text-4xl font-black mb-6 tracking-tight text-slate-900">Das AI-Parameter-Center</h2>
-                                <p className="text-lg text-slate-500 font-medium mb-10 leading-relaxed">
+                                <h2 className="text-4xl font-black mb-6 tracking-tight text-foreground">Das AI-Parameter-Center</h2>
+                                <p className="text-lg text-muted-foreground font-medium mb-10 leading-relaxed">
                                     Konfigurieren Sie die KI exakt für Ihre spezifische Aufgabe. Nutzen Sie moderne Cloud-Modelle oder betreiben Sie Koreki komplett lokal.
                                 </p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -79,7 +79,7 @@ export default function IntelligenceFeature() {
                                         { t: 'Custom System-Prompts für maßgeschneiderte Korrekturen', i: CheckCircle },
                                         { t: 'Vollständiger Datenschutz durch lokale Ausführung', i: CheckCircle }
                                     ].map((f, i) => (
-                                        <div key={i} className="flex items-center gap-4 text-sm font-black text-slate-700">
+                                        <div key={i} className="flex items-center gap-4 text-sm font-black text-foreground">
                                             <div className="bg-primary/10 text-primary p-2 rounded-lg">
                                                 <f.i size={20} />
                                             </div>

@@ -32,7 +32,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({ src, alt, onClose 
     // Render into Portal
     return createPortal(
         <div 
-            className="fixed inset-0 z-[9999] bg-slate-900/90 backdrop-blur-2xl flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300 cursor-zoom-out"
+            className="fixed inset-0 z-[9999] bg-foreground text-background/90 backdrop-blur-2xl flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300 cursor-zoom-out"
             onClick={onClose}
         >
             <div 
@@ -49,7 +49,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({ src, alt, onClose 
                     {/* Industrial Close Button */}
                     <button 
                         onClick={onClose}
-                        className="absolute -top-4 -right-4 md:-top-8 md:-right-8 bg-white text-slate-900 p-3 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 z-50 group/close"
+                        className="absolute -top-4 -right-4 md:-top-8 md:-right-8 bg-white text-foreground p-3 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 z-50 group/close"
                         aria-label="Schließen"
                     >
                         <X size={24} className="group-hover/close:rotate-90 transition-transform duration-300" />

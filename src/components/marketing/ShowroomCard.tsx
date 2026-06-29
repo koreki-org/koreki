@@ -44,17 +44,17 @@ export const ShowroomCard: React.FC<ShowroomCardProps> = ({
                             {icon}
                         </div>
                         {badge && (
-                            <Badge variant="glass" className="text-slate-500 bg-white/40">
+                            <Badge variant="glass" className="text-muted-foreground bg-white/40">
                                 {badge}
                             </Badge>
                         )}
                     </div>
 
-                    <h3 className="text-3xl md:text-4xl font-black text-slate-900 mb-6 tracking-tight leading-tight">
+                    <h3 className="text-3xl md:text-4xl font-black text-foreground mb-6 tracking-tight leading-tight">
                         {title}
                     </h3>
                     
-                    <p className="text-lg text-slate-500 font-medium leading-relaxed mb-10 max-w-lg">
+                    <p className="text-lg text-muted-foreground font-medium leading-relaxed mb-10 max-w-lg">
                         {description}
                     </p>
 
@@ -75,7 +75,7 @@ export const ShowroomCard: React.FC<ShowroomCardProps> = ({
                         }}
                     >
                         {/* Shadow Blob for the Visual */}
-                        <div className="absolute inset-0 bg-slate-900/5 blur-[60px] rounded-full scale-75 -translate-y-4" />
+                        <div className="absolute inset-0 bg-foreground text-background/5 blur-[60px] rounded-full scale-75 -translate-y-4" />
                         <div className="relative">
                             {visual}
                         </div>
