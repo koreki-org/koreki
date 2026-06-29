@@ -207,7 +207,7 @@ export default function DesktopSetup() {
                     <div className="animate-fade-up delay-100">
                         <div className="text-left mb-6">
                             <h2 className="text-xl font-black text-foreground mb-2 tracking-tight">Cloud-API Einrichtungs-Guide</h2>
-                            <div className="w-12 h-1 bg-orange-400 rounded-full" />
+                            <div className="w-12 h-1 bg-accent-1 rounded-full" />
                         </div>
                         <div className="grid grid-cols-1 gap-4">
                             {mistralPhases.map((phase, idx) => (
