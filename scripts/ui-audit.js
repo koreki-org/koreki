@@ -13,7 +13,6 @@ const validExtensions = ['.ts', '.tsx', '.js', '.jsx'];
 const excludedPages = [
     'src/pages/app.tsx',
     'src/pages/admin.tsx',
-    'src/pages/org-admin.tsx',
     'src/pages/_app.tsx',
     'src/pages/desktop.tsx',
     'src/pages/desktop-setup.tsx'
@@ -21,52 +20,7 @@ const excludedPages = [
 
 // List of app files that have been fully migrated to design tokens and must pass all checks
 // List of app files in the grace period (not yet migrated to design tokens, warnings only)
-const gracePeriodFiles = [
-
-    'src/components/admin/CostOverview.tsx',
-    'src/components/batch/parts/AnonymizeModal.tsx',
-    'src/components/batch/BatchItemDoneView.tsx',
-    'src/components/batch/ExportToolbar.tsx',
-    'src/components/dashboard/DashboardModals.tsx',
-    'src/components/layout/AdminHeader.tsx',
-    'src/components/marketing/BentoGrid.tsx',
-    'src/components/marketing/FeatureHero.tsx',
-    'src/components/marketing/FeatureIconGrid.tsx',
-    'src/components/marketing/FeaturePillar.tsx',
-    'src/components/marketing/FeatureSpotlight.tsx',
-    'src/components/marketing/FeatureSubNav.tsx',
-    'src/components/marketing/ImageLightbox.tsx',
-    'src/components/marketing/MarketingModules.tsx',
-    'src/components/marketing/ModelProfiles.tsx',
-    'src/components/marketing/PerformanceSection.tsx',
-    'src/components/marketing/ShowroomCard.tsx',
-    'src/components/marketing/WorkflowVisual.tsx',
-    'src/components/org/OrgMemberTable.tsx',
-    'src/components/org/OrgModals.tsx',
-    'src/components/org/OrgStats.tsx',
-    'src/components/settings/AIProviderSection.tsx',
-    'src/components/settings/ProfileModules.tsx',
-    'src/components/settings/SettingsSections.tsx',
-    'src/components/ui/Button.tsx',
-    'src/components/ui/Card.tsx',
-    'src/components/ui/Checkbox.tsx',
-    'src/components/ui/HighlightableTextArea.tsx',
-    'src/components/ui/Input.tsx',
-    'src/components/ui/Textarea.tsx',
-    'src/components/Logo.tsx',
-    'src/components/ModelTypeModal.tsx',
-    'src/components/PDFTypeModal.tsx',
-    'src/components/UploadGrid.tsx',
-    // Excluded pages & App compliance pages
-    'src/pages/app.tsx',
-    'src/pages/admin.tsx',
-    'src/pages/org-admin.tsx',
-    'src/pages/_app.tsx',
-    'src/pages/app/compliance/agb.tsx',
-    'src/pages/app/compliance/avv.tsx',
-    'src/pages/app/compliance/manual.tsx',
-    'src/pages/app/compliance/tom.tsx'
-];
+const gracePeriodFiles = [];
 
 // 21 Tailwind Color Families
 const colorFamilies = 'slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose';
@@ -226,6 +180,9 @@ if (totalViolations > 0) {
     console.log('\x1b[32mÃ¢Å“â€¦ UI-Audit successful. All elements correspond to the Koreki Style Guide!\x1b[0m');
     process.exit(0);
 }
+
+
+
 
 
 

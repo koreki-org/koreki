@@ -140,30 +140,30 @@ export default function OrgAdminDashboard() {
                             {/* Info Card 3: Rechtliches & AVV */}
                             <Card className="bg-card rounded-3xl p-8 border-none shadow-sm md:col-span-2">
                                 <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
-                                    <Shield size={20} className="text-blue-600" />
+                                    <Shield size={20} className="text-primary" />
                                     Rechtssicherheit & AVV
                                 </h3>
-                                <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-blue-50/50 border border-blue-100">
+                                <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-2xl bg-primary/5 border border-primary/20">
                                     <div className="items-start gap-4 flex">
                                         <div className="w-12 h-12 rounded-xl bg-white shadow-sm flex items-center justify-center shrink-0">
-                                            <Shield size={24} className="text-blue-600" />
+                                            <Shield size={24} className="text-primary" />
                                         </div>
                                         <div>
-                                            <h4 className="font-bold text-slate-900 mb-1">Auftragsverarbeitungsvertrag (AVV)</h4>
-                                            <p className="text-xs text-slate-500 leading-relaxed max-w-[450px]">
+                                            <h4 className="font-bold text-foreground mb-1">Auftragsverarbeitungsvertrag (AVV)</h4>
+                                            <p className="text-xs text-muted-foreground leading-relaxed max-w-[450px]">
                                                 Ihr Institut hat dem AVV (Art. 28 DSGVO) am {workspace?.createdAt ? new Date(workspace.createdAt).toLocaleDateString() : '—'} digital zugestimmt. 
                                                 Dieses Dokument ist die Rechtsgrundlage für die Nutzung von Koreki in Ihrer Schule.
                                             </p>
                                             
                                             {workspace?.avvAccepted && (
-                                                <div className="mt-3 flex items-center gap-2 text-xs font-bold text-emerald-600 uppercase tracking-wider">
+                                                <div className="mt-3 flex items-center gap-2 text-xs font-bold text-success uppercase tracking-wider">
                                                     <CheckCircle size={14} /> Audit-Log Status: Verifiziert
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                     <Button 
-                                        className="shrink-0 bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 rounded-2xl font-black gap-2 shadow-lg shadow-blue-500/20"
+                                        className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 rounded-2xl font-black gap-2 shadow-lg shadow-primary/20"
                                         onClick={() => router.push('/app/compliance/avv')}
                                     >
                                         Anzeigen & Drucken <Eye size={20} />

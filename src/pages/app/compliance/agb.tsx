@@ -95,10 +95,10 @@ export default function AGBPage({ content, version }: AGBPageProps) {
                     
                     <h1 className="text-4xl md:text-5xl font-outfit font-extrabold text-foreground mb-8 tracking-tight leading-[1.1]">
                         Nutzungsbedingungen <br /> 
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-600">für die Zukunft der Korrektur.</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/80">für die Zukunft der Korrektur.</span>
                     </h1>
 
-                    <div className="bg-card rounded-3xl p-10 md:p-16 shadow-xl shadow-slate-200/50 border border-border prose prose-slate max-w-none prose-headings:font-outfit prose-headings:font-extrabold prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-p:text-muted-foreground prose-li:text-muted-foreground print-container">
+                    <div className="bg-card rounded-3xl p-10 md:p-16 shadow-xl shadow-border/50 border border-border prose prose-slate max-w-none prose-headings:font-outfit prose-headings:font-extrabold prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-p:text-muted-foreground prose-li:text-muted-foreground print-container">
                         <div className="mb-10 p-6 bg-muted rounded-2xl border border-border text-xs flex items-center gap-3 no-print">
                             <Lock size={20} className="text-muted-foreground" />
                             <p className="m-0 leading-relaxed font-medium">
@@ -131,17 +131,17 @@ export default function AGBPage({ content, version }: AGBPageProps) {
                         </div>
 
                         {/* Hidden print footer */}
-                        <div className="hidden print:block mt-20 pt-10 border-t border-border text-[9pt] text-slate-500">
+                        <div className="hidden print:block mt-20 pt-10 border-t border-border text-[9pt] text-muted-foreground">
                             Gedruckt am {new Date().toLocaleDateString('de-DE')} | Koreki AGB Dokument | Version {version}
                         </div>
                     </div>
                 </div>
             </main>
 
-            <footer className="bg-slate-900 text-white py-12 md:py-20 mt-20 text-center no-print">
+            <footer className="bg-foreground text-white py-12 md:py-20 mt-20 text-center no-print">
                 <div className="max-w-4xl mx-auto px-6">
                     <p className="text-muted-foreground text-sm mb-4">Professionelle Nutzungsbedingungen für Koreki.</p>
-                    <p className="text-xs text-slate-500 uppercase tracking-widest font-bold">
+                    <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
                         &copy; {new Date().getFullYear()} Max Mustermann UG (haftungsbeschränkt) - Koreki<span className="text-primary">.</span> Alle Rechte vorbehalten.
                     </p>
                 </div>
