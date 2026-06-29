@@ -1,4 +1,4 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 
 const targetDirs = [
@@ -54,10 +54,10 @@ const marketingChecks = [
     }
 ];
 
-// App-specific check for any hardcoded brand/neutral colors (excluding semantic statuses like red/emerald/amber)
-const appColorCheck = {
+// Global check for any hardcoded brand/neutral colors (excluding semantic statuses like red/emerald/amber)
+const hardcodedColorCheck = {
     regex: new RegExp(`(?:bg|text|border|ring|shadow|from|to|hover:bg|hover:text|hover:border|hover:ring|focus:bg|focus:text|focus:border|focus:ring)-(${brandAndNeutralColors})-\\d+`, 'g'),
-    message: 'Ã°Å¸Å¡Â¨ Hardcodierte Farbe aus einer Tailwind-Farbfamilie gefunden. Bitte nutze systemische Design-Tokens (bg-primary, text-muted-foreground, border-border etc.) gemÃƒÂ¤ÃƒÅ¸ Style Guide.'
+    message: 'Ã°Å¸Å¡Â¨ Hardcodierte Farbe aus einer Tailwind-Farbfamilie gefunden. Bitte nutze systemische Design-Tokens (bg-primary, text-muted-foreground, border-border, accent-1 etc.) gemÃƒÂ¤ÃƒÅ¸ Style Guide.'
 };
 
 // Helper to recursively walk a directory
@@ -112,7 +112,8 @@ for (const dir of targetDirs) {
             isAppCompliance
         );
 
-        const isGracePeriod = isAppFile && gracePeriodFiles.includes(relPath);
+        // Apply grace period to both app files and marketing files
+        const isGracePeriod = gracePeriodFiles.includes(relPath);
 
         const content = fs.readFileSync(file, 'utf-8');
         const lines = content.split('\n');
@@ -152,17 +153,15 @@ for (const dir of targetDirs) {
                 }
             }
 
-            // 3. App-specific hardcoded color check
-            if (isAppFile) {
-                appColorCheck.regex.lastIndex = 0;
-                if (appColorCheck.regex.test(line)) {
-                    if (isGracePeriod) {
-                        console.warn(`\x1b[33m[Grace Period Warning] ${appColorCheck.message}\x1b[0m\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
-                        totalWarnings++;
-                    } else {
-                        console.error(`\x1b[31m${appColorCheck.message}\x1b[0m\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
-                        totalViolations++;
-                    }
+            // 3. Global hardcoded color check (now applies to all files: App + Marketing)
+            hardcodedColorCheck.regex.lastIndex = 0;
+            if (hardcodedColorCheck.regex.test(line)) {
+                if (isGracePeriod) {
+                    console.warn(`\x1b[33m[Grace Period Warning] ${hardcodedColorCheck.message}\x1b[0m\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
+                    totalWarnings++;
+                } else {
+                    console.error(`\x1b[31m${hardcodedColorCheck.message}\x1b[0m\n   Datei: ${relPath}:${index + 1}\n   Zeile: ${line.trim()}\n`);
+                    totalViolations++;
                 }
             }
         });
