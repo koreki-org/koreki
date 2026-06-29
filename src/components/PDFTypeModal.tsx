@@ -64,7 +64,7 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                         className="group flex h-auto flex-col items-center text-center p-5 sm:p-6 bg-white border-2 border-border rounded-2xl hover:border-primary hover:bg-primary/[0.02] transition-all duration-200"
                         onClick={() => onSelect('typed', applyToAll)}
                     >
-                        <div className="w-14 h-14 bg-sky-50 text-sky-700 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                        <div className="w-14 h-14 bg-primary/5 text-primary rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
                             <FileText size={24} />
                         </div>
                         <span className="font-semibold text-foreground">Digitaler Text / PDF</span>
@@ -76,7 +76,7 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                                 Kostenlos (0 Credits)
                             </div>
                         ) : (
-                            <div className="mt-4 px-3 py-1 bg-sky-100 text-sky-700 text-xs font-bold rounded-full">
+                            <div className="mt-4 px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">
                                 1 Credit / Seite
                             </div>
                         )}
@@ -99,7 +99,7 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                                 Kostenlos (0 Credits)
                             </div>
                         ) : (
-                            <div className="mt-4 px-3 py-1 bg-orange-50 text-orange-700 text-xs font-bold rounded-full">
+                            <div className="mt-4 px-3 py-1 bg-warning/10 text-warning text-xs font-bold rounded-full">
                                 2 Credits / Seite
                             </div>
                         )}
@@ -120,9 +120,9 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                         <span className="text-sm text-muted-foreground">Diese Wahl für alle Dokumente in diesem Upload anwenden</span>
                     </label>
                     {fileName.toLowerCase().endsWith('.txt') && (
-                        <div className="mt-4 p-3 bg-sky-50 border border-sky-100 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-1">
-                            <FileText size={16} className="text-sky-600 mt-0.5 shrink-0" />
-                            <p className="text-sm text-sky-800 leading-relaxed font-medium">
+                        <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-1">
+                            <FileText size={16} className="text-primary mt-0.5 shrink-0" />
+                            <p className="text-sm text-primary leading-relaxed font-medium">
                                 💡 <strong className="font-bold">Hinweis:</strong> Dies ist eine <strong className="font-bold">.txt-Datei</strong>. Sie liegt bereits als digitaler Text vor und benötigt keinen Scan-Pfad.
                             </p>
                         </div>
