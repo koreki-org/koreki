@@ -52,7 +52,7 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
                 {onToggleFocus && (
                     <button
                         onClick={() => onToggleFocus(focusedPanel === 'left' ? null : 'left')}
-                        className="hidden md:inline-flex p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-muted-foreground hover:text-primary transition-all duration-200"
+                        className="hidden md:inline-flex p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-primary transition-all duration-200"
                         title={focusedPanel === 'left' ? "Fokus beenden" : "Panel maximieren"}
                     >
                         {focusedPanel === 'left' ? <Minimize2 size={13} /> : <Maximize2 size={13} />}

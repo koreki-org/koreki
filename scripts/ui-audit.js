@@ -29,12 +29,7 @@ const gracePeriodFiles = [
     'src/components/admin/WorkspaceManager.tsx',
     'src/components/avv-upload/TeacherViewInfo.tsx',
     'src/components/batch/parts/AnonymizeModal.tsx',
-    'src/components/batch/parts/BatchItemStatusSummary.tsx',
-    'src/components/batch/parts/BatchSolutionPanel.tsx',
-    'src/components/batch/BatchFileListItem.tsx',
-    'src/components/batch/BatchHelpContent.tsx',
     'src/components/batch/BatchItemDoneView.tsx',
-    'src/components/batch/CorrectionAnalytics.tsx',
     'src/components/batch/ExportToolbar.tsx',
     'src/components/dashboard/DashboardModals.tsx',
     'src/components/layout/AdminHeader.tsx',
@@ -238,6 +233,7 @@ if (totalViolations > 0) {
     console.log('\x1b[32mÃ¢Å“â€¦ UI-Audit successful. All elements correspond to the Koreki Style Guide!\x1b[0m');
     process.exit(0);
 }
+
 
 
 

@@ -72,9 +72,9 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
     return (
         <div className={cn(
             "group rounded-xl border transition-all duration-300",
-            idx === currentProcessingIndex ? "bg-primary/5 border-primary/20 ring-2 ring-primary/10 shadow-md" : (isDone ? "bg-emerald-50/10 border-emerald-100 hover:border-emerald-200 hover:shadow-md" : "bg-background/80 border-border hover:border-primary/20 hover:shadow-md"),
+            idx === currentProcessingIndex ? "bg-primary/5 border-primary/20 ring-2 ring-primary/10 shadow-md" : (isDone ? "bg-success/5 border-success/20 hover:border-success/30 hover:shadow-md" : "bg-background/80 border-border hover:border-primary/20 hover:shadow-md"),
             isExpanded ? "shadow-lg bg-background" : "",
-            (itemHasWarnings || (warnings && warnings.length > 0)) && "border-orange-300 bg-orange-50/20 ring-1 ring-orange-100 shadow-sm"
+            (itemHasWarnings || (warnings && warnings.length > 0)) && "border-warning/30 bg-warning/10 ring-1 ring-warning/20 shadow-sm"
         )}>
             {/* ITEM HEADER */}
             <div className="flex items-center justify-between p-2 sm:p-3 gap-2 sm:gap-4 relative">
@@ -84,10 +84,10 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                             <Loader2 size={16} className="animate-spin text-primary" />
                         ) : isDone ? (
                             /* Industrial Success State */
-                            <CheckCircle size={20} className="text-emerald-500 shrink-0" />
+                            <CheckCircle size={20} className="text-success shrink-0" />
                         ) : item.status === 'pending' ? (
                             loading && item.documentType === 'scanned' && !item.ocrDone ? (
-                                <Loader2 size={14} className="animate-spin text-slate-300" />
+                                <Loader2 size={14} className="animate-spin text-muted-foreground" />
                             ) : (
                                 <Checkbox 
                                     checked={item.selected !== false} 
@@ -104,9 +104,9 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 max-w-full overflow-hidden">
                         {item.status === 'error' && <AlertCircle size={20} className="text-destructive shrink-0 animate-pulse" />}
                         <div className="flex flex-col min-w-0">
-                            <span className="font-bold text-slate-900 truncate tracking-tight text-sm sm:text-base font-outfit">{item.name}</span>
+                            <span className="font-bold text-foreground truncate tracking-tight text-sm sm:text-base font-outfit">{item.name}</span>
                             {isProcessing && streamedText && (
-                                <div className="text-[10px] text-primary font-mono truncate max-w-[200px] animate-pulse">
+                                <div className="text-xxs text-primary font-mono truncate max-w-[200px] animate-pulse">
                                     KI schreibt: {streamedText.substring(streamedText.length - 40)}
                                 </div>
                             )}
@@ -121,7 +121,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                                 variant="outline" 
                                 size="sm" 
                                 onClick={(e) => { e.stopPropagation(); onProcessSingleFile(idx); }}
-                                className="h-7 px-3 bg-red-50 text-red-600 border-red-100 hover:bg-red-600 hover:text-white transition-all rounded-full flex items-center gap-2 font-bold text-[10px] uppercase tracking-wider"
+                                className="h-7 px-3 bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive hover:text-white transition-all rounded-full flex items-center gap-2 font-bold text-xxs uppercase tracking-wider"
                             >
                                 <RotateCcw size={12} />
                                 Korrektur neu starten
@@ -137,7 +137,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                                 variant="outline" 
                                 size="sm" 
                                 onClick={(e) => { e.stopPropagation(); onProcessSingleOCR(idx); }}
-                                className="h-7 px-3 bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-600 hover:text-white transition-all rounded-full flex items-center gap-2 font-bold text-[10px] uppercase tracking-wider"
+                                className="h-7 px-3 bg-primary/10 text-primary border-primary/20 hover:bg-primary hover:text-white transition-all rounded-full flex items-center gap-2 font-bold text-xxs uppercase tracking-wider"
                             >
                                 <RotateCcw size={12} />
                                 OCR neu starten
@@ -149,20 +149,20 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                 <div className="flex items-center gap-2 shrink-0">
                     {!isProcessing && item.status === 'pending' && (
                         <>
-                            {item.pageCount && item.pageCount > 1 && <Button variant="outline" size="icon" onClick={(e) => { e.stopPropagation(); onSplit(idx); }} className="h-8 w-8 text-sky-600 border-sky-100 bg-sky-50 hover:bg-sky-600 hover:text-white transition-all"><Scissors size={14}/></Button>}
+                            {item.pageCount && item.pageCount > 1 && <Button variant="outline" size="icon" onClick={(e) => { e.stopPropagation(); onSplit(idx); }} className="h-8 w-8 text-primary border-primary/20 bg-primary/10 hover:bg-primary hover:text-white transition-all"><Scissors size={14}/></Button>}
                             {item.documentType === 'scanned' && <Button variant="outline" size="icon" onClick={(e) => { e.stopPropagation(); onRedact(idx); }} className="h-8 w-8 text-primary border-primary/20 bg-primary/5 hover:bg-primary hover:text-white transition-all rounded-lg"><Highlighter size={14}/></Button>}
                         </>
                     )}
                     {isDone && (
                         <div className="flex items-center gap-2">
                             {reviewRecommended && (
-                                <Badge className="hidden sm:flex bg-warning/10 text-warning border-warning/20 h-7 px-3 text-[10px] font-black uppercase tracking-tight gap-1.5 shadow-sm animate-pulse rounded-lg">
+                                <Badge className="hidden sm:flex bg-warning/10 text-warning border-warning/20 h-7 px-3 text-xxs font-black uppercase tracking-tight gap-1.5 shadow-sm animate-pulse rounded-lg">
                                     <AlertTriangle size={12} className="text-warning" /> Review
                                 </Badge>
                             )}
                             <div className="flex items-center gap-3">
-                                {scorePercentage !== null && <span className="text-[10px] sm:text-xs font-black text-muted-foreground">{scorePercentage}%</span>}
-                                <Badge className="bg-emerald-500 text-white h-7 px-3 text-xs font-black tracking-tight shadow-sm border-0 rounded-lg">{item.grade}</Badge>
+                                {scorePercentage !== null && <span className="text-xxs sm:text-xs font-black text-muted-foreground">{scorePercentage}%</span>}
+                                <Badge className="bg-success text-white h-7 px-3 text-xs font-black tracking-tight shadow-sm border-0 rounded-lg">{item.grade}</Badge>
                             </div>
                         </div>
                     )}
