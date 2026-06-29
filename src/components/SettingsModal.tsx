@@ -51,8 +51,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="relative w-full max-w-[550px] bg-white rounded-hero shadow-glass border border-border max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 text-foreground">
                 {/* Header - Fixed */}
                 <div className="flex justify-between items-center p-8 pb-4">
-                    <h2 className="text-2xl font-bold tracking-tight text-slate-900">Einstellungen</h2>
-                    <Button variant="ghost" size="icon" className="text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors" onClick={onClose}>
+                    <h2 className="text-2xl font-bold tracking-tight text-foreground">Einstellungen</h2>
+                    <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors" onClick={onClose}>
                         <X size={24} />
                     </Button>
                 </div>
@@ -96,8 +96,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* Footer - Fixed */}
-                <div className="flex justify-between items-center p-8 pt-4 border-t border-slate-50 bg-white rounded-b-[32px]">
-                    <span className="text-xs text-slate-400 font-medium font-sans">
+                <div className="flex justify-between items-center p-8 pt-4 border-t border-border/50 bg-white rounded-b-hero">
+                    <span className="text-xs text-muted-foreground font-medium font-sans">
                         Koreki<span className="text-primary">.</span> v{packageJson.version}
                     </span>
                     <Button onClick={onClose} className="px-8 font-bold shadow-lg shadow-primary/20 rounded-xl h-12">

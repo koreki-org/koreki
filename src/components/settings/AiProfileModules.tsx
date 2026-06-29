@@ -357,7 +357,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             : "text-muted-foreground hover:text-foreground"
                     )}
                 >
-                    <Eye size={14} className={activeTab === 'vision' ? "text-emerald-500" : "text-muted-foreground"} />
+                    <Eye size={14} className={activeTab === 'vision' ? "text-success" : "text-muted-foreground"} />
                     Handschriften-OCR (Vision)
                 </button>
             </div>
