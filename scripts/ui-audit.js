@@ -14,7 +14,6 @@ const excludedPages = [
     'src/pages/app.tsx',
     'src/pages/admin.tsx',
     'src/pages/org-admin.tsx',
-    'src/pages/view.tsx',
     'src/pages/_app.tsx',
     'src/pages/desktop.tsx',
     'src/pages/desktop-setup.tsx'
@@ -24,10 +23,7 @@ const excludedPages = [
 // List of app files in the grace period (not yet migrated to design tokens, warnings only)
 const gracePeriodFiles = [
 
-    'src/components/admin/ComplianceAuditLog.tsx',
     'src/components/admin/CostOverview.tsx',
-    'src/components/admin/WorkspaceManager.tsx',
-    'src/components/avv-upload/TeacherViewInfo.tsx',
     'src/components/batch/parts/AnonymizeModal.tsx',
     'src/components/batch/BatchItemDoneView.tsx',
     'src/components/batch/ExportToolbar.tsx',
@@ -57,8 +53,6 @@ const gracePeriodFiles = [
     'src/components/ui/HighlightableTextArea.tsx',
     'src/components/ui/Input.tsx',
     'src/components/ui/Textarea.tsx',
-    'src/components/AiConfigurationContent.tsx',
-    'src/components/AiSetupModal.tsx',
     'src/components/Logo.tsx',
     'src/components/ModelTypeModal.tsx',
     'src/components/PDFTypeModal.tsx',
@@ -67,7 +61,6 @@ const gracePeriodFiles = [
     'src/pages/app.tsx',
     'src/pages/admin.tsx',
     'src/pages/org-admin.tsx',
-    'src/pages/view.tsx',
     'src/pages/_app.tsx',
     'src/pages/app/compliance/agb.tsx',
     'src/pages/app/compliance/avv.tsx',
@@ -233,6 +226,7 @@ if (totalViolations > 0) {
     console.log('\x1b[32mÃ¢Å“â€¦ UI-Audit successful. All elements correspond to the Koreki Style Guide!\x1b[0m');
     process.exit(0);
 }
+
 
 
 

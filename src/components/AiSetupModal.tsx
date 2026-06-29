@@ -22,12 +22,12 @@ const AiSetupModal: React.FC<AiSetupModalProps> = ({
 }) => {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300">
-            <div className="relative w-full max-w-lg bg-white rounded-hero shadow-glass border border-border max-h-[90vh] md:max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 text-foreground">
+            <div className="relative w-full max-w-lg bg-background rounded-hero shadow-glass border border-border max-h-[90vh] md:max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 text-foreground">
                 <Button 
                     variant="ghost"
                     size="icon"
                     onClick={onClose}
-                    className="absolute right-6 top-6 h-10 w-10 rounded-full text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors z-10 border-none shadow-none"
+                    className="absolute right-6 top-6 h-10 w-10 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10 border-none shadow-none"
                 >
                     <X size={20} />
                 </Button>
@@ -36,8 +36,8 @@ const AiSetupModal: React.FC<AiSetupModalProps> = ({
                     <div className="inline-flex p-3 bg-primary/10 rounded-2xl text-primary mb-2">
                         <Sparkles size={28} />
                     </div>
-                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">KI-Setup</h2>
-                    <p className="text-slate-500 text-sm font-medium px-4">
+                    <h2 className="text-2xl font-black text-foreground tracking-tight">KI-Setup</h2>
+                    <p className="text-muted-foreground text-sm font-medium px-4">
                         Wähle deine bevorzugte Infrastruktur für die Analyse und Korrektur.
                     </p>
                 </div>
@@ -51,7 +51,7 @@ const AiSetupModal: React.FC<AiSetupModalProps> = ({
                     />
                 </div>
 
-                <div className="mt-auto py-4 px-8 border-t border-slate-100 flex items-center justify-center gap-2 text-slate-400 shrink-0 bg-white">
+                <div className="mt-auto py-4 px-8 border-t border-border/50 flex items-center justify-center gap-2 text-muted-foreground shrink-0 bg-background">
                     <ShieldCheck size={14} />
                     <p className="text-xs font-bold italic">
                         {isDesktopTarget()

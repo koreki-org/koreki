@@ -25,7 +25,7 @@ export const TeacherViewInfo: React.FC<TeacherViewInfoProps> = ({ onLogout }) =>
 
             <Button
                 variant="outline"
-                className="w-full py-5 font-bold rounded-xl border-slate-200 text-sm"
+                className="w-full py-5 font-bold rounded-xl border-border text-sm"
                 onClick={onLogout}
             >
                 Abmelden

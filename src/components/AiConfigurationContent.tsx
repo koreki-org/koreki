@@ -42,7 +42,7 @@ const AiConfigurationContent: React.FC<AiConfigurationContentProps> = ({
     };
 
     const containerClasses = isInline 
-        ? "bg-slate-50 p-5 rounded-2xl border border-border animate-fade-in" 
+        ? "bg-muted/50 p-5 rounded-2xl border border-border animate-fade-in" 
         : "space-y-6 animate-fade-in";
 
     return (

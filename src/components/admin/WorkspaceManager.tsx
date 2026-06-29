@@ -88,7 +88,7 @@ const WorkspaceManager: React.FC<WorkspaceManagerProps> = ({
                                                     {ws.inviteCode}
                                                 </Badge>
                                             ) : (
-                                                <span className="text-[10px] text-muted-foreground/50 italic">Kein Code</span>
+                                                <span className="text-xxs text-muted-foreground/50 italic">Kein Code</span>
                                             )}
                                         </td>
                                         <td className="px-6 py-4 text-right">
