@@ -684,15 +684,15 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                 </div>
                             )}
 
-                            <div className="flex gap-2 overflow-x-auto pb-4 px-1 no-scrollbar">
+                            <div className="flex gap-2 overflow-x-auto pb-4 px-1 no-scrollbar scrollbar-hide">
                                 {groupNames.map(name => (
                                     <Button
                                         key={name}
                                         variant={activeGroupName === name ? "default" : "secondary"}
                                         onClick={() => setActiveGroupName(name)}
                                         className={cn(
-                                            "rounded-2xl px-6 py-2 h-auto text-xs font-bold transition-all shrink-0 border border-transparent",
-                                            activeGroupName === name ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105" : "bg-background text-muted-foreground hover:bg-muted border-border"
+                                            "rounded-xl px-4 py-2 h-9 text-xs font-bold transition-all shrink-0 border border-transparent gap-2",
+                                            activeGroupName === name ? "bg-primary text-primary-foreground shadow-md" : "bg-background text-muted-foreground hover:bg-muted border-border"
                                         )}
                                     >
                                         {name}
