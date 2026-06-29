@@ -27,9 +27,6 @@ const gracePeriodFiles = [
     'src/components/admin/ComplianceAuditLog.tsx',
     'src/components/admin/CostOverview.tsx',
     'src/components/admin/WorkspaceManager.tsx',
-    'src/components/avv-upload/StepDownload.tsx',
-    'src/components/avv-upload/StepSuccess.tsx',
-    'src/components/avv-upload/StepUpload.tsx',
     'src/components/avv-upload/TeacherViewInfo.tsx',
     'src/components/batch/parts/AnonymizeModal.tsx',
     'src/components/batch/parts/BatchItemStatusSummary.tsx',
@@ -37,7 +34,6 @@ const gracePeriodFiles = [
     'src/components/batch/parts/BatchTaskAnalysisCard.tsx',
     'src/components/batch/parts/MobileViewSelector.tsx',
     'src/components/batch/parts/SecondOpinionDrawer.tsx',
-    'src/components/batch/AnalyticsModal.tsx',
     'src/components/batch/BatchFileListItem.tsx',
     'src/components/batch/BatchHelpContent.tsx',
     'src/components/batch/BatchItemDoneView.tsx',
@@ -63,10 +59,8 @@ const gracePeriodFiles = [
     'src/components/org/OrgMemberTable.tsx',
     'src/components/org/OrgModals.tsx',
     'src/components/org/OrgStats.tsx',
-    'src/components/settings/AccountSection.tsx',
     'src/components/settings/AiProfileModules.tsx',
     'src/components/settings/AIProviderSection.tsx',
-    'src/components/settings/DangerZoneSection.tsx',
     'src/components/settings/ProfileModules.tsx',
     'src/components/settings/SettingsSections.tsx',
     'src/components/ui/Button.tsx',
@@ -76,17 +70,13 @@ const gracePeriodFiles = [
     'src/components/ui/Input.tsx',
     'src/components/ui/Textarea.tsx',
     'src/components/AiConfigurationContent.tsx',
-    'src/components/AiParamsModal.tsx',
     'src/components/AiSetupModal.tsx',
-    'src/components/AVVUploadModal.tsx',
     'src/components/BatchProcessor.tsx',
     'src/components/ConfirmationModal.tsx',
     'src/components/Logo.tsx',
     'src/components/ModelTypeModal.tsx',
     'src/components/PDFTypeModal.tsx',
-    'src/components/PromptSettingsModal.tsx',
     'src/components/SettingsModal.tsx',
-    'src/components/SkillsSettingsModal.tsx',
     'src/components/UploadGrid.tsx',
     // Excluded pages & App compliance pages
     'src/pages/app.tsx',
@@ -258,5 +248,6 @@ if (totalViolations > 0) {
     console.log('\x1b[32mÃ¢Å“â€¦ UI-Audit successful. All elements correspond to the Koreki Style Guide!\x1b[0m');
     process.exit(0);
 }
+
 
 

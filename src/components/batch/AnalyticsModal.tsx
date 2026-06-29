@@ -90,16 +90,16 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                             <BarChart3 size={24} />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-bold tracking-tight text-slate-900 font-outfit">Detaillierte Analyse</h2>
+                            <h2 className="text-2xl font-bold tracking-tight text-foreground font-outfit">Detaillierte Analyse</h2>
                             <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Statistische Auswertung der Korrektur</p>
                         </div>
                     </div>
                     
                     <div className="flex items-center gap-3">
                         {stats && (
-                            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-50/50 border border-slate-100 rounded-xl text-slate-500 animate-in fade-in slide-in-from-right-4 duration-700">
-                                <span className="text-[10px] font-bold uppercase tracking-tight opacity-70">Gesamt-Inferenz:</span>
-                                <span className="text-[11px] font-black text-slate-700">{(stats as any).totalInferenceDuration > 0 ? `${((stats as any).totalInferenceDuration / 1000).toFixed(1)}s` : '...'}</span>
+                            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 border border-border rounded-xl text-muted-foreground animate-in fade-in slide-in-from-right-4 duration-700">
+                                <span className="text-xxs font-bold uppercase tracking-tight opacity-70">Gesamt-Inferenz:</span>
+                                <span className="text-xs font-black text-foreground/80">{(stats as any).totalInferenceDuration > 0 ? `${((stats as any).totalInferenceDuration / 1000).toFixed(1)}s` : '...'}</span>
                             </div>
                         )}
 
@@ -108,12 +108,12 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                                 variant="outline" 
                                 size="sm" 
                                 onClick={handleExportPerformance}
-                                className="hidden sm:flex h-10 gap-2 px-3 bg-emerald-50/50 border-emerald-100 text-emerald-700 hover:bg-emerald-600 hover:text-white transition-all rounded-xl shadow-sm animate-in fade-in slide-in-from-right-4 duration-500"
+                                className="hidden sm:flex h-10 gap-2 px-3 bg-success/10 border-success/20 text-success hover:bg-success hover:text-white transition-all rounded-xl shadow-sm animate-in fade-in slide-in-from-right-4 duration-500"
                             >
                                 <Clock size={14} className="shrink-0" />
                                 <div className="flex flex-col items-start -space-y-0.5">
-                                    <span className="text-[10px] font-black uppercase tracking-tight leading-none text-left">Inferenz-Analyse</span>
-                                    <span className="text-[10px] font-bold opacity-80">Excel Download</span>
+                                    <span className="text-xxs font-black uppercase tracking-tight leading-none text-left">Inferenz-Analyse</span>
+                                    <span className="text-xxs font-bold opacity-80">Excel Download</span>
                                 </div>
                             </Button>
                         )}
@@ -122,7 +122,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                             variant="outline" 
                             onClick={handleExportPDF} 
                             disabled={isExporting || !stats}
-                            className="h-10 gap-2 rounded-xl border-slate-200 font-bold text-xs"
+                            className="h-10 gap-2 rounded-xl border-border font-bold text-xs"
                         >
                             {isExporting ? (
                                 <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-primary border-t-transparent" />
@@ -149,8 +149,8 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="mt-8 pt-6 border-t border-slate-100 text-center shrink-0">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">
+                <div className="mt-8 pt-6 border-t border-border text-center shrink-0">
+                    <p className="text-xxs text-muted-foreground font-bold uppercase tracking-[0.2em]">
                         Koreki Analytics Engine | Enterprise Grade
                     </p>
                 </div>

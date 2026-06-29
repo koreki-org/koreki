@@ -45,13 +45,13 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
                 )}
 
                 <div className="mb-6 flex flex-col items-center w-full">
-                    <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-inner ring-4 ring-blue-50/50">
+                    <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-4 shadow-inner ring-4 ring-primary/5">
                         <Shield size={32} />
                     </div>
-                    <h2 className="text-2xl font-black text-slate-900 tracking-tight mb-2">
+                    <h2 className="text-2xl font-black text-foreground tracking-tight mb-2">
                         {isOrganization ? 'Instituts-AVV' : 'Rechtssicherheit'}
                     </h2>
-                    <p className="text-slate-500 text-sm leading-relaxed max-w-[340px]">
+                    <p className="text-muted-foreground text-sm leading-relaxed max-w-[340px]">
                         {isOrganization 
                             ? `Für "${organizationName}" sind folgende Dokumente gesetzlich zwingend erforderlich:`
                             : 'Für den vollen Funktionsumfang benötigen wir Ihre Zustimmung zu den Compliance-Dokumenten.'
@@ -61,10 +61,10 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
 
                 <div className="w-full flex flex-col gap-4 mb-8">
                     {/* Download Alert */}
-                    <div className="flex items-start gap-4 p-4 bg-slate-50 border border-slate-100 rounded-2xl text-[12px] text-slate-600 text-left">
-                        <AlertCircle size={20} className="text-blue-500 shrink-0 mt-0.5" />
+                    <div className="flex items-start gap-4 p-4 bg-muted border border-border rounded-2xl text-xs text-muted-foreground text-left">
+                        <AlertCircle size={20} className="text-primary shrink-0 mt-0.5" />
                         <div className="flex-1">
-                            <p className="font-bold text-slate-800 mb-1">Digitale Unterzeichnung</p>
+                            <p className="font-bold text-foreground mb-1">Digitale Unterzeichnung</p>
                             <p className="leading-relaxed mb-3">
                                 Lesen Sie die folgenden Dokumente und bestätigen Sie diese digital.
                             </p>
@@ -73,7 +73,7 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
                                     href="/app/compliance/avv" 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 text-blue-600 font-bold hover:underline group"
+                                    className="inline-flex items-center gap-1.5 text-primary font-bold hover:underline group"
                                 >
                                     <FileText size={14} />
                                     AVV-Muster lesen
@@ -83,7 +83,7 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
                                     href="/app/compliance/manual" 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 text-blue-600 font-bold hover:underline group"
+                                    className="inline-flex items-center gap-1.5 text-primary font-bold hover:underline group"
                                 >
                                     <FileText size={14} />
                                     Betriebsanleitung (Art. 13 AI Act) lesen
@@ -93,7 +93,7 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
                                     href="/app/compliance/tom" 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-1.5 text-blue-600 font-bold hover:underline group"
+                                    className="inline-flex items-center gap-1.5 text-primary font-bold hover:underline group"
                                 >
                                     <FileText size={14} />
                                     TOM (Sicherheitskatalog) einsehen
@@ -107,30 +107,30 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
                     <label 
                         className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all cursor-pointer ${
                             isAccepted 
-                                ? 'bg-blue-50/50 border-blue-600 shadow-sm' 
-                                : 'bg-white border-slate-100 hover:border-slate-200'
+                                ? 'bg-primary/5 border-primary shadow-sm' 
+                                : 'bg-white border-border hover:border-border'
                         }`}
                         onClick={() => handlers.toggleAccepted(!isAccepted)}
                     >
                         <div className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${
-                            isAccepted ? 'bg-blue-600 border-blue-600' : 'bg-white border-slate-300'
+                            isAccepted ? 'bg-primary border-primary' : 'bg-white border-border'
                         }`}>
                             {isAccepted && <CheckCircle size={16} className="text-white" />}
                         </div>
-                        <span className="flex-1 text-left text-xs font-bold text-slate-700 leading-snug">
+                        <span className="flex-1 text-left text-xs font-bold text-foreground/80 leading-snug">
                             Ich akzeptiere den AVV sowie die Betriebsanleitung und TOM in der aktuellen Version.
                         </span>
                     </label>
 
                     {error && (
-                        <p className="text-rose-600 text-[11px] font-bold mt-1 bg-rose-50 p-2 rounded-lg border border-rose-100">
+                        <p className="text-destructive text-xs font-bold mt-1 bg-destructive/10 p-2 rounded-lg border border-destructive/20">
                             ⚠️ {error}
                         </p>
                     )}
                 </div>
 
                 <Button 
-                    className="w-full py-7 text-lg font-black shadow-xl shadow-blue-500/20 gap-2 mb-2 rounded-2xl disabled:opacity-50 disabled:grayscale transition-all" 
+                    className="w-full py-7 text-lg font-black shadow-xl shadow-primary/20 gap-2 mb-2 rounded-2xl disabled:opacity-50 disabled:grayscale transition-all" 
                     disabled={!isAccepted || isProcessing}
                     onClick={handlers.executeConsent}
                 >
@@ -141,7 +141,7 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
                     )}
                 </Button>
                 
-                <p className="text-xxs text-slate-400 font-medium tracking-tighter">
+                <p className="text-xxs text-muted-foreground font-medium tracking-tighter">
                     Ihre Zustimmung wird kryptografisch (SHA-256) im Audit-Log archiviert.
                 </p>
             </div>
