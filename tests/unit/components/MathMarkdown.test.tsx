@@ -22,7 +22,7 @@ describe('MathMarkdown Component (Layer 1)', () => {
         render(<MathMarkdown content={content} />);
         
         const markdownContainer = screen.getByTestId('markdown');
-        expect(markdownContainer.innerHTML).toContain('bg-orange-100');
+        expect(markdownContainer.innerHTML).toContain('bg-warning/20');
         expect(markdownContainer.innerHTML).toContain('animate-pulse');
         expect(markdownContainer.innerHTML).toContain('Unsicher (?)');
         expect(markdownContainer.innerHTML).toContain('Wort(?)');
@@ -33,7 +33,7 @@ describe('MathMarkdown Component (Layer 1)', () => {
         render(<MathMarkdown content={content} />);
         
         const markdownContainer = screen.getByTestId('markdown');
-        expect(markdownContainer.innerHTML).toContain('bg-rose-50');
+        expect(markdownContainer.innerHTML).toContain('bg-destructive/10');
         expect(markdownContainer.innerHTML).toContain('&gt;r&lt;/span&gt;');
         expect(markdownContainer.innerHTML).toContain('&gt;f&lt;/span&gt;');
         expect(markdownContainer.innerHTML).toContain('&gt;FF&lt;/span&gt;');
@@ -45,7 +45,7 @@ describe('MathMarkdown Component (Layer 1)', () => {
         
         const markdownContainer = screen.getByTestId('markdown');
         
-        expect(markdownContainer.innerHTML).toContain('bg-rose-50');
+        expect(markdownContainer.innerHTML).toContain('bg-destructive/10');
         expect(markdownContainer.innerHTML).toContain('&gt;Orth&lt;/span&gt;');
         expect(markdownContainer.innerHTML).toContain('&gt;Sb&lt;/span&gt;');
         expect(markdownContainer.innerHTML).toContain('&gt;Tipp&lt;/span&gt;');
