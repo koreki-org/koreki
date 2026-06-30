@@ -36,9 +36,15 @@ graph TD
 ```
 
 ### Dateisystem-Persistenz (The Vault)
-Anstatt den flüchtigen `localStorage` des Browsers zu nutzen, sendet die Community Edition Experten-Prompts an eine dedizierte Server-API. Der `LocalProfileService` speichert diese als isolierte JSON-Dateien:
-* **Pfad**: `/data/prompts/profiles_[SHA256_HASH_OF_USER_ID].json`
-* **Isolierung**: Die Dateinamen basieren auf dem SHA-256 Hash der OIDC-Sub (UserID). Dies verhindert jegliche Path-Traversal-Angriffe und garantiert eine strikte Datentrennung zwischen Lehrern, da keine ungefilterten Nutzereingaben direkt im Dateisystem verwendet werden.
+Anstatt den flüchtigen `localStorage` des Browsers zu nutzen, speichert die Community Edition kritische Daten als isolierte JSON-Dateien in einem dedizierten "Vault":
+
+1. **User-Granulare Daten (Prompts):** Der `LocalProfileService` speichert diese als isolierte JSON-Dateien:
+   * **Pfad**: `/data/prompts/profiles_[SHA256_HASH_OF_USER_ID].json`
+   * **Isolierung**: Die Dateinamen basieren auf dem SHA-256 Hash der OIDC-Sub (UserID). Dies verhindert Path-Traversal-Angriffe und garantiert strikte Datentrennung zwischen Lehrern.
+
+2. **Globale AI-Einstellungen (Routing & Provider):** Der `GlobalSettingsService` speichert systemweite Parameter (wie Ollama-URL oder Standard-Provider):
+   * **Pfad**: `/data/prompts/global_ai_settings.json`
+   * **Hydration**: Bei jedem Login (oder App-Start im Single-User Modus) werden diese Vorgaben über `/api/user` ans Frontend gesendet und überschreiben etwaige lokale "Relikte" im Browser (`localStorage`), sodass der Admin immer das letzte Wort hat.
 
 ---
 
@@ -59,7 +65,8 @@ NEXT_PUBLIC_ADMIN_ROLE_NAME="koreki-admin"
 ```
 
 ### API-Routing
-Die API `/api/user/prompt-profiles` erkennt den Community-Modus und leitet Anfragen automatisch an den `LocalProfileService` weiter, anstatt Prisma zu nutzen.
+- **Experten-Prompts:** Die API `/api/user/prompt-profiles` erkennt den Community-Modus und leitet Anfragen an den `LocalProfileService` weiter.
+- **Globale Einstellungen:** Der Endpunkt `/api/admin/global-ai-settings` nimmt Konfigurationen für die `global_ai_settings.json` entgegen. Er verlangt strikt Admin-Rechte (`claims.role === 'ADMIN'` oder `AuthType === NONE`). Das Einstellungs-Zahnrad im Frontend ist für normale Lehrer im Keycloak-Modus vollständig unsichtbar.
 
 ---
 
