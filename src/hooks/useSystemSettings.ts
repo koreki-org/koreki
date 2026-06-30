@@ -52,8 +52,17 @@ export const useSystemSettings = (onSave: (newSettings: AppSettings) => void) =>
         }
     };
 
-    const updateSettings = (updates: Partial<AppSettings>, currentSettings: AppSettings) => {
+    const updateSettings = async (updates: Partial<AppSettings>, currentSettings: AppSettings, isAdmin?: boolean) => {
         onSave({ ...currentSettings, ...updates });
+        
+        // If we have admin privileges, we try to save routing settings globally
+        if (isAdmin) {
+            try {
+                await apiClient.post('/api/admin/global-ai-settings', updates);
+            } catch (err) {
+                console.error('Failed to save global AI settings:', err);
+            }
+        }
     };
 
     return {

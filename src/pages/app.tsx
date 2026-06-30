@@ -30,7 +30,7 @@ import AuthGuard from '@/components/guards/AuthGuard';
 
 export default function Home() {
     // Core Auth & Logic Hooks
-    const { userData, setUserData, aiStatus, authLoading, checkAuth, fetchAiStatus } = useAuth();
+    const { userData, setUserData, aiStatus, globalAiSettings, authLoading, checkAuth, fetchAiStatus } = useAuth();
     const [showGradingMemory, setShowGradingMemory] = React.useState(false);
     const [activeGradingMemoryName, setActiveGradingMemoryName] = React.useState<string | undefined>(undefined);
     
@@ -179,8 +179,13 @@ export default function Home() {
     // Initial State Effects
     useEffect(() => {
         checkAuth();
-        hydrateAiSettings(); // Hydrate Desktop/Ollama settings once after mount
-    }, [checkAuth, hydrateAiSettings]);
+    }, [checkAuth]);
+
+    useEffect(() => {
+        if (!authLoading) {
+            hydrateAiSettings(globalAiSettings); // Hydrate Desktop/Ollama settings once after mount, injecting global fallback
+        }
+    }, [authLoading, globalAiSettings, hydrateAiSettings]);
 
     // Tauri DevTools Keyboard Shortcut (F12 / Ctrl+Shift+I)
     useEffect(() => {

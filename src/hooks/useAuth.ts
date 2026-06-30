@@ -39,7 +39,8 @@ export const useAuth = () => {
                         canEditPrompts: true,
                         hasGlobalAiKey: process.env.NEXT_PUBLIC_HAS_GLOBAL_MISTRAL_KEY === 'true'
                     } as User,
-                    aiStatus: { ocrBrakeActive: false, correctionBrakeActive: false, message: '' } as AiStatus
+                    aiStatus: { ocrBrakeActive: false, correctionBrakeActive: false, message: '' } as AiStatus,
+                    globalAiSettings: null
                 };
             }
 
@@ -67,7 +68,8 @@ export const useAuth = () => {
                 if (data.loggedIn && data.user) {
                     return { 
                         user: data.user as User, 
-                        aiStatus: data.aiStatus as AiStatus 
+                        aiStatus: data.aiStatus as AiStatus,
+                        globalAiSettings: data.globalAiSettings
                     };
                 }
                 return null;
@@ -113,6 +115,7 @@ export const useAuth = () => {
         userData: authData?.user || null,
         setUserData,
         aiStatus: aiStatus || authData?.aiStatus || null,
+        globalAiSettings: authData?.globalAiSettings || null,
         authLoading,
         isFetched,
         checkAuth,

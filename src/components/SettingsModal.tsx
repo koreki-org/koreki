@@ -2,7 +2,7 @@ import React from 'react';
 import { X } from 'lucide-react';
 import { AppSettings } from '../types';
 import { Button } from './ui/Button';
-import { isLocalInstance } from '@/lib/env-context';
+import { isLocalInstance, isKeycloakAuth } from '@/lib/env-context';
 import packageJson from '../../package.json';
 
 // Sub-Components
@@ -45,6 +45,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     } = useSystemSettings(onSave);
 
     const isDesktop = isLocalInstance();
+    const isUserAdmin = isAdminView || (isLocalInstance() && !isKeycloakAuth()) || userRole === 'ADMIN';
 
     return (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300">
@@ -72,8 +73,8 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 <AIProviderSection 
                     settings={settings}
-                    onSave={(upd) => updateSettings(upd, settings)}
-                    isAdmin={isAdminView || isLocalInstance() || userRole === 'ADMIN'}
+                    onSave={(upd) => updateSettings(upd, settings, isUserAdmin)}
+                    isAdmin={isUserAdmin}
                 />
 
                 {!isAdminView && !isDesktop && (

@@ -15,7 +15,7 @@ interface DashboardStateStore {
     aiSettings: AppSettings;
     isHydrated: boolean;
     setAiSettings: (val: AppSettings | ((prev: AppSettings) => AppSettings)) => void;
-    hydrateAiSettings: () => void;
+    hydrateAiSettings: (globalSettings?: any) => void;
     
     upgrading: boolean;
     setUpgrading: Setter<boolean>;
@@ -105,19 +105,19 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
         return { aiSettings: next };
     }),
     
-    hydrateAiSettings: async () => {
+    hydrateAiSettings: async (globalSettings?: any) => {
         if (typeof window === 'undefined') return;
         if (get().isHydrated) return;
         
         const isDesktop = isLocalInstance();
         if (isDesktop) {
-            const savedProvider = (localStorage.getItem('koreki_desktop_provider') || 'mistral') as any;
+            const savedProvider = (globalSettings?.provider || localStorage.getItem('koreki_desktop_provider') || 'mistral') as any;
             
             // SECURITY: Load sensitive keys from Vault, not localStorage
             const mistralKey = await vaultService.getSecret('koreki-mistral-key');
             const openaiKey = await vaultService.getSecret('koreki-openai-key');
 
-            let url = localStorage.getItem('koreki_ollama_url') || undefined;
+            let url = globalSettings?.ollamaUrl !== undefined ? globalSettings.ollamaUrl : (localStorage.getItem('koreki_ollama_url') || undefined);
             if (url && url.includes('http') && url.lastIndexOf('http') > 0) {
                 url = url.substring(0, url.indexOf('http', 1)).trim();
                 localStorage.setItem('koreki_ollama_url', url);
@@ -126,15 +126,16 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
                 document.cookie = `koreki_ollama_url=${encodeURIComponent(url)}; path=/; max-age=31536000; SameSite=Lax`;
             }
 
-            let model = localStorage.getItem('koreki_ollama_model') || undefined;
-            let customModel = localStorage.getItem('koreki_ollama_custom_model') || undefined;
-            const ollamaNumCtx = localStorage.getItem('koreki_ollama_num_ctx') ? Number(localStorage.getItem('koreki_ollama_num_ctx')) : undefined;
-            const openaiUrl = localStorage.getItem('koreki_openai_url') || undefined;
+            let model = globalSettings?.ollamaModel !== undefined ? globalSettings.ollamaModel : (localStorage.getItem('koreki_ollama_model') || undefined);
+            let customModel = globalSettings?.customOllamaModel !== undefined ? globalSettings.customOllamaModel : (localStorage.getItem('koreki_ollama_custom_model') || undefined);
+            const ollamaNumCtx = globalSettings?.ollamaNumCtx !== undefined ? globalSettings.ollamaNumCtx : (localStorage.getItem('koreki_ollama_num_ctx') ? Number(localStorage.getItem('koreki_ollama_num_ctx')) : undefined);
+            
+            const openaiUrl = globalSettings?.openaiUrl !== undefined ? globalSettings.openaiUrl : (localStorage.getItem('koreki_openai_url') || undefined);
             if (openaiUrl) {
                 document.cookie = `koreki_openai_url=${encodeURIComponent(openaiUrl)}; path=/; max-age=31536000; SameSite=Lax`;
             }
-            const openaiModel = localStorage.getItem('koreki_openai_model') || undefined;
-            const enableThinking = localStorage.getItem('koreki_openai_thinking') !== 'false';
+            const openaiModel = globalSettings?.openaiModel !== undefined ? globalSettings.openaiModel : (localStorage.getItem('koreki_openai_model') || undefined);
+            const enableThinking = globalSettings?.enableThinking !== undefined ? globalSettings.enableThinking : (localStorage.getItem('koreki_openai_thinking') !== 'false');
             
             const temperature = localStorage.getItem('koreki_openai_temperature') ? Number(localStorage.getItem('koreki_openai_temperature')) : undefined;
             const topP = localStorage.getItem('koreki_openai_topp') ? Number(localStorage.getItem('koreki_openai_topp')) : undefined;

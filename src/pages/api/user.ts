@@ -5,6 +5,7 @@ import { getSystemAiStatus } from '../../lib/billing';
 import { withSecurity, AuthenticatedRequest } from '../../lib/security';
 import { logger } from '../../lib/logger';
 import { isLocalInstance, getKorekiMode } from '../../lib/env-context';
+import { GlobalSettingsService } from '../../lib/services/global-settings-service';
 
 /**
  * User Status & Sync API
@@ -52,7 +53,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         canBuyCredits: false,
                         hasGlobalAiKey: !!process.env.MISTRAL_API_KEY || !!process.env.MITTWALD_API_KEY || !!process.env.OPENAI_API_KEY
                     },
-                    aiStatus: { ocrBrakeActive: false, correctionBrakeActive: false }
+                    aiStatus: { ocrBrakeActive: false, correctionBrakeActive: false },
+                    globalAiSettings: await GlobalSettingsService.getSettings()
                 });
             }
 

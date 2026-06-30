@@ -84,7 +84,7 @@ export const HeaderPortalTooltip: React.FC<{
                     style={{ top: coords.top, left: coords.left, transform: 'translateX(-50%)' }}
                 >
                     <p className="text-primary font-bold text-xs">{title}</p>
-                    {description && <p className="text-muted-foreground text-[10px] mt-0.5">{description}</p>}
+                    {description && <p className="text-muted-foreground text-xs mt-0.5">{description}</p>}
                 </div>,
                 document.body
             )}
