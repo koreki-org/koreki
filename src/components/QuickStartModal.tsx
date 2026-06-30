@@ -17,29 +17,30 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                 className="relative w-full max-w-[550px] bg-white rounded-hero p-6 shadow-glass border border-border animate-in zoom-in-95 duration-500 my-auto max-h-[92vh] flex flex-col"
                 onClick={e => e.stopPropagation()}
             >
-                <div className="overflow-y-auto scrollbar-thin p-1">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="absolute h-auto top-6 right-6 p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-all duration-200"
-                        onClick={onClose}
-                    >
-                        <X size={20} />
-                    </Button>
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute h-auto top-4 right-4 z-10 p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-all duration-200"
+                    onClick={onClose}
+                >
+                    <X size={20} />
+                </Button>
 
-                    <div className="flex flex-col items-center mb-4 text-center">
-                        <Logo
-                            size={36}
-                            showText
-                            textLarge
-                            className="mb-2"
-                            subtitle="KI-Assistent"
-                        />
-                        <div className="space-y-0.5">
-                            <p className="text-lg font-black text-foreground tracking-tight">Willkommen bei Koreki!</p>
-                            <p className="text-xs text-muted-foreground font-medium">In nur <strong className="font-extrabold text-foreground">sechs</strong> einfachen Schritten zum Ziel.</p>
-                        </div>
+                <div className="flex flex-col items-center mb-6 text-center shrink-0 mt-2">
+                    <Logo
+                        size={36}
+                        showText
+                        textLarge
+                        className="mb-2"
+                        subtitle="KI-Assistent"
+                    />
+                    <div className="space-y-0.5">
+                        <p className="text-lg font-black text-foreground tracking-tight">Willkommen bei Koreki!</p>
+                        <p className="text-xs text-muted-foreground font-medium">In nur <strong className="font-extrabold text-foreground">sechs</strong> einfachen Schritten zum Ziel.</p>
                     </div>
+                </div>
+
+                <div className="overflow-y-auto scrollbar-thin p-1">
 
                     <div className="space-y-2 mb-8">
                         <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
