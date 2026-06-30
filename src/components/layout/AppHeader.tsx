@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Settings, LogOut, Loader2, HelpCircle, Sparkles, FileText, FileUp, Camera, PlusCircle, SlidersHorizontal, BookOpen, Brain, GraduationCap, Wrench } from 'lucide-react';
 import Logo from '../Logo';
 import { Button } from '../ui/Button';
@@ -38,7 +39,7 @@ interface ProfileConfigButtonProps {
     label: string;
     value: string;
     onClick: () => void;
-    title: string;
+    description?: string;
     isActive?: boolean;
 }
 
@@ -47,38 +48,82 @@ interface ProfileConfigButtonProps {
  * 💎 Shows both the category label and the active dynamic value with strict text truncation.
  * In mobile view, collapses to a square icon button with a pulse indicator for active states.
  */
+export const HeaderPortalTooltip: React.FC<{
+    children: React.ReactNode;
+    title: string;
+    description?: string;
+}> = ({ children, title, description }) => {
+    const [isHovered, setIsHovered] = useState(false);
+    const [coords, setCoords] = useState({ top: 0, left: 0 });
+    const triggerRef = useRef<HTMLDivElement>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    const handleMouseEnter = () => {
+        if (triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect();
+            setCoords({ top: rect.bottom + 8, left: rect.left + rect.width / 2 });
+        }
+        setIsHovered(true);
+    };
+
+    return (
+        <div 
+            ref={triggerRef}
+            className="relative shrink-0 flex items-center"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            {children}
+            {mounted && isHovered && typeof document !== 'undefined' && createPortal(
+                <div 
+                    className="fixed z-[9999] bg-white/95 backdrop-blur-md border border-border/50 px-3.5 py-2.5 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 pointer-events-none whitespace-nowrap"
+                    style={{ top: coords.top, left: coords.left, transform: 'translateX(-50%)' }}
+                >
+                    <p className="text-primary font-bold text-xs">{title}</p>
+                    {description && <p className="text-muted-foreground text-[10px] mt-0.5">{description}</p>}
+                </div>,
+                document.body
+            )}
+        </div>
+    );
+};
+
 const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({ 
     icon, 
     label, 
     value, 
     onClick, 
-    title,
+    description,
     isActive = false 
 }) => {
     return (
-        <Button
-            variant="outline"
-            size="sm"
-            onClick={onClick}
-            className={cn(
-                "relative rounded-xl px-0 md:px-3.5 py-1.5 h-9 text-xs font-bold shadow-sm flex items-center justify-center md:justify-start gap-1.5 transition-all w-9 h-9 md:w-[210px] overflow-visible shrink-0",
-                isActive 
-                    ? "bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 shadow-sm" 
-                    : "bg-muted/30 hover:bg-muted/50 text-muted-foreground border-border hover:border-muted-foreground/30"
-            )}
-            title={title}
-        >
-            <span className={cn("shrink-0 transition-colors", isActive ? "text-primary" : "text-muted-foreground")}>
-                {icon}
-            </span>
-            <span className={cn("hidden md:inline font-medium transition-colors", isActive ? "text-primary/70" : "text-muted-foreground")}>
-                {label}:
-            </span>
-            <span className={cn("hidden md:inline truncate max-w-[110px] transition-colors font-bold", isActive ? "text-primary" : "text-muted-foreground")}>
-                {value}
-            </span>
-            
-        </Button>
+        <HeaderPortalTooltip title={`${label}: ${value}`} description={description}>
+            <Button
+                variant="outline"
+                size="sm"
+                onClick={onClick}
+                className={cn(
+                    "relative rounded-xl px-0 md:px-3.5 py-1.5 h-9 text-xs font-bold shadow-sm flex items-center justify-center md:justify-start gap-1.5 transition-all w-9 h-9 md:w-[150px] lg:w-[180px] xl:w-[210px] overflow-visible shrink-0",
+                    isActive 
+                        ? "bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 shadow-sm" 
+                        : "bg-muted/30 hover:bg-muted/50 text-muted-foreground border-border hover:border-muted-foreground/30"
+                )}
+            >
+                <span className={cn("shrink-0 transition-colors", isActive ? "text-primary" : "text-muted-foreground")}>
+                    {icon}
+                </span>
+                <span className={cn("hidden md:inline font-medium transition-colors", isActive ? "text-primary/70" : "text-muted-foreground")}>
+                    {label}:
+                </span>
+                <span className={cn("hidden md:inline truncate max-w-[60px] lg:max-w-[80px] xl:max-w-[110px] transition-colors font-bold", isActive ? "text-primary" : "text-muted-foreground")}>
+                    {value}
+                </span>
+            </Button>
+        </HeaderPortalTooltip>
     );
 };
 
@@ -116,40 +161,43 @@ const Header: React.FC<HeaderProps> = ({
 
     const renderQuickActions = (isMobile: boolean) => (
         <div className={`${isMobile ? 'flex lg:hidden' : 'hidden lg:flex'} items-center justify-end gap-1.5 sm:gap-2 shrink-0 ml-auto lg:ml-0`}>
-            <Button 
-                variant="outline" 
-                size="icon" 
-                onClick={onShowHelp} 
-                title="Hilfe & Infos" 
-                className="border-0 bg-transparent text-muted-foreground hover:bg-background hover:text-foreground rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
-            >
-                <HelpCircle size={16} />
-            </Button>
-            
-            {(userData?.role === 'ADMIN' || isLocalInstance()) && (
+            <HeaderPortalTooltip title="Hilfe & Infos">
                 <Button 
                     variant="outline" 
                     size="icon" 
-                    onClick={onShowSettings} 
-                    title="System-Einstellungen" 
+                    onClick={onShowHelp} 
                     className="border-0 bg-transparent text-muted-foreground hover:bg-background hover:text-foreground rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
                 >
-                    <Settings size={16} />
+                    <HelpCircle size={16} />
                 </Button>
+            </HeaderPortalTooltip>
+            
+            {(userData?.role === 'ADMIN' || (isLocalInstance() && !isKeycloakAuth())) && (
+                <HeaderPortalTooltip title="System-Einstellungen">
+                    <Button 
+                        variant="outline" 
+                        size="icon" 
+                        onClick={onShowSettings} 
+                        className="border-0 bg-transparent text-muted-foreground hover:bg-background hover:text-foreground rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
+                    >
+                        <Settings size={16} />
+                    </Button>
+                </HeaderPortalTooltip>
             )}
             
             {(!isLocalInstance() || isKeycloakAuth()) && (
                 <>
                     <div className="w-px h-5 bg-border mx-0.5 shrink-0" />
-                    <Button 
-                        variant="outline" 
-                        size="icon" 
-                        onClick={onLogout} 
-                        title="Abmelden" 
-                        className="border-0 bg-transparent text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
-                    >
-                        <LogOut size={16} />
-                    </Button>
+                    <HeaderPortalTooltip title="Abmelden">
+                        <Button 
+                            variant="outline" 
+                            size="icon" 
+                            onClick={onLogout} 
+                            className="border-0 bg-transparent text-muted-foreground hover:bg-destructive/10 hover:text-destructive rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
+                        >
+                            <LogOut size={16} />
+                        </Button>
+                    </HeaderPortalTooltip>
                 </>
             )}
         </div>
@@ -161,7 +209,13 @@ const Header: React.FC<HeaderProps> = ({
             <div className="w-full bg-background/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 flex flex-row items-center justify-between gap-3 transition-all duration-300">
                 
                 {/* Left Side: Badges & Profile Config Buttons */}
-                <div className="flex flex-row items-center gap-2 sm:gap-3 w-auto">
+                <div 
+                    className="flex flex-row items-center gap-2 sm:gap-3 flex-1 min-w-0 overflow-x-auto no-scrollbar py-0.5 pr-8"
+                    style={{ 
+                        maskImage: 'linear-gradient(to right, black 0%, black calc(100% - 30px), transparent 100%)', 
+                        WebkitMaskImage: 'linear-gradient(to right, black 0%, black calc(100% - 30px), transparent 100%)' 
+                    }}
+                >
                     <HeaderBadges
                         userData={userData}
                         upgrading={upgrading}
@@ -179,7 +233,7 @@ const Header: React.FC<HeaderProps> = ({
                                 label="Expertise"
                                 value={activeProfileName || 'Standard'} 
                                 onClick={onShowPrompts!} 
-                                title="Expert Center: Fachprofile & Prompts verwalten" 
+                                description="Expert Center: Fachprofile & Prompts verwalten" 
                                 isActive={!!activeProfileName && activeProfileName !== 'Standard'}
                             />
                             
@@ -188,7 +242,7 @@ const Header: React.FC<HeaderProps> = ({
                                 label="Skills"
                                 value={activeSkillsProfileName || 'MINT Standard'} 
                                 onClick={onShowSkills!} 
-                                title="Skills Center: Modulare AI-Kompetenzen konfigurieren" 
+                                description="Skills Center: Modulare AI-Kompetenzen konfigurieren" 
                                 isActive={!!activeSkillsProfileName && activeSkillsProfileName !== 'MINT Standard'}
                             />
                             
@@ -197,7 +251,7 @@ const Header: React.FC<HeaderProps> = ({
                                 label="Erfahrung"
                                 value={activeGradingMemoryName || 'Standard-Korrektur'} 
                                 onClick={onShowGradingMemory!} 
-                                title="GradingMemory™: Korrektur-Erfahrung kalibrieren" 
+                                description="GradingMemory: Korrektur-Erfahrung kalibrieren" 
                                 isActive={!!activeGradingMemoryName && activeGradingMemoryName !== 'Standard-Korrektur'}
                             />
                             
@@ -206,7 +260,7 @@ const Header: React.FC<HeaderProps> = ({
                                 label="Intelligenz"
                                 value={activeAiProfileName || 'Standard'} 
                                 onClick={onShowAiParams!} 
-                                title="Intelligenz: AI-Leistungskraft steuern" 
+                                description="Intelligenz: AI-Leistungskraft steuern" 
                                 isActive={!!activeAiProfileName && activeAiProfileName !== 'Standard'}
                             />
                         </div>

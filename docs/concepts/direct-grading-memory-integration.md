@@ -1,5 +1,5 @@
 ---
-title: "Direkte Übernahme unbefriedigender Korrekturen in den Erfahrungsschatz (GradingMemory™)"
+title: "Direkte Übernahme unbefriedigender Korrekturen in den Erfahrungsschatz (GradingMemory)"
 description: "Technisches und konzeptionelles Design zur On-the-Fly-Kalibrierung des Erfahrungsschatzes direkt aus der aktiven Korrekturansicht."
 author: "@principal_architect"
 date: "2026-05-12"
