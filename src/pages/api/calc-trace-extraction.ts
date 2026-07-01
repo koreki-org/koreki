@@ -1,5 +1,5 @@
 import type { NextApiResponse } from 'next';
-import { extractCalcTraceValues } from '@/lib/grading/calc-trace-extraction';
+import { extractStudentAST } from '@/lib/grading/calc-trace-extraction';
 import { logger } from '@/lib/logger';
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 import { z } from 'zod';
@@ -52,15 +52,14 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const { studentText, trace, settings, taskName } = validation.data;
 
         // Perform server-side extraction using standard extraction logic
-        const extractedValues = await extractCalcTraceValues(
+        const extractedAST = await extractStudentAST(
             studentText,
-            trace,
-            'STANDARD', // Force standard (server-side) mode on backend
+            'STANDARD',
             settings as any,
             taskName
         );
 
-        return res.status(200).json(extractedValues);
+        return res.status(200).json(extractedAST);
     } catch (error: any) {
         logger.error('API CalcTrace Extraction Fatal Error:', error);
         return res.status(500).json({ error: error.message || 'Internal Server Error' });

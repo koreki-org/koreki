@@ -155,36 +155,32 @@ export function buildCorrectionPrompt(
         if (vorevaluierungBlock) {
             system += vorevaluierungBlock;
         }
-
-        // Dynamic Injection of mathematical-deterministic CalcTrace Vorevaluierung
+             // Dynamic Injection of mathematical-deterministic CalcTrace Vorevaluierung
         let calcTraceVorevaluierungBlock = '';
         tasksLayout.forEach(t => {
             if (t.calcTraceResult) {
-                const disablePointsActive = shouldDisablePoints(t.taskType, t.calcTrace);
+                const disablePointsActive = shouldDisablePoints(t.taskType, t.targetGoal);
 
                 calcTraceVorevaluierungBlock += `\n\n### MATHEMATISCH-DETERMINISTISCHE CALCTRACE VOREVALUIERUNG FÜR "${t.name}":\n`;
                 calcTraceVorevaluierungBlock += (disablePointsActive ? mathHybridHeader : `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!`) + `\n\n`;
                 calcTraceVorevaluierungBlock += mathFallbackInstruction + `\n\n`;
 
                 if (disablePointsActive) {
-                    calcTraceVorevaluierungBlock += `- STATUS DER ENGINE: Die Rechenkette wurde erfolgreich ausgewertet. Nutze ausschließlich die folgenden Detail-Ergebnisse (Korrekt/Fehlerhaft/Folgefehler) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.\n`;
+                    calcTraceVorevaluierungBlock += `- STATUS DER ENGINE: Die Rechenkette wurde ausgewertet. Nutze diese Information (ob Ziel erreicht oder nicht) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.\n`;
                 } else {
                     calcTraceVorevaluierungBlock += `- ZU VERGEBENDE PUNKTE: ${t.calcTraceResult.totalPoints} von max ${t.calcTraceResult.maxPoints} Punkten.\n`;
                 }
 
-                calcTraceVorevaluierungBlock += `- DETAIL-ERGEBNISSE DER EINZELNEN RECHENSCHRITTE:\n`;
-                t.calcTraceResult.results.forEach((step: any) => {
-                    const statusStr = step.status === 'correct' ? 'Korrekt' : 
-                                    step.status === 'consecutive' ? 'Folgefehler-Kompensiert (Korrekt gewertet)' : 
-                                    step.status === 'omission' ? 'Ausgelassen' :
-                                    'Fehlerhaft (Primärfehler)';
-                    const unitSuffix = step.unit ? ` ${step.unit}` : '';
-                    calcTraceVorevaluierungBlock += `  * Schritt "${step.label}" (${step.id}): Schülerwert: "${step.studentValue !== undefined && step.studentValue !== null ? step.studentValue + unitSuffix : 'nicht angegeben'}", Erwartet: "${step.expected}${unitSuffix}", Status: ${statusStr}. Punkte: ${step.pointsAwarded}/${step.pointsMax}\n`;
-                });
+                calcTraceVorevaluierungBlock += `- DETAIL-ERGEBNIS: Endziel erreicht: ${t.calcTraceResult.isGoalReached ? 'JA' : 'NEIN'}.\n`;
+                
+                if (t.calcTraceResult.sandboxErrors && t.calcTraceResult.sandboxErrors.length > 0) {
+                    calcTraceVorevaluierungBlock += `  * Sandbox Fehler: ${t.calcTraceResult.sandboxErrors.join(', ')}\n`;
+                }
 
                 if (disablePointsActive) {
-                    calcTraceVorevaluierungBlock += `\n` + mathHybridInstruction;
+                    calcTraceVorevaluierungBlock += `\n` + mathHybridInstruction.replace('{{POINTS}}', String(t.calcTraceResult.totalPoints));
                 } else {
+                    calcTraceVorevaluierungBlock += `\n` + mathAutoInstruction.replace('{{POINTS}}', String(t.calcTraceResult.totalPoints));
                     calcTraceVorevaluierungBlock += `\nÜbernimm zwingend die oben berechnete Punktzahl (${t.calcTraceResult.totalPoints} von ${t.calcTraceResult.maxPoints}) für diese Aufgabe und begründe sie im Feedback anhand der Detail-Ergebnisse.\n`;
                 }
             }
@@ -468,26 +464,35 @@ export function buildVariableExtractionPrompt(studentText: string, variables: an
  */
 export function buildCalcTraceExtractionPrompt(
     studentText: string,
-    variables: { id: string; label: string; unit?: string }[],
-    taskName?: string
+    variables?: { id: string; label: string; unit?: string }[],
+    taskName?: string,
+    systemPrompt?: string,
+    correctionInstruction?: string
 ): StructuredPrompt {
-    let system = calcTraceExtractionSystem;
+    if (systemPrompt) {
+        // V6 AST Extraction
+        let system = systemPrompt;
+        if (taskName) {
+            system += `\n\n### KONTEXT DER AUFGABE:\nDie Aufgabe heißt: "${taskName}".`;
+        }
+        let user = `Schülerantwort:\n"""\n${studentText}\n"""\n\nAntworte als reines JSON.`;
+        if (correctionInstruction) {
+             user += `\n\nKORREKTUR-ANWEISUNG:\n${correctionInstruction}`;
+        }
+        return { system, user, options: { temperature: 0.0, topP: 0.1 } };
+    }
 
+    // Fallback to V5 Variable Extraction
+    let system = calcTraceExtractionSystem;
     if (taskName) {
         system += `\n\n### KONTEXT DER AUFGABE:\nDie Aufgabe, die der Schüler beantwortet, heißt: "${taskName}".\nNutze diesen Kontext zwingend, um Mehrdeutigkeiten aufzulösen.\n`;
     }
-
-    const variablesList = variables.map(v =>
+    const variablesList = variables ? variables.map(v =>
         `- ID: "${v.id}" (Label: "${v.label}", Einheit: "${v.unit || 'keine Vorgabe'}")`
-    ).join('\n');
+    ).join('\n') : '';
 
     const user = `Schülerantwort:\n"""\n${studentText}\n"""\n\nZu extrahierende Variablen:\n${variablesList}\n\nAntworte als reines JSON.`;
-
-    return {
-        system,
-        user,
-        options: { temperature: 0.0, topP: 0.1 }
-    };
+    return { system, user, options: { temperature: 0.0, topP: 0.1 } };
 }
 
 // HMR Trigger: 2026-06-20T15:21:00 (Forces prompt recompilation)

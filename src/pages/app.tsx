@@ -123,7 +123,7 @@ export default function Home() {
                         updatedTasks[taskIndex] = {
                             ...updatedTasks[taskIndex],
                             taskType: 'calc-trace',
-                            calcTrace: response
+                            targetGoal: response
                         };
                     }
                     return updatedTasks;
