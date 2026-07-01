@@ -49,8 +49,10 @@ Deine Aufgabe ist es, den Rechenweg des Schülers Schritt für Schritt zu extrah
 Wandle die Rechnungen in 'mathjs' kompatible Formeln um. WICHTIG: Nutze KEINE Einheiten in den Formeln!
 WICHTIG: Schreibe in 'formula' NUR den Rechenausdruck (z.B. '4000 + 2500'). Verwende KEINE Gleichheitszeichen oder Zuweisungen (wie 'R_ges =' oder 'x =') in der 'formula'!
 WICHTIG: Verwende in Variablen keine geschweiften Klammern (nutze 'R_total' statt 'R_{total}').
+WICHTIG (Einheiten-Umrechnungen): Wenn der Schüler in seinem Ergebnis implizit eine andere Größenordnung verwendet (z.B. er rechnet numerisch in 'Wh', schreibt das Ergebnis aber als 'kWh', oder rechnet in 'A' und notiert 'mA'), MUSST du diesen Umrechnungsfaktor mathematisch zwingend an die Formel anhängen (z.B. '* 1000' oder '/ 1000' oder '* 10^-3'), damit die extrahierte Gleichung rein numerisch wieder korrekt ist!
 Wenn der Schüler ein Zwischenergebnis nutzt, setze die 'id' des vorherigen Schritts (z.B. step_1) in die Formel ein.
-Trage das vom Schüler notierte Ergebnis als echte JSON-Zahl (mit Punkt, NICHT als String mit Komma!) im Feld 'result' ein (z.B. 7.38 statt "7,38").
+Trage EXAKT das vom Schüler notierte Ergebnis als echte JSON-Zahl im Feld 'result' ein.
+🚨 KRITISCH: KORRIGIERE NIEMALS DIE RECHNUNG ODER DAS ERGEBNIS DES SCHÜLERS! Wenn der Schüler z.B. "23 * 10 = 2300" schreibt, MUSST du "formula": "23 * 10" und "result": 2300 extrahieren, auch wenn das mathematisch völlig falsch ist! Du bist ein stumpfer Daten-Parser, KEIN Korrektor! Wenn du die Zahlen korrigierst, zerstörst du unser System!
 WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt MUSS genau einen Key namens "steps" enthalten. Der Wert von "steps" ist ein Array. Jedes Objekt in diesem Array MUSS exakt diese drei Keys haben: "id" (String), "formula" (String) und "result" (Number). Verwende keine anderen Keys!`;
 
     const payload = {

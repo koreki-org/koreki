@@ -114,6 +114,9 @@ export function evaluateCalcTrace(
   let isGoalReached = false;
   const expectedValues = normalizeTargetValues(target.targetValue);
   
+  console.log(`[CalcTrace] expectedValues:`, expectedValues);
+  console.log(`[CalcTrace] AST steps:`, JSON.stringify(ast, null, 2));
+  
   if (expectedValues.length > 0 && ast.length > 0) {
       // The student must have computed ALL expected values at some point in their AST
       isGoalReached = expectedValues.every(expected => {
