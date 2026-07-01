@@ -9,6 +9,7 @@ import { PointInput } from '../ui/PointInput';
 import { AppSettings, GradingMemory, GradingMemoryCase, Task } from '../../types';
 import { useGradingMemories } from '../../hooks/useGradingMemories';
 import { useGradingMemoryModalState } from '../../hooks/useGradingMemoryModalState';
+import { resolveTaskName, resolveMaxPoints } from '../../lib/grading-memory-utils';
 
 import { isDesktopTarget } from '../../lib/env-context';
 import { apiClient } from '../../lib/api-client';
@@ -383,29 +384,11 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
  
                                                  <div className="space-y-4 pr-1">
                                                      {activeMemory?.cases?.map((c, index) => {
-                                                          // 1. Resolve taskName
-                                                          let resolvedTaskName = c.taskName;
-                                                          if (!resolvedTaskName && c.expectedCorrection.correctionNotes) {
-                                                              const match = c.expectedCorrection.correctionNotes.match(/^\[Aufgabe:\s*([^\]]+)\]/);
-                                                              if (match) resolvedTaskName = match[1];
-                                                          }
-                                                          // Fallback: If tasksLayout is present, match text keywords to map task
-                                                          if (!resolvedTaskName && tasksLayout && tasksLayout.length > 0) {
-                                                              const combinedText = `${c.studentText} ${c.expectedCorrection.correctionNotes}`.toLowerCase();
-                                                              const bestTask = tasksLayout.reduce((best, t) => {
-                                                                  const words = `${t.name} ${t.content || ''}`.toLowerCase().match(/\b[a-z0-9äöüß]{3,}\b/g) || [];
-                                                                  const score = words.filter(w => combinedText.includes(w)).length;
-                                                                  return score > best.score ? { task: t, score } : best;
-                                                              }, { task: null as any, score: 0 });
-                                                              if (bestTask.score > 2) resolvedTaskName = bestTask.task.name;
-                                                          }
+                                                          // 1. Resolve taskName via pure function
+                                                          const { resolvedTaskName } = resolveTaskName(c.taskName, c.expectedCorrection.correctionNotes, c.studentText, tasksLayout);
 
-                                                          // 2. Resolve maxPoints
-                                                          let resolvedMaxPoints = c.expectedCorrection.maxPoints;
-                                                          if (!resolvedMaxPoints && resolvedTaskName && tasksLayout) {
-                                                              const matched = tasksLayout.find(t => t.name?.toLowerCase() === resolvedTaskName.toLowerCase());
-                                                              if (matched) resolvedMaxPoints = Number(matched.maxPoints);
-                                                          }
+                                                          // 2. Resolve maxPoints via pure function
+                                                          const resolvedMaxPoints = resolveMaxPoints(c.expectedCorrection.maxPoints, resolvedTaskName, tasksLayout);
 
                                                           return (
                                                          <div key={c.id} className="p-4 border border-slate-150 rounded-xl bg-slate-50/20 space-y-3">

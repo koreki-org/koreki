@@ -5,6 +5,7 @@ import { isDesktopTarget } from '../lib/env-context';
 import { apiClient } from '../lib/api-client';
 import { downloadFile } from '../lib/file-utils';
 import { exportGradingMemoryToMarkdown, parseMarkdownGradingMemory } from '../lib/parsers/markdown-grading-memory-parser';
+import { resolveTaskName, resolveMaxPoints } from '../lib/grading-memory-utils';
 
 export interface UseGradingMemoryModalStateProps {
     isOpen: boolean;
@@ -124,25 +125,7 @@ export function useGradingMemoryModalState({
                 let updatedCase = { ...c };
                 
                 // Resolve taskName
-                let resolvedTaskName = c.taskName;
-                let isHighConfidence = !!c.taskName;
-                if (!resolvedTaskName && c.expectedCorrection.correctionNotes) {
-                    const match = c.expectedCorrection.correctionNotes.match(/^\[Aufgabe:\s*([^\]]+)\]/);
-                    if (match) {
-                        resolvedTaskName = match[1];
-                        isHighConfidence = true;
-                    }
-                }
-                // Fallback matching (low confidence, UI render only, never auto-persist)
-                if (!resolvedTaskName && tasksLayout && tasksLayout.length > 0) {
-                    const combinedText = `${c.studentText} ${c.expectedCorrection.correctionNotes}`.toLowerCase();
-                    const bestTask = tasksLayout.reduce((best, t) => {
-                        const words = `${t.name} ${t.content || ''}`.toLowerCase().match(/\b[a-z0-9äöüß]{3,}\b/g) || [];
-                        const score = words.filter(w => combinedText.includes(w)).length;
-                        return score > best.score ? { task: t, score } : best;
-                    }, { task: null as any, score: 0 });
-                    if (bestTask.score > 2) resolvedTaskName = bestTask.task.name;
-                }
+                const { resolvedTaskName, isHighConfidence } = resolveTaskName(c.taskName, c.expectedCorrection.correctionNotes, c.studentText, tasksLayout);
                 
                 if (isHighConfidence && resolvedTaskName && c.taskName !== resolvedTaskName) {
                     updatedCase.taskName = resolvedTaskName;
@@ -150,11 +133,7 @@ export function useGradingMemoryModalState({
                 }
                 
                 // Resolve maxPoints
-                let resolvedMaxPoints = c.expectedCorrection.maxPoints;
-                if (!resolvedMaxPoints && resolvedTaskName && tasksLayout) {
-                    const matched = tasksLayout.find(t => t.name?.toLowerCase() === resolvedTaskName.toLowerCase());
-                    if (matched) resolvedMaxPoints = Number(matched.maxPoints);
-                }
+                let resolvedMaxPoints = resolveMaxPoints(c.expectedCorrection.maxPoints, resolvedTaskName, tasksLayout);
                 
                 if (isHighConfidence && resolvedMaxPoints !== undefined && c.expectedCorrection.maxPoints !== resolvedMaxPoints) {
                     updatedCase.expectedCorrection = {
