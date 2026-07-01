@@ -10,6 +10,7 @@ import { AppSettings, GradingMemory, GradingMemoryCase, Task } from '../../types
 import { useGradingMemories } from '../../hooks/useGradingMemories';
 import { useGradingMemoryModalState } from '../../hooks/useGradingMemoryModalState';
 import { GradingMemoryStartScreen } from './GradingMemoryStartScreen';
+import { GradingMemoryGeneratingScreen } from './GradingMemoryGeneratingScreen';
 import { resolveTaskName, resolveMaxPoints } from '../../lib/grading-memory-utils';
 
 import { isDesktopTarget } from '../../lib/env-context';
