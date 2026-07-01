@@ -199,7 +199,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                 </Button>
                                                 <Button
                                                     onClick={onClose}
-                                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary hover:opacity-90 text-white font-black rounded-xl shadow-xl shadow-md transition-all"
+                                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary hover:bg-primary/90 text-white font-black rounded-xl sm:rounded-2xl shadow-xl shadow-primary/20 transition-all"
                                                 >
                                                     Zuweisen
                                                 </Button>
