@@ -98,10 +98,10 @@ export default function Impressum() {
                             <h2 className="text-warning font-bold flex items-center gap-2 mb-4">
                                 <Shield className="w-5 h-5 text-warning" /> Wichtiger Nutzungshinweis (Demo-Instanz)
                             </h2>
-                            <p className="text-warning-foreground text-sm leading-relaxed mb-4">
+                            <p className="text-foreground/80 text-sm leading-relaxed mb-4">
                                 Dies ist ein <strong>privates, nicht-kommerzielles Open-Source-Projekt</strong>. Diese Instanz (koreki.org) wird ausschließlich zu <strong>Demonstrations- und Testzwecken</strong> betrieben. 
                             </p>
-                            <ul className="text-warning-foreground text-sm list-disc pl-5 space-y-2 mb-4">
+                            <ul className="text-foreground/80 text-sm list-disc pl-5 space-y-2 mb-4">
                                 <li><strong>Haftungsausschluss:</strong> Die Bereitstellung erfolgt &quot;wie besehen&quot; ohne jegliche Gewährleistung. Der Betreiber übernimmt keine Haftung für Schäden, Datenverlust oder die Richtigkeit der KI-Bewertungen.</li>
                                 <li><strong>Datenverbot:</strong> Es dürfen <strong>keine echten personenbezogenen Schülerdaten</strong> hochgeladen werden. Bitte nutzen Sie ausschließlich anonymisierte Testdaten.</li>
                                 <li><strong>Kein Unternehmen:</strong> Der Betrieb erfolgt rein privat und ohne Gewinnerzielungsabsicht.</li>
