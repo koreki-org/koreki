@@ -33,6 +33,11 @@ export const logger = {
     error: (msg: string, ...args: any[]) => {
         console.error(`[ERROR] ${sanitize(msg)}`, ...args.map(a => typeof a === 'string' ? sanitize(a) : a));
     },
+    debug: (msg: string, ...args: any[]) => {
+        if (process.env.NODE_ENV === 'development') {
+            console.debug(`[DEBUG] ${sanitize(msg)}`, ...args.map(a => typeof a === 'string' ? sanitize(a) : a));
+        }
+    },
     security: (msg: string, ...args: any[]) => {
         console.warn(`[SECURITY] 🛡️ ${sanitize(msg)}`, ...args.map(a => typeof a === 'string' ? sanitize(a) : a));
     }

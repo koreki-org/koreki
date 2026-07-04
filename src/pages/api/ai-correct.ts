@@ -12,7 +12,7 @@ import { isLocalInstance } from '@/lib/env-context';
 import { GraphRunner } from '@/lib/grading/GraphRunner';
 import { splitTextByTasks } from '@/lib/task-utils';
 import { evaluateCalcTrace } from '@/lib/grading/CalcTrace';
-import { extractCalcTraceValues } from '@/lib/grading/calc-trace-extraction';
+import { extractStudentAST } from '@/lib/grading/calc-trace-extraction';
 
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 
@@ -69,10 +69,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     ))
                 );
 
-                const hasAttachedCalcTrace = !!task.calcTrace;
-                const isCalcTraceSkill = task.taskType && (
+                const hasAttachedCalcTrace = !!task.calcTrace; // Fallback
+                const hasTargetGoal = !!task.targetGoal;
+                const isCalcTraceSkill = task.taskType === 'calc-trace' || (task.taskType && (
                     customSkills[task.taskType]?.isCalcTrace
-                );
+                ));
 
                 if (hasAttachedGraph) {
                     try {
@@ -108,22 +109,29 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     } catch (err: any) {
                         logger.error('Error in local GraphRunner execution', { taskName: task.name, error: err.message });
                     }
-                } else if (hasAttachedCalcTrace || isCalcTraceSkill) {
+                } else if (hasTargetGoal || hasAttachedCalcTrace || isCalcTraceSkill) {
                     try {
                         const studentTaskText = rawSplit[i] || "";
                         const taskSpecificText = (studentTaskText && studentTaskText.trim().length > 0) ? studentTaskText : studentText;
                         
-                        const trace = task.calcTrace || customSkills[task.taskType]?.calcTrace;
+                        const targetGoal = task.targetGoal || customSkills[task.taskType]?.targetGoal || { targetValue: 0, maxPoints: task.maxPoints || 0 };
                         
-                        const studentValues = await extractCalcTraceValues(taskSpecificText, trace, 'STANDARD', settings as any, task.name);
-                        const calcTraceResult = evaluateCalcTrace(trace, studentValues);
+                        let astResult = await extractStudentAST(taskSpecificText, 'STANDARD', settings as any, task.name);
+                        let calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
+                        
+                        let retryCount = 0;
+                        const maxRetries = 2;
+                        while (calcTraceResult.sandboxErrors.length > 0 && retryCount < maxRetries) {
+                            logger.warn(`[Server] CalcTrace Sandbox validation failed. Retrying self-correction (${retryCount + 1}/${maxRetries}):`, calcTraceResult.sandboxErrors);
+                            
+                            const correctionInstruction = `Die mathematische Sandbox hat Fehler in deinem extrahierten AST gefunden:\n${calcTraceResult.sandboxErrors.join('\n')}\nBitte extrahiere den AST neu, beachte die Syntax für mathjs, und erfinde keine Rechenschritte, die der Schüler nicht gemacht hat.`;
+                            astResult = await extractStudentAST(taskSpecificText, 'STANDARD', settings as any, task.name, astResult, correctionInstruction);
+                            calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
+                            retryCount++;
+                        }
                         
                         task.calcTraceResult = calcTraceResult;
-                        const disablePointsActive = shouldDisablePoints(task.taskType, trace);
-                        if (!disablePointsActive) {
-                            task.pointsObtained = calcTraceResult.totalPoints;
-                            task.maxPoints = calcTraceResult.maxPoints;
-                        }
+                        task.maxPoints = targetGoal.maxPoints || task.maxPoints;
                     } catch (err: any) {
                         logger.error('Error in server-side CalcTrace execution', { taskName: task.name, error: err.message });
                     }

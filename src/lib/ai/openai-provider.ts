@@ -13,7 +13,7 @@ import {
 
 } from './prompt-builder';
 import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
-import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, VALIDATE_CALC_TRACE_TOOL, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
+import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
 import { isDesktopTarget } from '@/lib/env-context';
 
 export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
@@ -102,7 +102,7 @@ export async function executeOpenAIRequest(
         } else if (action === 'refine-calc-trace') {
             promptObj = buildCalcTraceRefinementPrompt(payload.taskText, payload.currentTrace, payload.userInstruction, payload.discipline);
         } else if (action === 'calc-trace-extraction') {
-            promptObj = buildCalcTraceExtractionPrompt(payload.studentText, payload.expectedValues, payload.taskName);
+            promptObj = buildCalcTraceExtractionPrompt(payload.studentText, payload.expectedValues, payload.taskName, payload.systemPrompt, payload.correctionInstruction);
         } else {
             throw new Error(`Unsupported action: ${action}`);
         }
@@ -194,12 +194,8 @@ export async function executeOpenAIRequest(
     // We rely on the system prompt or native model behavior for reasoning instead.
     
     const isGraphAction = action === 'generate-graph' || action === 'refine-graph';
-    const isCalcTraceAction = action === 'generate-calc-trace' || action === 'refine-calc-trace';
     if (isGraphAction) {
         body.tools = [VALIDATE_GRAPH_TOOL];
-        body.tool_choice = "auto";
-    } else if (isCalcTraceAction) {
-        body.tools = [VALIDATE_CALC_TRACE_TOOL];
         body.tool_choice = "auto";
     }
 

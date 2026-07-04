@@ -5,6 +5,7 @@
  */
 
 import LZString from 'lz-string';
+import { toSafeString } from './validation';
 
 export interface FeedbackTask {
     id: string;
@@ -50,9 +51,10 @@ export function decodeFeedback(encoded: string): FeedbackData | null {
 /**
  * Parses status tags like [r], [f], [Ff] from a string.
  */
-export function parseStatus(text: string): { status?: 'r' | 'f' | 'Ff'; cleanText: string } {
-    if (text.includes('[r]')) return { status: 'r', cleanText: text.replace('[r]', '').trim() };
-    if (text.includes('[f]')) return { status: 'f', cleanText: text.replace('[f]', '').trim() };
-    if (text.includes('[Ff]')) return { status: 'Ff', cleanText: text.replace('[Ff]', '').trim() };
-    return { cleanText: text };
+export function parseStatus(text: any): { status?: 'r' | 'f' | 'Ff'; cleanText: string } {
+    const safeText = toSafeString(text);
+    if (safeText.includes('[r]')) return { status: 'r', cleanText: safeText.replace('[r]', '').trim() };
+    if (safeText.includes('[f]')) return { status: 'f', cleanText: safeText.replace('[f]', '').trim() };
+    if (safeText.includes('[Ff]')) return { status: 'Ff', cleanText: safeText.replace('[Ff]', '').trim() };
+    return { cleanText: safeText };
 }

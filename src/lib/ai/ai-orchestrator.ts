@@ -4,6 +4,7 @@ import { Task, AppSettings, AITask, AIAnalysisResult } from '../../types';
 import { executeMistralRequest } from './mistral-provider';
 import { executeOllamaRequest } from './ollama-logic';
 import { executeOpenAIRequest } from './openai-provider';
+import { AIAnalysisResultSchema } from '../validation';
 import { isLocalInstance, isDesktopTarget } from '@/lib/env-context';
 import { GraphRunner } from '../grading/GraphRunner';
 import { parseGeneratedGraph, validateGraphDeterminism, GRADING_GRAPH_SCHEMA } from '../grading/graph-generator';
@@ -13,7 +14,7 @@ import { SKILL_REGISTRY } from '@/prompts/skills';
 import { splitSkillSnippet } from './prompt-library';
 import { splitTextByTasks } from '../task-utils';
 import { evaluateCalcTrace, formatCalcTraceForPrompt } from '../grading/CalcTrace';
-import { extractCalcTraceValues } from '../grading/calc-trace-extraction';
+import { extractStudentAST } from '../grading/calc-trace-extraction';
 import { shouldDisablePoints } from './prompt-builder';
 
 export { shouldDisablePoints };
@@ -22,6 +23,11 @@ export { shouldDisablePoints };
  * Maps the AI raw JSON results back to the Koreki Task structure and calculates totals.
  */
 export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: Task[] | null, studentText?: string): AIAnalysisResult {
+    const parsed = AIAnalysisResultSchema.safeParse(analysis);
+    if (parsed.success) {
+        analysis = parsed.data as any;
+    }
+
     if (tasksLayout && Array.isArray(tasksLayout) && tasksLayout.length > 0) {
         let totalObtained = 0;
         let totalMax = 0;
@@ -37,23 +43,19 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
 
             // --- DETECT DETERMINISTIC CALCTRACE-BASED TASKS & EVALUATE LOCALLY ---
             if (layoutTask.calcTraceResult) {
-                const disablePointsActive = shouldDisablePoints(layoutTask.taskType, layoutTask.calcTrace);
                 let enginePoints: number;
-                if (disablePointsActive) {
-                    const aiPoints = aiTask && aiTask.pointsObtained !== undefined && aiTask.pointsObtained !== null
-                        ? Number(aiTask.pointsObtained)
-                        : NaN;
-                    enginePoints = !isNaN(aiPoints)
-                        ? aiPoints
-                        : Number(layoutTask.calcTraceResult.totalPoints ?? 0);
-                } else {
-                    enginePoints = Number(layoutTask.calcTraceResult.totalPoints ?? 0);
-                }
+                
+                // Hybrid-Grading: CalcTrace Engine ist ein reiner Proof-Provider.
+                // Das LLM entscheidet IMMER über die finale Punktevergabe.
+                enginePoints = aiTask && aiTask.pointsObtained !== undefined && aiTask.pointsObtained !== null
+                    ? Number(aiTask.pointsObtained)
+                    : 0;
 
                 totalObtained += enginePoints;
 
                 const isAlreadyFormatted = aiTask && aiTask.feedback && (
-                    aiTask.feedback.includes('[📐 CalcTrace Engine - Mathematischer Abgleich]')
+                    aiTask.feedback.includes('[📐 CalcTrace Engine - Mathematischer Abgleich]') ||
+                    aiTask.feedback.includes('DETERMINISTISCHER BEWEIS (SANDBOX)')
                 );
 
                 if (isAlreadyFormatted) {
@@ -67,7 +69,7 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                     };
                 }
 
-                const stepFeedback = formatCalcTraceForPrompt(layoutTask.calcTraceResult);
+                const stepFeedback = formatCalcTraceForPrompt(layoutTask.calcTraceResult, layoutTask.targetGoal || {});
                 const aiFeedbackText = aiTask ? (aiTask.feedback || aiTask.content || '') : '';
                 
                 let finalFeedback = `[📐 CalcTrace Engine - Mathematischer Abgleich]\n${stepFeedback}\n\n---\n\n`;
@@ -488,10 +490,11 @@ export async function performAIRequest(
                 ))
             );
 
-            const hasAttachedCalcTrace = !!task.calcTrace;
-            const isCalcTraceSkill = task.taskType && (
+            const hasAttachedCalcTrace = !!task.calcTrace; // Fallback
+            const hasTargetGoal = !!task.targetGoal;
+            const isCalcTraceSkill = task.taskType === 'calc-trace' || (task.taskType && (
                 customSkills[task.taskType]?.isCalcTrace
-            );
+            ));
 
             if (hasAttachedGraph) {
                 try {
@@ -513,22 +516,30 @@ export async function performAIRequest(
                 } catch (err: any) {
                     logger.error('Error in client-side GraphRunner execution', err);
                 }
-            } else if (hasAttachedCalcTrace || isCalcTraceSkill) {
+            } else if (hasTargetGoal || hasAttachedCalcTrace || isCalcTraceSkill) {
                 try {
                     const studentTaskText = rawSplit[i] || "";
                     const taskSpecificText = (studentTaskText && studentTaskText.trim().length > 0) ? studentTaskText : studentText;
                     
-                    const trace = task.calcTrace || customSkills[task.taskType]?.calcTrace;
+                    const targetGoal = task.targetGoal || customSkills[task.taskType]?.targetGoal || { targetValue: 0, maxPoints: task.maxPoints || 0 };
                     
-                    const studentValues = await extractCalcTraceValues(taskSpecificText, trace, appMode, settings, task.name);
-                    const calcTraceResult = evaluateCalcTrace(trace, studentValues);
+                    let astResult = await extractStudentAST(taskSpecificText, appMode, settings, task.name);
+                    let calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
+                    
+                    let retryCount = 0;
+                    const maxRetries = 2;
+                    while (calcTraceResult.sandboxErrors.length > 0 && retryCount < maxRetries) {
+                        logger.warn(`[Client] CalcTrace Sandbox validation failed. Retrying self-correction (${retryCount + 1}/${maxRetries}):`, calcTraceResult.sandboxErrors);
+                        
+                        const correctionInstruction = `Die mathematische Sandbox hat Fehler in deinem extrahierten AST gefunden:\n${calcTraceResult.sandboxErrors.join('\n')}\nBitte extrahiere den AST neu, beachte die Syntax für mathjs, und erfinde keine Rechenschritte, die der Schüler nicht gemacht hat.`;
+                        astResult = await extractStudentAST(taskSpecificText, appMode, settings, task.name, astResult, correctionInstruction);
+                        calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
+                        retryCount++;
+                    }
                     
                     task.calcTraceResult = calcTraceResult;
-                    const disablePointsActive = shouldDisablePoints(task.taskType, trace);
-                    if (!disablePointsActive) {
-                        task.pointsObtained = calcTraceResult.totalPoints;
-                        task.maxPoints = calcTraceResult.maxPoints;
-                    }
+                    // Die Engine vergibt keine Punkte mehr, das macht das LLM.
+                    task.maxPoints = targetGoal.maxPoints || task.maxPoints;
                 } catch (err: any) {
                     logger.error('Error in client-side CalcTrace execution', err);
                 }

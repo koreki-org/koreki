@@ -1,79 +1,68 @@
 /**
- * CalcTrace Type Definitions
+ * CalcTrace Type Definitions (V7 - Unit-Aware Grading)
  * 
- * Flache Rechenketten-Typen für deterministische Mathe/Physik-Bewertung.
- * Ergänzt PANG (GradingGraph) als leichtgewichtige Alternative.
+ * Based on industry best practices from STACK/Maxima, WeBWorK, Numbas.
+ * Key principle: Physical quantity = Tuple(value, unit), compared separately.
  * 
  * @module calc-trace-types
  */
 
-/** Einzelner Rechenschritt in der Kette */
-export interface CalcStep {
-  /** Eindeutige ID, referenzierbar in Formeln anderer Steps (z.B. "leistung") */
+/** Ein einzelner berechneter Schritt im AST des Schülers */
+export interface StudentASTStep {
+  /** Eindeutige ID (z.B. "step_1") */
   id: string;
-  /** Menschenlesbares Label (z.B. "Leistung P") */
-  label: string;
-  /** 'given' = vom Schüler abzulesen, 'calc' = aus Formel berechenbar */
-  type: 'given' | 'calc';
-  /** Erwarteter korrekter Wert aus der Musterlösung */
-  value: number;
-  /** mathjs-kompatibler Ausdruck, referenziert IDs anderer Steps (nur bei type: 'calc') */
-  formula?: string;
-  /** Relative Toleranz für Rundungsunterschiede (z.B. 0.01 = 1%) */
-  tolerance?: number;
-  /** Physikalische Einheit für Feedback-Anzeige (z.B. "kWh") */
+  /** Der vom Schüler gerechnete mathematische Ausdruck (referenziert ggf. IDs früherer Steps) */
+  formula: string;
+  /** Das numerische Ergebnis, das der Schüler für diesen Schritt aufgeschrieben hat */
+  result: number;
+  /** Optionale physikalische Einheit die der Schüler beim Ergebnis notiert hat (z.B. "mA", "kΩ", "W") */
   unit?: string;
-  /** Punktwert dieses Steps (Default: 1) */
-  points?: number;
 }
 
-/** Vollständige Rechenkette für eine Aufgabe */
-export interface CalcTrace {
-  /** Referenz auf die zugehörige Aufgabe */
-  taskId: string;
-  /** Geordnete Liste der Rechenschritte */
-  steps: CalcStep[];
-  /** Optional: true für hybrides Didaktik-Grading (Standard), false für streng starr */
-  disablePoints?: boolean;
-}
-
-/** Bewertungsstatus eines einzelnen Steps */
-export type StepStatus = 'correct' | 'consecutive' | 'error' | 'omission';
-
-/** Auswertungsergebnis eines einzelnen Steps */
-export interface StepResult {
-  /** Step-ID */
-  id: string;
-  /** Menschenlesbares Label */
-  label: string;
-  /** Einheit (optional) */
-  unit?: string;
-  /** Erwarteter Wert (Musterlösung) */
-  expected: number;
-  /** Vom Schüler gegebener Wert (null bei Omission) */
-  studentValue: number | null;
-  /** Von der Engine mit Schüler-Kontext berechneter Wert (bei calc-Steps) */
-  computed: number | null;
-  /** Bewertungsstatus */
-  status: StepStatus;
-  /** Vergebene Punkte für diesen Step */
-  pointsAwarded: number;
-  /** Maximale Punkte für diesen Step */
-  pointsMax: number;
-}
-
-/** Gesamtergebnis der CalcTrace-Auswertung */
-export interface CalcTraceResult {
-  /** Einzelergebnisse pro Step */
-  results: StepResult[];
-  /** Summe aller vergebenen Punkte */
-  totalPoints: number;
-  /** Summe aller maximal erreichbaren Punkte */
+/** Das extrahierte Endziel und die Punkteverteilung für eine MINT-Aufgabe */
+export interface TargetGoal {
+  /** Der numerische Endwert (oder mehrere Werte), den der Schüler erreichen muss */
+  targetValue: number | number[] | string;
+  /** Maximale Punkte für diese Aufgabe */
   maxPoints: number;
-  /** Anzahl Primärfehler */
-  primaryErrors: number;
-  /** Anzahl kompensierter Folgefehler */
-  consecutiveErrors: number;
-  /** Gibt an, ob die Punkteberechnung deaktiviert ist (Hybridmodus) */
-  disablePoints?: boolean;
+  /** Optionale physikalische Einheit (z.B. "mA", "kΩ") */
+  unit?: string;
+  /** Textueller Erwartungshorizont für das Hybrid-Grading LLM (z.B. "1P Formel, 1P Ergebnis") */
+  gradingRubric?: string;
+}
+
+/** Ergebnis des Unit-Vergleichs für einen einzelnen Zielwert */
+export interface UnitComparisonDetail {
+  /** Der natürliche Zielwert (Lehrereinheit) */
+  targetValue: number;
+  /** Die erwartete Einheit (z.B. "mA") */
+  expectedUnit: string;
+  /** Die vom Schüler notierte Einheit (z.B. "A") — undefined wenn nicht extrahiert */
+  studentUnit?: string;
+  /** Der Zahlenwert stimmt (exakt oder via SI-Normalisierung) */
+  isValueMatch: boolean;
+  /** Exakter Match: Zahlenwert UND Einheit stimmen überein */
+  isExactMatch: boolean;
+  /** Zahlenwert ist physikalisch äquivalent, aber Einheit/Präfix abweichend */
+  isUnitMismatch: boolean;
+}
+
+/** Auswertungsergebnis des Student-ASTs in der mathjs Sandbox */
+export interface CalcTraceResult {
+  /** Hat der Schüler das korrekte Endziel (TargetGoal) erreicht? (inkl. SI-Äquivalente) */
+  isGoalReached: boolean;
+  /** Array von Syntax- oder Logik-Fehlern, die die Sandbox beim Nachrechnen des ASTs geworfen hat */
+  sandboxErrors: string[];
+  /** Natürliche Zielwerte (Lehrereinheit) die im AST gefunden wurden */
+  reachedTargets: number[];
+  /** Natürliche Zielwerte die NICHT im AST gefunden wurden */
+  missedTargets: number[];
+  /** Der originale AST des Schülers */
+  ast: StudentASTStep[];
+  /** Maximale Punkte (aus dem TargetGoal übernommen) */
+  maxPoints?: number;
+  /** True wenn mindestens ein Zielwert nur via SI-Normalisierung (andere Einheit) gefunden wurde */
+  unitMismatch?: boolean;
+  /** Detail-Informationen zum Einheitsvergleich (für LLM-Prompt) */
+  unitDetails?: UnitComparisonDetail[];
 }

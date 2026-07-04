@@ -1,69 +1,68 @@
 ---
-title: "CalcTrace Engine & Calculation Chain Architecture"
-description: "Technische Dokumentation des flachen Rechenketten-Bewertungssystems zur automatisierten Folgefehler-Kompensation (CalcTrace)."
+title: "CalcTrace Engine V7: Unit-Aware Hybrid Grading Architecture"
+description: "Technische Dokumentation des KI-gestützten, deterministischen Evaluierungssystems für MINT-Fächer mit 3-Stufen-Unit-Awareness (CalcTrace V7)."
 author: "@principal_architect"
-date: "2026-06-19"
-last_updated: "2026-06-19"
+date: "2026-07-04"
+last_updated: "2026-07-04"
 status: "Approved"
 domain: "technical"
 security_classification: "Internal"
 ---
 
-# CalcTrace Engine & Calculation Chain Architecture
+# CalcTrace Engine V7: Unit-Aware Hybrid Grading
 
 ## 1. Executive Summary & Kontext
 > [!NOTE]
-> **Zusammenfassung:** Die CalcTrace Engine ist ein zustandsfreier, leichtgewichtiger Formelketten-Interpreter zur mathematisch-physikalischen Bewertung von Schülerantworten mit automatisierter Folgefehler-Kompensation (Consecutive Error Compensation). Sie dient als performante, lineare Alternative zur graph-basierten PANG Engine.
+> **Zusammenfassung:** Die CalcTrace Engine V7 kombiniert LLM-basierte Extraktion mit einer deterministischen, hermetisch abgeriegelten `mathjs` Sandbox. Sie bewertet MINT-Rechenwege durch Trennung in **Proof A (Interne Rechenkonsistenz)** und **Proof B (Unit-Aware Zielerreichung)** nach etablierten Industrie-Standards (vgl. STACK/Maxima, WeBWorK).
 > **Zielgruppe:** Core-Entwickler, QA-Ingenieure und Product Manager.
 
-In MINT- und Technik-Fächern hängen Berechnungen oft sequenziell voneinander ab. Macht ein Schüler einen Fehler im ersten Schritt (z. B. Leistung $P$ falsch abgelesen), werden nachfolgende Ergebnisse (z. B. Energie $W = P \times t$) mathematisch falsch sein, obwohl die Rechenweise korrekt war. Die CalcTrace Engine löst dies, indem sie Fehler isoliert und Folgefehler vollständig kompensiert (didaktische Kulanz).
+In MINT-Fächern hängen Berechnungen oft sequenziell voneinander ab, und Schüler verwenden unterschiedliche physikalische Einheiten (z. B. 0.001846 A statt 1.846 mA). CalcTrace V7 löst dies durch eine hybride Architektur: Ein LLM extrahiert den Rechenweg des Schülers in einen AST (Abstract Syntax Tree) inklusive der notierten Einheiten. Die Engine rechnet diesen AST in einer Sandbox nach und vergleicht das Resultat deterministisch mit dem `TargetGoal` des Lehrers.
 
 ---
 
 ## 2. Architektur & Systemdesign
 
-Die Auswertung basiert auf einer geordneten Liste von Schritten (`CalcStep`), die nacheinander evaluiert werden.
+Die Auswertung basiert auf zwei Phasen: **Extraktion** und **Sandbox-Evaluierung**.
 
 ```mermaid
 graph TD
-    A["Schülerantworten (given / calc)"] --> B["evaluateCalcTrace Interpreter"]
-    C["CalcTrace-Definition (Musterlösung)"] --> B
+    A["Schülerantwort (Freitext)"] -->|LLM Extraction| B["Student AST (id, formula, result, unit)"]
+    C["TargetGoal (Musterlösung: Wert, Einheit, Punkte)"] --> D["CalcTrace Engine (mathjs Sandbox)"]
+    B --> D
     
-    B --> D["1. Initialisiere expectedCtx & studentCtx"]
-    D --> E["2. Sequenzielle Schleife über alle Schritte"]
-    E --> F{"Schritt-Typ?"}
+    D --> E["Proof A: Interne Rechenkonsistenz"]
+    E -->|AST syntaktisch validieren| F["Jeden Schritt mit 'math.evaluate' prüfen"]
+    F -->|Fehler| G["Sandbox-Error registrieren"]
+    F -->|Korrekt| H["Kontext propagieren (Folgefehler-Basis)"]
     
-    F -->|"given (Eingabe)"| G["Prüfe Toleranz gegen Expected"]
-    F -->|"calc (Formel)"| H["Berechne expectedVal & computedVal"]
+    D --> I["Proof B: Unit-Aware Zielerreichung"]
+    I -->|Werte & Einheiten via math.unit().toSI() normalisieren| J["Vergleich Schülerwert vs Zielwert"]
     
-    G --> I["Kontext-Update (Dual-Context)"]
-    H --> J["Vergleiche Schülerwert mit computedVal"]
-    J -->|Treffer mit computedVal| K["Folgefehler-Kompensation (consecutive)"]
-    J -->|Kein Treffer| L["Primärfehler (error)"]
+    J --> K{"Match Typ?"}
+    K -->|"Exakter Match (Wert & Einheit)"| L["Tier A: 100% Auto-Punkte"]
+    K -->|"SI-Match (Wert stimmt, Einheit anders)"| M["Tier B: unitMismatch = true (LLM entscheidet)"]
+    K -->|"Kein Match"| N["Tier C: isGoalReached = false"]
     
-    K --> I
-    L --> I
-    
-    I --> M["Endergebnis (Punkte & Fehler-Zähler)"]
+    L --> O["CalcTraceResult für Hybrid-Grading Prompt"]
+    M --> O
+    N --> O
 ```
 
-### 2.1 Dual-Context Propagation
-Um Folgefehler zu erkennen, pflegt die Engine zur Laufzeit zwei getrennte Variablen-Kontexte:
-1. **Expected Context (`expectedCtx`):** Enthält die mathematisch perfekten Werte aus der Musterlösung.
-2. **Student Context (`studentCtx`):** Enthält die vom Schüler tatsächlich eingegebenen (oder computed) Werte.
+### 2.1 Proof A: Interne Rechenkonsistenz (Folgefehler-Garantie)
+Die Engine rechnet den extrahierten AST des Schülers Schritt für Schritt nach. Jeder Schritt speichert sein Ergebnis im internen Kontext. Verwendet der Schüler in Schritt 2 das Ergebnis aus Schritt 1, wird strikt mit dem *vom Schüler berechneten* Wert weitergerechnet. So können Folgefehler (richtige Formel, falscher Input) deterministisch als "Folgerichtig" erkannt werden.
 
-Bei der Evaluierung eines Formelschritts (`type: 'calc'`) berechnet die Engine:
-*   `expectedVal`: Formelauswertung unter Verwendung von `expectedCtx`.
-*   `computedVal`: Formelauswertung unter Verwendung von `studentCtx` (Einsatz der fehlerhaften Vorläufer-Werte des Schülers).
+### 2.2 Proof B: Unit-Aware Ziel-Test (3-Stufen Modell)
+Die Engine vergleicht die erreichten Meilensteine mit dem `TargetGoal` des Lehrers unter Nutzung der `math.unit()` API. Es gilt ein 3-Stufen-Modell (Best Practice adaptiert von STACK):
 
-Stimmt die Schülerantwort innerhalb der Toleranz mit `computedVal` überein, aber weicht sie von `expectedVal` ab, wird die Antwort als **folgerichtig** (`consecutive`) gewertet und erhält die volle Punktzahl.
+1. **Tier A (Perfekt):** Zahlenwert ist physikalisch äquivalent UND die angegebene Einheit/Präfix (z. B. `mA`) stimmt exakt überein. (Auto-Zuweisung der vollen Punkte).
+2. **Tier B (Unit-Mismatch):** Zahlenwert ist physikalisch äquivalent (z. B. `0.001846 A` = `1.846 mA`), aber die Einheitsbezeichnung weicht ab. Das Flag `unitMismatch` wird gesetzt. Das LLM erhält ein detailliertes Einheiten-Protokoll und vergibt Teilpunkte nach Erwartungshorizont.
+3. **Tier C (Falsch):** Der berechnete Wert weicht auch nach SI-Normalisierung ab. Ziel verfehlt.
 
-### 2.2 Formel-Sandboxing & AST-Validierung (Security & Compliance)
-Um Arbitrary Code Execution und Prompt-Injection durch manipulierte, KI-generierte Formeln im Browser und auf dem Server auszuschließen, nutzt CalcTrace eine gehärtete `mathjs`-Instanz.
-
+### 2.3 Formel-Sandboxing & AST-Validierung (Security & Compliance)
+Um Arbitrary Code Execution und Prompt-Injection auszuschließen, nutzt CalcTrace eine gehärtete `mathjs`-Instanz.
 Jede Formel durchläuft vor der Auswertung eine strenge AST-Traversierung (`validateAST`).
 *   **Erlaubte Node-Typen:** Nur absolute mathematische Repräsentationen (`SymbolNode`, `ConstantNode`, `OperatorNode`, `ParenthesisNode`, `FunctionNode`) sind gestattet.
-*   **Funktions-Whitelist:** Nur eine explizite Whitelist mathematischer und trigonometrischer Standardfunktionen ist zugelassen (`sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `sinh`, `cosh`, `tanh`, `log`, `log10`, `ln`, `exp`, `sqrt`, `cbrt`, `abs`, `sign`, `round`, `floor`, `ceil`, `min`, `max`, `pow`, `sum`). Zugriffe auf `eval`, `import` oder andere invasive Funktionen werden sofort blockiert.
+*   **Funktions-Whitelist:** Nur eine explizite Whitelist mathematischer und trigonometrischer Standardfunktionen ist zugelassen (`sin`, `cos`, `log`, `sqrt`, etc.).
 
 ---
 
@@ -71,55 +70,66 @@ Jede Formel durchläuft vor der Auswertung eine strenge AST-Traversierung (`vali
 
 ### 3.1 Datenstrukturen & Interfaces
 
-Das JSON-Schema einer Rechenkette ist flach und intuitiv aufgebaut:
-
 ```typescript
-export interface CalcStep {
-  id: string;          // Eindeutige Variablen-ID (z. B. 'leistung_p')
-  label: string;       // Benennung für UI/Feedback (z. B. 'Leistung P')
-  type: 'given' | 'calc'; // 'given' = Startwert/Eingabe, 'calc' = Berechnet
-  value: number;       // Wert laut Musterlösung
-  formula?: string;    // Berechnungsformel (nur bei 'calc', z. B. 'U * I')
-  tolerance?: number;  // Relative Toleranz (z. B. 0.01 für 1%)
-  unit?: string;       // Physikalische Einheit (z. B. 'W')
-  points?: number;     // Erreichbare Teilpunkte (Default: 1)
+// Das vom Lehrer definierte Ziel
+export interface TargetGoal {
+  targetValue: number | number[] | string;
+  maxPoints: number;
+  unit?: string;         // z.B. "mA"
+  gradingRubric?: string;
+}
+
+// Der vom LLM extrahierte Rechenweg des Schülers
+export interface StudentASTStep {
+  id: string;            // z.B. "step_1"
+  formula: string;       // z.B. "12 / 6.5"
+  result: number;        // z.B. 1.846
+  unit?: string;         // Vom Schüler notierte Einheit, z.B. "mA"
+}
+
+// Resultat der Sandbox-Evaluierung
+export interface CalcTraceResult {
+  isGoalReached: boolean;
+  sandboxErrors: string[];
+  reachedTargets: number[]; // Natürliche Werte in Lehrereinheit
+  missedTargets: number[];
+  ast: StudentASTStep[];
+  totalPoints?: number;     // Nur bei Tier A (exakter Match) gesetzt
+  unitMismatch?: boolean;   // Flag für Tier B
+  unitDetails?: UnitComparisonDetail[];
 }
 ```
 
-### 3.2 Beispiel-Evaluierung
+### 3.2 Beispiel-Evaluierung (Unit-Mismatch Szenario)
 
 ```typescript
 import { evaluateCalcTrace } from '@/lib/grading/CalcTrace';
 
-const trace = {
-  taskId: "task-leistung",
-  steps: [
-    { id: 'U', label: 'Spannung U', type: 'given', value: 230, unit: 'V' },
-    { id: 'I', label: 'Stromstärke I', type: 'given', value: 10, unit: 'A' },
-    { id: 'P', label: 'Leistung P', type: 'calc', formula: 'U * I', value: 2300, unit: 'W' }
-  ]
+const target: TargetGoal = {
+  targetValue: 1.846,
+  unit: 'mA',
+  maxPoints: 3
 };
 
-// Schüler rechnet: U = 230 V, I = 9 A (Fehler!), berechnet P = 2070 W (Folgefehler-Korrekt!)
-const studentAnswers = {
-  U: 230,
-  I: 9,
-  P: 2070
-};
+// Schüler hat 0.001846 A statt 1.846 mA ausgerechnet
+const ast: StudentASTStep[] = [
+  { id: 'step_1', formula: '12 / 6500', result: 0.001846, unit: 'A' }
+];
 
-const result = evaluateCalcTrace(trace, studentAnswers);
-// result.results[1].status = 'error' (Stromstärke I ist falsch)
-// result.results[2].status = 'consecutive' (Leistung P ist folgerichtig berechnet!)
+const result = evaluateCalcTrace(ast, target);
+// result.isGoalReached = true (Da 0.001846 A physikalisch == 1.846 mA)
+// result.unitMismatch = true (Da "A" != "mA")
+// result.totalPoints = undefined (LLM muss Teilpunkte für Einheitenfehler abziehen)
 ```
 
 ---
 
 ## 4. Security & Compliance
-*   **Datenminimierung:** Es werden ausschließlich physikalische/mathematische Kennwerte und Zwischenschritte verarbeitet. Es findet keine Übertragung oder Speicherung personenbezogener Schülerdaten statt (GDPR/DSGVO-konform).
-*   **Ausführungssicherheit:** Durch die mathjs-AST-Validierung läuft die mathematische Evaluierung in einer hermetisch abgeriegelten Sandbox.
+*   **Datenminimierung:** Es werden ausschließlich physikalische/mathematische Kennwerte und Zwischenschritte im LLM verarbeitet. 
+*   **Ausführungssicherheit:** Durch die mathjs-AST-Validierung läuft die mathematische Evaluierung in einer hermetisch abgeriegelten Sandbox. Injection von Schadcode ist ausgeschlossen.
 
 ---
 
 ## 5. Testing & Referenzen
-*   **Unit-Tests:** Die gesamte logische Integrität und Fehlerkompensation ist in [CalcTrace.test.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/tests/unit/lib/CalcTrace.test.ts) abgesichert.
+*   **Unit-Tests:** Die gesamte logische Integrität, 3-Tier Unit-Awareness und Fehlerkompensation ist in [CalcTrace.test.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/tests/unit/lib/CalcTrace.test.ts) abgesichert (inklusive Folgefehler und SI-Präfix Normalisierung).
 *   **Verwandte Dokumente:** [PANG-Engine Dokumentation](./pang-engine.md), [Architekturübersicht](./architecture.md).

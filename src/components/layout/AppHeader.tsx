@@ -107,7 +107,7 @@ const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({
                 size="sm"
                 onClick={onClick}
                 className={cn(
-                    "relative rounded-xl px-0 md:px-3.5 py-1.5 h-9 text-xs font-bold shadow-sm flex items-center justify-center md:justify-start gap-1.5 transition-all w-9 h-9 md:w-[150px] lg:w-[180px] xl:w-[210px] overflow-visible shrink-0",
+                    "relative rounded-xl px-0 md:px-3.5 py-1.5 h-9 text-xs font-bold shadow-sm flex items-center justify-center md:justify-start gap-1.5 transition-all w-9 h-9 md:w-[130px] lg:w-[160px] xl:w-[190px] overflow-visible shrink-0",
                     isActive 
                         ? "bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 shadow-sm" 
                         : "bg-muted/30 hover:bg-muted/50 text-muted-foreground border-border hover:border-muted-foreground/30"
@@ -119,7 +119,7 @@ const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({
                 <span className={cn("hidden md:inline font-medium transition-colors", isActive ? "text-primary/70" : "text-muted-foreground")}>
                     {label}:
                 </span>
-                <span className={cn("hidden md:inline truncate max-w-[60px] lg:max-w-[80px] xl:max-w-[110px] transition-colors font-bold", isActive ? "text-primary" : "text-muted-foreground")}>
+                <span className={cn("hidden md:inline truncate max-w-[40px] lg:max-w-[60px] xl:max-w-[90px] transition-colors font-bold", isActive ? "text-primary" : "text-muted-foreground")}>
                     {value}
                 </span>
             </Button>

@@ -123,7 +123,7 @@ export default function Home() {
                         updatedTasks[taskIndex] = {
                             ...updatedTasks[taskIndex],
                             taskType: 'calc-trace',
-                            calcTrace: response
+                            targetGoal: response
                         };
                     }
                     return updatedTasks;
@@ -505,7 +505,7 @@ export default function Home() {
                                 )}
                                 onExportStudents={() => exportStudentSummaries(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult))}
                                 onExportIndividual={() => exportIndividualFeedbacks(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult))}
-                                onExportPDFs={() => exportIndividualPDFs(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult))}
+                                onExportPDFs={(mode) => void exportIndividualPDFs(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult), mode)}
                                 onExportKoreki={() => {
                                     let cases = undefined;
                                     try {

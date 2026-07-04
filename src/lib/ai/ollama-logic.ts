@@ -13,7 +13,7 @@ import {
 
 } from './prompt-builder';
 import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
-import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, VALIDATE_CALC_TRACE_TOOL, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
+import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
 import { AppSettings } from '../../types';
 import { isDesktopTarget } from '@/lib/env-context';
 
@@ -137,7 +137,7 @@ export async function executeOllamaRequest(
     } else if (action === 'refine-calc-trace') {
         promptObj = buildCalcTraceRefinementPrompt(payload.taskText, payload.currentTrace, payload.userInstruction, payload.discipline);
     } else if (action === 'calc-trace-extraction') {
-        promptObj = buildCalcTraceExtractionPrompt(payload.studentText, payload.expectedValues, payload.taskName);
+        promptObj = buildCalcTraceExtractionPrompt(payload.studentText, payload.expectedValues, payload.taskName, payload.systemPrompt, payload.correctionInstruction);
     } else {
         throw new Error(`Unsupported action: ${action}`);
     }
@@ -323,21 +323,23 @@ export async function executeOllamaRequest(
     }
 
     const isGraphAction = action === 'generate-graph' || action === 'refine-graph';
-    const isCalcTraceAction = action === 'generate-calc-trace' || action === 'refine-calc-trace';
     let tools: any[] | undefined = undefined;
     if (isGraphAction) {
-        tools = [VALIDATE_GRAPH_TOOL];
-    } else if (isCalcTraceAction) {
-        tools = [VALIDATE_CALC_TRACE_TOOL];
+        tools = [
+            {
+                type: 'function',
+                function: VALIDATE_GRAPH_TOOL.function
+            }
+        ];
     }
-
+    
     let fullContent = '';
     let toolRetryCount = 0;
     const maxToolRetries = 3;
 
     while (toolRetryCount <= maxToolRetries) {
         // We disable streaming if we are using tools to safely capture the full tool_calls object.
-        const isStreaming = !isGraphAction && !isCalcTraceAction;
+        const isStreaming = !isGraphAction;
 
         // If tools are active, we CANNOT enforce a strict responseSchema! 
         // A tool call structure {"name": "...", "arguments": {...}} would violate the graph schema, 
@@ -565,10 +567,19 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
         if (parts.length > 1) rawJson = parts[1].split('```')[0].trim();
     }
 
-    // 2. Greedy Extraction (First { to Last })
+    // 2. Greedy Extraction (First { or [ to Last } or ])
     const standardJson = (() => {
-        const match = rawJson.match(/\{[\s\S]*\}/);
-        return match ? match[0] : rawJson;
+        const firstCurly = rawJson.indexOf('{');
+        const firstSquare = rawJson.indexOf('[');
+        const isArray = (firstSquare !== -1 && (firstCurly === -1 || firstSquare < firstCurly));
+        
+        if (isArray) {
+            const match = rawJson.match(/\[[\s\S]*\]/);
+            return match ? match[0] : rawJson;
+        } else {
+            const match = rawJson.match(/\{[\s\S]*\}/);
+            return match ? match[0] : rawJson;
+        }
     })();
 
     const repairUnescapedBackslashes = (jsonStr: string): string => {
@@ -589,7 +600,16 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
                 .replace(/\[thought\][\s\S]*?(\[\/thought\]|$)/gi, '')
                 .trim();
 
-            const hardenedMatch = cleanContent.match(/\{[\s\S]*\}/);
+            const hardenedMatch = (() => {
+                const firstCurly = cleanContent.indexOf('{');
+                const firstSquare = cleanContent.indexOf('[');
+                const isArray = (firstSquare !== -1 && (firstCurly === -1 || firstSquare < firstCurly));
+                if (isArray) {
+                    return cleanContent.match(/\[[\s\S]*\]/);
+                } else {
+                    return cleanContent.match(/\{[\s\S]*\}/);
+                }
+            })();
             const hardenedJson = hardenedMatch ? hardenedMatch[0] : cleanContent;
             
             // Industrial Recovery: Check for trailing commas in arrays/objects (common LLM failure)

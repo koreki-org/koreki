@@ -105,10 +105,12 @@ export const useProcessingPipeline = (
                     fileText: textToMap, 
                     tasks: structuredTasks, 
                     ocrDone: true, 
-                    status: 'pending'
+                    status: 'pending' // Let User review it first
                 };
                 return next;
             });
+        } else {
+            throw new Error("KI konnte keine Aufgaben im Text finden. Bitte erneut versuchen oder LLM-Anbieter prüfen.");
         }
     }, [userData, settings, tasksLayout, setUserData, setBatchFiles]);
 
@@ -274,6 +276,16 @@ export const useProcessingPipeline = (
                         break;
                     }
                     console.error("Extraction error", err);
+                    // Ensure the UI shows the error instead of defaulting to [unbeantwortet]
+                    setBatchFiles((prev: BatchFile[]) => {
+                        const next = [...prev];
+                        next[i] = {
+                            ...next[i],
+                            status: 'error',
+                            error: err.message || "Fehler bei der Verarbeitung. Bitte erneut versuchen."
+                        };
+                        return next;
+                    });
                 }
             }
         } finally {

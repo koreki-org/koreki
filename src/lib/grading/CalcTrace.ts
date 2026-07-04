@@ -1,9 +1,11 @@
 /**
- * CalcTrace Engine — Deterministic Math/Physics Grading
+ * CalcTrace Engine V7 — Unit-Aware Grading
  *
- * Leichtgewichtige Alternative zu PANG für Mathe/Physik-Aufgaben.
- * Nutzt mathjs mit Sandbox-Konfiguration (keine eval-ähnlichen Funktionen).
- * Kernfeature: Folgefehler-Kompensation via Dual-Context-Propagierung.
+ * Based on industry best practices from STACK/Maxima, WeBWorK, Numbas:
+ * Physical quantity = Tuple(value, unit). Both dimensions checked separately.
+ *
+ * Uses mathjs unit() API for deterministic SI normalization.
+ * No custom prefix tables — mathjs handles all SI prefixes and compound units.
  *
  * @module CalcTrace
  */
@@ -11,15 +13,13 @@
 import { create, all, type MathJsInstance } from 'mathjs';
 import { logger } from '@/lib/logger';
 import type {
-  CalcTrace,
+  StudentASTStep,
+  TargetGoal,
   CalcTraceResult,
-  StepResult,
-  StepStatus,
+  UnitComparisonDetail
 } from './calc-trace-types';
 
 // ─── Sandboxed mathjs Instance ───────────────────────────────────────────────
-// Nutzen AST-Validierung vor der Ausführung, um Prompt-Injection/Sicherheitsrisiken
-// bei KI-generierten Formeln zu verhindern.
 const math: MathJsInstance = create(all);
 
 const ALLOWED_NODE_TYPES = new Set([
@@ -37,238 +37,382 @@ const ALLOWED_FUNCTIONS = new Set([
   'min', 'max', 'pow', 'sum',
 ]);
 
-/**
- * Validates the AST of a mathjs formula against allowed node types and functions.
- * Throws an error if any forbidden syntax or function is found.
- */
 function validateAST(formula: string): void {
   const node = math.parse(formula);
   node.traverse((n) => {
     if (!ALLOWED_NODE_TYPES.has(n.type)) {
-      throw new Error(`[CalcTrace Security] Forbidden expression syntax: ${n.type}`);
+      throw new Error(`Forbidden expression syntax: ${n.type}`);
     }
     if (n.type === 'FunctionNode') {
       // eslint-disable-next-line
       const funcNode = n as any;
       const name = typeof funcNode.name === 'string' ? funcNode.name : funcNode.name?.name;
       if (!ALLOWED_FUNCTIONS.has(name)) {
-        throw new Error(`[CalcTrace Security] Forbidden function call: ${name}`);
+        throw new Error(`Forbidden function call: ${name}`);
       }
     }
   });
 }
 
-// ─── Core Engine ─────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/**
- * Evaluiert eine mathjs-Formel mit gegebenem Variablen-Kontext.
- * Gibt `null` zurück wenn die Evaluation fehlschlägt.
- */
-function evalFormula(
-  formula: string,
-  context: Record<string, number>
-): number | null {
-  try {
-    // Zuerst die Formel syntaktisch/sicherheitstechnisch prüfen
-    validateAST(formula);
-
-    const result = math.evaluate(formula, { ...context });
-    if (typeof result === 'number' && isFinite(result)) {
-      return result;
-    }
-    // mathjs kann Unit-Objekte o.ä. zurückgeben — nur reine Zahlen akzeptieren
-    const numeric = Number(result);
-    return isFinite(numeric) ? numeric : null;
-  } catch (err) {
-    logger.warn('[CalcTrace] Formula evaluation failed', {
-      formula,
-      error: err instanceof Error ? err.message : String(err),
-    });
-    return null;
-  }
-}
-
-/**
- * Prüft ob zwei Werte innerhalb der gegebenen Toleranz übereinstimmen.
- */
-function isWithinTolerance(
-  actual: number,
-  expected: number,
-  tolerance: number
-): boolean {
+function isWithinTolerance(actual: number, expected: number, tolerance: number): boolean {
   if (expected === 0) {
     return Math.abs(actual) <= tolerance;
   }
   return Math.abs((actual - expected) / expected) <= tolerance;
 }
 
-/**
- * Evaluiert eine CalcTrace gegen Schüler-Antworten.
- * Implementiert Dual-Context-Propagierung für Folgefehler-Kompensation.
- *
- * @param trace - Die CalcTrace-Definition (Musterlösung)
- * @param studentAnswers - Vom Schüler extrahierte Werte (nur `given`-Steps)
- * @returns CalcTraceResult mit Bewertung pro Step
- */
-export function evaluateCalcTrace(
-  trace: CalcTrace,
-  studentAnswers: Record<string, number | null>
-): CalcTraceResult {
-  const expectedCtx: Record<string, number> = {};
-  const studentCtx: Record<string, number> = {};
-  const results: StepResult[] = [];
-  let primaryErrors = 0;
-  let consecutiveErrors = 0;
+/** Round to N significant figures to avoid floating-point display noise */
+function roundSig(v: number, sig = 8): number {
+  if (v === 0) return 0;
+  const d = Math.ceil(Math.log10(Math.abs(v)));
+  const power = sig - d;
+  const magnitude = Math.pow(10, power);
+  const result = Math.round(v * magnitude) / magnitude;
+  return result;
+}
 
-  for (const step of trace.steps) {
-    const tolerance = step.tolerance ?? 0.01;
-    const pointsMax = step.points ?? 1;
+// ─── Unit-Aware Comparison (mathjs-based) ────────────────────────────────────
 
-    let expectedVal = step.value;
-    let computedVal: number | null = null;
-    let studentVal: number | null = null;
-    let status: StepStatus;
-    let pointsAwarded = 0;
+/** Map of common non-standard unit strings to mathjs-compatible unit strings */
+const UNIT_ALIASES: Record<string, string> = {
+  'Ohm': 'ohm',
+  'Ω':   'ohm',
+  'kΩ':  'kohm',
+  'MΩ':  'Mohm',
+  'kOhm': 'kohm',
+  'MOhm': 'Mohm',
+  'mΩ':  'mohm',
+};
 
-    if (step.type === 'given') {
-      // ── Given Step: Wert direkt vom Schüler ──
-      studentVal = studentAnswers[step.id] ?? null;
-
-      if (studentVal === null) {
-        // Schüler hat keinen Wert angegeben → Omission
-        status = 'omission';
-      } else if (isWithinTolerance(studentVal, expectedVal, tolerance)) {
-        status = 'correct';
-        pointsAwarded = pointsMax;
-      } else {
-        status = 'error';
-        primaryErrors++;
-      }
-    } else {
-      // ── Calc Step: Wert aus Formel berechnen ──
-      studentVal = studentAnswers[step.id] ?? null;
-
-      if (step.formula) {
-        // Erwarteter Wert: Formel mit Musterlösungs-Kontext
-        const formulaExpected = evalFormula(step.formula, expectedCtx);
-        if (formulaExpected !== null) {
-          expectedVal = formulaExpected;
-        }
-
-        // Berechneter Wert: Formel mit Schüler-Kontext (für Folgefehler)
-        computedVal = evalFormula(step.formula, studentCtx);
-      }
-
-      if (studentVal === null) {
-        status = 'omission';
-      } else {
-        let isMatched = false;
-        if (step.formula) {
-          if (computedVal !== null && isWithinTolerance(studentVal, computedVal, tolerance)) {
-            if (isWithinTolerance(computedVal, expectedVal, tolerance)) {
-              status = 'correct';
-              pointsAwarded = pointsMax;
-            } else {
-              status = 'consecutive';
-              pointsAwarded = pointsMax;
-              consecutiveErrors++;
-            }
-            isMatched = true;
-          }
-        } else {
-          if (isWithinTolerance(studentVal, expectedVal, tolerance)) {
-            status = 'correct';
-            pointsAwarded = pointsMax;
-            isMatched = true;
-          }
-        }
-
-        if (!isMatched) {
-          status = 'error';
-          primaryErrors++;
-        }
-      }
-    }
-
-    // ── Kontext-Propagierung (Dual-Context) ──
-    expectedCtx[step.id] = expectedVal;
-    studentCtx[step.id] = studentVal ?? computedVal ?? NaN;
-
-    results.push({
-      id: step.id,
-      label: step.label,
-      unit: step.unit,
-      expected: expectedVal,
-      studentValue: studentVal,
-      computed: computedVal,
-      status,
-      pointsAwarded,
-      pointsMax,
-    });
-  }
-
-  const totalPoints = results.reduce((sum, r) => sum + r.pointsAwarded, 0);
-  const maxPoints = results.reduce((sum, r) => sum + r.pointsMax, 0);
-
-  return {
-    results,
-    totalPoints,
-    maxPoints,
-    primaryErrors,
-    consecutiveErrors,
-    disablePoints: typeof trace.disablePoints === 'boolean' ? trace.disablePoints : true,
-  };
+/** Normalize a unit string to a mathjs-compatible format */
+function normalizeUnitString(unit: string): string {
+  const trimmed = unit.trim();
+  return UNIT_ALIASES[trimmed] || trimmed;
 }
 
 /**
- * Formatiert ein CalcTraceResult als menschenlesbaren String
- * für den Korrektur-Prompt an das LLM (Hybrid-Modus).
+ * Converts a value+unit pair to its SI base value using mathjs unit().
+ * Returns null if the unit is not recognized by mathjs.
+ *
+ * Example: toSIBaseValue(1.846, "mA") → 0.001846
+ * Example: toSIBaseValue(6.5, "kohm") → 6500
  */
-export function formatCalcTraceForPrompt(result: CalcTraceResult): string {
-  const lines: string[] = ['RECHNERISCHE ANALYSE (CalcTrace):'];
+function toSIBaseValue(value: number, unit: string): number | null {
+  try {
+    const normalized = normalizeUnitString(unit);
+    const u = math.unit(value, normalized);
+    const si = u.toSI();
+    return si.toNumber();
+  } catch {
+    logger.debug(`[CalcTrace] mathjs could not parse unit: "${unit}"`);
+    return null;
+  }
+}
 
-  for (const r of result.results) {
-    const unitSuffix = r.unit ? ` ${r.unit}` : '';
-    const studentStr = r.studentValue !== null
-      ? `${r.studentValue}${unitSuffix}`
-      : 'NICHT ANGEGEBEN';
+/**
+ * Checks if two unit strings represent the same physical dimension.
+ * e.g. "mA" and "A" are both current → true
+ *      "mA" and "V" are different → false
+ */
+function isSameBaseDimension(unitA: string, unitB: string): boolean {
+  try {
+    const a = math.unit(1, normalizeUnitString(unitA));
+    const b = math.unit(1, normalizeUnitString(unitB));
+    return a.equalBase(b);
+  } catch {
+    return false;
+  }
+}
 
-    switch (r.status) {
-      case 'correct':
-        lines.push(`  ✓ ${r.label} = ${studentStr} → KORREKT`);
-        break;
-      case 'consecutive':
-        lines.push(
-          `  ✓ ${r.label} = ${studentStr} → FOLGEFEHLER-KOMPENSATION ` +
-          `(korrekt weitergerechnet, erwartet: ${r.expected}${unitSuffix})`
-        );
-        break;
-      case 'error':
-        lines.push(
-          `  ✗ ${r.label} = ${studentStr} → PRIMÄRFEHLER ` +
-          `(erwartet: ${r.expected}${unitSuffix})`
-        );
-        break;
-      case 'omission':
-        lines.push(
-          `  ○ ${r.label} = NICHT ANGEGEBEN → AUSLASSUNG ` +
-          `(erwartet: ${r.expected}${unitSuffix})`
-        );
-        break;
+/**
+ * Core unit-aware comparison: checks a student's value+unit against a target value+unit.
+ * 
+ * Returns a detailed result indicating:
+ * - Exact match (value AND unit match)
+ * - Unit mismatch (value matches after SI normalization, but different prefix/unit)
+ * - No match
+ */
+function compareWithUnit(
+  studentValue: number,
+  studentUnit: string | undefined,
+  expectedValue: number,
+  expectedUnit: string,
+  tolerance: number
+): UnitComparisonDetail {
+  const base: UnitComparisonDetail = {
+    targetValue: expectedValue,
+    expectedUnit,
+    studentUnit: studentUnit,
+    isValueMatch: false,
+    isExactMatch: false,
+    isUnitMismatch: false,
+  };
+
+  // 1. Exact numeric match (same prefix) — check if units also match
+  const isExactNumeric = isWithinTolerance(studentValue, expectedValue, tolerance);
+  if (isExactNumeric) {
+    // If no student unit extracted, or units match → exact match
+    if (!studentUnit || normalizeUnitString(studentUnit) === normalizeUnitString(expectedUnit)) {
+      return { ...base, isValueMatch: true, isExactMatch: true };
+    }
+    // Same number but different unit (e.g. student wrote "230 mA" but target is "230 V")
+    // Check if they're even the same dimension
+    if (!isSameBaseDimension(studentUnit, expectedUnit)) {
+      return { ...base, isValueMatch: false, isExactMatch: false };
+    }
+    // Same dimension, same number, different prefix (e.g. 6.5 Ω vs 6.5 kΩ)
+    // → the student clearly has the wrong magnitude
+    return { ...base, isValueMatch: false, isExactMatch: false, isUnitMismatch: true };
+  }
+
+  // 2. SI normalization: check if value matches after unit conversion
+  const siExpected = toSIBaseValue(expectedValue, expectedUnit);
+  if (siExpected === null) return base; // Can't parse unit → no SI comparison possible
+
+  const isSIMatch = isWithinTolerance(studentValue, siExpected, tolerance);
+  if (isSIMatch) {
+    // Student's raw number matches the SI base value of the target
+    // e.g. student wrote 0.001846, target is 1.846 mA → 0.001846 A
+    if (studentUnit && isSameBaseDimension(studentUnit, expectedUnit)) {
+      // Student wrote a unit in the same dimension — check if it's correct
+      const siStudent = toSIBaseValue(studentValue, studentUnit);
+      if (siStudent !== null && isWithinTolerance(siStudent, siExpected, tolerance)) {
+        // Full physical equivalence: 0.001846 A = 1.846 mA ✓
+        return { ...base, isValueMatch: true, isExactMatch: true };
+      }
+      // Student's unit makes the value wrong (e.g. 0.001846 mA ≠ 1.846 mA)
+      return { ...base, isValueMatch: true, isExactMatch: false, isUnitMismatch: true };
+    }
+    // No student unit → value matches SI base, but we can't confirm the unit label
+    return { ...base, isValueMatch: true, isExactMatch: false, isUnitMismatch: true };
+  }
+
+  // 3. If student provided a unit, try full physical comparison
+  if (studentUnit && isSameBaseDimension(studentUnit, expectedUnit)) {
+    const siStudent = toSIBaseValue(studentValue, studentUnit);
+    if (siStudent !== null && isWithinTolerance(siStudent, siExpected, tolerance)) {
+      // e.g. student: 1846 µA, target: 1.846 mA → both = 0.001846 A ✓
+      return { ...base, isValueMatch: true, isExactMatch: true };
     }
   }
 
-  if (result.disablePoints) {
-    lines.push(
-      `Fazit: ${result.primaryErrors} Primärfehler, ` +
-      `${result.consecutiveErrors} Folgefehler-Kompensation(en)`
-    );
+  return base; // No match
+}
+
+// ─── Target Value Parsing ────────────────────────────────────────────────────
+
+/** Parse target values into an array of numbers (no unit expansion, just raw values) */
+function parseTargetValues(targetVal: number | number[] | string): number[] {
+  if (typeof targetVal === 'number') return [targetVal];
+  if (Array.isArray(targetVal)) return targetVal.map(Number).filter(n => !isNaN(n));
+  if (typeof targetVal === 'string') {
+    const matches = targetVal.match(/-?\d+(?:[\.,]\d+)?(?:[eE][-+]?\d+)?/g);
+    if (matches) {
+      return matches.map(m => Number(m.replace(',', '.'))).filter(n => !isNaN(n));
+    }
+  }
+  return [];
+}
+
+/** Parse a unit string into per-value units (e.g. "kΩ, mA" → ["kΩ", "mA"]) */
+function parseUnitsPerValue(unit: string | undefined, valueCount: number): (string | undefined)[] {
+  if (!unit) return new Array(valueCount).fill(undefined);
+  const parsed = unit.split(/[,;]+/).map(u => u.trim()).filter(u => u.length > 0);
+  if (parsed.length === 1) {
+    // Single unit → apply to last value (the final target)
+    return new Array(valueCount).fill(undefined).map((_, i) => i === valueCount - 1 ? parsed[0] : undefined);
+  }
+  // Multiple units → pair by index
+  return new Array(valueCount).fill(undefined).map((_, i) => parsed[i]);
+}
+
+// ─── Core Engine ─────────────────────────────────────────────────────────────
+
+/**
+ * Evaluiert den extrahierten AST in der Sandbox.
+ *
+ * Proof A: Interne Rechenkonsistenz (jeder Schritt mathematisch korrekt?)
+ * Proof B: Zielerreichung (Endziel erreicht? Unit-aware!)
+ *
+ * @param ast - Der vom LLM extrahierte Rechenweg
+ * @param target - Das Ziel (Erwartungshorizont)
+ * @returns CalcTraceResult
+ */
+export function evaluateCalcTrace(
+  ast: StudentASTStep[],
+  target: TargetGoal
+): CalcTraceResult {
+  const sandboxErrors: string[] = [];
+  const context: Record<string, number> = {};
+  const TOLERANCE = 0.05; // 5% tolerance for rounding/follow-up errors
+
+  // ── Proof A: Internal consistency ──────────────────────────────────────────
+  for (const step of ast) {
+    try {
+      validateAST(step.formula);
+      const computed = math.evaluate(step.formula, context);
+
+      if (typeof computed !== 'number' || !isFinite(computed)) {
+        sandboxErrors.push(`Schritt ${step.id}: Resultat ist keine gültige Zahl.`);
+      } else {
+        if (!isWithinTolerance(step.result, computed, TOLERANCE)) {
+          sandboxErrors.push(`Rechenfehler in ${step.id}: Formel ergibt ${computed.toFixed(2)}, aber Schüler notierte ${step.result}`);
+        }
+        context[step.id] = step.result;
+      }
+    } catch (e: any) {
+      sandboxErrors.push(`Syntax-Fehler in ${step.id} (${step.formula}): ${e.message}`);
+      context[step.id] = step.result;
+    }
+  }
+
+  // ── Proof B: Goal reached? (Unit-aware) ────────────────────────────────────
+  let isGoalReached = false;
+  let hasUnitMismatch = false;
+
+  const naturalValues = parseTargetValues(target.targetValue);
+  const unitsPerValue = parseUnitsPerValue(target.unit, naturalValues.length);
+
+  const reachedTargets: number[] = [];
+  const missedTargets: number[] = [];
+  const unitDetails: UnitComparisonDetail[] = [];
+
+  logger.debug(`[CalcTrace] naturalValues: ${JSON.stringify(naturalValues)}`);
+  logger.debug(`[CalcTrace] unitsPerValue: ${JSON.stringify(unitsPerValue)}`);
+  logger.debug(`[CalcTrace] AST steps: ${JSON.stringify(ast)}`);
+
+  if (naturalValues.length > 0 && ast.length > 0) {
+    naturalValues.forEach((expected, i) => {
+      const expectedUnit = unitsPerValue[i];
+
+      if (!expectedUnit) {
+        // No unit → pure numeric comparison
+        const reached = ast.some(step => isWithinTolerance(step.result, expected, TOLERANCE));
+        if (reached) {
+          reachedTargets.push(roundSig(expected));
+        } else {
+          missedTargets.push(roundSig(expected));
+        }
+        return;
+      }
+
+      // Unit-aware comparison: check each AST step
+      let bestMatch: UnitComparisonDetail | null = null;
+      for (const step of ast) {
+        const comparison = compareWithUnit(step.result, step.unit, expected, expectedUnit, TOLERANCE);
+        if (comparison.isExactMatch) {
+          bestMatch = comparison;
+          break; // Exact match found, no need to check further
+        }
+        if (comparison.isValueMatch && (!bestMatch || !bestMatch.isValueMatch)) {
+          bestMatch = comparison; // Keep best SI-match as fallback
+        }
+      }
+
+      if (bestMatch && bestMatch.isValueMatch) {
+        reachedTargets.push(roundSig(expected));
+        if (bestMatch.isUnitMismatch) {
+          hasUnitMismatch = true;
+        }
+      } else {
+        missedTargets.push(roundSig(expected));
+      }
+
+      if (bestMatch) {
+        unitDetails.push(bestMatch);
+      }
+    });
+
+    // Goal is reached if ALL natural values were found
+    isGoalReached = missedTargets.length === 0 && reachedTargets.length > 0;
+  } else if (ast.length === 0) {
+    missedTargets.push(...naturalValues.map(v => roundSig(v)));
+  }
+
+  return {
+    isGoalReached,
+    sandboxErrors,
+    reachedTargets,
+    missedTargets,
+    ast,
+    maxPoints: target.maxPoints,
+    unitMismatch: hasUnitMismatch || undefined,
+    unitDetails: unitDetails.length > 0 ? unitDetails : undefined,
+  };
+}
+
+// ─── Prompt Formatter ────────────────────────────────────────────────────────
+
+/**
+ * Formatiert das Evaluierungsergebnis in einen robusten Prompt für das Hybrid-Grading LLM.
+ */
+export function formatCalcTraceForPrompt(result: CalcTraceResult, target: TargetGoal): string {
+  const lines: string[] = ['--- DETERMINISTISCHER BEWEIS (SANDBOX) ---'];
+  let targetDisplay = `${target.targetValue} ${target.unit || ''}`;
+  if (Array.isArray(target.targetValue) && target.unit && target.unit.includes(',')) {
+    const units = target.unit.split(',').map(u => u.trim());
+    if (units.length === target.targetValue.length) {
+      targetDisplay = target.targetValue.map((v, i) => `${v} ${units[i]}`).join(', ');
+    }
+  }
+  lines.push(`Muster-Zielwert: ${targetDisplay}`);
+
+  // ── Proof A ──
+  lines.push(`\n[Proof A: Logik & Folgefehler-Test]`);
+  if (result.ast.length === 0) {
+    lines.push(`✗ Die KI konnte keinen gültigen mathematischen Rechenweg aus der Schülerantwort extrahieren (AST leer).`);
+  } else if (result.sandboxErrors.length === 0) {
+    lines.push(`✓ Der extrahierte Schüler-AST ist mathematisch in sich vollkommen fehlerfrei.`);
+    lines.push(`  [DEBUG-AST]: ${JSON.stringify(result.ast)}`);
   } else {
-    lines.push(
-      `Fazit: ${result.primaryErrors} Primärfehler, ` +
-      `${result.consecutiveErrors} Folgefehler-Kompensation(en), ` +
-      `${result.totalPoints}/${result.maxPoints} Punkte`
-    );
+    lines.push(`✗ Die Sandbox hat interne Verrechner im Weg des Schülers gefunden:\n`);
+    result.sandboxErrors.forEach(err => lines.push(`* ${err}`));
+  }
+
+  // ── Proof B ──
+  lines.push(`\n[Proof B: Ziel-Test]`);
+  if (result.isGoalReached && !result.unitMismatch) {
+    if (result.sandboxErrors.length === 0) {
+      lines.push(`✓ Der Schüler hat das Endziel komplett fehlerfrei erreicht.`);
+    } else {
+      lines.push(`⚠ Der Schüler hat den Endziel-Zahlenwert zwar notiert, ABER der Rechenweg dorthin enthält Rechenfehler (siehe Proof A)!`);
+    }
+  } else if (result.isGoalReached && result.unitMismatch) {
+    lines.push(`⚠ Der berechnete Zahlenwert stimmt (evtl. korrekte SI-Normalisierung), aber die vom Schüler notierte Einheitsbezeichnung weicht ab oder ist physikalisch falsch. Details siehe [Einheiten-Analyse].`);
+  } else {
+    lines.push(`✗ Der Schüler hat das Endziel verfehlt oder nicht vollständig gelöst.`);
+  }
+
+  // Reached/missed targets (only natural values, not SI-expanded)
+  if (result.reachedTargets && result.reachedTargets.length > 0) {
+    if (result.sandboxErrors.length === 0) {
+      lines.push(`✓ Folgende Meilensteine/Teilziele wurden im Rechenweg fehlerfrei gefunden: ${result.reachedTargets.join(', ')}`);
+    } else {
+      lines.push(`⚠ Folgende Meilensteine/Teilziele wurden als Zahl notiert (Achtung, evtl. fiktiv/unlogisch durch obige Rechenfehler!): ${result.reachedTargets.join(', ')}`);
+    }
+  }
+  if (result.missedTargets && result.missedTargets.length > 0) {
+    lines.push(`✗ Folgende Meilensteine/Teilziele wurden NICHT erreicht oder übersprungen: ${result.missedTargets.join(', ')}`);
+  }
+
+  // ── Unit Analysis (NEW in V7) ──
+  if (result.unitMismatch && result.unitDetails) {
+    lines.push(`\n[Einheiten-Analyse]`);
+    result.unitDetails.forEach(detail => {
+      if (detail.isUnitMismatch) {
+        const studentUnitStr = detail.studentUnit ? ` (Schüler notierte: ${detail.studentUnit})` : '';
+        lines.push(`⚠ Zielwert ${detail.targetValue} ${detail.expectedUnit}: Der berechnete nackte Zahlenwert stimmt (entspricht ggf. der SI-Basiseinheit), aber die notierte Einheit ist physikalisch falsch oder passt nicht zum Wert${studentUnitStr}.`);
+        lines.push(`  → Prüfe die Einheitsbezeichnung im Schülertext. Rechenweg-Punkt: JA, Einheits-Punkt: abhängig vom Erwartungshorizont.`);
+      }
+    });
+  }
+
+  // ── Grading Rubric ──
+  if (target.gradingRubric && target.gradingRubric.trim().length > 0) {
+    lines.push(`\n--- LEHRER-ERWARTUNGSHORIZONT ---`);
+    lines.push(target.gradingRubric);
   }
 
   return lines.join('\n');

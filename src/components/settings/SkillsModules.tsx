@@ -993,7 +993,6 @@ ${skill.prompt || ''}`;
                     onClose={() => setIsCalcTraceModalOpen(false)}
                     initialTrace={editingSkillData?.calcTrace}
                     taskName={editingSkillData?.name || "Benutzerdefinierter Skill"}
-                    taskContent={editingSkillData?.taskText || editingSkillData?.description || editingSkillData?.name || ""}
                     onSave={(updatedTrace) => {
                         setEditingSkillData({
                             ...editingSkillData,

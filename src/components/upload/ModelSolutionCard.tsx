@@ -19,7 +19,6 @@ import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { STANDARD_SKILL_PROFILES } from '@/lib/ai/standard-skills-profiles';
-import { AutoPilotConfigModal } from './AutoPilotConfigModal';
 import { downloadFile } from '@/lib/file-utils';
 
 
@@ -54,7 +53,6 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
     const [activeGroupName, setActiveGroupName] = useState<string>("");
     const [generatingGraphForTask, setGeneratingGraphForTask] = useState<number | null>(null);
     const [editingGraphTaskIdx, setEditingGraphTaskIdx] = useState<number | null>(null);
-    const [showAutoPilotConfig, setShowAutoPilotConfig] = useState<boolean>(false);
     const [showEngineSelectionTaskIdx, setShowEngineSelectionTaskIdx] = useState<number | null>(null);
 
     const [isBatchGenerating, setIsBatchGenerating] = useState<boolean>(false);
@@ -127,7 +125,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
     const eligibleTaskIndices = useMemo(() => {
         return tasksLayout
             .map((t, idx) => ({ t, idx }))
-            .filter(({ t }) => t.suggestGraph && !t.gradingGraph && !t.calcTrace)
+            .filter(({ t }) => t.suggestGraph && !t.gradingGraph && !t.targetGoal)
             .map(({ idx }) => idx);
     }, [tasksLayout]);
 
@@ -136,7 +134,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         if (suggestedTasks.length === 0) return false;
         return suggestedTasks.every(t => {
             const hasValidGraph = t.gradingGraph && (t.gradingGraph.validation?.isValid ?? true);
-            const hasValidTrace = t.calcTrace && ((t.calcTrace as any).validation?.isValid ?? true);
+            const hasValidTrace = t.targetGoal; // Target Goals are always valid once extracted
             return hasValidGraph || hasValidTrace;
         });
     }, [tasksLayout]);
@@ -340,20 +338,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         return persistSkillData(name, newSkill, taskIdx, (task) => ({ ...task, gradingGraph: graph }));
     }, [persistSkillData]);
 
-    const persistCalcTraceAsSkill = useCallback(async (name: string, trace: any, taskIdx: number) => {
-        const newSkill = {
-            id: '',
-            name,
-            category: 'calc-skills',
-            description: `Automatisch generierte Rechenkette für ${name}.`,
-            promptSnippet: `KORREKTUR-DIREKTIVE FÜR CALCTRACE-BEWERTUNG:\nNutze die definierte Rechenkette zur mathematischen Prüfung und Folgefehler-Kompensation.`,
-            isCustom: true,
-            isGraphBased: false,
-            isCalcTrace: true,
-            calcTrace: trace
-        };
-        return persistSkillData(name, newSkill, taskIdx, (task) => ({ ...task, calcTrace: trace }));
-    }, [persistSkillData]);
+    // persistCalcTraceAsSkill removed
 
     const handleStartAutoPilot = useCallback(async (configs: Record<number, { discipline: 'standard' | 'vlsm'; disablePoints: boolean }>) => {
         if (eligibleTaskIndices.length === 0 || isBatchGenerating) return;
@@ -426,23 +411,22 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             setBatchStatus(prev => ({ ...prev, [idx]: 'error' }));
                         }
                     } else {
-                        // CalcTrace Autopilot
+                        // Calc Goal Autopilot
                         if (onGenerateCalcTrace) {
-                            onTasksChange?.(prevTasks => {
-                                const updated = [...prevTasks];
-                                if (updated[idx]) {
-                                    updated[idx] = {
-                                        ...updated[idx],
-                                        taskType: 'calc-trace'
-                                    };
-                                }
-                                return updated;
-                            });
-                            
-                            const note = `SPEZIFIKATION: Bitte erstelle eine flache Rechenkette (CalcTrace).`;
-                            const generatedTrace = await onGenerateCalcTrace(idx, content, note);
-                            if (generatedTrace) {
-                                await persistCalcTraceAsSkill(skillName, generatedTrace, idx);
+                            const note = `SPEZIFIKATION: Bitte extrahiere das Endziel und den Erwartungshorizont (TargetGoal).`;
+                            const generatedGoal = await onGenerateCalcTrace(idx, content, note);
+                            if (generatedGoal) {
+                                onTasksChange?.(prevTasks => {
+                                    const updated = [...prevTasks];
+                                    if (updated[idx]) {
+                                        updated[idx] = {
+                                            ...updated[idx],
+                                            taskType: 'calc-trace', // Keep identifier for Math Tasks
+                                            targetGoal: generatedGoal
+                                        };
+                                    }
+                                    return updated;
+                                });
                                 setBatchStatus(prev => ({ ...prev, [idx]: 'success' }));
                             } else {
                                 setBatchStatus(prev => ({ ...prev, [idx]: 'error' }));
@@ -461,7 +445,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         } finally {
             setIsBatchGenerating(false);
         }
-    }, [eligibleTaskIndices, onGenerateGraph, onGenerateCalcTrace, persistGraphAsSkill, persistCalcTraceAsSkill, isBatchGenerating]);
+    }, [eligibleTaskIndices, onGenerateGraph, onGenerateCalcTrace, persistGraphAsSkill, isBatchGenerating, onTasksChange]);
 
 
 
@@ -628,7 +612,18 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                     </div>
                                     <Button
                                         disabled={isLocked || isBatchGenerating}
-                                        onClick={() => setShowAutoPilotConfig(true)}
+                                        onClick={() => {
+                                            const autoConfigs: Record<number, { discipline: 'standard' | 'vlsm'; disablePoints: boolean }> = {};
+                                            eligibleTaskIndices.forEach(idx => {
+                                                const t = tasksLayout[idx];
+                                                const isVlsm = t.predictedPluginDomain?.toLowerCase().includes('netzwerk') || t.predictedPluginDomain?.toLowerCase().includes('vlsm');
+                                                autoConfigs[idx] = {
+                                                    discipline: isVlsm ? 'vlsm' : 'standard',
+                                                    disablePoints: true
+                                                };
+                                            });
+                                            handleStartAutoPilot(autoConfigs);
+                                        }}
                                         size="sm"
                                         className={cn(
                                             "rounded-lg px-3 py-1 h-7 text-xxs font-bold tracking-wide text-primary-foreground uppercase flex items-center gap-1.5 shrink-0 transition-all duration-200",
@@ -707,7 +702,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                     const content = taskSections[originalIdx];
                                     const isCustomSkill = !!(task.taskType && task.taskType.startsWith('custom-skill-'));
                                     const customSkillData = isCustomSkill ? settings?.customSkills?.[task.taskType] : null;
-                                    const isCalcTrace = !!task.calcTrace || 
+                                    const isCalcTrace = !!task.targetGoal || 
                                                         !!customSkillData?.isCalcTrace || 
                                                         task.taskType === 'calc-trace' || 
                                                         (!task.gradingGraph && task.predictedPluginDomain === 'math');
@@ -720,7 +715,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
 
                                     const batchState = batchStatus[originalIdx];
                                     const isGeneratingThisTask = generatingGraphForTask === originalIdx || batchState === 'generating';
-                                    const validation = task.gradingGraph?.validation || (task.calcTrace as any)?.validation;
+                                    const validation = task.gradingGraph?.validation || (task.targetGoal as any)?.validation;
                                     const isValid = validation?.isValid ?? true;
                                     const valError = validation?.error;
 
@@ -746,7 +741,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                 </div>
                                             );
                                         }
-                                        if (task.gradingGraph || task.calcTrace) {
+                                        if (task.gradingGraph || task.targetGoal) {
                                             if (isValid) {
                                                 return (
                                                     <div className={cn(
@@ -783,7 +778,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                     const graphActionNode = (
                                         <div className={cn(
                                             "flex items-center gap-1.5 transition-all duration-300",
-                                            shouldSuggestGraph && !task.gradingGraph && !task.calcTrace ? "opacity-95 scale-105" : "opacity-40 hover:opacity-100"
+                                            task.suggestGraph && !task.gradingGraph && !task.targetGoal ? "opacity-95 scale-105" : "opacity-40 hover:opacity-100"
                                         )}>
                                             {statusIcon}
                                             <button
@@ -791,7 +786,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                 disabled={isGeneratingThisTask || batchState === 'waiting'}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    if (task.gradingGraph || task.calcTrace) {
+                                                    if (task.gradingGraph || task.targetGoal) {
                                                         setEditingGraphTaskIdx(originalIdx);
                                                     } else {
                                                         setShowEngineSelectionTaskIdx(originalIdx);
@@ -799,7 +794,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                 }}
                                                 title={isLocked 
                                                     ? (isCalcTrace ? "Rechenkette ansehen (Schreibgeschützt)" : "Bewertungs-Graph ansehen (Schreibgeschützt)") 
-                                                    : ((task.gradingGraph || task.calcTrace) 
+                                                    : ((task.gradingGraph || task.targetGoal) 
                                                         ? (isCustomSkill ? `Vorlage "${templateName}" bearbeiten` : (isCalcTrace ? "Rechenkette bearbeiten" : "Bewertungs-Graph bearbeiten")) 
                                                         : (shouldSuggestGraph 
                                                             ? "Bewertungs-Struktur erstellen oder zuweisen (KI-Empfehlung)" 
@@ -807,7 +802,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                 }
                                                 className={cn(
                                                     "h-7 w-7 rounded-lg transition-all flex items-center justify-center shrink-0 border select-none cursor-pointer focus:outline-none relative",
-                                                    (task.gradingGraph || task.calcTrace) 
+                                                    (task.gradingGraph || task.targetGoal) 
                                                         ? (isCustomSkill 
                                                             ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 hover:border-primary/30" 
                                                             : (isCalcTrace 
@@ -818,15 +813,15 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                             : "border-dashed border-border text-muted-foreground hover:text-primary hover:border-primary/50")
                                                 )}
                                             >
-                                                <Sparkles size={12} className={cn("shrink-0", (task.gradingGraph || task.calcTrace || shouldSuggestGraph) && "animate-pulse")} />
-                                                {shouldSuggestGraph && !task.gradingGraph && !task.calcTrace && !isGeneratingThisTask && batchState !== 'waiting' && (
+                                                <Sparkles size={12} className={cn("shrink-0", (task.gradingGraph || task.targetGoal || shouldSuggestGraph) && "animate-pulse")} />
+                                                {shouldSuggestGraph && !task.gradingGraph && !task.targetGoal && !isGeneratingThisTask && batchState !== 'waiting' && (
                                                     <span className="absolute -top-1.5 -right-1.5 flex h-2.5 w-2.5">
                                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
                                                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
                                                     </span>
                                                 )}
                                             </button>
-                                            {shouldSuggestGraph && !task.gradingGraph && !task.calcTrace && !isGeneratingThisTask && (
+                                            {shouldSuggestGraph && !task.gradingGraph && !task.targetGoal && !isGeneratingThisTask && (
                                                 <button
                                                     type="button"
                                                     onClick={handleToggleSuggestGraph}
@@ -837,7 +832,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                     <ToggleRight size={12} />
                                                 </button>
                                             )}
-                                            {!shouldSuggestGraph && !task.gradingGraph && !task.calcTrace && eligibleTaskIndices.length > 0 && (
+                                            {!shouldSuggestGraph && !task.gradingGraph && !task.targetGoal && eligibleTaskIndices.length > 0 && (
                                                 <button
                                                     type="button"
                                                     onClick={handleToggleSuggestGraph}
@@ -932,7 +927,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
             {editingGraphTaskIdx !== null && (() => {
                 const task = tasksLayout[editingGraphTaskIdx];
                 const content = taskSections[editingGraphTaskIdx] || "";
-                const isCalcTraceTask = !!task?.calcTrace || 
+                const isCalcTraceTask = !!task?.targetGoal || 
                                         (task?.taskType && settings?.customSkills?.[task.taskType]?.isCalcTrace) ||
                                         task?.taskType === 'calc-trace' ||
                                         (!task?.gradingGraph && task?.predictedPluginDomain === 'math');
@@ -942,83 +937,16 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         <CalcTraceModal
                             isOpen={editingGraphTaskIdx !== null}
                             onClose={() => setEditingGraphTaskIdx(null)}
-                            initialTrace={task?.calcTrace || settings?.customSkills?.[task.taskType]?.calcTrace}
+                            initialTrace={task?.targetGoal}
                             isLocked={isLocked}
                             taskName={task?.name || `Aufgabe ${editingGraphTaskIdx + 1}`}
-                            taskContent={content && content.trim() ? content : (modelSolution || "")}
-                            taskType={task?.taskType}
-                            customSkills={settings?.customSkills}
-                            settings={settings}
-                            appMode={appMode}
-                            onEngineChange={(newEngine) => {
+                            onSave={(goal) => {
                                 const updatedTasks = [...tasksLayout];
-                                const currentTask = updatedTasks[editingGraphTaskIdx];
-                                
-                                if (newEngine === 'default') {
-                                    updatedTasks[editingGraphTaskIdx] = {
-                                        ...currentTask,
-                                        taskType: 'default',
-                                        calcTrace: undefined
-                                    };
-                                } else {
-                                    const selectedSkill = settings?.customSkills?.[newEngine];
-                                    updatedTasks[editingGraphTaskIdx] = {
-                                        ...currentTask,
-                                        taskType: newEngine,
-                                        calcTrace: selectedSkill?.calcTrace
-                                    };
-                                }
-                                onTasksChange?.(updatedTasks);
-                            }}
-                            onSaveCustomSkill={(name, trace) => {
-                                persistCalcTraceAsSkill(name, trace, editingGraphTaskIdx);
-                                alert(`Skill "${name}" erfolgreich im Skill Center gespeichert und dem active Skill-Profil hinzugefügt!`);
-                            }}
-                            isGenerating={generatingGraphForTask === editingGraphTaskIdx}
-                            onRegenerateCalcTrace={async (userNotes) => {
-                                if (onGenerateCalcTrace && content && content.trim().length > 10) {
-                                    setGeneratingGraphForTask(editingGraphTaskIdx);
-                                    try {
-                                        const generatedTrace = await onGenerateCalcTrace(editingGraphTaskIdx, content, userNotes);
-                                        if (generatedTrace) {
-                                            const updatedTasks = [...tasksLayout];
-                                            updatedTasks[editingGraphTaskIdx] = {
-                                                ...updatedTasks[editingGraphTaskIdx],
-                                                taskType: 'calc-trace',
-                                                calcTrace: generatedTrace
-                                            };
-                                            onTasksChange?.(updatedTasks);
-                                        }
-                                        return generatedTrace;
-                                    } catch (err) {
-                                        // Handled by parent
-                                    } finally {
-                                        setGeneratingGraphForTask(null);
-                                    }
-                                }
-                                return null;
-                            }}
-                            onDeleteCalcTrace={() => {
-                                const updatedTasks = [...tasksLayout];
-                                const currentTask = updatedTasks[editingGraphTaskIdx];
                                 updatedTasks[editingGraphTaskIdx] = {
-                                    ...currentTask,
-                                    taskType: 'default',
-                                    calcTrace: undefined,
-                                    calcTraceResult: undefined
+                                    ...updatedTasks[editingGraphTaskIdx],
+                                    targetGoal: goal
                                 };
                                 onTasksChange?.(updatedTasks);
-                                setEditingGraphTaskIdx(null);
-                            }}
-                            onSave={(newTrace) => {
-                                const updatedTasks = [...tasksLayout];
-                                const currentTask = updatedTasks[editingGraphTaskIdx];
-                                updatedTasks[editingGraphTaskIdx] = {
-                                    ...currentTask,
-                                    calcTrace: newTrace
-                                };
-                                onTasksChange?.(updatedTasks);
-                                setEditingGraphTaskIdx(null);
                             }}
                         />
                     );
@@ -1118,13 +1046,6 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                     />
                 );
             })()}
-            <AutoPilotConfigModal
-                isOpen={showAutoPilotConfig}
-                onClose={() => setShowAutoPilotConfig(false)}
-                onConfirm={handleStartAutoPilot}
-                eligibleTaskIndices={eligibleTaskIndices}
-                tasksLayout={tasksLayout}
-            />
             {showEngineSelectionTaskIdx !== null && createPortal(
                 <div 
                     className="fixed inset-0 z-[9000] flex items-center justify-center p-4 bg-foreground/60 backdrop-blur-md animate-fade-in font-inter text-foreground"
@@ -1194,7 +1115,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                             updated[taskIdx] = {
                                                 ...updated[taskIdx],
                                                 taskType: 'calc-trace',
-                                                calcTrace: { taskId: `task-${Date.now()}`, steps: [] }
+                                                targetGoal: { targetValue: 0, maxPoints: Number(updated[taskIdx].maxPoints) || 1, unit: '', gradingRubric: '' }
                                             };
                                         }
                                         return updated;

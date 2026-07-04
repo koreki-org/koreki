@@ -26,7 +26,7 @@ interface BatchProcessorProps {
     onExportTeacher: () => void;
     onExportStudents: () => void;
     onExportIndividual: () => void;
-    onExportPDFs: () => void;
+    onExportPDFs: (mode: 'none' | 'total' | 'detailed') => void;
     onToggleSelect: (idx: number) => void;
     onToggleType: (idx: number) => void;
     onUpdateText: (idx: number, text: string, tasks?: Task[]) => void;
