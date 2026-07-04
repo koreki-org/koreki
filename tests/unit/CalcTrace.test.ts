@@ -19,7 +19,7 @@ describe('CalcTrace Sandbox V6', () => {
     
     expect(result.sandboxErrors.length).toBe(0);
     expect(result.isGoalReached).toBe(true);
-    expect(result.totalPoints).toBe(5);
+    expect(result).not.toHaveProperty('totalPoints');
   });
 
   it('should detect a sandbox error if the internal math is wrong (Proof A fails)', () => {
@@ -31,7 +31,7 @@ describe('CalcTrace Sandbox V6', () => {
     
     expect(result.sandboxErrors.length).toBe(1);
     expect(result.sandboxErrors[0]).toContain('Rechenfehler');
-    expect(result.totalPoints).toBeUndefined(); // Leaves for LLM
+    expect(result).not.toHaveProperty('totalPoints'); // Leaves for LLM
   });
 
   it('should detect if the math is correct but target is missed (Proof B fails)', () => {
@@ -43,7 +43,7 @@ describe('CalcTrace Sandbox V6', () => {
     
     expect(result.sandboxErrors.length).toBe(0); // Internally consistent
     expect(result.isGoalReached).toBe(false); // But 100 !== 120
-    expect(result.totalPoints).toBeUndefined(); // LLM gives partial points
+    expect(result).not.toHaveProperty('totalPoints'); // LLM gives partial points
   });
 
   it('should allow consecutive calculations referencing previous step ids', () => {
@@ -56,7 +56,7 @@ describe('CalcTrace Sandbox V6', () => {
     
     expect(result.sandboxErrors.length).toBe(0);
     expect(result.isGoalReached).toBe(true);
-    expect(result.totalPoints).toBe(5);
+    expect(result).not.toHaveProperty('totalPoints');
   });
 
   it('should block unsafe mathjs syntax', () => {
