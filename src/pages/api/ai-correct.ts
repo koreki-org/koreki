@@ -131,9 +131,6 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         }
                         
                         task.calcTraceResult = calcTraceResult;
-                        if (calcTraceResult.totalPoints !== undefined) {
-                            task.pointsObtained = calcTraceResult.totalPoints;
-                        }
                         task.maxPoints = targetGoal.maxPoints || task.maxPoints;
                     } catch (err: any) {
                         logger.error('Error in server-side CalcTrace execution', { taskName: task.name, error: err.message });

@@ -172,13 +172,7 @@ export function buildCorrectionPrompt(
                     templateStr = templateStr.replace('{{ENGINE_STATUS_TEXT}}', `Endziel erreicht: ${t.calcTraceResult.isGoalReached ? 'JA' : 'NEIN'}.`);
                 }
 
-                if (disablePointsActive) {
-                    templateStr = templateStr.replace('{{POINTS_TEXT}}', `[Muss durch LLM auf Basis der Sandbox-Ergebnisse ermittelt werden (max ${t.calcTraceResult.maxPoints} P)]`);
-                } else if (t.calcTraceResult.totalPoints === undefined) {
-                    templateStr = templateStr.replace('{{POINTS_TEXT}}', `[Muss durch LLM auf Basis der Sandbox-Ergebnisse ermittelt werden (max ${t.calcTraceResult.maxPoints} P)]`);
-                } else {
-                    templateStr = templateStr.replace('{{POINTS_TEXT}}', `${t.calcTraceResult.totalPoints} von max ${t.calcTraceResult.maxPoints} Punkten.`);
-                }
+                templateStr = templateStr.replace('{{POINTS_TEXT}}', `[Muss durch LLM auf Basis der Sandbox-Ergebnisse ermittelt werden (max ${t.calcTraceResult.maxPoints} P)]`);
                 
                 let detailsStr = '';
                 if (t.calcTraceResult.reachedTargets && t.calcTraceResult.reachedTargets.length > 0) {
@@ -196,13 +190,7 @@ export function buildCorrectionPrompt(
                 }
                 templateStr = templateStr.replace('</engine_status>', `${detailsStr}</engine_status>`);
 
-                if (disablePointsActive || t.calcTraceResult.totalPoints === undefined) {
-                    templateStr = templateStr.replace('{{HYBRID_INSTRUCTION_BLOCK}}', mathHybridInstruction);
-                } else {
-                    let autoStr = mathAutoInstruction.replace('{{POINTS}}', String(t.calcTraceResult.totalPoints));
-                    autoStr += `\nÜbernimm zwingend die oben berechnete Punktzahl (${t.calcTraceResult.totalPoints} von ${t.calcTraceResult.maxPoints}) für diese Aufgabe und begründe sie im Feedback anhand der Detail-Ergebnisse.\n`;
-                    templateStr = templateStr.replace('{{HYBRID_INSTRUCTION_BLOCK}}', autoStr);
-                }
+                templateStr = templateStr.replace('{{HYBRID_INSTRUCTION_BLOCK}}', mathHybridInstruction);
                 
                 calcTraceVorevaluierungBlock += `\n` + templateStr;
             }

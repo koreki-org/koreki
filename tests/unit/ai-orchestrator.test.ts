@@ -142,7 +142,6 @@ describe('AI Orchestrator (Layer 1 Unit)', () => {
                     content: '',
                     taskType: 'custom-skill-1',
                     calcTraceResult: {
-                        totalPoints: 3,
                         maxPoints: 6,
                         isGoalReached: false,
                         sandboxErrors: [],
@@ -171,7 +170,7 @@ describe('AI Orchestrator (Layer 1 Unit)', () => {
             const result = parseCorrectionResult(rawAnalysis, layoutWithCalcTrace);
 
             expect(result.tasks).toHaveLength(1);
-            expect(result.tasks[0].pointsObtained).toBe(3); // Overridden to strict 3 points!
+            expect(result.tasks[0].pointsObtained).toBe(5); // Now it's ALWAYS hybrid for CalcTrace!
             expect(result.tasks[0].feedback).toContain('[📐 CalcTrace Engine - Mathematischer Abgleich]');
             expect(result.tasks[0].feedback).toContain('[KI-Pädagogische Einschätzung]');
         });
@@ -184,7 +183,6 @@ describe('AI Orchestrator (Layer 1 Unit)', () => {
                     content: '',
                     taskType: 'custom-skill-1',
                     calcTraceResult: {
-                        totalPoints: undefined, // Hybrid grading: LLM decides
                         maxPoints: 6,
                         isGoalReached: false,
                         sandboxErrors: [],
