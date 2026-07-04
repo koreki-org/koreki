@@ -97,7 +97,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                         />
                                         <div className="flex flex-col">
                                             <span className="text-xs font-bold text-foreground">Keine Punkte</span>
-                                            <span className="text-[10px] text-muted-foreground">Nur Text-Feedback</span>
+                                            <span className="text-xs text-muted-foreground">Nur Text-Feedback</span>
                                         </div>
                                     </label>
                                     <label className="flex items-center gap-2.5 px-1 py-1 cursor-pointer rounded-lg hover:bg-muted/40 transition-all">
@@ -111,7 +111,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                         />
                                         <div className="flex flex-col">
                                             <span className="text-xs font-bold text-foreground">Gesamtaufgabe</span>
-                                            <span className="text-[10px] text-muted-foreground">Punkte nur pro Hauptaufgabe</span>
+                                            <span className="text-xs text-muted-foreground">Punkte nur pro Hauptaufgabe</span>
                                         </div>
                                     </label>
                                     <label className="flex items-center gap-2.5 px-1 py-1 cursor-pointer rounded-lg hover:bg-muted/40 transition-all">
@@ -125,7 +125,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                         />
                                         <div className="flex flex-col">
                                             <span className="text-xs font-bold text-foreground">Detailliert</span>
-                                            <span className="text-[10px] text-muted-foreground">Teilaufgaben & Summenzeile</span>
+                                            <span className="text-xs text-muted-foreground">Teilaufgaben & Summenzeile</span>
                                         </div>
                                     </label>
                                 </div>
@@ -175,7 +175,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                     <span className="flex items-center gap-2">
                                         <Download size={14} /> Einzel-PDFs (ZIP)
                                     </span>
-                                    <span className="text-[10px] font-mono text-muted-foreground/60 font-bold">➔</span>
+                                    <span className="text-xs font-mono text-muted-foreground/60 font-bold">➔</span>
                                 </button>
                             </div>
                         )}

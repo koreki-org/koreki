@@ -180,7 +180,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                 return (
                                     <div key={idx} className="flex gap-4 items-end animate-fade-in">
                                         <div className="flex-1 space-y-2">
-                                            <label className="text-[10px] font-bold uppercase text-muted-foreground/70">{label}</label>
+                                            <label className="text-xs font-bold uppercase text-muted-foreground/70">{label}</label>
                                             <Input 
                                                 type="text" 
                                                 value={row.value}
@@ -191,7 +191,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                             />
                                         </div>
                                         <div className="w-32 space-y-2">
-                                            <label className="text-[10px] font-bold uppercase text-muted-foreground/70">Einheit</label>
+                                            <label className="text-xs font-bold uppercase text-muted-foreground/70">Einheit</label>
                                             <Input 
                                                 value={row.unit}
                                                 disabled={isLocked}
