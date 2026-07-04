@@ -1,7 +1,9 @@
 import { exportIndividualPDFs } from '../../src/lib/pdf';
 import { cleanDidacticalMarks, formatMarkdownTableForPDF } from '../../src/lib/pdf-utils';
+import { toSafeString } from '../../src/lib/validation';
 import jsPDF from 'jspdf';
 import JSZip from 'jszip';
+import autoTable from 'jspdf-autotable';
 
 // Redundant local mocks removed. Using global mocks from jest.setup.js. 🏮🛡️
 jest.mock('../../src/lib/env-context', () => ({
@@ -11,6 +13,9 @@ jest.mock('../../src/lib/env-context', () => ({
 
 
 describe('PDF Utils tests', () => {
+    it('toSafeString should convert arrays to strings', () => {
+        expect(toSafeString(['a', 'b'])).toBe('a\n\nb');
+    });
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -28,6 +33,10 @@ describe('PDF Utils tests', () => {
             }
             return originalCreateElement(tag);
         });
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
     });
 
     const mockResults = [
@@ -83,6 +92,89 @@ describe('PDF Utils tests', () => {
             expect(formatted).toContain('• Subnetz B:');
             expect(formatted).toContain('- Netz-ID: 10.0.1.0 [f]');
             expect(formatted).not.toContain('- First: -'); // Omitted empty/dash cells
+        });
+    });
+
+    describe('Regression: non-string fields from LLM response (arrays, etc.)', () => {
+        it('should handle overallFeedback and task.feedback when they are arrays', async () => {
+            const rawResults = [
+                {
+                    studentName: 'Max Mustermann',
+                    analysis: {
+                        overallFeedback: ['Erste Zeile des Feedbacks', 'Zweite Zeile des Feedbacks'] as any,
+                        tasks: [
+                            { 
+                                name: 'Aufgabe 1', 
+                                feedback: ['Schritt 1 OK', 'Schritt 2 unvollständig'] as any 
+                            }
+                        ]
+                    }
+                }
+            ];
+
+            await expect(exportIndividualPDFs(rawResults)).resolves.not.toThrow();
+            expect(jsPDF).toHaveBeenCalled();
+            expect(JSZip).toHaveBeenCalled();
+        });
+    });
+
+    describe('Points Display Modes', () => {
+        const mockResults = [
+            {
+                studentName: 'Max Mustermann',
+                analysis: {
+                    overallFeedback: 'Gut gemacht',
+                    tasks: [
+                        { name: 'Aufgabe 1a', pointsObtained: 3, maxPoints: 4, feedback: 'Teil A' },
+                        { name: 'Aufgabe 1b', pointsObtained: 5, maxPoints: 6, feedback: 'Teil B' },
+                        { name: 'Aufgabe 2', pointsObtained: 10, maxPoints: 10, feedback: 'Teil C' }
+                    ]
+                }
+            }
+        ];
+
+        it('should generate PDF table without points in "none" mode', async () => {
+            await exportIndividualPDFs(mockResults, 'none');
+            expect(autoTable).toHaveBeenLastCalledWith(
+                expect.any(Object),
+                expect.objectContaining({
+                    body: [
+                        ['Aufgabe 1a', 'Teil A'],
+                        ['Aufgabe 1b', 'Teil B'],
+                        ['Aufgabe 2', 'Teil C']
+                    ]
+                })
+            );
+        });
+
+        it('should generate PDF table with parent sum points in "total" mode', async () => {
+            await exportIndividualPDFs(mockResults, 'total');
+            expect(autoTable).toHaveBeenLastCalledWith(
+                expect.any(Object),
+                expect.objectContaining({
+                    body: [
+                        ['Aufgabe 1a', 'Teil A'],
+                        ['Aufgabe 1b', 'Teil B'],
+                        ['Gesamt Aufgabe 1 (8 / 10 P.)', ''],
+                        ['Aufgabe 2 (10 / 10 P.)', 'Teil C']
+                    ]
+                })
+            );
+        });
+
+        it('should generate PDF table with subtask and parent sum points in "detailed" mode', async () => {
+            await exportIndividualPDFs(mockResults, 'detailed');
+            expect(autoTable).toHaveBeenLastCalledWith(
+                expect.any(Object),
+                expect.objectContaining({
+                    body: [
+                        ['Aufgabe 1a (3 / 4 P.)', 'Teil A'],
+                        ['Aufgabe 1b (5 / 6 P.)', 'Teil B'],
+                        ['Gesamt Aufgabe 1 (8 / 10 P.)', ''],
+                        ['Aufgabe 2 (10 / 10 P.)', 'Teil C']
+                    ]
+                })
+            );
         });
     });
 });

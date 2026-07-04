@@ -141,19 +141,16 @@ describe('AI Orchestrator (Layer 1 Unit)', () => {
                     maxPoints: 6,
                     content: '',
                     taskType: 'custom-skill-1',
-                    calcTrace: {
-                        taskId: 'Aufgabe 1a',
-                        disablePoints: false,
-                        steps: []
-                    },
                     calcTraceResult: {
                         totalPoints: 3,
                         maxPoints: 6,
-                        primaryErrors: 1,
-                        consecutiveErrors: 0,
-                        results: [
-                            { id: 'r_ges', label: 'Gesamtwiderstand', expected: 6.5, studentValue: 6.5, computed: 6.5, status: 'correct', pointsAwarded: 3, pointsMax: 3 },
-                            { id: 'i_ges', label: 'Stromstärke', expected: 1.846, studentValue: 0.001846, computed: 0.001846, status: 'error', pointsAwarded: 0, pointsMax: 3 }
+                        isGoalReached: false,
+                        sandboxErrors: [],
+                        reachedTargets: [6.5],
+                        missedTargets: [1.846],
+                        ast: [
+                            { id: 'r_ges', formula: '4 + 2.5', result: 6.5 },
+                            { id: 'i_ges', formula: '12 / r_ges', result: 0.001846 }
                         ]
                     }
                 }
@@ -186,19 +183,16 @@ describe('AI Orchestrator (Layer 1 Unit)', () => {
                     maxPoints: 6,
                     content: '',
                     taskType: 'custom-skill-1',
-                    calcTrace: {
-                        taskId: 'Aufgabe 1a',
-                        disablePoints: true, // Hybrid grading active
-                        steps: []
-                    },
                     calcTraceResult: {
-                        totalPoints: 3,
+                        totalPoints: undefined, // Hybrid grading: LLM decides
                         maxPoints: 6,
-                        primaryErrors: 1,
-                        consecutiveErrors: 0,
-                        results: [
-                            { id: 'r_ges', label: 'Gesamtwiderstand', expected: 6.5, studentValue: 6.5, computed: 6.5, status: 'correct', pointsAwarded: 3, pointsMax: 3 },
-                            { id: 'i_ges', label: 'Stromstärke', expected: 1.846, studentValue: 0.001846, computed: 0.001846, status: 'error', pointsAwarded: 0, pointsMax: 3 }
+                        isGoalReached: false,
+                        sandboxErrors: [],
+                        reachedTargets: [6.5],
+                        missedTargets: [1.846],
+                        ast: [
+                            { id: 'r_ges', formula: '4 + 2.5', result: 6.5 },
+                            { id: 'i_ges', formula: '12 / r_ges', result: 0.001846 }
                         ]
                     }
                 }
@@ -222,6 +216,31 @@ describe('AI Orchestrator (Layer 1 Unit)', () => {
             expect(result.tasks[0].pointsObtained).toBe(5); // Retains didactical 5 points from AI!
             expect(result.tasks[0].feedback).toContain('[📐 CalcTrace Engine - Mathematischer Abgleich]');
             expect(result.tasks[0].feedback).toContain('[KI-Pädagogische Einschätzung]');
+        });
+
+        it('should validate and coerce raw AI response containing non-string fields using Zod', () => {
+            const rawAnalysis = {
+                overallFeedback: ['Gut gearbeitet', 'Weiter so!'] as any,
+                confidence: '95' as any,
+                tasks: [
+                    {
+                        name: 'Aufgabe 1',
+                        pointsObtained: '8' as any,
+                        feedback: ['Kommentar 1', 'Kommentar 2'] as any,
+                        content: ['Inhalt 1'] as any
+                    }
+                ]
+            };
+
+            const result = parseCorrectionResult(rawAnalysis);
+
+            expect(result.overallFeedback).toBe('Gut gearbeitet\n\nWeiter so!');
+            expect(result.confidence).toBe(95);
+            expect(result.tasks).toHaveLength(1);
+            expect(result.tasks[0].name).toBe('Aufgabe 1');
+            expect(result.tasks[0].pointsObtained).toBe(8);
+            expect(result.tasks[0].feedback).toBe('Kommentar 1\n\nKommentar 2');
+            expect(result.tasks[0].content).toBe('Inhalt 1');
         });
     });
 

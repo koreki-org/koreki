@@ -505,7 +505,7 @@ export default function Home() {
                                 )}
                                 onExportStudents={() => exportStudentSummaries(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult))}
                                 onExportIndividual={() => exportIndividualFeedbacks(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult))}
-                                onExportPDFs={() => exportIndividualPDFs(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult))}
+                                onExportPDFs={(mode) => void exportIndividualPDFs(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult), mode)}
                                 onExportKoreki={() => {
                                     let cases = undefined;
                                     try {

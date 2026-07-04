@@ -226,6 +226,7 @@ export interface AIAnalysisResult {
     overallMatchPercentage?: number;
     confidence?: number;
     expertProfile?: string;
+    overallFeedback?: string;
 }
 
 

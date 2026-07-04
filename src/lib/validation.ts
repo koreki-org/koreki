@@ -61,3 +61,50 @@ export const secondOpinionRequestSchema = z.object({
     })).optional()
 });
 
+export function toSafeString(value: unknown): string {
+    if (typeof value === 'string') return value;
+    if (Array.isArray(value)) return value.map(toSafeString).join('\n\n');
+    if (value == null) return '';
+    return String(value);
+}
+
+export const AIAnalysisResultSchema = z.object({
+    overallFeedback: z.preprocess(toSafeString, z.string()).optional(),
+    overallMatchPercentage: z.preprocess((val) => {
+        if (val === undefined || val === null) return undefined;
+        const num = Number(val);
+        return isNaN(num) ? undefined : num;
+    }, z.number().optional()),
+    confidence: z.preprocess((val) => {
+        if (val === undefined || val === null) return undefined;
+        const num = Number(val);
+        return isNaN(num) ? undefined : num;
+    }, z.number().optional()),
+    expertProfile: z.preprocess(toSafeString, z.string()).optional(),
+    tasks: z.preprocess((val) => {
+        if (Array.isArray(val)) return val;
+        return undefined;
+    }, z.array(
+        z.object({
+            name: z.preprocess(toSafeString, z.string()),
+            pointsObtained: z.preprocess((val) => {
+                const num = Number(val || 0);
+                return isNaN(num) ? 0 : num;
+            }, z.number()),
+            maxPoints: z.preprocess((val) => {
+                if (val === undefined || val === null) return undefined;
+                const num = Number(val);
+                return isNaN(num) ? undefined : num;
+            }, z.number().optional()),
+            feedback: z.preprocess(toSafeString, z.string()).optional(),
+            confidence: z.preprocess((val) => {
+                if (val === undefined || val === null) return undefined;
+                const num = Number(val);
+                return isNaN(num) ? undefined : num;
+            }, z.number().optional()),
+            content: z.preprocess(toSafeString, z.string()).optional(),
+        }).passthrough()
+    ).optional()),
+}).passthrough();
+
+

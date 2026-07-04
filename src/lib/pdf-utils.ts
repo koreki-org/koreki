@@ -6,14 +6,16 @@
  */
 
 import { splitFeedback } from '@/components/ui/EditableMathArea';
+import { toSafeString } from './validation';
 
 /**
  * Strips the technical PANG engine block from feedback text, keeping only
  * the pedagogical part. Safe for all student-facing output channels.
  */
-export function stripPangBlock(text: string): string {
-    if (!text) return '';
-    return splitFeedback(text).pedagogical;
+export function stripPangBlock(text: any): string {
+    const safeText = toSafeString(text);
+    if (!safeText) return '';
+    return splitFeedback(safeText).pedagogical;
 }
 
 /**
@@ -21,9 +23,10 @@ export function stripPangBlock(text: string): string {
  * removes gear/system emojis, and cleans non-ASCII symbols so that
  * standard Helvetica font renders them cleanly without corruption.
  */
-export function cleanDidacticalMarks(text: string): string {
-    if (!text) return "";
-    return text
+export function cleanDidacticalMarks(text: any): string {
+    const safeText = toSafeString(text);
+    if (!safeText) return "";
+    return safeText
         .replace(/\[⚙️/g, '[System')
         .replace(/⚙️/g, '')
         // Clean up only the emojis and private use unicode areas to prevent PDF generation crashes/mangling
@@ -36,10 +39,11 @@ export function cleanDidacticalMarks(text: string): string {
  * Parses markdown tables within the feedback string and formats them
  * into an extremely clean, readable bulleted key-value list for the PDF cell.
  */
-export function formatMarkdownTableForPDF(text: string): string {
-    if (!text) return "";
+export function formatMarkdownTableForPDF(text: any): string {
+    const safeText = toSafeString(text);
+    if (!safeText) return "";
 
-    const lines = text.split('\n');
+    const lines = safeText.split('\n');
     const tableLines: { index: number, line: string }[] = [];
 
     lines.forEach((line, idx) => {
@@ -49,7 +53,7 @@ export function formatMarkdownTableForPDF(text: string): string {
     });
 
     if (tableLines.length < 3) {
-        return cleanDidacticalMarks(text);
+        return cleanDidacticalMarks(safeText);
     }
 
     const beforeLines: string[] = [];
@@ -105,6 +109,6 @@ export function formatMarkdownTableForPDF(text: string): string {
         return result.trim();
     } catch (err) {
         console.error("Failed to parse markdown table in PDF export:", err);
-        return cleanDidacticalMarks(text);
+        return cleanDidacticalMarks(safeText);
     }
 }

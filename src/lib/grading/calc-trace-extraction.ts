@@ -23,7 +23,8 @@ export const STUDENT_AST_SCHEMA = {
         properties: {
           id: { type: "string", description: "step_1, step_2, etc." },
           formula: { type: "string", description: "mathjs compatible formula string, referencing previous step ids if needed" },
-          result: { type: "number", description: "the actual number the student wrote down as the result for this step" }
+          result: { type: "number", description: "the actual number the student wrote down as the result for this step" },
+          unit: { type: "string", description: "the physical unit the student wrote next to the result (e.g. 'mA', 'kΩ', 'W', 'V'). Omit if no unit was written." }
         },
         required: ["id", "formula", "result"]
       }
@@ -49,11 +50,32 @@ Deine Aufgabe ist es, den Rechenweg des Schülers Schritt für Schritt zu extrah
 Wandle die Rechnungen in 'mathjs' kompatible Formeln um. WICHTIG: Nutze KEINE Einheiten in den Formeln!
 WICHTIG: Schreibe in 'formula' NUR den Rechenausdruck (z.B. '4000 + 2500'). Verwende KEINE Gleichheitszeichen oder Zuweisungen (wie 'R_ges =' oder 'x =') in der 'formula'!
 WICHTIG: Verwende in Variablen keine geschweiften Klammern (nutze 'R_total' statt 'R_{total}').
-WICHTIG (Einheiten-Umrechnungen): Wenn der Schüler in seinem Ergebnis implizit eine andere Größenordnung verwendet (z.B. er rechnet numerisch in 'Wh', schreibt das Ergebnis aber als 'kWh', oder rechnet in 'A' und notiert 'mA'), MUSST du diesen Umrechnungsfaktor mathematisch zwingend an die Formel anhängen (z.B. '* 1000' oder '/ 1000' oder '* 10^-3'), damit die extrahierte Gleichung rein numerisch wieder korrekt ist!
+WICHTIG (Einheiten-Umrechnungen & Ketten-Gleichungen): Wenn der Schüler Kettenrechnungen durchführt (z.B. '2300 * 5/60 = 191.66 = 0.1916 kWh' oder 'A = B = C'), darfst du NIEMALS versuchen, alles in eine einzige Formel zu pressen. Du MUSST solche Ketten in MEHRERE sequentielle 'steps' aufteilen!
+Beispiel für '2300 * 5/60 = 191.66 = 0.1916 kWh':
+- Schritt 1: 'formula': '2300 * 5/60', 'result': 191.66
+- Schritt 2 (Einheitenumrechnung): 'formula': 'step_1 / 1000', 'result': 0.1916, 'unit': 'kWh'
+Auf diese Weise bleibt die Mathematik pro Schritt (Proof A) immer zu 100% korrekt.
 Wenn der Schüler ein Zwischenergebnis nutzt, setze die 'id' des vorherigen Schritts (z.B. step_1) in die Formel ein.
 Trage EXAKT das vom Schüler notierte Ergebnis als echte JSON-Zahl im Feld 'result' ein.
-🚨 KRITISCH: KORRIGIERE NIEMALS DIE RECHNUNG ODER DAS ERGEBNIS DES SCHÜLERS! Wenn der Schüler z.B. "23 * 10 = 2300" schreibt, MUSST du "formula": "23 * 10" und "result": 2300 extrahieren, auch wenn das mathematisch völlig falsch ist! Du bist ein stumpfer Daten-Parser, KEIN Korrektor! Wenn du die Zahlen korrigierst, zerstörst du unser System!
-WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt MUSS genau einen Key namens "steps" enthalten. Der Wert von "steps" ist ein Array. Jedes Objekt in diesem Array MUSS exakt diese drei Keys haben: "id" (String), "formula" (String) und "result" (Number). Verwende keine anderen Keys!`;
+WICHTIG (Einheiten): Wenn der Schüler eine physikalische Einheit neben dem Ergebnis notiert hat (z.B. '= 6500 Ω' oder '= 0,001846 mA'), extrahiere diese Einheit im Feld 'unit'. Verwende die Standardabkürzung (z.B. 'A', 'mA', 'V', 'kΩ', 'W', 'kWh'). Wenn KEINE Einheit notiert wurde, lasse das Feld 'unit' weg.
+
+🚨 KRITISCH: KORRIGIERE NIEMALS DIE RECHNUNG DES SCHÜLERS! Du bist ein stumpfer Daten-Parser!
+Wenn der Schüler einen offensichtlichen Rechenfehler macht (z.B. 12 * 4 = 50), MUSST du genau diese falschen Zahlen extrahieren!
+BEISPIEL FÜR RECHENFEHLER DES SCHÜLERS:
+Schülertext: "F = m * a = 12 kg * 4 m/s² = 50 N"
+❌ FALSCHE EXTRAKTION (Du hast das Ergebnis korrigiert! Das zerstört unser System!): 
+{"id":"step_1", "formula":"12 * 4", "result": 48, "unit":"N"}
+✅ KORREKTE EXTRAKTION (Stumpf abgetippt was dort steht):
+{"id":"step_1", "formula":"12 * 4", "result": 50, "unit":"N"}
+
+BEISPIEL FÜR NACKTES ENDERGEBNIS (Kein Rechenweg):
+Schülertext: "2.5 GHz"
+❌ FALSCHE EXTRAKTION (Erfinde keine Formeln oder löse SI-Präfixe auf!):
+{"id":"step_1", "formula":"2.5 * 10^9", "result": 2500000000, "unit":"Hz"}
+✅ KORREKTE EXTRAKTION (Nimm einfach die nackte Zahl als Formel):
+{"id":"step_1", "formula":"2.5", "result": 2.5, "unit":"GHz"}
+
+WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt MUSS genau einen Key namens "steps" enthalten. Der Wert von "steps" ist ein Array. Jedes Objekt in diesem Array MUSS die Keys "id" (String), "formula" (String) und "result" (Number) haben. Optional: "unit" (String). Verwende keine anderen Keys!`;
 
     const payload = {
       studentText,

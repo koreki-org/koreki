@@ -28,8 +28,9 @@ import correctionUserDefault from '../../prompts/core/default/correction/user.md
 import studentSimulatorSystemDefault from '../../prompts/student-simulator/system.md';
 import studentSimulatorUserDefault from '../../prompts/student-simulator/user.md';
 import mathFallbackInstruction from '../../prompts/core/default/correction/math-engine/fallback-instruction.md';
-import mathHybridInstruction from '../../prompts/core/default/correction/math-engine/hybrid-instruction.md';
 import mathAutoInstruction from '../../prompts/core/default/correction/math-engine/auto-instruction.md';
+import mathHybridInstruction from '../../prompts/core/default/correction/math-engine/hybrid-instruction.md';
+import calcTraceTemplate from '../../prompts/core/default/correction/math-engine/calc-trace-template.md';
 import mathHybridHeader from '../../prompts/core/default/correction/math-engine/hybrid-header.md';
 import mathAutoHeader from '../../prompts/core/default/correction/math-engine/auto-header.md';
 
@@ -161,28 +162,49 @@ export function buildCorrectionPrompt(
             if (t.calcTraceResult) {
                 const disablePointsActive = shouldDisablePoints(t.taskType, t.targetGoal);
 
-                calcTraceVorevaluierungBlock += `\n\n### MATHEMATISCH-DETERMINISTISCHE CALCTRACE VOREVALUIERUNG FÜR "${t.name}":\n`;
-                calcTraceVorevaluierungBlock += (disablePointsActive ? mathHybridHeader : `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!`) + `\n\n`;
-                calcTraceVorevaluierungBlock += mathFallbackInstruction + `\n\n`;
+                let templateStr = calcTraceTemplate;
+                templateStr = templateStr.replace('{{TASK_NAME}}', t.name);
+                templateStr = templateStr.replace('{{MATH_FALLBACK_INSTRUCTION}}', disablePointsActive ? mathHybridHeader : `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!\n\n${mathFallbackInstruction}`);
 
                 if (disablePointsActive) {
-                    calcTraceVorevaluierungBlock += `- STATUS DER ENGINE: Die Rechenkette wurde ausgewertet. Nutze diese Information (ob Ziel erreicht oder nicht) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.\n`;
+                    templateStr = templateStr.replace('{{ENGINE_STATUS_TEXT}}', `Die Rechenkette wurde ausgewertet. Nutze diese Information (ob Ziel erreicht oder nicht) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.`);
                 } else {
-                    calcTraceVorevaluierungBlock += `- ZU VERGEBENDE PUNKTE: ${t.calcTraceResult.totalPoints} von max ${t.calcTraceResult.maxPoints} Punkten.\n`;
+                    templateStr = templateStr.replace('{{ENGINE_STATUS_TEXT}}', `Endziel erreicht: ${t.calcTraceResult.isGoalReached ? 'JA' : 'NEIN'}.`);
                 }
 
-                calcTraceVorevaluierungBlock += `- DETAIL-ERGEBNIS: Endziel erreicht: ${t.calcTraceResult.isGoalReached ? 'JA' : 'NEIN'}.\n`;
+                if (disablePointsActive) {
+                    templateStr = templateStr.replace('{{POINTS_TEXT}}', `[Muss durch LLM auf Basis der Sandbox-Ergebnisse ermittelt werden (max ${t.calcTraceResult.maxPoints} P)]`);
+                } else if (t.calcTraceResult.totalPoints === undefined) {
+                    templateStr = templateStr.replace('{{POINTS_TEXT}}', `[Muss durch LLM auf Basis der Sandbox-Ergebnisse ermittelt werden (max ${t.calcTraceResult.maxPoints} P)]`);
+                } else {
+                    templateStr = templateStr.replace('{{POINTS_TEXT}}', `${t.calcTraceResult.totalPoints} von max ${t.calcTraceResult.maxPoints} Punkten.`);
+                }
                 
+                let detailsStr = '';
+                if (t.calcTraceResult.reachedTargets && t.calcTraceResult.reachedTargets.length > 0) {
+                    if (t.calcTraceResult.sandboxErrors && t.calcTraceResult.sandboxErrors.length > 0) {
+                        detailsStr += `  * NOTIERTE ZAHLENWERTE (ACHTUNG: FIKTIV DURCH RECHENFEHLER, KEINE PUNKTE GEBEN!): ${t.calcTraceResult.reachedTargets.join(', ')}\n`;
+                    } else {
+                        detailsStr += `  * ERREICHTE MEILENSTEINE: ${t.calcTraceResult.reachedTargets.join(', ')}\n`;
+                    }
+                }
+                if (t.calcTraceResult.missedTargets && t.calcTraceResult.missedTargets.length > 0) {
+                    detailsStr += `  * VERFEHLTE ODER ÜBERSPRUNGENE MEILENSTEINE: ${t.calcTraceResult.missedTargets.join(', ')}\n`;
+                }
                 if (t.calcTraceResult.sandboxErrors && t.calcTraceResult.sandboxErrors.length > 0) {
-                    calcTraceVorevaluierungBlock += `  * Sandbox Fehler: ${t.calcTraceResult.sandboxErrors.join(', ')}\n`;
+                    detailsStr += `  * Sandbox Fehler: ${t.calcTraceResult.sandboxErrors.join(', ')}\n`;
                 }
+                templateStr = templateStr.replace('</engine_status>', `${detailsStr}</engine_status>`);
 
-                if (disablePointsActive) {
-                    calcTraceVorevaluierungBlock += `\n` + mathHybridInstruction.replace('{{POINTS}}', String(t.calcTraceResult.totalPoints));
+                if (disablePointsActive || t.calcTraceResult.totalPoints === undefined) {
+                    templateStr = templateStr.replace('{{HYBRID_INSTRUCTION_BLOCK}}', mathHybridInstruction);
                 } else {
-                    calcTraceVorevaluierungBlock += `\n` + mathAutoInstruction.replace('{{POINTS}}', String(t.calcTraceResult.totalPoints));
-                    calcTraceVorevaluierungBlock += `\nÜbernimm zwingend die oben berechnete Punktzahl (${t.calcTraceResult.totalPoints} von ${t.calcTraceResult.maxPoints}) für diese Aufgabe und begründe sie im Feedback anhand der Detail-Ergebnisse.\n`;
+                    let autoStr = mathAutoInstruction.replace('{{POINTS}}', String(t.calcTraceResult.totalPoints));
+                    autoStr += `\nÜbernimm zwingend die oben berechnete Punktzahl (${t.calcTraceResult.totalPoints} von ${t.calcTraceResult.maxPoints}) für diese Aufgabe und begründe sie im Feedback anhand der Detail-Ergebnisse.\n`;
+                    templateStr = templateStr.replace('{{HYBRID_INSTRUCTION_BLOCK}}', autoStr);
                 }
+                
+                calcTraceVorevaluierungBlock += `\n` + templateStr;
             }
         });
         if (calcTraceVorevaluierungBlock) {
@@ -203,7 +225,7 @@ export function buildCorrectionPrompt(
         examplesText += '- Vermeide das blinde Kopieren von Werten (wie IP-Adressen oder Zahlen) aus anderen Aufgabenstellungen, wenn diese für die aktuelle Aufgabe nicht relevant sind.\n\n';
         
         gradingMemory.forEach((item, index) => {
-            examplesText += `BEISPIEL ${index + 1}:\n`;
+            examplesText += `<example id="${index + 1}">\n`;
             if (item.taskName) {
                 examplesText += `[Betrifft Aufgabe]\n"${item.taskName}"\n\n`;
             }
@@ -218,14 +240,18 @@ export function buildCorrectionPrompt(
             if (item.expectedCorrection.feedback) {
                 examplesText += `- Feedback: "${item.expectedCorrection.feedback}"\n`;
             }
-            examplesText += '\n-------------------\n\n';
+            examplesText += '</example>\n\n';
         });
     } else {
         console.log('[PromptBuilder] No active grading memory cases to inject (gradingMemory is empty or null).');
     }
 
     if (examplesText) {
-        user = user.replace('SCHÜLERABGABE (ZU BEWERTEN):', `${examplesText}\n### JETZT AKTUELL ZU BEWERTENDE SCHÜLERABGABE (DIESE STRENG UND EIGENSTÄNDIG BEWERTEN):\n`);
+        user = user.replace('SCHÜLERABGABE (ZU BEWERTEN):', `<grading_memory>\n${examplesText}</grading_memory>\n\n<task_to_evaluate>\n### JETZT AKTUELL ZU BEWERTENDE SCHÜLERABGABE (DIESE STRENG UND EIGENSTÄNDIG BEWERTEN):\n`);
+        user += `\n</task_to_evaluate>`;
+    } else {
+        user = user.replace('SCHÜLERABGABE (ZU BEWERTEN):', `<task_to_evaluate>\n### JETZT AKTUELL ZU BEWERTENDE SCHÜLERABGABE:\n`);
+        user += `\n</task_to_evaluate>`;
     }
 
     user = user.replace('{{studentText}}', studentText);

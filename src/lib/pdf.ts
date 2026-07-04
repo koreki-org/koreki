@@ -3,16 +3,17 @@ import autoTable from 'jspdf-autotable';
 import JSZip from 'jszip';
 import { StudentResult } from './excel';
 import { downloadFile } from './file-utils';
+import { toSafeString } from './validation';
 
 import { cleanDidacticalMarks, formatMarkdownTableForPDF, stripPangBlock } from './pdf-utils';
 
 /**
  * Helper to generate a PDF blob for a single student.
  */
-const generateStudentPDF = (r: StudentResult): Blob => {
+const generateStudentPDF = (r: StudentResult, pointsMode: 'none' | 'total' | 'detailed' = 'detailed'): Blob => {
     const doc = new jsPDF();
     const analysis = r.analysis || {};
-    const name = r.studentName || 'Unbekannt';
+    const name = toSafeString(r.studentName || 'Unbekannt');
     const brandColor = [37, 99, 235]; // Tailwind blue-600
 
     // --- Header Section ---
@@ -38,7 +39,7 @@ const generateStudentPDF = (r: StudentResult): Blob => {
     doc.text('Gesamtfeedback:', 14, 52);
     doc.setFont('helvetica', 'normal');
     
-    const feedbackText = cleanDidacticalMarks(stripPangBlock(analysis.overallFeedback || 'Kein Gesamtfeedback vorhanden.'));
+    const feedbackText = cleanDidacticalMarks(stripPangBlock(toSafeString(analysis.overallFeedback || 'Kein Gesamtfeedback vorhanden.')));
     const splitFeedback = doc.splitTextToSize(feedbackText, 180);
     doc.text(splitFeedback, 14, 58);
 
@@ -47,11 +48,62 @@ const generateStudentPDF = (r: StudentResult): Blob => {
     // --- Detail Table ---
     const tableData: any[][] = [];
     if (analysis.tasks && analysis.tasks.length > 0) {
-        analysis.tasks.forEach((task, index) => {
-            tableData.push([
-                task.name || `Aufgabe ${index + 1}`,
-                formatMarkdownTableForPDF(stripPangBlock(task.feedback || '-'))
-            ]);
+        const getParentName = (taskName: string) => taskName.match(/^(.*?\d+)/)?.[0]?.trim() || taskName;
+
+        const parentOrder: string[] = [];
+        const grouped: Record<string, typeof analysis.tasks> = {};
+
+        analysis.tasks.forEach((task) => {
+            const parent = getParentName(task.name || '');
+            if (!grouped[parent]) {
+                grouped[parent] = [];
+                parentOrder.push(parent);
+            }
+            grouped[parent].push(task);
+        });
+
+        parentOrder.forEach((parentName) => {
+            const subtasks = grouped[parentName];
+
+            // Calculate parent totals
+            let parentObtained = 0;
+            let parentMax = 0;
+            subtasks.forEach((t) => {
+                parentObtained += Number(t.pointsObtained || 0);
+                parentMax += Number(t.maxPoints || 0);
+            });
+
+            if (subtasks.length === 1) {
+                const task = subtasks[0];
+                let displayName = toSafeString(task.name || parentName);
+                if (pointsMode === 'detailed' || pointsMode === 'total') {
+                    displayName += ` (${task.pointsObtained || 0} / ${task.maxPoints || 0} P.)`;
+                }
+                tableData.push([
+                    displayName,
+                    formatMarkdownTableForPDF(stripPangBlock(toSafeString(task.feedback || '-')))
+                ]);
+            } else {
+                // List subtasks
+                subtasks.forEach((task) => {
+                    let displayName = toSafeString(task.name || '');
+                    if (pointsMode === 'detailed') {
+                        displayName += ` (${task.pointsObtained || 0} / ${task.maxPoints || 0} P.)`;
+                    }
+                    tableData.push([
+                        displayName,
+                        formatMarkdownTableForPDF(stripPangBlock(toSafeString(task.feedback || '-')))
+                    ]);
+                });
+
+                // Add sum row for the parent task
+                if (pointsMode === 'detailed' || pointsMode === 'total') {
+                    tableData.push([
+                        `Gesamt ${parentName} (${parentObtained} / ${parentMax} P.)`,
+                        ''
+                    ]);
+                }
+            }
         });
     }
 
@@ -117,15 +169,18 @@ export interface CorrectionStatistics {
 /**
  * Generates individual PDF files for each student and bundles them in a ZIP.
  */
-export const exportIndividualPDFs = async (results: StudentResult[]): Promise<void> => {
+export const exportIndividualPDFs = async (
+    results: StudentResult[],
+    pointsMode: 'none' | 'total' | 'detailed' = 'detailed'
+): Promise<void> => {
     if (!results || results.length === 0) return;
 
     const zip = new JSZip();
     const dateStr = new Date().toISOString().split('T')[0];
 
     results.forEach((r, index) => {
-        const pdfBlob = generateStudentPDF(r);
-        const safeName = (r.studentName || 'Unbekannt').replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
+        const pdfBlob = generateStudentPDF(r, pointsMode);
+        const safeName = toSafeString(r.studentName || 'Unbekannt').replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
         const fileName = `${index + 1}_Feedback_${safeName}_${dateStr}.pdf`;
         zip.file(fileName, pdfBlob);
     });

@@ -1,144 +1,306 @@
-import { evaluateCalcTrace } from '../../../src/lib/grading/CalcTrace';
-import type { CalcTrace } from '../../../src/lib/grading/calc-trace-types';
+/**
+ * CalcTrace Engine V7 — Unit-Aware Grading Tests
+ *
+ * Tests cover:
+ * - Proof A: Internal AST consistency (sandbox errors)
+ * - Proof B: Goal reached with exact match, SI-equivalent match, unit mismatch
+ * - 3-tier model: Perfect / Unit-Mismatch / Wrong
+ */
 
-describe('CalcTrace Engine - Math/Physics Grading Tests', () => {
-  // Physik-Aufgabe: W = P * t = 2300 W * 5/60 h = 191.59 Wh
-  const physicsTrace: CalcTrace = {
-    taskId: 'physics-power-1',
-    steps: [
-      { id: 'P', label: 'Leistung P', type: 'given', value: 2300, unit: 'W' },
-      { id: 't', label: 'Zeit t', type: 'given', value: 0.0833, unit: 'h', tolerance: 0.01 },
-      { id: 'W', label: 'Energie W', type: 'calc', value: 191.59, formula: 'P * t', unit: 'Wh', tolerance: 0.01, points: 2 }
-    ]
-  };
+import { evaluateCalcTrace } from '@/lib/grading/CalcTrace';
+import type { StudentASTStep, TargetGoal } from '@/lib/grading/calc-trace-types';
 
-  test('Scenario 1: Perfect Solution (100% correct)', () => {
-    const studentAnswers = {
-      P: 2300,
-      t: 0.0833,
-      W: 191.59
+describe('CalcTrace Engine V7 - Core (Proof A & B)', () => {
+
+  test('Scenario 1: Perfect Solution — exact value match, no units', () => {
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '230 * 10', result: 2300 },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 2300,
+      maxPoints: 3,
     };
 
-    const result = evaluateCalcTrace(physicsTrace, studentAnswers);
+    const result = evaluateCalcTrace(ast, target);
 
-    expect(result.totalPoints).toBe(4); // 1 + 1 + 2
-    expect(result.maxPoints).toBe(4);
-    expect(result.primaryErrors).toBe(0);
-    expect(result.consecutiveErrors).toBe(0);
-
-    expect(result.results[0].status).toBe('correct');
-    expect(result.results[1].status).toBe('correct');
-    expect(result.results[2].status).toBe('correct');
+    expect(result.sandboxErrors).toHaveLength(0);
+    expect(result.isGoalReached).toBe(true);
+    expect(result).not.toHaveProperty('totalPoints');
+    expect(result.unitMismatch).toBeUndefined();
   });
 
-  test('Scenario 2: Primary Error in Given Step', () => {
-    const studentAnswers = {
-      P: 2300,
-      t: 0.12, // Expected: 0.0833
-      W: 191.59 // They didn't calculate with their wrong t=0.12, they just wrote the correct solution value from memory/copying
+  test('Scenario 2: Wrong values — goal missed', () => {
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '23 * 10', result: 230 },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 2300,
+      maxPoints: 3,
     };
 
-    const result = evaluateCalcTrace(physicsTrace, studentAnswers);
+    const result = evaluateCalcTrace(ast, target);
 
-    expect(result.results[0].status).toBe('correct');
-    expect(result.results[1].status).toBe('error'); // Primary error in t
-    expect(result.results[2].status).toBe('error'); // Inconsistent with wrong t=0.12
-    expect(result.totalPoints).toBe(1); // P (1) + t (0) + W (0)
-    expect(result.primaryErrors).toBe(2);
-    expect(result.consecutiveErrors).toBe(0);
+    expect(result.sandboxErrors).toHaveLength(0);
+    expect(result.isGoalReached).toBe(false);
+    expect(result).not.toHaveProperty('totalPoints');
   });
 
-  test('Scenario 3: Consecutive Error Compensation (Follow-Through)', () => {
-    // The student makes a primary error in 't' (0.12 instead of 0.0833).
-    // But they calculate W correctly using their wrong t: W = 2300 * 0.12 = 276.
-    const studentAnswers = {
-      P: 2300,
-      t: 0.12, // Error
-      W: 276 // Correctly calculated with t=0.12
+  test('Scenario 3: Folgefehler — Proof A clean, Proof B missed', () => {
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '23 * 10', result: 230 },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 2300,
+      maxPoints: 3,
+      unit: 'W',
     };
 
-    const result = evaluateCalcTrace(physicsTrace, studentAnswers);
+    const result = evaluateCalcTrace(ast, target);
 
-    expect(result.results[0].status).toBe('correct');
-    expect(result.results[1].status).toBe('error'); // Primary error
-    expect(result.results[2].status).toBe('consecutive'); // Compensated follow-through error
-    expect(result.results[2].pointsAwarded).toBe(2); // Full points for correct calculation logic
-
-    expect(result.totalPoints).toBe(3); // P (1) + t (0) + W (2)
-    expect(result.primaryErrors).toBe(1);
-    expect(result.consecutiveErrors).toBe(1);
+    expect(result.sandboxErrors).toHaveLength(0); // Proof A clean
+    expect(result.isGoalReached).toBe(false);      // Proof B missed
+    expect(result).not.toHaveProperty('totalPoints');     // LLM decides via Folgefehler rule
   });
 
-  test('Scenario 4: Multiple Independent Errors', () => {
-    // Both P and t are wrong, and W is also wrong (doesn't match expected or computed).
-    const studentAnswers = {
-      P: 1000, // Expected: 2300
-      t: 0.12, // Expected: 0.0833
-      W: 500   // Expected: 191.59, computed: 120
+  test('Scenario 4: Internal calculation error — Proof A fails', () => {
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '230 * 10', result: 2500 }, // 230*10=2300, not 2500
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 2300,
+      maxPoints: 3,
     };
 
-    const result = evaluateCalcTrace(physicsTrace, studentAnswers);
+    const result = evaluateCalcTrace(ast, target);
 
-    expect(result.results[0].status).toBe('error');
-    expect(result.results[1].status).toBe('error');
-    expect(result.results[2].status).toBe('error');
-
-    expect(result.totalPoints).toBe(0);
-    expect(result.primaryErrors).toBe(3);
-    expect(result.consecutiveErrors).toBe(0);
+    expect(result.sandboxErrors.length).toBeGreaterThan(0);
+    expect(result.isGoalReached).toBe(false);
   });
 
-  test('Scenario 5: Omission (Missing Value)', () => {
-    const studentAnswers = {
-      P: 2300,
-      t: null, // Omitted
-      W: 191.59
+  test('Scenario 5: 5% tolerance — close result accepted', () => {
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '230 * 10', result: 2300 },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 2310, // Within 5% of 2300
+      maxPoints: 3,
     };
 
-    const result = evaluateCalcTrace(physicsTrace, studentAnswers);
+    const result = evaluateCalcTrace(ast, target);
 
-    expect(result.results[0].status).toBe('correct');
-    expect(result.results[1].status).toBe('omission');
-    expect(result.results[2].status).toBe('error'); // Inconsistent due to omitted t
-
-    expect(result.totalPoints).toBe(1); // P (1) + t (0) + W (0)
-    expect(result.primaryErrors).toBe(1); // W is now a primary error
-    expect(result.consecutiveErrors).toBe(0);
+    expect(result.sandboxErrors).toHaveLength(0);
+    expect(result.isGoalReached).toBe(true);
+    expect(result).not.toHaveProperty('totalPoints');
   });
 
-  test('Scenario 6: Tolerance Matching', () => {
-    // Within 1% tolerance: 2300 * 0.0833 = 191.59
-    // Student writes 192 (difference is ~0.2%, within 1%)
-    const studentAnswers = {
-      P: 2300,
-      t: 0.0833,
-      W: 192
+  test('Scenario 6: Empty AST — no student steps', () => {
+    const ast: StudentASTStep[] = [];
+
+    const target: TargetGoal = {
+      targetValue: 2300,
+      maxPoints: 3,
     };
 
-    const result = evaluateCalcTrace(physicsTrace, studentAnswers);
+    const result = evaluateCalcTrace(ast, target);
 
-    expect(result.results[2].status).toBe('correct');
-    expect(result.totalPoints).toBe(4);
+    expect(result.isGoalReached).toBe(false);
+    expect(result.missedTargets).toEqual([2300]);
   });
 
-  test('Scenario 7: Fraction Precision via mathjs', () => {
-    // Formula with division: a / b
-    const fractionTrace: CalcTrace = {
-      taskId: 'fraction-task-1',
-      steps: [
-        { id: 'a', label: 'Wert a', type: 'given', value: 5 },
-        { id: 'b', label: 'Wert b', type: 'given', value: 60 },
-        { id: 'result', label: 'Division', type: 'calc', value: 0.08333, formula: 'a / b', tolerance: 0.001 }
-      ]
+  test('Scenario 7: Multi-step chain with intermediate milestone', () => {
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '5 / 60', result: 0.08333 },
+      { id: 'step_2', formula: '2300 * step_1', result: 191.67 },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 191.67,
+      maxPoints: 3,
     };
 
-    const studentAnswers = {
-      a: 5,
-      b: 60,
-      result: 0.08333
+    const result = evaluateCalcTrace(ast, target);
+
+    expect(result.sandboxErrors).toHaveLength(0);
+    expect(result.isGoalReached).toBe(true);
+    expect(result).not.toHaveProperty('totalPoints');
+  });
+});
+
+describe('CalcTrace Engine V7 — Unit-Aware Grading (3-Tier Model)', () => {
+
+  test('Tier A: Perfect match — value AND unit both exact', () => {
+    // Student writes 1.846 mA, target is 1.846 mA → exact match
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '12 / 6.5', result: 1.846, unit: 'mA' },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 1.846,
+      unit: 'mA',
+      maxPoints: 3,
     };
 
-    const result = evaluateCalcTrace(fractionTrace, studentAnswers);
-    expect(result.results[2].status).toBe('correct');
+    const result = evaluateCalcTrace(ast, target);
+
+    expect(result.sandboxErrors).toHaveLength(0);
+    expect(result.isGoalReached).toBe(true);
+    expect(result).not.toHaveProperty('totalPoints'); // Auto-assigned (exact match)
+    expect(result.unitMismatch).toBeUndefined();
+  });
+
+  test('Tier B: Unit mismatch — student computes in A, target is mA', () => {
+    // Student: 12/6500 = 0.001846 mA (wrong unit! should be A)
+    // Target: 1.846 mA
+    // The raw number 0.001846 matches the SI base of 1.846 mA
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '12 / 6500', result: 0.001846, unit: 'mA' },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 1.846,
+      unit: 'mA',
+      maxPoints: 3,
+    };
+
+    const result = evaluateCalcTrace(ast, target);
+
+    expect(result.sandboxErrors).toHaveLength(0);
+    expect(result.isGoalReached).toBe(true);
+    // NOT auto-assigned because unit label is wrong
+    expect(result).not.toHaveProperty('totalPoints');
+    expect(result.unitMismatch).toBe(true);
+    expect(result.unitDetails).toBeDefined();
+    expect(result.unitDetails![0].isUnitMismatch).toBe(true);
+  });
+
+  test('Tier B: Student computes in A (correct), target is mA', () => {
+    // Student: 12/6500 = 0.001846 A (physically correct!)
+    // Target: 1.846 mA
+    // math.unit(0.001846, "A").toSI() = 0.001846 A = 1.846 mA ✓
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '12 / 6500', result: 0.001846, unit: 'A' },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 1.846,
+      unit: 'mA',
+      maxPoints: 3,
+    };
+
+    const result = evaluateCalcTrace(ast, target);
+
+    expect(result.sandboxErrors).toHaveLength(0);
+    expect(result.isGoalReached).toBe(true);
+    // Physically correct → exact match (after unit normalization)
+    expect(result).not.toHaveProperty('totalPoints');
+  });
+
+  test('Tier B: Student computes in Ω, target is kΩ', () => {
+    // Student: 4000 + 2500 = 6500 Ω
+    // Target: 6.5 kΩ
+    // math.unit(6500, "ohm").toSI() = math.unit(6.5, "kohm").toSI() ✓
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '4000 + 2500', result: 6500, unit: 'Ω' },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 6.5,
+      unit: 'kΩ',
+      maxPoints: 3,
+    };
+
+    const result = evaluateCalcTrace(ast, target);
+
+    expect(result.sandboxErrors).toHaveLength(0);
+    expect(result.isGoalReached).toBe(true);
+    // 6500 Ω = 6.5 kΩ → physically equivalent, exact match
+    expect(result).not.toHaveProperty('totalPoints');
+  });
+
+  test('Tier C: Value completely wrong', () => {
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '23 * 10', result: 230, unit: 'W' },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 2300,
+      unit: 'W',
+      maxPoints: 3,
+    };
+
+    const result = evaluateCalcTrace(ast, target);
+
+    expect(result.isGoalReached).toBe(false);
+    expect(result).not.toHaveProperty('totalPoints');
+    expect(result.unitMismatch).toBeUndefined();
+  });
+
+  test('No unit on target: pure numeric comparison', () => {
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '23 * 10', result: 230 },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 2300,
+      maxPoints: 3,
+      // No unit → no SI expansion → 230 ≠ 2300
+    };
+
+    const result = evaluateCalcTrace(ast, target);
+
+    expect(result.isGoalReached).toBe(false);
+    expect(result.sandboxErrors).toHaveLength(0);
+  });
+
+  test('No unit on student step: SI-only match defers to LLM', () => {
+    // Student: 12/6500 = 0.001846 (NO unit written)
+    // Target: 1.846 mA
+    // Value matches SI base but no student unit to verify
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '12 / 6500', result: 0.001846 },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: 1.846,
+      unit: 'mA',
+      maxPoints: 3,
+    };
+
+    const result = evaluateCalcTrace(ast, target);
+
+    expect(result.sandboxErrors).toHaveLength(0);
+    expect(result.isGoalReached).toBe(true);
+    // No student unit → can't verify label → unitMismatch, defer to LLM
+    expect(result).not.toHaveProperty('totalPoints');
+    expect(result.unitMismatch).toBe(true);
+  });
+
+  test('Multi-target with mixed units (Rges + I)', () => {
+    // Rges = 4+2.5 = 6.5 kΩ → student writes 6500 Ω
+    // I = 12/6500 = 0.001846 → student writes mA (wrong: should be A)
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '4 + 2.5', result: 6.5 },
+      { id: 'step_2', formula: 'step_1 * 1000', result: 6500, unit: 'Ω' },
+      { id: 'step_3', formula: '12 / step_2', result: 0.001846, unit: 'mA' },
+    ];
+
+    const target: TargetGoal = {
+      targetValue: [6.5, 1.846],
+      unit: 'kΩ, mA',
+      maxPoints: 6,
+    };
+
+    const result = evaluateCalcTrace(ast, target);
+
+    expect(result.sandboxErrors).toHaveLength(0);
+    // 6.5 is found directly (step_1), 6500 Ω = 6.5 kΩ also valid
+    expect(result.reachedTargets).toContain(6.5);
+    // 0.001846 mA ≠ 1.846 mA → unit mismatch detected
+    expect(result.unitMismatch).toBe(true);
   });
 });

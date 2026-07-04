@@ -4,6 +4,7 @@ import { Task, AppSettings, AITask, AIAnalysisResult } from '../../types';
 import { executeMistralRequest } from './mistral-provider';
 import { executeOllamaRequest } from './ollama-logic';
 import { executeOpenAIRequest } from './openai-provider';
+import { AIAnalysisResultSchema } from '../validation';
 import { isLocalInstance, isDesktopTarget } from '@/lib/env-context';
 import { GraphRunner } from '../grading/GraphRunner';
 import { parseGeneratedGraph, validateGraphDeterminism, GRADING_GRAPH_SCHEMA } from '../grading/graph-generator';
@@ -22,6 +23,11 @@ export { shouldDisablePoints };
  * Maps the AI raw JSON results back to the Koreki Task structure and calculates totals.
  */
 export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: Task[] | null, studentText?: string): AIAnalysisResult {
+    const parsed = AIAnalysisResultSchema.safeParse(analysis);
+    if (parsed.success) {
+        analysis = parsed.data as any;
+    }
+
     if (tasksLayout && Array.isArray(tasksLayout) && tasksLayout.length > 0) {
         let totalObtained = 0;
         let totalMax = 0;
@@ -39,15 +45,11 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
             if (layoutTask.calcTraceResult) {
                 let enginePoints: number;
                 
-                // Hybrid-Grading: Sandbox gibt nur dann Punkte, wenn Proof A & B fehlerfrei sind.
-                // Wenn totalPoints = undefined, entscheidet das LLM über Teilpunkte.
-                if (layoutTask.calcTraceResult.totalPoints !== undefined) {
-                    enginePoints = Number(layoutTask.calcTraceResult.totalPoints);
-                } else {
-                    enginePoints = aiTask && aiTask.pointsObtained !== undefined && aiTask.pointsObtained !== null
-                        ? Number(aiTask.pointsObtained)
-                        : 0;
-                }
+                // Hybrid-Grading: CalcTrace Engine ist ein reiner Proof-Provider.
+                // Das LLM entscheidet IMMER über die finale Punktevergabe.
+                enginePoints = aiTask && aiTask.pointsObtained !== undefined && aiTask.pointsObtained !== null
+                    ? Number(aiTask.pointsObtained)
+                    : 0;
 
                 totalObtained += enginePoints;
 
@@ -536,9 +538,7 @@ export async function performAIRequest(
                     }
                     
                     task.calcTraceResult = calcTraceResult;
-                    if (calcTraceResult.totalPoints !== undefined) {
-                        task.pointsObtained = calcTraceResult.totalPoints;
-                    }
+                    // Die Engine vergibt keine Punkte mehr, das macht das LLM.
                     task.maxPoints = targetGoal.maxPoints || task.maxPoints;
                 } catch (err: any) {
                     logger.error('Error in client-side CalcTrace execution', err);

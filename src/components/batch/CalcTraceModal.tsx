@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Check, Target, Info, Sparkles } from 'lucide-react';
+import { X, Check, Target, Info, Sparkles, Plus, Trash2 } from 'lucide-react';
 import { TargetGoal } from '../../lib/grading/calc-trace-types';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
+
+interface RowData {
+    value: string;
+    unit: string;
+}
 
 interface CalcTraceModalProps {
     isOpen: boolean;
@@ -32,6 +37,27 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
         return { targetValue: 0, maxPoints: 1, unit: '', gradingRubric: '' };
     });
 
+    const [rows, setRows] = useState<RowData[]>(() => {
+        let valStr = '';
+        if (typeof goal.targetValue === 'string') {
+            valStr = goal.targetValue;
+        } else if (Array.isArray(goal.targetValue)) {
+            valStr = goal.targetValue.join(', ');
+        } else {
+            valStr = String(goal.targetValue);
+        }
+        
+        const vals = valStr.split(',').map(s => s.trim()).filter(s => s !== '');
+        const units = (goal.unit || '').split(',').map(s => s.trim());
+        
+        if (vals.length === 0) return [{ value: '', unit: '' }];
+        
+        return vals.map((v, i) => ({
+            value: v,
+            unit: units[i] || ''
+        }));
+    });
+
     useEffect(() => { 
         setMounted(true); 
         return () => setMounted(false); 
@@ -40,20 +66,65 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
     useEffect(() => {
         if (initialTrace && 'targetValue' in initialTrace) {
             setGoal(initialTrace);
+            
+            let valStr = '';
+            if (typeof initialTrace.targetValue === 'string') {
+                valStr = initialTrace.targetValue;
+            } else if (Array.isArray(initialTrace.targetValue)) {
+                valStr = initialTrace.targetValue.join(', ');
+            } else {
+                valStr = String(initialTrace.targetValue);
+            }
+            
+            const vals = valStr.split(',').map(s => s.trim()).filter(s => s !== '');
+            const units = (initialTrace.unit || '').split(',').map(s => s.trim());
+            
+            if (vals.length > 0) {
+                setRows(vals.map((v, i) => ({
+                    value: v,
+                    unit: units[i] || ''
+                })));
+            }
         }
     }, [initialTrace]);
 
     if (!mounted || !isOpen) return null;
 
+    const handleAddRow = () => {
+        if (isLocked) return;
+        setRows([...rows, { value: '', unit: '' }]);
+    };
+
+    const handleRemoveRow = (index: number) => {
+        if (isLocked || rows.length <= 1) return;
+        setRows(rows.filter((_, i) => i !== index));
+    };
+
+    const handleRowChange = (index: number, field: keyof RowData, value: string) => {
+        if (isLocked) return;
+        const newRows = [...rows];
+        newRows[index][field] = value;
+        setRows(newRows);
+    };
+
     const handleSave = () => {
         if (isLocked) return;
-        onSave(goal);
+        
+        const validRows = rows.filter(r => r.value.trim() !== '');
+        const targetValue = validRows.map(r => r.value.trim()).join(', ');
+        const unit = validRows.map(r => r.unit.trim()).join(', ');
+        
+        onSave({
+            ...goal,
+            targetValue,
+            unit
+        });
         onClose();
     };
 
     return createPortal(
         <div className="fixed inset-0 z-[2300] flex items-center justify-center p-4 bg-foreground/60 backdrop-blur-md animate-fade-in font-inter text-foreground">
-            <div className="bg-background border border-border shadow-2xl rounded-2xl w-full max-w-2xl flex flex-col overflow-hidden animate-zoom-in">
+            <div className="bg-background border border-border shadow-2xl rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
                 
                 <div className="px-6 py-5 border-b border-border bg-muted/30 flex justify-between items-center">
                     <div className="flex items-center gap-3">
@@ -77,7 +148,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                     </Button>
                 </div>
 
-                <div className="p-6 flex flex-col gap-6">
+                <div className="p-6 flex flex-col gap-6 overflow-y-auto">
                     <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3 text-sm text-primary">
                         <Sparkles className="shrink-0 mt-0.5" size={18} />
                         <p>
@@ -85,35 +156,74 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                         </p>
                     </div>
 
-                    <div className="flex gap-4">
-                        <div className="flex-1 space-y-2">
-                            <label className="text-xs font-bold uppercase text-muted-foreground">Zielwert (Zahl)</label>
-                            <Input 
-                                type="text" 
-                                value={Array.isArray(goal.targetValue) ? goal.targetValue.join(',') : goal.targetValue}
+                    <div className="flex flex-col gap-4">
+                        <div className="flex justify-between items-center">
+                            <label className="text-xs font-bold uppercase text-muted-foreground">Zielwerte & Meilensteine</label>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={handleAddRow} 
                                 disabled={isLocked}
-                                onChange={e => setGoal(prev => ({ ...prev, targetValue: e.target.value }))}
-                                className="font-mono text-lg font-bold"
-                            />
+                                className="h-7 text-xs font-medium"
+                            >
+                                <Plus size={14} className="mr-1" /> Zeile hinzufügen
+                            </Button>
                         </div>
-                        <div className="w-32 space-y-2">
-                            <label className="text-xs font-bold uppercase text-muted-foreground">Einheit</label>
-                            <Input 
-                                value={goal.unit || ''}
-                                disabled={isLocked}
-                                placeholder="z.B. kg"
-                                onChange={e => setGoal(prev => ({ ...prev, unit: e.target.value }))}
-                            />
+                        
+                        <div className="space-y-3">
+                            {rows.map((row, idx) => {
+                                const isLast = idx === rows.length - 1;
+                                const label = rows.length === 1 
+                                    ? "Endziel" 
+                                    : (isLast ? "Endziel" : `Meilenstein ${idx + 1}`);
+                                
+                                return (
+                                    <div key={idx} className="flex gap-4 items-end animate-fade-in">
+                                        <div className="flex-1 space-y-2">
+                                            <label className="text-[10px] font-bold uppercase text-muted-foreground/70">{label}</label>
+                                            <Input 
+                                                type="text" 
+                                                value={row.value}
+                                                disabled={isLocked}
+                                                onChange={e => handleRowChange(idx, 'value', e.target.value)}
+                                                placeholder={isLast ? "Zahl (z.B. 1.846)" : "Zahl (z.B. 6.5)"}
+                                                className={`font-mono text-lg font-bold ${isLast ? 'border-primary/50 bg-primary/5' : ''}`}
+                                            />
+                                        </div>
+                                        <div className="w-32 space-y-2">
+                                            <label className="text-[10px] font-bold uppercase text-muted-foreground/70">Einheit</label>
+                                            <Input 
+                                                value={row.unit}
+                                                disabled={isLocked}
+                                                placeholder={isLast ? "z.B. mA" : "z.B. kOhm"}
+                                                onChange={e => handleRowChange(idx, 'unit', e.target.value)}
+                                            />
+                                        </div>
+                                        {rows.length > 1 && (
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                onClick={() => handleRemoveRow(idx)}
+                                                disabled={isLocked}
+                                                className="mb-[1px] text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0"
+                                            >
+                                                <Trash2 size={16} />
+                                            </Button>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
-                        <div className="w-32 space-y-2">
-                            <label className="text-xs font-bold uppercase text-muted-foreground">Max. Punkte</label>
+                        
+                        <div className="w-48 mt-2 space-y-2">
+                            <label className="text-xs font-bold uppercase text-muted-foreground">Max. Punkte (Gesamt)</label>
                             <Input 
                                 type="number"
                                 min="0"
                                 value={goal.maxPoints}
                                 disabled={isLocked}
                                 onChange={e => setGoal(prev => ({ ...prev, maxPoints: parseFloat(e.target.value) || 0 }))}
-                                className="font-bold"
+                                className="font-bold text-lg text-primary"
                             />
                         </div>
                     </div>

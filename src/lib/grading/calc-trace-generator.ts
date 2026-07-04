@@ -16,16 +16,16 @@ export const VALIDATE_CALC_TRACE_TOOL = {};
 
 export function buildCalcTraceGenerationPrompt(taskText: string, discipline: string, userNotes?: string) {
     const system = `Du bist ein KI-Assistent zur Extraktion von Zielwerten und Bewertungskriterien aus Musterlösungen.
-Deine Aufgabe ist es, aus dem Text einer Musterlösung (oder Aufgabe) den finalen, numerischen Zielwert zu extrahieren, den der Schüler erreichen muss.
+Deine Aufgabe ist es, aus dem Text einer Musterlösung ALLE geforderten numerischen Zielwerte (sowohl wichtige Zwischenergebnisse/Meilensteine als auch das finale Endergebnis) zu extrahieren, für die es Punkte gibt. 
 Zudem sollst du die maximale Punktzahl erkennen und einen kurzen, prägnanten "Erwartungshorizont" (Rubric) formulieren, der auflistet, wie sich die Punkte zusammensetzen (Teilpunkte).
 
 WICHTIG: Antworte AUSSCHLIESSLICH im puren JSON Format. Verwende KEIN Markdown (kein \`\`\`json), schreibe keinen Text davor oder danach! Dein gesamter Output muss als JSON-String geparst werden können.
 
 Schema:
 {
-  "targetValue": (string, falls mehrere Werte dann durch Komma getrennt z.B. "7.38, 4.62"),
+  "targetValue": (string, ALLE relevanten Meilensteine und das Endergebnis durch Komma getrennt. NUR nackte Zahlen, KEINE Einheiten! z.B. "6.5, 1.846"),
   "maxPoints": (number),
-  "unit": (string),
+  "unit": (string, alle zugehörigen Einheiten kommagetrennt in exakt derselben Reihenfolge wie targetValue, z.B. "kOhm, mA"),
   "gradingRubric": (string)
 }
 
