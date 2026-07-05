@@ -12,7 +12,7 @@ export interface StudentASTStep {
   /** Eindeutige ID (z.B. "step_1") */
   id: string;
   /** Der exakte Originaltext des Schülers für diesen Schritt */
-  original_text: string;
+  original_text?: string;
   /** Der vom Schüler gerechnete mathematische Ausdruck (referenziert ggf. IDs früherer Steps) */
   formula: string;
   /** Das numerische Ergebnis, das der Schüler für diesen Schritt aufgeschrieben hat */
