@@ -29,6 +29,16 @@ Schema:
   "gradingRubric": (string)
 }
 
+BEISPIEL:
+Musterlösung: "Die Grundfläche des Zylinders beträgt A = 3.14 * 5^2 = 78.5 cm² (1 Punkt). Daraus ergibt sich das Volumen V = 78.5 * 10 = 785 cm³ (2 Punkte). Gesamtpunktzahl: 3."
+Dein JSON Output:
+{
+  "targetValue": "78.5, 785",
+  "maxPoints": 3,
+  "unit": "cm², cm³",
+  "gradingRubric": "1P für Fläche (78.5 cm²), 2P für Volumen (785 cm³)"
+}
+
 ${userNotes ? `Zusätzliche Instruktion vom Nutzer: ${userNotes}` : ''}`;
 
     const user = `Analysiere folgenden Text der Aufgabe/Musterlösung und extrahiere das 'TargetGoal':\n\n${taskText}`;

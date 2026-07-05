@@ -122,7 +122,7 @@ WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt M
           const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
           if (!apiKey) throw new Error('Mistral API-Key fehlt.');
           extracted = await executeMistralRequest('calc-trace-extraction', payload, apiKey, {
-            model: settings.model,
+            model: 'mistral-medium-2604', // Always use the highly capable medium model for extraction
             temperature: 0.0,
             topP: 0.1,
             maxTokens: 1000,
