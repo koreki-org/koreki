@@ -363,7 +363,7 @@ export async function executeMistralRequest(
     }
 
     // 4. Robust JSON Parsing (Standard Pattern)
-    if (responseFormat?.type === 'json_object') {
+    if (responseFormat?.type === 'json_object' || responseFormat?.type === 'json_schema') {
         const repairUnescapedBackslashes = (jsonStr: string): string => {
             return jsonStr.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
         };
