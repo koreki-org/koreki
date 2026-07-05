@@ -131,4 +131,4 @@ Hier laufen mehrere Anfragen nacheinander oder parallel im `promisePool`.
 * **Test-Coverage:** Die Abbruch-Logik wird durch Unit-Tests auf Hook-Ebene (`tests/unit/useProcessingPipeline.test.ts`) sowie einen Playwright-Integrationstest abgedeckt, der einen API-Timeout provoziert und das visuelle Entsperren des UI validiert.
 
 ---
-*Status: PROPOSED BY ARCHITECT (@principal_architect)* 🏛️🛡️✅
+*Status: Proposed*

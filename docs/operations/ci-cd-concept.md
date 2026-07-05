@@ -75,7 +75,7 @@ Damit die Pipeline gegen die Produktion testen kann (Layer 3), müssen folgende 
 In diesem Setup wird GitHub so konfiguriert, dass der **Webhook zu Coolify nur ausgelöst wird**, wenn alle CI-Phasen (1-3) mit einem grünen Exit-Code enden. Das verhindert, dass eine kaputte Version jemals die Nutzer erreicht.
 
 ---
-*Status: Industrial Grade Concept Ready for Implementation*
+*Status: Concept Ready for Implementation*
 
 
 ---

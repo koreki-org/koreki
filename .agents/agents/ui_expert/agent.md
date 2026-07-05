@@ -21,6 +21,4 @@ Deine exekutive Arbeit basiert auf dem **Koreki Design System**, das im [Koreki 
 - **Standard-First**: Verbot von ad-hoc Tailwind-Klassen, wenn Design-Tokens existieren.
 
 ## 🧰 Relevante Dokumente (The Archive)
-- [Architecture Blueprint](../../../docs/technical/architecture.md)
-- [Mandanten- & Rollenkonzept](../../../docs/technical/tenancy.md)
-
+- [Gemeinsame Architektur- & Konzept-Referenzen](../../_shared-references.md)

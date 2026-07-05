@@ -115,7 +115,6 @@ Im **PURE-Modus** (Eigener API-Key) erreicht das System das höchste Datenschutz
 | **Korrektur** | Pädagogische Bewertung | `mistral-large-latest` | Maximale pädagogische Tiefe |
 
 ---
-*Status: INDUSTRIAL STABLE (UNIFIED BRIDGE ARCHITECTURE)* 🏛️🛡️🚀
-
+*Status: INDUSTRIAL STABLE *
 > [!IMPORTANT]
 > ARCHITECT-NOTE: Jegliche Erweiterung der Prompt-Logik MUSS in der `MistralBridge` erfolgen, um die Synchronität zwischen PURE und STANDARD zu wahren. Die `fetchWithRetry`-Logik ist das zentrale Sicherheitsnetz gegen API-Instabilitäten.

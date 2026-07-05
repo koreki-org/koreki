@@ -155,5 +155,5 @@ In der Datenbank werden ausschließlich standardisierte Begriffe verwendet. Die 
 
 ---
 
-*Dokumentation Stand: 07. April 2026 (Industrial Grade V7)*
+*Dokumentation Stand: 07. April 2026 (V7)*
 *Sicherheits-Status: PILLAR 8 (DB-AUTHORITATIVE RBAC) VERIFIED* 🏮🛡️⚖️🏮🏛️🛡️✅⚙️🚀

@@ -21,9 +21,4 @@ Deine exekutive Arbeit basiert auf der **Architectural Vision**, die im [Archite
 - **Race-Condition Architect**: Bündelung initialer Zustandsabfragen zur Vermeidung von Session-Concurrency-Problemen.
 
 ## 🧰 Relevante Dokumente (The Archive)
-- [Agent Collaboration Protocol](../../rules/agent-collaboration.md)
-- [Architecture Blueprint](../../../docs/technical/architecture.md)
-- [Authentifizierung & Benutzerverwaltung](../../../docs/technical/auth-system.md)
-- [Tenancy & RBAC Logic](../../../docs/technical/tenancy.md)
-- [Roadmap 2026](../../../docs/strategy/roadmap-2026.md)
-- [Open Source Roadmap](../../../docs/strategy/opensource.md)
+- [Gemeinsame Architektur- & Konzept-Referenzen](../../_shared-references.md)

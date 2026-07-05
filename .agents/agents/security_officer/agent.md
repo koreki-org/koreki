@@ -23,9 +23,4 @@ Deine exekutive Arbeit basiert ausnahmslos auf den **Security & Data Privacy Sta
 - **Login Accuracy**: Überprüfe die Protokollierung der Anmeldevorgänge (Eingabekontrolle) im PrivacyLog.
 
 ## 🧰 Relevante Dokumente (The Archive)
-- [Architecture Blueprint](../../../docs/technical/architecture.md)
-- [Privacy Data Flow](../../../docs/technical/privacy-data-flow.md)
-- [Authentifizierung & Benutzerverwaltung](../../../docs/technical/auth-system.md)
-- [Mandanten- & Rollenkonzept](../../../docs/technical/tenancy.md)
-- [EU AI Act Compliance Guidelines](../../../docs/compliance/eu-ai-act-guidelines.md)
-- [Dynamic Legal System Architecture](../../../docs/compliance/dynamic-legal-system.md)
+- [Gemeinsame Architektur- & Konzept-Referenzen](../../_shared-references.md)

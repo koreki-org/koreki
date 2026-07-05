@@ -177,4 +177,4 @@ Alle KI-Interaktionen MÜSSEN über die `MistralBridge` laufen. Direkte `fetch` 
 
 ### C. Pipeline Unification
 Sämtliche Mapping-Operationen (Digital & Scan) MÜSSEN den zentralen `internalProcessMapping` Pfad nutzen. Logik-Drift in den Verarbeitungsstufen ist strikt zu vermeiden.
-*Status: ARCHITECT APPROVED (V15 - SSoT DEPLOYMENT MATRIX)* 🏛️🛡️✅
+*Status: Approved (V15)*

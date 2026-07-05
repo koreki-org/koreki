@@ -37,8 +37,8 @@ Vermeide proprietäre Vendor-Locks, die eine Selbst-Hosting-Fähigkeit verhinder
 ## 6. Industrial Quality Assurance
 Die technische Verifizierung der Architektur folgt dem Prinzip **"Logic in Lib, State in Hook"**.
 1. **Separation of Concerns**: Massive Berechnungen oder Daten-Transformationen dürfen nicht direkt in Hooks stattfinden. Sie müssen als Pure Functions in `src/lib/` isoliert werden.
-2. **Industrial Testing**: Die technische Ausführung von Unit- (Layer 1) und Integrationstests (Layer 2) ist im zentralen Skill [Industrial Testing](file:///.agents/skills/industrial_testing/SKILL.md) definiert.
-3. **E2E Automation (Layer 3)**: Kritische User Journeys müssen durch Playwright-Tests (Layer 3) validiert werden, wie im Skill [Playwright Pro](file:///.agents/skills/playwright_pro/SKILL.md) beschrieben. Jede neue Core-Funktion muss diese Standards erfüllen.
+2. **Industrial Testing**: Die technische Ausführung von Unit- (Layer 1) und Integrationstests (Layer 2) ist im zentralen Skill [Industrial Testing](../industrial_testing/SKILL.md) definiert.
+3. **E2E Automation (Layer 3)**: Kritische User Journeys müssen durch Playwright-Tests (Layer 3) validiert werden, wie im Skill [Playwright Pro](../playwright_pro/SKILL.md) beschrieben. Jede neue Core-Funktion muss diese Standards erfüllen.
 4. **Thin Components**: Komponenten und Hooks dienen ausschließlich der Steuerung des Zustands und der UI-Reaktionen.
 5. **End-to-End Type Propagation**: Types aus `src/types/index.ts` MÜSSEN bis in die Hook-Signaturen durchgezogen werden. Hooks dürfen keine `any`-Parameter akzeptieren — stattdessen sind konkrete Interfaces zu nutzen (z.B. `User | null`, `BatchFile[]`, `AppSettings`). Die Type-Kette `types/ → hooks/ → components/` darf nirgends durch `any` unterbrochen werden.
 
@@ -90,4 +90,4 @@ Um eine unübersichtliche Ordnerstruktur zu vermeiden, dürfen für einzelne Pat
 - **Verteilte Dokumentation**: Die Freigabe des Audits wird ausschließlich in Git-Commits, Pull-Request-Beschreibungen oder den GitHub-Release-Notes dokumentiert. Die Codebasis selbst bleibt frei von Release-spezifischen Audit-Dateien.
 
 ---
-*Status: ARCHITECT APPROVED (V9 - ZERO-CLUTTER AUDIT GOVERNANCE)* 🏛️🛡️✅
+*Status: Approved (V9)*

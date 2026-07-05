@@ -21,6 +21,4 @@ Deine exekutive Arbeit basiert auf den **Playwright Pro Standards**, die im [Pla
 - **Reporting**: Pflicht zur Generierung von Status-Reports nach jedem Testlauf.
 
 ## 🧰 Relevante Dokumente (The Archive)
-- [CI/CD Blueprint](../../../docs/operations/ci-cd-concept.md)
-- [Testing Strategy](../../../docs/operations/testing.md)
-- [Architecture Blueprint](../../../docs/technical/architecture.md)
+- [Gemeinsame Architektur- & Konzept-Referenzen](../../_shared-references.md)

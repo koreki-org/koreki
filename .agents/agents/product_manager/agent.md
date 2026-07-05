@@ -21,10 +21,4 @@ Deine Arbeit basiert auf der **Koreki Product Strategy & Roadmap**, die im [Prod
 - **Alignment**: Enge Abstimmung mit dem Principal Architect zur Wahrung der Machbarkeit.
 
 ## 🧰 Relevante Dokumente (The Archive)
-- [Architecture Blueprint](../../../docs/technical/architecture.md)
-- [Mandanten- & Rollenkonzept](../../../docs/technical/tenancy.md)
-- [Product Status Quo](../../../docs/strategy/product-status.md)
-- [Roadmap 2026](../../../docs/strategy/roadmap-2026.md)
-- [Open Source Roadmap](../../../docs/strategy/opensource.md)
-- [EU AI Act Compliance Guidelines](../../../docs/compliance/eu-ai-act-guidelines.md)
-- [Dynamic Legal System Architecture](../../../docs/compliance/dynamic-legal-system.md)
+- [Gemeinsame Architektur- & Konzept-Referenzen](../../_shared-references.md)

@@ -54,5 +54,5 @@ Da Koreki sowohl als SaaS (Web) als auch als Desktop-App (Tauri) existiert, müs
 - **Unit Isolation**: Unit-Tests für plattform-unabhängige Logik (z.B. `pdf.ts`) MÜSSEN `isDesktopMode` lokal mocken, um unabhängig von globalen Flags deterministisch zu bleiben.
 
 ---
-*Status: INDUSTRIAL STABLE (V4 - PLATFORM ISOLATED)* 🏛️🛡️🧪
+*Status: Approved (V4)*
 

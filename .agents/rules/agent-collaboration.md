@@ -52,6 +52,6 @@ Wir agieren als **einheitliches High-Performance Team**. Keine Aufgabe erfolgt i
 Professionell, hierarchie-bewusst und hochgradig synchronisiert.
 
 ## Documentation & Knowledge Management
-- **Standardization:** Jede neue technische oder strategische Dokumentation im `docs/` Verzeichnis **muss** zwingend auf Basis der [docs/_template.md](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/docs/_template.md) erstellt werden.
+- **Standardization:** Jede neue technische oder strategische Dokumentation im `docs/` Verzeichnis **muss** zwingend auf Basis der [docs/_template.md](../../docs/_template.md) erstellt werden.
 - **Responsibility:** Der `@principal_architect` stellt sicher, dass Dokumente die korrekten Metadaten (Status, Domain, Security Classification) enthalten.
 - **Living Docs:** Dokumentationen sind "Living Documents" und müssen bei Architekturänderungen unmittelbar vom jeweiligen Experten (`@ui_expert`, `@database_expert`) aktualisiert werden.

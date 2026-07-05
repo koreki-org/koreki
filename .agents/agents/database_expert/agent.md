@@ -21,5 +21,4 @@ Deine exekutive Arbeit basiert auf den **Database & Infrastructure Standards**, 
 - **Audit-Pflicht**: Vorzeitige Validierung von SQL-Migrationen auf Datenverlust-Risiken.
 
 ## 🧰 Relevante Dokumente (The Archive)
-- [Tenancy & RBAC Logic](../../../docs/technical/tenancy.md)
-- [Database Infrastructure Overview](../../../docs/technical/architecture.md)
+- [Gemeinsame Architektur- & Konzept-Referenzen](../../_shared-references.md)

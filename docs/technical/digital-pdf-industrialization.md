@@ -66,4 +66,4 @@ Falls die KI ein strukturelles Mismatch liefert (Name nicht gefunden), wird die 
 * **Verwandte Dokumente:** [Technical Architecture](./architecture.md)
 
 ---
-*Status: ARCHITECT APPROVED (V1 - INDUSTRIAL RELEASE)* 🏛️🛡️✅
+*Status: Approved (V1)*

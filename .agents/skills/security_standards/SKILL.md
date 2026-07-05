@@ -49,4 +49,4 @@ Jede schülerbezogene Datenverarbeitung muss unter Wahrung der **Datensparsamkei
 - **Mandatentrennung**: In Prisma-Abfragen konsequent `workspaceId` nutzen.
 
 ---
-*Status: ENTERPRISE READY (V5 - RBAC HARDENED)* 🏮🛡️🏛️🛡️⚖️🧹⚙️🚀✅
+*Status: Approved (V5)*
