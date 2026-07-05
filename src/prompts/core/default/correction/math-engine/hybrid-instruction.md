@@ -49,18 +49,18 @@ Gehe jeden Teilschritt des Erwartungshorizonts durch (z.B. "Formel = 1P, Einsetz
 
 ### Konkretes Beispiel (Folgefehler)
 
-Erwartungshorizont: 1P Formel (P=U×I), 1P Einsetzen (230V×10A), 1P Ergebnis (2300W)
-Schüler schreibt: `P = U × Z = 23 × 10 = 230`
+Erwartungshorizont: 1P Formel (F=m×a), 1P Einsetzen (50kg×9.81), 1P Ergebnis (490.5N)
+Schüler schreibt: `F = m × v = 5 × 9.81 = 49.05`
 CalcTrace: Proof A = ✓, Proof B = ✗
 
 correctionNotes-Schmierzettel:
 - Folgefehler-Check: Proof A ✓, Proof B ✗ → FOLGEFEHLER. Ergebnis-Punkt wird vergeben.
-- Formel: Variable Z statt I → FALSCH (0P)
-- Einsetzen: 23V statt 230V → FALSCH (0P)
-- Ergebnis: Folgefehler erkannt → 23 × 10 = 230 ist mathematisch korrekt → RICHTIG (1P)
+- Formel: Variable v statt a → FALSCH (0P)
+- Einsetzen: 5kg statt 50kg → FALSCH (0P)
+- Ergebnis: Folgefehler erkannt → 5 × 9.81 = 49.05 ist mathematisch korrekt → RICHTIG (1P)
 - Gesamt: 0 + 0 + 1 = 1P
 
 pointsObtained: 1
-feedback: "[f] Die Variable Z beschreibt Impedanz, nicht Stromstärke — korrekt wäre I. [f] Die Spannung wurde falsch abgelesen (23 V statt 230 V). [r] Das Durchrechnen mit den eigenen Werten war mathematisch fehlerfrei (23 × 10 = 230)."
+feedback: "[f] Die Variable v steht für Geschwindigkeit, nicht für Beschleunigung — korrekt wäre a. [f] Die Masse wurde falsch eingesetzt (5 kg statt 50 kg). [r] Das Durchrechnen mit den eigenen Werten war jedoch mathematisch fehlerfrei (5 × 9.81 = 49.05)."
 
 </engine_evaluation_logic>
