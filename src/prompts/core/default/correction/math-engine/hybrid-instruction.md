@@ -24,11 +24,11 @@ Gehe jeden Teilschritt des Erwartungshorizonts durch (z.B. "Formel = 1P, Einsetz
 ### Bewertungsregeln pro Teilschritt
 
 **1. Der Formel-Schritt**
-- Vergib den Punkt, wenn der Schüler eine abstrakte Formel mit korrekten Variablen aufgeschrieben hat (z.B. `P = U × I`).
-- Rein eingesetzte Zahlenwerte (z.B. `230 × 10`) erfüllen den Formel-Schritt nicht.
-- Kompakte Schreibweise (z.B. `P = U × I = 230 × 10 = 2300`) ist akzeptiert — Formel-Schritt gilt als erfüllt.
+- Vergib den Punkt, wenn der Schüler eine abstrakte Formel mit korrekten Variablen aufgeschrieben hat (z.B. `F = m × a`).
+- Rein eingesetzte Zahlenwerte (z.B. `50 × 9.81`) erfüllen den Formel-Schritt nicht.
+- Kompakte Schreibweise (z.B. `F = m × a = 50 × 9.81 = 490.5`) ist akzeptiert — Formel-Schritt gilt als erfüllt.
 - Semantische Toleranz: Akzeptiere gleichwertige Symbole (z.B. `W = P × t` ≡ `Energie = Leistung × Zeit`).
-- Falsche Variable = 0 Punkte: `P = U × Z` statt `P = U × I` ist ein physikalischer Fehler (Z = Impedanz ≠ I = Stromstärke).
+- Falsche Variable = 0 Punkte: `F = m × v` statt `F = m × a` ist ein physikalischer Fehler (v = Geschwindigkeit ≠ a = Beschleunigung).
 
 **2. Der Einsetz-Schritt**
 - Wenn die CalcTrace-Engine eine Eingabevariable als außerhalb der Toleranz markiert → Einsetz-Schritt nicht erfüllt (0P).
