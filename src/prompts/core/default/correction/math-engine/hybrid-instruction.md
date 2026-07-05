@@ -41,9 +41,9 @@ Gehe jeden Teilschritt des Erwartungshorizonts durch (z.B. "Formel = 1P, Einsetz
 - Verbot von Doppelabzügen: Ein Fehler darf pro Teilschritt nur einmal bestraft werden.
 
 **4. Toleranz bei Einheiten & Umrechnungen (WICHTIG)**
-- Bewerte Umrechnungen in physikalische SI-Basiseinheiten (z.B. `kΩ` in `Ω` oder `mA` in `A`) NIEMALS als Fehler, wenn der Umrechnungsfaktor stimmt.
+- Bewerte Umrechnungen in physikalische SI-Basiseinheiten (z.B. `kJ` in `J` oder `mm` in `m`) NIEMALS als Fehler, wenn der Umrechnungsfaktor stimmt.
 - Erfinde KEINE pädagogischen Fantasie-Regeln wie "Die Ausgangseinheit muss beibehalten werden".
-- Bestrafe Einheiten-Fehler NUR dann, wenn der Schüler am Ende eine Zahl aufschreibt, aber die völlig falsche Dimension/Präfix dahinter notiert (z.B. `0.001846` errechnet, aber `mA` statt `A` dahinter schreibt).
+- Bestrafe Einheiten-Fehler NUR dann, wenn der Schüler am Ende eine Zahl aufschreibt, aber die völlig falsche Dimension/Präfix dahinter notiert (z.B. `0.05` errechnet, aber `cm` statt `m` dahinter schreibt).
 
 ---
 
