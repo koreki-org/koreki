@@ -22,11 +22,12 @@ export const STUDENT_AST_SCHEMA = {
         type: "object",
         properties: {
           id: { type: "string", description: "step_1, step_2, etc." },
+          original_text: { type: "string", description: "The EXACT raw text the student wrote for this step (e.g. '23 V x 10 A = 2300 W'). MUST be extracted 1:1." },
           formula: { type: "string", description: "mathjs compatible formula string, referencing previous step ids if needed" },
           result: { type: "number", description: "the actual number the student wrote down as the result for this step" },
           unit: { type: "string", description: "the physical unit the student wrote next to the result (e.g. 'mA', 'kΩ', 'W', 'V'). Omit if no unit was written." }
         },
-        required: ["id", "formula", "result"]
+        required: ["id", "original_text", "formula", "result"]
       }
     }
   },
@@ -66,18 +67,18 @@ Es ist ABSOLUT VERBOTEN, das 'result' an die 'formula' anzupassen, oder die 'for
 BEISPIEL FÜR RECHENFEHLER DES SCHÜLERS:
 Schülertext: "F = m * a = 12 kg * 4 m/s² = 50 N"
 ❌ FALSCHE EXTRAKTION (Du hast das Ergebnis korrigiert, damit die Mathe stimmt! Das zerstört unser Fehlererkennungs-System!): 
-{"id":"step_1", "formula":"12 * 4", "result": 48, "unit":"N"}
+{"id":"step_1", "original_text": "F = m * a = 12 kg * 4 m/s² = 50 N", "formula":"12 * 4", "result": 48, "unit":"N"}
 ✅ KORREKTE EXTRAKTION (Stumpf abgetippt was dort steht, auch wenn es mathematisch falsch ist):
-{"id":"step_1", "formula":"12 * 4", "result": 50, "unit":"N"}
+{"id":"step_1", "original_text": "F = m * a = 12 kg * 4 m/s² = 50 N", "formula":"12 * 4", "result": 50, "unit":"N"}
 
 BEISPIEL FÜR NACKTES ENDERGEBNIS (Kein Rechenweg):
 Schülertext: "2.5 GHz"
 ❌ FALSCHE EXTRAKTION (Erfinde keine Formeln oder löse SI-Präfixe auf!):
-{"id":"step_1", "formula":"2.5 * 10^9", "result": 2500000000, "unit":"Hz"}
+{"id":"step_1", "original_text": "2.5 GHz", "formula":"2.5 * 10^9", "result": 2500000000, "unit":"Hz"}
 ✅ KORREKTE EXTRAKTION (Nimm einfach die nackte Zahl als Formel):
-{"id":"step_1", "formula":"2.5", "result": 2.5, "unit":"GHz"}
+{"id":"step_1", "original_text": "2.5 GHz", "formula":"2.5", "result": 2.5, "unit":"GHz"}
 
-WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt MUSS genau einen Key namens "steps" enthalten. Der Wert von "steps" ist ein Array. Jedes Objekt in diesem Array MUSS die Keys "id" (String), "formula" (String) und "result" (Number) haben. Optional: "unit" (String). Verwende keine anderen Keys!`;
+WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt MUSS genau einen Key namens "steps" enthalten. Der Wert von "steps" ist ein Array. Jedes Objekt in diesem Array MUSS die Keys "id", "original_text", "formula" und "result" haben. Optional: "unit". Verwende keine anderen Keys!`;
 
     const payload = {
       studentText,
