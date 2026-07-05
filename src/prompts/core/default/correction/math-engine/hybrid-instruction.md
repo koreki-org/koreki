@@ -37,6 +37,7 @@ Gehe jeden Teilschritt des Erwartungshorizonts durch (z.B. "Formel = 1P, Einsetz
 
 **3. Der Ergebnis-Schritt**
 - Proof A ✓ + Proof B ✗ = **Folgefehler → Ergebnis-Punkt MUSS vergeben werden** (siehe Schritt 1 oben).
+- Proof A ✓ + Proof B ⚠ (Einheiten-Fehler) = Der reine Zahlenwert stimmt, aber die Einheit ist falsch. **Formel- und Einsetz-Punkte bleiben zwingend erhalten!** Entziehe nur den Punkt für das Ergebnis/Einheit.
 - Proof A ✗ (Rechenfehler in der Sandbox) = Keine Punkte für das Ergebnis, auch wenn der Zahlenwert zufällig stimmt.
 - Verbot von Doppelabzügen: Ein Fehler darf pro Teilschritt nur einmal bestraft werden.
 
@@ -44,6 +45,7 @@ Gehe jeden Teilschritt des Erwartungshorizonts durch (z.B. "Formel = 1P, Einsetz
 - Bewerte Umrechnungen in physikalische SI-Basiseinheiten (z.B. `kJ` in `J` oder `mm` in `m`) NIEMALS als Fehler, wenn der Umrechnungsfaktor stimmt.
 - Erfinde KEINE pädagogischen Fantasie-Regeln wie "Die Ausgangseinheit muss beibehalten werden".
 - Bestrafe Einheiten-Fehler NUR dann, wenn der Schüler am Ende eine Zahl aufschreibt, aber die völlig falsche Dimension/Präfix dahinter notiert (z.B. `0.05` errechnet, aber `cm` statt `m` dahinter schreibt).
+- **Abzugs-Regel bei Einheiten-Fehlern (⚠ Einheiten-Analyse):** Ein Einheiten-Fehler am Ende einer Rechnung betrifft AUSSCHLIESSLICH den "Ergebnis-Punkt" (oder einen expliziten "Einheiten-Punkt"). Die Teilpunkte für "Formel" und "Einsetzen" in diesem Teilschritt BLEIBEN ERHALTEN und dürfen unter keinen Umständen wegen der falschen Einheit abgezogen werden. Entziehe für einen Einheitenfehler maximal 1 Punkt (bzw. exakt die Punkte, die der Erwartungshorizont für das "Ergebnis" vorsieht).
 
 ---
 

@@ -133,3 +133,8 @@ const result = evaluateCalcTrace(ast, target);
 ## 5. Testing & Referenzen
 *   **Unit-Tests:** Die gesamte logische Integrität, 3-Tier Unit-Awareness und Fehlerkompensation ist in [CalcTrace.test.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/tests/unit/lib/CalcTrace.test.ts) abgesichert (inklusive Folgefehler und SI-Präfix Normalisierung).
 *   **Verwandte Dokumente:** [PANG-Engine Dokumentation](./pang-engine.md), [Architekturübersicht](./architecture.md).
+
+---
+
+## 6. Architectural Decisions (ADR)
+*   **Evaluation reiner Math-AIs (z.B. Mathstral):** Am 05.07.2026 wurde durch den Principal Architect evaluiert, ob unsere deterministische Sandbox durch dedizierte Mathematik-Modelle (wie Mistrals *Mathstral*) ersetzt werden sollte. **Entscheidung:** Abgelehnt. Obwohl diese Modelle in Benchmarks exzellent abschneiden, arbeiten sie probabilistisch. Sie behandeln physikalische Einheiten primär als semantische Textbausteine, wodurch eine 100%ige deterministische Sicherheit (insbesondere bei komplexen Folgefehlern und Einheitenumrechnungen wie z.B. A zu mA) nicht garantiert werden kann. Die Architektur bleibt bei dem hybriden Best-Practice-Ansatz (LLM zur reinen AST-Extraktion, deterministische mathjs Sandbox zur Evaluierung).
