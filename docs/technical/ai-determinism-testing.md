@@ -66,6 +66,9 @@ npm run test:determinism:mistral
 
 # Explizit Qwen / OpenAI-Compatible (mit Temperature 0.3 + seed 42 Interceptor)
 npm run test:determinism:qwen
+
+# Lokales Ollama (mit Temperature 0.3 + seed 42 Interceptor in den Ollama-Options)
+npm run test:determinism:ollama
 ```
 
 ### Hinzufügen neuer Testfälle

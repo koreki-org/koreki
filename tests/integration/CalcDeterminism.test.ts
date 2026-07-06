@@ -106,6 +106,13 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
         openaiUrl: process.env.OPENAI_API_BASE || 'https://api.openai.com/v1'
       };
       console.log(`🧪 Using Provider: QWEN (OpenAI Compatible) - Model: ${settings.openaiModel}`);
+    } else if (providerOverride === 'ollama') {
+      settings = {
+        provider: 'ollama',
+        ollamaUrl: process.env.OLLAMA_API_BASE || 'http://127.0.0.1:11434',
+        ollamaModel: process.env.OLLAMA_API_MODEL || 'qwen2.5:32b'
+      };
+      console.log(`🧪 Using Provider: OLLAMA - Model: ${settings.ollamaModel}`);
     } else {
       console.warn('No API Key found. The test will likely fail if it attempts to make a real call.');
     }
@@ -114,7 +121,7 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
     const originalFetch = global.fetch;
     global.fetch = async (url: RequestInfo | URL, options?: RequestInit) => {
       const urlString = url.toString();
-      if ((urlString.includes('api.mistral.ai') || urlString.includes('openai')) && options && typeof options.body === 'string') {
+      if ((urlString.includes('api.mistral.ai') || urlString.includes('openai') || urlString.includes('11434') || urlString.includes('api/chat')) && options && typeof options.body === 'string') {
         try {
           const body = JSON.parse(options.body);
           // Check if it's a grading request where the goal was not reached
@@ -126,11 +133,24 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
             if (urlString.includes('api.mistral.ai')) {
                body.temperature = 0.0;
                body.random_seed = 42; // Mistral seed
-               console.log(`🧪 [Option C+ Deep Dive] Intercepted fetch to ${urlString}: Forced temperature to 0.0 AND seed to 42!`);
-            } else {
+               
+               // MoE Determinism Shield (Research Agent Findings)
+               body.model = 'mistral-large-2407'; // Pin exactly, no 'latest'
+               body.top_p = 1.0;
+               body.presence_penalty = 0.0;
+               body.frequency_penalty = 0.0;
+               body.safe_prompt = false; // Disable legacy guardrails
+               
+               console.log(`🧪 [Option C+ Deep Dive] Intercepted fetch to ${urlString}: Applied MoE Determinism Shield (Temp 0.0, Seed 42, Pinned Model)`);
+            } else if (urlString.includes('openai')) {
                body.temperature = 0.3; // Qwen needs min temp 0.3 for inference stability (prevents JSON crash)
                body.seed = 42; // OpenAI / Qwen seed
                console.log(`🧪 [Option C+ Deep Dive] Intercepted fetch to ${urlString}: Forced temperature to 0.3 (Qwen stability limit) AND seed to 42!`);
+            } else { // Ollama
+               body.options = body.options || {};
+               body.options.temperature = 0.3;
+               body.options.seed = 42;
+               console.log(`🧪 [Option C+ Deep Dive] Intercepted fetch to Ollama ${urlString}: Forced options.temperature to 0.3 AND options.seed to 42!`);
             }
             options.body = JSON.stringify(body);
           }
