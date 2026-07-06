@@ -7,7 +7,8 @@
 </engine_status>
 
 <teilpunkte_anweisung>
-WICHTIG FÜR DIE TEILPUNKTE: Vergib Teilpunkte aus dem Erwartungshorizont basierend auf den 'ERREICHTEN MEILENSTEINEN', selbst wenn das Endziel nicht komplett erreicht wurde!
+- WENN "Endziel erreicht: JA" => Vergib ZWINGEND die VOLLE Punktzahl! Es sind keine weiteren Abzüge zulässig.
+- WENN "Endziel erreicht: NEIN" => Vergib Teilpunkte aus dem Erwartungshorizont basierend auf den 'ERREICHTEN MEILENSTEINEN', selbst wenn das Endziel nicht komplett erreicht wurde!
 </teilpunkte_anweisung>
 
 {{HYBRID_INSTRUCTION_BLOCK}}

@@ -28,7 +28,24 @@ function withJitter(ms: number): number {
  * 4. Uses 5 retries with 2s initial delay (~2 min max total wait)
  */
 export async function fetchWithRetry(url: string, options: any, retries = 5, delay = 2000): Promise<Response> {
-  const response = await apiClient.fetch(url, options);
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout per request
+  const fetchOptions = { ...options, signal: options.signal || controller.signal };
+  
+  let response;
+  try {
+    response = await apiClient.fetch(url, fetchOptions);
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (retries > 0) {
+      const nextDelay = withJitter(delay * 2);
+      await sleep(nextDelay);
+      return fetchWithRetry(url, options, retries - 1, nextDelay);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeoutId);
+  }
   
   if ((response.status === 429 || response.status >= 500) && retries > 0) {
     // Consume response body to release the connection before retrying

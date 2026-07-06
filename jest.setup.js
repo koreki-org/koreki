@@ -60,18 +60,20 @@ jest.mock('next/font/google', () => ({
 }));
 
 // Global mock for fetch (API Infrastructure)
-global.fetch = jest.fn().mockImplementation((url) => {
-  if (url === '/api/user') {
+if (process.env.KOREKI_REAL_FETCH !== 'true') {
+  global.fetch = jest.fn().mockImplementation((url) => {
+    if (url === '/api/user') {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ loggedIn: true, user: { id: 'user-123', username: 'testuser', role: 'USER', credits: 20 } }),
+      });
+    }
     return Promise.resolve({
       ok: true,
-      json: async () => ({ loggedIn: true, user: { id: 'user-123', username: 'testuser', role: 'USER', credits: 20 } }),
+      json: async () => ([]),
     });
-  }
-  return Promise.resolve({
-    ok: true,
-    json: async () => ([]),
   });
-});
+}
 
 // useAuth mock removed from global scope to preserve unit test integrity. 
 // It must be mocked locally in integration tests. 🏮🛡️

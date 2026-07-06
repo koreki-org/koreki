@@ -53,6 +53,12 @@ Da Koreki sowohl als SaaS (Web) als auch als Desktop-App (Tauri) existiert, müs
   `cross-env KOREKI_TEST_PLATFORM=desktop npm test`
 - **Unit Isolation**: Unit-Tests für plattform-unabhängige Logik (z.B. `pdf.ts`) MÜSSEN `isDesktopMode` lokal mocken, um unabhängig von globalen Flags deterministisch zu bleiben.
 
----
-*Status: Approved (V4)*
+## 8. AI Determinism Testing (Layer 2.5) 🧠🔒
+Die deterministische Verifikation komplexer KI-Pipelines (z.B. CalcTrace & Hybrid Grading) erfolgt zwingend mehrphasig:
 
+- **Phase 1 (Engine Determinism):** Isolierte Iteration (N=3) der Extraktion (AST) und der mathematischen Sandbox. Prüfung auf identisch verfehlte/erreichte Targets.
+- **Phase 2 (Hybrid Grading Determinism):** Einspeisung der Sandbox-Resultate zusammen mit der `gradingRubric` in das Grading-LLM. Strikte Prüfung, ob bei N Iterationen exakt dieselbe `pointsObtained` Integer-Punktzahl generiert wird.
+- **Kostenkontrolle:** Layer 2.5 Determinismus-Tests kosten echte API-Tokens und sind standardmäßig als lokale/manuelle Tests (z.B. `npm run test:determinism`) ausgelegt. Sie laufen nicht automatisiert bei jedem Commit.
+
+---
+*Status: Approved (V5)*

@@ -21,6 +21,9 @@
     "tauri": "tauri",
     "dev:desktop": "cross-env NEXT_PUBLIC_KOREKI_DESKTOP=true tauri dev",
     "build:desktop": "cross-env NEXT_PUBLIC_KOREKI_MODE=desktop NEXT_PUBLIC_KOREKI_DESKTOP=true next build && tauri build",
+    "test:determinism": "cross-env KOREKI_REAL_FETCH=true jest tests/integration/CalcDeterminism.test.ts",
+    "test:determinism:mistral": "cross-env KOREKI_TEST_PROVIDER=mistral KOREKI_REAL_FETCH=true jest tests/integration/CalcDeterminism.test.ts",
+    "test:determinism:qwen": "cross-env KOREKI_TEST_PROVIDER=qwen KOREKI_REAL_FETCH=true jest tests/integration/CalcDeterminism.test.ts",
     "prepare": "husky"
   },
   "dependencies": {

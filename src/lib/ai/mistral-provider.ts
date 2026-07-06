@@ -276,11 +276,13 @@ export async function executeMistralRequest(
             }
             responseData = await response.json();
         }
-
         const data = responseData;
+        if (!data.choices) {
+            console.error('MISTRAL_DATA:', JSON.stringify(data, null, 2));
+        }
         const message = data.choices[0].message;
         responseUsage = data.usage;
-
+        
         // Handle structured content block arrays returned by Mistral's reasoning models
         let content = message.content;
         if (Array.isArray(content)) {
