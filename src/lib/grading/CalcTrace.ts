@@ -241,6 +241,17 @@ function convertBetweenUnits(value: number, fromUnit: string, toUnit: string): n
   }
 }
 
+function getPrefixScale(unitString: string): number {
+  const normalized = normalizeUnitString(unitString);
+  if (normalized.startsWith('k') && normalized !== 'kg') return 1000;
+  if (normalized.startsWith('M') && normalized !== 'min') return 1000000;
+  if (normalized.startsWith('m') && normalized !== 'm' && normalized !== 'min') return 0.001;
+  if (normalized.startsWith('u') || normalized.startsWith('μ') || normalized.startsWith('µ')) return 0.000001;
+  if (normalized.startsWith('d') && normalized !== 'd') return 0.1;
+  if (normalized.startsWith('c') && normalized !== 'c') return 0.01;
+  return 1;
+}
+
 /**
  * Evaluiert den extrahierten AST in der Sandbox.
  *
@@ -277,19 +288,17 @@ export function evaluateCalcTrace(
             comparisonValue = converted;
           }
         } else if (step.unit) {
-          // Generic fallback: convert student result to SI and compare to computed SI (since formula is in SI base units)
-          const siStudent = toSIBaseValue(step.result, step.unit);
-          if (siStudent !== null) {
-            studentValue = siStudent;
-          }
+          // Prefix-scaling logic: scale student result by prefix and compare directly to raw computed formula result
+          const scale = getPrefixScale(step.unit);
+          studentValue = step.result * scale;
         }
 
         if (!isWithinTolerance(studentValue, comparisonValue, TOLERANCE)) {
           let formulaResultDisplay = `${computed.toFixed(2)}`;
           if (step.unit) {
-            const scaleFactor = toSIBaseValue(1, step.unit);
-            if (scaleFactor !== null && scaleFactor !== 0) {
-              const valInStudentUnit = computed / scaleFactor;
+            const scale = getPrefixScale(step.unit);
+            if (scale !== 0) {
+              const valInStudentUnit = computed / scale;
               formulaResultDisplay = `${valInStudentUnit.toFixed(2)} ${step.unit}`;
             } else {
               formulaResultDisplay = `${computed.toFixed(2)} ${step.unit}`;
