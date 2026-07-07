@@ -39,8 +39,8 @@ WICHTIG (Mathematik & Formeln):
 - Nutze `$...$` für Inline-Formeln und `$$...$$` für freigestellte Formeln auf eigener Zeile.
 - Erhalte die fachliche Korrektheit der LaTeX-Syntax (z.B. Brüche, Summen, Integrale).
 - ACHTUNG (JSON-Maskierung & Delimiter): Da du ein JSON-Objekt ausgibst, musst du JEDEN Backslash vor LaTeX-Befehlen doppelt maskieren (z. B. `\\frac`, `\\text`, `\\Omega`, `\\alpha`) UND die Formeln zwingend in `$` bzw. `$$` einschließen.
-  * FALSCH: `"content": "P = U \\times I = 230,\\text{V} \\times 10,\\text{A}"`
-  * RICHTIG: `"content": "$P = U \\times I = 230,\\text{V} \\times 10,\\text{A}$"`
+  * FALSCH: `"content": "E = m \\times c^2 = 10,\\text{kg} \\times 90,\\frac{\\text{m}^2}{\\text{s}^2}"`
+  * RICHTIG: `"content": "$E = m \\times c^2 = 10,\\text{kg} \\times 90,\\frac{\\text{m}^2}{\\text{s}^2}$"`
 
 
 WICHTIG (Tabellen-Formatierung & Rekonstruktion):

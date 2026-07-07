@@ -55,9 +55,8 @@ WICHTIG: Verwende in Variablen keine geschweiften Klammern (nutze 'R_total' stat
 WICHTIG (Einheiten-Umrechnungen & Ketten-Gleichungen): Wenn der Schüler Kettenrechnungen durchführt (z.B. '2300 * 5/60 = 191.66 = 0.1916 kWh' oder 'A = B = C'), darfst du NIEMALS versuchen, alles in eine einzige Formel zu pressen. Du MUSST solche Ketten in MEHRERE sequentielle 'steps' aufteilen!
 Beispiel für '2300 * 5/60 = 191.66 = 0.1916 kWh':
 - Schritt 1: 'formula': '2300 * 5/60', 'result': 191.66
-- Schritt 2 (Einheitenumrechnung): 'formula': 'step_1 / 1000', 'result': 0.1916, 'unit': 'kWh'
 Auf diese Weise bleibt die Mathematik pro Schritt (Proof A) immer zu 100% korrekt.
-Wenn der Schüler ein Zwischenergebnis nutzt, setze die 'id' des vorherigen Schritts (z.B. step_1) in die Formel ein.
+WICHTIG (Schritt-Referenzen): Nutze eine Schritt-ID-Referenz (z. B. 'step_1') in der Formel NUR, wenn der Schüler in diesem Schritt selbst KEINE explizite Zahl notiert hat, sondern implizit auf ein vorheriges Ergebnis verweist (z.B. bei 'I = U/R_ges = 12 / 6500' und später 'U1 = I * 4000'). Schreibt der Schüler hingegen eine explizite Zahl hin (z.B. 'U1 = 1.846 * 4000'), MUSST du genau diese Zahl wörtlich übernehmen, auch wenn sie aus einem vorherigen Schritt stammt!
 WICHTIG (formulaUnit): Falls die Zahlen in 'formula' in einer anderen Einheit/Skalierung stehen als das notierte Endergebnis (z. B. Rechenweg in cm, Ergebnis in m), gib zusätzlich das Feld 'formulaUnit' mit der Einheit der Rohzahlen an. Wenn keine Skalierungs-Differenz erkennbar ist, lasse das Feld weg.
 Trage EXAKT das vom Schüler notierte Ergebnis als echte JSON-Zahl im Feld 'result' ein.
 WICHTIG (Einheiten): Wenn der Schüler eine physikalische Einheit neben dem Ergebnis notiert hat (z.B. '= 6500 Ω' oder '= 0,001846 mA'), extrahiere diese Einheit im Feld 'unit'. Verwende die Standardabkürzung (z.B. 'A', 'mA', 'V', 'kΩ', 'W', 'kWh'). Wenn KEINE Einheit notiert wurde, lasse das Feld 'unit' weg.

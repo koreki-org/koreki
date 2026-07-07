@@ -6,6 +6,10 @@ import { extractStudentAST } from '../../src/lib/grading/calc-trace-extraction';
 import { evaluateCalcTrace } from '../../src/lib/grading/CalcTrace';
 import type { TargetGoal } from '../../src/lib/grading/calc-trace-types';
 import type { AppSettings } from '../../src/types';
+import * as fs from 'fs';
+import * as path from 'path';
+
+let testReportMarkdown = `# Determinism Test Report\n\n**Date:** ${new Date().toISOString()}\n\n`;
 
 // Increase Jest timeout for massive overnight LLM runs (20 mins)
 jest.setTimeout(1200000);
@@ -16,6 +20,8 @@ interface TestCase {
   name: string;
   target: TargetGoal;
   studentText: string;
+  sampleSolution?: string;
+  expectedPoints?: number;
 }
 
 const TEST_CASES: TestCase[] = [
@@ -23,10 +29,17 @@ const TEST_CASES: TestCase[] = [
     name: 'Drehstromaufgabe (Perfect Answer)',
     target: {
       targetValue: [18750, 11250, 27.06, 230.94], // S, Q, I_L, U_P
-      maxPoints: 8,
+      maxPoints: 12,
       unit: 'VA, var, A, V',
-      gradingRubric: '2 Punkte pro korrekt errechnetem Zielwert (Formel + Ergebnis).'
+      gradingRubric: 'S (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. Q (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. I_L (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. U_P (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis.'
     },
+    sampleSolution: `
+S = P / cos_phi = 15000 W / 0.8 = 18750 VA
+Q = sqrt(S^2 - P^2) = sqrt(18750^2 - 15000^2) = 11250 var
+I_L = P / (sqrt(3) * U_L * cos_phi) = 15000 / (sqrt(3) * 400 * 0.8) = 27.06 A
+U_P = U_L / sqrt(3) = 400 / sqrt(3) = 230.94 V
+    `,
+    expectedPoints: 12,
     studentText: `
 U_L = 400 V, P = 15000 W, cos_phi = 0.8
 S = P / cos_phi = 15000 / 0.8 = 18750 VA
@@ -44,6 +57,15 @@ I_P = I_L = 27.06 A
       unit: 'kOhm, mA, V, V',
       gradingRubric: 'a. Rges und I: je 1 P Formel, 1 P Werte einsetzen, 1 P Ergebnis. b. U1 und U2: je 1 P Formel, 1 P Werte einsetzen, 1 P Ergebnis.'
     },
+    sampleSolution: `
+a.
+Rges = R1 + R2 = 4 kΩ + 2.5 kΩ = 6.5 kΩ = 6500 Ω
+I = U / Rges = 12 V / 6500 Ω = 0.001846 A = 1.846 mA
+b.
+U1 = I * R1 = 0.001846 A * 4000 Ω = 7.38 V
+U2 = I * R2 = 0.001846 A * 2500 Ω = 4.62 V
+    `,
+    expectedPoints: 10,
     studentText: `
 Aufgabe 1
 a. 
@@ -61,8 +83,14 @@ U2 = I*R2= 2,5 kΩ*1,846 mA = 4,62 V
       targetValue: [2300, 0.1916, 0.0575], // P, W, Kosten
       maxPoints: 9,
       unit: 'W, kWh, €',
-      gradingRubric: 'a. P: 3 Punkte. b. W: 3 Punkte. c. Kosten: 3 Punkte.'
+      gradingRubric: 'a. P (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. b. W (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. c. Kosten (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis.'
     },
+    sampleSolution: `
+a. P = U * I = 230 V * 10 A = 2300 W
+b. W = P * t = 2300 W * (5/60) h = 0.1916 kWh
+c. Kosten = W * Preis = 0.1916 kWh * 0.30 €/kWh = 0.0575 €
+    `,
+    expectedPoints: 6,
     studentText: `
 1
 a. P=U x Z = 23 V x 10 A = 2300 W
@@ -76,8 +104,14 @@ c. Kosten= W x VE = 0,1916kWh×0,30€/kWh=0,0575€
       targetValue: [2300, 0.1916, 0.0575], // P, W, Kosten
       maxPoints: 9,
       unit: 'W, kWh, €',
-      gradingRubric: 'a. P: 3 Punkte. b. W: 3 Punkte. c. Kosten: 3 Punkte.'
+      gradingRubric: 'a. P (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. b. W (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. c. Kosten (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis.'
     },
+    sampleSolution: `
+a. P = U * I = 230 V * 10 A = 2300 W
+b. W = P * t = 2300 W * (5/60) h = 0.1916 kWh
+c. Kosten = W * Preis = 0.1916 kWh * 0.30 €/kWh = 0.0575 €
+    `,
+    expectedPoints: 0,
     studentText: `
 1a.
 P=U x Z = 23 V x 10 A = 230 W
@@ -165,10 +199,14 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
 
   TEST_CASES.forEach(testCase => {
     let savedCalcTraceResult: any = null;
+    let phase1Mismatches = 0;
+    let phase2Mismatches = 0;
+    let phase1MismatchDetails: string[] = [];
+    let phase2MismatchDetails: string[] = [];
 
     it(`should deterministically evaluate: ${testCase.name}`, async () => {
       let firstResultString: string | null = null;
-      let mismatches = 0;
+      phase1Mismatches = 0;
 
       for (let i = 1; i <= ITERATIONS; i++) {
         // 1. Extract AST (LLM part) with retry for local Ollama crashes
@@ -216,27 +254,31 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
           
         } else {
           if (runSignature !== firstResultString) {
-            mismatches++;
+            phase1Mismatches++;
             console.error(`Mismatch in Run ${i}:\nBaseline: ${firstResultString}\nThis Run: ${runSignature}`);
+            phase1MismatchDetails.push(`**Run ${i} Mismatch:**\n- Baseline: \`${firstResultString}\`\n- This Run: \`${runSignature}\``);
           }
         }
       }
 
       // Assert that there are no mismatches across the N iterations
-      expect(mismatches).toBe(0);
+      expect(phase1Mismatches).toBe(0);
     });
 
     it(`should deterministically grade with Hybrid LLM (Phase 2): ${testCase.name}`, async () => {
       let firstPoints: number | null = null;
-      let mismatches = 0;
+      phase2Mismatches = 0;
 
       for (let i = 1; i <= ITERATIONS; i++) {
+        
         const payload = {
           studentText: testCase.studentText,
+          modelSolution: testCase.sampleSolution,
           tasksLayout: [
             {
               name: testCase.name,
               maxPoints: testCase.target.maxPoints,
+              gradingRubric: testCase.target.gradingRubric,
               calcTraceResult: savedCalcTraceResult
             }
           ]
@@ -268,18 +310,52 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
           firstPoints = awardedPoints;
           console.log(`\n--- [${testCase.name}] Phase 2: Hybrid LLM Grading ---`);
           console.log(`Iteration ${i}: ${awardedPoints}/${testCase.target.maxPoints} Punkte vergeben`);
+          console.log(`Correction Notes: ${taskResult?.correctionNotes || ''}`);
           console.log(`Feedback: ${taskResult?.feedback || taskResult?.structuredReview || ''}`);
         } else {
-          console.log(`Iteration ${i}: ${awardedPoints}/${testCase.target.maxPoints} Punkte vergeben`);
+          console.log(`Iteration ${i}: ${taskResult.pointsObtained}/${testCase.target.maxPoints} Punkte vergeben`);
+          console.log(`Correction Notes: ${taskResult?.correctionNotes || ''}`);
+          
+          // (Moved assertion outside the loop so we always run 5 iterations)
+          
           if (awardedPoints !== firstPoints) {
-            mismatches++;
+            phase2Mismatches++;
             console.error(`Hybrid Mismatch in Run ${i}: Baseline was ${firstPoints}, this run gave ${awardedPoints}`);
+            phase2MismatchDetails.push(`**Run ${i} Mismatch:** Baseline: ${firstPoints} points, This Run: ${awardedPoints} points.`);
           }
         }
       }
 
       console.log(`--------------------------------------------------`);
-      expect(mismatches).toBe(0);
+      
+      // Append to Report
+      testReportMarkdown += `## Task: ${testCase.name}\n\n`;
+      testReportMarkdown += `### Phase 1 (AST Extraction & Sandbox)\n`;
+      testReportMarkdown += `- Iterations: ${ITERATIONS}\n`;
+      testReportMarkdown += `- Mismatches: **${phase1Mismatches}**\n`;
+      if (phase1Mismatches > 0) {
+        testReportMarkdown += `\n**Details:**\n${phase1MismatchDetails.join('\n\n')}\n`;
+      }
+      
+      testReportMarkdown += `\n### Phase 2 (Hybrid LLM Grading)\n`;
+      testReportMarkdown += `- Iterations: ${ITERATIONS}\n`;
+      testReportMarkdown += `- Mismatches: **${phase2Mismatches}**\n`;
+      if (phase2Mismatches > 0) {
+        testReportMarkdown += `\n**Details:**\n${phase2MismatchDetails.join('\n\n')}\n`;
+      }
+      testReportMarkdown += `\n---\n\n`;
+
+      expect(phase2Mismatches).toBe(0);
+
+      if (testCase.expectedPoints !== undefined) {
+         expect(firstPoints).toBe(testCase.expectedPoints);
+      }
     });
+  });
+
+  afterAll(() => {
+    const reportPath = path.join(process.cwd(), 'determinism-report-latest.md');
+    fs.writeFileSync(reportPath, testReportMarkdown);
+    console.log(`\n📄 Detailed Markdown report written to: ${reportPath}`);
   });
 });

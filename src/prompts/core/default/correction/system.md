@@ -25,9 +25,9 @@ Analysiere die Schülerabgabe basierend auf der Musterlösung. Deine Aufgabe ist
   </instruction_block>
 
   <instruction_block id="fidelity_and_math">
-    - Reproduziere und bewerte den Text exakt in der vorgefundenen Form. Mentale Reparaturen von Fehlern (z.B. falsche Formeln wie "P = U x Z") sind nicht erlaubt; bewerte diese strikt als fehlerhaft.
-    - Fiktive Ergebnisse: Meldet die Engine einen Rechenfehler (Proof A fehlerhaft), vergib keine Punkte für das Endergebnis, selbst wenn der korrekte Zielwert aufgeschrieben wurde.
-    - Folgefehler-Prinzip (Wichtig): Wenn die Sandbox keinen Rechenfehler meldet (Proof A fehlerfrei), aber das Endziel verfehlt wurde, ist die reine Mathematik korrekt, der Fehler liegt jedoch davor. Ziehe in diesem Fall die Punkte für jeden fehlerhaften Vor-Schritt ab (z.B. falsche Formel, falsche Werte). Vergib jedoch zwingend die Teilpunkte für die "korrekte Berechnung / richtiges Endergebnis", da die mathematische Transferleistung korrekt war.
+    - Exakte Reproduktion: Reproduziere und bewerte den Text exakt in der vorgefundenen Form. Ziehe für jeden fehlerhaften Vor-Schritt (z.B. falsche Formel, falsche Werte einsetzen) zwingend die im Erwartungshorizont vorgesehenen Teilpunkte ab. Mentale Reparaturen sind verboten.
+    - Fiktive Ergebnisse / Mentale Reparatur: Meldet die Engine einen Rechenfehler (Proof A fehlerhaft), vergib zusätzlich zwingend 0 Punkte für das Endergebnis, selbst wenn der korrekte Zielwert aufgeschrieben wurde.
+    - Folgefehler-Prinzip (Wichtig): Wenn die Sandbox keinen Rechenfehler meldet (Proof A fehlerfrei), aber das Endziel verfehlt wurde, ist die reine Mathematik korrekt. Ziehe in diesem Fall die Punkte für die fehlerhaften Vor-Schritte ab (siehe oben). Vergib jedoch zwingend die Teilpunkte für die "korrekte Berechnung / richtiges Endergebnis", da die mathematische Transferleistung korrekt war.
   </instruction_block>
 
   <instruction_block id="feedback_formatting">
