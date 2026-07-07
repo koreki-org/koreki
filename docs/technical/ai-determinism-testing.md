@@ -100,3 +100,10 @@ Wichtig: Für Phase 2 muss die Eigenschaft `gradingRubric` (der textuelle Erwart
 Um die Mistral-Ausfälle zu verifizieren, wurde in der Test-Suite ein dynamischer Provider-Umschalter integriert (`test:determinism:qwen`).
 * **Ergebnis:** Das Qwen-Modell hat (über eine dedizierte OpenAI-kompatible Schnittstelle) mit `Temperature 0.3` und `seed 42` **alle** Determinismus-Tests zu 100% fehlerfrei bestanden.
 * **Fazit:** Der Determinismus von Teilpunkten hängt aktuell von internen Server-Architekturen (MoE vs Dense) und geheimen Hardware-Rundungen der Provider ab. Ein Enterprise-System darf juristische Sicherheit nicht von Provider-Lotterien abhängig machen, weshalb harte Teilpunkte zukünftig rein durch die PANG-Sandbox berechnet werden müssen.
+
+### 6.2 Die formulaUnit-Struktur & Aufgabenteilung (Separation of Concerns)
+Um die restliche Fluktuation bei Skalenwechseln (z.B. Wh vs. kWh oder A vs. mA) zu eliminieren, wurde eine klare Aufgabentrennung etabliert:
+1. **Phase 1 (LLM):** Das LLM agiert als reiner Beobachter. Es kopiert wörtlich die Rohzahlen des Schülers in die Formel (keine manuelle Arithmetik wie `* 10^3`). Weichen diese von der Ergebnisskalierung ab, gibt es deklarativ im Feld `formulaUnit` die Einheit der Formelzahlen an.
+2. **Sandbox (Code):** Die deterministische Sandbox übernimmt die Umrechnung (z. B. via `convertBetweenUnits`) vollautomatisch.
+* **Ergebnis:** Dies entlastet das LLM von mathematischer Transformation, verhindert prompt-basiertes Oszillieren und stellt ein stabiles, deterministisches Grading sicher.
+

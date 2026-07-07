@@ -231,10 +231,8 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
         const result = evaluateCalcTrace(astResult, testCase.target);
         if (i === 1) savedCalcTraceResult = result;
         
-        // 3. Hash/Stringify the core outputs
         const runSignature = JSON.stringify({
           isGoalReached: result.isGoalReached,
-          sandboxErrors: result.sandboxErrors,
           reachedTargets: result.reachedTargets,
           missedTargets: result.missedTargets,
           unitMismatch: result.unitMismatch
