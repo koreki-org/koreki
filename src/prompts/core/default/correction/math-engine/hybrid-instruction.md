@@ -38,7 +38,7 @@ Gehe jeden Teilschritt des Erwartungshorizonts durch (z.B. "Formel = 1P, Einsetz
 **3. Der Ergebnis-Schritt**
 - Proof A ✓ + Proof B ✗ = **Folgefehler → Ergebnis-Punkt MUSS vergeben werden** (siehe Schritt 1 oben).
 - Proof A ✓ + Proof B ⚠ (Einheiten-Fehler) = Der reine Zahlenwert stimmt, aber die Einheit ist falsch. **Formel- und Einsetz-Punkte bleiben zwingend erhalten!** Entziehe nur den Punkt für das Ergebnis/Einheit.
-- Proof A ✗ (Rechenfehler in der Sandbox) = Keine Punkte für das Ergebnis, auch wenn der Zahlenwert zufällig stimmt.
+- Proof A ✗ (Rechenfehler in der Sandbox für einen bestimmten Teilschritt) = Keine Punkte für das Ergebnis dieses betroffenen Teilschritts, auch wenn der Zahlenwert zufällig stimmt. Andere, korrekte Teilschritte sind davon nicht betroffen.
 - Verbot von Doppelabzügen: Ein Fehler darf pro Teilschritt nur einmal bestraft werden.
 
 **4. Toleranz bei Einheiten & Umrechnungen (WICHTIG)**

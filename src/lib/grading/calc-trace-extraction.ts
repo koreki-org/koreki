@@ -50,14 +50,28 @@ export async function extractStudentAST(
     const systemPrompt = `Du bist eine hochpräzise Extraktions-KI für mathematische Aufgaben.
 Deine Aufgabe ist es, den Rechenweg des Schülers Schritt für Schritt zu extrahieren.
 Wandle die Rechnungen in 'mathjs' kompatible Formeln um. WICHTIG: Nutze KEINE Einheiten in den Formeln!
-WICHTIG: Schreibe in 'formula' NUR den Rechenausdruck (z.B. '4000 + 2500'). Verwende KEINE Gleichheitszeichen oder Zuweisungen (wie 'R_ges =' oder 'x =') in der 'formula'!
+WICHTIG: Schreibe in 'formula' NUR den Rechenausdruck (z.B. '4 + 2.5'). Verwende KEINE Gleichheitszeichen oder Zuweisungen (wie 'R_ges =' oder 'x =') in der 'formula'!
+WICHTIG: Nutze standardmäßige mathematische Funktionen (wie 'sqrt', 'sin', 'cos', 'tan') direkt ohne 'Math.'-Prefix (schreibe 'sqrt(100)' statt 'Math.sqrt(100)'), da dies zu Auswertungsfehlern führt.
 WICHTIG: Verwende in Variablen keine geschweiften Klammern (nutze 'R_total' statt 'R_{total}').
 WICHTIG (Einheiten-Umrechnungen & Ketten-Gleichungen): Wenn der Schüler Kettenrechnungen durchführt (z.B. '2300 * 5/60 = 191.66 = 0.1916 kWh' oder 'A = B = C'), darfst du NIEMALS versuchen, alles in eine einzige Formel zu pressen. Du MUSST solche Ketten in MEHRERE sequentielle 'steps' aufteilen!
 Beispiel für '2300 * 5/60 = 191.66 = 0.1916 kWh':
 - Schritt 1: 'formula': '2300 * 5/60', 'result': 191.66
 Auf diese Weise bleibt die Mathematik pro Schritt (Proof A) immer zu 100% korrekt.
 WICHTIG (Schritt-Referenzen): Nutze eine Schritt-ID-Referenz (z. B. 'step_1') in der Formel NUR, wenn der Schüler in diesem Schritt selbst KEINE explizite Zahl notiert hat, sondern implizit auf ein vorheriges Ergebnis verweist (z.B. bei 'I = U/R_ges = 12 / 6500' und später 'U1 = I * 4000'). Schreibt der Schüler hingegen eine explizite Zahl hin (z.B. 'U1 = 1.846 * 4000'), MUSST du genau diese Zahl wörtlich übernehmen, auch wenn sie aus einem vorherigen Schritt stammt!
-WICHTIG (formulaUnit): Falls die Zahlen in 'formula' in einer anderen Einheit/Skalierung stehen als das notierte Endergebnis (z. B. Rechenweg in cm, Ergebnis in m), gib zusätzlich das Feld 'formulaUnit' mit der Einheit der Rohzahlen an. Wenn keine Skalierungs-Differenz erkennbar ist, lasse das Feld weg.
+WICHTIG (Dezimalpunkt, SI-Basiseinheiten & formulaUnit):
+- Verwende in 'formula' IMMER den Punkt (.) als Dezimaltrennzeichen, NIEMALS das Komma (,), selbst wenn der Schüler ein Komma notiert hat (z. B. '0,75 * 0,20' -> formula: '0.75 * 0.20').
+- Konvertiere in 'formula' alle Werte zwingend in ihre SI-Basiseinheiten, indem du entsprechende Multiplikatoren für Präfixe anhängst:
+  * k (Kilo) -> * 10^3
+  * m (Milli) -> * 10^-3
+  * M (Mega) -> * 10^6
+  * u/μ (Mikro) -> * 10^-6
+  * d (Dezi) -> * 10^-1, c (Zenti) -> * 10^-2
+  * Keine Skalierung nötig für Standardeinheiten ohne Präfix (V, A, W, Ohm).
+  Dadurch sind alle Formelberechnungen in der Sandbox automatisch in der SI-Basiseinheit konsistent.
+- Falls das Ergebnis des Schülers eine andere Einheit/Skalierung hat als die SI-Basiseinheit der Formel, trage im Feld 'formulaUnit' die SI-Basiseinheit der Formel (z. B. 'Ω' bei Widerstand, 'V' bei Spannung) ein, damit die Sandbox das Ergebnis korrekt umrechnen kann.
+  Beispiel 1: 'U = R * I = 2 kΩ * 5 mA = 10 V' -> formula: '2 * 10^3 * 5 * 10^-3', result: 10, unit: 'V'. (Kein formulaUnit nötig, da das Ergebnis bereits in der SI-Basiseinheit vorliegt).
+  Beispiel 2: 'R = 3 kΩ + 1.5 kΩ = 4.5 kΩ' -> formula: '3 * 10^3 + 1.5 * 10^3', formulaUnit: 'Ω', result: 4.5, unit: 'kΩ'. (formulaUnit 'Ω' sorgt für die korrekte Umrechnung von 4500 Ω in 4.5 kΩ in der Sandbox).
+  Beispiel 3: 'R = 3 kΩ + 1.5 kΩ = 4500 Ω' -> formula: '3 * 10^3 + 1.5 * 10^3', result: 4500, unit: 'Ω'. (Kein formulaUnit nötig).
 Trage EXAKT das vom Schüler notierte Ergebnis als echte JSON-Zahl im Feld 'result' ein.
 WICHTIG (Einheiten): Wenn der Schüler eine physikalische Einheit neben dem Ergebnis notiert hat (z.B. '= 6500 Ω' oder '= 0,001846 mA'), extrahiere diese Einheit im Feld 'unit'. Verwende die Standardabkürzung (z.B. 'A', 'mA', 'V', 'kΩ', 'W', 'kWh'). Wenn KEINE Einheit notiert wurde, lasse das Feld 'unit' weg.
 

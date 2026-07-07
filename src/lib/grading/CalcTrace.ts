@@ -88,8 +88,11 @@ const UNIT_ALIASES: Record<string, string> = {
 
 /** Normalize a unit string to a mathjs-compatible format */
 function normalizeUnitString(unit: string): string {
-  const trimmed = unit.trim();
-  return UNIT_ALIASES[trimmed] || trimmed;
+  let u = unit.trim();
+  // Globally normalize all ohm symbols (handles compound units like kΩ*mA or kΩ*A)
+  u = u.replace(/[ΩΩ]/g, 'ohm');
+  u = u.replace(/\bOhm\b/g, 'ohm');
+  return UNIT_ALIASES[u] || u;
 }
 
 /**
@@ -265,12 +268,34 @@ export function evaluateCalcTrace(
       if (typeof computed !== 'number' || !isFinite(computed)) {
         sandboxErrors.push(`Schritt ${step.id}: Resultat ist keine gültige Zahl.`);
       } else {
-        const comparisonValue = (step.formulaUnit && step.unit && step.formulaUnit !== step.unit)
-          ? convertBetweenUnits(computed, step.formulaUnit, step.unit)
-          : computed;
+        let comparisonValue = computed;
+        let studentValue = step.result;
 
-        if (comparisonValue === null || !isWithinTolerance(step.result, comparisonValue, TOLERANCE)) {
-          sandboxErrors.push(`Rechenfehler in ${step.id}: Formel ergibt ${computed.toFixed(2)} ${step.formulaUnit ?? ''}, aber Schüler notierte ${step.result} ${step.unit ?? ''}`.trim());
+        if (step.formulaUnit && step.unit && step.formulaUnit !== step.unit) {
+          const converted = convertBetweenUnits(computed, step.formulaUnit, step.unit);
+          if (converted !== null) {
+            comparisonValue = converted;
+          }
+        } else if (step.unit) {
+          // Generic fallback: convert student result to SI and compare to computed SI (since formula is in SI base units)
+          const siStudent = toSIBaseValue(step.result, step.unit);
+          if (siStudent !== null) {
+            studentValue = siStudent;
+          }
+        }
+
+        if (!isWithinTolerance(studentValue, comparisonValue, TOLERANCE)) {
+          let formulaResultDisplay = `${computed.toFixed(2)}`;
+          if (step.unit) {
+            const scaleFactor = toSIBaseValue(1, step.unit);
+            if (scaleFactor !== null && scaleFactor !== 0) {
+              const valInStudentUnit = computed / scaleFactor;
+              formulaResultDisplay = `${valInStudentUnit.toFixed(2)} ${step.unit}`;
+            } else {
+              formulaResultDisplay = `${computed.toFixed(2)} ${step.unit}`;
+            }
+          }
+          sandboxErrors.push(`Rechenfehler in ${step.id}: Formel ergibt ${formulaResultDisplay}, aber Schüler notierte ${step.result} ${step.unit ?? ''}`.trim());
         }
         // Save the explicitly stated student result in context, so subsequent formulas use the scaled value
         context[step.id] = step.result;
