@@ -19,6 +19,8 @@ export interface StudentASTStep {
   result: number;
   /** Optionale physikalische Einheit die der Schüler beim Ergebnis notiert hat (z.B. "mA", "kΩ", "W") */
   unit?: string;
+  /** Einheit der Rohzahlen in `formula`, falls abweichend von `unit` (z.B. Formel in cm, Ergebnis in m) */
+  formulaUnit?: string;
 }
 
 /** Das extrahierte Endziel und die Punkteverteilung für eine MINT-Aufgabe */

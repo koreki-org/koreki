@@ -230,6 +230,14 @@ function parseUnitsPerValue(unit: string | undefined, valueCount: number): (stri
 
 // ─── Core Engine ─────────────────────────────────────────────────────────────
 
+function convertBetweenUnits(value: number, fromUnit: string, toUnit: string): number | null {
+  try {
+    return math.unit(value, normalizeUnitString(fromUnit)).toNumber(normalizeUnitString(toUnit));
+  } catch {
+    return null; // inkompatible Dimensionen → kein legitimer Umrechnungsfall, Fehler bleibt bestehen
+  }
+}
+
 /**
  * Evaluiert den extrahierten AST in der Sandbox.
  *
@@ -257,9 +265,14 @@ export function evaluateCalcTrace(
       if (typeof computed !== 'number' || !isFinite(computed)) {
         sandboxErrors.push(`Schritt ${step.id}: Resultat ist keine gültige Zahl.`);
       } else {
-        if (!isWithinTolerance(step.result, computed, TOLERANCE)) {
-          sandboxErrors.push(`Rechenfehler in ${step.id}: Formel ergibt ${computed.toFixed(2)}, aber Schüler notierte ${step.result}`);
+        const comparisonValue = (step.formulaUnit && step.unit && step.formulaUnit !== step.unit)
+          ? convertBetweenUnits(computed, step.formulaUnit, step.unit)
+          : computed;
+
+        if (comparisonValue === null || !isWithinTolerance(step.result, comparisonValue, TOLERANCE)) {
+          sandboxErrors.push(`Rechenfehler in ${step.id}: Formel ergibt ${computed.toFixed(2)} ${step.formulaUnit ?? ''}, aber Schüler notierte ${step.result} ${step.unit ?? ''}`.trim());
         }
+        // Save the explicitly stated student result in context, so subsequent formulas use the scaled value
         context[step.id] = step.result;
       }
     } catch (e: any) {
