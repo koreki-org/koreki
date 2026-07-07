@@ -164,7 +164,7 @@ function compareWithUnit(
     }
     // Same dimension, same number, different prefix (e.g. 6.5 Ω vs 6.5 kΩ)
     // → the student clearly has the wrong magnitude
-    return { ...base, isValueMatch: false, isExactMatch: false, isUnitMismatch: true };
+    return { ...base, isValueMatch: false, isExactMatch: false, isUnitMismatch: true, isPrefixError: true };
   }
 
   // 2. SI normalization: check if value matches after unit conversion
@@ -302,12 +302,26 @@ export function evaluateCalcTrace(
       let bestMatch: UnitComparisonDetail | null = null;
       for (const step of ast) {
         const comparison = compareWithUnit(step.result, step.unit, expected, expectedUnit, TOLERANCE);
+        
         if (comparison.isExactMatch) {
           bestMatch = comparison;
           break; // Exact match found, no need to check further
         }
-        if (comparison.isValueMatch && (!bestMatch || !bestMatch.isValueMatch)) {
-          bestMatch = comparison; // Keep best SI-match as fallback
+        
+        // If the student explicitly made a prefix error (e.g. 1.846 A instead of 1.846 mA),
+        // this is their final WRONG answer. It overrides any earlier weak SI-match without unit.
+        if (comparison.isPrefixError) {
+          if (!bestMatch || !bestMatch.isExactMatch) {
+            bestMatch = comparison;
+          }
+        }
+        
+        // If we found a valid SI match (e.g. 0.001846 without unit), we only keep it
+        // if we haven't found a prefix error or exact match yet.
+        if (comparison.isValueMatch) {
+          if (!bestMatch || (!bestMatch.isExactMatch && !bestMatch.isPrefixError && !bestMatch.isValueMatch)) {
+            bestMatch = comparison;
+          }
         }
       }
 

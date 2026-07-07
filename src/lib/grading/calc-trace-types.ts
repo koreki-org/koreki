@@ -47,6 +47,8 @@ export interface UnitComparisonDetail {
   isExactMatch: boolean;
   /** Zahlenwert ist physikalisch äquivalent, aber Einheit/Präfix abweichend */
   isUnitMismatch: boolean;
+  /** Der Schüler hat den exakten Zahlenwert notiert, aber ein physikalisch falsches SI-Präfix (z.B. 1.846 A statt 1.846 mA) */
+  isPrefixError?: boolean;
 }
 
 /** Auswertungsergebnis des Student-ASTs in der mathjs Sandbox */

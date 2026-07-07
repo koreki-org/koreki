@@ -57,6 +57,7 @@ Beispiel für '2300 * 5/60 = 191.66 = 0.1916 kWh':
 - Schritt 2 (Einheitenumrechnung): 'formula': 'step_1 / 1000', 'result': 0.1916, 'unit': 'kWh'
 Auf diese Weise bleibt die Mathematik pro Schritt (Proof A) immer zu 100% korrekt.
 Wenn der Schüler ein Zwischenergebnis nutzt, setze die 'id' des vorherigen Schritts (z.B. step_1) in die Formel ein.
+WICHTIG (Präfixe in Formeln): Wenn der Schüler Werte mit physikalischen Präfixen verrechnet (z.B. Kilo, Milli, Mega) und das Ergebnis in einer anderen Skalierung oder der Basiseinheit notiert, MUSST du in der 'formula' die numerische Skalierung (z.B. *1000 oder /1000) zwingend abbilden! Die von dir extrahierte Formel muss rechnerisch immer exakt das extrahierte 'result' ergeben. Ignoriere Präfixe niemals, wenn sie für die mathematische Gleichung erforderlich sind.
 Trage EXAKT das vom Schüler notierte Ergebnis als echte JSON-Zahl im Feld 'result' ein.
 WICHTIG (Einheiten): Wenn der Schüler eine physikalische Einheit neben dem Ergebnis notiert hat (z.B. '= 6500 Ω' oder '= 0,001846 mA'), extrahiere diese Einheit im Feld 'unit'. Verwende die Standardabkürzung (z.B. 'A', 'mA', 'V', 'kΩ', 'W', 'kWh'). Wenn KEINE Einheit notiert wurde, lasse das Feld 'unit' weg.
 
@@ -73,9 +74,9 @@ Schülertext: "F = m * a = 12 kg * 4 m/s² = 50 N"
 
 BEISPIEL FÜR NACKTES ENDERGEBNIS (Kein Rechenweg):
 Schülertext: "2.5 GHz"
-❌ FALSCHE EXTRAKTION (Erfinde keine Formeln oder löse SI-Präfixe auf!):
+❌ FALSCHE EXTRAKTION (Erfinde keine Formeln, wenn der Schüler keine Rechenoperation notiert hat!):
 {"id":"step_1", "original_text": "2.5 GHz", "formula":"2.5 * 10^9", "result": 2500000000, "unit":"Hz"}
-✅ KORREKTE EXTRAKTION (Nimm einfach die nackte Zahl als Formel):
+✅ KORREKTE EXTRAKTION (Nimm einfach die nackte Zahl als Formel, da es keinen Rechenausdruck gab):
 {"id":"step_1", "original_text": "2.5 GHz", "formula":"2.5", "result": 2.5, "unit":"GHz"}
 
 WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt MUSS genau einen Key namens "steps" enthalten. Der Wert von "steps" ist ein Array. Jedes Objekt in diesem Array MUSS die Keys "id", "original_text", "formula" und "result" haben. Optional: "unit". Verwende keine anderen Keys!`;

@@ -7,10 +7,10 @@ import { evaluateCalcTrace } from '../../src/lib/grading/CalcTrace';
 import type { TargetGoal } from '../../src/lib/grading/calc-trace-types';
 import type { AppSettings } from '../../src/types';
 
-// Increase Jest timeout for LLM calls (5 mins)
-jest.setTimeout(300000);
+// Increase Jest timeout for massive overnight LLM runs (20 mins)
+jest.setTimeout(1200000);
 
-const ITERATIONS = 2;
+const ITERATIONS = 5;
 
 interface TestCase {
   name: string;
@@ -109,10 +109,11 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
     } else if (providerOverride === 'ollama') {
       settings = {
         provider: 'ollama',
-        ollamaUrl: process.env.OLLAMA_API_BASE || 'http://127.0.0.1:11434',
-        ollamaModel: process.env.OLLAMA_API_MODEL || 'qwen2.5:32b'
+        ollamaUrl: process.env.OLLAMA_API_BASE || 'http://192.168.250.12:11434',
+        ollamaModel: process.env.OLLAMA_API_MODEL || 'qwen3.6:35b',
+        ollamaNumCtx: 32768 // Changed to 32k for overnight run
       };
-      console.log(`🧪 Using Provider: OLLAMA - Model: ${settings.ollamaModel}`);
+      console.log(`🧪 Using Provider: OLLAMA - Model: ${settings.ollamaModel} at ${settings.ollamaUrl}`);
     } else {
       console.warn('No API Key found. The test will likely fail if it attempts to make a real call.');
     }
@@ -121,7 +122,7 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
     const originalFetch = global.fetch;
     global.fetch = async (url: RequestInfo | URL, options?: RequestInit) => {
       const urlString = url.toString();
-      if ((urlString.includes('api.mistral.ai') || urlString.includes('openai') || urlString.includes('11434') || urlString.includes('api/chat')) && options && typeof options.body === 'string') {
+      if ((urlString.includes('api.mistral.ai') || urlString.includes('openai') || urlString.includes('11434') || urlString.includes('192.168.250.12') || urlString.includes('api/chat')) && options && typeof options.body === 'string') {
         try {
           const body = JSON.parse(options.body);
           // Check if it's a grading request where the goal was not reached
@@ -170,16 +171,26 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
       let mismatches = 0;
 
       for (let i = 1; i <= ITERATIONS; i++) {
-        // 1. Extract AST (Non-deterministic AI part)
-        const targetGoal = testCase.target;
-        const astResult = await extractStudentAST(testCase.studentText, 'PURE', settings, testCase.name);
-        
-        // Strict Assertion: If the AST is completely empty for a known good/bad test case, the LLM API call failed!
+        // 1. Extract AST (LLM part) with retry for local Ollama crashes
+        let astResult;
+        let attempts = 0;
+        const maxAttempts = 3;
+        while (attempts < maxAttempts) {
+          astResult = await extractStudentAST(testCase.studentText, 'PURE', settings, testCase.name);
+          if (astResult && astResult.length > 0) {
+            break; // Success!
+          }
+          attempts++;
+          console.warn(`[Ollama Crash Defense] Iteration ${i} - Attempt ${attempts}: Empty response from Ollama. Retrying in 5 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+
+        // Strict Assertion: If the AST is completely empty after all retries, the LLM API call fatally failed!
         expect(astResult).toBeDefined();
-        expect(astResult.length).toBeGreaterThan(0);
+        expect(astResult?.length).toBeGreaterThan(0);
 
         // 2. Evaluate (Deterministic Sandbox part)
-        const result = evaluateCalcTrace(astResult, targetGoal);
+        const result = evaluateCalcTrace(astResult, testCase.target);
         if (i === 1) savedCalcTraceResult = result;
         
         // 3. Hash/Stringify the core outputs
@@ -231,10 +242,23 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
           ]
         };
 
-        const result = await performAIRequest('correction', payload, 'PURE', settings);
+        let result;
+        let attempts = 0;
+        const maxAttempts = 3;
+        while (attempts < maxAttempts) {
+          result = await performAIRequest('correction', payload, 'PURE', settings);
+          const taskResult = result?.tasks?.[0];
+          if (taskResult && typeof taskResult.pointsObtained === 'number') {
+            break; // Success!
+          }
+          attempts++;
+          console.warn(`[Ollama Crash Defense] Phase 2 Iteration ${i} - Attempt ${attempts}: Empty or invalid response from Ollama. Retrying in 5 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+
         const taskResult = result?.tasks?.[0];
         
-        // Strict Assertion: If the API fails or returns no points, the test MUST fail!
+        // Strict Assertion: If the API fails or returns no points after all retries, the test MUST fail!
         expect(taskResult?.pointsObtained).toBeDefined();
         expect(typeof taskResult?.pointsObtained).toBe('number');
         
