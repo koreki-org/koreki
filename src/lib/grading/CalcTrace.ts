@@ -46,6 +46,8 @@ const ALLOWED_FUNCTIONS = new Set([
   'min', 'max', 'pow', 'sum',
 ]);
 
+const TOLERANCE = 0.05; // 5% tolerance for rounding/follow-up errors
+
 function validateAST(formula: string): void {
   const node = math.parse(formula);
   node.traverse((n) => {
@@ -288,7 +290,6 @@ export function evaluateCalcTrace(
 ): CalcTraceResult {
   const sandboxErrors: string[] = [];
   const context: Record<string, number> = {};
-  const TOLERANCE = 0.05; // 5% tolerance for rounding/follow-up errors
 
   // ── Proof A: Internal consistency ──────────────────────────────────────────
   for (const step of ast) {
@@ -392,7 +393,7 @@ export function evaluateCalcTrace(
         const comparison = compareWithUnit(step.result, step.unit, expected, expectedUnit, TOLERANCE);
         
         if (comparison.isExactMatch) {
-          bestMatch = comparison;
+          bestMatch = { ...comparison, stepId: step.id };
           break; // Exact match found, no need to check further
         }
         
@@ -400,7 +401,7 @@ export function evaluateCalcTrace(
         // this is their final WRONG answer. It overrides any earlier weak SI-match without unit.
         if (comparison.isPrefixError) {
           if (!bestMatch || !bestMatch.isExactMatch) {
-            bestMatch = comparison;
+            bestMatch = { ...comparison, stepId: step.id };
           }
         }
         
@@ -408,7 +409,7 @@ export function evaluateCalcTrace(
         // if we haven't found a prefix error or exact match yet.
         if (comparison.isValueMatch) {
           if (!bestMatch || (!bestMatch.isExactMatch && !bestMatch.isPrefixError && !bestMatch.isValueMatch)) {
-            bestMatch = comparison;
+            bestMatch = { ...comparison, stepId: step.id };
           }
         }
       }
@@ -474,42 +475,49 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
   }
 
   // ── Proof B ──
-  lines.push(`\n[Proof B: Ziel-Test]`);
-  if (result.isGoalReached && !result.unitMismatch) {
-    if (result.sandboxErrors.length === 0) {
-      lines.push(`✓ Der Schüler hat das Endziel komplett fehlerfrei erreicht.`);
-    } else {
-      lines.push(`⚠ Der Schüler hat den Endziel-Zahlenwert zwar notiert, ABER der Rechenweg dorthin enthält Rechenfehler (siehe Proof A)!`);
-    }
-  } else if (result.isGoalReached && result.unitMismatch) {
-    lines.push(`⚠ Der berechnete Zahlenwert stimmt (evtl. korrekte SI-Normalisierung), aber die vom Schüler notierte Einheitsbezeichnung weicht ab oder ist physikalisch falsch. Details siehe [Einheiten-Analyse].`);
-  } else {
-    lines.push(`✗ Der Schüler hat das Endziel verfehlt oder nicht vollständig gelöst.`);
-  }
+  lines.push(`\n[Proof B: Ziel-Test & Einheiten-Abgleich]`);
+  const naturalValues = parseTargetValues(target.targetValue);
+  const unitsPerValue = parseUnitsPerValue(target.unit, naturalValues.length);
+  const ast = result.ast;
 
-  // Reached/missed targets (only natural values, not SI-expanded)
-  if (result.reachedTargets && result.reachedTargets.length > 0) {
-    if (result.sandboxErrors.length === 0) {
-      lines.push(`✓ Folgende Meilensteine/Teilziele wurden im Rechenweg fehlerfrei gefunden: ${result.reachedTargets.join(', ')}`);
-    } else {
-      lines.push(`⚠ Folgende Meilensteine/Teilziele wurden als Zahl notiert (Achtung, evtl. fiktiv/unlogisch durch obige Rechenfehler!): ${result.reachedTargets.join(', ')}`);
-    }
-  }
-  if (result.missedTargets && result.missedTargets.length > 0) {
-    lines.push(`✗ Folgende Meilensteine/Teilziele wurden NICHT erreicht oder übersprungen: ${result.missedTargets.join(', ')}`);
-  }
+  naturalValues.forEach((expected, idx) => {
+    const expectedUnit = unitsPerValue[idx] || '';
+    const targetStr = `${expected} ${expectedUnit}`.trim();
+    
+    // Find if we have unit comparison details for this target
+    const detail = result.unitDetails ? result.unitDetails.find(d => d.targetValue === expected && d.expectedUnit === expectedUnit) : null;
+    
+    if (detail) {
+      const stepStr = detail.stepId ? ` in ${detail.stepId}` : '';
+      const studentUnitStr = detail.studentUnit ? ` (Schüler notierte: ${detail.studentUnit})` : (detail.isExactMatch ? '' : ' (keine Einheit angegeben)');
+      
+      // Check if this specific step had a sandbox error
+      const hasErrorInStep = detail.stepId ? result.sandboxErrors.some(err => err.includes(detail.stepId!)) : false;
+      const logicIndicator = hasErrorInStep ? `⚠ Rechenweg für diesen Schritt enthält Rechenfehler (siehe Proof A)` : `✓ Rechenweg für diesen Schritt fehlerfrei`;
 
-  // ── Unit Analysis (NEW in V7) ──
-  if (result.unitMismatch && result.unitDetails) {
-    lines.push(`\n[Einheiten-Analyse]`);
-    result.unitDetails.forEach(detail => {
-      if (detail.isUnitMismatch) {
-        const studentUnitStr = detail.studentUnit ? ` (Schüler notierte: ${detail.studentUnit})` : '';
-        lines.push(`⚠ Zielwert ${detail.targetValue} ${detail.expectedUnit}: Der berechnete nackte Zahlenwert stimmt (entspricht ggf. der SI-Basiseinheit), aber die notierte Einheit ist physikalisch falsch oder passt nicht zum Wert${studentUnitStr}.`);
+      if (detail.isExactMatch) {
+        lines.push(`* Zielwert ${targetStr}: Gefunden${stepStr}${studentUnitStr} -> EXAKTER MATCH (Wert & Einheit physikalisch korrekt)`);
+        lines.push(`  → ${logicIndicator}`);
+      } else if (detail.isUnitMismatch) {
+        lines.push(`* Zielwert ${targetStr}: Gefunden${stepStr}${studentUnitStr} -> UNIT-MISMATCH (Zahlenwert stimmt physikalisch, aber Einheitsbezeichnung weicht ab)`);
+        lines.push(`  → ${logicIndicator}`);
         lines.push(`  → Prüfe die Einheitsbezeichnung im Schülertext. Rechenweg-Punkt: JA, Einheits-Punkt: abhängig vom Erwartungshorizont.`);
+      } else {
+        lines.push(`* Zielwert ${targetStr}: NICHT erreicht oder übersprungen`);
       }
-    });
-  }
+    } else {
+      // Pure numeric target (no unit expected)
+      const matchingStep = ast.find(step => isWithinTolerance(step.result, expected, TOLERANCE));
+      if (matchingStep) {
+        const hasErrorInStep = result.sandboxErrors.some(err => err.includes(matchingStep.id));
+        const logicIndicator = hasErrorInStep ? `⚠ Rechenweg für diesen Schritt enthält Rechenfehler (siehe Proof A)` : `✓ Rechenweg für diesen Schritt fehlerfrei`;
+        lines.push(`* Zielwert ${targetStr}: Gefunden in ${matchingStep.id} -> MATCH (Reiner Zahlenwert-Abgleich)`);
+        lines.push(`  → ${logicIndicator}`);
+      } else {
+        lines.push(`* Zielwert ${targetStr}: NICHT erreicht oder übersprungen`);
+      }
+    }
+  });
 
   // ── Grading Rubric ──
   if (target.gradingRubric && target.gradingRubric.trim().length > 0) {
