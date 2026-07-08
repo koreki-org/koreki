@@ -498,6 +498,10 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
       if (detail.isExactMatch) {
         lines.push(`* Zielwert ${targetStr}: Gefunden${stepStr}${studentUnitStr} -> EXAKTER MATCH (Wert & Einheit physikalisch korrekt)`);
         lines.push(`  → ${logicIndicator}`);
+      } else if (detail.isPrefixError) {
+        lines.push(`* Zielwert ${targetStr}: Gefunden${stepStr}${studentUnitStr} -> PRÄFIX-FEHLER (Zahlenwert stimmt als nackte Zahl, aber SI-Präfix/Größenordnung ist falsch)`);
+        lines.push(`  → ${logicIndicator}`);
+        lines.push(`  → Prüfe die Einheitsbezeichnung im Schülertext. Rechenweg-Punkt: JA, Einheits-Punkt: abhängig vom Erwartungshorizont.`);
       } else if (detail.isUnitMismatch) {
         lines.push(`* Zielwert ${targetStr}: Gefunden${stepStr}${studentUnitStr} -> UNIT-MISMATCH (Zahlenwert stimmt physikalisch, aber Einheitsbezeichnung weicht ab)`);
         lines.push(`  → ${logicIndicator}`);
