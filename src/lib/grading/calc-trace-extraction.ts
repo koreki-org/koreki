@@ -58,13 +58,17 @@ Beispiel für '2300 * 5/60 = 191.66 = 0.1916 kWh':
 - Schritt 1: 'formula': '2300 * 5/60', 'result': 191.66
 Auf diese Weise bleibt die Mathematik pro Schritt (Proof A) immer zu 100% korrekt.
 WICHTIG (Schritt-Referenzen): Nutze eine Schritt-ID-Referenz (z. B. 'step_1') in der Formel NUR, wenn der Schüler in diesem Schritt selbst KEINE explizite Zahl notiert hat, sondern implizit auf ein vorheriges Ergebnis verweist (z.B. bei 'I = U/R_ges = 12 / 6500' und später 'U1 = I * 4000'). Schreibt der Schüler hingegen eine explizite Zahl hin (z.B. 'U1 = 1.846 * 4000'), MUSST du genau diese Zahl wörtlich übernehmen, auch wenn sie aus einem vorherigen Schritt stammt!
-WICHTIG (Dezimalpunkt & formulaUnit):
-- Verwende in 'formula' IMMER den Punkt (.) als Dezimaltrennzeichen, NIEMALS das Komma (,), selbst wenn der Schüler ein Komma notiert hat (z. B. '0,75 * 0,20' -> formula: '0.75 * 0.20').
-- Schreibe die 'formula' mit den Rohzahlen, wie sie der Schüler notiert hat (z. B. '2 * 5' für '2 kΩ * 5 mA'). Löse physikalische Präfixe in der Formel NICHT manuell auf (schreibe NICHT '2 * 10^3 * 5 * 10^-3').
-- Falls die Zahlen in 'formula' in einer anderen Einheit/Skalierung stehen als das notierte Ergebnis (z. B. Rechenweg in cm, Ergebnis in m; oder Formelzahlen in kΩ/mA und das Ergebnis in V/Ω), gib zusätzlich das Feld 'formulaUnit' mit der Einheit der Rohzahlen an (z.B. 'Wh', 'cm', 'kΩ'), damit die Sandbox das Ergebnis korrekt umrechnen kann. Wenn keine Skalierungs-Differenz erkennbar ist, lasse das Feld weg.
-  Beispiel 1: 'R = 3 kΩ + 1.5 kΩ = 4.5 kΩ' -> formula: '3 + 1.5', result: 4.5, unit: 'kΩ'. (Kein formulaUnit nötig, da Formel und Ergebnis auf derselben kΩ-Skala liegen).
-  Beispiel 2: 'R = 3 kΩ + 1.5 kΩ = 4500 Ω' -> formula: '3 + 1.5', formulaUnit: 'kΩ', result: 4500, unit: 'Ω'. (formulaUnit 'kΩ' sorgt dafür, dass die Sandbox erkennt, dass die Formel 4.5 kΩ ergibt und rechnet dies in 4500 Ω um).
-  Beispiel 3: 'W = 2300 W * (5/60) h = 0.1916 kWh' -> formula: '2300 * (5/60)', formulaUnit: 'Wh', result: 0.1916, unit: 'kWh'. (formulaUnit 'Wh' sorgt dafür, dass die Sandbox 191.66 Wh in 0.1916 kWh umrechnet).
+WICHTIG (Dezimalpunkt, Einheiten in Formeln & formulaUnit):
+- Verwende in 'formula' IMMER den Punkt (.) als Dezimaltrennzeichen, NIEMALS das Komma (,), selbst wenn der Schüler ein Komma notiert hat (z. B. '0,1916 * 0,30' -> formula: '0.1916 * 0.30').
+- Schreibe in 'formula' die Einheiten und Präfixe direkt mit in die Formel, exakt so, wie sie der Schüler notiert hat (z. B. '4 kΩ * 1.846 mA' oder '230 V * 10 A'). 
+  Erlaubt sind alle Standard-Abkürzungen wie 'V', 'A', 'W', 'ohm', 'kΩ', 'mA', 'kWh' etc.
+  Beispiel: 'U1 = I*R1 = 4 kΩ * 1.846 * 10^-3 A' -> formula: '4 kΩ * 1.846 * 10^-3 A', result: 7.38, unit: 'V'.
+  Beispiel: 'Rges = 4 kΩ + 2.5 kΩ = 6500 Ω' -> formula: '4 kΩ + 2.5 kΩ', result: 6500, unit: 'Ω'.
+  Beispiel: 'W = P * t = 680 W * (30/60) h = 0.34 kWh' -> formula: '680 W * (30/60) h', result: 0.34, unit: 'kWh'.
+  Auf diese Weise sind alle Formelberechnungen in der Sandbox automatisch einheiten-sensitiv!
+- Falls der Schüler in seiner Formel KEINE Einheiten notiert hat (z. B. 'R = 3 + 1.5 = 4.5 kΩ'), schreibe die Formel ohne Einheiten ('3 + 1.5').
+  Falls das Ergebnis eine andere Einheit/Skalierung hat als die Formelzahlen (z. B. Formelzahlen in kΩ, aber Ergebnis in Ω; oder Formelzahlen in cm, aber Ergebnis in m), trage im Feld 'formulaUnit' die Einheit der Formelzahlen (z. B. 'kΩ' oder 'cm') ein. Dies dient der Sandbox als Fallback zur korrekten Skalierungs-Umrechnung.
+  Beispiel: 'R = 3 + 1.5 = 4500 Ω' (wo 3 und 1.5 für kΩ stehen) -> formula: '3 + 1.5', formulaUnit: 'kΩ', result: 4500, unit: 'Ω'.
 Trage EXAKT das vom Schüler notierte Ergebnis als echte JSON-Zahl im Feld 'result' ein.
 
 WICHTIG (Einheiten): Wenn der Schüler eine physikalische Einheit neben dem Ergebnis notiert hat (z.B. '= 6500 Ω' oder '= 0,001846 mA'), extrahiere diese Einheit im Feld 'unit'. Verwende die Standardabkürzung (z.B. 'A', 'mA', 'V', 'kΩ', 'W', 'kWh'). Wenn KEINE Einheit notiert wurde, lasse das Feld 'unit' weg.

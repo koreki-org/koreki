@@ -65,7 +65,7 @@ b.
 U1 = I * R1 = 0.001846 A * 4000 Ω = 7.38 V
 U2 = I * R2 = 0.001846 A * 2500 Ω = 4.62 V
     `,
-    expectedPoints: 9,
+    expectedPoints: 10,
     studentText: `
 Aufgabe 1
 a. 
@@ -90,7 +90,7 @@ a. P = U * I = 230 V * 10 A = 2300 W
 b. W = P * t = 2300 W * (5/60) h = 0.1916 kWh
 c. Kosten = W * Preis = 0.1916 kWh * 0.30 €/kWh = 0.0575 €
     `,
-    expectedPoints: 7,
+    expectedPoints: 6,
     studentText: `
 1
 a. P=U x Z = 23 V x 10 A = 2300 W

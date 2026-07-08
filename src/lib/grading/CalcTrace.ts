@@ -22,6 +22,15 @@ import type {
 // ─── Sandboxed mathjs Instance ───────────────────────────────────────────────
 const math: MathJsInstance = create(all);
 
+// ─── Custom Units (Currency) ─────────────────────────────────────────────────
+try {
+  math.createUnit('EUR', { aliases: ['euro', 'euros'] });
+  math.createUnit('USD', { aliases: ['dollar', 'dollars'] });
+  math.createUnit('CHF', { aliases: ['chf'] });
+} catch (e) {
+  // Ignore if already registered
+}
+
 const ALLOWED_NODE_TYPES = new Set([
   'SymbolNode',
   'ConstantNode',
@@ -84,15 +93,37 @@ const UNIT_ALIASES: Record<string, string> = {
   'kOhm': 'kohm',
   'MOhm': 'Mohm',
   'mΩ':  'mohm',
+  '€':   'EUR',
+  'EUR': 'EUR',
+  '$':   'USD',
+  'USD': 'USD',
 };
 
 /** Normalize a unit string to a mathjs-compatible format */
 function normalizeUnitString(unit: string): string {
   let u = unit.trim();
-  // Globally normalize all ohm symbols (handles compound units like kΩ*mA or kΩ*A)
+  // Globally normalize all ohm and currency symbols
   u = u.replace(/[ΩΩ]/g, 'ohm');
   u = u.replace(/\bOhm\b/g, 'ohm');
+  u = u.replace(/€/g, 'EUR');
+  u = u.replace(/\$/g, 'USD');
   return UNIT_ALIASES[u] || u;
+}
+
+/** Normalize unit symbols inside a formula string using UNIT_ALIASES */
+function normalizeExpressionFormula(formula: string): string {
+  let f = formula;
+  const keys = Object.keys(UNIT_ALIASES).sort((a, b) => b.length - a.length);
+  for (const key of keys) {
+    f = f.split(key).join(UNIT_ALIASES[key]);
+  }
+  // Additionally clean up other Ohm variants, currency and standard unit capitals
+  f = f.replace(/[ΩΩ]/g, 'ohm');
+  f = f.replace(/\bOhm\b/g, 'ohm');
+  f = f.replace(/\bVolt\b/g, 'volt');
+  f = f.replace(/€/g, 'EUR');
+  f = f.replace(/\$/g, 'USD');
+  return f;
 }
 
 /**
@@ -262,26 +293,57 @@ export function evaluateCalcTrace(
   // ── Proof A: Internal consistency ──────────────────────────────────────────
   for (const step of ast) {
     try {
-      validateAST(step.formula);
-      const computed = math.evaluate(step.formula, context);
+      const normalizedFormula = normalizeExpressionFormula(step.formula);
+      validateAST(normalizedFormula);
+      const computed = math.evaluate(normalizedFormula, context);
 
-      if (typeof computed !== 'number' || !isFinite(computed)) {
-        sandboxErrors.push(`Schritt ${step.id}: Resultat ist keine gültige Zahl.`);
+      const isNumber = typeof computed === 'number' && isFinite(computed);
+      const isUnit = computed && typeof computed === 'object' && math.typeOf(computed) === 'Unit';
+
+      if (!isNumber && !isUnit) {
+        sandboxErrors.push(`Schritt ${step.id}: Resultat ist keine gültige Zahl oder physikalische Einheit.`);
       } else {
-        let comparisonValue = computed;
-        let studentValue = step.result;
+        let comparisonValue = NaN;
+        const studentValue = step.result;
 
-        if (step.formulaUnit && step.unit && step.formulaUnit !== step.unit) {
-          const converted = convertBetweenUnits(computed, step.formulaUnit, step.unit);
-          if (converted !== null) {
-            comparisonValue = converted;
+        if (isUnit) {
+          if (step.unit) {
+            const expectedUnitNormalized = normalizeUnitString(step.unit);
+            try {
+              const convertedUnit = computed.to(expectedUnitNormalized);
+              comparisonValue = convertedUnit.toNumber();
+            } catch {
+              comparisonValue = NaN;
+            }
+          } else {
+            try {
+              comparisonValue = computed.toNumber();
+            } catch {
+              comparisonValue = NaN;
+            }
+          }
+        } else {
+          comparisonValue = computed as number;
+          if (step.formulaUnit && step.unit && step.formulaUnit !== step.unit) {
+            const converted = convertBetweenUnits(comparisonValue, step.formulaUnit, step.unit);
+            if (converted !== null) {
+              comparisonValue = converted;
+            }
           }
         }
 
         if (!isWithinTolerance(studentValue, comparisonValue, TOLERANCE)) {
-          let formulaResultDisplay = `${computed.toFixed(2)}`;
+          let formulaResultDisplay = isUnit
+            ? `${math.format(computed, { precision: 6 })}`
+            : `${math.format(computed, { precision: 6 })}`;
           if (step.unit) {
-            formulaResultDisplay = `${computed.toFixed(2)} ${step.unit}`;
+            try {
+              formulaResultDisplay = isUnit
+                ? `${math.format(computed.to(normalizeUnitString(step.unit)), { precision: 6 })}`
+                : `${math.format(computed, { precision: 6 })} ${step.unit}`;
+            } catch {
+              // Ignore conversion display error, use raw value
+            }
           }
           sandboxErrors.push(`Rechenfehler in ${step.id}: Formel ergibt ${formulaResultDisplay}, aber Schüler notierte ${step.result} ${step.unit ?? ''}`.trim());
         }

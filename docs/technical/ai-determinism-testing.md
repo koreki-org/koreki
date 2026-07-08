@@ -1,9 +1,9 @@
 ---
-title: "AI Determinism Testing (Layer 2.5)"
-description: "Architektur und Ausführung der deterministischen Tests für die Calc Engine und das Hybrid Grading"
+title: "AI Determinism Testing (Layer 2.5) - CalcTrace V8"
+description: "Architektur und Ausführung der deterministischen Tests für die Calc Engine V8 und das Hybrid Grading"
 author: "@principal_architect"
-date: "2026-07-06"
-last_updated: "2026-07-06"
+date: "2026-07-08"
+last_updated: "2026-07-08"
 status: "Approved"
 domain: "technical"
 security_classification: "Internal"
@@ -101,9 +101,9 @@ Um die Mistral-Ausfälle zu verifizieren, wurde in der Test-Suite ein dynamische
 * **Ergebnis:** Das Qwen-Modell hat (über eine dedizierte OpenAI-kompatible Schnittstelle) mit `Temperature 0.3` und `seed 42` **alle** Determinismus-Tests zu 100% fehlerfrei bestanden.
 * **Fazit:** Der Determinismus von Teilpunkten hängt aktuell von internen Server-Architekturen (MoE vs Dense) und geheimen Hardware-Rundungen der Provider ab. Ein Enterprise-System darf juristische Sicherheit nicht von Provider-Lotterien abhängig machen, weshalb harte Teilpunkte zukünftig rein durch die PANG-Sandbox berechnet werden müssen.
 
-### 6.2 Die formulaUnit-Struktur & Aufgabenteilung (Separation of Concerns)
-Um die restliche Fluktuation bei Skalenwechseln (z.B. Wh vs. kWh oder A vs. mA) zu eliminieren, wurde eine klare Aufgabentrennung etabliert:
-1. **Phase 1 (LLM):** Das LLM agiert als reiner Beobachter. Es kopiert wörtlich die Rohzahlen des Schülers in die Formel (keine manuelle Arithmetik wie `* 10^3`). Weichen diese von der Ergebnisskalierung ab, gibt es deklarativ im Feld `formulaUnit` die Einheit der Formelzahlen an.
-2. **Sandbox (Code):** Die deterministische Sandbox übernimmt die Umrechnung (z. B. via `convertBetweenUnits`) vollautomatisch.
-* **Ergebnis:** Dies entlastet das LLM von mathematischer Transformation, verhindert prompt-basiertes Oszillieren und stellt ein stabiles, deterministisches Grading sicher.
+### 6.2 Die native Unit-Awareness (CalcTrace V8)
+Um die restliche Fluktuation bei Skalenwechseln (z.B. Wh vs. kWh, oder A vs. mA) und Währungsrechnungen vollständig zu eliminieren, wurde in CalcTrace V8 eine native physikalische und monetäre Sandbox etabliert:
+1. **Phase 1 (LLM):** Das LLM agiert als reiner Beobachter. Es kopiert die Formeln des Schülers inklusive ihrer literalen Einheiten (z. B. `4 kΩ * 1.846 mA` oder `0.1916 kWh * 0.30 €/kWh`) direkt in das `formula`-Feld. Sollte das LLM mal keine Einheiten extrahieren können, dient das Feld `formulaUnit` als robuster Fallback für die Skalierung.
+2. **Sandbox (Code):** Die Sandbox registriert custom Währungen (wie `EUR`/`€`, `USD`/`$`, `CHF`) direkt in `math.js`. Sie normalisiert Formeln (z.B. `Ω` -> `ohm`) und wertet diese nativ als physikalische Größen aus. Bei der Context Propagation verbleiben Ergebnisse als reine Zahlen (`context[step.id] = step.result`), um studentische Umrechnungs-Abkürzungen (wie `0.8 * 1000 = 800 mm`) fehlerfrei zu stützen.
+* **Ergebnis:** Dies eliminiert jegliche mathematische Transformations-Verantwortung des LLMs, beendet prompt-basiertes Oszillieren bei Präfixwechseln und liefert ein absolut stabiles, deterministisches Grading.
 
