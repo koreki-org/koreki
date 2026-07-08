@@ -90,7 +90,7 @@ a. P = U * I = 230 V * 10 A = 2300 W
 b. W = P * t = 2300 W * (5/60) h = 0.1916 kWh
 c. Kosten = W * Preis = 0.1916 kWh * 0.30 €/kWh = 0.0575 €
     `,
-    expectedPoints: 6,
+    expectedPoints: 7,
     studentText: `
 1
 a. P=U x Z = 23 V x 10 A = 2300 W
