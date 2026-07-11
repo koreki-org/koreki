@@ -26,7 +26,7 @@ export const STUDENT_AST_SCHEMA = {
           formula: { type: "string", description: "mathjs compatible formula string, referencing previous step ids if needed" },
           result: { type: "number", description: "the actual number the student wrote down as the result for this step" },
           unit: { type: "string", description: "the physical unit the student wrote next to the result (e.g. 'mA', 'kΩ', 'W', 'V'). Omit if no unit was written." },
-          formulaUnit: { type: "string", description: "the physical unit the raw numbers in the 'formula' correspond to (e.g. 'cm', 'kΩ'). Omit if same scale as 'unit' or no difference." }
+          formulaUnit: { type: "string", description: "The unit of the numeric result of 'formula' BEFORE converting to 'unit'. Required if formula is unitless but has different scale than result. E.g. 'A' for formula '12/6500' yielding 0.001846, where result is 1.846 mA." }
         },
         required: ["id", "original_text", "formula", "result"]
       }
@@ -49,11 +49,11 @@ export async function extractStudentAST(
   try {
     const systemPrompt = `Du bist eine hochpräzise Extraktions-KI für mathematische Aufgaben.
 Deine Aufgabe ist es, den Rechenweg des Schülers Schritt für Schritt zu extrahieren.
-Wandle die Rechnungen in 'mathjs' kompatible Formeln um. WICHTIG: Nutze KEINE Einheiten in den Formeln!
-WICHTIG: Schreibe in 'formula' NUR den Rechenausdruck (z.B. '4 + 2.5'). Verwende KEINE Gleichheitszeichen oder Zuweisungen (wie 'R_ges =' oder 'x =') in der 'formula'!
+Wandle die Rechnungen in 'mathjs' kompatible Formeln um.
+WICHTIG: Schreibe in 'formula' NUR den Rechenausdruck (z.B. '4 + 2.5' oder '4 kΩ + 2.5 kΩ'). Verwende KEINE Gleichheitszeichen oder Zuweisungen (wie 'R_ges =' oder 'x =') in der 'formula'!
 WICHTIG: Nutze standardmäßige mathematische Funktionen (wie 'sqrt', 'sin', 'cos', 'tan') direkt ohne 'Math.'-Prefix (schreibe 'sqrt(100)' statt 'Math.sqrt(100)'), da dies zu Auswertungsfehlern führt.
 WICHTIG: Verwende in Variablen keine geschweiften Klammern (nutze 'R_total' statt 'R_{total}').
-WICHTIG (Einheiten-Umrechnungen & Ketten-Gleichungen): Wenn der Schüler Kettenrechnungen durchführt (z.B. '2300 * 5/60 = 191.66 = 0.1916 kWh' oder 'A = B = C'), darfst du NIEMALS versuchen, alles in eine einzige Formel zu pressen. Du MUSST solche Ketten in MEHRERE sequentielle 'steps' aufteilen!
+WICHTIG (Einheiten-Umrechnungen & Ketten-Gleichungen): Wenn der Schüler Kettenrechnungen durchführt (z.B. '2300 * 5/60 = 191.66 = 0.1916 kWh' oder 'Rges = R1 + R2 = 4k + 2.5k = 6.5k = 6500 Ω'), darfst du NIEMALS versuchen, alles in einen einzigen Schritt zu pressen. Du MUSST solche Ketten in separate, aufeinanderfolgende Schritte aufteilen! Jeder Schritt darf nur EINE mathematische Berechnung oder EINE Konvertierung enthalten. Verwende 'original_text' des jeweiligen Schrittes, um den entsprechenden Teilabschnitt zu dokumentieren.
 Beispiel für '2300 * 5/60 = 191.66 = 0.1916 kWh':
 - Schritt 1: 'formula': '2300 * 5/60', 'result': 191.66
 Auf diese Weise bleibt die Mathematik pro Schritt (Proof A) immer zu 100% korrekt.
@@ -63,13 +63,17 @@ WICHTIG (Dezimalpunkt, Einheiten in Formeln & formulaUnit):
 - Schreibe in 'formula' die Einheiten und Präfixe direkt mit in die Formel, exakt so, wie sie der Schüler notiert hat (z. B. '4 kΩ * 1.846 mA' oder '230 V * 10 A'). 
   Erlaubt sind alle Standard-Abkürzungen wie 'V', 'A', 'W', 'ohm', 'kΩ', 'mA', 'kWh' etc.
   Beispiel: 'U1 = I*R1 = 4 kΩ * 1.846 * 10^-3 A' -> formula: '4 kΩ * 1.846 * 10^-3 A', result: 7.38, unit: 'V'.
-  Beispiel: 'Rges = 4 kΩ + 2.5 kΩ = 6500 Ω' -> formula: '4 kΩ + 2.5 kΩ', result: 6500, unit: 'Ω'.
+  Beispiel: 'Rges = 4 kΩ + 2.5 kΩ = 6.5 kΩ' -> formula: '4 kΩ + 2.5 kΩ', result: 6.5, unit: 'kΩ'.
   Beispiel: 'W = P * t = 680 W * (30/60) h = 0.34 kWh' -> formula: '680 W * (30/60) h', result: 0.34, unit: 'kWh'.
   Auf diese Weise sind alle Formelberechnungen in der Sandbox automatisch einheiten-sensitiv!
 - Falls der Schüler in seiner Formel KEINE Einheiten notiert hat (z. B. 'R = 3 + 1.5 = 4.5 kΩ'), schreibe die Formel ohne Einheiten ('3 + 1.5').
-  Falls das Ergebnis eine andere Einheit/Skalierung hat als die Formelzahlen (z. B. Formelzahlen in kΩ, aber Ergebnis in Ω; oder Formelzahlen in cm, aber Ergebnis in m), trage im Feld 'formulaUnit' die Einheit der Formelzahlen (z. B. 'kΩ' oder 'cm') ein. Dies dient der Sandbox als Fallback zur korrekten Skalierungs-Umrechnung.
-  Beispiel: 'R = 3 + 1.5 = 4500 Ω' (wo 3 und 1.5 für kΩ stehen) -> formula: '3 + 1.5', formulaUnit: 'kΩ', result: 4500, unit: 'Ω'.
+  Falls das Ergebnis eine andere Skalierung/Einheit hat als das rein mathematische Ergebnis der Formel (z. B. wenn die Formel '12 / 6500' lautet, was 0.001846 ergibt, das Ergebnis aber als '1.846 mA' geschrieben wird), trage im Feld 'formulaUnit' die physikalische Einheit des mathematischen Formelergebnisses ein (in diesem Fall 'A' für Ampere). Dies ermöglicht der Sandbox die automatische Umrechnung.
+  Beispiel: 'I = 12 / 6500 = 1.846 mA' -> formula: '12 / 6500', result: 1.846, unit: 'mA', formulaUnit: 'A'.
+  Beispiel: 'R = 3 + 1.5 = 4500 Ω' (wo 3 und 1.5 für kΩ stehen) -> formula: '3 + 1.5', result: 4500, unit: 'Ω', formulaUnit: 'kΩ'.
 Trage EXAKT das vom Schüler notierte Ergebnis als echte JSON-Zahl im Feld 'result' ein.
+STRIKTE REGEL: Konvertiere oder skaliere den Wert NIEMALS! Wenn der Schüler "6.5" schreibt, extrahiere 6.5. Rechne es NIEMALS in "6500" um. Wenn keine Einheit dasteht, trage KEINE Einheit ein (unit: null/weglassen).
+Beispiel: "R = 6,5" -> result: 6.5, unit: null (FALSCH: result: 6500, unit: Ω)
+Beispiel: "R = 6,5 kΩ" -> result: 6.5, unit: "kΩ" (FALSCH: result: 6500, unit: Ω)
 
 WICHTIG (Einheiten): Wenn der Schüler eine physikalische Einheit neben dem Ergebnis notiert hat (z.B. '= 6500 Ω' oder '= 0,001846 mA'), extrahiere diese Einheit im Feld 'unit'. Verwende die Standardabkürzung (z.B. 'A', 'mA', 'V', 'kΩ', 'W', 'kWh'). Wenn KEINE Einheit notiert wurde, lasse das Feld 'unit' weg.
 
@@ -91,7 +95,7 @@ Schülertext: "2.5 GHz"
 ✅ KORREKTE EXTRAKTION (Nimm einfach die nackte Zahl als Formel, da es keinen Rechenausdruck gab):
 {"id":"step_1", "original_text": "2.5 GHz", "formula":"2.5", "result": 2.5, "unit":"GHz"}
 
-WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt MUSS genau einen Key namens "steps" enthalten. Der Wert von "steps" ist ein Array. Jedes Objekt in diesem Array MUSS die Keys "id", "original_text", "formula" und "result" haben. Optional: "unit", "formulaUnit". Verwende keine anderen Keys!`;
+WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt MUSS genau einen Key namens "steps" enthalten. Der Wert von "steps" is ein Array. Jedes Objekt in diesem Array MUSS die Keys "id", "original_text", "formula" und "result" haben. Optional: "unit", "formulaUnit". Verwende keine anderen Keys!`;
 
     const payload = {
       studentText,

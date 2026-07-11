@@ -398,6 +398,12 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                                 showMaxPoints={true}
                             />
                         </div>
+                        {aiResult?.sandboxBypassed && (
+                            <div className="bg-destructive/10 text-destructive border border-destructive/20 rounded-xl p-3 flex items-start gap-2 text-xs font-semibold animate-in fade-in duration-200">
+                                <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                                <span>Diese Bewertung erfolgte ohne mathematische Sandbox-Prüfung — bitte manuell gegenprüfen!</span>
+                            </div>
+                        )}
 
                         <EditableMathArea
                             value={aiResult?.feedback || ''}

@@ -49,3 +49,8 @@ src-tauri/build_error.txt
 
 # Internal Documentation (Architect Only)
 docs/internal/
+
+# Temp audit & testing outputs
+audit-output.txt
+audit-output-utf8.txt
+determinism-report-latest.md

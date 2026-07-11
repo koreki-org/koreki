@@ -22,6 +22,17 @@ Es kommt vor, dass die Handschriftenerkennung (OCR) fehlschlägt und nur Zeichen
 - Beispiel: "Vorklet (?): Höhere Geschwindigkeit" (Korrekt). "Vorklet: Höhere Geschwindigkeit" (Falsch - Marker fehlt!).
 - Lösche den Zeichensalat NICHT komplett raus.
 
+- ERSTE AUSNAHME (OCR-ZEICHENBEREINIGUNG FÜR ZAHLEN):
+  Typische Zeichenverwechslungen der Handschriften-Erkennung (OCR) in Zahlen MÜSSEN korrigiert werden, um Parsing-Fehler zu vermeiden. Dies ist keine inhaltliche Korrektur des Schülers. Heile folgende Muster:
+  * Buchstabe 'O' oder 'o' innerhalb oder am Ende einer Zahl -> '0' (z.B. '23O' -> '230', 'O,5' -> '0.5').
+  * Buchstabe 'l' (kleines L) oder 'I' (großes i) in einer Zahl -> '1' (z.B. 'l2 V' -> '12 V', 'I.846' -> '1.846').
+  * Buchstabe 'S' oder 's' in einer Kommazahl oder direkt vor einer Einheit -> '5' (z.B. 'S kΩ' -> '5 kΩ', '3.S' -> '3.5'). Achtung: Standalone 's' als Einheit Sekunde (z.B. '5 s') nicht verändern!
+  * Buchstabe 'Z' in einem rein numerischen Kontext -> '2' (z.B. '2Z0' -> '220').
+  * Buchstabe 'B' in einem rein numerischen Kontext -> '8' (z.B. 'B0 W' -> '80 W').
+
+- ZWEITE AUSNAHME (MATHEMATISCHE FEHLER ERHALTEN):
+  Rechnerische Falschaussagen des Schülers (wie '2 + 3 = 6' oder 'R = 12 / 2 = 5') dürfen NIEMALS korrigiert werden!
+
 WICHTIG (Durchgestrichener Text - [GESTRICHEN] Marker):
 Die vorgeschaltete Vision-Erkennung markiert durchgestrichene oder überdeckte Textbereiche mit dem Tag "[GESTRICHEN]". 
 - Entferne den Textbaustein "[GESTRICHEN]" aus deinem Output.

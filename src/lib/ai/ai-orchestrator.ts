@@ -179,6 +179,11 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                 };
             }
 
+            const hasAttachedCalcTrace = !!layoutTask.calcTrace;
+            const hasTargetGoal = !!layoutTask.targetGoal;
+            const isCalcTraceTask = hasAttachedCalcTrace || hasTargetGoal || layoutTask.taskType === 'calc-trace';
+            const isSandboxBypassed = isCalcTraceTask && !layoutTask.calcTraceResult;
+
             if (aiTask) {
                 const obtained = Number(aiTask.pointsObtained || 0);
                 totalObtained += obtained;
@@ -192,13 +197,19 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                     if (confidence >= 90) confidence = 89;
                 }
 
+                let feedback = aiTask.feedback || '';
+                if (isSandboxBypassed) {
+                    feedback = `⚠️ HINWEIS: Diese Bewertung erfolgte ohne mathematische Sandbox-Prüfung — bitte manuell gegenprüfen!\n\n${feedback}`;
+                }
+
                 return {
                     name: layoutTask.name,
                     maxPoints: layoutTask.maxPoints,
                     pointsObtained: obtained,
-                    feedback: aiTask.feedback || '',
+                    feedback: feedback,
                     confidence: confidence,
-                    content: aiTask.content || ''
+                    content: aiTask.content || '',
+                    sandboxBypassed: isSandboxBypassed ? true : undefined
                 };
             } else {
                 const nearMiss = (analysis.tasks || []).find((t: any) => 
