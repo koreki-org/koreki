@@ -182,7 +182,11 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
             const hasAttachedCalcTrace = !!layoutTask.calcTrace;
             const hasTargetGoal = !!layoutTask.targetGoal;
             const isCalcTraceTask = hasAttachedCalcTrace || hasTargetGoal || layoutTask.taskType === 'calc-trace';
-            const isSandboxBypassed = isCalcTraceTask && !layoutTask.calcTraceResult;
+            const isSandboxBypassed = isCalcTraceTask && (
+                !layoutTask.calcTraceResult || 
+                !layoutTask.calcTraceResult.ast || 
+                layoutTask.calcTraceResult.ast.length === 0
+            );
 
             if (aiTask) {
                 const obtained = Number(aiTask.pointsObtained || 0);
