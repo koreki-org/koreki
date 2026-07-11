@@ -40,6 +40,7 @@ export interface Task {
     calcTraceResult?: CalcTraceResult;
     suggestGraph?: boolean;
     predictedPluginDomain?: string | null;
+    sandboxBypassed?: boolean;
 }
 
 export function calculatePercentageFromTasks(tasks: Task[]): number {
