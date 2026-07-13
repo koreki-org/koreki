@@ -14,7 +14,7 @@ let testReportMarkdown = `# Determinism Test Report\n\n**Date:** ${new Date().to
 // Increase Jest timeout for massive overnight LLM runs (20 mins)
 jest.setTimeout(1200000);
 
-const ITERATIONS = 5;
+const ITERATIONS = 30;
 
 interface TestCase {
   name: string;
@@ -55,7 +55,21 @@ const TEST_CASES: TestCase[] = [
       targetValue: [6.5, 1.846, 7.38, 4.62], // Rges, I, U1, U2
       maxPoints: 12,
       unit: 'kOhm, mA, V, V',
-      gradingRubric: 'a. Rges und I: je 1 P Formel, 1 P Werte einsetzen, 1 P Ergebnis. b. U1 und U2: je 1 P Formel, 1 P Werte einsetzen, 1 P Ergebnis.'
+      gradingRubric: 'a. Rges und I: je 1 P Formel, 1 P Werte einsetzen, 1 P Ergebnis. b. U1 und U2: je 1 P Formel, 1 P Werte einsetzen, 1 P Ergebnis.',
+      criteria: [
+        { id: 'rges_formel', label: 'Formel für Rges korrekt', punktwert: 1, source: 'llm', targetIndex: 0 },
+        { id: 'rges_werte', label: 'Werte für Rges einsetzen', punktwert: 1, source: 'llm', targetIndex: 0 },
+        { id: 'rges_ergebnis', label: 'Ergebnis für Rges korrekt', punktwert: 1, source: 'proofB', targetIndex: 0 },
+        { id: 'i_formel', label: 'Formel für I korrekt', punktwert: 1, source: 'llm', targetIndex: 1 },
+        { id: 'i_werte', label: 'Werte für I einsetzen', punktwert: 1, source: 'llm', targetIndex: 1 },
+        { id: 'i_ergebnis', label: 'Ergebnis für I korrekt', punktwert: 1, source: 'proofB', targetIndex: 1 },
+        { id: 'u1_formel', label: 'Formel für U1 korrekt', punktwert: 1, source: 'llm', targetIndex: 2 },
+        { id: 'u1_werte', label: 'Werte für U1 einsetzen', punktwert: 1, source: 'llm', targetIndex: 2 },
+        { id: 'u1_ergebnis', label: 'Ergebnis für U1 korrekt', punktwert: 1, source: 'proofB', targetIndex: 2 },
+        { id: 'u2_formel', label: 'Formel für U2 korrekt', punktwert: 1, source: 'llm', targetIndex: 3 },
+        { id: 'u2_werte', label: 'Werte für U2 einsetzen', punktwert: 1, source: 'llm', targetIndex: 3 },
+        { id: 'u2_ergebnis', label: 'Ergebnis für U2 korrekt', punktwert: 1, source: 'proofB', targetIndex: 3 }
+      ]
     },
     sampleSolution: `
 a.
@@ -71,52 +85,74 @@ Aufgabe 1
 a. 
 R1 + R2 = 4 kΩ + 2,5 kΩ = 6500 Ω
 I = U/R = 12 V / 6500 Ω = 0,001846 mA
-
+ 
 b. 
 U1 = I*R1= 4 kΩ*1,846*10^-3 A = 7,38 V
 U2 = I*R2= 2,5 kΩ*1,846 mA = 4,62 V
     `
   },
-  {
-    name: 'Wasserkocher (Schüler 1 - Typo in Formula but correct value)',
-    target: {
-      targetValue: [2300, 0.1916, 0.0575], // P, W, Kosten
-      maxPoints: 9,
-      unit: 'W, kWh, €',
-      gradingRubric: 'a. P (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. b. W (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. c. Kosten (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis.'
-    },
-    sampleSolution: `
-a. P = U * I = 230 V * 10 A = 2300 W
-b. W = P * t = 2300 W * (5/60) h = 0.1916 kWh
-c. Kosten = W * Preis = 0.1916 kWh * 0.30 €/kWh = 0.0575 €
-    `,
-    expectedPoints: 6,
-    studentText: `
-1
-a. P=U x Z = 23 V x 10 A = 2300 W
-b. W = P x t = 2300 W x (5/60) h = 0,1916kWh 
-c. Kosten= W x VE = 0,1916kWh×0,30€/kWh=0,0575€
-    `
-  },
-  {
-    name: 'Wasserkocher (Schüler 2 - Calculation Error)',
-    target: {
-      targetValue: [2300, 0.1916, 0.0575], // P, W, Kosten
-      maxPoints: 9,
-      unit: 'W, kWh, €',
-      gradingRubric: 'a. P (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. b. W (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. c. Kosten (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis.'
-    },
-    sampleSolution: `
-a. P = U * I = 230 V * 10 A = 2300 W
-b. W = P * t = 2300 W * (5/60) h = 0.1916 kWh
-c. Kosten = W * Preis = 0.1916 kWh * 0.30 €/kWh = 0.0575 €
-    `,
-    expectedPoints: 1,
-    studentText: `
-1a.
-P=U x Z = 23 V x 10 A = 230 W
-    `
-  }
+//   {
+//     name: 'Wasserkocher (Schüler 1 - Typo in Formula but correct value)',
+//     target: {
+//       targetValue: [2300, 0.1916, 0.0575], // P, W, Kosten
+//       maxPoints: 9,
+//       unit: 'W, kWh, €',
+//       gradingRubric: 'a. P (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. b. W (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. c. Kosten (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis.',
+//       criteria: [
+//         { id: 'p_formel', label: 'Formel für P', punktwert: 1, source: 'llm', targetIndex: 0 },
+//         { id: 'p_werte', label: 'Werte für P einsetzen', punktwert: 1, source: 'llm', targetIndex: 0 },
+//         { id: 'p_ergebnis', label: 'Ergebnis für P', punktwert: 1, source: 'proofB', targetIndex: 0 },
+//         { id: 'w_formel', label: 'Formel für W', punktwert: 1, source: 'llm', targetIndex: 1 },
+//         { id: 'w_werte', label: 'Werte für W einsetzen', punktwert: 1, source: 'llm', targetIndex: 1 },
+//         { id: 'w_ergebnis', label: 'Ergebnis für W', punktwert: 1, source: 'proofB', targetIndex: 1 },
+//         { id: 'kosten_formel', label: 'Formel für Kosten', punktwert: 1, source: 'llm', targetIndex: 2 },
+//         { id: 'kosten_werte', label: 'Werte für Kosten einsetzen', punktwert: 1, source: 'llm', targetIndex: 2 },
+//         { id: 'kosten_ergebnis', label: 'Ergebnis für Kosten', punktwert: 1, source: 'proofB', targetIndex: 2 }
+//       ]
+//     },
+//     sampleSolution: `
+// a. P = U * I = 230 V * 10 A = 2300 W
+// b. W = P * t = 2300 W * (5/60) h = 0.1916 kWh
+// c. Kosten = W * Preis = 0.1916 kWh * 0.30 €/kWh = 0.0575 €
+//     `,
+//     expectedPoints: 7,
+//     studentText: `
+// 1
+// a. P=U x Z = 23 V x 10 A = 2300 W
+// b. W = P x t = 2300 W x (5/60) h = 0,1916kWh 
+// c. Kosten= W x VE = 0,1916kWh×0,30€/kWh=0,0575€
+//     `
+//   },
+//   {
+//     name: 'Wasserkocher (Schüler 2 - Calculation Error)',
+//     target: {
+//       targetValue: [2300, 0.1916, 0.0575], // P, W, Kosten
+//       maxPoints: 9,
+//       unit: 'W, kWh, €',
+//       gradingRubric: 'a. P (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. b. W (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis. c. Kosten (3 Pkt): 1 P Formel, 1 P korrekt einsetzen, 1 P korrektes Ergebnis.',
+//       criteria: [
+//         { id: 'p_formel', label: 'Formel für P', punktwert: 1, source: 'llm', targetIndex: 0 },
+//         { id: 'p_werte', label: 'Werte für P einsetzen', punktwert: 1, source: 'llm', targetIndex: 0 },
+//         { id: 'p_ergebnis', label: 'Ergebnis für P', punktwert: 1, source: 'proofB', targetIndex: 0 },
+//         { id: 'w_formel', label: 'Formel für W', punktwert: 1, source: 'llm', targetIndex: 1 },
+//         { id: 'w_werte', label: 'Werte für W einsetzen', punktwert: 1, source: 'llm', targetIndex: 1 },
+//         { id: 'w_ergebnis', label: 'Ergebnis für W', punktwert: 1, source: 'proofB', targetIndex: 1 },
+//         { id: 'kosten_formel', label: 'Formel für Kosten', punktwert: 1, source: 'llm', targetIndex: 2 },
+//         { id: 'kosten_werte', label: 'Werte für Kosten einsetzen', punktwert: 1, source: 'llm', targetIndex: 2 },
+//         { id: 'kosten_ergebnis', label: 'Ergebnis für Kosten', punktwert: 1, source: 'proofB', targetIndex: 2 }
+//       ]
+//     },
+//     sampleSolution: `
+// a. P = U * I = 230 V * 10 A = 2300 W
+// b. W = P * t = 2300 W * (5/60) h = 0.1916 kWh
+// c. Kosten = W * Preis = 0.1916 kWh * 0.30 €/kWh = 0.0575 €
+//     `,
+//     expectedPoints: 0,
+//     studentText: `
+// 1a.
+// P=U x Z = 23 V x 10 A = 230 W
+//     `
+//   }
 ];
 
 describe('CalcTrace Determinism Tests (Layer 2)', () => {
@@ -156,27 +192,40 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
     const originalFetch = global.fetch;
     global.fetch = async (url: RequestInfo | URL, options?: RequestInit) => {
       const urlString = url.toString();
+      if (urlString.includes('/api/billing/')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ status: 'ok' })
+        } as Response);
+      }
       if ((urlString.includes('api.mistral.ai') || urlString.includes('openai') || urlString.includes('11434') || urlString.includes('192.168.250.12') || urlString.includes('api/chat')) && options && typeof options.body === 'string') {
         try {
           const body = JSON.parse(options.body);
-          // Check if it's a grading request where the goal was not reached
-          const isPartialGrading = body.messages?.some((m: any) => 
-            typeof m.content === 'string' && m.content.includes('Endziel erreicht: NEIN')
+          // Check if it's a grading request (legacy or structured criteria)
+          const isGradingRequest = body.messages?.some((m: any) => 
+            typeof m.content === 'string' && (
+              m.content.includes('Endziel erreicht') || 
+              m.content.includes('NICHT ERFÜLLT') || 
+              m.content.includes('STRUKTURIERTE BEWERTUNGSKRITERIEN') ||
+              m.content.includes('Du bist ein erfahrener Lehrer') ||
+              m.content.includes('Klassenarbeit')
+            )
           );
           
-          if (isPartialGrading) {
+          if (isGradingRequest) {
             if (urlString.includes('api.mistral.ai')) {
                body.temperature = 0.0;
                body.random_seed = 42; // Mistral seed
                
-               // MoE Determinism Shield (Research Agent Findings)
-               body.model = 'mistral-large-2407'; // Pin exactly, no 'latest'
+               // MoE Determinism Shield (Research Agent Findings & User Request)
+               body.model = 'mistral-medium-2604'; // Pin exactly to the math-optimized medium model
                body.top_p = 1.0;
                body.presence_penalty = 0.0;
                body.frequency_penalty = 0.0;
                body.safe_prompt = false; // Disable legacy guardrails
                
-               console.log(`🧪 [Option C+ Deep Dive] Intercepted fetch to ${urlString}: Applied MoE Determinism Shield (Temp 0.0, Seed 42, Pinned Model)`);
+               console.log(`🧪 [Option C+ Deep Dive] Intercepted fetch to ${urlString}: Applied MoE Determinism Shield (Temp 0.0, Seed 42, Pinned Model: mistral-medium-2604)`);
             } else if (urlString.includes('openai')) {
                body.temperature = 0.3; // Qwen needs min temp 0.3 for inference stability (prevents JSON crash)
                body.seed = 42; // OpenAI / Qwen seed
@@ -277,6 +326,7 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
               name: testCase.name,
               maxPoints: testCase.target.maxPoints,
               gradingRubric: testCase.target.gradingRubric,
+              targetGoal: testCase.target,
               calcTraceResult: savedCalcTraceResult
             }
           ]

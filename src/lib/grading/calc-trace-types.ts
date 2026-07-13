@@ -33,6 +33,22 @@ export interface TargetGoal {
   unit?: string;
   /** Textueller Erwartungshorizont für das Hybrid-Grading LLM (z.B. "1P Formel, 1P Ergebnis") */
   gradingRubric?: string;
+  /** Strukturierte Kriterienliste für die Teilpunktebewertung */
+  criteria?: GradingCriterion[];
+}
+
+export interface GradingCriterion {
+  id: string;
+  label: string;
+  punktwert: number;
+  source: 'llm' | 'proofA' | 'proofB';
+  targetIndex: number;
+}
+
+export interface CriterionClassification {
+  criterionId: string;
+  erfuellt: boolean;
+  begruendung?: string;
 }
 
 /** Ergebnis des Unit-Vergleichs für einen einzelnen Zielwert */
@@ -73,4 +89,12 @@ export interface CalcTraceResult {
   unitMismatch?: boolean;
   /** Detail-Informationen zum Einheitsvergleich (für LLM-Prompt) */
   unitDetails?: UnitComparisonDetail[];
+  /** Auswertungsergebnisse pro Ziel-Index */
+  perTargetResult?: Array<{
+    targetIndex: number;
+    reached: boolean;
+    hasCorrectValues?: boolean;
+    hasCalculationError: boolean;
+    associatedStepIds: string[];
+  }>;
 }

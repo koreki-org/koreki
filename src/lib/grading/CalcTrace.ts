@@ -290,6 +290,7 @@ export function evaluateCalcTrace(
 ): CalcTraceResult {
   const sandboxErrors: string[] = [];
   const context: Record<string, number> = {};
+  const computedValues: Record<string, any> = {};
 
   // ── Proof A: Internal consistency ──────────────────────────────────────────
   for (const step of ast) {
@@ -297,6 +298,7 @@ export function evaluateCalcTrace(
       const normalizedFormula = normalizeExpressionFormula(step.formula);
       validateAST(normalizedFormula);
       const computed = math.evaluate(normalizedFormula, context);
+      computedValues[step.id] = computed;
 
       const isNumber = typeof computed === 'number' && isFinite(computed);
       const isUnit = computed && typeof computed === 'object' && math.typeOf(computed) === 'Unit';
@@ -367,6 +369,12 @@ export function evaluateCalcTrace(
   const reachedTargets: number[] = [];
   const missedTargets: number[] = [];
   const unitDetails: UnitComparisonDetail[] = [];
+  const perTargetResult: Array<{
+    targetIndex: number;
+    reached: boolean;
+    hasCalculationError: boolean;
+    associatedStepIds: string[];
+  }> = [];
 
   logger.debug(`[CalcTrace] naturalValues: ${JSON.stringify(naturalValues)}`);
   logger.debug(`[CalcTrace] unitsPerValue: ${JSON.stringify(unitsPerValue)}`);
@@ -375,57 +383,107 @@ export function evaluateCalcTrace(
   if (naturalValues.length > 0 && ast.length > 0) {
     naturalValues.forEach((expected, i) => {
       const expectedUnit = unitsPerValue[i];
+      let bestMatch: UnitComparisonDetail | null = null;
 
-      if (!expectedUnit) {
-        // No unit → pure numeric comparison
-        const reached = ast.some(step => isWithinTolerance(step.result, expected, TOLERANCE));
-        if (reached) {
-          reachedTargets.push(roundSig(expected));
+      // 1. Check all steps for student result match
+      for (const step of ast) {
+        if (!expectedUnit) {
+          const isMatch = isWithinTolerance(step.result, expected, TOLERANCE);
+          if (isMatch) {
+            bestMatch = {
+              targetValue: expected,
+              expectedUnit: '',
+              studentUnit: step.unit,
+              isValueMatch: true,
+              isExactMatch: true,
+              isUnitMismatch: false,
+              stepId: step.id
+            };
+            break;
+          }
         } else {
-          missedTargets.push(roundSig(expected));
+          const comparison = compareWithUnit(step.result, step.unit, expected, expectedUnit, TOLERANCE);
+          if (comparison.isExactMatch) {
+            if (!step.unit) {
+              // Lenient exact match (value matches, student forgot unit) -> keep but keep looking for a better one with unit
+              if (!bestMatch || !bestMatch.studentUnit) {
+                bestMatch = { ...comparison, stepId: step.id };
+              }
+            } else {
+              // True exact match with unit -> set and break
+              bestMatch = { ...comparison, stepId: step.id };
+              break;
+            }
+          }
+          if (comparison.isPrefixError) {
+            if (!bestMatch || (!bestMatch.isExactMatch || !bestMatch.studentUnit)) {
+              bestMatch = { ...comparison, stepId: step.id };
+            }
+          }
+          if (comparison.isValueMatch) {
+            if (!bestMatch || (!bestMatch.isExactMatch && !bestMatch.isPrefixError && !bestMatch.isValueMatch)) {
+              bestMatch = { ...comparison, stepId: step.id };
+            }
+          }
         }
-        return;
       }
 
-      // Unit-aware comparison: check each AST step
-      let bestMatch: UnitComparisonDetail | null = null;
-      for (const step of ast) {
-        const comparison = compareWithUnit(step.result, step.unit, expected, expectedUnit, TOLERANCE);
-        
-        if (comparison.isExactMatch) {
-          bestMatch = { ...comparison, stepId: step.id };
-          break; // Exact match found, no need to check further
-        }
-        
-        // If the student explicitly made a prefix error (e.g. 1.846 A instead of 1.846 mA),
-        // this is their final WRONG answer. It overrides any earlier weak SI-match without unit.
-        if (comparison.isPrefixError) {
-          if (!bestMatch || !bestMatch.isExactMatch) {
-            bestMatch = { ...comparison, stepId: step.id };
+      // 2. Fallback: If student result didn't match, check computed values to find intended step
+      let targetStepId = bestMatch?.stepId;
+      if (!targetStepId) {
+        for (const step of ast) {
+          const computed = computedValues[step.id];
+          if (computed === undefined) continue;
+
+          let isMatch = false;
+          const isUnit = computed && typeof computed === 'object' && math.typeOf(computed) === 'Unit';
+          const numericVal = isUnit ? computed.toNumber() : computed;
+
+          if (!expectedUnit) {
+            isMatch = isWithinTolerance(numericVal, expected, TOLERANCE);
+          } else {
+            const comp = compareWithUnit(numericVal, isUnit ? step.unit : undefined, expected, expectedUnit, TOLERANCE);
+            isMatch = comp.isValueMatch;
+          }
+
+          if (isMatch) {
+            targetStepId = step.id;
+            break;
           }
         }
-        
-        // If we found a valid SI match (e.g. 0.001846 without unit), we only keep it
-        // if we haven't found a prefix error or exact match yet.
-        if (comparison.isValueMatch) {
-          if (!bestMatch || (!bestMatch.isExactMatch && !bestMatch.isPrefixError && !bestMatch.isValueMatch)) {
-            bestMatch = { ...comparison, stepId: step.id };
-          }
-        }
+      }
+
+      // 3. Trace calculation chain and check for errors
+      let reached = false;
+      let hasCalculationError = false;
+      let associatedStepIds: string[] = [];
+
+      if (targetStepId) {
+        const chain = traceStepChain(targetStepId, ast);
+        associatedStepIds = Array.from(chain);
+        hasCalculationError = associatedStepIds.some(id => 
+          sandboxErrors.some(err => err.includes(id))
+        );
       }
 
       if (bestMatch && bestMatch.isValueMatch) {
+        reached = true;
         reachedTargets.push(roundSig(expected));
         if (bestMatch.isUnitMismatch) {
           hasUnitMismatch = true;
         }
+        unitDetails.push(bestMatch);
       } else {
         missedTargets.push(roundSig(expected));
       }
 
-      if (bestMatch) {
-        unitDetails.push(bestMatch);
-      }
+      perTargetResult.push({
+        targetIndex: i,
+        reached,
+        hasCorrectValues: !!targetStepId,
+        hasCalculationError,
+        associatedStepIds
+      });
     });
 
     // Goal is reached if ALL natural values were found
@@ -443,7 +501,28 @@ export function evaluateCalcTrace(
     maxPoints: target.maxPoints,
     unitMismatch: hasUnitMismatch || undefined,
     unitDetails: unitDetails.length > 0 ? unitDetails : undefined,
+    perTargetResult
   };
+}
+
+export function traceStepChain(targetStepId: string, ast: StudentASTStep[]): Set<string> {
+  const chain = new Set<string>([targetStepId]);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const step of ast) {
+      if (chain.has(step.id)) continue;
+      const isReferenced = [...chain].some(id => {
+        const referencingStep = ast.find(s => s.id === id);
+        return referencingStep?.formula.includes(step.id);
+      });
+      if (isReferenced) {
+        chain.add(step.id);
+        changed = true;
+      }
+    }
+  }
+  return chain;
 }
 
 // ─── Prompt Formatter ────────────────────────────────────────────────────────

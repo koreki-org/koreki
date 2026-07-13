@@ -217,6 +217,7 @@ export interface AITask {
     pointsObtained: number;
     maxPoints?: number;
     feedback?: string;
+    correctionNotes?: string;
     confidence?: number;
     content?: string;
 }

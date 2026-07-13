@@ -126,7 +126,7 @@ WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt M
         const mistralKey = settings?.mistralKey;
         if (!mistralKey) throw new Error('PURE_KEY_MISSING');
         extracted = await executeMistralRequest('calc-trace-extraction', payload, mistralKey, {
-          model: settings?.model,
+          model: settings?.model || 'mistral-medium-2604',
           temperature: 0.0,
           topP: 0.1,
           maxTokens: 1000,

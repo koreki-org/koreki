@@ -156,43 +156,110 @@ export function buildCorrectionPrompt(
         if (vorevaluierungBlock) {
             system += vorevaluierungBlock;
         }
-             // Dynamic Injection of mathematical-deterministic CalcTrace Vorevaluierung
+            // Dynamic Injection of mathematical-deterministic CalcTrace Vorevaluierung
         let calcTraceVorevaluierungBlock = '';
         tasksLayout.forEach(t => {
             if (t.calcTraceResult) {
-                const disablePointsActive = shouldDisablePoints(t.taskType, t.targetGoal);
+                const targetGoal = t.targetGoal || {};
+                const criteria = targetGoal.criteria;
 
-                let templateStr = calcTraceTemplate;
-                templateStr = templateStr.replace('{{TASK_NAME}}', t.name);
-                templateStr = templateStr.replace('{{MATH_FALLBACK_INSTRUCTION}}', disablePointsActive ? mathHybridHeader : `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!\n\n${mathFallbackInstruction}`);
-
-                if (disablePointsActive) {
-                    templateStr = templateStr.replace('{{ENGINE_STATUS_TEXT}}', `Die Rechenkette wurde ausgewertet. Nutze diese Information (ob Ziel erreicht oder nicht) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.`);
+                if (criteria && Array.isArray(criteria) && criteria.length > 0) {
+                    // Structured criteria path
+                    let criteriaBlock = `\n### STRUKTURIERTE BEWERTUNGSKRITERIEN FÜR "${t.name}":\n`;
+                    criteriaBlock += `Du MUSST die Punkte anhand der folgenden Liste vergeben. Bereits vorab durch die Sandbox aufgelöste Kriterien sind bindend und dürfen nicht verändert werden. Addiere die Punktwerte aller Kriterien exakt wie angegeben:\n\n`;
+                    
+                    criteria.forEach((crit: any) => {
+                        if (crit.targetIndex === undefined || crit.targetIndex === null) {
+                            throw new Error(`Structured criteria construction failed: Criterion "${crit.id}" is missing required field "targetIndex"`);
+                        }
+                        const idx = crit.targetIndex;
+                        const pt = t.calcTraceResult.perTargetResult?.find((r: any) => r.targetIndex === idx);
+                        let statusText = '';
+                        
+                        if (crit.source === 'proofB') {
+                             if (pt && pt.reached && !pt.hasCalculationError) {
+                                 statusText = `✓ ERFÜLLT -> ZWINGEND GENAU ${crit.punktwert} PUNKTE GEBEN (Sandbox-bestätigt für Schritt: ${pt.associatedStepIds.join(', ')})`;
+                             } else if (pt && pt.reached && pt.hasCalculationError) {
+                                 const errSteps = pt.associatedStepIds.filter((id: string) => t.calcTraceResult.sandboxErrors.some((err: string) => err.includes(id)));
+                                 statusText = `✗ NICHT ERFÜLLT -> ZWINGEND 0 PUNKTE GEBEN (Rechenfehler in Schritten: ${errSteps.join(', ')})`;
+                             } else {
+                                 statusText = `✗ NICHT ERFÜLLT -> ZWINGEND 0 PUNKTE GEBEN (Zielwert nicht erreicht/nicht notiert)`;
+                             }
+                         } else if (crit.source === 'proofA') {
+                             if (pt && pt.reached && !pt.hasCalculationError) {
+                                 statusText = `✓ ERFÜLLT -> ZWINGEND GENAU ${crit.punktwert} PUNKTE GEBEN (Sandbox-bestätigt: keine Rechenfehler im Rechenweg)`;
+                             } else if (pt && pt.reached && pt.hasCalculationError) {
+                                 const errSteps = pt.associatedStepIds.filter((id: string) => t.calcTraceResult.sandboxErrors.some((err: string) => err.includes(id)));
+                                 statusText = `✗ NICHT ERFÜLLT -> ZWINGEND 0 PUNKTE GEBEN (Rechenfehler im Rechenweg in Schritten: ${errSteps.join(', ')})`;
+                             } else {
+                                 statusText = `✗ NICHT ERFÜLLT -> ZWINGEND 0 PUNKTE GEBEN (Rechenweg nicht vorhanden)`;
+                             }
+                         } else {
+                              // LLM criterion or values/formula pre-resolution
+                              if (crit.id.endsWith('_werte')) {
+                                  if (pt && pt.hasCorrectValues) {
+                                      statusText = `✓ ERFÜLLT -> ZWINGEND GENAU ${crit.punktwert} PUNKTE GEBEN (Sandbox-bestätigt: Werte korrekt eingesetzt in Schritt: ${pt.associatedStepIds.join(', ')})`;
+                                  } else {
+                                      statusText = `✗ NICHT ERFÜLLT -> ZWINGEND 0 PUNKTE GEBEN (Keine korrekte Werteeinsetzung für diesen Zielwert gefunden)`;
+                                  }
+                              } else if (crit.id.endsWith('_formel')) {
+                                  if (!pt || pt.associatedStepIds.length === 0) {
+                                      statusText = `✗ NICHT ERFÜLLT (Keine Schritte für diesen Zielwert im Schülertext gefunden)`;
+                                  } else {
+                                      const stepsStr = ` anhand der Schritte: ${pt.associatedStepIds.join(', ')}`;
+                                      const hint = ' - HINWEIS: Formeln sind als ERFÜLLT (1 Punkt) zu werten, wenn die mathematische Struktur stimmt, auch bei Auslassung der linken Seite (z. B. nur U/R) oder bei Nutzung von Basis-Variablen wie R statt Rges!';
+                                      statusText = `[von dir zu beurteilen${stepsStr}${hint}]`;
+                                  }
+                              } else {
+                                  if (!pt || pt.associatedStepIds.length === 0) {
+                                      statusText = `✗ NICHT ERFÜLLT (Keine Schritte für diesen Zielwert im Schülertext gefunden)`;
+                                  } else {
+                                      const stepsStr = ` anhand der Schritte: ${pt.associatedStepIds.join(', ')}`;
+                                      statusText = `[von dir zu beurteilen${stepsStr}]`;
+                                  }
+                              }
+                         }
+                        
+                        criteriaBlock += `- Kriterium "${crit.id}" (${crit.label} - ${crit.punktwert} Punkte max): ${statusText}\n`;
+                    });
+                    
+                    calcTraceVorevaluierungBlock += `\n` + criteriaBlock;
                 } else {
-                    templateStr = templateStr.replace('{{ENGINE_STATUS_TEXT}}', `Endziel erreicht: ${t.calcTraceResult.isGoalReached ? 'JA' : 'NEIN'}.`);
-                }
+                    // Legacy path fallback
+                    const disablePointsActive = shouldDisablePoints(t.taskType, t.targetGoal);
 
-                templateStr = templateStr.replace('{{POINTS_TEXT}}', `[Muss durch LLM auf Basis der Sandbox-Ergebnisse ermittelt werden (max ${t.calcTraceResult.maxPoints} P)]`);
-                
-                let detailsStr = '';
-                if (t.calcTraceResult.reachedTargets && t.calcTraceResult.reachedTargets.length > 0) {
-                    if (t.calcTraceResult.sandboxErrors && t.calcTraceResult.sandboxErrors.length > 0) {
-                        detailsStr += `  * NOTIERTE ZAHLENWERTE (ACHTUNG: FIKTIV DURCH RECHENFEHLER, KEINE PUNKTE GEBEN!): ${t.calcTraceResult.reachedTargets.join(', ')}\n`;
+                    let templateStr = calcTraceTemplate;
+                    templateStr = templateStr.replace('{{TASK_NAME}}', t.name);
+                    templateStr = templateStr.replace('{{MATH_FALLBACK_INSTRUCTION}}', disablePointsActive ? mathHybridHeader : `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!\n\n${mathFallbackInstruction}`);
+
+                    if (disablePointsActive) {
+                        templateStr = templateStr.replace('{{ENGINE_STATUS_TEXT}}', `Die Rechenkette wurde ausgewertet. Nutze diese Information (ob Ziel erreicht oder nicht) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.`);
                     } else {
-                        detailsStr += `  * ERREICHTE MEILENSTEINE: ${t.calcTraceResult.reachedTargets.join(', ')}\n`;
+                        templateStr = templateStr.replace('{{ENGINE_STATUS_TEXT}}', `Endziel erreicht: ${t.calcTraceResult.isGoalReached ? 'JA' : 'NEIN'}.`);
                     }
-                }
-                if (t.calcTraceResult.missedTargets && t.calcTraceResult.missedTargets.length > 0) {
-                    detailsStr += `  * VERFEHLTE ODER ÜBERSPRUNGENE MEILENSTEINE: ${t.calcTraceResult.missedTargets.join(', ')}\n`;
-                }
-                if (t.calcTraceResult.sandboxErrors && t.calcTraceResult.sandboxErrors.length > 0) {
-                    detailsStr += `  * Sandbox Fehler: ${t.calcTraceResult.sandboxErrors.join(', ')}\n`;
-                }
-                templateStr = templateStr.replace('</engine_status>', `${detailsStr}</engine_status>`);
 
-                templateStr = templateStr.replace('{{HYBRID_INSTRUCTION_BLOCK}}', mathHybridInstruction);
-                
-                calcTraceVorevaluierungBlock += `\n` + templateStr;
+                    templateStr = templateStr.replace('{{POINTS_TEXT}}', `[Muss durch LLM auf Basis der Sandbox-Ergebnisse ermittelt werden (max ${t.calcTraceResult.maxPoints} P)]`);
+                    
+                    let detailsStr = '';
+                    if (t.calcTraceResult.reachedTargets && t.calcTraceResult.reachedTargets.length > 0) {
+                        if (t.calcTraceResult.sandboxErrors && t.calcTraceResult.sandboxErrors.length > 0) {
+                            detailsStr += `  * NOTIERTE ZAHLENWERTE (ACHTUNG: FIKTIV DURCH RECHENFEHLER, KEINE PUNKTE GEBEN!): ${t.calcTraceResult.reachedTargets.join(', ')}\n`;
+                        } else {
+                            detailsStr += `  * ERREICHTE MEILENSTEINE: ${t.calcTraceResult.reachedTargets.join(', ')}\n`;
+                        }
+                    }
+                    if (t.calcTraceResult.missedTargets && t.calcTraceResult.missedTargets.length > 0) {
+                        detailsStr += `  * VERFEHLTE ODER ÜBERSPRUNGENE MEILENSTEINE: ${t.calcTraceResult.missedTargets.join(', ')}\n`;
+                    }
+                    if (t.calcTraceResult.sandboxErrors && t.calcTraceResult.sandboxErrors.length > 0) {
+                        detailsStr += `  * Sandbox Fehler: ${t.calcTraceResult.sandboxErrors.join(', ')}\n`;
+                    }
+                    templateStr = templateStr.replace('</engine_status>', `${detailsStr}</engine_status>`);
+
+                    templateStr = templateStr.replace('{{HYBRID_INSTRUCTION_BLOCK}}', mathHybridInstruction);
+                    
+                    calcTraceVorevaluierungBlock += `\n` + templateStr;
+                }
             }
         });
         if (calcTraceVorevaluierungBlock) {

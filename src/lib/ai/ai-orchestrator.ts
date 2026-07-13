@@ -80,6 +80,7 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                     maxPoints: layoutTask.maxPoints,
                     pointsObtained: enginePoints,
                     feedback: finalFeedback,
+                    correctionNotes: aiTask ? (aiTask.correctionNotes || '') : '',
                     confidence: 95,
                     content: aiTask ? (aiTask.content || '') : ''
                 };
@@ -543,16 +544,18 @@ export async function performAIRequest(
                     
                     let retryCount = 0;
                     const maxRetries = 2;
-                    while (calcTraceResult.sandboxErrors.length > 0 && retryCount < maxRetries) {
-                        logger.warn(`[Client] CalcTrace Sandbox validation failed. Retrying self-correction (${retryCount + 1}/${maxRetries}):`, calcTraceResult.sandboxErrors);
+                    while (calcTraceResult.sandboxErrors.some(err => !err.startsWith('Rechenfehler')) && retryCount < maxRetries) {
+                        const extractionErrors = calcTraceResult.sandboxErrors.filter(err => !err.startsWith('Rechenfehler'));
+                        logger.warn(`[Client] CalcTrace Sandbox validation failed (extraction errors). Retrying self-correction (${retryCount + 1}/${maxRetries}):`, extractionErrors);
                         
-                        const correctionInstruction = `Die mathematische Sandbox hat Fehler in deinem extrahierten AST gefunden:\n${calcTraceResult.sandboxErrors.join('\n')}\nBitte extrahiere den AST neu, beachte die Syntax für mathjs, und erfinde keine Rechenschritte, die der Schüler nicht gemacht hat.`;
+                        const correctionInstruction = `Die mathematische Sandbox hat Fehler in deinem extrahierten AST gefunden:\n${extractionErrors.join('\n')}\nBitte extrahiere den AST neu, beachte die Syntax für mathjs, und erfinde keine Rechenschritte, die der Schüler nicht gemacht hat.`;
                         astResult = await extractStudentAST(taskSpecificText, appMode, settings, task.name, astResult, correctionInstruction);
                         calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
                         retryCount++;
                     }
                     
                     task.calcTraceResult = calcTraceResult;
+                    task.targetGoal = targetGoal;
                     // Die Engine vergibt keine Punkte mehr, das macht das LLM.
                     task.maxPoints = targetGoal.maxPoints || task.maxPoints;
                 } catch (err: any) {
