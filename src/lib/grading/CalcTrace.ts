@@ -372,6 +372,7 @@ export function evaluateCalcTrace(
   const perTargetResult: Array<{
     targetIndex: number;
     reached: boolean;
+    hasCorrectValues?: boolean;
     hasCalculationError: boolean;
     associatedStepIds: string[];
   }> = [];
@@ -512,7 +513,7 @@ export function traceStepChain(targetStepId: string, ast: StudentASTStep[]): Set
     changed = false;
     for (const step of ast) {
       if (chain.has(step.id)) continue;
-      const isReferenced = [...chain].some(id => {
+      const isReferenced = Array.from(chain).some(id => {
         const referencingStep = ast.find(s => s.id === id);
         return referencingStep?.formula.includes(step.id);
       });

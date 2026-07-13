@@ -160,7 +160,7 @@ export function buildCorrectionPrompt(
         let calcTraceVorevaluierungBlock = '';
         tasksLayout.forEach(t => {
             if (t.calcTraceResult) {
-                const targetGoal = t.targetGoal || {};
+                const targetGoal: any = t.targetGoal || {};
                 const criteria = targetGoal.criteria;
 
                 if (criteria && Array.isArray(criteria) && criteria.length > 0) {
