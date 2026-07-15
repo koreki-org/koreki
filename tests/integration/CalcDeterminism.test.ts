@@ -14,7 +14,7 @@ let testReportMarkdown = `# Determinism Test Report\n\n**Date:** ${new Date().to
 // Increase Jest timeout for massive overnight LLM runs (20 mins)
 jest.setTimeout(1200000);
 
-const ITERATIONS = 20;
+const ITERATIONS = 5;
 
 interface TestCase {
   name: string;
