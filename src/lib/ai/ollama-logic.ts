@@ -169,8 +169,9 @@ export async function executeOllamaRequest(
         targetTemp = settings.visionTemperature ?? promptObj.options?.temperature ?? 0.0;
         targetTopP = settings.visionTopP ?? promptObj.options?.topP ?? 1.0;
     } else if (isSystemAction) {
-        // Respect user temperature if configured, otherwise apply model-specific defaults (0.0 for maximum determinism, except Gemma/MoE which needs 0.5 for JSON stability)
-        const defaultTemp = isGemmaOrMoE ? 0.5 : 0.0;
+        // Respect user temperature if configured, otherwise apply model-specific defaults:
+        // gemma/moe -> 0.5, qwen -> 0.3, others -> 0.2
+        const defaultTemp = isGemmaOrMoE ? 0.5 : (isQwen ? 0.3 : 0.2);
         const defaultTopP = 0.9;
 
         if (action === 'clean-and-map' || action === 'clean-and-analyze') {
@@ -178,7 +179,8 @@ export async function executeOllamaRequest(
             targetTemp = defaultTemp;
             targetTopP = defaultTopP;
         } else {
-            targetTemp = settings.temperature ?? defaultTemp;
+            // For mathematical calc-trace-extraction, we force 0.0 temperature for deterministic parsing, otherwise use settings/defaults
+            targetTemp = settings.temperature ?? (action === 'calc-trace-extraction' ? 0.0 : defaultTemp);
             targetTopP = settings.topP ?? defaultTopP;
         }
     } else {
