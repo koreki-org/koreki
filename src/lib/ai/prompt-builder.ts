@@ -197,12 +197,10 @@ export function buildCorrectionPrompt(
                          } else {
                               // LLM criterion or values/formula pre-resolution
                               if (crit.id.endsWith('_werte')) {
-                                  if (!pt || pt.associatedStepIds.length === 0) {
-                                      statusText = `✗ NICHT ERFÜLLT (Keine Schritte für diesen Zielwert im Schülertext gefunden)`;
+                                  if (pt && pt.hasCorrectValues) {
+                                      statusText = `✓ ERFÜLLT -> ZWINGEND GENAU ${crit.punktwert} PUNKTE GEBEN (Sandbox-bestätigt: Werte korrekt eingesetzt in Schritt: ${pt.associatedStepIds.join(', ')})`;
                                   } else {
-                                      const stepsStr = ` anhand der Schritte: ${pt.associatedStepIds.join(', ')}`;
-                                      const hint = ' - HINWEIS: Einsetzungs-Kriterien sind als ERFÜLLT (1 Punkt) zu werten, wenn der Zahlenwert korrekt ist. Alle physikalisch äquivalenten Einheiten/Präfixe (z. B. mA, kΩ) sind absolut zulässig!';
-                                      statusText = `[von dir zu beurteilen${stepsStr}${hint}]`;
+                                      statusText = `✗ NICHT ERFÜLLT -> ZWINGEND 0 PUNKTE GEBEN (Keine korrekte Werteeinsetzung für diesen Zielwert gefunden)`;
                                   }
                               } else if (crit.id.endsWith('_formel')) {
                                   if (!pt || pt.associatedStepIds.length === 0) {
