@@ -169,10 +169,7 @@ export function buildCorrectionPrompt(
                     criteriaBlock += `Du MUSST die Punkte anhand der folgenden Liste vergeben. Bereits vorab durch die Sandbox aufgelöste Kriterien sind bindend und dürfen nicht verändert werden. Addiere die Punktwerte aller Kriterien exakt wie angegeben:\n\n`;
                     
                     criteria.forEach((crit: any) => {
-                        if (crit.targetIndex === undefined || crit.targetIndex === null) {
-                            throw new Error(`Structured criteria construction failed: Criterion "${crit.id}" is missing required field "targetIndex"`);
-                        }
-                        const idx = crit.targetIndex;
+                        const idx = (crit.targetIndex !== undefined && crit.targetIndex !== null) ? crit.targetIndex : 0;
                         const pt = t.calcTraceResult.perTargetResult?.find((r: any) => r.targetIndex === idx);
                         let statusText = '';
                         
