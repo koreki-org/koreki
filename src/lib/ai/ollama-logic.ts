@@ -169,9 +169,8 @@ export async function executeOllamaRequest(
         targetTemp = settings.visionTemperature ?? promptObj.options?.temperature ?? 0.0;
         targetTopP = settings.visionTopP ?? promptObj.options?.topP ?? 1.0;
     } else if (isSystemAction) {
-        // Respect user temperature if configured, otherwise apply model-specific defaults:
-        // gemma/moe -> 0.5, qwen -> 0.3, others -> 0.2
-        const defaultTemp = isGemmaOrMoE ? 0.5 : (isQwen ? 0.3 : 0.2);
+        // Respect user temperature if configured, otherwise apply model-specific defaults (0.0 for maximum determinism, except Gemma/MoE which needs 0.5 for JSON stability)
+        const defaultTemp = isGemmaOrMoE ? 0.5 : 0.0;
         const defaultTopP = 0.9;
 
         if (action === 'clean-and-map' || action === 'clean-and-analyze') {
@@ -196,9 +195,10 @@ export async function executeOllamaRequest(
         }
     } else {
         if (isQwen) {
-            // Qwen models are extremely prone to infinite repetition loops in Ollama at very low temperatures (<= 0.1).
-            // Clamp targetTemp to at least 0.2 to prevent looping.
-            if (targetTemp < 0.2) {
+            // Qwen models are extremely prone to infinite repetition loops in Ollama at very low temperatures (<= 0.1) in free-text mode.
+            // For system actions or structured JSON mode, we allow temperature to go down to 0.0 for maximum determinism.
+            const hasStructuredFormat = !!(options?.responseSchema) || isSystemAction || action !== 'second-opinion';
+            if (!hasStructuredFormat && targetTemp < 0.2) {
                 targetTemp = 0.2;
             }
         } else if (targetTemp === 0) {
@@ -265,7 +265,7 @@ export async function executeOllamaRequest(
                 temperature: targetTemp,
                 topP: targetTopP,
                 numPredict: finalMaxTokens,
-                ...(shouldIncludeThink ? { think: thinkValue } : {})
+                think: thinkValue
             });
 
             let content: string;
@@ -360,7 +360,7 @@ export async function executeOllamaRequest(
                 stream: isStreaming,
                 tools,
                 format: formatParam,
-                ...(shouldIncludeThink ? { think: thinkValue } : {}),
+                think: thinkValue,
                 options: { 
                     num_ctx: numCtx,
                     temperature: targetTemp,

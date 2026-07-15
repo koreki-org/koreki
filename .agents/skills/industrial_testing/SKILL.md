@@ -60,5 +60,10 @@ Die deterministische Verifikation komplexer KI-Pipelines (z.B. CalcTrace & Hybri
 - **Phase 2 (Hybrid Grading Determinism):** Einspeisung der Sandbox-Resultate zusammen mit der `gradingRubric` in das Grading-LLM. Strikte Prüfung, ob bei N Iterationen exakt dieselbe `pointsObtained` Integer-Punktzahl generiert wird.
 - **Kostenkontrolle:** Layer 2.5 Determinismus-Tests kosten echte API-Tokens und sind standardmäßig als lokale/manuelle Tests (z.B. `npm run test:determinism`) ausgelegt. Sie laufen nicht automatisiert bei jedem Commit.
 
+- **8.1 Ausführungs- & Konfigurations-Konventionen (Layer 2.5):**
+  * **Provider-Switch via Env-Bit:** Der Wechsel des KI-Anbieters erfolgt ausschließlich über die Umgebungsvariable `KOREKI_TEST_PROVIDER` (z.B. `ollama`, `mistral` oder `qwen`), ohne den Code der Test-Suite zu verändern.
+  * **Kontextgröße (`OLLAMA_NUM_CTX`):** Die Kontextgröße für lokale Ollama-Anfragen wird dynamisch über die Umgebungsvariable `OLLAMA_NUM_CTX` gesteuert und fällt standardmäßig auf `32768` (32k) zurück.
+  * **Erzwungenes Deaktivieren von 'Thinking':** Bei mathematischen Extraktions-Aufgaben (System-Aktionen wie `calc-trace-extraction`) wird in der Provider-Schnittstelle fest `think: false` im Request-Body übergeben, um Latenzen und JSON-Validierungsfehler durch das interne Model-Reasoning auszuschließen.
+
 ---
-*Status: Approved (V5)*
+*Status: Approved (V6)*

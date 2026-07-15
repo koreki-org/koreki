@@ -1,20 +1,21 @@
 ---
-title: "CalcTrace Engine V8: Natively Unit-Aware Hybrid Grading Sandbox"
-description: "Technische Dokumentation des KI-gestützten, deterministischen Evaluierungssystems für MINT-Fächer mit nativer physikalischer und monetärer Unit-Awareness in der mathjs Sandbox (CalcTrace V8)."
+title: "CalcTrace Engine V9: Natively Unit-Aware Hybrid Grading Sandbox"
+description: "Technische Dokumentation des KI-gestützten, deterministischen Evaluierungssystems für MINT-Fächer mit nativer physikalischer und monetärer Unit-Awareness in der mathjs Sandbox (CalcTrace V9)."
 author: "@principal_architect"
-date: "2026-07-08"
-last_updated: "2026-07-08"
+date: "2026-07-15"
+last_updated: "2026-07-15"
 status: "Approved"
 domain: "technical"
 security_classification: "Internal"
 ---
 
-# CalcTrace Engine V8: Natively Unit-Aware Hybrid Grading
+# CalcTrace Engine V9: Natively Unit-Aware Hybrid Grading
 
 ## 1. Executive Summary & Kontext
 > [!NOTE]
-> **Zusammenfassung:** Die CalcTrace Engine V8 kombiniert LLM-basierte Extraktion mit einer physikalisch und monetär einheitenbewussten, hermetisch abgeriegelten `mathjs` Sandbox. Sie bewertet MINT-Rechenwege durch Trennung in **Proof A (Interne Rechenkonsistenz)** und **Proof B (Unit-Aware Zielerreichung)** nach etablierten Industrie-Standards (STACK, WeBWorK).
+> **Zusammenfassung:** Die CalcTrace Engine V9 kombiniert LLM-basierte Extraktion mit einer physikalisch und monetär einheitenbewussten, hermetisch abgeriegelten `mathjs` Sandbox. Sie bewertet MINT-Rechenwege durch Trennung in **Proof A (Interne Rechenkonsistenz)** und **Proof B (Unit-Aware Zielerreichung)** und liefert strukturierte Kriterien-Ergebnisse (`perTargetResult`) inklusive Vorevaluierungen wie `hasCorrectValues`.
 > **Zielgruppe:** Core-Entwickler, QA-Ingenieure und Product Manager.
+
 
 In MINT-Fächern hängen Berechnungen oft sequenziell voneinander ab, und Schüler verwenden unterschiedliche physikalische Einheiten (z. B. `0.001846 A` statt `1.846 mA`) sowie Währungen (z. B. `0.30 €/kWh`). CalcTrace V8 löst dies durch eine native, einheitenbewusste Sandbox-Evaluierung: Ein LLM extrahiert den Rechenweg des Schülers inklusive seiner notierten Einheiten direkt in die Formel-Strings (z.B. `4 kΩ * 1.846 mA`). Die Engine rechnet diese Formeln nativ als physikalische Größen in einer Sandbox nach und vergleicht das Resultat deterministisch mit dem `TargetGoal` des Lehrers.
 
@@ -108,6 +109,13 @@ export interface CalcTraceResult {
   totalPoints?: number;     // Nur bei Tier A (exakter Match) gesetzt
   unitMismatch?: boolean;   // Flag für Tier B
   unitDetails?: UnitComparisonDetail[];
+  perTargetResult?: Array<{
+    targetIndex: number;
+    reached: boolean;
+    hasCorrectValues?: boolean;
+    hasCalculationError: boolean;
+    associatedStepIds: string[];
+  }>;
 }
 ```
 
@@ -131,6 +139,31 @@ const result = evaluateCalcTrace(ast, target);
 // result.isGoalReached = true (Da 0.001846 A physikalisch == 1.846 mA)
 // result.unitMismatch = true (Da "A" != "mA")
 // result.totalPoints = undefined (LLM muss Teilpunkte für Einheitenfehler abziehen)
+```
+
+### 3.3 Anschauliches Zahlenbeispiel: `reached` vs. `hasCorrectValues` vs. `hasCalculationError`
+
+> [!TIP]
+> **Verständnis-Tipp:** Die Unterscheidung dieser drei Parameter steuert die gerechte Punktevergabe bei Rechenweg- und Einsetzungsfehlern:
+> * **`reached`** prüft ausschließlich das aufgeschriebene Endergebnis (Zahl hinter dem `=`).
+> * **`hasCorrectValues`** beweist mathematisch, ob die Zahlen in der Formel (vor dem `=`) richtig eingesetzt wurden.
+> * **`hasCalculationError`** vergleicht Formel und Endergebnis auf arithmetische Konsistenz.
+
+| Schülerantwort | `reached` | `hasCorrectValues` | `hasCalculationError` | Didaktische Bewertung & Punktevergabe |
+| :--- | :---: | :---: | :---: | :--- |
+| **Fall 1:** Richtig eingesetzt, aber falsch ausgerechnet<br>`I = 12 V / 6500 Ω = 5 mA` *(erwartet: 1.846 mA)* | **`false`** | **`true`** | **`true`** | **1 Pkt für Einsetzen** (`_werte`), da die Zahlen 12 und 6500 korrekt sind.<br>**0 Pkt für Ergebnis** (`_ergebnis`), da 5 mA falsch ist. |
+| **Fall 2:** Falsch eingesetzt, aber richtiges Ergebnis abgeschrieben<br>`I = 12 V / 4000 Ω = 1.846 mA` *(erwartet: 1.846 mA)* | **`true`** | **`false`** | **`true`** | **0 Pkt für Einsetzen** (`_werte`), da 4000 statt 6500 eingesetzt wurde.<br>**1 Pkt für Ergebnis** (`_ergebnis`), da 1.846 mA am Ende korrekt dasteht. |
+| **Fall 3:** Alles perfekt eingesetzt und gerechnet<br>`I = 12 V / 6500 Ω = 1.846 mA` | **`true`** | **`true`** | **`false`** | **Volle Punkte** für Einsetzen (`_werte`) und Ergebnis (`_ergebnis`). |
+
+#### JSON-Repräsentation im Sandbox-Ergebnis (für Fall 1):
+```json
+{
+  "targetIndex": 1,
+  "reached": false,
+  "hasCorrectValues": true,
+  "hasCalculationError": true,
+  "associatedStepIds": ["step_2"]
+}
 ```
 
 ---

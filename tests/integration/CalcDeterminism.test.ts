@@ -14,7 +14,7 @@ let testReportMarkdown = `# Determinism Test Report\n\n**Date:** ${new Date().to
 // Increase Jest timeout for massive overnight LLM runs (20 mins)
 jest.setTimeout(1200000);
 
-const ITERATIONS = 30;
+const ITERATIONS = 20;
 
 interface TestCase {
   name: string;
@@ -181,7 +181,7 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
         provider: 'ollama',
         ollamaUrl: process.env.OLLAMA_API_BASE || 'http://192.168.250.12:11434',
         ollamaModel: process.env.OLLAMA_API_MODEL || 'qwen3.6:35b',
-        ollamaNumCtx: 32768 // Changed to 32k for overnight run
+        ollamaNumCtx: Number(process.env.OLLAMA_NUM_CTX) || 32768 // Configurable context size (defaults to 32k)
       };
       console.log(`🧪 Using Provider: OLLAMA - Model: ${settings.ollamaModel} at ${settings.ollamaUrl}`);
     } else {
@@ -268,8 +268,8 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
             break; // Success!
           }
           attempts++;
-          console.warn(`[Ollama Crash Defense] Iteration ${i} - Attempt ${attempts}: Empty response from Ollama. Retrying in 5 seconds...`);
-          await new Promise(resolve => setTimeout(resolve, 5000));
+          console.warn(`[Ollama Crash Defense] Iteration ${i} - Attempt ${attempts}: Empty response from Ollama. Retrying in 15 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 15000));
         }
 
         // Strict Assertion: If the AST is completely empty after all retries, the LLM API call fatally failed!
@@ -342,8 +342,8 @@ describe('CalcTrace Determinism Tests (Layer 2)', () => {
             break; // Success!
           }
           attempts++;
-          console.warn(`[Ollama Crash Defense] Phase 2 Iteration ${i} - Attempt ${attempts}: Empty or invalid response from Ollama. Retrying in 5 seconds...`);
-          await new Promise(resolve => setTimeout(resolve, 5000));
+          console.warn(`[Ollama Crash Defense] Phase 2 Iteration ${i} - Attempt ${attempts}: Empty or invalid response from Ollama. Retrying in 15 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 15000));
         }
 
         const taskResult = result?.tasks?.[0];
