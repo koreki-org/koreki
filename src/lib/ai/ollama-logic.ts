@@ -584,12 +584,111 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
         }
     })();
 
-    const repairUnescapedBackslashes = (jsonStr: string): string => {
-        return jsonStr.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
+    const escapeInnerQuotes = (jsonStr: string): string => {
+        let result = '';
+        let inString = false;
+        let i = 0;
+        while (i < jsonStr.length) {
+            const char = jsonStr[i];
+            if (char === '"') {
+                let isEscaped = false;
+                let backslashes = 0;
+                let j = i - 1;
+                while (j >= 0 && jsonStr[j] === '\\') {
+                    backslashes++;
+                    j--;
+                }
+                if (backslashes % 2 === 1) {
+                    isEscaped = true;
+                }
+
+                // Look ahead to check if the quote is structural
+                let nextNonWhitespace = '';
+                let k = i + 1;
+                while (k < jsonStr.length) {
+                    const c = jsonStr[k];
+                    if (c !== ' ' && c !== '\t' && c !== '\n' && c !== '\r') {
+                        nextNonWhitespace = c;
+                        break;
+                    }
+                    k++;
+                }
+
+                let isStructural = nextNonWhitespace === ',' || 
+                                     nextNonWhitespace === '}' || 
+                                     nextNonWhitespace === ']' || 
+                                     nextNonWhitespace === ':';
+
+                let nextKeyMatched = false;
+                if (nextNonWhitespace === '"') {
+                    let nextQuoteIdx = -1;
+                    let m = k + 1;
+                    while (m < jsonStr.length) {
+                        if (jsonStr[m] === '"' && jsonStr[m - 1] !== '\\') {
+                            nextQuoteIdx = m;
+                            break;
+                        }
+                        m++;
+                    }
+                    if (nextQuoteIdx !== -1) {
+                        let afterNextQuote = '';
+                        let n = nextQuoteIdx + 1;
+                        while (n < jsonStr.length) {
+                            const c = jsonStr[n];
+                            if (c !== ' ' && c !== '\t' && c !== '\n' && c !== '\r') {
+                                afterNextQuote = c;
+                                break;
+                            }
+                            n++;
+                        }
+                        if (afterNextQuote === ':') {
+                            isStructural = true;
+                            nextKeyMatched = true;
+                        }
+                    }
+                }
+
+                if (isStructural) {
+                    if (isEscaped) {
+                        if (result.endsWith('\\')) {
+                            result = result.slice(0, -1);
+                        }
+                    }
+                    inString = false;
+                    result += char;
+                    if (nextKeyMatched) {
+                        result += ',';
+                    }
+                } else if (isEscaped) {
+                    result += char;
+                } else if (!inString) {
+                    inString = true;
+                    result += char;
+                } else {
+                    result += '\\"';
+                }
+            } else {
+                result += char;
+            }
+            i++;
+        }
+        return result;
+    };
+
+    const repairJsonString = (jsonStr: string): string => {
+        // 1. Escape literal unescaped double quotes inside strings
+        let repaired = escapeInnerQuotes(jsonStr);
+        // 2. Repair unescaped backslashes (like in LaTeX or paths)
+        repaired = repaired.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
+        // 3. Escape literal newlines and carriage returns inside double-quoted string values
+        repaired = repaired.replace(/"((?:[^"\\]|\\[\s\S])*)"/g, (match, p1) => {
+            return '"' + p1.replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '"';
+        });
+        return repaired;
     };
 
     try {
-        return validateOllamaResponse(JSON.parse(repairUnescapedBackslashes(standardJson)), action);
+        return validateOllamaResponse(JSON.parse(repairJsonString(standardJson)), action);
     } catch (e) {
         if (e instanceof Error && e.message.startsWith('Ungültige KI-Struktur')) {
             throw e;
@@ -598,14 +697,20 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
         try {
             const cleanContent = rawJson
                 .replace(/<thought>[\s\S]*?(<\/thought>|$)/gi, '') 
+                .replace(/<thought>[\s\S]*/gi, '')
+                .replace(/<\/thought>[\s\S]*/gi, '')
                 .replace(/<reasoning>[\s\S]*?(<\/reasoning>|$)/gi, '')
-                .replace(/\[thought\][\s\S]*?(\[\/thought\]|$)/gi, '')
+                .replace(/<reasoning>[\s\S]*/gi, '')
+                .replace(/<\/reasoning>[\s\S]*/gi, '')
+                .replace(/^[\s\S]*?(?=\{|\[)/, '') 
+                .replace(/(?<=\}|\])[^\]\}]*$/, '') 
                 .trim();
 
+            const firstCurly = cleanContent.indexOf('{');
+            const firstSquare = cleanContent.indexOf('[');
+            const isArray = (firstSquare !== -1 && (firstCurly === -1 || firstSquare < firstCurly));
+
             const hardenedMatch = (() => {
-                const firstCurly = cleanContent.indexOf('{');
-                const firstSquare = cleanContent.indexOf('[');
-                const isArray = (firstSquare !== -1 && (firstCurly === -1 || firstSquare < firstCurly));
                 if (isArray) {
                     return cleanContent.match(/\[[\s\S]*\]/);
                 } else {
@@ -619,7 +724,7 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
                 .replace(/,\s*([\]\}])/g, '$1') // Removes trailing commas before ] or }
                 .trim();
 
-            return validateOllamaResponse(JSON.parse(repairUnescapedBackslashes(partiallyRepaired)), action);
+            return validateOllamaResponse(JSON.parse(repairJsonString(partiallyRepaired)), action);
         } catch (e2) {
             if (e2 instanceof Error && e2.message.startsWith('Ungültige KI-Struktur')) {
                 throw e2;
@@ -628,6 +733,16 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
             const start = cleaned.slice(0, 100); // Increased visibility
             const end = cleaned.slice(-100);
             const errorMsg = e2 instanceof Error ? e2.message : String(e2);
+            
+            try {
+                const fs = require('fs');
+                const path = require('path');
+                const scratchDir = 'C:\\Users\\AndreasHeid\\.gemini\\antigravity\\brain\\40d31989-9543-4b81-aec1-dc6882e7aeb9\\scratch';
+                if (!fs.existsSync(scratchDir)) {
+                    fs.mkdirSync(scratchDir, { recursive: true });
+                }
+                fs.writeFileSync(path.join(scratchDir, 'raw_ollama_error.json'), cleaned, 'utf-8');
+            } catch (err) {}
             
             throw new Error(`Ollama JSON-Parse fehlgeschlagen (${errorMsg}). \n\nAnfang: [${start}]\n\nEnde: [${end}]\n\nLänge: ${cleaned.length}`);
         }
