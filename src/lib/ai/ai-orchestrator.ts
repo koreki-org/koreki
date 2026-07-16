@@ -861,11 +861,14 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
         }
 
         if (action === 'correction') {
-            const parsed = parseCorrectionResult(data, payload.tasksLayout);
-            if (payload.expertProfileName) {
-                parsed.expertProfile = payload.expertProfileName;
+            // The server (api/ai-correct.ts) already ran parseCorrectionResult before returning the
+            // response — including CalcTrace evaluation, PANG graph scoring, and Zod validation.
+            // Calling parseCorrectionResult again client-side is redundant, wastes CPU, and caused
+            // false-positive "sandbox bypassed" warnings (calcTraceResult is a server-only state).
+            if (payload.expertProfileName && !data.expertProfile) {
+                data.expertProfile = payload.expertProfileName;
             }
-            return parsed;
+            return data;
         } else if (action === 'clean-and-map') {
             return parseMappingResult(data, payload.tasksLayout);
         }
