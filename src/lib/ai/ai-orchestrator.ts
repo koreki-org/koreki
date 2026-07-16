@@ -183,7 +183,12 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
             const hasAttachedCalcTrace = !!layoutTask.calcTrace;
             const hasTargetGoal = !!layoutTask.targetGoal;
             const isCalcTraceTask = hasAttachedCalcTrace || hasTargetGoal || layoutTask.taskType === 'calc-trace';
-            const isSandboxBypassed = isCalcTraceTask && (
+            // Idempotency guard: if the server already ran CalcTrace and the feedback contains its
+            // deterministic proof markers, the sandbox was NOT bypassed — even if calcTraceResult
+            // is absent on the client-side tasksLayout (it's a server-only intermediate state).
+            const calcTraceAlreadyFormatted = !!(aiTask?.feedback?.includes('[📐 CalcTrace Engine') ||
+                aiTask?.feedback?.includes('DETERMINISTISCHER BEWEIS (SANDBOX)'));
+            const isSandboxBypassed = isCalcTraceTask && !calcTraceAlreadyFormatted && (
                 !layoutTask.calcTraceResult || 
                 !layoutTask.calcTraceResult.ast || 
                 layoutTask.calcTraceResult.ast.length === 0
