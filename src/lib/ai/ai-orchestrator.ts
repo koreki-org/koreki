@@ -571,9 +571,15 @@ export async function performAIRequest(
     }
 
     // --- HYBRID ORCHESTRATION ---
-    // Rule: Ollama always runs client-side (PURE) even in STANDARD mode, 
-    // because the backend cannot reach the user's local network.
-    // Also, Desktop Mode (Tauri) has no backend server, so it always runs client-side.
+    // PURE mode: LLM is called directly from the browser (no Koreki backend involved).
+    //   → Applies to: PURE app mode, and Desktop/Tauri (which has no backend server).
+    //   → All providers (Mistral, Qwen/OpenAI-compatible, Ollama) are called client-side.
+    // STANDARD mode: all AI calls go through the Koreki backend (/api/ai-correct etc.).
+    //   → Applies to: SaaS and Community (self-hosted) deployments.
+    //   → Ollama in STANDARD mode is handled server-side by api/ai-correct.ts,
+    //     which calls executeOllamaRequest using the OLLAMA_BASE_URL env variable.
+    //     This is intentional: the server can reach the configured Ollama instance
+    //     (e.g. a Docker container on the same host), not the user's local browser.
     if (isClientSideExecution) {
         const mistralKey = settings?.mistralKey;
         if (!mistralKey && settings?.provider === 'mistral') throw new Error("PURE_KEY_MISSING");
