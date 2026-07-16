@@ -220,7 +220,12 @@ export interface AITask {
     correctionNotes?: string;
     confidence?: number;
     content?: string;
+    /** Set to true by parseCorrectionResult when the mathematical sandbox (CalcTrace) was bypassed
+     * (e.g. AST extraction failed or produced an empty AST). The client uses this flag to render
+     * a manual-review warning banner in the UI. */
+    sandboxBypassed?: boolean;
 }
+
 
 export interface AIAnalysisResult {
     tasks: AITask[];
