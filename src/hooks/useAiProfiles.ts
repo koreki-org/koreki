@@ -411,6 +411,8 @@ export const useAiProfiles = (
 
     useEffect(() => {
         if (settings.provider === 'ollama' || settings.provider === 'openai-compatible') {
+            // For Ollama / openai-compatible: enforce a minimum of 0.2 to avoid instability.
+            // Users can raise this freely in the AI params modal.
             if (temperature < 0.2) setTemperature(0.2);
             if (visionTemperature < 0.2) setVisionTemperature(0.2);
         }

@@ -17,7 +17,7 @@ describe('Mistral Provider (Bridge) - Unit Tests', () => {
     });
 
     describe('executeMistralRequest - Model Mapping', () => {
-        it('should map "correction" to MISTRAL_CORE_MODEL', async () => {
+        it('should map "correction" to MISTRAL_MEDIUM_MODEL', async () => {
             mockFetchWithRetry.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({ choices: [{ message: { content: '{}' } }] })
@@ -26,7 +26,7 @@ describe('Mistral Provider (Bridge) - Unit Tests', () => {
             await executeMistralRequest('correction', { modelSolution: '', studentText: '' }, API_KEY);
             
             const body = JSON.parse(mockFetchWithRetry.mock.calls[0][1].body);
-            expect(body.model).toBe(constants.MISTRAL_CORE_MODEL);
+            expect(body.model).toBe(constants.MISTRAL_MEDIUM_MODEL);
         });
 
         it('should map "clean-and-analyze" to MISTRAL_MEDIUM_MODEL', async () => {

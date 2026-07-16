@@ -1,6 +1,5 @@
 import { 
     MISTRAL_CORE_MODEL, 
-    MISTRAL_UTILS_MODEL, 
     MISTRAL_CHATS_MODEL, 
     MISTRAL_OCR_MODEL,
     MISTRAL_MEDIUM_MODEL,
@@ -62,10 +61,11 @@ export async function executeMistralRequest(
     } else if (action === 'ocr') {
         model = MISTRAL_OCR_MODEL; // Force specialized OCR model
     } else if (!options.model) {
-        // Fallback for text actions if no model is provided
-        if (action === 'clean-and-analyze' || action === 'clean-and-map') {
-            // Default to Mistral Medium (mistral-medium-2604) for optimal precision/verbatim integrity without being oversized
-            model = MISTRAL_MEDIUM_MODEL; 
+        // Default model selection per action when no explicit model override is provided
+        if (action === 'correction' || action === 'clean-and-analyze' || action === 'clean-and-map') {
+            // Mistral Medium (mistral-medium-2604) for corrections & analysis:
+            // Math-optimized reasoning at a better cost/performance ratio than Large
+            model = MISTRAL_MEDIUM_MODEL;
         } else if (action === 'second-opinion') {
             model = MISTRAL_CORE_MODEL; // mistral-large-latest (Mistral Large) as preferred by the user
         }
