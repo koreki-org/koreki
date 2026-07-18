@@ -256,7 +256,9 @@ describe('AI Logic tests', () => {
     it('should handle STANDARD mode for correction', async () => {
         (global.fetch as jest.Mock).mockResolvedValueOnce({
             ok: true,
-            json: async () => ({ tasks: [] })
+            // The server runs parseCorrectionResult (incl. Zod normalization) before responding,
+            // so the client receives a fully normalized AIAnalysisResult with overallMatchPercentage.
+            json: async () => ({ tasks: [], overallMatchPercentage: 0 })
         });
         const res = await performAIRequest('correction', { modelSolution: 'A' }, 'STANDARD', { provider: 'mistral', mistralKey: '' });
         expect(res).toEqual({ tasks: [], overallMatchPercentage: 0 });

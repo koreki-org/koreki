@@ -9,12 +9,15 @@ const createJestConfig = nextJest({
 const customJestConfig = {
     setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
     testEnvironment: 'jest-environment-jsdom',
-    roots: ['<rootDir>/tests/unit', '<rootDir>/tests/integration'],
+    // Integration tests require live external APIs (Ollama, Mistral) and are excluded from the
+    // default test run (CI / pre-push). Run them manually via: npm run test:integration
+    roots: ['<rootDir>/tests/unit'],
     testPathIgnorePatterns: [
         '<rootDir>/.next/',
         '<rootDir>/node_modules/',
         '<rootDir>/tests/e2e/',
         '<rootDir>/tests/fixtures/',
+        '<rootDir>/tests/integration/',
     ],
     modulePathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/tests/reports/'],
     coverageDirectory: 'tests/reports/coverage',
