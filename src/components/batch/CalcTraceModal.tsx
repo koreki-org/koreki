@@ -276,7 +276,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                         <div className="flex justify-between items-center">
                             <div className="space-y-0.5">
                                 <label className="text-xs font-bold uppercase text-muted-foreground">Strukturierte Kriterien (Hybrid-Grading)</label>
-                                <p className="text-[10px] text-muted-foreground">Kombination aus KI-Prüfung und mathematischen Sandbox-Tests.</p>
+                                <p className="text-xs text-muted-foreground">Kombination aus KI-Prüfung und mathematischen Sandbox-Tests.</p>
                             </div>
                             <Button 
                                 variant="outline" 
@@ -297,7 +297,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                     <div key={crit.id || cIdx} className="bg-muted/30 border border-border rounded-xl p-3 flex flex-col gap-3 animate-fade-in text-sm">
                                         <div className="flex gap-3 items-end">
                                             <div className="flex-1 space-y-1">
-                                                <label className="text-[10px] font-bold uppercase text-muted-foreground/70">Kriterium Beschreibung</label>
+                                                <label className="text-xs font-bold uppercase text-muted-foreground/70">Kriterium Beschreibung</label>
                                                 <Input 
                                                     value={crit.label}
                                                     disabled={isLocked}
@@ -307,7 +307,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                 />
                                             </div>
                                             <div className="w-16 space-y-1">
-                                                <label className="text-[10px] font-bold uppercase text-muted-foreground/70">Punkte</label>
+                                                <label className="text-xs font-bold uppercase text-muted-foreground/70">Punkte</label>
                                                 <Input 
                                                     type="number"
                                                     min="0"
@@ -330,7 +330,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
                                         <div className="flex gap-4">
                                             <div className="flex-1 space-y-1">
-                                                <label className="text-[10px] font-bold uppercase text-muted-foreground/70">Prüfungs-Typ</label>
+                                                <label className="text-xs font-bold uppercase text-muted-foreground/70">Prüfungs-Typ</label>
                                                 <select
                                                     value={crit.source}
                                                     disabled={isLocked}
@@ -345,7 +345,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
                                             {crit.source !== 'llm' && (
                                                 <div className="w-48 space-y-1 animate-fade-in">
-                                                    <label className="text-[10px] font-bold uppercase text-muted-foreground/70">Bezieht sich auf</label>
+                                                    <label className="text-xs font-bold uppercase text-muted-foreground/70">Bezieht sich auf</label>
                                                     <select
                                                         value={crit.targetIndex ?? 0}
                                                         disabled={isLocked}
@@ -378,7 +378,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                             if (!isSumMismatch) return null;
 
                             return (
-                                <div className="text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200/50 rounded-xl p-3 flex items-center justify-between animate-fade-in">
+                                <div className="text-xs font-semibold text-warning bg-warning/5 border border-warning/20 rounded-xl p-3 flex items-center justify-between animate-fade-in">
                                     <span className="flex items-center gap-2">
                                         <span>⚠️</span>
                                         <span>Kriterienpunkte ({criteriaSum} P) weichen von den Gesamtpunkten ({goal.maxPoints} P) ab.</span>
@@ -388,7 +388,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                         size="sm"
                                         disabled={isLocked}
                                         onClick={() => setGoal(prev => ({ ...prev, maxPoints: criteriaSum }))}
-                                        className="h-6 text-[10px] uppercase font-bold border-amber-300 text-amber-700 bg-amber-100/50 hover:bg-amber-100 hover:text-amber-800"
+                                        className="h-6 text-xs uppercase font-bold border-warning/30 text-warning bg-warning/10 hover:bg-warning/20 transition-all"
                                     >
                                         Auf {criteriaSum} P setzen
                                     </Button>
