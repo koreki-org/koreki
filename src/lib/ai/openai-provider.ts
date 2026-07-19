@@ -133,9 +133,12 @@ export async function executeOpenAIRequest(
         targetTemp = isThinking ? 0.6 : 0.2;
     }
 
-    // Clamp minimum temperature to 0.2 for Qwen models to prevent loops / hangs
+    // Clamp minimum temperature to 0.2 for Qwen models on reasoning/correction tasks to prevent
+    // degenerate loops or hangs. Extraction tasks (calc-trace-extraction, variable-extraction etc.)
+    // must be allowed to run at 0.0 for deterministic, verbatim results.
     const isQwen = targetModel.toLowerCase().includes('qwen');
-    if (isQwen && targetTemp < 0.2) {
+    const isReasoningAction = ['correction', 'second-opinion', 'generate-graph', 'refine-graph', 'generate-calc-trace'].includes(action);
+    if (isQwen && isReasoningAction && targetTemp < 0.2) {
         targetTemp = 0.2;
     }
 
@@ -169,11 +172,18 @@ export async function executeOpenAIRequest(
         max_tokens: options.maxTokens ?? (isThinking ? 32768 : defaultLimit)
     };
     
-    if (options.responseSchema) {
+    // Extraction actions use json_object instead of json_schema:
+    // Qwen/vLLM on Mittwald does not reliably support strict json_schema mode for simple
+    // array-based extraction tasks (calc-trace-extraction, variable-extraction).
+    // The prompt already enforces the structure — json_object + our repair parser is sufficient.
+    const extractionActions: AIAction[] = ['calc-trace-extraction', 'variable-extraction', 'clean-and-map', 'clean-and-analyze'];
+    const useJsonSchema = options.responseSchema && !extractionActions.includes(action);
+    if (useJsonSchema) {
+        const schemaName = action === 'generate-calc-trace' || action === 'refine-calc-trace' ? 'CalcTrace' : 'GradingGraph';
         body.response_format = {
             type: "json_schema",
             json_schema: {
-                name: "GradingGraph",
+                name: schemaName,
                 strict: true,
                 schema: options.responseSchema
             }

@@ -22,6 +22,24 @@ export { shouldDisablePoints };
 /**
  * Maps the AI raw JSON results back to the Koreki Task structure and calculates totals.
  */
+function parseCriteriaScoresFromNotes(notes: string): Record<string, number> {
+    const scores: Record<string, number> = {};
+    if (!notes) return scores;
+    
+    // Match patterns like:
+    // - rges_formel: 1/1
+    // - rges_formel: 1 / 1
+    // - [rges_formel]: 1/1
+    const regex = /(?:^|\n)\s*[-*]?\s*\[?([a-zA-Z0-9_-]+)\]?\s*:\s*([0-9.]+)\s*\/\s*([0-9.]+)/g;
+    let match;
+    while ((match = regex.exec(notes)) !== null) {
+        const id = match[1].trim();
+        const points = parseFloat(match[2]);
+        scores[id] = points;
+    }
+    return scores;
+}
+
 export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: Task[] | null, studentText?: string): AIAnalysisResult {
     const parsed = AIAnalysisResultSchema.safeParse(analysis);
     if (parsed.success) {
@@ -45,11 +63,70 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
             if (layoutTask.calcTraceResult) {
                 let enginePoints: number;
                 
-                // Hybrid-Grading: CalcTrace Engine ist ein reiner Proof-Provider.
-                // Das LLM entscheidet IMMER über die finale Punktevergabe.
-                enginePoints = aiTask && aiTask.pointsObtained !== undefined && aiTask.pointsObtained !== null
-                    ? Number(aiTask.pointsObtained)
-                    : 0;
+                const targetGoal: any = layoutTask.targetGoal || {};
+                const criteria = targetGoal.criteria;
+                
+                if (aiTask && criteria && Array.isArray(criteria) && criteria.length > 0) {
+                    const notes = aiTask.correctionNotes || '';
+                    const parsedScores = parseCriteriaScoresFromNotes(notes);
+                    
+                    let computedSum = 0;
+                    const finalCriteriaNotes: string[] = [];
+                    
+                    criteria.forEach((crit: any) => {
+                        const idx = (crit.targetIndex !== undefined && crit.targetIndex !== null) ? crit.targetIndex : 0;
+                        const pt = layoutTask.calcTraceResult.perTargetResult?.find((r: any) => r.targetIndex === idx);
+                        
+                        let pts = 0;
+                        let justification = '';
+                        
+                        const isProof = crit.source === 'proofB' || crit.source === 'proofA';
+                        const isWerteKriterium = crit.id.endsWith('_werte') || 
+                                                 crit.id.includes('werte') || 
+                                                 crit.label.toLowerCase().includes('einsetzen') || 
+                                                 crit.label.toLowerCase().includes('eingesetzt') || 
+                                                 crit.label.toLowerCase().includes('werte');
+                        
+                        if (isProof) {
+                            if (pt && pt.reached && !pt.hasCalculationError) {
+                                pts = crit.punktwert;
+                                justification = 'Sandbox-bestätigt';
+                            } else {
+                                pts = 0;
+                                justification = pt && pt.reached && pt.hasCalculationError 
+                                    ? 'Rechenfehler im Rechenweg' 
+                                    : 'Zielwert nicht erreicht/nicht notiert';
+                            }
+                        } else if (isWerteKriterium) {
+                            if (pt && pt.hasCorrectValues) {
+                                pts = crit.punktwert;
+                                justification = 'Sandbox-bestätigt: Werte eingesetzt';
+                            } else {
+                                pts = 0;
+                                justification = 'Einsetzung fehlerhaft oder fehlt';
+                            }
+                        } else {
+                            // LLM-evaluated qualitative criteria (e.g. formulas): Use score from LLM notes
+                            pts = parsedScores[crit.id] !== undefined ? parsedScores[crit.id] : 0;
+                            // Clamp to max points of criterion
+                            pts = Math.min(crit.punktwert, Math.max(0, pts));
+                            justification = 'KI-Einschätzung';
+                        }
+                        
+                        computedSum += pts;
+                        finalCriteriaNotes.push(`- ${crit.id}: ${pts} / ${crit.punktwert} (${justification})`);
+                    });
+                    
+                    enginePoints = computedSum;
+                    
+                    // Re-write correctionNotes cleanly to prevent rounding errors or incorrect sums
+                    const cleanNotes = `[Kriterien-Bewertung]\n${finalCriteriaNotes.join('\n')}\n\nGesamtsumme: ${computedSum} Punkte`;
+                    aiTask.correctionNotes = cleanNotes;
+                } else {
+                    enginePoints = aiTask && aiTask.pointsObtained !== undefined && aiTask.pointsObtained !== null
+                        ? Number(aiTask.pointsObtained)
+                        : 0;
+                }
 
                 totalObtained += enginePoints;
 

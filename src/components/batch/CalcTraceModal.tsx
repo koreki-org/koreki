@@ -31,10 +31,13 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
     const [mounted, setMounted] = useState(false);
     
     const [goal, setGoal] = useState<TargetGoal>(() => {
-        if (initialTrace && 'targetValue' in initialTrace) {
-            return initialTrace;
-        }
-        return { targetValue: 0, maxPoints: 1, unit: '', gradingRubric: '' };
+        const initial = initialTrace && 'targetValue' in initialTrace 
+            ? initialTrace 
+            : { targetValue: 0, maxPoints: 1, unit: '', gradingRubric: '' };
+        return {
+            ...initial,
+            criteria: initial.criteria || []
+        };
     });
 
     const [rows, setRows] = useState<RowData[]>(() => {
@@ -65,7 +68,10 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
     useEffect(() => {
         if (initialTrace && 'targetValue' in initialTrace) {
-            setGoal(initialTrace);
+            setGoal({
+                ...initialTrace,
+                criteria: initialTrace.criteria || []
+            });
             
             let valStr = '';
             if (typeof initialTrace.targetValue === 'string') {
@@ -107,6 +113,37 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
         setRows(newRows);
     };
 
+    const handleCriterionChange = (index: number, field: string, value: any) => {
+        if (isLocked) return;
+        const newCriteria = [...(goal.criteria || [])];
+        newCriteria[index] = {
+            ...newCriteria[index],
+            [field]: value
+        };
+        setGoal(prev => ({ ...prev, criteria: newCriteria }));
+    };
+
+    const handleAddCriterion = () => {
+        if (isLocked) return;
+        const newCriteria = [
+            ...(goal.criteria || []),
+            {
+                id: `crit_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+                label: 'Neues Kriterium',
+                punktwert: 1,
+                source: 'llm' as const,
+                targetIndex: 0
+            }
+        ];
+        setGoal(prev => ({ ...prev, criteria: newCriteria }));
+    };
+
+    const handleRemoveCriterion = (index: number) => {
+        if (isLocked) return;
+        const newCriteria = (goal.criteria || []).filter((_, i) => i !== index);
+        setGoal(prev => ({ ...prev, criteria: newCriteria }));
+    };
+
     const handleSave = () => {
         if (isLocked) return;
         
@@ -114,10 +151,16 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
         const targetValue = validRows.map(r => r.value.trim()).join(', ');
         const unit = validRows.map(r => r.unit.trim()).join(', ');
         
+        // Regenerate free-text grading rubric automatically to stay backward-compatible
+        const generatedRubric = (goal.criteria || [])
+            .map(c => `${c.punktwert}P für ${c.label}`)
+            .join(', ');
+        
         onSave({
             ...goal,
             targetValue,
-            unit
+            unit,
+            gradingRubric: generatedRubric || goal.gradingRubric
         });
         onClose();
     };
@@ -228,17 +271,143 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                         </div>
                     </div>
 
-                    <div className="space-y-2">
+                    {/* Structured Criteria Editor Section */}
+                    <div className="flex flex-col gap-4 border-t border-border pt-4">
+                        <div className="flex justify-between items-center">
+                            <div className="space-y-0.5">
+                                <label className="text-xs font-bold uppercase text-muted-foreground">Strukturierte Kriterien (Hybrid-Grading)</label>
+                                <p className="text-[10px] text-muted-foreground">Kombination aus KI-Prüfung und mathematischen Sandbox-Tests.</p>
+                            </div>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={handleAddCriterion} 
+                                disabled={isLocked}
+                                className="h-7 text-xs font-medium"
+                            >
+                                <Plus size={14} className="mr-1" /> Kriterium hinzufügen
+                            </Button>
+                        </div>
+
+                        <div className="space-y-3 max-h-[30vh] overflow-y-auto pr-1">
+                            {(goal.criteria || []).length === 0 ? (
+                                <p className="text-xs text-muted-foreground italic py-2">Keine Kriterien vorhanden. Klicke auf 'Kriterium hinzufügen' oder generiere die Zielwerte neu.</p>
+                            ) : (
+                                (goal.criteria || []).map((crit, cIdx) => (
+                                    <div key={crit.id || cIdx} className="bg-muted/30 border border-border rounded-xl p-3 flex flex-col gap-3 animate-fade-in text-sm">
+                                        <div className="flex gap-3 items-end">
+                                            <div className="flex-1 space-y-1">
+                                                <label className="text-[10px] font-bold uppercase text-muted-foreground/70">Kriterium Beschreibung</label>
+                                                <Input 
+                                                    value={crit.label}
+                                                    disabled={isLocked}
+                                                    onChange={e => handleCriterionChange(cIdx, 'label', e.target.value)}
+                                                    placeholder="z.B. Formel für Rges korrekt"
+                                                    className="h-9 text-xs font-medium"
+                                                />
+                                            </div>
+                                            <div className="w-16 space-y-1">
+                                                <label className="text-[10px] font-bold uppercase text-muted-foreground/70">Punkte</label>
+                                                <Input 
+                                                    type="number"
+                                                    min="0"
+                                                    value={crit.punktwert}
+                                                    disabled={isLocked}
+                                                    onChange={e => handleCriterionChange(cIdx, 'punktwert', parseFloat(e.target.value) || 0)}
+                                                    className="h-9 text-xs font-bold text-center"
+                                                />
+                                            </div>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="icon" 
+                                                onClick={() => handleRemoveCriterion(cIdx)}
+                                                disabled={isLocked}
+                                                className="h-9 w-9 text-destructive hover:bg-destructive/10 hover:text-destructive shrink-0"
+                                            >
+                                                <Trash2 size={15} />
+                                            </Button>
+                                        </div>
+
+                                        <div className="flex gap-4">
+                                            <div className="flex-1 space-y-1">
+                                                <label className="text-[10px] font-bold uppercase text-muted-foreground/70">Prüfungs-Typ</label>
+                                                <select
+                                                    value={crit.source}
+                                                    disabled={isLocked}
+                                                    onChange={e => handleCriterionChange(cIdx, 'source', e.target.value)}
+                                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                >
+                                                    <option value="llm">🧠 KI-Bewertung (Sprache/Formelaufbau)</option>
+                                                    <option value="proofA">📐 Rechenweg-Prüfung (Sandbox Proof A)</option>
+                                                    <option value="proofB">🎯 Ergebnis-Prüfung (Sandbox Proof B)</option>
+                                                </select>
+                                            </div>
+
+                                            {crit.source !== 'llm' && (
+                                                <div className="w-48 space-y-1 animate-fade-in">
+                                                    <label className="text-[10px] font-bold uppercase text-muted-foreground/70">Bezieht sich auf</label>
+                                                    <select
+                                                        value={crit.targetIndex ?? 0}
+                                                        disabled={isLocked}
+                                                        onChange={e => handleCriterionChange(cIdx, 'targetIndex', parseInt(e.target.value, 10))}
+                                                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                    >
+                                                        {rows.map((row, rIdx) => {
+                                                            const label = rows.length === 1 
+                                                                ? "Endziel" 
+                                                                : (rIdx === rows.length - 1 ? `Endziel (${row.value || '?'} ${row.unit || ''})` : `Meilenstein ${rIdx + 1} (${row.value || '?'} ${row.unit || ''})`);
+                                                            return (
+                                                                <option key={rIdx} value={rIdx}>
+                                                                    {label}
+                                                                </option>
+                                                            );
+                                                        })}
+                                                    </select>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+
+                        {/* Live Points Sum Mismatch Alert */}
+                        {(() => {
+                            const criteriaSum = (goal.criteria || []).reduce((acc, c) => acc + (c.punktwert || 0), 0);
+                            const isSumMismatch = criteriaSum !== goal.maxPoints;
+                            if (!isSumMismatch) return null;
+
+                            return (
+                                <div className="text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200/50 rounded-xl p-3 flex items-center justify-between animate-fade-in">
+                                    <span className="flex items-center gap-2">
+                                        <span>⚠️</span>
+                                        <span>Kriterienpunkte ({criteriaSum} P) weichen von den Gesamtpunkten ({goal.maxPoints} P) ab.</span>
+                                    </span>
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={isLocked}
+                                        onClick={() => setGoal(prev => ({ ...prev, maxPoints: criteriaSum }))}
+                                        className="h-6 text-[10px] uppercase font-bold border-amber-300 text-amber-700 bg-amber-100/50 hover:bg-amber-100 hover:text-amber-800"
+                                    >
+                                        Auf {criteriaSum} P setzen
+                                    </Button>
+                                </div>
+                            );
+                        })()}
+                    </div>
+
+                    <div className="space-y-2 border-t border-border pt-4">
                         <div className="flex items-center gap-2">
-                            <label className="text-xs font-bold uppercase text-muted-foreground">Erwartungshorizont für KI (Rubric)</label>
+                            <label className="text-xs font-bold uppercase text-muted-foreground">Erwartungshorizont für KI (Zusatzhinweise)</label>
                             <Info size={14} className="text-muted-foreground" />
                         </div>
                         <Textarea 
                             value={goal.gradingRubric || ''}
                             disabled={isLocked}
                             onChange={e => setGoal(prev => ({ ...prev, gradingRubric: e.target.value }))}
-                            placeholder="Beispiel: 1 Punkt für den korrekten Ansatz (Formel U = R * I), 1 Punkt für das richtige Einsetzen der Werte, 1 Punkt für das finale Ergebnis."
-                            className="min-h-[120px] text-sm leading-relaxed"
+                            placeholder="Zusätzliche Freitext-Anweisungen für das LLM..."
+                            className="min-h-[80px] text-sm leading-relaxed"
                         />
                     </div>
                 </div>

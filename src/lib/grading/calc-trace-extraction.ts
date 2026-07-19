@@ -53,10 +53,12 @@ Wandle die Rechnungen in 'mathjs' kompatible Formeln um.
 WICHTIG: Schreibe in 'formula' NUR den Rechenausdruck (z.B. '4 + 2.5' oder '4 kΩ + 2.5 kΩ'). Verwende KEINE Gleichheitszeichen oder Zuweisungen (wie 'R_ges =' oder 'x =') in der 'formula'!
 WICHTIG: Nutze standardmäßige mathematische Funktionen (wie 'sqrt', 'sin', 'cos', 'tan') direkt ohne 'Math.'-Prefix (schreibe 'sqrt(100)' statt 'Math.sqrt(100)'), da dies zu Auswertungsfehlern führt.
 WICHTIG: Verwende in Variablen keine geschweiften Klammern (nutze 'R_total' statt 'R_{total}').
-WICHTIG (Einheiten-Umrechnungen & Ketten-Gleichungen): Wenn der Schüler Kettenrechnungen durchführt (z.B. '2300 * 5/60 = 191.66 = 0.1916 kWh' oder 'Rges = R1 + R2 = 4k + 2.5k = 6.5k = 6500 Ω'), darfst du NIEMALS versuchen, alles in einen einzigen Schritt zu pressen. Du MUSST solche Ketten in separate, aufeinanderfolgende Schritte aufteilen! Jeder Schritt darf nur EINE mathematische Berechnung oder EINE Konvertierung enthalten. Verwende 'original_text' des jeweiligen Schrittes, um den entsprechenden Teilabschnitt zu dokumentieren.
-Beispiel für '2300 * 5/60 = 191.66 = 0.1916 kWh':
-- Schritt 1: 'formula': '2300 * 5/60', 'result': 191.66
-Auf diese Weise bleibt die Mathematik pro Schritt (Proof A) immer zu 100% korrekt.
+WICHTIG (Einheiten-Umrechnungen & Ketten-Gleichungen):
+- Eine Kettenrechnung (die in separate Schritte aufgeteilt werden MUSS) liegt NUR dann vor, wenn in derselben Zeile nacheinander verschiedene Berechnungen oder Einheitenumrechnungen durchgeführt werden (z. B. '2300 * 5/60 = 191.66 = 0.1916 kWh' hat zwei Schritte: erst Multiplikation, dann Division durch 1000).
+- Eine einzelne Berechnung oder Zuweisung wie 'P = U * I = 23 V * 10 A = 2300 W' ist ein EINZELNER Schritt. Du darfst eine solche Zeile NIEMALS aufteilen (z. B. in einen ersten Teil '23 * 10 = 230' und einen zweiten Teil '= 2300'), nur weil das vom Schüler notierte Ergebnis mathematisch fehlerhaft ist ($23 \times 10 \neq 2300$). Die Erkennung von Rechenfehlern ist Aufgabe der Sandbox. Extrahiere dies zwingend als einen einzelnen Schritt: 'formula': '23 V * 10 A', 'result': 2300, 'unit': 'W'.
+- Teile echte Kettenrechnungen (z. B. '2300 * 5/60 = 191.66 = 0.1916 kWh') in separate, aufeinanderfolgende Schritte auf:
+  * Schritt 1: 'formula': '2300 * 5/60', 'result': 191.66
+  * Schritt 2: 'formula': '191.66 / 1000', 'result': 0.1916, 'unit': 'kWh'
 WICHTIG (Schritt-Referenzen): Nutze eine Schritt-ID-Referenz (z. B. 'step_1') in der Formel NUR, wenn der Schüler in diesem Schritt selbst KEINE explizite Zahl notiert hat, sondern implizit auf ein vorheriges Ergebnis verweist (z.B. bei 'I = U/R_ges = 12 / 6500' und später 'U1 = I * 4000'). Schreibt der Schüler hingegen eine explizite Zahl hin (z.B. 'U1 = 1.846 * 4000'), MUSST du genau diese Zahl wörtlich übernehmen, auch wenn sie aus einem vorherigen Schritt stammt!
 WICHTIG (Dezimalpunkt, Einheiten in Formeln & formulaUnit):
 - Verwende in 'formula' IMMER den Punkt (.) als Dezimaltrennzeichen, NIEMALS das Komma (,), selbst wenn der Schüler ein Komma notiert hat (z. B. '0,1916 * 0,30' -> formula: '0.1916 * 0.30').

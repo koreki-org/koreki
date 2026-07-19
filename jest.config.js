@@ -17,7 +17,6 @@ const customJestConfig = {
         '<rootDir>/node_modules/',
         '<rootDir>/tests/e2e/',
         '<rootDir>/tests/fixtures/',
-        '<rootDir>/tests/integration/',
     ],
     modulePathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/tests/reports/'],
     coverageDirectory: 'tests/reports/coverage',

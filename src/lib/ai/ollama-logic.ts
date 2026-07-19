@@ -179,8 +179,11 @@ export async function executeOllamaRequest(
             targetTemp = defaultTemp;
             targetTopP = defaultTopP;
         } else {
-            // For mathematical calc-trace-extraction, we force 0.0 temperature for deterministic parsing, otherwise use settings/defaults
-            targetTemp = settings.temperature ?? (action === 'calc-trace-extraction' ? 0.0 : defaultTemp);
+            // For highly structured mathematical extraction and generation tasks, we force 0.0 temperature
+            // for absolute determinism, unless user manually configured a specific temperature.
+            const deterministicActions = ['calc-trace-extraction', 'generate-calc-trace', 'variable-extraction'];
+            const isDeterministicAction = deterministicActions.includes(action);
+            targetTemp = settings.temperature ?? (isDeterministicAction ? 0.0 : defaultTemp);
             targetTopP = settings.topP ?? defaultTopP;
         }
     } else {
@@ -215,15 +218,24 @@ export async function executeOllamaRequest(
 
     // Dynamic Context size Estimation
     const promptCharCount = promptObj.user.length + (promptObj.system?.length || 0);
-    const estimatedTextTokens = Math.ceil(promptCharCount / 3.7);
+    // Lower divisor to 2.8 to prevent underestimating tokens (especially for German text / formulas)
+    const estimatedTextTokens = Math.ceil(promptCharCount / 2.8);
     const imageCount = images?.length || 0;
     const imageTokens = imageCount * 8000; // Vision Hardening: 8000 tokens per image
 
     let numCtx: number | undefined = settings.ollamaNumCtx;
     if (!numCtx || numCtx === 0) {
         const customLimit = isVision ? (settings.visionMaxTokens ?? 0) : (settings.maxTokens ?? 0);
-        const responseBuffer = Math.max(settings.enableThinking ? 12000 : 4000, customLimit);
-        const totalEstimated = estimatedTextTokens + imageTokens + responseBuffer;
+        // If the model is a reasoning model (or thinking is enabled), allocate a large 12k buffer
+        // to prevent context overflows during long internal thinking generations.
+        const needsMoreBuffer = shouldIncludeThink || isReasoningModel;
+        const responseBuffer = Math.max(needsMoreBuffer ? 12000 : 4000, customLimit);
+        let totalEstimated = estimatedTextTokens + imageTokens + responseBuffer;
+
+        // Force a minimum context of 16k for complex mathematical extraction actions
+        if (action === 'calc-trace-extraction' || action === 'generate-calc-trace') {
+            totalEstimated = Math.max(totalEstimated, 16384);
+        }
 
         if (totalEstimated <= 8192) {
             numCtx = 8192;

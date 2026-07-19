@@ -323,6 +323,23 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
         setIsEditingSkill(true);
     };
 
+    const handleCopySkillClick = (skill: any) => {
+        setEditingSkillData({
+            name: `Kopie von ${skill.name}`,
+            category: skill.category || 'math-science',
+            description: skill.description || '',
+            promptSnippet: skill.promptSnippet || skill.prompt || '',
+            isCustom: true,
+            taskText: skill.taskText || '',
+            gradingGraph: skill.gradingGraph,
+            calcTrace: skill.calcTrace,
+            isGraphBased: skill.isGraphBased,
+            isCalcTrace: skill.isCalcTrace
+        });
+        setGraphGenTaskText(skill.taskText || '');
+        setIsEditingSkill(true);
+    };
+
     const handleAIGraphGenerate = async () => {
         const textToGen = editingSkillData?.taskText || graphGenTaskText;
         if (!onGenerateGraph || !textToGen.trim()) return;
@@ -661,7 +678,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         size="icon" 
                                                         title="Skill kopieren"
                                                         className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-muted/80" 
-                                                        onClick={() => onStartNew([skill.id])}
+                                                        onClick={(e) => { e.stopPropagation(); handleCopySkillClick(skill); }}
                                                     >
                                                         <PlusCircle size={14} />
                                                     </Button>

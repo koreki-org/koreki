@@ -94,9 +94,48 @@ Bei der Texterkennung (Vision) und Layout-Analyse (Mapping) wird eine **Temperat
 Bei der inhaltlichen Bewertung (Correction) wird eine **Temperature von 0.7** verwendet.
 *   **Rational:** Nur hier ist "Fuzzy-Logic" erwünscht, um semantische Ähnlichkeiten zu erkennen (z.B. "höhere Geschwindigkeit" vs. "Durchsatz"). Ohne diese Wärme würde die KI zu einer pedantischen Wort-Suchmaschine degradieren.
 
+
+---
+
+## 8. Vier-Phasen-MINT-Korrekturmodell (Lehrer-Workflow)
+
+Um die mathematische Bewertung für Lehrkräfte intuitiv und nachvollziehbar zu gestalten, folgt das System beim Grading von mathematisch-naturwissenschaftlichen Aufgaben (MINT) einem Vier-Phasen-Korrekturmodell. Dieses Modell spiegelt den echten Korrektur-Workflow einer Lehrkraft wider und ist modular in vier zuschaltbare Layer-3-Skills ausgelagert:
+
+```text
++-----------------------+      +-------------------------------+
+| 1. ANSATZ (Formel)     | ===> | 2. EINSETZEN & RECHNUNG       |
+| (Mathematische        |      | (Einheiten, Werte & Isolation |
+|  Äquivalenz-Prüfung)  |      |  vom Endergebnis)             |
++-----------------------+      +-------------------------------+
+                                               ||
+                                               \/
++-----------------------+      +-------------------------------+
+| 4. BEPUNKTUNG         | <=== | 3. RESULTAT & FOLGEFEHLER     |
+| (Punkte-Notizzettel & |      | (Logische Fehlerfortpflanzung |
+|  exakte Addition)     |      |  und Selbstkorrektur-Kulanz)  |
++-----------------------+      +-------------------------------+
+```
+
+### Phase 1: Der Ansatz (Formel & Konzepte)
+*   **Dokumentiert in:** `math-equivalence.md` (`skill-math-equivalence`)
+*   **Fokus:** Überprüfung des konzeptionellen Verständnisses. Akzeptiert alternative Variablenbezeichnungen, weggelassene linke Seiten der Gleichung (LHS-Auslassung) sowie synonyme Darstellungsformen als vollkommen korrekt. Keine Kulanzpunkte für konzeptionell falsche Formelstrukturen.
+
+### Phase 2: Das Einsetzen & Die Rechnung
+*   **Dokumentiert in:** `math-isolated-grading.md` (`skill-math-isolated-grading`)
+*   **Fokus:** Trennung von Ansatz, Rechenweg und Ergebnis. Stellt sicher, dass ein Rechenfehler beim Rechnen nicht rückwirkend die korrekte Einsetzung oder Formel abwertet (Fehler-Isolation). Regelt den korrekten Umgang mit physikalischen Einheiten und den Präfix-Ausgleich (z. B. Zusammenwirken von $mA$ und $k\Omega$ zu Volt).
+
+### Phase 3: Das Endergebnis & Der Folgefehler
+*   **Dokumentiert in:** `consecutive-errors.md` (`skill-consecutive-errors`)
+*   **Fokus:** Logische Folgerichtigkeit bei Rechenfehlern. Führt ein folgerichtiges Nachrechnen mit den fehlerhaften Zwischenwerten des Schülers durch. Führt der Schüler den Rechenweg basierend auf einem fehlerhaften Wert logisch korrekt weiter, erhält er volle Punkte für diese Folgeschritte (Folgefehler-Kompensation). Erkennt Selbstkorrekturen bei Rückkehr zu korrekten Werten der Musterlösung an.
+
+### Phase 4: Der Punkte-Notizzettel (Bepunktung)
+*   **Dokumentiert in:** `math-scratchpad.md` (`skill-math-scratchpad`)
+*   **Fokus:** Arithmetische Korrektheit der Punktevergabe. Zwingt die KI zur Nutzung von `correctionNotes` als Notizzettel. Hier werden alle Kriterien-Ergebnisse und die bindenden Sandbox-Ergebnisse strukturiert aufgelistet und schrittweise addiert. Dies verhindert mathematische Additionsfehler der KI bei der Zuweisung von `pointsObtained`.
+
 ---
 
 ## 7. Testing & Referenzen
 *   **Verwandte Dokumente:** [Architecture Document](./architecture.md), [OCR Integrity Standards](./ocr-integrity-standards.md)
 *   **Test-Case RAID 0**: Dieser Case dient als Benchmark für die inhaltliche Kulanz. "Höhere Geschwindigkeit" muss ohne Abzug als korrekt akzeptiert werden.
 *   **ADR Link**: [VRE Architecture Patch (2026-04-16)]
+

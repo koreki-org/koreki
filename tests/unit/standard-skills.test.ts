@@ -6,17 +6,22 @@ describe('Standard Skills Registry (Layer 1 Unit) 🧪🏮🛡️', () => {
         expect(SKILL_REGISTRY['skill-math-equivalence']).toBeDefined();
         expect(SKILL_REGISTRY['skill-math-equivalence'].metadata.id).toBe('skill-math-equivalence');
         expect(SKILL_REGISTRY['skill-math-equivalence'].metadata.category).toBe('math-science');
-        expect(SKILL_REGISTRY['skill-math-equivalence'].promptSnippet).toContain('MATHEMATISCHE ÄQUIVALENZ');
+        expect(SKILL_REGISTRY['skill-math-equivalence'].promptSnippet).toContain('FORMEL- & ANSATZ-BEWERTUNG');
 
         expect(SKILL_REGISTRY['skill-math-isolated-grading']).toBeDefined();
         expect(SKILL_REGISTRY['skill-math-isolated-grading'].metadata.id).toBe('skill-math-isolated-grading');
         expect(SKILL_REGISTRY['skill-math-isolated-grading'].metadata.category).toBe('math-science');
-        expect(SKILL_REGISTRY['skill-math-isolated-grading'].promptSnippet).toContain('STRIKTE TRENNUNG VON RECHENWEG UND ENDERGEBNIS');
+        expect(SKILL_REGISTRY['skill-math-isolated-grading'].promptSnippet).toContain('EINSETZUNGS- & RECHNUNGS-BEWERTUNG');
 
         expect(SKILL_REGISTRY['skill-math-scratchpad']).toBeDefined();
         expect(SKILL_REGISTRY['skill-math-scratchpad'].metadata.id).toBe('skill-math-scratchpad');
         expect(SKILL_REGISTRY['skill-math-scratchpad'].metadata.category).toBe('math-science');
-        expect(SKILL_REGISTRY['skill-math-scratchpad'].promptSnippet).toContain('AKTIVES NACHRECHNEN IM DENK-RAUM (SCRATCHPAD)');
+        expect(SKILL_REGISTRY['skill-math-scratchpad'].promptSnippet).toContain('KRITERIEN-DOKUMENTATION & PUNKT-ADDITION');
+
+        expect(SKILL_REGISTRY['skill-consecutive-errors']).toBeDefined();
+        expect(SKILL_REGISTRY['skill-consecutive-errors'].metadata.id).toBe('skill-consecutive-errors');
+        expect(SKILL_REGISTRY['skill-consecutive-errors'].metadata.category).toBe('math-science');
+        expect(SKILL_REGISTRY['skill-consecutive-errors'].promptSnippet).toContain('ERGEBNIS- & FOLGEFEHLER-BEWERTUNG');
     });
 
     it('should map mathematical grading skills into default system skill profiles', () => {

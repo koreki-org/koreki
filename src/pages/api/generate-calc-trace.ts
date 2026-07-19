@@ -39,67 +39,87 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         const { taskText, userNotes, settings } = validation.data;
         const useOpenAI = settings?.provider === 'openai-compatible';
-        let rawResult: Record<string, unknown>;
+        let rawResult: Record<string, unknown> | null = null;
+        let trace: any = null;
+        let attempts = 0;
+        const maxAttempts = 2;
+        let lastError: any = null;
 
-        if (settings?.provider === 'ollama') {
-            rawResult = await executeOllamaRequest(
-                'generate-calc-trace',
-                { taskText, userNotes },
-                settings as AppSettings,
-                undefined,
-                { responseSchema: TARGET_GOAL_SCHEMA }
-            );
-        } else if (!useOpenAI) {
-            const apiKey = settings?.mistralKey || process.env.MISTRAL_API_KEY;
-            if (!apiKey) throw new Error('Mistral API-Key fehlt.');
-
-            // Always use the highly capable medium model for complex extraction tasks when using Mistral
-            const mistralModel = 'mistral-medium-2604';
-
-            rawResult = await executeMistralRequest(
-                'generate-calc-trace',
-                { taskText, userNotes },
-                apiKey,
-                {
-                    model: mistralModel,
-                    enableThinking: settings?.enableThinking,
-                    temperature: settings?.temperature ?? 0.2,
-                    topP: settings?.topP ?? 0.9,
-                    maxTokens: settings?.maxTokens ?? 4000,
-                    responseSchema: TARGET_GOAL_SCHEMA
+        while (attempts < maxAttempts && !trace) {
+            try {
+                attempts++;
+                
+                // Inject the previous error into user notes for self-correction feedback
+                let dynamicUserNotes = userNotes;
+                if (attempts > 1 && lastError) {
+                    dynamicUserNotes = (userNotes ? userNotes + "\n\n" : "") + 
+                        `[KORREKTUR-HINWEIS: Der vorherige Generierungsversuch ist mit folgendem Fehler fehlgeschlagen. Bitte korrigiere diesen Fehler im neuen Versuch: ${lastError.message || lastError}]`;
                 }
-            );
-        } else {
-            const baseUrl = settings?.openaiUrl || process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || 'https://llm.aihosting.mittwald.de/v1';
-            const apiKey = settings?.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
-            const model = settings?.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
 
-            if (!apiKey) throw new Error('Mittwald/OpenAI API-Key fehlt.');
+                if (settings?.provider === 'ollama') {
+                    rawResult = await executeOllamaRequest(
+                        'generate-calc-trace',
+                        { taskText, userNotes: dynamicUserNotes },
+                        settings as AppSettings,
+                        undefined,
+                        { responseSchema: TARGET_GOAL_SCHEMA }
+                    );
+                } else if (!useOpenAI) {
+                    const apiKey = settings?.mistralKey || process.env.MISTRAL_API_KEY;
+                    if (!apiKey) throw new Error('Mistral API-Key fehlt.');
 
-            rawResult = await executeOpenAIRequest(
-                'generate-calc-trace',
-                { taskText, userNotes },
-                baseUrl,
-                apiKey,
-                {
-                    model,
-                    enableThinking: settings?.enableThinking,
-                    temperature: settings?.temperature ?? 0.2,
-                    topP: settings?.topP ?? 0.9,
-                    maxTokens: settings?.maxTokens ?? 4000,
-                    responseSchema: TARGET_GOAL_SCHEMA
+                    // Always use the highly capable medium model for complex extraction tasks when using Mistral
+                    const mistralModel = 'mistral-medium-2604';
+
+                    rawResult = await executeMistralRequest(
+                        'generate-calc-trace',
+                        { taskText, userNotes: dynamicUserNotes },
+                        apiKey,
+                        {
+                            model: mistralModel,
+                            enableThinking: settings?.enableThinking,
+                            temperature: settings?.temperature ?? 0.0,
+                            topP: settings?.topP ?? 0.9,
+                            maxTokens: settings?.maxTokens ?? 4000,
+                            responseSchema: TARGET_GOAL_SCHEMA
+                        }
+                    );
+                } else {
+                    const baseUrl = settings?.openaiUrl || process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || 'https://llm.aihosting.mittwald.de/v1';
+                    const apiKey = settings?.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
+                    const model = settings?.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
+
+                    if (!apiKey) throw new Error('Mittwald/OpenAI API-Key fehlt.');
+
+                    rawResult = await executeOpenAIRequest(
+                        'generate-calc-trace',
+                        { taskText, userNotes: dynamicUserNotes },
+                        baseUrl,
+                        apiKey,
+                        {
+                            model,
+                            enableThinking: settings?.enableThinking,
+                            temperature: settings?.temperature ?? 0.0,
+                            topP: settings?.topP ?? 0.9,
+                            maxTokens: settings?.maxTokens ?? 4000,
+                            responseSchema: TARGET_GOAL_SCHEMA
+                        }
+                    );
                 }
-            );
+
+                if (rawResult) {
+                    trace = parseGeneratedCalcTrace(JSON.stringify(rawResult));
+                }
+            } catch (err: any) {
+                lastError = err;
+                logger.warn(`[Server] TargetGoal generation attempt ${attempts} failed:`, err.message || err);
+            }
         }
 
-        let trace = parseGeneratedCalcTrace(JSON.stringify(rawResult));
-
         if (!trace) {
-            logger.warn('TargetGoal generation: LLM returned invalid structure', {
-                rawKeys: Object.keys(rawResult)
-            });
+            logger.error('[Server] TargetGoal generation failed after all attempts', { lastError: lastError?.message || lastError });
             return res.status(422).json({
-                error: 'Die KI konnte kein gültiges TargetGoal generieren. Bitte versuche es erneut oder passe den Aufgabentext an.'
+                error: `Die KI konnte kein gültiges TargetGoal generieren. Letzter Fehler: ${lastError?.message || 'Ungültige Struktur'}`
             });
         }
 
@@ -107,7 +127,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         (trace as any).validation = {
             isValid: true,
             error: '',
-            retriesUsed: 0,
+            retriesUsed: attempts - 1,
             dryRunChecked: true
         };
 

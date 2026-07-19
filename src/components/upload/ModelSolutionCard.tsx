@@ -249,7 +249,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(localProfiles));
             } else {
                 const matchingSystem = STANDARD_SKILL_PROFILES.find(p => p.name === activeProfileId || p.isSystem);
-                const baseSkillIds = matchingSystem ? [...matchingSystem.activeSkillIds] : ["skill-consecutive-errors", "skill-math-equivalence"];
+                const baseSkillIds = matchingSystem ? [...matchingSystem.activeSkillIds] : ["skill-consecutive-errors", "skill-math-equivalence", "skill-math-isolated-grading", "skill-math-scratchpad"];
                 
                 const newProfileId = `local-skill-${Date.now()}`;
                 const newProfileName = `Mein Skill-Profil`;
@@ -293,7 +293,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             }
                         });
                     } else {
-                        const baseSkillIds = activeProfile ? [...activeProfile.activeSkillIds] : ["skill-consecutive-errors", "skill-math-equivalence"];
+                        const baseSkillIds = activeProfile ? [...activeProfile.activeSkillIds] : ["skill-consecutive-errors", "skill-math-equivalence", "skill-math-isolated-grading", "skill-math-scratchpad"];
                         const newProfileName = `Mein Skill-Profil`;
                         
                         const createRes = await apiClient.post('/api/user/skill-profiles', {

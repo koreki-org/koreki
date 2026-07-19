@@ -1,4 +1,5 @@
 import { TargetGoal } from './calc-trace-types';
+import calcTraceGenSystemDefault from '../../prompts/core/default/calc-trace-generation/system.md';
 
 export const TARGET_GOAL_SCHEMA = {
   type: "object",
@@ -19,7 +20,7 @@ export const TARGET_GOAL_SCHEMA = {
           source: { type: "string", enum: ["llm", "proofA", "proofB"] },
           targetIndex: { type: "number", description: "Der 0-basierte Index im targetValue-Array, auf das sich dieses Kriterium bezieht. Jedes Kriterium muss zwingend einem Zielwert zugeordnet sein." }
         },
-        required: ["id", "label", "punktwert", "source", "targetIndex"]
+        required: ["id", "label", "punktwert", "source"]
       }
     }
   },
@@ -30,50 +31,7 @@ export const TARGET_GOAL_SCHEMA = {
 export const VALIDATE_CALC_TRACE_TOOL = {};
 
 export function buildCalcTraceGenerationPrompt(taskText: string, discipline: string, userNotes?: string) {
-    const system = `Du bist ein KI-Assistent zur Extraktion von Zielwerten und Bewertungskriterien aus Musterlösungen.
-Deine Aufgabe ist es, aus dem Text einer Musterlösung ALLE geforderten numerischen Zielwerte (sowohl wichtige Zwischenergebnisse/Meilensteine als auch das finale Endergebnis) zu extrahieren, für die es Punkte gibt. 
-Zudem sollst du die maximale Punktzahl erkennen, einen kurzen "Erwartungshorizont" (Rubric) formulieren und eine strukturierte Kriterienliste (criteria) erstellen.
-
-Kriterien-Regeln:
-1. "source" definiert, wer das Kriterium bewertet:
-   - "proofB": Für Meilensteine / Endergebnisse (Zielwerte). Hier muss targetIndex angegeben werden (der 0-basierte Index des Werts im targetValue-Array).
-   - "proofA": Für reine rechnerische Korrektheit eines Teilschritts. Hier muss targetIndex angegeben werden (der 0-basierte Index des Ziels, zu dem der Schritt hinführt).
-   - "llm": Für rein sprachliche/textuelle Kriterien wie "Formel fachlich korrekt" oder "Werte korrekt eingesetzt".
-2. Die Summe aller Kriterien-Punktwerte MUSS exakt "maxPoints" entsprechen.
-3. Ordne Kriterien in derselben Reihenfolge wie die Zielwerte im Erwartungshorizont (targetValue-Array) zu.
-
-WICHTIG: Antworte AUSSCHLIESSLICH im puren JSON Format. Verwende KEIN Markdown (kein \`\`\`json), schreibe keinen Text davor oder danach! Dein gesamter Output muss als JSON-String geparst werden können.
-
-Schema:
-{
-  "targetValue": (string, z.B. "78.5, 785"),
-  "maxPoints": (number, z.B. 3),
-  "unit": (string, z.B. "cm², cm³"),
-  "gradingRubric": (string, z.B. "1P für Fläche, 2P für Volumen"),
-  "criteria": [
-    { "id": "flaeche_formel", "label": "Formel für Fläche korrekt", "punktwert": 1, "source": "llm" },
-    { "id": "volumen_formel", "label": "Formel für Volumen korrekt", "punktwert": 0, "source": "llm" },
-    { "id": "volumen_ergebnis", "label": "Ergebnis Volumen erreicht", "punktwert": 2, "source": "proofB", "targetIndex": 1 }
-  ]
-}
-
-BEISPIEL:
-Musterlösung: "Die Grundfläche des Zylinders beträgt A = 3.14 * 5^2 = 78.5 cm² (1 Punkt). Daraus ergibt sich das Volumen V = 78.5 * 10 = 785 cm³ (2 Punkte). Gesamtpunktzahl: 3."
-Dein JSON Output:
-{
-  "targetValue": "78.5, 785",
-  "maxPoints": 3,
-  "unit": "cm², cm³",
-  "gradingRubric": "1P für Fläche (78.5 cm²), 2P für Volumen (785 cm³)",
-  "criteria": [
-    { "id": "flaeche_formel", "label": "Formel für Fläche korrekt", "punktwert": 1, "source": "llm" },
-    { "id": "volumen_formel", "label": "Formel für Volumen korrekt", "punktwert": 0, "source": "llm" },
-    { "id": "volumen_ergebnis", "label": "Ergebnis Volumen erreicht", "punktwert": 2, "source": "proofB", "targetIndex": 1 }
-  ]
-}
-
-${userNotes ? `Zusätzliche Instruktion vom Nutzer: ${userNotes}` : ''}`;
-
+    const system = calcTraceGenSystemDefault + (userNotes ? `\n\nZusätzliche Instruktion vom Nutzer: ${userNotes}` : '');
     const user = `Analysiere folgenden Text der Aufgabe/Musterlösung und extrahiere das 'TargetGoal':\n\n${taskText}`;
     
     return { system, user };
@@ -134,6 +92,20 @@ export function compileRubricRegex(rubric: string, target: Omit<TargetGoal, 'cri
   return undefined;
 }
 
+function normalizeTargetValue(targetVal: any): string {
+    if (targetVal === undefined || targetVal === null) return '0';
+    if (typeof targetVal === 'number') return String(targetVal);
+    if (Array.isArray(targetVal)) return targetVal.map(String).join(', ');
+    if (typeof targetVal === 'string') {
+        const matches = targetVal.match(/-?\d+(?:[\.,]\d+)?(?:[eE][-+]?\d+)?/g);
+        if (matches) {
+            return matches.map(m => m.replace(',', '.')).join(', ');
+        }
+        return targetVal;
+    }
+    return String(targetVal);
+}
+
 export function parseGeneratedCalcTrace(rawOutput: any): TargetGoal | null {
     if (!rawOutput) return null;
     let data = rawOutput;
@@ -156,7 +128,7 @@ export function parseGeneratedCalcTrace(rawOutput: any): TargetGoal | null {
     }
     
     const target: TargetGoal = {
-        targetValue: data.targetValue || 0,
+        targetValue: normalizeTargetValue(data.targetValue),
         maxPoints: data.maxPoints || 0,
         unit: data.unit || '',
         gradingRubric: data.gradingRubric || '',
@@ -171,12 +143,14 @@ export function parseGeneratedCalcTrace(rawOutput: any): TargetGoal | null {
         }
     }
 
-    // Strict validation of parsed criteria list
-    if (target.criteria) {
-        // 1. Check sum of criteria points matches target.maxPoints
+    // Resilient validation of parsed criteria list
+    if (target.criteria && target.criteria.length > 0) {
+        // 1. Align maxPoints dynamically with the sum of generated criteria points
+        // to prevent pedagogical distortion caused by arbitrary scaling or rounding.
         const sum = target.criteria.reduce((acc, c) => acc + (c.punktwert || 0), 0);
         if (sum !== target.maxPoints) {
-            throw new Error(`Criteria validation failed: Sum of criterion points (${sum}) does not match maxPoints (${target.maxPoints})`);
+            console.warn(`[Resilience] Updating maxPoints from ${target.maxPoints} to match sum of criteria points ${sum}`);
+            target.maxPoints = sum;
         }
 
         // 2. Enforce that targetIndex is a required valid number matching targetValues array length
@@ -185,12 +159,28 @@ export function parseGeneratedCalcTrace(rawOutput: any): TargetGoal | null {
           : String(target.targetValue).split(',').length;
 
         for (const crit of target.criteria) {
-            if (crit.targetIndex === undefined || crit.targetIndex === null) {
-                throw new Error(`Criteria validation failed: Criterion "${crit.id}" is missing required field "targetIndex"`);
-            }
-            const idx = Number(crit.targetIndex);
-            if (isNaN(idx) || idx < 0 || idx >= valuesCount) {
-                throw new Error(`Criteria validation failed: Criterion "${crit.id}" has invalid targetIndex (${crit.targetIndex}) for target values count (${valuesCount})`);
+            const isProof = crit.source === 'proofA' || crit.source === 'proofB';
+            if (isProof) {
+                if (crit.targetIndex === undefined || crit.targetIndex === null) {
+                    console.warn(`[Resilience] Criterion "${crit.id}" (source: ${crit.source}) is missing targetIndex. Defaulting to final goal (0).`);
+                    crit.targetIndex = 0;
+                }
+                let idx = Number(crit.targetIndex);
+                if (isNaN(idx) || idx < 0 || idx >= valuesCount) {
+                    const clampedIdx = Math.max(0, valuesCount - 1);
+                    console.warn(`[Resilience] Adjusting invalid targetIndex ${crit.targetIndex} on criterion "${crit.id}" to maximum valid index ${clampedIdx}`);
+                    crit.targetIndex = clampedIdx;
+                }
+            } else {
+                // llm source criteria: targetIndex is optional. If present, clamp if out of bounds.
+                if (crit.targetIndex !== undefined && crit.targetIndex !== null) {
+                    let idx = Number(crit.targetIndex);
+                    if (isNaN(idx) || idx < 0 || idx >= valuesCount) {
+                        const clampedIdx = Math.max(0, valuesCount - 1);
+                        console.warn(`[Resilience] Adjusting out-of-bounds targetIndex ${crit.targetIndex} on qualitative criterion "${crit.id}" to ${clampedIdx}`);
+                        crit.targetIndex = clampedIdx;
+                    }
+                }
             }
         }
     }

@@ -79,7 +79,7 @@ b.
 U1 = I * R1 = 0.001846 A * 4000 Ω = 7.38 V
 U2 = I * R2 = 0.001846 A * 2500 Ω = 4.62 V
     `,
-    expectedPoints: 10,
+    expectedPoints: 11,
     studentText: `
 Aufgabe 1
 a. 

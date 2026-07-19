@@ -229,6 +229,18 @@ describe('CalcTrace Sandbox V6', () => {
       expect(target.criteria!.length).toBe(3);
       expect(target.criteria![0].id).toBe('formel');
     });
+
+    it('should normalize German decimal commas to dots in targetValue', () => {
+      const rawOutput = JSON.stringify({
+        targetValue: '0,0575',
+        maxPoints: 3,
+        unit: '€',
+        gradingRubric: '1P für Formel, 1P Einsetzen, 1P Ergebnis'
+      });
+      const target = parseGeneratedCalcTrace(rawOutput);
+      expect(target).toBeDefined();
+      expect(target.targetValue).toBe('0.0575');
+    });
   });
 
   describe('prompt-builder.ts structured criteria injection', () => {

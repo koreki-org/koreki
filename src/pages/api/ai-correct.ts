@@ -120,7 +120,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         let calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
                         
                         let retryCount = 0;
-                        const maxRetries = 2;
+                        const isOllama = settings.provider === 'ollama';
+                        const maxRetries = isOllama ? 1 : 2;
                         while (calcTraceResult.sandboxErrors.some(err => !err.startsWith('Rechenfehler')) && retryCount < maxRetries) {
                             const extractionErrors = calcTraceResult.sandboxErrors.filter(err => !err.startsWith('Rechenfehler'));
                             logger.warn(`[Server] CalcTrace Sandbox validation failed (extraction errors). Retrying self-correction (${retryCount + 1}/${maxRetries}):`, extractionErrors);

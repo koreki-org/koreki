@@ -1,10 +1,10 @@
 import { parsePromptFile, PromptLibraryEntry } from '@/lib/ai/prompt-library';
 
 // Import raw Markdown files
-import folgefehlerRaw from './folgefehler.md';
-import mathEquivalenceRaw from './math-equivalence.md';
-import mathIsolatedGradingRaw from './math-isolated-grading.md';
-import mathScratchpadRaw from './math-scratchpad.md';
+import consecutiveErrorsRaw from './math-consecutive-errors.md';
+import mathEquivalenceRaw from './math-formula-concept.md';
+import mathIsolatedGradingRaw from './math-substitution-units.md';
+import mathScratchpadRaw from './math-points-addition.md';
 import marksBayernRaw from './marks-bayern.md';
 import marksNrwRaw from './marks-nrw.md';
 import marksClassicRaw from './marks-classic.md';
@@ -18,7 +18,7 @@ import calcVlsmRaw from './calc-vlsm.md';
  * 🏮🛡️🏛️
  */
 export const SKILL_REGISTRY: Record<string, PromptLibraryEntry> = {
-    'skill-consecutive-errors': parsePromptFile(folgefehlerRaw),
+    'skill-consecutive-errors': parsePromptFile(consecutiveErrorsRaw),
     'skill-math-equivalence': parsePromptFile(mathEquivalenceRaw),
     'skill-math-isolated-grading': parsePromptFile(mathIsolatedGradingRaw),
     'skill-math-scratchpad': parsePromptFile(mathScratchpadRaw),
