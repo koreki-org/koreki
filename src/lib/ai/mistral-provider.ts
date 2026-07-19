@@ -63,8 +63,8 @@ export async function executeMistralRequest(
     } else if (!options.model) {
         // Default model selection per action when no explicit model override is provided
         if (action === 'correction' || action === 'clean-and-analyze' || action === 'clean-and-map') {
-            // Mistral Large for corrections & analysis:
-            // Math-optimized reasoning
+            // Mistral Medium (mistral-medium-2604) for corrections & analysis:
+            // Math-optimized reasoning at a better cost/performance ratio than Large
             model = MISTRAL_MEDIUM_MODEL;
         } else if (action === 'second-opinion') {
             model = MISTRAL_CORE_MODEL; // mistral-large-latest (Mistral Large) as preferred by the user

@@ -178,11 +178,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
             if (!apiKey) throw new Error('Mistral API-Key fehlt.');
 
-            // Use the flagship 'mistral-large-latest' when "High Accuracy" is toggled.
+            // Use the math-optimized 'mistral-medium-2604' when "High Accuracy" is toggled.
             // Otherwise, respect the user's selected model from their profile settings (settings.model).
             const mistralModel = (isComplex && settings.provider === 'mistral') 
-                ? 'mistral-large-latest' 
-                : (settings.model || 'mistral-large-latest');
+                ? 'mistral-medium-2604' 
+                : (settings.model || 'mistral-medium-2604');
 
             analysis = await executeMistralRequest(
                 'correction',

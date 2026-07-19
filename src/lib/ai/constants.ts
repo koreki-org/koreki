@@ -4,7 +4,7 @@ export const MISTRAL_OCR_MODEL = 'mistral-ocr-latest';
 export const MISTRAL_CORE_MODEL = 'mistral-large-latest';
 export const MISTRAL_UTILS_MODEL = 'mistral-small-latest';
 export const MISTRAL_CHATS_MODEL = 'mistral-large-latest'; // Hardened: Using flagship instead of pixtral for better instruction following
-export const MISTRAL_MEDIUM_MODEL = 'mistral-large-latest'; // Math-optimized flagship model
+export const MISTRAL_MEDIUM_MODEL = 'mistral-medium-2604'; // Brand new math-optimized reasoning model
 
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 

@@ -68,8 +68,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     const apiKey = settings?.mistralKey || process.env.MISTRAL_API_KEY;
                     if (!apiKey) throw new Error('Mistral API-Key fehlt.');
 
-                    // Always use the highly capable large model for complex extraction tasks when using Mistral
-                    const mistralModel = settings?.model || 'mistral-large-latest';
+                    // Always use the highly capable medium model for complex extraction tasks when using Mistral
+                    const mistralModel = settings?.model || 'mistral-medium-2604';
 
                     rawResult = await executeMistralRequest(
                         'generate-calc-trace',
