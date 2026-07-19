@@ -3,6 +3,7 @@ import { Loader2, PenLine, Brain, Download, Info } from 'lucide-react';
 import { CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { cn } from '@/lib/utils';
+import { isLocalInstance } from '@/lib/env-context';
 import { KorekiTooltip } from '../ui/KorekiTooltip';
 import { BatchHelpContent } from './BatchHelpContent';
 import { AppSettings } from '../../types';
@@ -67,7 +68,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
             
             <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
                 {/* OCR Strategy Toggle (Mistral -> Qwen Override for High Accuracy / Slower Correction) */}
-                {settings?.provider === 'mistral' && setOcrStrategy && (
+                {!isLocalInstance() && settings?.provider === 'mistral' && setOcrStrategy && (
                     <div className={cn(
                         "flex items-center gap-2.5 px-3 py-1.5 bg-muted/30 border border-border rounded-xl shadow-xs transition-all duration-300",
                         lockStrategy && "opacity-50 pointer-events-none"
