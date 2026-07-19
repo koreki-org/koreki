@@ -128,7 +128,7 @@ WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt M
         const mistralKey = settings?.mistralKey;
         if (!mistralKey) throw new Error('PURE_KEY_MISSING');
         extracted = await executeMistralRequest('calc-trace-extraction', payload, mistralKey, {
-          model: settings?.model || 'mistral-medium-2604',
+          model: settings?.model || 'mistral-large-latest',
           temperature: 0.0,
           topP: 0.1,
           maxTokens: 1000,
@@ -144,7 +144,7 @@ WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt M
           const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
           if (!apiKey) throw new Error('Mistral API-Key fehlt.');
           extracted = await executeMistralRequest('calc-trace-extraction', payload, apiKey, {
-            model: 'mistral-medium-2604', // Always use the highly capable medium model for extraction
+            model: settings?.model || 'mistral-large-latest', // Always use the highly capable large model for extraction by default
             temperature: 0.0,
             topP: 0.1,
             maxTokens: 1000,
