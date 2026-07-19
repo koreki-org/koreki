@@ -31,7 +31,7 @@ struct OllamaChatRequest {
     messages: Vec<OllamaMessage>,
     stream: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
-    format: Option<String>,
+    format: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     think: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -178,7 +178,7 @@ async fn execute_ollama_command(
     stream: bool, // Toggle for streaming vs batch mode
     system: Option<String>,
     images: Option<Vec<String>>,
-    format: Option<String>,
+    format: Option<serde_json::Value>,
     num_ctx: Option<u32>,
     temperature: Option<f32>,
     top_p: Option<f32>,
