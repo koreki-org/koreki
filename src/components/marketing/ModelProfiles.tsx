@@ -21,7 +21,7 @@ export const ModelProfiles: React.FC = () => {
                         <div className="w-10 h-10 rounded-xl bg-accent-1/10 text-accent-1 flex items-center justify-center shrink-0 border border-accent-1/20 group-hover:bg-primary group-hover:text-white transition-all">
                             <Zap size={20} />
                         </div>
-                        <div>
+                        <div className="pr-20">
                             <p className="text-xs text-accent-1 font-black uppercase tracking-wider">Qwen 3.6 (35B)</p>
                             <h5 className="font-black text-foreground text-sm leading-tight">Pro Correction Engine</h5>
                         </div>
@@ -46,7 +46,7 @@ export const ModelProfiles: React.FC = () => {
                     </div>
                     <p className="text-xs text-muted-foreground font-medium italic mb-4">&quot;Optimierter Allrounder für getippte Texte (PDF) und schnelle Feedback-Zyklen. Beste Performance pro Watt.&quot;</p>
                     <div className="mt-auto pt-4 border-t border-accent-1/20/50 flex items-center gap-2">
-                        <CheckCircle2 size={12} className="text-accent-2/200" />
+                        <CheckCircle2 size={12} className="text-accent-2" />
                         <span className="text-xs font-black text-accent-2 uppercase">Performance Choice</span>
                     </div>
                 </div>
