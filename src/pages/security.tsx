@@ -17,7 +17,7 @@ export default function Security() {
             <div className="relative pt-0">
                 {/* Hero Section */}
                 <section className="pt-10 pb-12 md:pt-14 md:pb-hero-bottom px-6 md:px-page-inline text-center relative overflow-hidden">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-accent-1-500/5 rounded-full blur-[120px] -z-10" />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-accent-1/5 rounded-full blur-[120px] -z-10" />
                     <div className="max-w-3xl mx-auto relative text-center space-y-8 animate-fade-up">
                         <Badge variant="light" className="mb-4">
                             <ShieldCheck size={14} className="mr-2" />
@@ -43,10 +43,10 @@ export default function Security() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Desktop Edition Card */}
                         <div className="glass-morphism p-6 md:p-card-padding rounded-3xl border border-white bg-white/60 shadow-xl relative overflow-hidden group hover:shadow-2xl hover:bg-white/80 hover:-translate-y-2 transition-all">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-accent-1-500/5 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-accent-1-500/10 transition-all duration-1000" />
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-accent-1/5 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-accent-1/10 transition-all duration-1000" />
                             <div className="relative z-10">
                                 <div className="flex items-center gap-5 mb-8">
-                                    <div className="bg-accent-1-500/10 text-accent-1-600 p-5 rounded-2xl shadow-sm border border-accent-1-500/20">
+                                    <div className="bg-accent-1/10 text-accent-1 p-5 rounded-2xl shadow-sm border border-accent-1/20">
                                         <Monitor size={32} />
                                     </div>
                                     <div>
@@ -64,15 +64,15 @@ export default function Security() {
                                         { t: 'Datenhoheit: Offline-Modus oder direkte KI-Anbindung', i: ShieldCheck },
                                         { t: 'Ideal für private Endgeräte', i: Sparkles, gold: true }
                                     ].map((item, i) => (
-                                        <li key={i} className={`flex items-start gap-4 text-sm font-bold ${item.gold ? 'bg-accent-1-500/5 rounded-2xl p-4 border border-accent-1-500/10 -mx-4 text-accent-1-700' : 'text-foreground/80'}`}>
-                                            <item.i size={20} className={`${item.gold ? 'text-accent-1-600' : 'text-accent-1-500'} flex-shrink-0 mt-0.5`} />
+                                        <li key={i} className={`flex items-start gap-4 text-sm font-bold ${item.gold ? 'bg-accent-1/5 rounded-2xl p-4 border border-accent-1/10 -mx-4 text-accent-1' : 'text-foreground/80'}`}>
+                                            <item.i size={20} className={`${item.gold ? 'text-accent-1' : 'text-accent-1/80'} flex-shrink-0 mt-0.5`} />
                                             <span>{item.t}</span>
                                         </li>
                                     ))}
                                 </ul>
 
                                 <div className="mt-12">
-                                    <Link href="/desktop" className="inline-flex items-center gap-2 text-accent-1-600 font-bold text-xs uppercase tracking-widest hover:text-accent-1-500 transition-colors">
+                                    <Link href="/desktop" className="inline-flex items-center gap-2 text-accent-1 font-bold text-xs uppercase tracking-widest hover:text-accent-1 transition-colors">
                                         Details zur Desktop App <ArrowRight size={14} />
                                     </Link>
                                 </div>
@@ -82,7 +82,7 @@ export default function Security() {
                         {/* Community Edition Card */}
                         <div className="glass-morphism p-6 md:p-card-padding rounded-3xl border border-white bg-white/60 shadow-xl transition-all hover:bg-white hover:shadow-2xl hover:-translate-y-1 group">
                             <div className="flex items-center gap-5 mb-8">
-                                <div className="bg-accent-2-500/10 text-accent-2-600 p-5 rounded-2xl shadow-sm border border-accent-2-500/10">
+                                <div className="bg-accent-2/10 text-accent-2 p-5 rounded-2xl shadow-sm border border-accent-2/10">
                                     <LayoutGrid size={32} />
                                 </div>
                                 <div>
@@ -94,11 +94,11 @@ export default function Security() {
 
                             <ul className="space-y-6">
                                 {[
-                                    { t: 'Self-Hosting via Docker & Docker-Compose', i: ShieldCheck, v: 'text-accent-2-600' },
-                                    { t: 'Volle Kontrolle über die Infrastruktur', i: ShieldCheck, v: 'text-accent-2-600' },
-                                    { t: 'KI-Wahl: Lokal (Ollama) oder Cloud (Mistral)', i: Brain, v: 'text-accent-2-600' },
-                                    { t: 'Zentrales Management für Fachschaften', i: ShieldCheck, v: 'text-accent-2-600' },
-                                    { t: 'Open Source (Polyform Lizenz)', i: Sparkles, v: 'text-accent-2-600', bg: 'bg-accent-2-500/5 rounded-2xl p-4 border border-accent-2-500/10 -mx-4' }
+                                    { t: 'Self-Hosting via Docker & Docker-Compose', i: ShieldCheck, v: 'text-accent-2' },
+                                    { t: 'Volle Kontrolle über die Infrastruktur', i: ShieldCheck, v: 'text-accent-2' },
+                                    { t: 'KI-Wahl: Lokal (Ollama) oder Cloud (Mistral)', i: Brain, v: 'text-accent-2' },
+                                    { t: 'Zentrales Management für Fachschaften', i: ShieldCheck, v: 'text-accent-2' },
+                                    { t: 'Open Source (Polyform Lizenz)', i: Sparkles, v: 'text-accent-2', bg: 'bg-accent-2/5 rounded-2xl p-4 border border-accent-2/10 -mx-4' }
                                 ].map((item, i) => (
                                     <li key={i} className={`flex items-start gap-4 text-sm font-bold text-foreground/80 ${item.bg || ''}`}>
                                         <item.i size={20} className={`${item.v} flex-shrink-0 mt-0.5`} />
@@ -125,9 +125,9 @@ export default function Security() {
                                 <p className="text-muted-foreground font-medium leading-relaxed">Namen auf eingescannten Bildern lassen sich direkt im Browser unkenntlich machen (&quot;Pixel einbrennen&quot;). Erst das anonymisierte Bild verlässt Ihren Rechner.</p>
                             </div>
 
-                            <div className="glass-morphism rounded-3xl p-4 md:p-card-padding-sm border border-white bg-accent-1-500/5 hover:bg-white hover:shadow-xl transition-all group">
-                                <div className="bg-accent-1-600 text-white p-4 rounded-2xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><Cpu size={28} /></div>
-                                <h4 className="text-xl font-black text-accent-1-900 mb-3 tracking-tight">Lokale Key-Souveränität</h4>
+                            <div className="glass-morphism rounded-3xl p-4 md:p-card-padding-sm border border-white bg-white/60 hover:bg-white hover:shadow-xl transition-all group">
+                                <div className="bg-primary text-white p-4 rounded-2xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><Cpu size={28} /></div>
+                                <h4 className="text-xl font-black text-foreground mb-3 tracking-tight">Lokale Key-Souveränität</h4>
                                 <p className="text-muted-foreground font-medium leading-relaxed">In der Desktop & Community Edition werden Ihre API-Schlüssel (z.B. Mistral) <strong className="text-foreground/80">ausschließlich lokal</strong> auf Ihrem Endgerät gespeichert. Es findet keine Übertragung oder Speicherung auf Koreki-Servern statt.</p>
                             </div>
 

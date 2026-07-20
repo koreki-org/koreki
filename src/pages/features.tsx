@@ -16,42 +16,42 @@ const InteractiveWorkflowVisual: React.FC = () => {
             title: 'Musterlösung',
             desc: 'Klausurenraster automatisch festlegen',
             icon: <FileSpreadsheet className="w-5 h-5" />,
-            color: 'from-accent-1-500/10 to-accent-2-500/10 text-accent-1-600 border-accent-1-100'
+            color: 'from-accent-1/10 to-accent-2/10 text-accent-1 border-accent-1/20'
         },
         {
             number: 2,
             title: 'Schülerarbeiten',
             desc: 'Stapel parallel hochladen',
             icon: <Upload className="w-5 h-5" />,
-            color: 'from-accent-4-500/10 to-accent-2-500/10 text-accent-4-600 border-accent-4-100'
+            color: 'from-accent-4/10 to-accent-2/10 text-accent-4 border-accent-4/20'
         },
         {
             number: 3,
             title: 'Stapel-Splitting',
             desc: 'Seiten trennen & anonymisieren',
             icon: <Scissors className="w-5 h-5" />,
-            color: 'from-accent-4-500/10 to-accent-4-500/10 text-accent-4-600 border-accent-4-100'
+            color: 'from-accent-4/10 to-accent-4/10 text-accent-4 border-accent-4/20'
         },
         {
             number: 4,
             title: 'OCR-Analyse',
             desc: 'Handschriften & Plausibilität prüfen',
             icon: <Cpu className="w-5 h-5" />,
-            color: 'from-accent-2-500/10 to-accent-2-500/10 text-accent-2-600 border-accent-2-100'
+            color: 'from-accent-2/10 to-accent-2/10 text-accent-2 border-accent-2/20'
         },
         {
             number: 5,
             title: 'Stapelverarbeitung',
             desc: 'Validierung & Vertrauenslevel ermitteln',
             icon: <Brain className="w-5 h-5" />,
-            color: 'from-accent-3-500/10 to-accent-3-500/10 text-accent-3-600 border-accent-3-100'
+            color: 'from-accent-3/10 to-accent-3/10 text-accent-3 border-accent-3/20'
         },
         {
             number: 6,
             title: 'Einschätzungsliste',
             desc: 'Kontrolle & XLSX/PDF-Export',
             icon: <FileCheck className="w-5 h-5" />,
-            color: 'from-accent-1-500/10 to-accent-1-500/10 text-accent-1-600 border-accent-1-100'
+            color: 'from-accent-1/10 to-accent-1/10 text-accent-1 border-accent-1/20'
         }
     ];
 
@@ -231,27 +231,27 @@ export default function Features() {
                         {pillars.map((pillar) => {
                             const isActive = activeTab === pillar.id;
                             const colors: Record<string, string> = {
-                                'accent-2': 'hover:border-accent-2-200 hover:bg-accent-2-50/20 text-accent-2-600',
-                                'accent-1': 'hover:border-accent-1-200 hover:bg-accent-1-50/20 text-accent-1-600',
-                                'accent-4': 'hover:border-accent-4-200 hover:bg-accent-4-50/20 text-accent-4-600',
-                                'accent-3': 'hover:border-accent-3-200 hover:bg-accent-3-50/20 text-accent-3-600',
-                                sky: 'hover:border-accent-1-200 hover:bg-accent-1-50/20 text-accent-1-600'
+                                'accent-2': 'hover:border-accent-2/20 hover:bg-accent-2/5 text-accent-2',
+                                'accent-1': 'hover:border-accent-1/20 hover:bg-accent-1/5 text-accent-1',
+                                'accent-4': 'hover:border-accent-4/20 hover:bg-accent-4/5 text-accent-4',
+                                'accent-3': 'hover:border-accent-3/20 hover:bg-accent-3/5 text-accent-3',
+                                sky: 'hover:border-accent-1/20 hover:bg-accent-1/5 text-accent-1'
                             };
 
                             const activeBgColors: Record<string, string> = {
-                                'accent-2': 'bg-accent-2-50/80 border-accent-2-200 text-accent-2-900 shadow-accent-2-100/50',
-                                'accent-1': 'bg-accent-1-50/80 border-accent-1-200 text-accent-1-900 shadow-accent-1-100/50',
-                                'accent-4': 'bg-accent-4-50/80 border-accent-4-200 text-accent-4-900 shadow-accent-4-100/50',
-                                'accent-3': 'bg-accent-3-50/80 border-accent-3-200 text-accent-3-900 shadow-accent-3-100/50',
-                                sky: 'bg-accent-1-50/80 border-accent-1-200 text-accent-1-900 shadow-accent-1-100/50'
+                                'accent-2': 'bg-accent-2/10 border-accent-2/20 text-accent-2 shadow-sm',
+                                'accent-1': 'bg-accent-1/10 border-accent-1/20 text-accent-1 shadow-sm',
+                                'accent-4': 'bg-accent-4/10 border-accent-4/20 text-accent-4 shadow-sm',
+                                'accent-3': 'bg-accent-3/10 border-accent-3/20 text-accent-3 shadow-sm',
+                                sky: 'bg-accent-1/10 border-accent-1/20 text-accent-1 shadow-sm'
                             };
 
                             const activeAccentLine: Record<string, string> = {
-                                'accent-2': 'bg-accent-2-600',
-                                'accent-1': 'bg-accent-1-600',
-                                'accent-4': 'bg-accent-4-600',
-                                'accent-3': 'bg-accent-3-600',
-                                sky: 'bg-accent-1-600'
+                                'accent-2': 'bg-accent-2',
+                                'accent-1': 'bg-accent-1',
+                                'accent-4': 'bg-accent-4',
+                                'accent-3': 'bg-accent-3',
+                                sky: 'bg-accent-1'
                             };
 
                             return (

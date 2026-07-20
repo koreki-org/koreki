@@ -61,8 +61,8 @@ export default function AGB() {
                                     <Button
                                         variant="ghost"
                                         className={`w-full justify-start text-left px-3 py-2 rounded-lg text-sm transition-all h-auto ${activeSection === sec.id
-                                                ? 'bg-accent-1-50 text-accent-1-700 font-bold hover:bg-accent-1-100 hover:text-accent-1-800'
-                                                : 'text-muted-foreground hover:bg-muted hover:text-accent-1-600'
+                                                ? 'bg-accent-1/5 text-accent-1 font-bold hover:bg-accent-1/10 hover:text-accent-1'
+                                                : 'text-muted-foreground hover:bg-muted hover:text-accent-1'
                                             }`}
                                         onClick={() => scrollToSection(sec.id)}
                                     >
@@ -85,9 +85,9 @@ export default function AGB() {
                             <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><Book size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§1 Geltungsbereich und Zweck</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für die Nutzung der unter koreki.org bereitgestellten Instanz der Koreki-Software. Davon unberührt bleibt die Lizenzierung des Quellcodes der Software, welcher als Open-Source-Projekt separat lizenziert wird.</p>
-                            <div className="bg-accent-1-50 border-l-4 border-accent-1-500 p-6 rounded-r-2xl my-6">
-                                <strong className="text-accent-1-700 block mb-2 font-bold">REINER TESTBETRIEB:</strong>
-                                <p className="text-accent-1-900 text-sm leading-relaxed m-0">Die Instanz auf <strong>koreki.org dient ausschließlich zu Test- und Demonstrationszwecken</strong>. Die Verarbeitung von realen, personenbezogenen Schülerdaten ist auf dieser öffentlichen Test-Instanz untersagt. Nutzer sind verpflichtet, ausschließlich Demo-Daten oder vollständig anonymisierte Texte zu verwenden.</p>
+                            <div className="bg-accent-1/5 border-l-4 border-accent-1 p-6 rounded-r-2xl my-6">
+                                <strong className="text-accent-1 block mb-2 font-bold">REINER TESTBETRIEB:</strong>
+                                <p className="text-accent-1 text-sm leading-relaxed m-0">Die Instanz auf <strong>koreki.org dient ausschließlich zu Test- und Demonstrationszwecken</strong>. Die Verarbeitung von realen, personenbezogenen Schülerdaten ist auf dieser öffentlichen Test-Instanz untersagt. Nutzer sind verpflichtet, ausschließlich Demo-Daten oder vollständig anonymisierte Texte zu verwenden.</p>
                             </div>
                             <p className="leading-relaxed text-muted-foreground">Koreki richtet sich an Lehrkräfte und Bildungseinrichtungen als Open-Source-Hilfsmittel zur KI-gestützten Korrektur und Einschätzung von Aufgaben.</p>
                         </section>
@@ -124,7 +124,7 @@ export default function AGB() {
                                 <li><strong>Standard-Mode:</strong> Für die serverseitige Verarbeitung kann ein Vertrag zur Auftragsverarbeitung (AVV) gemäß Art. 28 DSGVO abgeschlossen werden. Ein Mustervertrag steht im Kontobereich zur Verfügung.</li>
                                 <li><strong>PURE-Mode:</strong> Nutzer des &quot;PURE-Mode&quot; stimmen zu, dass die Datenkommunikation direkt zwischen dem Endgerät des Nutzers (Browser) und dem API-Schnittstellen-Anbieter (Mistral, EU-Server) stattfindet, ohne Zwischenspeicherung auf Koreki-Servern. </li>
                             </ul>
-                            <p className="leading-relaxed text-muted-foreground">Weitere Details regelt die <Link href="/privacy" className="text-accent-1-600 hover:underline">Datenschutzerklärung</Link>.</p>
+                            <p className="leading-relaxed text-muted-foreground">Weitere Details regelt die <Link href="/privacy" className="text-accent-1 hover:underline">Datenschutzerklärung</Link>.</p>
                         </section>
 
                         <section id="duties" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">

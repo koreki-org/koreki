@@ -54,8 +54,8 @@ export default function Privacy() {
                                     <Button
                                         variant="ghost"
                                         className={`w-full justify-start text-left px-3 py-2 rounded-lg text-sm transition-all h-auto ${activeSection === sec.id
-                                                ? 'bg-accent-1-50 text-accent-1-700 font-bold hover:bg-accent-1-100 hover:text-accent-1-800'
-                                                : 'text-muted-foreground hover:bg-muted hover:text-accent-1-600'
+                                                ? 'bg-accent-1/5 text-accent-1 font-bold hover:bg-accent-1/10 hover:text-accent-1'
+                                                : 'text-muted-foreground hover:bg-muted hover:text-accent-1'
                                             }`}
                                         onClick={() => scrollToSection(sec.id)}
                                     >
@@ -109,8 +109,8 @@ export default function Privacy() {
                             <p className="leading-relaxed text-muted-foreground mb-4">
                                 Koreki folgt dem Prinzip der Datensparsamkeit durch technisches Design (Privacy by Design). Wir haben eine <strong>automatisierte Datenaufbewahrungs-Richtlinie</strong> implementiert:
                             </p>
-                            <div className="bg-muted p-6 rounded-2xl border border-border flex items-start gap-4">
-                                <div className="text-accent-1-600 mt-1"><Database size={20} /></div>
+                             <div className="bg-muted p-6 rounded-2xl border border-border flex items-start gap-4">
+                                <div className="text-accent-1 mt-1"><Database size={20} /></div>
                                 <div>
                                     <strong className="text-foreground block mb-1">90-Tage-Löschzyklus</strong>
                                     <p className="text-muted-foreground text-sm leading-relaxed m-0">Alle temporären Nutzungsdaten, Sicherheits-Events und Compliance-Audit-Logs werden nach spätestens 90 Tagen unwiderruflich von unseren Systemen gelöscht. Es erfolgt keine Langzeit-Speicherung personenbezogener Daten.</p>
@@ -118,13 +118,13 @@ export default function Privacy() {
                             </div>
                         </section>
 
-                        <section id="privacy" className="bg-white rounded-3xl p-10 border border-accent-3-200 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-accent-3-50/30 to-white">
-                            <div className="inline-flex p-3 bg-accent-3-100 text-accent-3-600 rounded-xl mb-6"><Lock size={24} /></div>
+                         <section id="privacy" className="bg-white rounded-3xl p-10 border border-accent-3/20 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-accent-3/5 to-white">
+                            <div className="inline-flex p-3 bg-accent-3/10 text-accent-3 rounded-xl mb-6"><Lock size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§4 Empfehlung für maximale Privatsphäre</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Wenn Sie Koreki mit echten Daten nutzen möchten, empfehlen wir:</p>
-                            <div className="bg-accent-3-50 border-l-4 border-accent-3-500 p-6 rounded-r-2xl my-6">
-                                <strong className="text-accent-3-700 block mb-2 font-bold">Self-Hosting & Lokale Nutzung</strong>
-                                <p className="text-accent-3-900 text-sm leading-relaxed m-0">Laden Sie den Quellcode auf GitHub herunter und betreiben Sie Koreki auf Ihrem eigenen Rechner oder Server. Nur so haben Sie die volle Kontrolle über den Datenfluss.</p>
+                            <div className="bg-accent-3/5 border-l-4 border-accent-3 p-6 rounded-r-2xl my-6">
+                                <strong className="text-accent-3 block mb-2 font-bold">Self-Hosting & Lokale Nutzung</strong>
+                                <p className="text-accent-3 text-sm leading-relaxed m-0">Laden Sie den Quellcode auf GitHub herunter und betreiben Sie Koreki auf Ihrem eigenen Rechner oder Server. Nur so haben Sie die volle Kontrolle über den Datenfluss.</p>
                             </div>
                         </section>
 

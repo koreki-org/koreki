@@ -19,7 +19,7 @@ export default function SelfHosting() {
             <div className="relative pt-0">
                 {/* Hero Section */}
                 <section className="pt-10 pb-12 md:pt-14 md:pb-hero-bottom px-6 md:px-page-inline text-center relative overflow-hidden">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-accent-2-500/5 rounded-full blur-[120px] -z-10" />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[400px] bg-accent-2/5 rounded-full blur-[120px] -z-10" />
                     <div className="max-w-4xl mx-auto relative text-center space-y-8 animate-fade-up">
                         <Badge variant="light" className="mb-4">
                             <Layers size={14} className="mr-2" />
@@ -46,7 +46,7 @@ export default function SelfHosting() {
                         {/* Single-User Card */}
                         <div className="glass-morphism p-6 md:p-card-padding rounded-3xl border border-white bg-white/60 shadow-xl transition-all hover:bg-white hover:shadow-2xl hover:-translate-y-1 group">
                             <div className="flex items-center gap-5 mb-8">
-                                <div className="bg-accent-3-500/10 text-accent-3-600 p-5 rounded-2xl shadow-sm border border-accent-3-500/10">
+                                <div className="bg-accent-3/10 text-accent-3 p-5 rounded-2xl shadow-sm border border-accent-3/10">
                                     <Monitor size={32} />
                                 </div>
                                 <div>
@@ -62,10 +62,10 @@ export default function SelfHosting() {
                                     { t: 'Lokale Persistenz im Dateisystem', i: Database },
                                     { t: 'Ideal für NAS oder Homeserver', i: Server },
                                     { t: 'Volle Kostenkontrolle (Mistral oder Ollama)', i: Cpu },
-                                    { t: 'Installation in < 2 Minuten', i: Sparkles, bg: 'bg-accent-3-500/5 rounded-2xl p-4 border border-accent-3-500/10 -mx-4 text-accent-3-700' }
+                                    { t: 'Installation in < 2 Minuten', i: Sparkles, bg: 'bg-accent-3/5 rounded-2xl p-4 border border-accent-3/10 -mx-4 text-accent-3' }
                                 ].map((item, i) => (
                                     <li key={i} className={`flex items-start gap-4 text-sm font-bold ${item.bg ? item.bg : 'text-foreground/80'}`}>
-                                        <item.i size={20} className="text-accent-3-600 flex-shrink-0 mt-0.5" />
+                                        <item.i size={20} className="text-accent-3 flex-shrink-0 mt-0.5" />
                                         <span>{item.t}</span>
                                     </li>
                                 ))}
@@ -74,10 +74,10 @@ export default function SelfHosting() {
 
                         {/* Multi-User Card */}
                         <div className="glass-morphism p-6 md:p-card-padding rounded-3xl border border-white bg-white/60 shadow-xl relative overflow-hidden group hover:shadow-2xl hover:bg-white/80 hover:-translate-y-2 transition-all">
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-accent-2-500/5 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-accent-2-500/10 transition-all duration-1000" />
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-accent-2/5 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-accent-2/10 transition-all duration-1000" />
                             <div className="relative z-10">
                                 <div className="flex items-center gap-5 mb-8">
-                                    <div className="bg-accent-2-500/10 text-accent-2-600 p-5 rounded-2xl shadow-sm border border-accent-2-500/20">
+                                    <div className="bg-accent-2/10 text-accent-2 p-5 rounded-2xl shadow-sm border border-accent-2/20">
                                         <LayoutGrid size={32} />
                                     </div>
                                     <div>
@@ -95,8 +95,8 @@ export default function SelfHosting() {
                                         { t: 'Zentralisierte KI-Key Verwaltung', i: Zap },
                                         { t: 'Skalierbar für ganze Fachschaften', i: Sparkles, gold: true }
                                     ].map((item, i) => (
-                                        <li key={i} className={`flex items-start gap-4 text-sm font-bold ${item.gold ? 'bg-accent-2-500/5 rounded-2xl p-4 border border-accent-2-500/10 -mx-4 text-accent-2-700' : 'text-foreground/80'}`}>
-                                            <item.i size={20} className={`${item.gold ? 'text-accent-2-600' : 'text-accent-2-500'} flex-shrink-0 mt-0.5`} />
+                                        <li key={i} className={`flex items-start gap-4 text-sm font-bold ${item.gold ? 'bg-accent-2/5 rounded-2xl p-4 border border-accent-2/10 -mx-4 text-accent-2' : 'text-foreground/80'}`}>
+                                            <item.i size={20} className={`${item.gold ? 'text-accent-2' : 'text-accent-2/80'} flex-shrink-0 mt-0.5`} />
                                             <span>{item.t}</span>
                                         </li>
                                     ))}
@@ -106,7 +106,7 @@ export default function SelfHosting() {
                                     <a 
                                         href="https://github.com/koreki-org/koreki/releases"
                                         target="_blank"
-                                        className="inline-flex items-center gap-2 text-primary font-extrabold text-xs uppercase tracking-widest hover:text-accent-2-600 transition-colors"
+                                        className="inline-flex items-center gap-2 text-primary font-extrabold text-xs uppercase tracking-widest hover:text-accent-2 transition-colors"
                                     >
                                         Deployment Guide ansehen <ArrowRight size={14} />
                                     </a>
@@ -131,9 +131,9 @@ export default function SelfHosting() {
                                 <p className="text-muted-foreground font-medium leading-relaxed">Vorkonfigurierte Images für Koreki, Keycloak und PostgreSQL. Deployment via Docker-Compose in Sekunden.</p>
                             </div>
 
-                            <div className="glass-morphism rounded-3xl p-4 md:p-card-padding-sm border border-white bg-accent-2-50/5 hover:bg-white hover:shadow-xl transition-all group">
-                                <div className="bg-accent-2-600 text-white p-4 rounded-2xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><Cpu size={28} /></div>
-                                <h4 className="text-xl font-black text-accent-2-900 mb-3 tracking-tight">Local LLM Ready</h4>
+                            <div className="glass-morphism rounded-3xl p-4 md:p-card-padding-sm border border-white bg-white/60 hover:bg-white hover:shadow-xl transition-all group">
+                                <div className="bg-primary text-white p-4 rounded-2xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><Cpu size={28} /></div>
+                                <h4 className="text-xl font-black text-foreground mb-3 tracking-tight">Local LLM Ready</h4>
                                 <p className="text-muted-foreground font-medium leading-relaxed">Nahtlose Integration von Ollama. Nutzen Sie Ihre eigene GPU-Power für eine 100% private KI-Inferenz ohne Internet-Zwang.</p>
                             </div>
 
