@@ -109,7 +109,7 @@ const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({
                     "relative rounded-full px-3 py-1.5 h-8 text-xs flex items-center justify-start gap-1.5 transition-all duration-200 shrink-0 border outline-none select-none cursor-pointer w-8 h-8 md:w-[145px] lg:w-[165px] xl:w-[185px]",
                     isActive 
                         ? "bg-primary/10 border-primary/30 text-primary shadow-xs hover:bg-primary/15" 
-                        : "bg-background/40 hover:bg-muted/60 text-muted-foreground border-border/50 hover:border-border hover:text-foreground shadow-xs"
+                        : "bg-muted/40 hover:bg-muted/70 text-muted-foreground border-border/40 hover:border-border hover:text-foreground shadow-2xs"
                 )}
             >
                 <span className={cn("shrink-0 transition-colors", isActive ? "text-primary" : "text-muted-foreground/70")}>

@@ -63,12 +63,12 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                     size="sm"
                     onClick={onUpgrade}
                     disabled={upgrading}
-                    className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white shadow-md shadow-primary/20 border-0 rounded-xl px-3 sm:px-4 h-8 sm:h-9 transition-all hover:-translate-y-0.5 shrink-0 whitespace-nowrap flex items-center justify-center"
+                    className="bg-gradient-to-r from-primary to-primary/85 hover:from-primary/95 hover:to-primary/75 text-primary-foreground shadow-sm border-0 rounded-full px-3.5 h-8 transition-all hover:-translate-y-0.5 shrink-0 whitespace-nowrap flex items-center justify-center font-bold text-xs"
                 >
                     {upgrading ? (
-                        <Loader2 size={16} className="animate-spin shrink-0" />
+                        <Loader2 size={14} className="animate-spin shrink-0" />
                     ) : (
-                        <span className="font-bold tracking-wide text-xxs sm:text-xs whitespace-nowrap flex items-center justify-center">
+                        <span className="font-bold tracking-wide text-xs whitespace-nowrap flex items-center justify-center">
                             <span className="sm:hidden">+</span>
                             <span className="hidden sm:inline">+ Aufladen</span>
                         </span>
@@ -83,10 +83,10 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                     size="sm"
                     onClick={onUnlockExpert}
                     disabled={upgrading}
-                    className="relative group bg-primary/10 text-primary hover:bg-primary hover:text-white border border-primary/20 rounded-xl px-4 h-9 font-bold text-xs transition-all animate-pulse hover:animate-none"
+                    className="relative group bg-primary/10 text-primary hover:bg-primary hover:text-white border border-primary/20 rounded-full px-3.5 h-8 font-bold text-xs transition-all animate-pulse hover:animate-none shrink-0"
                     title="Experten-Modus für 25 Credits freischalten"
                 >
-                    <Sparkles size={14} className="mr-2 text-primary group-hover:text-white" />
+                    <Sparkles size={14} className="mr-1.5 text-primary group-hover:text-white" />
                     Experte werden
 
                     <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 bg-foreground text-white text-xxs p-3 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none z-[100] transition-opacity">
@@ -104,16 +104,16 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
             {((userData?.role === 'ADMIN' && !isLocalInstance()) || 
               (userData?.role !== 'ADMIN' && userData?.activeWorkspaceType === 'ORGANIZATION' && 
                (userData?.activeMembershipRole === 'ADMIN' || userData?.activeMembershipRole === 'OWNER'))) && (
-                <div className="flex items-center gap-1 border-l border-border ml-1 pl-2">
+                <div className="flex items-center gap-1 shrink-0">
                     {userData?.role === 'ADMIN' && !isLocalInstance() && (
                         <Button
                             variant="outline"
                             size="icon"
                             onClick={() => router.push('/admin')}
-                            className="bg-warning/10 border-warning/20 text-warning hover:bg-warning hover:text-white rounded-xl shadow-sm h-8 w-8 transition-all shrink-0"
+                            className="bg-warning/10 border-warning/20 text-warning hover:bg-warning hover:text-white rounded-full shadow-xs h-8 w-8 transition-all shrink-0"
                             title="System-Administration (GLOBAL)"
                         >
-                            <Shield size={16} />
+                            <Shield size={14} />
                         </Button>
                     )}
 
@@ -123,10 +123,10 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                             variant="outline"
                             size="icon"
                             onClick={() => router.push(`/org-admin?workspaceId=${userData?.activeWorkspaceId}`)}
-                            className="bg-primary/10 border-primary/20 text-primary hover:bg-primary hover:text-white rounded-xl shadow-sm h-8 w-8 transition-all shrink-0"
+                            className="bg-primary/10 border-primary/20 text-primary hover:bg-primary hover:text-white rounded-full shadow-xs h-8 w-8 transition-all shrink-0"
                             title="Schul-Verwaltung (INSTITUT)"
                         >
-                            <Building2 size={16} />
+                            <Building2 size={14} />
                         </Button>
                     )}
                 </div>
