@@ -26,14 +26,14 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
     const router = useRouter();
 
     return (
-        <div className="flex gap-2 sm:gap-3 items-center bg-background/70 backdrop-blur-xl p-1.5 rounded-2xl border border-white shadow-xl shadow-border/50 ring-1 ring-foreground/5 shrink-0">
+        <div className="flex gap-2 items-center shrink-0">
             {/* Branding Badge (Institutional Tenancy) - ONLY rendered locally, hidden in SaaS for space */}
             {isLocalInstance() && userData?.activeWorkspaceType === 'ORGANIZATION' && (
-                <div className="flex items-center gap-2.5 px-3.5 py-2 bg-primary/10 text-primary rounded-xl border border-primary/20 group transition-all hover:bg-primary/10">
-                   <Building2 size={16} className="text-primary opacity-80 group-hover:scale-110 transition-transform" />
-                   <div className="flex flex-col">
-                       <span className="text-xxs font-black uppercase tracking-[0.15em] text-primary/80 leading-none mb-0.5">INSTITUT</span>
-                       <span className="text-xs font-black uppercase tracking-wider truncate max-w-[150px] leading-none">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full border border-primary/20 group transition-all">
+                   <Building2 size={14} className="text-primary opacity-80 group-hover:scale-110 transition-transform" />
+                   <div className="flex items-center gap-1.5">
+                       <span className="text-xxs font-bold uppercase tracking-wider text-primary/70">INSTITUT:</span>
+                       <span className="text-xs font-bold uppercase tracking-wide truncate max-w-[120px]">
                            {userData?.activeWorkspaceName || 'Organisation'}
                        </span>
                    </div>
@@ -42,14 +42,14 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
             
             {/* Credits Counter or Local Instance Badge */}
             {isLocalInstance() ? (
-                <div className="flex items-center gap-2 px-2 sm:px-3 py-1.5 bg-primary/5 text-primary rounded-xl border border-primary/10 shadow-sm animate-in fade-in duration-500 w-9 h-9 sm:w-auto sm:h-auto justify-center shrink-0">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full border border-primary/20 shadow-2xs shrink-0">
                     <ShieldCheck size={14} className="text-primary shrink-0" />
-                    <span className="text-xxs font-black uppercase tracking-widest whitespace-nowrap hidden sm:inline">
+                    <span className="text-xs font-bold uppercase tracking-wider whitespace-nowrap hidden sm:inline">
                         Community Edition
                     </span>
                 </div>
             ) : (
-                <div className="flex items-center gap-2 sm:gap-3 px-2 sm:px-3 py-1.5 bg-primary/10 rounded-xl border border-primary/10 text-primary shadow-inner shrink-0 whitespace-nowrap">
+                <div className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20 text-primary shadow-xs shrink-0 whitespace-nowrap">
                      <Crown size={14} className="text-primary sm:w-[16px] sm:h-[16px]" />
                      <span className="font-bold text-xs sm:text-sm">{userData?.credits || 0}</span> 
                      <span className="hidden sm:inline text-xxs sm:text-xs font-semibold opacity-80 uppercase tracking-wide">Credits</span>

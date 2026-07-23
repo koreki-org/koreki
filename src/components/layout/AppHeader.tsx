@@ -102,27 +102,26 @@ const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({
 }) => {
     return (
         <HeaderPortalTooltip title={`${label}: ${value}`} description={description}>
-            <Button
-                variant="outline"
-                size="sm"
+            <button
+                type="button"
                 onClick={onClick}
                 className={cn(
-                    "relative rounded-xl px-0 md:px-3.5 py-1.5 h-9 text-xs font-bold shadow-sm flex items-center justify-center md:justify-start gap-1.5 transition-all w-9 h-9 md:w-[130px] lg:w-[160px] xl:w-[190px] overflow-visible shrink-0",
+                    "relative rounded-full px-3 py-1.5 h-8 text-xs flex items-center justify-start gap-1.5 transition-all duration-200 shrink-0 border outline-none select-none cursor-pointer w-8 h-8 md:w-[145px] lg:w-[165px] xl:w-[185px]",
                     isActive 
-                        ? "bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 shadow-sm" 
-                        : "bg-muted/30 hover:bg-muted/50 text-muted-foreground border-border hover:border-muted-foreground/30"
+                        ? "bg-primary/10 border-primary/30 text-primary shadow-xs hover:bg-primary/15" 
+                        : "bg-background/40 hover:bg-muted/60 text-muted-foreground border-border/50 hover:border-border hover:text-foreground shadow-xs"
                 )}
             >
-                <span className={cn("shrink-0 transition-colors", isActive ? "text-primary" : "text-muted-foreground")}>
+                <span className={cn("shrink-0 transition-colors", isActive ? "text-primary" : "text-muted-foreground/70")}>
                     {icon}
                 </span>
-                <span className={cn("hidden md:inline font-medium transition-colors", isActive ? "text-primary/70" : "text-muted-foreground")}>
+                <span className="hidden md:inline font-normal text-muted-foreground shrink-0">
                     {label}:
                 </span>
-                <span className={cn("hidden md:inline truncate max-w-[40px] lg:max-w-[60px] xl:max-w-[90px] transition-colors font-bold", isActive ? "text-primary" : "text-muted-foreground")}>
+                <span className={cn("hidden md:inline truncate flex-1 min-w-0 transition-colors font-semibold text-left", isActive ? "text-primary" : "text-foreground")}>
                     {value}
                 </span>
-            </Button>
+            </button>
         </HeaderPortalTooltip>
     );
 };
