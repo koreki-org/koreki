@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AppSettings } from '@/types';
 import { apiClient } from '@/lib/api-client';
+import { isLocalInstance } from '@/lib/env-context';
 
 export const useSystemSettings = (onSave: (newSettings: AppSettings) => void) => {
     const [delLoading, setDelLoading] = useState(false);
@@ -53,12 +54,13 @@ export const useSystemSettings = (onSave: (newSettings: AppSettings) => void) =>
     };
 
     const updateSettings = async (updates: Partial<AppSettings>, currentSettings: AppSettings, isAdmin?: boolean) => {
-        onSave({ ...currentSettings, ...updates });
+        const merged = { ...currentSettings, ...updates };
+        onSave(merged);
         
-        // If we have admin privileges, we try to save routing settings globally
-        if (isAdmin) {
+        // If we have admin privileges in local/community mode, save routing settings globally
+        if (isAdmin && isLocalInstance()) {
             try {
-                await apiClient.post('/api/admin/global-ai-settings', updates);
+                await apiClient.post('/api/admin/global-ai-settings', merged);
             } catch (err) {
                 console.error('Failed to save global AI settings:', err);
             }

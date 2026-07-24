@@ -4,6 +4,7 @@ import { AppSettings, Task, User } from '../types';
 import { useDashboardStore } from './store/useDashboardStore';
 import { isLocalInstance, isKeycloakAuth } from '../lib/env-context';
 import { signoutOidc } from '@/lib/auth-keycloak';
+import { apiClient } from '../lib/api-client';
 /**
  * Industrial Dashboard Orchestrator (Stage 7)
  * 🏮🛡️🏛️
@@ -39,20 +40,33 @@ export const useDashboardOrchestrator = (
         }
     }, []);
 
+    const syncGlobalSettingsIfAdmin = useCallback(async (newSettings: AppSettings) => {
+        if (userData?.role === 'ADMIN' && isLocalInstance()) {
+            try {
+                await apiClient.post('/api/admin/global-ai-settings', newSettings);
+            } catch (err) {
+                console.error('Failed to sync global AI settings:', err);
+            }
+        }
+    }, [userData?.role]);
+
     const handleAiOllamaSave = useCallback((url: string, model: string) => {
         const newSettings = { ...aiSettings, provider: 'ollama' as const, ollamaUrl: url, ollamaModel: model };
         setAiSettings(newSettings);
-    }, [aiSettings, setAiSettings]);
+        syncGlobalSettingsIfAdmin(newSettings);
+    }, [aiSettings, setAiSettings, syncGlobalSettingsIfAdmin]);
 
     const handleAiMistralSave = useCallback((key: string) => {
         const newSettings = { ...aiSettings, provider: 'mistral' as const, mistralKey: key };
         setAiSettings(newSettings);
-    }, [aiSettings, setAiSettings]);
+        syncGlobalSettingsIfAdmin(newSettings);
+    }, [aiSettings, setAiSettings, syncGlobalSettingsIfAdmin]);
 
     const handleAiCustomSave = useCallback((url: string, key: string, model: string, thinking: boolean) => {
         const newSettings = { ...aiSettings, provider: 'openai-compatible' as const, openaiUrl: url, openaiKey: key, openaiModel: model, enableThinking: thinking };
         setAiSettings(newSettings);
-    }, [aiSettings, setAiSettings]);
+        syncGlobalSettingsIfAdmin(newSettings);
+    }, [aiSettings, setAiSettings, syncGlobalSettingsIfAdmin]);
 
     // --- Modal Visibility States ---
     const [showSettings, setShowSettings] = useState(false);
