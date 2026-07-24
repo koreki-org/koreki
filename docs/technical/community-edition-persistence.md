@@ -42,16 +42,18 @@ Anstatt den flüchtigen `localStorage` des Browsers zu nutzen, speichert die Com
    * **Pfad**: `/data/prompts/profiles_[SHA256_HASH_OF_USER_ID].json`
    * **Isolierung**: Die Dateinamen basieren auf dem SHA-256 Hash der OIDC-Sub (UserID). Dies verhindert Path-Traversal-Angriffe und garantiert strikte Datentrennung zwischen Lehrern.
 
-2. **Globale AI-Einstellungen (Routing & Provider):** Der `GlobalSettingsService` speichert systemweite Parameter (wie Ollama-URL oder Standard-Provider):
+2. **Globale AI-Einstellungen (Routing & Provider):** Der `GlobalSettingsService` speichert systemweite Parameter (wie Ollama-URL, Ollama-Modell oder Standard-Provider):
    * **Pfad**: `/data/prompts/global_ai_settings.json`
-   * **Hydration**: Bei jedem Login (oder App-Start im Single-User Modus) werden diese Vorgaben über `/api/user` ans Frontend gesendet und überschreiben etwaige lokale "Relikte" im Browser (`localStorage`), sodass der Admin immer das letzte Wort hat.
+   * **Vollständiger Sync**: Sämtliche Admin-Änderungen in allen Setup-Dialogen (`SettingsModal`, `AiSetupModal`, `AiParamsModal`) speichern atomar das vollständige Routing-Setup (Provider, URLs, Modell-Tags, Thinking-Flags) via `/api/admin/global-ai-settings`.
+   * **` .env` Fallback**: Existiert noch keine `global_ai_settings.json` (z. B. nach einer frischen Installation, bevor ein Admin im UI speichert), liest der Service automatisch Umgebungsvariablen (`DEFAULT_AI_PROVIDER`, `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `OPENAI_API_BASE`, `OPENAI_API_MODEL`) aus der `.env` als initialen Standard aus.
+   * **Hydration**: Bei jedem Login werden diese Vorgaben über `/api/user` ans Frontend gesendet und überschreiben etwaige lokale "Relikte" im Browser (`localStorage`), sodass der Admin bzw. die Server-Konfiguration immer das letzte Wort hat.
 
 ---
 
 ## 3. Implementierung & Nutzung
 
 ### Konfiguration (`.env`)
-Um den Keycloak-Gatekeeper zu aktivieren:
+Um den Keycloak-Gatekeeper und Standard-KI-Provider zu konfigurieren:
 ```bash
 NEXT_PUBLIC_KOREKI_MODE=community
 NEXT_PUBLIC_SINGLE_USER_MODE=false
@@ -62,6 +64,11 @@ NEXT_PUBLIC_OIDC_CLIENT_ID="koreki-app"
 
 # Optional: Custom Admin-Rolle für den Zahnrad-Schutz
 NEXT_PUBLIC_ADMIN_ROLE_NAME="koreki-admin"
+
+# Globaler KI-Standard (falls noch keine global_ai_settings.json angelegt wurde)
+DEFAULT_AI_PROVIDER=ollama
+OLLAMA_BASE_URL="http://127.0.0.1:11434"
+OLLAMA_MODEL="qwen3.6:35b"
 ```
 
 ### API-Routing
