@@ -36,7 +36,26 @@ describe('Global AI Settings Sync Unit & API Verification (Layer 1 & 2)', () => 
         };
     });
 
-    describe('GlobalSettingsService', () => {
+        it('should return env fallbacks when no settings file exists yet', async () => {
+            process.env.DEFAULT_AI_PROVIDER = 'ollama';
+            process.env.OLLAMA_BASE_URL = 'http://127.0.0.1:11434';
+            process.env.OLLAMA_MODEL = 'qwen3.6:35b';
+
+            (fs.existsSync as jest.Mock).mockReturnValue(false);
+
+            const settings = await GlobalSettingsService.getSettings();
+
+            expect(settings).toEqual({
+                provider: 'ollama',
+                ollamaUrl: 'http://127.0.0.1:11434',
+                ollamaModel: 'qwen3.6:35b'
+            });
+
+            delete process.env.DEFAULT_AI_PROVIDER;
+            delete process.env.OLLAMA_BASE_URL;
+            delete process.env.OLLAMA_MODEL;
+        });
+
         it('should correctly merge and persist settings without corrupting existing fields', async () => {
             const initialData = { provider: 'mistral' };
             const newData = { provider: 'ollama', ollamaUrl: 'http://127.0.0.1:11434', ollamaModel: 'qwen3.6:35b' };
@@ -60,7 +79,6 @@ describe('Global AI Settings Sync Unit & API Verification (Layer 1 & 2)', () => 
                 }, null, 2)
             );
         });
-    });
 
     describe('GET /api/admin/global-ai-settings', () => {
         it('should return stored global settings for local instance admin', async () => {

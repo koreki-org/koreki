@@ -51,7 +51,21 @@ export const GlobalSettingsService = {
         } catch (err) {
             logger.error('[GlobalSettingsService] Error reading settings:', err);
         }
-        return {};
+
+        // Environment Fallbacks if no admin settings file exists yet
+        const envDefaults: Record<string, any> = {
+            provider: process.env.DEFAULT_AI_PROVIDER || process.env.DEFAULT_PROVIDER || 'mistral',
+            ollamaUrl: process.env.OLLAMA_BASE_URL || process.env.OLLAMA_URL || undefined,
+            ollamaModel: process.env.OLLAMA_MODEL || undefined,
+            openaiUrl: process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || undefined,
+            openaiModel: process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || undefined,
+        };
+
+        Object.keys(envDefaults).forEach(key => {
+            if (envDefaults[key] === undefined) delete envDefaults[key];
+        });
+
+        return envDefaults;
     },
 
     async updateSettings(data: any) {
