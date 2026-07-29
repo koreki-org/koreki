@@ -351,37 +351,60 @@ export async function executeOpenAIRequest(
             return jsonStr.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
         };
 
-        // [Industrial Hardening] 🛡️
-        // We try the standard greedy extraction first to maintain backward compatibility.
-        const standardJson = (() => {
-            const match = content.match(/\{[\s\S]*\}/);
-            return match ? match[0] : content;
-        })();
+        // Helper function to strip thinking/reasoning blocks first
+        const stripThinkingBlocks = (rawStr: string): string => {
+            return rawStr
+                .replace(/<think>[\s\S]*?(<\/think>|$)/gi, '')
+                .replace(/<thought>[\s\S]*?(<\/thought>|$)/gi, '')
+                .replace(/<reasoning>[\s\S]*?(<\/reasoning>|$)/gi, '')
+                .replace(/\[thought\][\s\S]*?(\[\/thought\]|$)/gi, '')
+                .replace(/\[think\][\s\S]*?(\[\/think\]|$)/gi, '')
+                .replace(/<channel>[\s\S]*?(<\/channel>|$)/gi, '')
+                .replace(/<annotation>[\s\S]*?(<\/annotation>|$)/gi, '')
+                .replace(/<chain_of_thought>[\s\S]*?(<\/chain_of_thought>|$)/gi, '')
+                .trim();
+        };
+
+        const cleanContent = stripThinkingBlocks(content);
+
+        // Try extracting JSON from markdown block ```json ... ``` first if present
+        const extractJsonCandidate = (text: string): string => {
+            const markdownMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+            if (markdownMatch && markdownMatch[1]) {
+                return markdownMatch[1].trim();
+            }
+            const objectMatch = text.match(/\{[\s\S]*\}/);
+            if (objectMatch) {
+                return objectMatch[0].trim();
+            }
+            const arrayMatch = text.match(/\[[\s\S]*\]/);
+            if (arrayMatch) {
+                return arrayMatch[0].trim();
+            }
+            return text.trim();
+        };
+
+        const jsonCandidate = extractJsonCandidate(cleanContent);
 
         try {
             return {
-                ...JSON.parse(repairUnescapedBackslashes(standardJson)),
+                ...JSON.parse(repairUnescapedBackslashes(jsonCandidate)),
                 usage: responseUsage
             };
         } catch (e) {
-            // Fallback: If standard parsing fails, it might be due to Thinking/Reasoning blocks 
-            // containing braces that confuse the greedy regex. We strip them and try again.
+            // Secondary fallback: Try aggressive trailing comma cleanup
             try {
-                const cleanContent = content
-                    .replace(/<thought>[\s\S]*?(<\/thought>|$)/gi, '') // Handle unclosed tags
-                    .replace(/<reasoning>[\s\S]*?(<\/reasoning>|$)/gi, '')
-                    .replace(/\[thought\][\s\S]*?(\[\/thought\]|$)/gi, '')
+                const partiallyRepaired = jsonCandidate
+                    .replace(/,\s*([\]\}])/g, '$1') // Removes trailing commas before ] or }
                     .trim();
-                
-                const hardenedMatch = cleanContent.match(/\{[\s\S]*\}/);
-                const hardenedJson = hardenedMatch ? hardenedMatch[0] : cleanContent;
-                
+
                 return {
-                    ...JSON.parse(repairUnescapedBackslashes(hardenedJson)),
+                    ...JSON.parse(repairUnescapedBackslashes(partiallyRepaired)),
                     usage: responseUsage
                 };
             } catch (e2) {
                 console.error("JSON Parse Fatal Error. Raw Content:", content);
+                console.error("Cleaned Candidate:", jsonCandidate);
                 throw new Error("KI-Antwort konnte nicht als JSON verarbeitet werden. (Möglicherweise unvollständige Antwort oder Formatierungsfehler im Thinking-Block)");
             }
         }

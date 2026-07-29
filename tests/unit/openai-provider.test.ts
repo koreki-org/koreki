@@ -87,6 +87,19 @@ describe('OpenAI Provider (Bridge) - Unit Tests', () => {
             expect(res.score).toBe(5);
         });
 
+        it('should strip Qwen <think> tags containing braces and extract JSON correctly', async () => {
+            mockFetchWithRetry.mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ 
+                    choices: [{ message: { content: '<think>\nIch analysiere den Fall: { "draft": true }\n</think>\n```json\n{"score": 9, "status": "done"}\n```' } }] 
+                })
+            });
+
+            const res = await executeOpenAIRequest('correction', { modelSolution: '', studentText: '' }, URL, API_KEY, { model: MODEL });
+            expect(res.score).toBe(9);
+            expect(res.status).toBe('done');
+        });
+
         it('should handle markdown code blocks', async () => {
             mockFetchWithRetry.mockResolvedValueOnce({
                 ok: true,
