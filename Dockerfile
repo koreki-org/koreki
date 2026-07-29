@@ -57,23 +57,22 @@ RUN groupadd --system --gid 1001 nodejs
 RUN useradd --system --uid 1001 --create-home --home-dir /home/nextjs nextjs
 
 # Copy standalone output (includes minimal node_modules)
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/prisma ./prisma/
-COPY --from=builder /app/scripts/start.sh ./start.sh
-COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+COPY --chown=nextjs:nodejs --from=builder /app/public ./public
+COPY --chown=nextjs:nodejs --from=builder /app/.next/standalone ./
+COPY --chown=nextjs:nodejs --from=builder /app/.next/static ./.next/static
+COPY --chown=nextjs:nodejs --from=builder /app/prisma ./prisma/
+COPY --chown=nextjs:nodejs --from=builder /app/scripts/start.sh ./start.sh
+COPY --chown=nextjs:nodejs --from=builder /app/prisma.config.ts ./prisma.config.ts
 
 # CRITICAL: We copy the production-pruned node_modules
 # This guarantees that the prisma CLI has all of its transitive dependencies (effect, pathe, fast-check, etc.)
 # without bloating the image with devDependencies (eslint, typescript, playwright, jest, etc.).
-COPY --from=prod-deps /app/node_modules ./node_modules
+COPY --chown=nextjs:nodejs --from=prod-deps /app/node_modules ./node_modules
 
 # Fix permissions and pre-create storage
 RUN chmod +x ./start.sh && \
     mkdir -p data/prompts && \
-    chown -R nextjs:nodejs /app && \
-    chown -R nextjs:nodejs /home/nextjs
+    chown -R nextjs:nodejs data
 
 USER nextjs
 
