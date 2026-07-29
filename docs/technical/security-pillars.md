@@ -3,7 +3,7 @@ title: "Koreki Security Pillars: The Industrial Defense Standard"
 description: "Definition der 9 industriellen Sicherheits-Säulen von Koreki für Enterprise-Stability und Datenschutz."
 author: "@security_officer"
 date: "2026-04-20"
-last_updated: "2026-04-20"
+last_updated: "2026-07-29"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -66,6 +66,14 @@ Die Sicherheitsarchitektur von Koreki ruht auf 9 identifizierten Säulen:
     - **Whitelist-Logik:** Im Desktop-Modus werden alle Calls zu `*.koreki.org` (SaaS) hart geblockt.
     - **Erlaubte Kanäle:** Nur lokale Netzwerke (Ollama), Localhost und die whitelisted Mistral API (PURE Mode) sind passierbar.
     - **Fail-Safe:** Erkennt der Client eine SaaS-URL im Desktop-Kontext, bricht der Request sofort mit einem `SecurityError` ab.
+    - **401-Retry:** Zusätzlich enthält der `apiClient` einen globalen Resilience-Mechanismus: Bei `401 Unauthorized` wird nach 300ms ein einmaliger Retry ausgeführt (außer für `/api/logto/`-Endpoints), um transiente Cookie-Race-Conditions bei parallelen Requests abzufangen.
+
+### Säule 10: Session Resilience (AuthGuard) 🛡️ [NEW]
+- **Ziel:** Verhinderung falscher Logouts durch transiente Authentifizierungsfehler.
+- **Implementierung:**
+    - Der `AuthGuard` führt bei fehlendem `userData` einen **einmaligen `checkAuth()`-Refetch** aus, bevor zum Login redirected wird.
+    - Erst bei doppeltem Fehlschlag (Session tatsächlich abgelaufen) erfolgt der Redirect.
+    - `useRef`-basiert (kein Extra-Render, kein UI-Flash).
 
 ---
 

@@ -3,7 +3,7 @@ title: "Troubleshooting: Login 401 Unauthorized (Logto Cookie Problem)"
 description: "Koreki Dokumentation: Troubleshooting: Login 401 Unauthorized (Logto Cookie Problem)"
 author: "@principal_architect"
 date: "2026-04-05"
-last_updated: "2026-04-05"
+last_updated: "2026-07-29"
 status: "Approved"
 domain: "support"
 security_classification: "Public"
@@ -100,6 +100,8 @@ if (action === 'sign-in-callback' && typeof state === 'string') {
 | `71e9b25` | `TRUST_PROXY=true` in Dockerfile gesetzt – Coolify/Traefik leitet Requests über einen Proxy weiter; ohne diese Einstellung werden Cookie-Attribute (wie `Secure`) falsch interpretiert. |
 | `858317a` | Fehlende `isAuthenticated`/`claims`-Variablen in `prompt-profiles.ts` wiederhergestellt, die nach einem Refactoring verloren gegangen waren. |
 | `3ec6c18` | Alle Debug-Logs entfernt für Production-Readiness. |
+| 2026-07-29 | **API-Client 401-Retry**: Globaler Retry-Mechanismus in `api-client.ts` – bei 401-Response wird nach 300ms ein einmaliger Retry ausgeführt. Überspringt `/api/logto/`-Endpoints. Fängt transiente Cookie-Race-Conditions ab. |
+| 2026-07-29 | **AuthGuard Retry**: `AuthGuard.tsx` führt bei `!userData` einen einmaligen `checkAuth()`-Refetch aus bevor zum Login redirected wird. Verhindert falsche Logouts bei transienten Session-Problemen. |
 
 ---
 
@@ -110,6 +112,8 @@ if (action === 'sign-in-callback' && typeof state === 'string') {
 3. **Cookie-Debug:** Mit `req.headers.cookie` loggen, welche Cookies ankommen.
 4. **Race Conditions:** Unkritische Routen sollten den leichten Cookie-Check nutzen, nicht `withLogtoApiRoute`.
 5. **Callback-Duplikate:** Der Deduplizierungsschutz in `[action].ts` fängt doppelte Hits ab.
+6. **Transiente 401-Fehler:** Der `apiClient` retried automatisch einmal nach 300ms. Falls das Problem persistiert, liegt es NICHT an Race Conditions.
+7. **Falsche Logouts:** Der `AuthGuard` retried `checkAuth()` einmal bevor er zum Login redirected. Erst bei doppeltem Fehlschlag wird redirected.
 
 ---
 
@@ -120,6 +124,8 @@ if (action === 'sign-in-callback' && typeof state === 'string') {
 - [[action].ts](../src/pages/api/logto/[action].ts) – Callback-Deduplizierung
 - [prompt-profiles.ts](../src/pages/api/admin/prompt-profiles.ts) – Auth-Variablen Fix
 - [Dockerfile](../Dockerfile) – `TRUST_PROXY` und `HOSTNAME`
+- [api-client.ts](../src/lib/api-client.ts) – Globaler 401-Retry (Resilience Layer)
+- [AuthGuard.tsx](../src/components/guards/AuthGuard.tsx) – Retry vor Login-Redirect
 
 
 ---
