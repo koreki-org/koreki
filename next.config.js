@@ -11,9 +11,6 @@ const nextConfig = {
         return config;
     },
     reactStrictMode: true,
-    devIndicators: {
-        appIsrStatus: false,
-    },
     // TypeScript strict mode: Build fails on type errors.
     // All 21 original TS errors were resolved (2026-05-03).
     typescript: {
