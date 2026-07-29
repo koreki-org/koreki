@@ -163,13 +163,18 @@ export async function executeOpenAIRequest(
 
 
 
+    const requestedMaxTokens = options.maxTokens;
+    const calculatedMaxTokens = isThinking 
+        ? Math.max(requestedMaxTokens || 0, 16384) 
+        : (requestedMaxTokens || defaultLimit);
+
     const body: any = {
         model: targetModel,
         messages,
         temperature: targetTemp,
         top_p: targetTopP,
         presence_penalty: presencePenalty,
-        max_tokens: options.maxTokens ?? (isThinking ? 32768 : defaultLimit)
+        max_tokens: calculatedMaxTokens
     };
     
     // Extraction actions use json_object instead of json_schema:
@@ -392,7 +397,7 @@ export async function executeOpenAIRequest(
                 usage: responseUsage
             };
         } catch (e) {
-            // Secondary fallback: Try aggressive trailing comma cleanup
+            // Secondary fallback: Try trailing comma cleanup and truncated JSON recovery
             try {
                 const partiallyRepaired = jsonCandidate
                     .replace(/,\s*([\]\}])/g, '$1') // Removes trailing commas before ] or }
@@ -403,9 +408,51 @@ export async function executeOpenAIRequest(
                     usage: responseUsage
                 };
             } catch (e2) {
-                console.error("JSON Parse Fatal Error. Raw Content:", content);
-                console.error("Cleaned Candidate:", jsonCandidate);
-                throw new Error("KI-Antwort konnte nicht als JSON verarbeitet werden. (Möglicherweise unvollständige Antwort oder Formatierungsfehler im Thinking-Block)");
+                try {
+                    // Tertiary fallback: Repair unclosed string quotes, braces, and brackets for truncated LLM responses
+                    const repairTruncatedJson = (str: string): string => {
+                        let s = str.trim();
+                        s = s.replace(/,\s*"[^"]*"?\s*:\s*"?[^"]*$/g, '');
+                        s = s.replace(/,\s*$/g, '');
+                        const quoteCount = (s.match(/"/g) || []).length;
+                        if (quoteCount % 2 !== 0) s += '"';
+                        
+                        const stack: string[] = [];
+                        let inString = false;
+                        let isEscaped = false;
+
+                        for (let i = 0; i < s.length; i++) {
+                            const char = s[i];
+                            if (char === '"' && !isEscaped) {
+                                inString = !inString;
+                            } else if (!inString) {
+                                if (char === '{') stack.push('}');
+                                else if (char === '[') stack.push(']');
+                                else if (char === '}' || char === ']') {
+                                    if (stack.length > 0 && stack[stack.length - 1] === char) {
+                                        stack.pop();
+                                    }
+                                }
+                            }
+                            isEscaped = (char === '\\' && !isEscaped);
+                        }
+
+                        while (stack.length > 0) {
+                            s += stack.pop();
+                        }
+                        return s;
+                    };
+
+                    const autoRepaired = repairTruncatedJson(jsonCandidate);
+                    return {
+                        ...JSON.parse(repairUnescapedBackslashes(autoRepaired)),
+                        usage: responseUsage
+                    };
+                } catch (e3) {
+                    console.error("JSON Parse Fatal Error. Raw Content:", content);
+                    console.error("Cleaned Candidate:", jsonCandidate);
+                    throw new Error("KI-Antwort konnte nicht als JSON verarbeitet werden. (Möglicherweise unvollständige Antwort oder Formatierungsfehler im Thinking-Block)");
+                }
             }
         }
     }

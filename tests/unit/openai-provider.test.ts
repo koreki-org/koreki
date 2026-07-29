@@ -100,6 +100,36 @@ describe('OpenAI Provider (Bridge) - Unit Tests', () => {
             expect(res.status).toBe('done');
         });
 
+        it('should auto-repair truncated JSON caused by max_tokens limits', async () => {
+            mockFetchWithRetry.mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ 
+                    choices: [{ message: { content: '<think>Reasoning...</think>\n{"score": 10, "tasks": [{"name": "Task 1"' } }] 
+                })
+            });
+
+            const res = await executeOpenAIRequest('correction', { modelSolution: '', studentText: '' }, URL, API_KEY, { model: MODEL });
+            expect(res.score).toBe(10);
+            expect(res.tasks).toBeDefined();
+            expect(res.tasks[0].name).toBe('Task 1');
+        });
+
+        it('should allocate at least 16384 max_tokens when Thinking Mode is active', async () => {
+            mockFetchWithRetry.mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ choices: [{ message: { content: '{}' } }] })
+            });
+
+            await executeOpenAIRequest('correction', { modelSolution: '', studentText: '' }, URL, API_KEY, {
+                model: MODEL,
+                maxTokens: 4000,
+                enableThinking: true
+            });
+            
+            const body = JSON.parse(mockFetchWithRetry.mock.calls[0][1].body);
+            expect(body.max_tokens).toBeGreaterThanOrEqual(16384);
+        });
+
         it('should handle markdown code blocks', async () => {
             mockFetchWithRetry.mockResolvedValueOnce({
                 ok: true,
