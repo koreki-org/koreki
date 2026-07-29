@@ -171,7 +171,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // In local instances (Desktop/Community), the "High Accuracy" toggle (isComplex)
         // should stay on Mistral (if Mistral is selected) but switch to the 'mistral-medium-latest' model.
         // In SaaS mode (where we manage centralized billing/scaling), we keep the default behavior of routing isComplex to OpenAI/Qwen.
-        const useOpenAI = settings.provider === 'openai-compatible' || (!settings?.provider && isComplex && !isLocalInstance());
+        const useOpenAI = settings.provider === 'openai-compatible' || (isComplex && !isLocalInstance());
 
         if (settings.provider === 'ollama') {
             analysis = await executeOllamaRequest(
