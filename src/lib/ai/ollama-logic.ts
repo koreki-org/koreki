@@ -746,15 +746,17 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
             const end = cleaned.slice(-100);
             const errorMsg = e2 instanceof Error ? e2.message : String(e2);
             
-            try {
-                const fs = require('fs');
-                const path = require('path');
-                const scratchDir = 'C:\\Users\\AndreasHeid\\.gemini\\antigravity\\brain\\40d31989-9543-4b81-aec1-dc6882e7aeb9\\scratch';
-                if (!fs.existsSync(scratchDir)) {
-                    fs.mkdirSync(scratchDir, { recursive: true });
-                }
-                fs.writeFileSync(path.join(scratchDir, 'raw_ollama_error.json'), cleaned, 'utf-8');
-            } catch (err) {}
+            if (typeof window === 'undefined') {
+                try {
+                    const fs = eval("require")('fs');
+                    const path = eval("require")('path');
+                    const scratchDir = path.join(process.cwd(), 'scratch');
+                    if (!fs.existsSync(scratchDir)) {
+                        fs.mkdirSync(scratchDir, { recursive: true });
+                    }
+                    fs.writeFileSync(path.join(scratchDir, 'raw_ollama_error.json'), cleaned, 'utf-8');
+                } catch (err) {}
+            }
             
             throw new Error(`Ollama JSON-Parse fehlgeschlagen (${errorMsg}). \n\nAnfang: [${start}]\n\nEnde: [${end}]\n\nLänge: ${cleaned.length}`);
         }
