@@ -123,9 +123,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         const isOllama = settings.provider === 'ollama';
                         const maxRetries = isOllama ? 1 : 2;
                         const shouldRetryCalcTrace = () => 
-                            !calcTraceResult.isGoalReached && 
-                            calcTraceResult.ast.length > 0 && 
-                            calcTraceResult.sandboxErrors.some(err => !err.startsWith('Rechenfehler'));
+                            !calcTraceResult?.isGoalReached && 
+                            calcTraceResult?.ast && calcTraceResult.ast.length > 0 && 
+                            calcTraceResult?.sandboxErrors && calcTraceResult.sandboxErrors.some(err => !err.startsWith('Rechenfehler'));
 
                         while (shouldRetryCalcTrace() && retryCount < maxRetries) {
                             const extractionErrors = calcTraceResult.sandboxErrors.filter(err => !err.startsWith('Rechenfehler'));
@@ -183,11 +183,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
             if (!apiKey) throw new Error('Mistral API-Key fehlt.');
 
-            // Use the math-optimized 'mistral-medium-2604' when "High Accuracy" is toggled.
+            // Use the math-optimized 'mistral-medium-latest' when "High Accuracy" is toggled.
             // Otherwise, respect the user's selected model from their profile settings (settings.model).
             const mistralModel = (isComplex && settings.provider === 'mistral') 
-                ? 'mistral-medium-2604' 
-                : (settings.model || 'mistral-medium-2604');
+                ? 'mistral-medium-latest' 
+                : (settings.model || 'mistral-medium-latest');
 
             analysis = await executeMistralRequest(
                 'correction',

@@ -627,9 +627,9 @@ export async function performAIRequest(
                     let retryCount = 0;
                     const maxRetries = 2;
                     const shouldRetryCalcTrace = () => 
-                        !calcTraceResult.isGoalReached && 
-                        calcTraceResult.ast.length > 0 && 
-                        calcTraceResult.sandboxErrors.some(err => !err.startsWith('Rechenfehler'));
+                        !calcTraceResult?.isGoalReached && 
+                        calcTraceResult?.ast && calcTraceResult.ast.length > 0 && 
+                        calcTraceResult?.sandboxErrors && calcTraceResult.sandboxErrors.some(err => !err.startsWith('Rechenfehler'));
 
                     while (shouldRetryCalcTrace() && retryCount < maxRetries) {
                         const extractionErrors = calcTraceResult.sandboxErrors.filter(err => !err.startsWith('Rechenfehler'));

@@ -182,9 +182,8 @@ export async function executeMistralRequest(
     if (isThinking) {
         body.max_tokens = options.maxTokens ?? 8192; // Max output tokens supported by modern Mistral models
         
-        // Pass adjustable reasoning parameters for Mistral Large / Medium
+        // Pass max tokens for Mistral Large / Medium
         if (model.toLowerCase().includes('medium') || model.toLowerCase().includes('large')) {
-            body.reasoning_effort = 'medium';
             body.max_tokens = options.maxTokens ?? 32768; // Elevate max tokens to allow room for the full reasoning chain
         }
     }

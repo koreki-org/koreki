@@ -1,6 +1,6 @@
 {
   "name": "koreki",
-  "version": "0.9.86",
+  "version": "0.9.87",
   "private": true,
   "scripts": {
     "dev": "prisma generate && cross-env NODE_OPTIONS='--max-old-space-size=1536' next dev -p 3000",
