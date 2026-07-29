@@ -174,4 +174,53 @@ describe('ai-correct API Provider Routing Guards (Layer 1 & 2)', () => {
         expect(executeMistralRequest).not.toHaveBeenCalled();
         expect(executeOpenAIRequest).not.toHaveBeenCalled();
     });
+
+    describe('Desktop / Community Local Mode Routing (isLocalInstance = true)', () => {
+        beforeEach(() => {
+            (isLocalInstance as jest.Mock).mockReturnValue(true); // Desktop/Community mode
+        });
+
+        it('MUST stay on Mistral (executeMistralRequest) when isComplex is true in Desktop/Community mode', async () => {
+            req = {
+                method: 'POST',
+                body: {
+                    modelSolution: 'Musterlösung',
+                    studentText: 'Schülertext',
+                    tasksLayout: [{ name: 'Aufgabe 1', maxPoints: 10 }],
+                    isComplex: true,
+                    settings: {
+                        provider: 'mistral',
+                        mistralKey: 'm-key-123'
+                    }
+                }
+            };
+
+            await aiCorrectHandler(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(executeMistralRequest).toHaveBeenCalledTimes(1);
+            expect(executeOpenAIRequest).not.toHaveBeenCalled();
+        });
+
+        it('MUST route to Ollama when provider is ollama in Desktop/Community mode', async () => {
+            req = {
+                method: 'POST',
+                body: {
+                    modelSolution: 'Musterlösung',
+                    studentText: 'Schülertext',
+                    tasksLayout: [{ name: 'Aufgabe 1', maxPoints: 10 }],
+                    isComplex: true,
+                    settings: {
+                        provider: 'ollama'
+                    }
+                }
+            };
+
+            await aiCorrectHandler(req, res);
+
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(executeOllamaRequest).toHaveBeenCalledTimes(1);
+            expect(executeOpenAIRequest).not.toHaveBeenCalled();
+        });
+    });
 });
