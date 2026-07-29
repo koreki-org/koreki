@@ -28,9 +28,9 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
     const hasStudents = batchFilesCount > 0;
 
     return (
-        <Card className="flex flex-col min-h-[320px] bg-background/60 backdrop-blur-xl border border-border hover:border-primary/30 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 overflow-hidden relative rounded-3xl group">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 relative z-20">
-                <CardTitle className="text-lg font-bold flex items-center gap-3">
+        <Card className="flex flex-col border-border/50 bg-background/60 backdrop-blur-xl shadow-xl shadow-foreground/5 rounded-hero overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border/50">
+                <CardTitle className="text-xl font-bold flex items-center gap-3">
                     <div className="p-2 bg-primary/10 rounded-xl text-primary">
                         <FolderOpen size={18} />
                     </div>
@@ -41,9 +41,9 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                         <>
                             <input type="file" accept=".pdf,.jpg,.jpeg,.png,.txt,.xlsx,.csv" multiple ref={studentInputRef} onChange={onStudentUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
                             <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 px-3 flex items-center gap-2 bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider rounded-lg border border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all font-outfit"
+                                variant="chip"
+                                size="xs"
+                                className="flex items-center gap-2 transition-all"
                                 onClick={() => studentInputRef.current?.click()}
                             >
                                 <RefreshCw size={12} />
@@ -59,11 +59,11 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                 </div>
             </CardHeader>
 
-            <CardContent className="flex-1 flex flex-col pt-4 relative z-10">
+            <CardContent className="flex-grow pt-4">
                 {!hasStudents ? (
                     <div 
                         onClick={() => studentInputRef.current?.click()}
-                        className="flex-1 border-2 border-dashed border-border rounded-hero bg-muted/10 hover:bg-background/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
+                        className="flex-1 border-2 border-dashed border-border/60 rounded-hero bg-muted/20 hover:bg-background/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
                     >
                         <input
                             type="file"
@@ -77,13 +77,13 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                         <div className="bg-background p-4 rounded-2xl shadow-sm border border-border mb-4 group-hover/dropzone:scale-110 group-hover/dropzone:-translate-y-1 group-hover/dropzone:shadow-md transition-all duration-300">
                             <Users size={36} className="text-primary" />
                         </div>
-                        <p className="font-semibold text-muted-foreground group-hover/dropzone:text-primary transition-colors">
+                        <p className="font-semibold text-foreground group-hover/dropzone:text-primary transition-colors">
                             Arbeiten auswählen (Excel/Moodle, Text (.txt), PDF, Bilder)
                         </p>
                     </div>
                 ) : (
                     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="bg-primary/5 border border-primary/10 rounded-3xl p-6 flex flex-col items-center justify-center text-center mb-6">
+                        <div className="bg-primary/5 border border-primary/10 rounded-xl p-6 flex flex-col items-center justify-center text-center mb-6">
                             <div className="w-12 h-12 bg-background rounded-full flex items-center justify-center text-primary shadow-sm mb-3">
                                 <Users size={24} />
                             </div>

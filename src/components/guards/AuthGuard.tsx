@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/hooks/useAuth';
 import Logo from '@/components/Logo';
@@ -18,11 +18,20 @@ interface AuthGuardProps {
  */
 const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false }) => {
     const router = useRouter();
-    const { userData, authLoading, isFetched } = useAuth();
+    const { userData, authLoading, isFetched, checkAuth } = useAuth();
+    const retryAttempted = useRef(false);
 
     useEffect(() => {
         // Redirect if definitively unauthenticated
         if (isFetched && !authLoading && !userData) {
+            // 🛡️ Resilience: Retry auth check once before redirecting.
+            // Handles transient Logto cookie race conditions on parallel API calls.
+            if (!retryAttempted.current) {
+                retryAttempted.current = true;
+                checkAuth();
+                return;
+            }
+
             if (isKeycloakAuth()) {
                 // 🛑 CRITICAL: Do not redirect if we are currently in the callback flow!
                 const url = typeof window !== 'undefined' ? window.location.href : '';
@@ -41,12 +50,17 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false })
             }
         }
 
+        // Reset retry state when user becomes available
+        if (userData) {
+            retryAttempted.current = false;
+        }
+
         // Optional: Admin check
         if (isFetched && !authLoading && userData && requireAdmin && userData.role !== 'ADMIN') {
             console.warn("🛡️ AuthGuard: Admin access required. Redirecting to landing page...");
             router.push('/');
         }
-    }, [isFetched, authLoading, userData, requireAdmin, router]);
+    }, [isFetched, authLoading, userData, requireAdmin, router, checkAuth]);
 
     // --- LOADING STATE (Aesthetic consistency with app.tsx) ---
     if (authLoading || !userData) {
