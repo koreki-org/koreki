@@ -290,4 +290,31 @@ describe('CalcTrace Sandbox V6', () => {
       expect(prompt.system).toContain('✗ NICHT ERFÜLLT');
     });
   });
+
+  describe('shouldRetryCalcTrace Short-Circuit Logic Guard', () => {
+    const shouldRetryCalcTrace = (calcTraceResult: any) => 
+        !calcTraceResult?.isGoalReached && 
+        calcTraceResult?.ast && calcTraceResult.ast.length > 0 && 
+        calcTraceResult?.sandboxErrors && calcTraceResult.sandboxErrors.some((err: string) => !err.startsWith('Rechenfehler'));
+
+    it('should return FALSE (skip retry) when goal is reached', () => {
+      const res = { isGoalReached: true, ast: [{ id: 's1' }], sandboxErrors: ['Forbidden syntax'] };
+      expect(shouldRetryCalcTrace(res)).toBe(false);
+    });
+
+    it('should return FALSE (skip retry) when AST is empty (text-only answer)', () => {
+      const res = { isGoalReached: false, ast: [], sandboxErrors: ['No AST steps'] };
+      expect(shouldRetryCalcTrace(res)).toBe(false);
+    });
+
+    it('should return FALSE (skip retry) when sandboxErrors are only Rechenfehler', () => {
+      const res = { isGoalReached: false, ast: [{ id: 's1' }], sandboxErrors: ['Rechenfehler in step_1'] };
+      expect(shouldRetryCalcTrace(res)).toBe(false);
+    });
+
+    it('should return TRUE (trigger retry) ONLY when goal is not reached, AST exists, and extraction errors exist', () => {
+      const res = { isGoalReached: false, ast: [{ id: 's1' }], sandboxErrors: ['Forbidden expression syntax: FooNode'] };
+      expect(shouldRetryCalcTrace(res)).toBe(true);
+    });
+  });
 });

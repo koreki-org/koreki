@@ -141,6 +141,34 @@ describe('Mistral Provider (Bridge) - Unit Tests', () => {
         });
     });
 
+    describe('executeMistralRequest - Payload Strictness & Schema Integrity', () => {
+        it('should NOT contain unsupported OpenAI fields like "reasoning_effort" in payload body', async () => {
+            mockFetchWithRetry.mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ choices: [{ message: { content: '{}' } }] })
+            });
+
+            await executeMistralRequest('correction', { modelSolution: 'A', studentText: 'B' }, API_KEY, {
+                enableThinking: true
+            });
+
+            const body = JSON.parse(mockFetchWithRetry.mock.calls[0][1].body);
+            expect(body).not.toHaveProperty('reasoning_effort');
+            expect(body).toHaveProperty('model');
+            expect(body).toHaveProperty('messages');
+            expect(body).toHaveProperty('max_tokens');
+        });
+
+        it('should use valid official Mistral model identifiers', () => {
+            const validModelRegex = /^mistral-(large|medium|small|ocr|embed|chats)-latest$|^pixtral-/;
+            expect(constants.MISTRAL_CORE_MODEL).toMatch(validModelRegex);
+            expect(constants.MISTRAL_MEDIUM_MODEL).toMatch(validModelRegex);
+            expect(constants.MISTRAL_UTILS_MODEL).toMatch(validModelRegex);
+            expect(constants.MISTRAL_OCR_MODEL).toMatch(validModelRegex);
+            expect(constants.MISTRAL_MEDIUM_MODEL).not.toContain('2604');
+        });
+    });
+
     describe('handleOCRRequest (OCR Action)', () => {
         it('should use the /v1/ocr endpoint', async () => {
             mockFetchWithRetry.mockResolvedValueOnce({
