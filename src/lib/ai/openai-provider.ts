@@ -192,15 +192,10 @@ export async function executeOpenAIRequest(
         body.response_format = { type: 'json_object' };
     }
 
-    // Enable/disable thinking mode for vLLM / Mittwald AI hosting via chat_template_kwargs
-    body.chat_template_kwargs = {
-        enable_thinking: isThinking
-    };
-
     // Specific Qwen/OpenAI-compat Extra Params
     // [Industrial Alert] 🛡️
-    // LiteLLM (Mittwald's proxy) crashes with 'Unknown model name' if we pass enable_thinking, 
-    // because it falsely assumes this is an Anthropic-specific request and searches the wrong catalog.
+    // LiteLLM (Mittwald's proxy) crashes if we pass custom non-standard fields like chat_template_kwargs or enable_thinking,
+    // because it falsely assumes this is an Anthropic/Custom-specific request and searches the wrong catalog.
     // We rely on the system prompt or native model behavior for reasoning instead.
     
     const isGraphAction = action === 'generate-graph' || action === 'refine-graph';

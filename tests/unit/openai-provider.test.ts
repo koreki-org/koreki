@@ -42,7 +42,7 @@ describe('OpenAI Provider (Bridge) - Unit Tests', () => {
             expect(body.messages[0].role).toBe('system');
         });
 
-        it('should inject enable_thinking when Thinking Mode is active', async () => {
+        it('should NOT include non-standard fields like chat_template_kwargs in payload body', async () => {
             mockFetchWithRetry.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({ choices: [{ message: { content: '{}' } }] })
@@ -54,7 +54,8 @@ describe('OpenAI Provider (Bridge) - Unit Tests', () => {
             });
             
             const body = JSON.parse(mockFetchWithRetry.mock.calls[0][1].body);
-            expect(body.chat_template_kwargs?.enable_thinking).toBe(true);
+            expect(body).not.toHaveProperty('chat_template_kwargs');
+            expect(body).not.toHaveProperty('enable_thinking');
         });
 
         it('should force temperature 0.6 for "correction" when Thinking Mode is active', async () => {
