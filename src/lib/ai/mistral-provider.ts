@@ -184,7 +184,7 @@ export async function executeMistralRequest(
         
         // Pass adjustable reasoning parameters for Mistral Large / Medium
         if (model.toLowerCase().includes('medium') || model.toLowerCase().includes('large')) {
-            body.reasoning_effort = 'high';
+            body.reasoning_effort = 'medium';
             body.max_tokens = options.maxTokens ?? 32768; // Elevate max tokens to allow room for the full reasoning chain
         }
     }

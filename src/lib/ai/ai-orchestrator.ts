@@ -626,7 +626,12 @@ export async function performAIRequest(
                     
                     let retryCount = 0;
                     const maxRetries = 2;
-                    while (calcTraceResult.sandboxErrors.some(err => !err.startsWith('Rechenfehler')) && retryCount < maxRetries) {
+                    const shouldRetryCalcTrace = () => 
+                        !calcTraceResult.isGoalReached && 
+                        calcTraceResult.ast.length > 0 && 
+                        calcTraceResult.sandboxErrors.some(err => !err.startsWith('Rechenfehler'));
+
+                    while (shouldRetryCalcTrace() && retryCount < maxRetries) {
                         const extractionErrors = calcTraceResult.sandboxErrors.filter(err => !err.startsWith('Rechenfehler'));
                         logger.warn(`[Client] CalcTrace Sandbox validation failed (extraction errors). Retrying self-correction (${retryCount + 1}/${maxRetries}):`, extractionErrors);
                         

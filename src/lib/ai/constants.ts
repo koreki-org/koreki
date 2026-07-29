@@ -29,7 +29,7 @@ function withJitter(ms: number): number {
  */
 export async function fetchWithRetry(url: string, options: any, retries = 5, delay = 2000): Promise<Response> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout per request
+  const timeoutId = setTimeout(() => controller.abort(), 300000); // 300s (5 min) timeout per request
   const fetchOptions = { ...options, signal: options.signal || controller.signal };
   
   let response;
