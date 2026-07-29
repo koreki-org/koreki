@@ -128,6 +128,12 @@ describe('ai-correct API Provider Routing Guards (Layer 1 & 2)', () => {
 
         expect(res.status).toHaveBeenCalledWith(200);
         expect(executeMistralRequest).toHaveBeenCalledTimes(1);
+        expect(executeMistralRequest).toHaveBeenCalledWith(
+            'correction',
+            expect.anything(),
+            'm-key-123',
+            expect.objectContaining({ model: 'mistral-medium-latest' })
+        );
         expect(executeOpenAIRequest).not.toHaveBeenCalled();
     });
 
