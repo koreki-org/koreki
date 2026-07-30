@@ -305,7 +305,17 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
     console.log(`👉 Keycloak Admin UI:  ${c('bold', `${appUrl}/auth/admin`)}`);
     console.log(c('dim', 'Note: Keycloak may take 30-45 seconds to initialize on first launch.'));
   } catch (err) {
-    console.error(c('red', '\n❌ Failed to start Docker stack: ' + err.message));
+    console.log(c('yellow', '\n⚠️  Initial launch encountered a database volume issue. Resetting stale volumes and retrying...'));
+    try {
+      execSync(`docker compose -f ${composeFile} down -v`, { cwd: TARGET_DIR, stdio: 'inherit' });
+      execSync(`docker compose -f ${composeFile} up -d --build`, { cwd: TARGET_DIR, stdio: 'inherit' });
+      console.log(c('green', '\n✅ Koreki Community Multi-User Stack is running!'));
+      console.log(`👉 App URL:            ${c('bold', appUrl)}`);
+      console.log(`👉 Keycloak Admin UI:  ${c('bold', `${appUrl}/auth/admin`)}`);
+      console.log(c('dim', 'Note: Keycloak may take 30-45 seconds to initialize on first launch.'));
+    } catch (retryErr) {
+      console.error(c('red', '\n❌ Failed to start Docker stack: ' + retryErr.message));
+    }
   }
 }
 
