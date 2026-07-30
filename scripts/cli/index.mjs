@@ -346,7 +346,8 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
 
   console.log(c('bold', '\n🚀 Launching Koreki Multi-User Stack (App + Keycloak + Nginx + Postgres)...'));
   try {
-    execSync(`docker compose -f ${composeFile} up -d --build --no-cache`, { cwd: TARGET_DIR, stdio: 'inherit' });
+    execSync(`docker compose -f ${composeFile} build --no-cache`, { cwd: TARGET_DIR, stdio: 'inherit' });
+    execSync(`docker compose -f ${composeFile} up -d`, { cwd: TARGET_DIR, stdio: 'inherit' });
     console.log(c('green', '\n✅ Koreki Community Multi-User Stack is running!'));
     console.log(`👉 App URL:            ${c('bold', appUrl)}`);
     console.log(`👉 Keycloak Admin UI:  ${c('bold', `${appUrl}/auth/admin`)}`);
@@ -355,7 +356,8 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
     console.log(c('yellow', '\n⚠️  Initial launch encountered a database volume issue. Resetting stale volumes and retrying...'));
     try {
       execSync(`docker compose -f ${composeFile} down -v`, { cwd: TARGET_DIR, stdio: 'inherit' });
-      execSync(`docker compose -f ${composeFile} up -d --build --no-cache`, { cwd: TARGET_DIR, stdio: 'inherit' });
+      execSync(`docker compose -f ${composeFile} build --no-cache`, { cwd: TARGET_DIR, stdio: 'inherit' });
+      execSync(`docker compose -f ${composeFile} up -d`, { cwd: TARGET_DIR, stdio: 'inherit' });
       console.log(c('green', '\n✅ Koreki Community Multi-User Stack is running!'));
       console.log(`👉 App URL:            ${c('bold', appUrl)}`);
       console.log(`👉 Keycloak Admin UI:  ${c('bold', `${appUrl}/auth/admin`)}`);
