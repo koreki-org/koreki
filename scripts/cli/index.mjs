@@ -35,27 +35,43 @@ function ensureRepoFilesExist() {
   const hasCompose = fs.existsSync(path.join(TARGET_DIR, 'docker-compose.community-multi-full.yml')) ||
                      fs.existsSync(path.join(TARGET_DIR, 'docker-compose.yml'));
                      
-  if (!hasCompose) {
-    console.log(c('yellow', '📦 Koreki repository files not found in current folder.'));
-    console.log(c('bold', '⬇️  Downloading Koreki environment automatically...'));
+  if (hasCompose) return;
 
-    const korekiFolder = path.join(TARGET_DIR, 'koreki');
+  const korekiFolder = path.join(TARGET_DIR, 'koreki');
+  if (fs.existsSync(path.join(korekiFolder, 'docker-compose.community-multi-full.yml')) ||
+      fs.existsSync(path.join(korekiFolder, 'docker-compose.yml'))) {
+    TARGET_DIR = korekiFolder;
+    process.chdir(TARGET_DIR);
+    return;
+  }
 
+  console.log(c('yellow', '📦 Koreki repository files not found in current folder.'));
+  console.log(c('bold', '⬇️  Downloading Koreki environment automatically...'));
+
+  if (isCommandAvailable('git')) {
+    let success = false;
     try {
-      if (isCommandAvailable('git')) {
-        execSync(`git clone --depth 1 ${REPO_URL} koreki`, { cwd: TARGET_DIR, stdio: 'inherit' });
-        TARGET_DIR = korekiFolder;
-        process.chdir(TARGET_DIR);
-        console.log(c('green', '✔ Repository cloned into ./koreki\n'));
-      } else {
-        console.log(c('red', '✖ Git is not installed. Please install Git or clone the repository manually.'));
-        process.exit(1);
-      }
-    } catch (err) {
-      console.error(c('red', 'Failed to clone repository: ' + err.message));
-      process.exit(1);
+      execSync(`git clone --depth 1 ${REPO_URL} koreki`, { cwd: TARGET_DIR, stdio: 'inherit' });
+      success = true;
+    } catch {
+      try {
+        console.log(c('dim', 'HTTPS clone failed, trying SSH clone...'));
+        execSync(`git clone --depth 1 git@github.com:koreki-org/koreki.git koreki`, { cwd: TARGET_DIR, stdio: 'inherit' });
+        success = true;
+      } catch {}
+    }
+
+    if (success) {
+      TARGET_DIR = korekiFolder;
+      process.chdir(TARGET_DIR);
+      console.log(c('green', '✔ Repository cloned into ./koreki\n'));
+      return;
     }
   }
+
+  console.log(c('red', '✖ Could not clone repository via Git. Please clone manually or check your GitHub access permissions:'));
+  console.log(c('bold', '  git clone git@github.com:koreki-org/koreki.git'));
+  process.exit(1);
 }
 
 // ANSI Color Helpers
