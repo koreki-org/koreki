@@ -68,7 +68,7 @@ services:
       KC_HOSTNAME_STRICT_HTTPS: "false"
       KC_HTTP_ENABLED: "true"
       KC_HTTP_RELATIVE_PATH: "/auth"
-      APP_URL: ${APP_URL}
+      APP_URL: ${APP_URL:-http://localhost:8080}
     volumes:
       - ./keycloak/koreki-realm.${ENVIRONMENT:-dev}.json:/opt/keycloak/data/import/koreki-realm.json
       - ./keycloak/themes:/opt/keycloak/themes
@@ -80,8 +80,8 @@ services:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && echo -e \"GET /auth/health/live HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n\" >&3 && cat <&3 | grep -q \"200 OK\""]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 40s
+      retries: 10
+      start_period: 60s
 
   keycloak-db:
     image: postgres:15

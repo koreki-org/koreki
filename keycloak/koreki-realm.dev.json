@@ -46,10 +46,10 @@
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
       "redirectUris": [
-        "${env.APP_URL}/*"
+        "*"
       ],
       "webOrigins": [
-        "${env.APP_URL}"
+        "+"
       ],
       "defaultClientScopes": [
         "web-origins",

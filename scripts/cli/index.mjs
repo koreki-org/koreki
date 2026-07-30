@@ -249,7 +249,12 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
 async function setupCommunityMulti(isDryRun) {
   console.log(c('bold', '⚙️  Configuring Koreki Community Multi-User (Keycloak & Gateway)...'));
 
-  const appUrl = await askQuestion('Public APP_URL (with protocol & port)', 'http://localhost:8080');
+  let appUrl = await askQuestion('Public APP_URL (with protocol & port)', 'http://localhost:8080');
+  if (!/^https?:\/\//i.test(appUrl)) {
+    appUrl = `http://${appUrl}`;
+  }
+  appUrl = appUrl.replace(/\/+$/, '');
+  
   const envMode = await askQuestion('Environment (dev or prod)', 'dev');
   const mistralKey = await askQuestion('Mistral API Key (Optional)', '');
   
