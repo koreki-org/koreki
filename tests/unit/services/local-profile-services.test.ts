@@ -1,4 +1,4 @@
-import { LocalProfileService, LocalAiProfileService } from '../../../src/lib/services/local-profile-service';
+import { LocalProfileService, LocalAiProfileService, LocalGradingMemoryService } from '../../../src/lib/services/local-profile-service';
 import fs from 'fs';
 import path from 'path';
 
@@ -109,6 +109,36 @@ describe('Local Profile & AI Parameter Services 🧪🏮🛡️', () => {
             const writtenData = JSON.parse(mockWrite.mock.calls[0][1] as string);
             expect(writtenData.length).toBe(1);
             expect(writtenData[0].id).toBe('ai-2');
+        });
+    });
+
+    describe('LocalGradingMemoryService (Few-Shot Calibration Memories)', () => {
+        it('should load local grading memories from disk', async () => {
+            (fs.existsSync as jest.Mock).mockReturnValue(true);
+            (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify([
+                { id: 'mem-1', name: 'Klausur 1 Kalibrierung', cases: [] }
+            ]));
+
+            const memories = await LocalGradingMemoryService.getAvailableProfiles('teacher-123');
+            expect(memories.length).toBe(1);
+            expect(memories[0].name).toBe('Klausur 1 Kalibrierung');
+        });
+
+        it('should save grading memory to disk', async () => {
+            (fs.existsSync as jest.Mock).mockReturnValue(false);
+            const mockWrite = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+
+            const memoryData = {
+                id: 'mem-1',
+                name: 'Klausur 1 Kalibrierung',
+                cases: []
+            };
+
+            await LocalGradingMemoryService.upsertProfile(memoryData, 'teacher-123');
+
+            expect(mockWrite).toHaveBeenCalled();
+            const writtenData = JSON.parse(mockWrite.mock.calls[0][1] as string);
+            expect(writtenData[0].name).toBe('Klausur 1 Kalibrierung');
         });
     });
 });
