@@ -46,7 +46,8 @@
       "standardFlowEnabled": true,
       "directAccessGrantsEnabled": false,
       "redirectUris": [
-        "*"
+        "http://*",
+        "https://*"
       ],
       "webOrigins": [
         "+"
