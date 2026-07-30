@@ -46,7 +46,7 @@ Voraussetzung: [Docker](https://www.docker.com/) & Docker Compose.
 
 **Für Windows (PowerShell):**
 ```powershell
-iwr -useb https://raw.githubusercontent.com/koreki-org/koreki/main/scripts/install/install.ps1 | iex
+iwr -useb https://get.koreki.org | iex
 ```
 
 **Für Linux / macOS (Terminal):**

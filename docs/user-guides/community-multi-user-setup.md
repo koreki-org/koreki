@@ -42,7 +42,7 @@ Der interaktive Setup-Wizard richtet das gesamte Multi-User-Environment inkl. Ke
 
 * **Windows (PowerShell):**
   ```powershell
-  iwr -useb https://raw.githubusercontent.com/koreki-org/koreki/main/scripts/install/install.ps1 | iex
+  iwr -useb https://get.koreki.org | iex
   ```
 * **Linux / macOS:**
   ```bash
