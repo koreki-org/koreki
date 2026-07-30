@@ -155,8 +155,8 @@ U2 = I*R2= 2,5 kΩ*1,846 mA = 4,62 V
 //   }
 ];
 
-const isCI = process.env.CI === 'true' || !!process.env.GITHUB_ACTIONS;
-const describeFn = isCI ? describe.skip : describe;
+const shouldRunLiveFetch = process.env.KOREKI_REAL_FETCH === 'true';
+const describeFn = shouldRunLiveFetch ? describe : describe.skip;
 
 describeFn('CalcTrace Determinism Tests (Layer 2)', () => {
   let settings: any = {};

@@ -150,7 +150,7 @@ export function useGradingMemoryModalState({
             
             return prev.map(m => m.id === activeMemoryId ? { ...m, cases: updatedCases } : m);
         });
-    }, [activeMemoryId, tasksLayout, memories]);
+    }, [activeMemoryId, tasksLayout]);
 
     useEffect(() => {
         setMounted(true);
@@ -158,7 +158,6 @@ export function useGradingMemoryModalState({
             document.body.style.overflow = 'hidden';
             const dateStr = new Date().toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
             setProfileName(`Erfahrungsschatz (${dateStr})`);
-            refreshMemories();
             
             // Default select all tasks from tasksLayout
             if (tasksLayout && Array.isArray(tasksLayout)) {
