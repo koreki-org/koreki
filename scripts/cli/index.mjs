@@ -35,13 +35,35 @@ function ensureRepoFilesExist() {
   const hasCompose = fs.existsSync(path.join(TARGET_DIR, 'docker-compose.community-multi-full.yml')) ||
                      fs.existsSync(path.join(TARGET_DIR, 'docker-compose.yml'));
                      
-  if (hasCompose) return;
+  if (hasCompose) {
+    // Repo exists — pull latest changes to ensure fixes are applied
+    if (fs.existsSync(path.join(TARGET_DIR, '.git'))) {
+      console.log(c('cyan', '🔄 Updating existing Koreki installation to latest version...'));
+      try {
+        execSync('git pull --ff-only origin main', { cwd: TARGET_DIR, stdio: 'inherit' });
+        console.log(c('green', '✔ Updated to latest version.\n'));
+      } catch {
+        console.log(c('dim', 'ℹ Could not auto-update (offline or uncommitted changes). Continuing with existing files.\n'));
+      }
+    }
+    return;
+  }
 
   const korekiFolder = path.join(TARGET_DIR, 'koreki');
   if (fs.existsSync(path.join(korekiFolder, 'docker-compose.community-multi-full.yml')) ||
       fs.existsSync(path.join(korekiFolder, 'docker-compose.yml'))) {
     TARGET_DIR = korekiFolder;
     process.chdir(TARGET_DIR);
+    // Pull latest in sub-folder repo too
+    if (fs.existsSync(path.join(TARGET_DIR, '.git'))) {
+      console.log(c('cyan', '🔄 Updating existing Koreki installation to latest version...'));
+      try {
+        execSync('git pull --ff-only origin main', { cwd: TARGET_DIR, stdio: 'inherit' });
+        console.log(c('green', '✔ Updated to latest version.\n'));
+      } catch {
+        console.log(c('dim', 'ℹ Could not auto-update. Continuing with existing files.\n'));
+      }
+    }
     return;
   }
 
@@ -324,7 +346,7 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
 
   console.log(c('bold', '\n🚀 Launching Koreki Multi-User Stack (App + Keycloak + Nginx + Postgres)...'));
   try {
-    execSync(`docker compose -f ${composeFile} up -d --build`, { cwd: TARGET_DIR, stdio: 'inherit' });
+    execSync(`docker compose -f ${composeFile} up -d --build --no-cache`, { cwd: TARGET_DIR, stdio: 'inherit' });
     console.log(c('green', '\n✅ Koreki Community Multi-User Stack is running!'));
     console.log(`👉 App URL:            ${c('bold', appUrl)}`);
     console.log(`👉 Keycloak Admin UI:  ${c('bold', `${appUrl}/auth/admin`)}`);
@@ -333,7 +355,7 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
     console.log(c('yellow', '\n⚠️  Initial launch encountered a database volume issue. Resetting stale volumes and retrying...'));
     try {
       execSync(`docker compose -f ${composeFile} down -v`, { cwd: TARGET_DIR, stdio: 'inherit' });
-      execSync(`docker compose -f ${composeFile} up -d --build`, { cwd: TARGET_DIR, stdio: 'inherit' });
+      execSync(`docker compose -f ${composeFile} up -d --build --no-cache`, { cwd: TARGET_DIR, stdio: 'inherit' });
       console.log(c('green', '\n✅ Koreki Community Multi-User Stack is running!'));
       console.log(`👉 App URL:            ${c('bold', appUrl)}`);
       console.log(`👉 Keycloak Admin UI:  ${c('bold', `${appUrl}/auth/admin`)}`);

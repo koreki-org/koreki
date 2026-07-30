@@ -4,3 +4,10 @@ package-lock.json linguist-generated=true
 public/*.mjs linguist-generated=true
 prisma/schema.prisma linguist-language=TypeScript
 keycloak/*.json linguist-generated=true
+
+# CRITICAL: Force LF line endings for shell scripts and Docker files
+# Prevents Windows Git checkout from converting to CRLF, which causes
+# "exec: ./start.sh: not found" in Linux containers
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
