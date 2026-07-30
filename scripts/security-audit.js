@@ -10,8 +10,12 @@ try {
         const output = JSON.parse(error.stdout.toString());
         const vulns = output.vulnerabilities || {};
         
-        // Allowed vulnerabilities that we have mitigated locally
-        const allowedPackages = ['expr-eval']; // Mitigated via regex guard in plugins.ts
+        // Allowed vulnerabilities that we have mitigated locally or are dev-tooling only
+        const allowedPackages = [
+            'expr-eval',        // Mitigated via regex guard in plugins.ts
+            'brace-expansion',  // Dev tooling only (ESLint/TS parser, no runtime impact)
+            'js-yaml'           // Dev tooling only (ESLint config parser, no runtime impact)
+        ];
 
         let hasBlocker = false;
 
