@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { GradingMemory } from '../types';
-import { isDesktopTarget } from '../lib/env-context';
+import { isDesktopTarget, isLocalInstance } from '../lib/env-context';
 import { apiClient } from '../lib/api-client';
 
 /**
@@ -42,6 +42,14 @@ export const useGradingMemories = (userData?: any) => {
                 window.dispatchEvent(new CustomEvent('koreki-grading-memories-changed', { detail: { origin: 'fetchMemories' } }));
             }
             return;
+        }
+
+
+        // 🛡️ Staggered Cookie Settling Delay (SaaS Only — Slot 4)
+        // Serializes Logto session cookie reads across governance hooks to prevent
+        // parallel withLogtoApiRoute calls from corrupting each other's session state.
+        if (!isLocalInstance()) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
         }
 
         try {

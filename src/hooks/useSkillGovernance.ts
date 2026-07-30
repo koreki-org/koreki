@@ -104,17 +104,15 @@ export const useSkillGovernance = (
                 }
             }
 
+            // 🛡️ Staggered Cookie Settling Delay (SaaS Only — Slot 2/3)
+            // Serializes Logto session cookie reads across governance hooks to prevent
+            // parallel withLogtoApiRoute calls from corrupting each other's session state.
             if (!isLocalInstance()) {
-                await new Promise(resolve => setTimeout(resolve, 80));
+                await new Promise(resolve => setTimeout(resolve, 600));
             }
 
             try {
                 let res = await apiClient.get('/api/user/skill-profiles');
-
-                if (res.status === 401 && !isLocalInstance()) {
-                    await new Promise(resolve => setTimeout(resolve, 250));
-                    res = await apiClient.get('/api/user/skill-profiles');
-                }
 
                 if (res.ok) {
                     const data = await res.json();

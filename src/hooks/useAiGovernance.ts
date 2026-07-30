@@ -45,22 +45,15 @@ export const useAiGovernance = (
                     } catch (e) {}
                 }
             } else if (userData) {
-                // 🛡️ Preemptive Cookie Settling Delay (SaaS Only)
-                // Ensures the browser has fully committed the rotated session cookie before we fire.
+                // 🛡️ Staggered Cookie Settling Delay (SaaS Only — Slot 3/3)
+                // Serializes Logto session cookie reads across governance hooks to prevent
+                // parallel withLogtoApiRoute calls from corrupting each other's session state.
                 if (!isLocalInstance()) {
-                    await new Promise(resolve => setTimeout(resolve, 250));
+                    await new Promise(resolve => setTimeout(resolve, 1050));
                 }
 
                 try {
                     let res = await apiClient.get('/api/user/ai-profiles');
-
-                    // 🛡️ Cookie Write Race-Condition Guard (SaaS Only)
-                    // Prevents 401 Unauthorized errors on F5 refresh caused by asynchronous browser cookie-write delays.
-                    if (res.status === 401 && !isLocalInstance()) {
-                        console.warn('[AI Governance] Got 401 on start. Retrying in 250ms to bypass browser cookie-write race...');
-                        await new Promise(resolve => setTimeout(resolve, 250));
-                        res = await apiClient.get('/api/user/ai-profiles');
-                    }
 
                     if (res.ok) {
                         const data = await res.json();
