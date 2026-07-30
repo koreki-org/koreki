@@ -15,7 +15,7 @@ interface DashboardStateStore {
     aiSettings: AppSettings;
     isHydrated: boolean;
     setAiSettings: (val: AppSettings | ((prev: AppSettings) => AppSettings)) => void;
-    hydrateAiSettings: (globalSettings?: any) => void;
+    hydrateAiSettings: (globalSettings?: AppSettings | null) => void;
     
     upgrading: boolean;
     setUpgrading: Setter<boolean>;
@@ -27,9 +27,12 @@ interface DashboardStateStore {
     setModelSolutionPageCount: Setter<number>;
 }
 
-const createSetter = <K extends keyof DashboardStateStore>(set: any, key: K) => 
-    (val: any) => set((state: any) => ({
-        [key]: typeof val === 'function' ? val(state[key]) : val
+const createSetter = <K extends keyof DashboardStateStore>(
+    set: (fn: (state: DashboardStateStore) => Partial<DashboardStateStore>) => void,
+    key: K
+) => (val: DashboardStateStore[K] | ((prev: DashboardStateStore[K]) => DashboardStateStore[K])) => 
+    set((state: DashboardStateStore) => ({
+        [key]: typeof val === 'function' ? (val as (prev: DashboardStateStore[K]) => DashboardStateStore[K])(state[key]) : val
     }));
 
 export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
@@ -44,7 +47,7 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
         mistralKey: ''
     },
     isHydrated: false,
-    setAiSettings: (val: any) => set((state: any) => {
+    setAiSettings: (val: AppSettings | ((prev: AppSettings) => AppSettings)) => set((state: DashboardStateStore) => {
         const next = typeof val === 'function' ? val(state.aiSettings) : val;
         
         if (typeof window !== 'undefined') {
@@ -105,13 +108,13 @@ export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
         return { aiSettings: next };
     }),
     
-    hydrateAiSettings: async (globalSettings?: any) => {
+    hydrateAiSettings: async (globalSettings?: AppSettings | null) => {
         if (typeof window === 'undefined') return;
         if (get().isHydrated) return;
         
         const isDesktop = isLocalInstance();
         if (isDesktop) {
-            const savedProvider = (globalSettings?.provider || localStorage.getItem('koreki_desktop_provider') || 'mistral') as any;
+            const savedProvider = (globalSettings?.provider || localStorage.getItem('koreki_desktop_provider') || 'mistral') as AppSettings['provider'];
             
             // SECURITY: Load sensitive keys from Vault, not localStorage
             const mistralKey = await vaultService.getSecret('koreki-mistral-key');
