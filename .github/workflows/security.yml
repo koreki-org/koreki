@@ -28,6 +28,12 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: ESLint Check
+        run: npm run lint
+
+      - name: UI Audit Check
+        run: node scripts/ui-audit.js
+
       - name: Build Check
         run: npm run build
         env:

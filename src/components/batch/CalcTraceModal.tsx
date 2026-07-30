@@ -291,7 +291,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
                         <div className="space-y-3 max-h-[30vh] overflow-y-auto pr-1">
                             {(goal.criteria || []).length === 0 ? (
-                                <p className="text-xs text-muted-foreground italic py-2">Keine Kriterien vorhanden. Klicke auf 'Kriterium hinzufügen' oder generiere die Zielwerte neu.</p>
+                                <p className="text-xs text-muted-foreground italic py-2">Keine Kriterien vorhanden. Klicke auf &apos;Kriterium hinzufügen&apos; oder generiere die Zielwerte neu.</p>
                             ) : (
                                 (goal.criteria || []).map((crit, cIdx) => (
                                     <div key={crit.id || cIdx} className="bg-muted/30 border border-border rounded-xl p-3 flex flex-col gap-3 animate-fade-in text-sm">
