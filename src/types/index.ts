@@ -1,5 +1,6 @@
 import { Task } from '../lib/logic';
 import { Analysis } from '../lib/excel';
+import type { PromptLibraryEntry, PromptMetadata } from '../lib/ai/prompt-library';
 
 export interface AiStatus {
     ocrCost: number;
@@ -11,12 +12,35 @@ export interface AiStatus {
     message: string | null;
 }
 
+export interface CustomSkillDefinition {
+    metadata?: PromptMetadata;
+    promptSnippet?: string;
+    id?: string;
+    name?: string;
+    description?: string;
+    discipline?: string;
+    isCalcTrace?: boolean;
+    calcTrace?: any;
+    gradingGraph?: any;
+    isGraphBased?: boolean;
+    targetGoal?: any;
+    [key: string]: any;
+}
+
+export interface WorkspaceMembership {
+    id?: string;
+    workspaceId?: string;
+    userId?: string;
+    workspace?: Workspace;
+    role: string;
+}
+
 export interface Workspace {
     id: string;
     name: string;
     type: 'PERSONAL' | 'ORGANIZATION';
     credits: number;
-    memberships?: any[];
+    memberships?: WorkspaceMembership[];
     inviteCode?: string;
 }
 
@@ -42,7 +66,7 @@ export interface DbUser {
     activeGradingMemoryId?: string;
     activeSkillProfileId?: string;
     activeSkillIds?: string[];
-    customSkills?: Record<string, any>;
+    customSkills?: Record<string, CustomSkillDefinition>;
 }
 
 export interface User {
@@ -60,7 +84,7 @@ export interface User {
     activeGradingMemoryId?: string;
     activeSkillProfileId?: string;
     activeSkillIds?: string[];
-    customSkills?: Record<string, any>;
+    customSkills?: Record<string, CustomSkillDefinition>;
     activeWorkspaceName?: string;
     activeWorkspaceType?: 'PERSONAL' | 'ORGANIZATION';
     activeMembershipRole?: 'OWNER' | 'ADMIN' | 'MEMBER';
@@ -104,7 +128,7 @@ export interface AppSettings {
     activeGradingMemoryId?: string;
     activeSkillProfileId?: string;
     activeSkillIds?: string[];
-    customSkills?: Record<string, any>;
+    customSkills?: Record<string, CustomSkillDefinition>;
 }
 
 export interface BatchFile {

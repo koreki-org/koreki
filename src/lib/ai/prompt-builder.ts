@@ -1,4 +1,4 @@
-import { Task, GradingMemoryCase } from '../../types';
+import { Task, GradingMemoryCase, CustomSkillDefinition } from '../../types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
 import { getAvailablePluginManifest } from '../grading/graph-generator';
@@ -81,7 +81,7 @@ export function buildCorrectionPrompt(
     model?: string,
     gradingMemory?: GradingMemoryCase[] | null,
     activeSkillIds?: string[], // Symmetrisches Grading Skills Center
-    customSkills?: Record<string, PromptLibraryEntry> // Custom user-defined skills mapping
+    customSkills?: Record<string, CustomSkillDefinition | PromptLibraryEntry> // Custom user-defined skills mapping
 ): StructuredPrompt {
     let system = correctionSystemDefault;
     let user = correctionUserDefault;

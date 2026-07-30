@@ -15,6 +15,8 @@ import {
 import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
 import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
 import { isDesktopTarget } from '@/lib/env-context';
+import type { GradingMemoryCase, CustomSkillDefinition } from '@/types';
+import type { PromptLibraryEntry } from './prompt-library';
 
 export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
 
@@ -26,10 +28,10 @@ export interface OpenAIRequestOptions {
     customPrompt?: string;
     model?: string;
     enableThinking?: boolean;
-    gradingMemory?: any[] | null;
+    gradingMemory?: GradingMemoryCase[] | null;
     activeSkillIds?: string[];
-    customSkills?: Record<string, any>;
-    responseSchema?: any;
+    customSkills?: Record<string, CustomSkillDefinition | PromptLibraryEntry>;
+    responseSchema?: unknown;
     signal?: AbortSignal;
 }
 
