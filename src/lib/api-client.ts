@@ -63,9 +63,10 @@ export const apiClient = {
 
         // 🛡️ Resilience: Single retry on 401 to handle transient Logto cookie race conditions.
         // Skips auth endpoints to avoid retry loops.
-        if (res.status === 401 && !url.includes('/api/logto/')) {
+        if (res?.status === 401 && !url.includes('/api/logto/')) {
             await new Promise(resolve => setTimeout(resolve, 300));
-            return fetch(url, { ...options, headers });
+            const retryRes = await fetch(url, { ...options, headers });
+            return retryRes || res;
         }
 
         return res;

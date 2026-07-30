@@ -48,13 +48,21 @@ describe('AuthGuard Component (Reliability Suite)', () => {
     });
 
     it('should redirect to login if fetched and no userData', async () => {
-        mockUseAuth.mockReturnValue({
+        let triggerRerender: (() => void) | undefined;
+        const TestWrapper = () => {
+            const [, setTick] = React.useState(0);
+            triggerRerender = () => setTick(t => t + 1);
+            return <AuthGuard><div>Protected Content</div></AuthGuard>;
+        };
+
+        mockUseAuth.mockImplementation(() => ({
             userData: null,
             authLoading: false,
             isFetched: true,
-        });
+            checkAuth: () => triggerRerender?.(),
+        }));
 
-        render(<AuthGuard><div>Protected Content</div></AuthGuard>);
+        render(<TestWrapper />);
 
         await waitFor(() => {
             expect(mockPush).toHaveBeenCalledWith('/login');

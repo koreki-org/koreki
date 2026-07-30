@@ -28,7 +28,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false })
             // Handles transient Logto cookie race conditions on parallel API calls.
             if (!retryAttempted.current) {
                 retryAttempted.current = true;
-                checkAuth();
+                checkAuth?.();
                 return;
             }
 
