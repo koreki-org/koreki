@@ -544,21 +544,23 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
 
   // ── Proof A ──
   lines.push(`\n[Proof A: Logik & Folgefehler-Test]`);
-  if (result.ast.length === 0) {
+  const ast = result.ast || [];
+  const sandboxErrors = result.sandboxErrors || [];
+
+  if (ast.length === 0) {
     lines.push(`✗ Die KI konnte keinen gültigen mathematischen Rechenweg aus der Schülerantwort extrahieren (AST leer).`);
-  } else if (result.sandboxErrors.length === 0) {
+  } else if (sandboxErrors.length === 0) {
     lines.push(`✓ Der extrahierte Schüler-AST ist mathematisch in sich vollkommen fehlerfrei.`);
-    lines.push(`  [DEBUG-AST]: ${JSON.stringify(result.ast)}`);
+    lines.push(`  [DEBUG-AST]: ${JSON.stringify(ast)}`);
   } else {
     lines.push(`✗ Die Sandbox hat interne Verrechner im Weg des Schülers gefunden:\n`);
-    result.sandboxErrors.forEach(err => lines.push(`* ${err}`));
+    sandboxErrors.forEach(err => lines.push(`* ${err}`));
   }
 
   // ── Proof B ──
   lines.push(`\n[Proof B: Ziel-Test & Einheiten-Abgleich]`);
   const naturalValues = parseTargetValues(target.targetValue);
   const unitsPerValue = parseUnitsPerValue(target.unit, naturalValues.length);
-  const ast = result.ast;
 
   naturalValues.forEach((expected, idx) => {
     const expectedUnit = unitsPerValue[idx] || '';
@@ -572,7 +574,7 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
       const studentUnitStr = detail.studentUnit ? ` (Schüler notierte: ${detail.studentUnit})` : (detail.isExactMatch ? '' : ' (keine Einheit angegeben)');
       
       // Check if this specific step had a sandbox error
-      const hasErrorInStep = detail.stepId ? result.sandboxErrors.some(err => err.includes(detail.stepId!)) : false;
+      const hasErrorInStep = detail.stepId ? sandboxErrors.some(err => err.includes(detail.stepId!)) : false;
       const logicIndicator = hasErrorInStep ? `⚠ Rechenweg für diesen Schritt enthält Rechenfehler (siehe Proof A)` : `✓ Rechenweg für diesen Schritt fehlerfrei`;
 
       if (detail.isExactMatch) {
@@ -593,7 +595,7 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
       // Pure numeric target (no unit expected)
       const matchingStep = ast.find(step => isWithinTolerance(step.result, expected, TOLERANCE));
       if (matchingStep) {
-        const hasErrorInStep = result.sandboxErrors.some(err => err.includes(matchingStep.id));
+        const hasErrorInStep = sandboxErrors.some(err => err.includes(matchingStep.id));
         const logicIndicator = hasErrorInStep ? `⚠ Rechenweg für diesen Schritt enthält Rechenfehler (siehe Proof A)` : `✓ Rechenweg für diesen Schritt fehlerfrei`;
         lines.push(`* Zielwert ${targetStr}: Gefunden in ${matchingStep.id} -> MATCH (Reiner Zahlenwert-Abgleich)`);
         lines.push(`  → ${logicIndicator}`);

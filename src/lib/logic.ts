@@ -38,6 +38,7 @@ export interface Task {
     gradingResult?: any;
     targetGoal?: TargetGoal;
     calcTraceResult?: CalcTraceResult;
+    calcTrace?: any;
     suggestGraph?: boolean;
     predictedPluginDomain?: string | null;
     sandboxBypassed?: boolean;
