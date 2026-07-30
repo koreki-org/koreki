@@ -40,7 +40,8 @@ function ensureRepoFilesExist() {
     if (fs.existsSync(path.join(TARGET_DIR, '.git'))) {
       console.log(c('cyan', '🔄 Updating existing Koreki installation to latest version...'));
       try {
-        execSync('git pull --ff-only origin main', { cwd: TARGET_DIR, stdio: 'inherit' });
+        execSync('git fetch origin main', { cwd: TARGET_DIR, stdio: 'inherit' });
+        execSync('git reset --hard origin/main', { cwd: TARGET_DIR, stdio: 'inherit' });
         console.log(c('green', '✔ Updated to latest version.\n'));
       } catch {
         console.log(c('dim', 'ℹ Could not auto-update (offline or uncommitted changes). Continuing with existing files.\n'));
@@ -58,8 +59,8 @@ function ensureRepoFilesExist() {
     if (fs.existsSync(path.join(TARGET_DIR, '.git'))) {
       console.log(c('cyan', '🔄 Updating existing Koreki installation to latest version...'));
       try {
-        execSync('git pull --ff-only origin main', { cwd: TARGET_DIR, stdio: 'inherit' });
-        console.log(c('green', '✔ Updated to latest version.\n'));
+        execSync('git fetch origin main', { cwd: TARGET_DIR, stdio: 'inherit' });
+        execSync('git reset --hard origin/main', { cwd: TARGET_DIR, stdio: 'inherit' });
       } catch {
         console.log(c('dim', 'ℹ Could not auto-update. Continuing with existing files.\n'));
       }
