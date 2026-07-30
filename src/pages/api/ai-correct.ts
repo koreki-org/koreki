@@ -81,7 +81,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         const taskSpecificText = (studentTaskText && studentTaskText.trim().length > 0) ? studentTaskText : studentText;
                         
                         
-                        const studentValues = await extractStudentAnswersWithLLM(taskSpecificText, task.gradingGraph, 'STANDARD', settings as any, task.taskType, task.name);
+                        const studentValues = await extractStudentAnswersWithLLM(taskSpecificText, task.gradingGraph, 'STANDARD', settings as unknown as AppSettings, task.taskType, task.name);
                         
                         // Dump to file for agent to read
                         try {
@@ -116,7 +116,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         
                         const targetGoal = task.targetGoal || customSkills[task.taskType]?.targetGoal || { targetValue: 0, maxPoints: task.maxPoints || 0 };
                         
-                        let astResult = await extractStudentAST(taskSpecificText, 'STANDARD', settings as any, task.name);
+                        let astResult = await extractStudentAST(taskSpecificText, 'STANDARD', settings as unknown as AppSettings, task.name);
                         let calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
                         
                         let retryCount = 0;
@@ -132,7 +132,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                             logger.warn(`[Server] CalcTrace Sandbox validation failed (extraction errors). Retrying self-correction (${retryCount + 1}/${maxRetries}):`, extractionErrors);
                             
                             const correctionInstruction = `Die mathematische Sandbox hat Fehler in deinem extrahierten AST gefunden:\n${extractionErrors.join('\n')}\nBitte extrahiere den AST neu, beachte die Syntax für mathjs, und erfinde keine Rechenschritte, die der Schüler nicht gemacht hat.`;
-                            astResult = await extractStudentAST(taskSpecificText, 'STANDARD', settings as any, task.name, astResult, correctionInstruction);
+                            astResult = await extractStudentAST(taskSpecificText, 'STANDARD', settings as unknown as AppSettings, task.name, astResult, correctionInstruction);
                             calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
                             retryCount++;
                         }

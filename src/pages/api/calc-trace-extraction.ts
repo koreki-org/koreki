@@ -2,6 +2,7 @@ import type { NextApiResponse } from 'next';
 import { extractStudentAST } from '@/lib/grading/calc-trace-extraction';
 import { logger } from '@/lib/logger';
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
+import type { AppSettings } from '@/types';
 import { z } from 'zod';
 
 const CalcTraceStepSchema = z.object({
@@ -55,7 +56,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const extractedAST = await extractStudentAST(
             studentText,
             'STANDARD',
-            settings as any,
+            settings as unknown as AppSettings,
             taskName
         );
 
