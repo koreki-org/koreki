@@ -47,6 +47,18 @@ const customJestConfig = {
             lines: 63,
             statements: 63,
         },
+        './src/hooks/': {
+            branches: 25,
+            functions: 30,
+            lines: 30,
+            statements: 30,
+        },
+        './src/pages/api/': {
+            branches: 35,
+            functions: 40,
+            lines: 55,
+            statements: 55,
+        },
     },
 };
 
