@@ -37,6 +37,21 @@ APP_URL=https://koreki.deine-schule.de
 
 ## 3. Installation Schritt-für-Schritt
 
+### Option A: Automatisierter 1-Befehl-Setup (Empfohlen)
+Der interaktive Setup-Wizard richtet das gesamte Multi-User-Environment inkl. Keycloak automatisch ein:
+
+* **Windows (PowerShell):**
+  ```powershell
+  iwr -useb https://raw.githubusercontent.com/koreki-org/koreki/main/scripts/install/install.ps1 | iex
+  ```
+* **Linux / macOS:**
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/koreki-org/koreki/main/scripts/install/install.sh | bash
+  ```
+
+---
+
+### Option B: Manuelle Installation
 1.  **Repository klonen:**
     ```bash
     git clone https://github.com/koreki-org/koreki.git
@@ -48,7 +63,6 @@ APP_URL=https://koreki.deine-schule.de
 
 3.  **System starten:**
     ```bash
-    # Initialer Start & Build
     docker compose -f docker-compose.community-multi-full.yml up -d --build
     ```
 

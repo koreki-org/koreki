@@ -41,15 +41,20 @@ Koreki passt sich Ihrer Infrastruktur an – nicht umgekehrt.
 
 Die Community Edition ist für Schulen optimiert, die maximale Datenhoheit wünschen und Koreki auf eigenen Servern betreiben möchten.
 
-### Schnellstart in 60 Sekunden
+### Schnellstart in 60 Sekunden (1-Befehl-Setup)
 Voraussetzung: [Docker](https://www.docker.com/) & Docker Compose.
 
-1.  **Repository klonen**
-2.  **Stack starten**:
-    ```bash
-    docker-compose -f docker-compose.community.yml up -d
-    ```
-3.  **Loslegen**: Öffnen Sie `http://localhost:3000` im Browser. Keine Registrierung notwendig (Single-User Mode).
+**Für Windows (PowerShell):**
+```powershell
+iwr -useb https://raw.githubusercontent.com/koreki-org/koreki/main/scripts/install/install.ps1 | iex
+```
+
+**Für Linux / macOS (Terminal):**
+```bash
+curl -fsSL https://raw.githubusercontent.com/koreki-org/koreki/main/scripts/install/install.sh | bash
+```
+
+*Der interaktive Setup-Wizard führt Sie automatisch durch die Auswahl (Single-User, Multi-User mit Keycloak oder SaaS) und startet den Stack sofort.*
 
 ---
 

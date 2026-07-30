@@ -2,7 +2,11 @@
   "name": "koreki",
   "version": "0.9.87",
   "private": true,
+  "bin": {
+    "koreki-cli": "./scripts/cli/index.mjs"
+  },
   "scripts": {
+    "cli": "node scripts/cli/index.mjs",
     "dev": "prisma generate && cross-env NODE_OPTIONS='--max-old-space-size=1536' next dev -p 3000",
     "build": "prisma generate && next build",
     "start": "next start",
