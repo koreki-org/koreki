@@ -20,6 +20,16 @@ const REPO_URL = 'https://github.com/koreki-org/koreki.git';
 // Target directory is current working directory (where user runs command)
 let TARGET_DIR = process.cwd();
 
+// Guard: If running in system folder like C:\Windows\System32, switch to user's home folder
+if (os.platform() === 'win32' && /\\system32/i.test(TARGET_DIR)) {
+  const userHome = os.homedir() || 'C:\\Users\\Public';
+  TARGET_DIR = path.join(userHome, 'koreki-app');
+  if (!fs.existsSync(TARGET_DIR)) {
+    fs.mkdirSync(TARGET_DIR, { recursive: true });
+  }
+  process.chdir(TARGET_DIR);
+}
+
 // Helper: Ensure repo files exist in target directory
 function ensureRepoFilesExist() {
   const hasCompose = fs.existsSync(path.join(TARGET_DIR, 'docker-compose.community-multi-full.yml')) ||
