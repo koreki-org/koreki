@@ -1,4 +1,4 @@
-import { exportTeacherList, exportStudentSummaries, exportIndividualFeedbacks } from '../../src/lib/excel';
+import { exportTeacherList, exportStudentSummaries, exportIndividualFeedbacks, exportPerformanceExcel } from '../../src/lib/excel';
 import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 
@@ -101,6 +101,33 @@ describe('Excel Utils tests', () => {
             await exportIndividualFeedbacks(mockResults);
             expect(JSZip).toHaveBeenCalled();
             expect(document.createElement).toHaveBeenCalledWith('a');
+        });
+    });
+
+    describe('exportPerformanceExcel', () => {
+        it('should correctly format Qwen/Pro provider metadata in Excel header when high accuracy override is active', async () => {
+            const mockBatchFiles: any[] = [
+                {
+                    name: 'Schüler 1',
+                    status: 'done',
+                    inferenceDuration: 2500,
+                    fileText: 'Beispieltext mit fünf Wörtern',
+                    result: { tasks: [{ name: 'A1' }] }
+                }
+            ];
+
+            await exportPerformanceExcel(mockBatchFiles, {
+                mode: 'saas',
+                provider: 'openai-compatible',
+                model: 'Qwen 3.6 (Pro)',
+                isPure: false
+            });
+
+            expect(XLSX.utils.aoa_to_sheet).toHaveBeenCalled();
+            const rows = (XLSX.utils.aoa_to_sheet as jest.Mock).mock.calls[0][0];
+            expect(rows[1]).toEqual(['Deployment-Modus:', 'Saas']);
+            expect(rows[2]).toEqual(['KI-Quelle:', 'SaaS API (Qwen/Pro)']);
+            expect(rows[3]).toEqual(['Verwendetes Modell:', 'Qwen 3.6 (Pro)']);
         });
     });
 });

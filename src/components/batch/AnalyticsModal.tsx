@@ -7,7 +7,8 @@ import { BatchFile, AppSettings } from '../../types';
 import { useCorrectionStatistics } from '../../hooks/useCorrectionStatistics';
 import { exportAnalyticsPDF } from '../../lib/pdf';
 import { exportPerformanceExcel } from '../../lib/excel';
-import { getKorekiMode } from '../../lib/env-context';
+import { getKorekiMode, isLocalInstance } from '../../lib/env-context';
+import { useBatchStore } from '../../hooks/store/useBatchStore';
 
 interface AnalyticsModalProps {
     isOpen: boolean;
@@ -52,16 +53,19 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
 
     const handleExportPerformance = async () => {
         const mode = getKorekiMode();
-        const provider = settings?.provider || 'unknown';
-        const model = provider === 'ollama' ? 
+        const ocrStrategy = useBatchStore.getState().ocrStrategy;
+        const isHandwritingOverride = !isLocalInstance() && settings?.provider === 'mistral' && ocrStrategy === 'handwriting';
+        const effectiveProvider = isHandwritingOverride ? 'openai-compatible' : (settings?.provider || 'unknown');
+        
+        const model = effectiveProvider === 'ollama' ? 
             (settings?.customOllamaModel || settings?.ollamaModel || 'Local Model') : 
-            (provider === 'openai-compatible' ? 
+            (effectiveProvider === 'openai-compatible' ? 
                 (settings?.openaiModel || 'Qwen 3.6 (Pro)') : 
-                ((settings?.enableThinking && provider === 'mistral') ? 'Mistral Medium 3.5 (Reasoning)' : (settings?.model || 'Mistral Standard')));
+                ((settings?.enableThinking && effectiveProvider === 'mistral') ? 'Mistral Medium 3.5 (Reasoning)' : (settings?.model || 'Mistral Standard')));
 
         await exportPerformanceExcel(batchFiles, {
             mode,
-            provider,
+            provider: effectiveProvider,
             model,
             isPure: isPureMode,
             temperature: settings?.temperature,

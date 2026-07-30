@@ -178,6 +178,7 @@ jest.mock('xlsx', () => ({
     utils: {
         book_new: jest.fn(() => ({})),
         json_to_sheet: jest.fn(() => ({})),
+        aoa_to_sheet: jest.fn(() => ({})),
         book_append_sheet: jest.fn(),
     },
     write: jest.fn(() => new ArrayBuffer(0)),
