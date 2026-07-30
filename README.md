@@ -51,7 +51,7 @@ iwr -useb https://get.koreki.org | iex
 
 **Für Linux / macOS (Terminal):**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/koreki-org/koreki/main/scripts/install/install.sh | bash
+curl -fsSL https://get.koreki.org/sh | bash
 ```
 
 *Der interaktive Setup-Wizard führt Sie automatisch durch die Auswahl (Single-User, Multi-User mit Keycloak oder SaaS) und startet den Stack sofort.*

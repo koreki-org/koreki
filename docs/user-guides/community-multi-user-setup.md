@@ -46,7 +46,7 @@ Der interaktive Setup-Wizard richtet das gesamte Multi-User-Environment inkl. Ke
   ```
 * **Linux / macOS:**
   ```bash
-  curl -fsSL https://raw.githubusercontent.com/koreki-org/koreki/main/scripts/install/install.sh | bash
+  curl -fsSL https://get.koreki.org/sh | bash
   ```
 
 ---
