@@ -69,8 +69,9 @@ COPY --chown=nextjs:nodejs --from=builder /app/prisma.config.ts ./prisma.config.
 # without bloating the image with devDependencies (eslint, typescript, playwright, jest, etc.).
 COPY --chown=nextjs:nodejs --from=prod-deps /app/node_modules ./node_modules
 
-# Fix permissions and pre-create storage
-RUN chmod +x ./start.sh && \
+# Fix permissions, CRLF line endings, and pre-create storage
+RUN sed -i 's/\r$//' ./start.sh && \
+    chmod +x ./start.sh && \
     mkdir -p data/prompts && \
     chown -R nextjs:nodejs data
 

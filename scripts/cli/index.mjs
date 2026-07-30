@@ -280,6 +280,31 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
 `;
 
   ensureRepoFilesExist();
+
+  // Inject dynamic appUrl into keycloak realm config
+  try {
+    const realmFile = path.join(TARGET_DIR, `keycloak/koreki-realm.${envMode}.json`);
+    if (fs.existsSync(realmFile)) {
+      const realmJson = JSON.parse(fs.readFileSync(realmFile, 'utf8'));
+      if (realmJson.clients && Array.isArray(realmJson.clients)) {
+        const appClient = realmJson.clients.find(c => c.clientId === 'koreki-app');
+        if (appClient) {
+          appClient.redirectUris = Array.from(new Set([
+            `${appUrl}/*`,
+            'http://localhost/*',
+            'http://localhost:8080/*',
+            'http://127.0.0.1/*',
+            'http://127.0.0.1:8080/*'
+          ]));
+          fs.writeFileSync(realmFile, JSON.stringify(realmJson, null, 2));
+        }
+      }
+    }
+  } catch (e) {
+    console.log(c('dim', 'Note: Could not update Keycloak realm file dynamically: ' + e.message));
+  }
+
+  ensureRepoFilesExist();
   const envPath = path.join(TARGET_DIR, '.env');
   const composeFile = 'docker-compose.community-multi-full.yml';
 
