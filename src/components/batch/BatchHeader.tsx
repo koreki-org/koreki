@@ -164,11 +164,11 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                     <Download size={14} />
                                     <span>Exportieren</span>
                                 </Button>
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 hidden group-hover:flex flex-col items-center z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:flex flex-col items-center z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                    <div className="w-2.5 h-2.5 bg-white/95 border-l border-t border-border rotate-45 -mb-1.5 z-40"></div>
                                     <div className="bg-white/95 backdrop-blur-md border border-border px-3.5 py-2 rounded-2xl shadow-xl whitespace-nowrap text-xs font-bold text-primary font-outfit">
                                         Schülerlösung als Zwischenstand exportieren (.koreki)
                                     </div>
-                                    <div className="w-2.5 h-2.5 bg-white/95 border-r border-b border-border rotate-45 -mt-1.5 z-40"></div>
                                 </div>
                             </div>
                         )}
@@ -184,11 +184,11 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                     <span>Korrektur exportieren</span>
                                     <Info size={14} className="opacity-60 group-hover:text-primary-foreground/80 transition-colors shrink-0" />
                                 </Button>
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 hidden group-hover:flex flex-col items-center z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:flex flex-col items-center z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                    <div className="w-2.5 h-2.5 bg-white/95 border-l border-t border-border rotate-45 -mb-1.5 z-40"></div>
                                     <div className="bg-white/95 backdrop-blur-md border border-border px-3.5 py-2 rounded-2xl shadow-xl whitespace-nowrap text-xs font-bold text-primary font-outfit">
                                         Ohne PDFs (beim Import nachladbar)
                                     </div>
-                                    <div className="w-2.5 h-2.5 bg-white/95 border-r border-b border-border rotate-45 -mt-1.5 z-40"></div>
                                 </div>
                             </div>
                         )}
