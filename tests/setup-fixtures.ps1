@@ -1,5 +1,5 @@
 # Create directories
-$dest = "C:\Users\AndreasHeid\Documents\Antigravity\koreki\tests\fixtures"
+$dest = Join-Path $PSScriptRoot "fixtures"
 if (!(Test-Path $dest)) { New-Item -Path $dest -ItemType Directory -Force }
 
 try {

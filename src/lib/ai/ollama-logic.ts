@@ -31,28 +31,6 @@ export function normalizeOllamaUrl(url: string): string {
     return clean;
 }
 
-async function sendDebugLog(data: {
-    action: string;
-    model: string;
-    numCtx?: number;
-    temp: number;
-    topP: number;
-    finalMaxTokens: number;
-    systemPrompt?: string;
-    userPrompt: string;
-    response: any;
-}) {
-    try {
-        await fetch('/api/debug-log', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-    } catch (e) {
-        // Silent catch
-    }
-}
-
 /**
  * Specifically optimized for Gemma 4 E4B (multimodal).
  * In Desktop mode, this bypasses CORS by using a Rust-Backend Proxy.
@@ -299,19 +277,6 @@ export async function executeOllamaRequest(
                 content = await invokePromise;
             }
 
-
-            sendDebugLog({
-                action,
-                model,
-                numCtx,
-                temp: targetTemp,
-                topP: targetTopP,
-                finalMaxTokens,
-                systemPrompt: promptObj.system,
-                userPrompt: promptObj.user,
-                response: content
-            });
-
             return processOllamaResponse(content, action, model);
 
         } catch (error) {
@@ -522,19 +487,6 @@ export async function executeOllamaRequest(
         // If no tool calls, exit loop
         break;
     }
-
-
-    sendDebugLog({
-        action,
-        model,
-        numCtx,
-        temp: targetTemp,
-        topP: targetTopP,
-        finalMaxTokens,
-        systemPrompt: promptObj.system,
-        userPrompt: promptObj.user,
-        response: fullContent
-    });
 
     return processOllamaResponse(fullContent, action, model);
 
