@@ -216,7 +216,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         return res.status(200).json({ text: resultData.text });
     } catch (error: any) {
-        console.error('[API/extract-image] OCR Error:', error);
+        logger.error('[API/extract-image] OCR Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
         const isComplianceError = error.message?.includes('Compliance') || error.message?.includes('AVV');
         const isCreditsError = error.message?.includes('Credits');
         const isRateLimit = error.message?.includes('429') || error.message?.toLowerCase().includes('rate limit');

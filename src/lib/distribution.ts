@@ -6,6 +6,7 @@
 
 import LZString from 'lz-string';
 import { toSafeString } from './validation';
+import { logger } from './logger';
 
 export interface FeedbackTask {
     id: string;
@@ -43,7 +44,7 @@ export function decodeFeedback(encoded: string): FeedbackData | null {
         if (!json) return null;
         return JSON.parse(json);
     } catch (e) {
-        console.error('Failed to decode feedback:', e);
+        logger.error('Failed to decode feedback', e);
         return null;
     }
 }

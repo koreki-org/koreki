@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 /**
  * Industrial Configuration Context
  * 🏮🛡️🏛️
@@ -76,7 +78,7 @@ export function isLocalInstance(): boolean {
         const isProdDomain = PROD_DOMAINS.includes(hostname) || hostname.endsWith('.koreki.org');
         
         if (isProdDomain) {
-            console.warn('SECURITY ALERT: Local instance flags detected on production domain! Ignoring flags.');
+            logger.security('SECURITY ALERT: Local instance flags detected on production domain! Ignoring flags.');
             return false;
         }
     }

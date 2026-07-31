@@ -7,6 +7,7 @@
 
 import { splitFeedback } from '@/components/ui/EditableMathArea';
 import { toSafeString } from './validation';
+import { logger } from './logger';
 
 /**
  * Strips the technical PANG engine block from feedback text, keeping only
@@ -108,7 +109,7 @@ export function formatMarkdownTableForPDF(text: any): string {
 
         return result.trim();
     } catch (err) {
-        console.error("Failed to parse markdown table in PDF export:", err);
+        logger.error("Failed to parse markdown table in PDF export", err);
         return cleanDidacticalMarks(safeText);
     }
 }

@@ -1,4 +1,5 @@
 import { isLocalInstance } from './env-context';
+import { logger } from './logger';
 
 /**
  * Industrial Network Guard (Layer 1)
@@ -35,7 +36,7 @@ export function validateNetworkTarget(url: string) {
         if (PRIVATE_NETWORK_REGEX.test(hostname)) return;
 
         // 3. BLOCK EVERYTHING ELSE (especially *.koreki.org)
-        console.error(`🚨 NETWORK ISOLATION BREACH: Blocked call to ${hostname} in Desktop Mode.`);
+        logger.security(`NETWORK ISOLATION BREACH: Blocked call to ${hostname} in Desktop Mode.`);
         throw new Error(`Koreki Security: Netzwerkzugriff auf ${hostname} im lokalen Modus blockiert.`);
     } catch (e: any) {
         if (e.message?.includes('Koreki Security')) throw e;

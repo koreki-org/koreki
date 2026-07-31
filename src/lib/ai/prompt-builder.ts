@@ -2,6 +2,7 @@ import { Task, GradingMemoryCase, CustomSkillDefinition } from '../../types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
 import { getAvailablePluginManifest } from '../grading/graph-generator';
+import { logger } from '../logger';
 
 /**
  * Helper to determine whether deterministic PANG engine point awarding should be disabled (default true for custom tasks).
@@ -269,7 +270,7 @@ export function buildCorrectionPrompt(
  
     let examplesText = '';
     if (gradingMemory && Array.isArray(gradingMemory) && gradingMemory.length > 0) {
-        console.log(`[PromptBuilder] Injecting ${gradingMemory.length} grading memory cases into correction prompt.`);
+        logger.debug(`[PromptBuilder] Injecting ${gradingMemory.length} grading memory cases into correction prompt.`);
         examplesText = '\n\n### WICHTIGER PÄDAGOGISCHER ERFAHRUNGSSCHATZ (BENOTUNGS-REFERENZ):\n';
         examplesText += 'Diese Beispiele zeigen dir, wie der Lehrer in der Vergangenheit bestimmte Typen von Fehlern bewertet hat. Sie dienen als Orientierung für deinen Bewertungsmaßstab (z. B. wie kulant oder streng du bei bestimmten Abweichungen sein sollst) und für die Formulierung deines Feedbacks.\n\n';
         examplesText += 'RICHTLINIEN FÜR DIE ANWENDUNG:\n';
@@ -296,7 +297,7 @@ export function buildCorrectionPrompt(
             examplesText += '</example>\n\n';
         });
     } else {
-        console.log('[PromptBuilder] No active grading memory cases to inject (gradingMemory is empty or null).');
+        logger.debug('[PromptBuilder] No active grading memory cases to inject (gradingMemory is empty or null).');
     }
 
     if (examplesText) {

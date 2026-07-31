@@ -1,5 +1,6 @@
 import { UserManager, WebStorageStateStore, User as OidcUser } from 'oidc-client-ts';
 import { isKeycloakAuth } from './env-context';
+import { logger } from './logger';
 
 /**
  * Industrial OIDC Manager (Keycloak Strategy)
@@ -16,7 +17,7 @@ const getOidcConfig = () => {
     const clientId = process.env.NEXT_PUBLIC_OIDC_CLIENT_ID;
     
     if (!issuer || !clientId) {
-        console.warn("🚨 OIDC Configuration missing (Issuer or Client ID).");
+        logger.warn("OIDC Configuration missing (Issuer or Client ID).");
         return null;
     }
 
@@ -60,7 +61,7 @@ export const handleOidcCallback = async (): Promise<OidcUser | null> => {
             window.history.replaceState({}, document.title, window.location.pathname);
             return user;
         } catch (err) {
-            console.error("❌ OIDC Callback Error:", err);
+            logger.error("OIDC Callback Error", err);
             return null;
         }
     }

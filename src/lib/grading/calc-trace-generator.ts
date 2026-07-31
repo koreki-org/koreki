@@ -1,5 +1,6 @@
 import { TargetGoal } from './calc-trace-types';
 import calcTraceGenSystemDefault from '../../prompts/core/default/calc-trace-generation/system.md';
+import { logger } from '../logger';
 
 export const TARGET_GOAL_SCHEMA = {
   type: "object",
@@ -149,7 +150,7 @@ export function parseGeneratedCalcTrace(rawOutput: any): TargetGoal | null {
         // to prevent pedagogical distortion caused by arbitrary scaling or rounding.
         const sum = target.criteria.reduce((acc, c) => acc + (c.punktwert || 0), 0);
         if (sum !== target.maxPoints) {
-            console.warn(`[Resilience] Updating maxPoints from ${target.maxPoints} to match sum of criteria points ${sum}`);
+            logger.warn(`[Resilience] Updating maxPoints from ${target.maxPoints} to match sum of criteria points ${sum}`);
             target.maxPoints = sum;
         }
 
@@ -162,13 +163,13 @@ export function parseGeneratedCalcTrace(rawOutput: any): TargetGoal | null {
             const isProof = crit.source === 'proofA' || crit.source === 'proofB';
             if (isProof) {
                 if (crit.targetIndex === undefined || crit.targetIndex === null) {
-                    console.warn(`[Resilience] Criterion "${crit.id}" (source: ${crit.source}) is missing targetIndex. Defaulting to final goal (0).`);
+                    logger.warn(`[Resilience] Criterion "${crit.id}" (source: ${crit.source}) is missing targetIndex. Defaulting to final goal (0).`);
                     crit.targetIndex = 0;
                 }
                 let idx = Number(crit.targetIndex);
                 if (isNaN(idx) || idx < 0 || idx >= valuesCount) {
                     const clampedIdx = Math.max(0, valuesCount - 1);
-                    console.warn(`[Resilience] Adjusting invalid targetIndex ${crit.targetIndex} on criterion "${crit.id}" to maximum valid index ${clampedIdx}`);
+                    logger.warn(`[Resilience] Adjusting invalid targetIndex ${crit.targetIndex} on criterion "${crit.id}" to maximum valid index ${clampedIdx}`);
                     crit.targetIndex = clampedIdx;
                 }
             } else {
@@ -177,7 +178,7 @@ export function parseGeneratedCalcTrace(rawOutput: any): TargetGoal | null {
                     let idx = Number(crit.targetIndex);
                     if (isNaN(idx) || idx < 0 || idx >= valuesCount) {
                         const clampedIdx = Math.max(0, valuesCount - 1);
-                        console.warn(`[Resilience] Adjusting out-of-bounds targetIndex ${crit.targetIndex} on qualitative criterion "${crit.id}" to ${clampedIdx}`);
+                        logger.warn(`[Resilience] Adjusting out-of-bounds targetIndex ${crit.targetIndex} on qualitative criterion "${crit.id}" to ${clampedIdx}`);
                         crit.targetIndex = clampedIdx;
                     }
                 }

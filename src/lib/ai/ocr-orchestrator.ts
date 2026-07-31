@@ -4,6 +4,7 @@ import { executeOpenAIRequest } from './openai-provider';
 import { promisePool } from './promise-pool';
 import { AppSettings } from '../../types';
 import { isLocalInstance } from '../env-context';
+import { logger } from '../logger';
 
 /**
  * Orchestrates OCR requests, choosing between direct Mistral API (PURE) or Koreki Backend (STANDARD).
@@ -94,7 +95,7 @@ export async function performOCRRequest(
                     action: 'ocr',
                     isScan: isScan
                 })
-            }).catch(e => console.error("Billing ping failed:", e));
+            }).catch(e => logger.error("Billing ping failed", e));
         }
 
         return fullText;
