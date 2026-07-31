@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma';
 import type { NextApiResponse } from 'next';
+import { z } from 'zod';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
@@ -18,13 +19,44 @@ export const config = {
 
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 
+const extractImageSchema = z.object({
+    buffer: z.string().optional(),
+    buffers: z.array(z.string()).optional(),
+    mimeType: z.string().optional(),
+    settings: z.object({
+        provider: z.enum(['mistral', 'ollama', 'openai-compatible']).optional(),
+        mistralKey: z.string().optional(),
+        openaiUrl: z.string().optional(),
+        openaiKey: z.string().optional(),
+        openaiModel: z.string().optional(),
+        model: z.string().optional(),
+        ollamaUrl: z.string().optional(),
+        ollamaModel: z.string().optional(),
+        ollamaNumCtx: z.number().optional(),
+        visionTemperature: z.number().optional(),
+        visionTopP: z.number().optional(),
+        visionMaxTokens: z.number().optional(),
+        visionPresencePenalty: z.number().optional()
+    }).passthrough().optional(),
+    pageCount: z.number().optional(),
+    pageRange: z.tuple([z.number(), z.number()]).optional(),
+    isComplex: z.boolean().optional()
+}).refine(data => !!data.buffer || (Array.isArray(data.buffers) && data.buffers.length > 0), {
+    message: 'Bilddaten fehlen (buffer oder buffers erforderlich).'
+});
+
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     try {
         if (req.method !== 'POST') {
             return res.status(405).json({ message: 'Method not allowed' });
         }
 
-        const { buffer, buffers: buffersFromReq, mimeType, settings, pageCount, pageRange, isComplex } = req.body;
+        const validation = extractImageSchema.safeParse(req.body);
+        if (!validation.success) {
+            return res.status(400).json({ error: validation.error.issues[0].message });
+        }
+
+        const { buffer, buffers: buffersFromReq, mimeType, settings, pageCount, pageRange, isComplex } = validation.data;
         let dataBuffer: Buffer[];
 
         if (buffersFromReq && Array.isArray(buffersFromReq)) {
