@@ -22,10 +22,21 @@ const buttonVariants = cva(
                 icon: 'h-10 w-10',
                 xs: 'h-8 px-3 rounded-lg text-xxs',
             },
+            shape: {
+                default: '',
+                // Kapselt den Marketing-"Pill-CTA"-Look (siehe Hero-/Deep-Dive-CTAs auf den
+                // Marketing-Seiten): voll gerundet, angehobener Custom-Shadow-Ton, dezenter
+                // Hover-Lift. Ersetzt bisherige Ad-hoc-Duplikate von rounded-full + shadow-*.
+                // Bewusst Sentence-Case (kein uppercase/tracking-widest) — Uppercase-CTAs
+                // erzeugten zusammen mit den Badges einen zu "hypigen" Gesamteindruck.
+                // Uppercase/tracking-widest bleibt Badge.tsx vorbehalten (dortige Konvention).
+                pill: 'relative overflow-hidden rounded-full font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 group',
+            },
         },
         defaultVariants: {
             variant: 'default',
             size: 'default',
+            shape: 'default',
         },
     }
 );
@@ -34,18 +45,23 @@ export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
     isLoading?: boolean;
+    /** Nur in Kombination mit shape="pill" sinnvoll: blendet den Shimmer-Overlay-Effekt der Hero-CTAs ein. */
+    shimmer?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({ className, variant, size, isLoading, children, type = 'button', ...props }, ref) => {
+    ({ className, variant, size, shape, shimmer, isLoading, children, type = 'button', ...props }, ref) => {
         return (
             <button
                 type={type}
-                className={cn(buttonVariants({ variant, size, className }))}
+                className={cn(buttonVariants({ variant, size, shape, className }))}
                 ref={ref}
                 disabled={isLoading || props.disabled}
                 {...props}
             >
+                {shimmer && (
+                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-[200%] transition-transform duration-700 pointer-events-none" />
+                )}
                 {isLoading && (
                     <svg
                         style={{ marginRight: '0.5rem', animation: 'spin 1s linear infinite' }}

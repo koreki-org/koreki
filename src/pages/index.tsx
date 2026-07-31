@@ -4,6 +4,8 @@ import { useRouter } from 'next/router';
 import { Sparkles, FileText, CheckCircle, Zap, ShieldCheck, MessageSquare, TrendingUp, Clock, ArrowRight } from 'lucide-react';
 import MarketingLayout from '../layouts/MarketingLayout';
 import { Badge } from '@/components/ui/Badge';
+import { buttonVariants } from '@/components/ui/Button';
+import { cn } from '@/lib/utils';
 import { isDesktopTarget, getKorekiMode } from '@/lib/env-context';
 import { WorkflowVisual } from '@/components/marketing/WorkflowVisual';
 import { PerformanceSection } from '@/components/marketing/PerformanceSection';
@@ -47,13 +49,11 @@ export default function LandingPage() {
 
                     <div className="mb-6">
                         {mode === 'community' ? (
-                            <Link href={(!authLoading && userData) ? "/app" : "/login"} className="relative bg-primary hover:bg-primary/90 text-primary-foreground px-10 py-5 rounded-full font-black text-sm uppercase tracking-widest inline-flex items-center gap-3 transition-all duration-300 shadow-[0_10px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:shadow-[0_20px_40px_-5px_rgba(var(--primary-rgb),0.5)] hover:-translate-y-1 group overflow-hidden">
-                                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-[200%] transition-transform duration-700"></span>
+                            <Link href={(!authLoading && userData) ? "/app" : "/login"} className={cn(buttonVariants({ variant: 'default', shape: 'pill' }), "px-10 py-5 h-auto text-sm gap-3 font-black shadow-[0_10px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:shadow-[0_20px_40px_-5px_rgba(var(--primary-rgb),0.5)]")}>
                                 Korrektur starten <ArrowRight size={18} />
                             </Link>
                         ) : (
-                            <Link href={(!authLoading && userData) ? "/app" : "/register"} className="relative bg-primary hover:bg-primary/90 text-primary-foreground px-9 py-4 rounded-full font-black text-sm uppercase tracking-widest inline-flex items-center gap-3 transition-all duration-300 shadow-[0_10px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:shadow-[0_20px_40px_-5px_rgba(var(--primary-rgb),0.5)] hover:-translate-y-1 group overflow-hidden">
-                                    <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-[200%] transition-transform duration-700"></span>
+                            <Link href={(!authLoading && userData) ? "/app" : "/register"} className={cn(buttonVariants({ variant: 'default', shape: 'pill' }), "px-9 py-4 h-auto text-sm gap-3 font-black shadow-[0_10px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:shadow-[0_20px_40px_-5px_rgba(var(--primary-rgb),0.5)]")}>
                                     {(!authLoading && userData) ? "Zum Dashboard" : "Jetzt testen"} <ArrowRight size={18} />
                             </Link>
                         )}
@@ -74,7 +74,7 @@ export default function LandingPage() {
                 <div className="lg:col-span-7 relative animate-fade-in delay-300 flex items-center justify-center w-full cursor-zoom-in" onClick={() => setIsLightboxOpen(true)}>
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-[radial-gradient(circle,rgba(var(--primary-rgb),0.02)_0%,transparent_70%)] z-0 blur-[40px] animate-float-glow"></div>
                     {/* Elegant Screenshot Card with clean border and shadow */}
-                    <div className="relative w-full transition-all duration-500 hover:scale-[1.01]">
+                    <div className="relative w-full lg:w-[110%] lg:shrink-0 transition-all duration-500 hover:scale-[1.01]">
                         <div className="bg-white/40 backdrop-blur-md rounded-hero border border-white/60 p-2 shadow-2xl overflow-hidden">
                             <img
                                 src="/screenshots/4_koreki_app_overview.png"
@@ -108,7 +108,7 @@ export default function LandingPage() {
                             <p className="text-muted-foreground text-lg font-medium leading-relaxed mb-10 mt-4">
                                 Beenden Sie den Umweg über Papier und OCR. Importieren Sie die Bewertung von Freitextfragen direkt aus Moodle XLSX-Exporten. Höchste Präzision bei der Schülermeldung.
                             </p>
-                            <Link href="/features/workflow" className="bg-primary text-white px-10 py-5 rounded-2xl font-bold text-sm uppercase tracking-widest shadow-xl shadow-primary/20 transition-all hover:-translate-y-1 hover:bg-primary/90 flex items-center gap-3 w-fit mx-auto lg:ml-0 group">
+                            <Link href="/features/workflow" className={cn(buttonVariants({ variant: 'default', shape: 'pill' }), "px-10 py-5 h-auto text-sm gap-3 shadow-xl hover:shadow-xl w-fit mx-auto lg:ml-0")}>
                                 Mehr erfahren <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                             </Link>
                         </div>
