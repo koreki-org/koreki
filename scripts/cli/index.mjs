@@ -288,8 +288,14 @@ async function setupCommunityMulti(isDryRun) {
   }
   const appHostname = parsedUrl.hostname;
   const isHttps = parsedUrl.protocol === 'https:';
-  // Use explicit port if given, otherwise default (443 for HTTPS, 80 for HTTP, 8080 for localhost)
-  const publicPort = parsedUrl.port || (isHttps ? '443' : (appHostname === 'localhost' ? '8080' : '80'));
+  // External port from the URL (what users/browsers see)
+  const externalPort = parsedUrl.port || (isHttps ? '443' : '80');
+
+  // Docker host port: the port Docker binds the Nginx gateway to on THIS machine
+  // Behind a reverse proxy (HAProxy, Traefik), this is typically 8080 or 3000
+  const isLocalhost = appHostname === 'localhost' || appHostname === '127.0.0.1';
+  const defaultDockerPort = isLocalhost ? (parsedUrl.port || '8080') : '8080';
+  const publicPort = await askQuestion('Local Docker port (port Nginx gateway binds to on this machine)', defaultDockerPort);
 
   const envMode = await askQuestion('Environment (dev or prod)', 'dev');
   const mistralKey = await askQuestion('Mistral API Key (Optional)', '');
@@ -297,9 +303,9 @@ async function setupCommunityMulti(isDryRun) {
   const adminPassword = generateSecret(12);
   const dbPassword = generateSecret(16);
 
-  // Keycloak port: -1 means "use default" (omit port from URLs) for standard ports
-  const isStandardPort = (isHttps && publicPort === '443') || (!isHttps && publicPort === '80');
-  const kcHostnamePort = isStandardPort ? '-1' : publicPort;
+  // Keycloak port: -1 means "use default" (omit port from URLs) for standard ports (443/80)
+  const isStandardPort = (isHttps && externalPort === '443') || (!isHttps && externalPort === '80');
+  const kcHostnamePort = isStandardPort ? '-1' : externalPort;
 
   const envContent = `
 # Koreki Community Multi-User Configuration
