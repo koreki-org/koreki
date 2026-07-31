@@ -9,7 +9,8 @@ import { isLocalInstance, isDesktopTarget } from '@/lib/env-context';
 import { GraphRunner } from '../grading/GraphRunner';
 import { parseGeneratedGraph, validateGraphDeterminism, GRADING_GRAPH_SCHEMA } from '../grading/graph-generator';
 import { formatPluginFeedback } from '../grading/feedback-formatter';
-import { GradingGraph } from '../grading/types';
+import { GradingGraph, StepResult, VariableDefinition } from '../grading/types';
+import { TargetGoal, GradingCriterion } from '../grading/calc-trace-types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { splitSkillSnippet } from './prompt-library';
 import { splitTextByTasks } from '../task-utils';
@@ -43,39 +44,39 @@ function parseCriteriaScoresFromNotes(notes: string): Record<string, number> {
 export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: Task[] | null, studentText?: string): AIAnalysisResult {
     const parsed = AIAnalysisResultSchema.safeParse(analysis);
     if (parsed.success) {
-        analysis = parsed.data as any;
+        analysis = parsed.data as AIAnalysisResult;
     }
 
     if (tasksLayout && Array.isArray(tasksLayout) && tasksLayout.length > 0) {
         let totalObtained = 0;
         let totalMax = 0;
 
-        tasksLayout.forEach((lt: any) => totalMax += Number(lt.maxPoints || 0));
+        tasksLayout.forEach((lt: Task) => totalMax += Number(lt.maxPoints || 0));
 
         let hasMappingError = false;
         let hasMarkerIssue = false;
 
-        const mappedTasks = tasksLayout.map((layoutTask: any) => {
+        const mappedTasks = tasksLayout.map((layoutTask: Task) => {
             // Find the AI task if it exists for extra pedagogical feedback
-            const aiTask = (analysis.tasks || []).find((t: any) => t.name === layoutTask.name);
+            const aiTask = (analysis.tasks || []).find((t: AITask) => t.name === layoutTask.name);
 
             // --- DETECT DETERMINISTIC CALCTRACE-BASED TASKS & EVALUATE LOCALLY ---
             if (layoutTask.calcTraceResult) {
                 let enginePoints: number;
-                
-                const targetGoal: any = layoutTask.targetGoal || {};
+
+                const targetGoal: Partial<TargetGoal> = layoutTask.targetGoal || {};
                 const criteria = targetGoal.criteria;
-                
+
                 if (aiTask && criteria && Array.isArray(criteria) && criteria.length > 0) {
                     const notes = aiTask.correctionNotes || '';
                     const parsedScores = parseCriteriaScoresFromNotes(notes);
-                    
+
                     let computedSum = 0;
                     const finalCriteriaNotes: string[] = [];
-                    
-                    criteria.forEach((crit: any) => {
+
+                    criteria.forEach((crit: GradingCriterion) => {
                         const idx = (crit.targetIndex !== undefined && crit.targetIndex !== null) ? crit.targetIndex : 0;
-                        const pt = layoutTask.calcTraceResult.perTargetResult?.find((r: any) => r.targetIndex === idx);
+                        const pt = layoutTask.calcTraceResult!.perTargetResult?.find((r) => r.targetIndex === idx);
                         
                         let pts = 0;
                         let justification = '';
@@ -146,7 +147,7 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                     };
                 }
 
-                const stepFeedback = formatCalcTraceForPrompt(layoutTask.calcTraceResult, layoutTask.targetGoal || {});
+                const stepFeedback = formatCalcTraceForPrompt(layoutTask.calcTraceResult, (layoutTask.targetGoal || {}) as TargetGoal);
                 const aiFeedbackText = aiTask ? (aiTask.feedback || aiTask.content || '') : '';
                 
                 let finalFeedback = `[📐 CalcTrace Engine - Mathematischer Abgleich]\n${stepFeedback}\n\n---\n\n`;
@@ -196,10 +197,10 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                     stepFeedback = pluginFeedback;
                     shownStepsCount = layoutTask.gradingResult.stepResults.length;
                 } else {
-                    const totalMaxPoints = layoutTask.gradingResult.stepResults.reduce((sum: number, s: any) => sum + (s.maxPoints || 0), 0);
-                    
-                    layoutTask.gradingResult.stepResults.forEach((step: any, idx: number) => {
-                        const originalVar = layoutTask.gradingGraph?.variables?.find((v: any) => v.id === step.variableId);
+                    const totalMaxPoints = layoutTask.gradingResult.stepResults.reduce((sum: number, s: StepResult) => sum + (s.maxPoints || 0), 0);
+
+                    layoutTask.gradingResult.stepResults.forEach((step: StepResult, idx: number) => {
+                        const originalVar = layoutTask.gradingGraph?.variables?.find((v: VariableDefinition) => v.id === step.variableId);
                         
                         // Only skip explicit setup variables to keep the UI clean, but ALWAYS show inputs and formulas
                         // even if they yield 0 points, so the user can verify the extraction process.
@@ -299,7 +300,7 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                     sandboxBypassed: isSandboxBypassed ? true : undefined
                 };
             } else {
-                const nearMiss = (analysis.tasks || []).find((t: any) => 
+                const nearMiss = (analysis.tasks || []).find((t: AITask) =>
                     t.name?.toLowerCase().trim() === layoutTask.name.toLowerCase().trim()
                 );
 
@@ -331,7 +332,7 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
             }
         });
 
-        analysis.tasks = mappedTasks;
+        analysis.tasks = mappedTasks as AITask[];
         analysis.overallMatchPercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
         
         // --- INDUSTRIAL CONFIDENCE BRAKE ---
@@ -344,7 +345,7 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
     } else if (analysis.tasks && Array.isArray(analysis.tasks)) {
         let totalObtained = 0;
         let totalMax = 0;
-        analysis.tasks.forEach((task: any) => {
+        analysis.tasks.forEach((task: AITask) => {
             totalObtained += Number(task.pointsObtained || 0);
             totalMax += Number(task.maxPoints || 0);
         });
@@ -360,7 +361,7 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
 export function parseMappingResult(result: any, tasksLayout?: Task[] | null): any {
     if (!tasksLayout || !Array.isArray(tasksLayout)) return result;
 
-    const mappedTasks = tasksLayout.map((layoutTask: any) => {
+    const mappedTasks = tasksLayout.map((layoutTask: Task) => {
         const aiTask = (result.tasks || []).find((t: any) => t.name === layoutTask.name);
         if (aiTask) {
             return aiTask;
@@ -395,8 +396,6 @@ export async function extractStudentAnswersWithLLM(
     taskName?: string
 ): Promise<Record<string, any>> {
     // 1. Establish baseline (Deactivated legacy "Schicht A" regex-based heuristics per user & architectural requirement)
-    let heuristicValues: Record<string, any> = {};
-
     if (!settings) {
         return {};
     }
@@ -611,7 +610,7 @@ export async function performAIRequest(
                         task.pointsObtained = gradingResult.totalPoints;
                         task.maxPoints = gradingResult.maxPoints;
                     }
-                } catch (err: any) {
+                } catch (err: unknown) {
                     logger.error('Error in client-side GraphRunner execution', err);
                 }
             } else if (hasTargetGoal || hasAttachedCalcTrace || isCalcTraceSkill) {
@@ -645,7 +644,7 @@ export async function performAIRequest(
                     task.targetGoal = targetGoal;
                     // Die Engine vergibt keine Punkte mehr, das macht das LLM.
                     task.maxPoints = targetGoal.maxPoints || task.maxPoints;
-                } catch (err: any) {
+                } catch (err: unknown) {
                     logger.error('Error in client-side CalcTrace execution', err);
                 }
             }
