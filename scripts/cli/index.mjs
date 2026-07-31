@@ -387,7 +387,6 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
     console.log(c('dim', 'Note: Could not update Keycloak realm file dynamically: ' + e.message));
   }
 
-  ensureRepoFilesExist();
   const composeFile = 'docker-compose.community-multi-full.yml';
 
   console.log('\n' + c('bold', '🔑 Generated Credentials:'));
