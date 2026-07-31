@@ -8,6 +8,7 @@ import { AppSettings } from '@/types';
 import { isLocalInstance } from '@/lib/env-context';
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 import { z } from 'zod';
+import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '@/lib/ai/constants';
 
 const GenerateCalcTraceSchema = z.object({
     taskText: z.string().min(1, 'Aufgabentext darf nicht leer sein.'),
@@ -85,7 +86,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         }
                     );
                 } else {
-                    const baseUrl = settings?.openaiUrl || process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || 'https://llm.aihosting.mittwald.de/v1';
+                    const baseUrl = settings?.openaiUrl || process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || DEFAULT_OPENAI_COMPATIBLE_BASE_URL;
                     const apiKey = settings?.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
                     const model = settings?.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
 
