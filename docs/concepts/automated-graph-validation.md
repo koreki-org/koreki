@@ -153,5 +153,5 @@ Um die nahtlose Übernahme von Graphen-Edits (wie z. B. das Hinzufügen von `equ
   Enthält dedizierte Testabdeckungen für array-basierte alternative Erwartungswerte und den didaktischen Tausch von Subnetzen. Verifiziert, dass bei korrekter Alternativ-Planung der Status `correct` vergeben wird und Betrugsversuche (identische Belegungen) zuverlässig als `primary_error` abgewiesen werden.
 * **Verwandte Dokumente:**
   * [Modular Grading Skills](./modular-grading-skills.md)
-  * [Koreki Design System](../../.agents/skills/koreki_design_system/SKILL.md)
-  * [Prisma Database Infrastructure](../../.agents/skills/database_infrastructure/SKILL.md)
+  * [Koreki Design System](../../.claude/skills/koreki-design-system/SKILL.md)
+  * [Prisma Database Infrastructure](../../.claude/skills/database-infrastructure/SKILL.md)

@@ -88,7 +88,7 @@ Wichtig: Für Phase 2 muss die Eigenschaft `gradingRubric` (der textuelle Erwart
 > Änderungen an `src/lib/ai/prompt-builder.ts` oder den Core-Prompts erfordern einen zwingenden Re-Run dieses Tests, um Regressionen in der Punktevergabe auszuschließen.
 
 * **Test-Skript:** `tests/integration/CalcDeterminism.test.ts`
-* **Referenz-Skill:** `.agents/skills/industrial_testing/SKILL.md` (Sektion 8)
+* **Referenz-Skill:** `.claude/skills/industrial-testing/SKILL.md` (Sektion 8)
 
 ---
 

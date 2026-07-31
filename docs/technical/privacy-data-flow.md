@@ -127,20 +127,20 @@ Für maximale Transparenz wurden die Implementierungen im Code gegen diese Dokum
 <details>
 <summary><b>Beleg: Keine Speicherung im Standard-Modus</b></summary>
 
-Die Datei [ai-correct.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/pages/api/ai-correct.ts) zeigt, dass Daten nur validiert und an Mistral weitergeleitet werden. 
-Die Abrechnungs-Logik in [billing-utils.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/lib/billing-utils.ts) führt ausschließlich Inkremente auf Token-Counter und Credit-Salden aus. Es gibt keine Datenbank-Operationen (`create`), die Schülertexte oder Bilder persistieren.
+Die Datei [ai-correct.ts](../../src/pages/api/ai-correct.ts) zeigt, dass Daten nur validiert und an Mistral weitergeleitet werden. 
+Die Abrechnungs-Logik in [billing.ts](../../src/lib/billing.ts) führt ausschließlich Inkremente auf Token-Counter und Credit-Salden aus. Es gibt keine Datenbank-Operationen (`create`), die Schülertexte oder Bilder persistieren.
 </details>
 
 <details>
 <summary><b>Beleg: Browser-Direktverbindung im Pure-Modus</b></summary>
 
-In [ai-logic.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/lib/ai-logic.ts) (Funktionen `performOCRRequest` und `performAIRequest`) ist hart codiert, dass bei `appMode === 'PURE'` ein direkter `fetch` auf `api.mistral.ai` erfolgt, anstatt die eigene Backend-Route aufzurufen.
+In [ai-logic.ts](../../src/lib/ai-logic.ts) (Funktionen `performOCRRequest` und `performAIRequest`) ist hart codiert, dass bei `appMode === 'PURE'` ein direkter `fetch` auf `api.mistral.ai` erfolgt, anstatt die eigene Backend-Route aufzurufen.
 </details>
 
 <details>
 <summary><b>Beleg: Daten-Isolation bei der Abrechnung</b></summary>
 
-Die Route [pure-deduct.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/pages/api/billing/pure-deduct.ts) nimmt im PURE-Modus lediglich Metadaten entgegen (`pageCount`, `action`). Inhaltsdaten (Texte/Bilder) tauchen in der Request-Struktur dieser API nicht auf.
+Die Route [pure-deduct.ts](../../src/pages/api/billing/pure-deduct.ts) nimmt im PURE-Modus lediglich Metadaten entgegen (`pageCount`, `action`). Inhaltsdaten (Texte/Bilder) tauchen in der Request-Struktur dieser API nicht auf.
 </details>
 
 

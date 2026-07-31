@@ -61,7 +61,7 @@ Das Badge sollte nicht verschwinden, sondern den Status bestätigen:
 ---
 
 ## 5. Testing & Referenzen
-*   **Verwandte Komponenten:** [BatchFileListItem.tsx](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/components/batch/BatchFileListItem.tsx)
+*   **Verwandte Komponenten:** [BatchFileListItem.tsx](../../src/components/batch/BatchFileListItem.tsx)
 *   **Vorgeschlagene Tests:** Integration-Test für den Status-Toggle `ocrDone` -> Check Rendering.
 
 ---

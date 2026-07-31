@@ -120,7 +120,7 @@ Das `AuthenticatedRequest`-Interface wurde implementiert. Alle 23 `@ts-ignore` a
 Alle `console.*`-Aufrufe in **server-side Code** (`src/pages/api/` und `src/lib/`) durch den PII-sanitized `logger` ersetzen. Verhindert, dass sensible Daten in persistierte Server-Logs landen.
 
 > [!NOTE]
-> **Scope-Grenze (Architectural Decision):** Client-side Code (`src/hooks/`, `src/components/`) darf weiterhin `console.error` nutzen. Browser-Logs werden nicht persistiert, enthalten keine Server-Secrets und benötigen keine PII-Sanitization. Siehe [Architectural Vision §8](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/.agents/skills/architectural_vision/SKILL.md).
+> **Scope-Grenze (Architectural Decision):** Client-side Code (`src/hooks/`, `src/components/`) darf weiterhin `console.error` nutzen. Browser-Logs werden nicht persistiert, enthalten keine Server-Secrets und benötigen keine PII-Sanitization. Siehe [Architectural Vision §8](../../.claude/skills/architectural-vision/SKILL.md).
 
 #### Status: API-Routen ✅ ABGESCHLOSSEN
 

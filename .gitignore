@@ -54,3 +54,6 @@ docs/internal/
 audit-output.txt
 audit-output-utf8.txt
 determinism-report-latest.md
+
+# Claude Code local settings (per-developer, not shared)
+.claude/settings.local.json
