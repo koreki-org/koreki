@@ -12,6 +12,7 @@ import { isDesktopTarget } from '@/lib/env-context';
 import { logger } from '@/lib/logger';
 import type { StudentASTStep } from './calc-trace-types';
 import type { AppSettings } from '../../types';
+import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '../ai/constants';
 
 export const STUDENT_AST_SCHEMA = {
   type: "object",
@@ -151,7 +152,7 @@ WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt M
             responseSchema: STUDENT_AST_SCHEMA
           });
         } else {
-          const baseUrl = settings.openaiUrl || process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || 'https://llm.aihosting.mittwald.de/v1';
+          const baseUrl = settings.openaiUrl || process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || DEFAULT_OPENAI_COMPATIBLE_BASE_URL;
           const apiKey = settings.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
           const model = settings.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
           if (!apiKey) throw new Error('OpenAI/Mittwald API-Key fehlt.');

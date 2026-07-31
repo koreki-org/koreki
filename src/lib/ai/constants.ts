@@ -6,6 +6,8 @@ export const MISTRAL_UTILS_MODEL = 'mistral-small-latest';
 export const MISTRAL_CHATS_MODEL = 'mistral-large-latest'; // Hardened: Using flagship instead of pixtral for better instruction following
 export const MISTRAL_MEDIUM_MODEL = 'mistral-medium-latest'; // Brand new math-optimized reasoning model
 
+export const DEFAULT_OPENAI_COMPATIBLE_BASE_URL = 'https://llm.aihosting.mittwald.de/v1';
+
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 /**
