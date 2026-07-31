@@ -1,5 +1,7 @@
 import { HelpCircle, ArrowRight } from 'lucide-react';
 import { Badge } from '../ui/Badge';
+import { buttonVariants } from '../ui/Button';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 /**
@@ -65,10 +67,10 @@ export const FeatureCTA: React.FC = () => {
                 <div className="relative z-10">
                     <h2 className="text-4xl font-black text-foreground mb-6 tracking-tight">Koreki gehört der Community.</h2>
                     <p className="text-muted-foreground font-medium text-lg mb-10 leading-relaxed">Nutzen Sie die Freiheit von Open Source kombiniert mit der Power moderner KI-Didaktik.</p>
-                    <Link 
+                    <Link
                         href="https://github.com/koreki-org/koreki"
                         target="_blank"
-                        className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-10 py-5 rounded-full font-bold text-sm uppercase tracking-widest shadow-xl shadow-primary/20 transform transition-all hover:-translate-y-1"
+                        className={cn(buttonVariants({ variant: 'default', shape: 'pill' }), "gap-2 px-10 py-5 h-auto text-sm shadow-xl hover:shadow-xl")}
                     >
                         GitHub Repository <ArrowRight size={20} />
                     </Link>

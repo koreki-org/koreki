@@ -8,6 +8,8 @@ description: Richtlinien für UI & Design Excellence (Enterprise Aesthetics)
 Dieses Dokument definiert das Erscheinungsbild und die Interaktionsstandards für Koreki. Es ist als verbindlicher Leitfaden für den **UI Expert** zu verstehen.
 
 ## 1. Glassmorphism Principle
+- **Geltungsbereich**: Glassmorphism (`.glass-morphism`, `backdrop-blur-*`, `bg-white/NN`) ist explizit auf **Modals, Sidebars und Overlays** beschränkt — also Elemente, die schwebend über anderem Content liegen (inkl. schwebender Bild-/Screenshot-Rahmen).
+- **Marketing-Content-Cards**: Flache Content-, Feature- und Info-Karten mit Fließtext auf Marketing-Seiten nutzen **standardmäßig keine Glass-Optik**. Stattdessen: `bg-background` (nicht `bg-card` — dieser Token ist im Projekt aktuell nicht mit einer Farbe hinterlegt und resultiert in einem transparenten No-Op) + `border border-border` + `shadow-md`, ohne `backdrop-blur`.
 - **Backdrop Blur**: Nutze durchgängig `backdrop-blur-glass` für Modals, Sidebars und Overlays.
 - **Transparenz**: Hintergründe sollten eine subtile Deckkraft aufweisen, um räumliche Tiefe zu erzeugen.
 - **Box Shadows**: Nutze den `shadow-glass` Effekt für eine schwebende Optik.
@@ -53,6 +55,10 @@ Alle UI-Elemente MÜSSEN aus `@/components/ui/` stammen. Niemals raw HTML-Elemen
 | Buttons | `Button` | `@/components/ui/Button` |
 | Karten / Panels | `Card`, `CardHeader`, `CardContent`, `CardTitle` | `@/components/ui/Card` |
 | Status-Labels | `Badge` | `@/components/ui/Badge` |
+
+> **Button `shape="pill"`**: Nutzt bewusst Sentence-Case (kein `uppercase`/`tracking-widest` mehr — entfernt zugunsten eines weniger "AI-SaaS-Hype"-artigen Looks). Die `shimmer`-Prop bleibt technisch nutzbar, ist auf Marketing-CTAs aber **nicht Standard** — Hover-Feedback läuft über `hover:-translate-y-0.5` + Shadow-Intensivierung.
+>
+> **Badge-Konventionen**: `Badge`-Varianten (`vibrant`, `light`, `glass`, `subtle`) behalten ihr Uppercase/`tracking-widest` bewusst bei — das ist gewollte Differenzierung gegenüber CTA-Buttons, nicht inkonsistent.
 | Checkboxen | `Checkbox` | `@/components/ui/Checkbox` |
 | Einzeiliger Input | `Input` | `@/components/ui/Input` |
 | Mehrzeiliger Input | `Textarea` | `@/components/ui/Textarea` |
@@ -150,13 +156,15 @@ Koreki nutzt zwei primäre Layout-Typen, um eine klare Trennung zwischen Marketi
 
 ### 1. AppLayout (`@/layouts/AppLayout`)
 **Einsatzbereich**: Dashboard, Admin-Panel, Login/Register-Flows.
-- **Optik**: Minimalistisch, `bg-slate-50`, Fokus auf Funktionalität.
+- **Optik**: `bg-background`, nutzt denselben `BackgroundGradients`-Ambient-Shell-Layer wie `MarketingLayout` (vereinheitlicht — siehe Abschnitt 7), Fokus auf Funktionalität in der Content-Ebene selbst.
 - **Komponenten**: Nutzt den `MinimalFooter`.
 
 ### 2. MarketingLayout (`@/layouts/MarketingLayout`)
 **Einsatzbereich**: Landingpage (`index`), Features, Pricing, Legal Docs.
 - **Optik**: Premium Aesthetics, komplexe radiale Gradients, Sticky Header.
 - **Komponenten**: Nutzt `MarketingHeader` und `MarketingFooter`.
+
+> **Hinweis:** Der `BackgroundGradients`-Ambient-Shell-Layer (Abschnitt 7) ist **kein Marketing-exklusives Element** — er läuft app-weit über `AppLayout` und `MarketingLayout` gleichermaßen, um eine kohärente Markenidentität zu erzeugen. Unterschiede zwischen beiden Layouts bestehen primär in Header/Footer-Komponenten und der Content-Dichte, nicht im Hintergrund-Layer.
 
 ### Seitenstruktur Beispiele
 
@@ -222,6 +230,7 @@ const BackgroundGradients = () => (
 ### Regeln:
 1. **Low Contrast**: Die Deckkraft (`opacity`) darf niemals so hoch sein, dass sie die Lesbarkeit des Contents stört. Standard ist `/5` bis `/10`.
 2. **Fixed**: Der Hintergrund muss mit `fixed` fixiert sein, um den "schwebenden" Effekt beim Scrollen zu erzeugen.
+3. **Marketing-Sections**: Zusätzlich zum globalen `BackgroundGradients`-Layer max. **1 zusätzlicher lokaler Akzent-Blob** (`blur-[...]`) pro sichtbarer Section — nur bei begründetem visuellem Zweck (z.B. Tiefe hinter einem Screenshot-Rahmen), nicht als reine Flächen-Dekoration.
 
 ---
 

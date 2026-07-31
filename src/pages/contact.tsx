@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { Mail, Send, CheckCircle2, AlertCircle, User, MessageSquare, Info, ShieldAlert } from 'lucide-react';
 import MarketingLayout from '../layouts/MarketingLayout';
-import { Button } from '../components/ui/Button';
+import { Button, buttonVariants } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Textarea } from '../components/ui/Textarea';
 import { LEGAL_CONFIG } from '@/config/legal-contact';
@@ -236,9 +236,3 @@ export default function Contact() {
         </MarketingLayout>
     );
 }
-
-// Helper for button variants if needed
-const buttonVariants = ({ variant }: { variant: string }) => {
-    if (variant === 'default') return 'bg-primary text-primary-foreground hover:bg-primary/90 transition-colors inline-flex items-center justify-center font-bold h-10 px-4 py-2';
-    return '';
-};

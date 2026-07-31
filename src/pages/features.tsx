@@ -6,6 +6,7 @@ import { FeatureSubNav } from '../components/marketing/FeatureSubNav';
 import { FeatureFAQ } from '../components/marketing/MarketingModules';
 import { Brain, FileSpreadsheet, ShieldCheck, Sparkles, Database, ArrowRight, Upload, Scissors, Cpu, FileCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
+import { buttonVariants } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { ImageLightbox } from '@/components/marketing/ImageLightbox';
 
@@ -328,9 +329,9 @@ export default function Features() {
                         </div>
 
                         <div className="mt-8 flex justify-end">
-                            <Link 
+                            <Link
                                 href={activePillar.href}
-                                className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold text-xs uppercase tracking-widest px-6 py-3.5 rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/35 hover:-translate-y-0.5 active:scale-95 transition-all duration-300 font-outfit"
+                                className={cn(buttonVariants({ variant: 'default', shape: 'pill' }), "gap-2 px-6 py-3.5 h-auto text-xs font-outfit")}
                             >
                                 Deep Dive öffnen <ArrowRight size={14} />
                             </Link>
