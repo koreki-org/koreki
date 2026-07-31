@@ -156,7 +156,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                         {onExportSL && !hasFinishedFiles && !hasPendingOcr && (
                             <Button
                                 variant="outline"
-                                className="border border-border bg-muted/30 text-muted-foreground hover:bg-muted hover:text-foreground transition-all rounded-xl w-full sm:w-auto flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider h-10 px-4"
+                                className="border border-primary/20 bg-primary/5 text-primary hover:bg-primary hover:text-primary-foreground transition-all rounded-xl w-full sm:w-auto flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider h-10 px-4"
                                 onClick={onExportSL}
                                 disabled={loading}
                                 title="Schülerlösung als Zwischenstand exportieren (.koreki)"
