@@ -533,6 +533,13 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         <FileText size={18} />
                     </div>
                     Musterlösung
+                    <KorekiTooltip
+                        title="PRO TIPP"
+                        content="Eine gute Musterlösung ist das Herzstück. Dokumentieren Sie hier alle Erwartungen und Punkte pro Teilaufgabe."
+                        position="bottom"
+                        align="left"
+                        className="inline-flex ml-2"
+                    />
                 </CardTitle>
                 <div className="flex items-center gap-2">
                     {hasModel && (
@@ -560,11 +567,6 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             </Button>
                         </>
                     )}
-                    <KorekiTooltip
-                        title="PRO TIPP"
-                        content="Eine gute Musterlösung ist das Herzstück. Dokumentieren Sie hier alle Erwartungen und Punkte pro Teilaufgabe."
-                        position="bottom"
-                    />
                     {onToggleCollapse && (
                         <CollapseToggleButton
                             collapsed={collapsed}

@@ -40,6 +40,13 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                         <FolderOpen size={18} />
                     </div>
                     Schülerarbeiten
+                    <KorekiTooltip
+                        title="Organisation"
+                        content="Laden Sie Dateien einzeln oder als Stapel hoch. Moodle-Exporte (XLSX/CSV) werden automatisch erkannt und digital verarbeitet."
+                        position="bottom"
+                        align="left"
+                        className="inline-flex ml-2"
+                    />
                 </CardTitle>
                 <div className="flex items-center gap-2">
                     {hasStudents && (
@@ -56,11 +63,6 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                             </Button>
                         </>
                     )}
-                    <KorekiTooltip
-                        title="Organisation"
-                        content="Laden Sie Dateien einzeln oder als Stapel hoch. Moodle-Exporte (XLSX/CSV) werden automatisch erkannt und digital verarbeitet."
-                        position="bottom"
-                    />
                     {onToggleCollapse && (
                         <CollapseToggleButton
                             collapsed={collapsed}
