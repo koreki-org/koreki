@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { logger } from './logger';
 
 export interface LegalDocument {
     version: string;
@@ -68,7 +69,7 @@ export function getLegalDocument(type: 'avv' | 'tom' | 'betriebsanleitung'| 'agb
             hash
         };
     } catch (error) {
-        console.error(`Error discovering ${type}${version ? ` (v${version})` : ''}:`, error);
+        logger.error(`Error discovering ${type}${version ? ` (v${version})` : ''}`, error);
         return null;
     }
 }

@@ -13,6 +13,7 @@ import {
 
 } from './prompt-builder';
 import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
+import { logger } from '@/lib/logger';
 import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
 import { isDesktopTarget } from '@/lib/env-context';
 import type { GradingMemoryCase, CustomSkillDefinition } from '@/types';
@@ -450,8 +451,10 @@ export async function executeOpenAIRequest(
                         usage: responseUsage
                     };
                 } catch (e3) {
-                    console.error("JSON Parse Fatal Error. Raw Content:", content);
-                    console.error("Cleaned Candidate:", jsonCandidate);
+                    logger.error("JSON Parse Fatal Error: AI response could not be parsed as JSON", {
+                        contentLength: content?.length || 0,
+                        candidateLength: jsonCandidate?.length || 0
+                    });
                     throw new Error("KI-Antwort konnte nicht als JSON verarbeitet werden. (Möglicherweise unvollständige Antwort oder Formatierungsfehler im Thinking-Block)");
                 }
             }

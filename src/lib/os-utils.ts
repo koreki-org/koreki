@@ -1,4 +1,5 @@
 import { isDesktopTarget } from './env-context';
+import { logger } from './logger';
 
 /**
  * Opens an external URL in the default browser.
@@ -12,7 +13,7 @@ export async function openExternal(url: string): Promise<void> {
             const { open } = await import('@tauri-apps/plugin-shell');
             await open(url);
         } catch (error) {
-            console.error('Failed to open external URL via Tauri:', error);
+            logger.error('Failed to open external URL via Tauri', error);
             // Fallback to window.open if Tauri shell fails
             window.open(url, '_blank', 'noopener,noreferrer');
         }

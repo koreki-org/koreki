@@ -18,6 +18,7 @@ import graphGenSystemDefault from '../../prompts/graph-generation/system.md';
 import graphGenUserDefault from '../../prompts/graph-generation/user.md';
 import graphGenRefineSystemDefault from '../../prompts/graph-generation/refine-system.md';
 import graphGenRefineUserDefault from '../../prompts/graph-generation/refine-user.md';
+import { logger } from '../logger';
 
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -238,7 +239,7 @@ export function parseGeneratedGraph(llmResponse: string, options?: { skipSanitiz
   try {
     parsed = JSON.parse(llmResponse.trim());
   } catch (e) {
-    console.warn("parseGeneratedGraph: JSON.parse failed. Expected structured JSON output.", e);
+    logger.warn("parseGeneratedGraph: JSON.parse failed. Expected structured JSON output.", e);
     return null;
   }
 
@@ -300,7 +301,7 @@ export function parseGeneratedGraph(llmResponse: string, options?: { skipSanitiz
           variable.expression = expr;
         } else {
           // Skip truly invalid expressions to prevent runtime crashes
-          console.warn(`Skipping invalid formula variable "${v.id}" with expression: "${expr}"`);
+          logger.warn(`Skipping invalid formula variable "${v.id}" with expression: "${expr}"`);
           shouldKeep = false;
         }
       } else {
