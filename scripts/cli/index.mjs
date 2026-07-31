@@ -278,17 +278,36 @@ async function setupCommunityMulti(isDryRun) {
   }
   appUrl = appUrl.replace(/\/+$/, '');
   
+  // Parse URL to extract hostname and port for Keycloak configuration
+  let parsedUrl;
+  try {
+    parsedUrl = new URL(appUrl);
+  } catch {
+    console.log(c('red', `✖ Invalid URL: ${appUrl}`));
+    process.exit(1);
+  }
+  const appHostname = parsedUrl.hostname;
+  const isHttps = parsedUrl.protocol === 'https:';
+  // Use explicit port if given, otherwise default (443 for HTTPS, 80 for HTTP, 8080 for localhost)
+  const publicPort = parsedUrl.port || (isHttps ? '443' : (appHostname === 'localhost' ? '8080' : '80'));
+
   const envMode = await askQuestion('Environment (dev or prod)', 'dev');
   const mistralKey = await askQuestion('Mistral API Key (Optional)', '');
   
   const adminPassword = generateSecret(12);
   const dbPassword = generateSecret(16);
 
+  // Keycloak port: -1 means "use default" (omit port from URLs) for standard ports
+  const isStandardPort = (isHttps && publicPort === '443') || (!isHttps && publicPort === '80');
+  const kcHostnamePort = isStandardPort ? '-1' : publicPort;
+
   const envContent = `
 # Koreki Community Multi-User Configuration
 ENVIRONMENT=${envMode}
 APP_URL=${appUrl}
-PUBLIC_PORT=8080
+APP_HOSTNAME=${appHostname}
+PUBLIC_PORT=${publicPort}
+KC_HOSTNAME_PORT=${kcHostnamePort}
 
 NEXT_PUBLIC_KOREKI_MODE=community
 NEXT_PUBLIC_SINGLE_USER_MODE=false

@@ -59,10 +59,10 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD:-admin}
       
-      # Proxy settings for Nginx (Dynamic Header-based)
+      # Proxy settings for Nginx / HAProxy (Dynamic Header-based)
       KC_PROXY: edge
       KC_HOSTNAME: ${APP_HOSTNAME:-localhost}
-      KC_HOSTNAME_PORT: ${PUBLIC_PORT:-8080}
+      KC_HOSTNAME_PORT: ${KC_HOSTNAME_PORT:-${PUBLIC_PORT:-8080}}
       KC_HOSTNAME_ADMIN_URL: ${APP_URL}/auth
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_HTTPS: "false"
