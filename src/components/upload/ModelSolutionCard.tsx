@@ -3,7 +3,8 @@ import { FileText, FileUp, RefreshCw, Sparkles, Loader2, Layers, Trash2, Link2Of
 import { createPortal } from 'react-dom';
 import { Task, AppSettings } from '@/types';
 import { promisePool } from '../../lib/ai/promise-pool';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { CollapsibleCardContent, CollapseToggleButton } from '@/components/ui/CollapsibleCardContent';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Textarea } from '@/components/ui/Textarea';
@@ -35,6 +36,8 @@ interface ModelSolutionCardProps {
     appMode?: 'PURE' | 'STANDARD' | 'TRIAL';
     onGenerateGraph?: (taskIndex: number, taskText: string, userNotes?: string, disciplineOverride?: string) => Promise<any>;
     onGenerateCalcTrace?: (taskIndex: number, taskText: string, userNotes?: string) => Promise<any>;
+    collapsed?: boolean;
+    onToggleCollapse?: () => void;
 }
 
 export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
@@ -48,7 +51,9 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
     settings,
     appMode,
     onGenerateGraph,
-    onGenerateCalcTrace
+    onGenerateCalcTrace,
+    collapsed = false,
+    onToggleCollapse
 }) => {
     const [activeGroupName, setActiveGroupName] = useState<string>("");
     const [generatingGraphForTask, setGeneratingGraphForTask] = useState<number | null>(null);
@@ -555,15 +560,22 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             </Button>
                         </>
                     )}
-                    <KorekiTooltip 
+                    <KorekiTooltip
                         title="PRO TIPP"
                         content="Eine gute Musterlösung ist das Herzstück. Dokumentieren Sie hier alle Erwartungen und Punkte pro Teilaufgabe."
                         position="bottom"
                     />
+                    {onToggleCollapse && (
+                        <CollapseToggleButton
+                            collapsed={collapsed}
+                            onToggleCollapse={onToggleCollapse}
+                            label="Musterlösung"
+                        />
+                    )}
                 </div>
             </CardHeader>
 
-            <CardContent className="flex-grow pt-4">
+            <CollapsibleCardContent collapsed={collapsed} className="flex-grow pt-4">
                 {!hasModel ? (
                     <div 
                         onClick={() => modelInputRef.current?.click()}
@@ -925,7 +937,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         />
                     </div>
                 )}
-            </CardContent>
+            </CollapsibleCardContent>
             {editingGraphTaskIdx !== null && (() => {
                 const task = tasksLayout[editingGraphTaskIdx];
                 const content = taskSections[editingGraphTaskIdx] || "";

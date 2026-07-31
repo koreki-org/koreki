@@ -209,8 +209,13 @@ export default function Home() {
 
     // Auto-Scroll Logic: Smooth scroll to BatchProcessor once files are added
     const prevFilesCount = React.useRef(0);
+    // Auto-Collapse: Once the first student file lands, fold the upload cards
+    // away to give the BatchProcessor more visual room. Reopened via the
+    // per-card chevron (CollapseToggleButton) or a full "Neu starten" reset.
+    const [isUploadSectionCollapsed, setIsUploadSectionCollapsed] = React.useState(false);
     useEffect(() => {
         if (fileProcessor.batchFiles.length > 0 && prevFilesCount.current === 0) {
+            setIsUploadSectionCollapsed(true);
             setTimeout(() => {
                 const element = document.getElementById('batch-processor-anchor');
                 if (element) {
@@ -254,6 +259,7 @@ export default function Home() {
                 fileProcessor.setBatchFiles([]);
                 data.setModelSolution("");
                 data.setTasksLayout([]);
+                setIsUploadSectionCollapsed(false);
             }
         }
     };
@@ -453,6 +459,8 @@ export default function Home() {
                         tasksLayout={data.tasksLayout}
                         extractingLayout={fileProcessor.isLoadingModel}
                         batchFilesCount={fileProcessor.batchFiles.length}
+                        collapsed={isUploadSectionCollapsed}
+                        onToggleCollapse={() => setIsUploadSectionCollapsed(v => !v)}
                     />
 
                     {fileProcessor.batchFiles.length > 0 && (() => {
