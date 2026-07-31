@@ -5,6 +5,7 @@ internal/
 .env
 .env.local
 .env.production
+.env.test.local
 # Local SQLite and Backups
 dev.db
 *.bak

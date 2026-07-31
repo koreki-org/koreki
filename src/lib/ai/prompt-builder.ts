@@ -168,7 +168,7 @@ export function buildCorrectionPrompt(
                 if (criteria && Array.isArray(criteria) && criteria.length > 0) {
                     // Structured criteria path
                     let criteriaBlock = `\n### STRUKTURIERTE BEWERTUNGSKRITERIEN FÜR "${t.name}":\n`;
-                    criteriaBlock += `Du MUSST die Punkte anhand der folgenden Liste vergeben. Bereits vorab durch die Sandbox aufgelöste Kriterien sind bindend und dürfen nicht verändert werden. Addiere die Punktwerte aller Kriterien exakt wie angegeben:\n\n`;
+                    criteriaBlock += `Du MUSST die Punkte anhand der folgenden Liste vergeben. Bereits vorab durch die Sandbox aufgelöste Kriterien sind bindend und dürfen nicht verändert werden. Addiere die Punktwerte aller Kriterien exakt wie angegeben. WICHTIG - Zielgrößen-Isolation: Bewerte jedes Kriterium AUSSCHLIESSLICH anhand der ihm zugeordneten Zielgröße. Ein Rechen-, Werte- oder Ergebnisfehler bei EINER Zielgröße darf die Bewertung der Kriterien ANDERER Zielgrößen derselben Aufgabe unter keinen Umständen beeinflussen:\n\n`;
                     
                     criteria.forEach((crit: any) => {
                         const idx = (crit.targetIndex !== undefined && crit.targetIndex !== null) ? crit.targetIndex : 0;
@@ -206,7 +206,8 @@ export function buildCorrectionPrompt(
                                       statusText = `✗ NICHT ERFÜLLT (Keine Schritte für diesen Zielwert im Schülertext gefunden)`;
                                   } else {
                                       const stepsStr = ` anhand der Schritte: ${pt.associatedStepIds.join(', ')}`;
-                                      const hint = ' - HINWEIS: Formeln sind als ERFÜLLT (1 Punkt) zu werten, wenn die mathematische Struktur stimmt, auch bei Auslassung der linken Seite (z. B. nur U/R) oder bei Nutzung von Basis-Variablen wie R statt Rges!';
+                                      const pointsLabel = `${crit.punktwert} Punkt${crit.punktwert === 1 ? '' : 'e'}`;
+                                      const hint = ` - HINWEIS: Formeln sind als ERFÜLLT (${pointsLabel}) zu werten, wenn die mathematische Struktur stimmt, auch bei Auslassung der linken Seite (z. B. nur U/R) oder bei Nutzung von Basis-Variablen wie R statt Rges!`;
                                       statusText = `[von dir zu beurteilen${stepsStr}${hint}]`;
                                   }
                               } else {
