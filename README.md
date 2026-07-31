@@ -54,7 +54,7 @@ iwr -useb https://get.koreki.org | iex
 curl -fsSL https://get.koreki.org/sh | bash
 ```
 
-*Der interaktive Setup-Wizard führt Sie automatisch durch die Auswahl (Single-User, Multi-User mit Keycloak oder SaaS) und startet den Stack sofort.*
+*Der interaktive Setup-Wizard führt Sie automatisch durch die Auswahl (Single-User, Multi-User mit Keycloak oder SaaS), konfiguriert Keycloak Redirect-URIs dynamisch und unterstützt den Betrieb hinter Reverse Proxies (HAProxy, Traefik). Bei wiederholter Ausführung aktualisiert sich der Installer automatisch auf die neueste Version.*
 
 ---
 

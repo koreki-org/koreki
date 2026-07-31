@@ -5,7 +5,7 @@ Diese Anleitung beschreibt, wie man die **Koreki Community Multi-User Edition** 
 ## 1. Voraussetzungen
 - Docker & Docker Compose installiert
 - Git installiert
-- Eine `.env` Datei (Vorlage siehe unten)
+- Node.js 18+ installiert (für den Setup-Wizard)
 
 ## 2. Das Environment-Konzept
 Wir nutzen ein **Multi-Environment-System**, um zwischen lokaler Entwicklung und echtem Server-Betrieb zu unterscheiden. Gesteuert wird dies über die `.env`.
@@ -14,24 +14,30 @@ Wir nutzen ein **Multi-Environment-System**, um zwischen lokaler Entwicklung und
 Ideal für Tests auf dem eigenen Rechner.
 ```bash
 ENVIRONMENT=dev
+APP_URL=http://localhost:8080
 APP_HOSTNAME=localhost
 PUBLIC_PORT=8080
-APP_URL=http://localhost:8080
+KC_HOSTNAME_PORT=8080
 ```
 - Nutzt automatisch: `keycloak/koreki-realm.dev.json`
 - Erreichbar unter: `http://localhost:8080`
 
-### Produktion (Server / Domain)
-Für den Einsatz in der Schule mit eigener Domain.
+### Produktion (Server / Domain hinter Reverse Proxy)
+Für den Einsatz in der Schule mit eigener Domain hinter HAProxy, Traefik oder Nginx.
 ```bash
 ENVIRONMENT=prod
-APP_HOSTNAME=koreki.deine-schule.de
-PUBLIC_PORT=443
 APP_URL=https://koreki.deine-schule.de
+APP_HOSTNAME=koreki.deine-schule.de
+PUBLIC_PORT=8080
+KC_HOSTNAME_PORT=-1
 ```
 - Nutzt automatisch: `keycloak/koreki-realm.prod.json`
 - Erreichbar unter: `https://koreki.deine-schule.de`
-- **Wichtig:** In der `koreki-realm.prod.json` müssen die Redirect-URLs einmalig auf die echte Domain angepasst werden.
+- `PUBLIC_PORT=8080`: Der Port, auf dem Docker den Nginx-Gateway auf dem Server bindet (HAProxy leitet Port 443 hierhin weiter)
+- `KC_HOSTNAME_PORT=-1`: Standardport (443/80) — Keycloak hängt keinen Port an URLs an
+
+> [!NOTE]
+> Die `redirectUris` in der Keycloak Realm-Datei werden vom Setup-Wizard **automatisch** auf Basis der `APP_URL` konfiguriert. Ein manuelles Editieren der JSON-Dateien ist nicht mehr nötig.
 
 ---
 
@@ -48,6 +54,15 @@ Der interaktive Setup-Wizard richtet das gesamte Multi-User-Environment inkl. Ke
   ```bash
   curl -fsSL https://get.koreki.org/sh | bash
   ```
+
+Der Wizard fragt:
+1. **Public URL** — z.B. `http://localhost:8080` oder `https://koreki.deine-schule.de`
+2. **Port auf diesem Server** — nur bei externen Domains (Default: `8080`)
+3. **Environment** — `dev` oder `prod`
+4. **Mistral API Key** — optional, für Cloud-AI-Modelle
+
+> [!TIP]
+> Bei wiederholter Ausführung aktualisiert der Installer automatisch auf die neueste Version (`git fetch + reset`). Ein manuelles Löschen des Ordners ist nicht nötig.
 
 ---
 
@@ -71,23 +86,46 @@ Der interaktive Setup-Wizard richtet das gesamte Multi-User-Environment inkl. Ke
 
 ---
 
-## 4. Administration & Logins
+## 4. Architektur
+
+```
+                          ┌──────────────────────────────────────────────┐
+Internet → HAProxy (:443) → Nginx Gateway (:80/PUBLIC_PORT) → Koreki (:3000)
+           (SSL Term.)    │                                  → Keycloak (:8080)
+                          └──────────────────────────────────────────────┘
+```
+
+- **Nginx Gateway** bündelt alle Requests auf einem Port (`PUBLIC_PORT`)
+- `/` → Next.js App (Koreki)
+- `/auth` → Keycloak Identity Provider
+
+---
+
+## 5. Administration & Logins
 
 - **Koreki UI:** `http://localhost:8080` (bzw. deine Domain)
 - **Keycloak Admin UI:** `http://localhost:8080/auth/admin`
-- **Standard-Admin (Keycloak):** `admin` / `admin` (Passwort in der `.env` unter `KC_ADMIN_PASSWORD` ändern!)
+- **Standard-Admin (Keycloak):** `admin` / Passwort wird vom Wizard generiert (siehe `.env` → `KC_ADMIN_PASSWORD`)
 - **Standard-Nutzer (Koreki App):** `koreki` / `koreki` (bereits mit Admin-Rechten vorkonfiguriert)
 
 ---
 
-## 5. Fehlerbehebung (Troubleshooting)
+## 6. Fehlerbehebung (Troubleshooting)
 
 ### 502 Bad Gateway
 - Keycloak ist noch beim Hochfahren/Importieren. Warte 60 Sekunden.
 - Prüfe die Logs: `docker compose logs keycloak -f`
 
 ### Redirect-Fehler (Invalid Parameter)
-- Prüfe, ob `APP_HOSTNAME` und `PUBLIC_PORT` in der `.env` exakt mit den `redirectUris` in der jeweiligen `koreki-realm.*.json` übereinstimmen.
+- Prüfe, ob `APP_URL` in der `.env` exakt mit der URL übereinstimmt, die du im Browser aufrufst.
+- Führe den Installer erneut aus — er aktualisiert die Redirect-URIs automatisch.
+
+### CSS/JS lädt nicht (MIME type Fehler)
+- Container neu starten: `docker compose -f docker-compose.community-multi-full.yml restart gateway`
+
+### `exec: ./start.sh: not found`
+- Tritt auf, wenn alte Docker-Images mit Windows-Zeilenumbrüchen gecacht sind.
+- Lösung: `docker compose -f docker-compose.community-multi-full.yml build --no-cache`
 
 ---
 
