@@ -22,6 +22,7 @@ import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGe
 import { isDesktopTarget } from '@/lib/env-context';
 import type { GradingMemoryCase, CustomSkillDefinition } from '@/types';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
+import { logger } from '@/lib/logger';
 
 export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
 
@@ -278,7 +279,7 @@ export async function executeMistralRequest(
         }
         const data = responseData;
         if (!data.choices) {
-            console.error('MISTRAL_DATA:', JSON.stringify(data, null, 2));
+            logger.error('Mistral response missing choices field', { hasData: !!data });
         }
         const message = data.choices[0].message;
         responseUsage = data.usage;

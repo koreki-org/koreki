@@ -270,7 +270,6 @@ export async function executeOpenAIRequest(
             }
 
             currentData = await response.json();
-            console.log("[OPENAI-RESPONSE-DATA]", JSON.stringify(currentData));
         }
 
         const message = currentData.choices?.[0]?.message;

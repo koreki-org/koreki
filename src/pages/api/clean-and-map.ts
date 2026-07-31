@@ -1,4 +1,5 @@
 import type { NextApiResponse } from 'next';
+import { z } from 'zod';
 import prisma from '../../lib/prisma';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
@@ -7,6 +8,25 @@ import { performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
 import { logger } from '@/lib/logger';
 
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
+
+const cleanAndMapSchema = z.object({
+    text: z.string().min(1, 'Text fehlt.'),
+    settings: z.object({
+        provider: z.enum(['mistral', 'ollama', 'openai-compatible']),
+        mistralKey: z.string().optional(),
+        openaiUrl: z.string().optional(),
+        openaiKey: z.string().optional(),
+        openaiModel: z.string().optional(),
+        model: z.string().optional(),
+        ollamaUrl: z.string().optional(),
+        ollamaModel: z.string().optional(),
+        ollamaNumCtx: z.number().optional()
+    }).passthrough(),
+    isInclusive: z.boolean().optional(),
+    tasksLayout: z.unknown().optional(),
+    pageCount: z.number().optional(),
+    isScan: z.boolean().optional()
+});
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     if (req.method !== 'POST') {
@@ -23,11 +43,12 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         return res.status(error.message?.includes('Compliance') || error.message?.includes('AVV') ? 403 : 500).json({ error: error.message });
     }
 
-    const { text, settings, isInclusive, tasksLayout, pageCount, isScan } = req.body;
-
-    if (!text) {
-        return res.status(400).json({ error: 'Text fehlt.' });
+    const validation = cleanAndMapSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ error: validation.error.issues[0].message });
     }
+
+    const { text, settings, isInclusive, tasksLayout, pageCount, isScan } = validation.data;
 
     logger.info('OCR Request passed to clean-and-map', { 
         pageCount: pageCount, 

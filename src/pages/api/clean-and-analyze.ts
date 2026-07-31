@@ -1,4 +1,5 @@
 import type { NextApiResponse } from 'next';
+import { z } from 'zod';
 import prisma from '../../lib/prisma';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
@@ -8,6 +9,24 @@ import { logger } from '@/lib/logger';
 
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 
+const cleanAndAnalyzeSchema = z.object({
+    modelSolution: z.string().min(1, 'Musterlösung fehlt.'),
+    settings: z.object({
+        provider: z.enum(['mistral', 'ollama', 'openai-compatible']),
+        mistralKey: z.string().optional(),
+        openaiUrl: z.string().optional(),
+        openaiKey: z.string().optional(),
+        openaiModel: z.string().optional(),
+        model: z.string().optional(),
+        ollamaUrl: z.string().optional(),
+        ollamaModel: z.string().optional(),
+        ollamaNumCtx: z.number().optional()
+    }).passthrough(),
+    isInclusive: z.boolean().optional(),
+    pageCount: z.number().optional(),
+    isScan: z.boolean().optional()
+});
+
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method not allowed' });
@@ -15,7 +34,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
     const { claims } = req.user;
     const logtoId = claims.sub;
-    
+
     // --- COMPLIANCE EARLY GATEKEEPER ---
     try {
         await resolveActiveWorkspace(logtoId);
@@ -23,11 +42,12 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         return res.status(error.message?.includes('Compliance') || error.message?.includes('AVV') ? 403 : 500).json({ error: error.message });
     }
 
-    const { modelSolution, settings, isInclusive, pageCount, isScan } = req.body;
-
-    if (!modelSolution) {
-        return res.status(400).json({ error: 'Musterlösung fehlt.' });
+    const validation = cleanAndAnalyzeSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ error: validation.error.issues[0].message });
     }
+
+    const { modelSolution, settings, isInclusive, pageCount, isScan } = validation.data;
 
     const effectivePageCount = Math.max(1, pageCount || 1);
 
