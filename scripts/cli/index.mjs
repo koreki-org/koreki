@@ -272,47 +272,75 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
 async function setupCommunityMulti(isDryRun) {
   console.log(c('bold', '⚙️  Configuring Koreki Community Multi-User (Keycloak & Gateway)...'));
 
-  let appUrl = await askQuestion('Public URL (how users access Koreki)', 'http://localhost:8080');
-  if (!/^https?:\/\//i.test(appUrl)) {
-    appUrl = `http://${appUrl}`;
-  }
-  appUrl = appUrl.replace(/\/+$/, '');
-  
-  // Parse URL to extract hostname and port for Keycloak configuration
-  let parsedUrl;
-  try {
-    parsedUrl = new URL(appUrl);
-  } catch {
-    console.log(c('red', `✖ Invalid URL: ${appUrl}`));
-    process.exit(1);
-  }
-  const appHostname = parsedUrl.hostname;
-  const isHttps = parsedUrl.protocol === 'https:';
-  // External port from the URL (what users/browsers see)
-  const externalPort = parsedUrl.port || (isHttps ? '443' : '80');
+  const envPath = path.join(TARGET_DIR, '.env');
+  let envContent = '';
+  let appUrl = 'http://localhost:8080';
+  let envMode = 'dev';
+  let isUpdate = false;
 
-  // Docker host port: which port Docker binds Nginx to on this machine
-  const isLocalhost = appHostname === 'localhost' || appHostname === '127.0.0.1';
-  let publicPort;
-  if (isLocalhost) {
-    // Localhost: port comes directly from the URL
-    publicPort = parsedUrl.port || '8080';
-  } else {
-    // Domain behind reverse proxy: ask which local port to bind to
-    publicPort = await askQuestion('Port auf diesem Server', '8080');
+  if (fs.existsSync(envPath)) {
+    console.log(c('cyan', '\n📝 Existing Koreki installation detected.'));
+    const action = await askQuestion('Do you want to (U)pdate safely or (R)econfigure from scratch? [U/R]', 'U');
+    if (action.toLowerCase() === 'u') {
+      isUpdate = true;
+      envContent = fs.readFileSync(envPath, 'utf8');
+      
+      // Extract APP_URL and ENVIRONMENT for the Keycloak realm injection later
+      const matchAppUrl = envContent.match(/^APP_URL=(.*)$/m);
+      if (matchAppUrl) appUrl = matchAppUrl[1].trim();
+      
+      const matchEnvMode = envContent.match(/^ENVIRONMENT=(.*)$/m);
+      if (matchEnvMode) envMode = matchEnvMode[1].trim();
+
+      console.log(c('green', '✔ Proceeding with safe update (config and passwords preserved)...'));
+    }
   }
 
-  const envMode = await askQuestion('Environment (dev or prod)', 'dev');
-  const mistralKey = await askQuestion('Mistral API Key (Optional)', '');
-  
-  const adminPassword = generateSecret(12);
-  const dbPassword = generateSecret(16);
+  let adminPassword = '*****'; // Masked for update console output
+  let dbPassword = '*****';
 
-  // Keycloak port: -1 means "use default" (omit port from URLs) for standard ports (443/80)
-  const isStandardPort = (isHttps && externalPort === '443') || (!isHttps && externalPort === '80');
-  const kcHostnamePort = isStandardPort ? '-1' : externalPort;
+  if (!isUpdate) {
+    appUrl = await askQuestion('Public URL (how users access Koreki)', 'http://localhost:8080');
+    if (!/^https?:\/\//i.test(appUrl)) {
+      appUrl = `http://${appUrl}`;
+    }
+    appUrl = appUrl.replace(/\/+$/, '');
+    
+    // Parse URL to extract hostname and port for Keycloak configuration
+    let parsedUrl;
+    try {
+      parsedUrl = new URL(appUrl);
+    } catch {
+      console.log(c('red', `✖ Invalid URL: ${appUrl}`));
+      process.exit(1);
+    }
+    const appHostname = parsedUrl.hostname;
+    const isHttps = parsedUrl.protocol === 'https:';
+    // External port from the URL (what users/browsers see)
+    const externalPort = parsedUrl.port || (isHttps ? '443' : '80');
 
-  const envContent = `
+    // Docker host port: which port Docker binds Nginx to on this machine
+    const isLocalhost = appHostname === 'localhost' || appHostname === '127.0.0.1';
+    let publicPort;
+    if (isLocalhost) {
+      // Localhost: port comes directly from the URL
+      publicPort = parsedUrl.port || '8080';
+    } else {
+      // Domain behind reverse proxy: ask which local port to bind to
+      publicPort = await askQuestion('Port auf diesem Server', '8080');
+    }
+
+    envMode = await askQuestion('Environment (dev or prod)', 'dev');
+    const mistralKey = await askQuestion('Mistral API Key (Optional)', '');
+    
+    adminPassword = generateSecret(12);
+    dbPassword = generateSecret(16);
+
+    // Keycloak port: -1 means "use default" (omit port from URLs) for standard ports (443/80)
+    const isStandardPort = (isHttps && externalPort === '443') || (!isHttps && externalPort === '80');
+    const kcHostnamePort = isStandardPort ? '-1' : externalPort;
+
+    envContent = `
 # Koreki Community Multi-User Configuration
 ENVIRONMENT=${envMode}
 APP_URL=${appUrl}
@@ -331,6 +359,7 @@ KC_DB_PASSWORD=${dbPassword}
 MISTRAL_API_KEY=${mistralKey}
 NEXT_PUBLIC_ENABLE_PAID_MODES=false
 `;
+  }
 
   ensureRepoFilesExist();
 
@@ -358,7 +387,6 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
   }
 
   ensureRepoFilesExist();
-  const envPath = path.join(TARGET_DIR, '.env');
   const composeFile = 'docker-compose.community-multi-full.yml';
 
   console.log('\n' + c('bold', '🔑 Generated Credentials:'));
@@ -384,17 +412,22 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
     console.log(`👉 Keycloak Admin UI:  ${c('bold', `${appUrl}/auth/admin`)}`);
     console.log(c('dim', 'Note: Keycloak may take 30-45 seconds to initialize on first launch.'));
   } catch (err) {
-    console.log(c('yellow', '\n⚠️  Initial launch encountered a database volume issue. Resetting stale volumes and retrying...'));
-    try {
-      execSync(`docker compose -f ${composeFile} down -v`, { cwd: TARGET_DIR, stdio: 'inherit' });
-      execSync(`docker compose -f ${composeFile} build --no-cache`, { cwd: TARGET_DIR, stdio: 'inherit' });
-      execSync(`docker compose -f ${composeFile} up -d`, { cwd: TARGET_DIR, stdio: 'inherit' });
-      console.log(c('green', '\n✅ Koreki Community Multi-User Stack is running!'));
-      console.log(`👉 App URL:            ${c('bold', appUrl)}`);
-      console.log(`👉 Keycloak Admin UI:  ${c('bold', `${appUrl}/auth/admin`)}`);
-      console.log(c('dim', 'Note: Keycloak may take 30-45 seconds to initialize on first launch.'));
-    } catch (retryErr) {
-      console.error(c('red', '\n❌ Failed to start Docker stack: ' + retryErr.message));
+    if (isUpdate) {
+      console.error(c('red', '\n❌ Failed to update and start Docker stack: ' + err.message));
+      console.log(c('yellow', 'Your data and configuration are safe. Check the logs with: docker compose logs'));
+    } else {
+      console.log(c('yellow', '\n⚠️  Initial launch encountered a database volume issue. Resetting stale volumes and retrying...'));
+      try {
+        execSync(`docker compose -f ${composeFile} down -v`, { cwd: TARGET_DIR, stdio: 'inherit' });
+        execSync(`docker compose -f ${composeFile} build --no-cache`, { cwd: TARGET_DIR, stdio: 'inherit' });
+        execSync(`docker compose -f ${composeFile} up -d`, { cwd: TARGET_DIR, stdio: 'inherit' });
+        console.log(c('green', '\n✅ Koreki Community Multi-User Stack is running!'));
+        console.log(`👉 App URL:            ${c('bold', appUrl)}`);
+        console.log(`👉 Keycloak Admin UI:  ${c('bold', `${appUrl}/auth/admin`)}`);
+        console.log(c('dim', 'Note: Keycloak may take 30-45 seconds to initialize on first launch.'));
+      } catch (retryErr) {
+        console.error(c('red', '\n❌ Failed to start Docker stack: ' + retryErr.message));
+      }
     }
   }
 }
