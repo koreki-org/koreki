@@ -82,22 +82,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         
                         
                         const studentValues = await extractStudentAnswersWithLLM(taskSpecificText, task.gradingGraph, 'STANDARD', settings as unknown as AppSettings, task.taskType, task.name);
-                        
-                        // Dump to file for agent to read
-                        try {
-                            const fs = require('fs');
-                            const path = require('path');
-                            fs.writeFileSync(path.join(process.cwd(), 'scratch', 'debug-pang.json'), JSON.stringify({
-                                taskName: task.name,
-                                taskSpecificText,
-                                studentValues,
-                                studentText: req.body.studentText || req.body.text || ""
-                            }, null, 2));
-                        } catch (e) {
-                            logger.error(e);
-                        }
-                        
-                        
+
                         const gradingResult = GraphRunner.grade(task.gradingGraph, studentValues);
                         task.gradingResult = gradingResult;
 
