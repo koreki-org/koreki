@@ -272,6 +272,9 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
 async function setupCommunityMulti(isDryRun) {
   console.log(c('bold', '⚙️  Configuring Koreki Community Multi-User (Keycloak & Gateway)...'));
 
+  // Ensure we are in the correct directory (e.g., if cloned into a subfolder) BEFORE looking for .env
+  ensureRepoFilesExist();
+
   const envPath = path.join(TARGET_DIR, '.env');
   let envContent = '';
   let appUrl = 'http://localhost:8080';
@@ -360,8 +363,6 @@ MISTRAL_API_KEY=${mistralKey}
 NEXT_PUBLIC_ENABLE_PAID_MODES=false
 `;
   }
-
-  ensureRepoFilesExist();
 
   // Inject dynamic appUrl into keycloak realm config
   try {
