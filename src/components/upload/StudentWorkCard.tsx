@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { FolderOpen, Users, RefreshCw, FileUp } from 'lucide-react';
 import { Task } from '@/types';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
+import { CollapsibleCardContent, CollapseToggleButton } from '@/components/ui/CollapsibleCardContent';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
@@ -13,6 +14,8 @@ interface StudentWorkCardProps {
     onStudentUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onReExtractLayout: () => void;
     isLocked?: boolean;
+    collapsed?: boolean;
+    onToggleCollapse?: () => void;
 }
 
 export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
@@ -21,7 +24,9 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
     extractingLayout,
     onStudentUpload,
     onReExtractLayout,
-    isLocked = false
+    isLocked = false,
+    collapsed = false,
+    onToggleCollapse
 }) => {
     const studentInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -51,15 +56,22 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                             </Button>
                         </>
                     )}
-                    <KorekiTooltip 
+                    <KorekiTooltip
                         title="Organisation"
                         content="Laden Sie Dateien einzeln oder als Stapel hoch. Moodle-Exporte (XLSX/CSV) werden automatisch erkannt und digital verarbeitet."
                         position="bottom"
                     />
+                    {onToggleCollapse && (
+                        <CollapseToggleButton
+                            collapsed={collapsed}
+                            onToggleCollapse={onToggleCollapse}
+                            label="Schülerarbeiten"
+                        />
+                    )}
                 </div>
             </CardHeader>
 
-            <CardContent className="flex-grow pt-4">
+            <CollapsibleCardContent collapsed={collapsed} className="flex-grow pt-4">
                 {!hasStudents ? (
                     <div 
                         onClick={() => studentInputRef.current?.click()}
@@ -138,7 +150,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                         )}
                     </div>
                 )}
-            </CardContent>
+            </CollapsibleCardContent>
         </Card>
     );
 };

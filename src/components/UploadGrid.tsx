@@ -21,6 +21,8 @@ interface UploadGridProps {
     appMode?: 'PURE' | 'STANDARD' | 'TRIAL';
     onGenerateGraph?: (taskIndex: number, taskText: string) => Promise<any>;
     onGenerateCalcTrace?: (taskIndex: number, taskText: string, userNotes?: string) => Promise<any>;
+    collapsed?: boolean;
+    onToggleCollapse?: () => void;
 }
 
 const UploadGrid: React.FC<UploadGridProps> = ({
@@ -38,12 +40,14 @@ const UploadGrid: React.FC<UploadGridProps> = ({
     settings,
     appMode,
     onGenerateGraph,
-    onGenerateCalcTrace
+    onGenerateCalcTrace,
+    collapsed = false,
+    onToggleCollapse
 }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch mb-8">
             {/* Musterlösung Card */}
-            <ModelSolutionCard 
+            <ModelSolutionCard
                 modelSolution={modelSolution}
                 tasksLayout={tasksLayout}
                 extractingLayout={extractingLayout}
@@ -55,16 +59,20 @@ const UploadGrid: React.FC<UploadGridProps> = ({
                 appMode={appMode}
                 onGenerateGraph={onGenerateGraph}
                 onGenerateCalcTrace={onGenerateCalcTrace}
+                collapsed={collapsed}
+                onToggleCollapse={onToggleCollapse}
             />
 
             {/* Schülerarbeiten Card */}
-            <StudentWorkCard 
+            <StudentWorkCard
                 batchFilesCount={batchFilesCount}
                 tasksLayout={tasksLayout}
                 extractingLayout={extractingLayout}
                 onStudentUpload={onStudentUpload}
                 onReExtractLayout={onReExtractLayout}
                 isLocked={isLocked}
+                collapsed={collapsed}
+                onToggleCollapse={onToggleCollapse}
             />
         </div>
     );

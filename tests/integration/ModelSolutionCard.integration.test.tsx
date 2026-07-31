@@ -24,7 +24,9 @@ jest.mock('lucide-react', () => ({
     Clock: () => <div data-testid="clock-icon" />,
     ToggleLeft: () => <div data-testid="toggleleft-icon" />,
     ToggleRight: () => <div data-testid="toggleright-icon" />,
-    Download: () => <div data-testid="download-icon" />
+    Download: () => <div data-testid="download-icon" />,
+    ChevronDown: () => <div data-testid="chevron-down-icon" />,
+    ChevronUp: () => <div data-testid="chevron-up-icon" />
 }));
 
 // Mock MathMarkdown to avoid ESM import issues with remark-gfm
@@ -55,12 +57,14 @@ jest.mock('../../src/components/ui/Card', () => ({
     Card: ({ children, className }: any) => <div className={className} data-testid="card">{children}</div>,
     CardHeader: ({ children }: any) => <div>{children}</div>,
     CardTitle: ({ children }: any) => <div>{children}</div>,
-    CardContent: ({ children }: any) => <div>{children}</div>,
+    // Forward className/aria-* so collapse-state assertions (aria-hidden, max-h-0) can inspect the real markup.
+    CardContent: ({ children, className, ...rest }: any) => <div className={className} {...rest}>{children}</div>,
 }));
 
 jest.mock('../../src/components/ui/Button', () => ({
-    Button: ({ children, onClick, className, disabled }: any) => (
-        <button onClick={onClick} className={className} disabled={disabled}>{children}</button>
+    // Forward aria-*/style/title so the collapse-toggle assertions (label flip, rotation) can inspect real markup.
+    Button: ({ children, onClick, className, disabled, ...rest }: any) => (
+        <button onClick={onClick} className={className} disabled={disabled} {...rest}>{children}</button>
     ),
 }));
 
@@ -151,5 +155,62 @@ describe('ModelSolutionCard Integration (Layer 2)', () => {
         expect(skillId).toBeDefined();
         expect(customSkills[skillId!].category).toBe('graph-skills');
         expect(customSkills[skillId!].isGraphBased).toBe(true);
+    });
+});
+
+describe('ModelSolutionCard Collapse Behavior (Auto-Collapse Feature)', () => {
+    const CollapseWrapper = () => {
+        const [collapsed, setCollapsed] = React.useState(true);
+        return (
+            <ModelSolutionCard
+                modelSolution="Musterlösungstext"
+                tasksLayout={[{ name: 'Aufgabe 1', maxPoints: 5, content: 'Musterlösungstext' }]}
+                extractingLayout={false}
+                onModelUpload={jest.fn()}
+                onModelSolutionChange={jest.fn()}
+                onTasksChange={jest.fn()}
+                collapsed={collapsed}
+                onToggleCollapse={() => setCollapsed((c) => !c)}
+            />
+        );
+    };
+
+    it('renders without collapse props with safe defaults (no chevron, content visible)', () => {
+        render(
+            <ModelSolutionCard
+                modelSolution="Musterlösungstext"
+                tasksLayout={[{ name: 'Aufgabe 1', maxPoints: 5, content: 'Musterlösungstext' }]}
+                extractingLayout={false}
+                onModelUpload={jest.fn()}
+                onModelSolutionChange={jest.fn()}
+                onTasksChange={jest.fn()}
+            />
+        );
+
+        // No onToggleCollapse -> no chevron rendered at all
+        expect(screen.queryByTestId('chevron-down-icon')).not.toBeInTheDocument();
+        expect(screen.queryByTestId('chevron-up-icon')).not.toBeInTheDocument();
+
+        // Content must not be aria-hidden by default
+        expect(document.querySelectorAll('[aria-hidden="true"]').length).toBe(0);
+    });
+
+    it('hides the content while collapsed and reveals it again via the chevron toggle', () => {
+        render(<CollapseWrapper />);
+
+        // Collapsed initially: content wrapper is aria-hidden, chevron button reads "ausklappen"
+        expect(document.querySelectorAll('[aria-hidden="true"]').length).toBeGreaterThan(0);
+        const chevronBtn = screen.getByTestId('chevron-down-icon').closest('button');
+        expect(chevronBtn).toBeInTheDocument();
+        expect(chevronBtn).toHaveAttribute('aria-label', expect.stringContaining('ausklappen'));
+        expect(chevronBtn).toHaveAttribute('aria-expanded', 'false');
+
+        // Click chevron -> parent flips `collapsed` to false
+        fireEvent.click(chevronBtn!);
+
+        // Expanded: no aria-hidden content anymore, same chevron icon rotates and label flips to "einklappen"
+        expect(document.querySelectorAll('[aria-hidden="true"]').length).toBe(0);
+        expect(chevronBtn).toHaveAttribute('aria-label', expect.stringContaining('einklappen'));
+        expect(chevronBtn).toHaveAttribute('aria-expanded', 'true');
     });
 });
