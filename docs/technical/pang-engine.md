@@ -191,7 +191,7 @@ Für die Graphenerstellung wird die KI angewiesen, zwingend vor dem eigentlichen
 * **Musterlösungs-Abgleich:** Das berechnete Endergebnis wird mit den Soll-Werten der Musterlösung verglichen, um Inkonsistenzen noch vor der JSON-Erstellung abzufangen und zu korrigieren.
 
 #### B) Backend Dry-Run Validierung
-Sobald die API den Graphen erhält und parst, wird eine automatisierte Simulation durchgeführt (`validateGraphDeterminism` in [graph-generator.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/lib/grading/graph-generator.ts)):
+Sobald die API den Graphen erhält und parst, wird eine automatisierte Simulation durchgeführt (`validateGraphDeterminism` in [graph-generator.ts](../../src/lib/grading/graph-generator.ts)):
 1. **Mock-Inputs:** Die Simulation extrahiert alle `defaultValue`s der `input`-Variablen als fehlerfreie Schülerantworten.
 2. **Auswertung:** Der `GraphRunner` berechnet alle `formula`-Ausdrücke sequenziell.
 3. **Integritäts-Check:** Schlägt eine Formel fehl (z.B. Syntaxfehler, Division-by-Zero, unbekannte Variablen-ID) oder weicht das Ergebnis vom didaktisch erwarteten Wert ab, wird die Validierung abgebrochen und ein detailreicher Fehlerbericht generiert.
@@ -202,7 +202,7 @@ Schlägt der Dry-Run fehl, startet das Backend einen automatisierten Korrekturla
 * **SaaS-Modus:** Um Betriebskosten und API-Token zu minimieren, wird die Auto-Korrektur im Cloud-Betrieb strikt auf **maximal 1 Retry** limitiert. Schlägt auch dieser fehl, wird der Graph mit entsprechenden Warn-Flags an das Frontend ausgeliefert.
 
 #### D) Echtzeit-Feedback & Fehlervisualisierung im UI
-Im [GradingGraphModal.tsx](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/components/batch/GradingGraphModal.tsx) werden die Ergebnisse des Dry-Runs transparent dargestellt:
+Im [GradingGraphModal.tsx](../../src/components/batch/GradingGraphModal.tsx) werden die Ergebnisse des Dry-Runs transparent dargestellt:
 * **🛡️ Verifiziert-Banner:** Ein grünes Banner signalisiert der Lehrkraft, dass der Graph mathematisch geprüft und 100% konsistent auswertbar ist.
 * **⚠️ Fehler-Highlights im Editor:** Weist eine Formel Fehler auf (z.B. durch nachträgliche manuelle Bearbeitung im Editor), leuchtet der betroffene Knoten zart rot auf, erhält ein prominentes "FEHLER"-Badge und zeigt die exakte Fehlermeldung direkt als Codebox auf der Knotenkarte an.
 
@@ -226,6 +226,5 @@ Um zu verhindern, dass die mathematische Folgefehler-Kette abreißt, wenn ein Sc
 
 ## 5. Testing & Referenzen
 
-* **Zugehöriger Walkthrough:** [KI Graph Skill Creator — Walkthrough](../../C:/Users/AndreasHeid/.gemini/antigravity/brain/4d861975-3411-49a1-a66b-e78b73efe27b/walkthrough.md)
-* **Unit Tests (Layer 1):** Absicherung aller mathematischen, sequenziellen und verschachtelten Berechnungsfälle in [GraphRunner.test.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/tests/unit/lib/GraphRunner.test.ts).
-* **Integration Tests (Layer 2):** Überprüfung der synchronisierten Speicherung, Aktivierung und visuellen Zuordnung in [ModelSolutionCard.integration.test.tsx](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/tests/integration/ModelSolutionCard.integration.test.tsx).
+* **Unit Tests (Layer 1):** Absicherung aller mathematischen, sequenziellen und verschachtelten Berechnungsfälle in [GraphRunner.test.ts](../../tests/unit/lib/GraphRunner.test.ts).
+* **Integration Tests (Layer 2):** Überprüfung der synchronisierten Speicherung, Aktivierung und visuellen Zuordnung in [ModelSolutionCard.integration.test.tsx](../../tests/integration/ModelSolutionCard.integration.test.tsx).

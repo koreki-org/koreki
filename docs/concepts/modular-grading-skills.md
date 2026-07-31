@@ -60,7 +60,7 @@ graph TD
 
 ## 3. Technische Spezifikationen & Datenhaltung (Rolle: `@database_expert`)
 
-### 1. Erweiterung des Prisma-Schemas ([schema.prisma](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/prisma/schema.prisma))
+### 1. Erweiterung des Prisma-Schemas ([schema.prisma](../../prisma/schema.prisma))
 Wir definieren das Modell `SkillProfile` und verknüpfen es mit dem Nutzer:
 
 ```prisma
@@ -88,8 +88,8 @@ model SkillProfile {
 }
 ```
 
-### 2. Der Prompt-Builder ([prompt-builder.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/lib/ai/prompt-builder.ts))
-Wir passen [buildCorrectionPrompt](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/lib/ai/prompt-builder.ts#L57) so an, dass es die `activeSkillIds` direkt verarbeitet:
+### 2. Der Prompt-Builder ([prompt-builder.ts](../../src/lib/ai/prompt-builder.ts))
+Wir passen [buildCorrectionPrompt](../../src/lib/ai/prompt-builder.ts#L57) so an, dass es die `activeSkillIds` direkt verarbeitet:
 
 ```typescript
 export function buildCorrectionPrompt(

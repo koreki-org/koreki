@@ -91,7 +91,7 @@ In Browser-basierten Umgebungen (wie dem selbstgehosteten Community-Modus) verhi
 ### H. Native Deaktivierung der Reasoning-Phase (Qwen / DeepSeek-R1) 🚀
 Mit dem Einzug von Reasoning-Modellen (wie Qwen2.5-Instruct mit Denkphase oder DeepSeek-R1) auf lokalen Servern kommt es bei Bilderkennungs-Tasks (OCR) oft zu immensen Latenzzeiten und Timeouts. Da die Inferenz bei komplexen handschriftlichen Bildern versucht, einen ausführlichen Denkprozess (`<thought>`) zu generieren, läuft die Anfrage häufig in den 5-Minuten-Gateway-Timeout des Servers und liefert leere Antworten zurück.
 
-*   **API-Konstruktion:** Zur Lösung dieses Problems wurde in der Ollama API-Anfrage ([ollama-logic.ts](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/src/lib/ai/ollama-logic.ts)) der native, top-level Parameter `think` integriert:
+*   **API-Konstruktion:** Zur Lösung dieses Problems wurde in der Ollama API-Anfrage ([ollama-logic.ts](../../src/lib/ai/ollama-logic.ts)) der native, top-level Parameter `think` integriert:
     ```json
     {
       "model": "qwen3.6:35b",

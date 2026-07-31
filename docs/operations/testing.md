@@ -35,9 +35,9 @@ Dieses Dokument beschreibt den architektonischen Ansatz für das Testing bei Kor
 ### Layer 3: End-to-End (E2E Testing)
 - **Ziel**: Reale Browser-Verifizierung des gesamten Anwendungs-Deployments.
 - **Fokus**: Öffentliche Seiten (Zone A: 9 Tests, 36 Checks), Authentifizierungs-Flow (Zone B).
-- **Tooling**: Antigravity `browser_subagent` gegen Live-Deployment (kein lokaler Server nötig).
-- **Status**: **Zone A implementiert** — auslösbar via `/layer3-smoke` Workflow.
-- **Siehe**: `.agents/workflows/layer3-smoke.md`
+- **Tooling**: Browser-Automatisierung (z.B. via Claude Code Browser-Tooling) gegen Live-Deployment (kein lokaler Server nötig).
+- **Status**: **Zone A implementiert** — auslösbar via `/layer3-smoke` Slash-Command.
+- **Siehe**: `.claude/commands/layer3-smoke.md`
 
 ---
 

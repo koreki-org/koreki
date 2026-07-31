@@ -100,6 +100,6 @@ In diesem Setup wird GitHub so konfiguriert, dass der **Webhook zu Coolify nur a
 > [!WARNING]
 > Verlinke hier zwingend auf zugehörige GitHub PRs, Tasks oder Architektur-Entscheidungen (ADR).
 
-* **Verwandte Dokumente:** [release-process.md](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/docs/operations/release-process.md), [security-pillars.md](file:///c:/Users/AndreasHeid/Documents/Antigravity/koreki/docs/technical/security-pillars.md)
+* **Verwandte Dokumente:** [release-process.md](./release-process.md), [security-pillars.md](../technical/security-pillars.md)
 * **Test-Coverage:** 100% Validierung der CI/CD Workflows vor jedem Push in `main`.
 * **Externe Referenzen:** [GitHub Security Hardening Guide for Actions](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-third-party-actions)
