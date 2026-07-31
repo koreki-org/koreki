@@ -191,6 +191,11 @@ describeFn('CalcTrace Determinism Tests (Layer 2)', () => {
       console.warn('No API Key found. The test will likely fail if it attempts to make a real call.');
     }
 
+    // Mirror the app's default skill profile for MINT tasks (see ModelSolutionCard.tsx:257/301).
+    // Without this, the grading LLM has no Folgefehler-Unabhängigkeit guidance for '_formel'
+    // criteria and incorrectly zeroes out unrelated formula points whenever ANY target has an error.
+    settings.activeSkillIds = ['skill-consecutive-errors', 'skill-math-equivalence', 'skill-math-isolated-grading', 'skill-math-scratchpad'];
+
     // Option C+ - Deep Dive Test: Force temperature to 0.0 for partial grading without touching source code
     const originalFetch = global.fetch;
     global.fetch = async (url: RequestInfo | URL, options?: RequestInit) => {
