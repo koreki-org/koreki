@@ -1,6 +1,7 @@
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 import type { NextApiResponse } from 'next';
+import { z } from 'zod';
 
 /**
  * Pure Proxy API (Client-Side Key Mode)
@@ -8,6 +9,19 @@ import type { NextApiResponse } from 'next';
  * Migrated to Pillar 8 Security Wrapper.
  * Provides rate-limiting and session auditing even for BYOK users.
  */
+const pureProxySchema = z.object({
+    buffer: z.string().optional(),
+    mimeType: z.string().optional(),
+    isOcr: z.boolean().optional(),
+    isCorrection: z.boolean().optional(),
+    modelSolution: z.string().optional(),
+    studentText: z.string().optional()
+}).refine(data => {
+    if (data.isOcr) return !!data.buffer;
+    if (data.isCorrection) return !!data.modelSolution && !!data.studentText;
+    return true;
+}, { message: 'Fehlende Felder für den gewählten Anfrage-Typ.' });
+
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -17,7 +31,12 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     const pureKey = req.headers['x-pure-key'] as string;
     if (!pureKey) return res.status(400).json({ error: 'Mistral API Key fehlt. Bitte in den Einstellungen hinterlegen.' });
 
-    const { buffer, mimeType, isOcr, isCorrection, modelSolution, studentText } = req.body;
+    const validation = pureProxySchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ error: validation.error.issues[0].message });
+    }
+
+    const { buffer, mimeType, isOcr, isCorrection, modelSolution, studentText } = validation.data;
 
     try {
         if (isOcr) {
