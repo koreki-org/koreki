@@ -154,16 +154,23 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                             </Button>
                         )}
                         {onExportSL && !hasFinishedFiles && !hasPendingOcr && (
-                            <Button
-                                variant="outline"
-                                className="border border-primary/20 bg-primary/5 text-primary hover:bg-primary hover:text-primary-foreground transition-all rounded-xl w-full sm:w-auto flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider h-10 px-4"
-                                onClick={onExportSL}
-                                disabled={loading}
-                                title="Schülerlösung als Zwischenstand exportieren (.koreki)"
-                            >
-                                <Download size={14} />
-                                <span>Exportieren</span>
-                            </Button>
+                            <div className="relative group flex items-center w-full sm:w-auto">
+                                <Button
+                                    variant="outline"
+                                    className="border border-primary/20 bg-primary/5 text-primary hover:bg-primary hover:text-primary-foreground transition-all rounded-xl w-full sm:w-auto flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider h-10 px-4"
+                                    onClick={onExportSL}
+                                    disabled={loading}
+                                >
+                                    <Download size={14} />
+                                    <span>Exportieren</span>
+                                </Button>
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2.5 hidden group-hover:flex flex-col items-center z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                    <div className="bg-white/95 backdrop-blur-md border border-border px-3.5 py-2 rounded-2xl shadow-xl whitespace-nowrap text-xs font-bold text-primary font-outfit">
+                                        Schülerlösung als Zwischenstand exportieren (.koreki)
+                                    </div>
+                                    <div className="w-2.5 h-2.5 bg-white/95 border-r border-b border-border rotate-45 -mt-1.5 z-40"></div>
+                                </div>
+                            </div>
                         )}
                         {onExportKoreki && hasFinishedFiles && (
                             <div className="relative group flex items-center w-full sm:w-auto">
