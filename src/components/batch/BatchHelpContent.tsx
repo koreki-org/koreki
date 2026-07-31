@@ -37,6 +37,7 @@ export const BatchHelpContent: React.FC = () => {
             position="bottom"
             widthClass="w-[22rem]"
             iconSize={18}
+            align="left"
             className="inline-flex ml-2"
         />
     );
