@@ -272,7 +272,7 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
 async function setupCommunityMulti(isDryRun) {
   console.log(c('bold', '⚙️  Configuring Koreki Community Multi-User (Keycloak & Gateway)...'));
 
-  let appUrl = await askQuestion('Public APP_URL (with protocol & port)', 'http://localhost:8080');
+  let appUrl = await askQuestion('Public URL (how users access Koreki)', 'http://localhost:8080');
   if (!/^https?:\/\//i.test(appUrl)) {
     appUrl = `http://${appUrl}`;
   }
@@ -291,11 +291,16 @@ async function setupCommunityMulti(isDryRun) {
   // External port from the URL (what users/browsers see)
   const externalPort = parsedUrl.port || (isHttps ? '443' : '80');
 
-  // Docker host port: the port Docker binds the Nginx gateway to on THIS machine
-  // Behind a reverse proxy (HAProxy, Traefik), this is typically 8080 or 3000
+  // Docker host port: which port Docker binds Nginx to on this machine
   const isLocalhost = appHostname === 'localhost' || appHostname === '127.0.0.1';
-  const defaultDockerPort = isLocalhost ? (parsedUrl.port || '8080') : '8080';
-  const publicPort = await askQuestion('Local Docker port (port Nginx gateway binds to on this machine)', defaultDockerPort);
+  let publicPort;
+  if (isLocalhost) {
+    // Localhost: port comes directly from the URL
+    publicPort = parsedUrl.port || '8080';
+  } else {
+    // Domain behind reverse proxy: ask which local port to bind to
+    publicPort = await askQuestion('Port auf diesem Server', '8080');
+  }
 
   const envMode = await askQuestion('Environment (dev or prod)', 'dev');
   const mistralKey = await askQuestion('Mistral API Key (Optional)', '');
