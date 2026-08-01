@@ -77,7 +77,11 @@ describe('Security Governance Audit', () => {
       /skipAuth\s*=\s*true/,
       /NEXT_PUBLIC_KOREKI_DESKTOP/, // Should only be used in env-context.ts
       /master_key/i,
-      /admin_override/i
+      /admin_override/i,
+      // Client-gelieferte Identitäts-Header sind KEINE Vertrauensquelle.
+      // Identität stammt ausschließlich aus dem verifizierten Bearer-Token
+      // (src/lib/auth-keycloak-server.ts). Historischer Bypass — nie wieder einführen.
+      /x-koreki-user-(id|roles)/i
     ];
 
     srcFiles.forEach(filePath => {

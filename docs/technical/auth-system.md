@@ -158,17 +158,19 @@ Seit V0.9.15 verfügt Koreki über eine integrierte Passwort-Wiederherstellung.
 Für die **Community Edition** (Self-Hosted) unterstützt Koreki eine alternative Authentifizierung via Keycloak oder andere OIDC-kompatible Provider.
 
 ### Architektur-Merkmale:
-- **Stateless Gatekeeper**: Im Gegensatz zum SaaS-Modus benötigt die Community Edition für die Authentifizierung **keine serverseitige Datenbank**. Die Sitzung wird rein im Browser via `localStorage` verwaltet.
-- **Identity Proxy**: Der Gatekeeper extrahiert Name und ID des Lehrers direkt aus dem OIDC-Token und stellt diese der App zur Verfügung.
+- **Stateless Gatekeeper**: Im Gegensatz zum SaaS-Modus benötigt die Community Edition für die Authentifizierung **keine serverseitige Datenbank**. Die Sitzung verwaltet `oidc-client-ts` im Browser.
+- **Server-seitige Token-Verifikation**: Jeder API-Request führt ein signiertes Access Token als `Authorization: Bearer` mit. Das Backend prüft Signatur (gegen den JWKS-Endpunkt des Realms), Issuer, Client-Bindung und Ablauf, bevor `sub` und Rollen verwendet werden (`src/lib/auth-keycloak-server.ts`). Da kein DB-Abgleich möglich ist, ist das verifizierte Token die alleinige Source of Truth — siehe Tier-Ausnahme zu Säule 8 im `security-standards` Skill.
+- **Keine Identitäts-Spiegelung**: Nutzer-ID und Rollen werden **nicht** im `localStorage` gespiegelt und nicht als Header übertragen. Client-gelieferte Identitätsangaben sind keine Vertrauensquelle.
 - **Auto-Persistenz**: Experten-Prompts werden im Community-Modus automatisch auf dem Server-Dateisystem gespeichert, verknüpft mit der Keycloak-ID (siehe [Community Persistence](./community-edition-persistence.md)).
 - **Settings Governance (Zahnrad-Schutz)**: In Multi-User-Umgebungen (z. B. Schulen) ist der Zugriff auf Systemeinstellungen (KI-Provider, API-Keys) rollenbasiert geschützt. Nur Nutzer mit der Admin-Rolle können das Einstellungs-Zahnrad und das Initial-Setup-Modal sehen.
 
 ### Konfiguration & Rollen:
 Über die Umgebungsvariable `NEXT_PUBLIC_AUTH_TYPE=KEYCLOAK` wird der Logto-Pfad deaktiviert und die OIDC-Schleuse aktiviert.
 
-- **Admin-Rolle**: Standardmäßig wird nach der Rolle `Admin` im Token gesucht. 
-- **Flexibilität**: Über `NEXT_PUBLIC_ADMIN_ROLE_NAME` kann ein abweichender Rollenname (z. B. `koreki-admin` für Schulnetze) konfiguriert werden, um Konflikte mit bestehenden Rollen zu vermeiden.
-- **Token-Mapping**: Keycloak muss so konfiguriert sein, dass Rollen im Claim `roles` (Plural) übertragen werden.
+- **Admin-Rolle**: Die Realm-Rolle `koreki-admin` wird serverseitig auf die interne Rolle `ADMIN` abgebildet, `koreki-user` auf `USER`. Rollen ohne Koreki-Entsprechung (z. B. `offline_access`) werden verworfen.
+- **Flexibilität**: Über `NEXT_PUBLIC_ADMIN_ROLE_NAME` kann ein **zusätzlicher** Rollenname akzeptiert werden, falls das Schulnetz (LDAP/AD) bereits eine eigene Admin-Rolle führt. `koreki-admin` bleibt immer gültig.
+- **Token-Mapping**: Ein Custom-Protocol-Mapper ist **nicht** erforderlich. Rollen werden aus `realm_access.roles` gelesen, das Keycloak über den Standard-Client-Scope `roles` immer mitliefert. Ein flaches `roles`-Array wird zusätzlich akzeptiert, damit bestehende Realms mit Mapper unverändert weiterlaufen.
+- **Rollenänderungen**: Wirken erst mit dem nächsten Access Token. Ohne Server-State gibt es keine sofortige Token-Rücknahme — kurze Token-Lifetime im Realm konfigurieren.
 
 ---
 

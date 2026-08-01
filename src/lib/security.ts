@@ -7,6 +7,7 @@ import { logger } from './logger';
 import prisma from './prisma';
 import { UserService } from './services/user-service';
 import { isLocalInstance, isKeycloakAuth } from './env-context';
+import { extractBearerToken, verifyKeycloakToken, type VerifiedKeycloakIdentity } from './auth-keycloak-server';
 
 export type SecurityOptions = {
     isAi?: boolean;
@@ -60,39 +61,66 @@ export function withSecurity(
         }
 
         if (isLocalInstance()) {
-            // 🏮 INDUSTRIAL MULTI-USER BYPASS
-            // Try to extract user ID from header if provided (Community Multi-User)
-            const headerUserId = req.headers['x-koreki-user-id'] as string;
-            
-            if (isKeycloakAuth() && !headerUserId) {
-                if (allowAnonymous) {
-                    req.user = {
-                        isAuthenticated: false,
-                        claims: {} as any
-                    };
-                    return await handler(req, res);
-                }
-                return res.status(401).json({ error: 'Nicht angemeldet.' });
-            }
+            // 🏛️ COMMUNITY MULTI-USER (KEYCLOAK)
+            // Kein DB-Abgleich möglich (bewusst DB-freier Tier), daher ist das
+            // kryptografisch verifizierte Token die alleinige Source of Truth.
+            // Client-gelieferte Identitäts-Header werden NIEMALS vertraut.
+            if (isKeycloakAuth()) {
+                const token = extractBearerToken(req.headers.authorization);
 
-            const finalUserId = headerUserId || 'local-desktop-user';
-            
-            // Extract roles passed from the client in Keycloak mode, fallback to ADMIN for Desktop
-            let roles = ['ADMIN'];
-            const headerUserRoles = req.headers['x-koreki-user-roles'] as string;
-            if (headerUserRoles) {
+                if (!token) {
+                    if (allowAnonymous) {
+                        req.user = {
+                            isAuthenticated: false,
+                            claims: {} as any
+                        };
+                        return await handler(req, res);
+                    }
+                    return res.status(401).json({ error: 'Nicht angemeldet.' });
+                }
+
+                let identity: VerifiedKeycloakIdentity;
                 try {
-                    roles = JSON.parse(headerUserRoles);
-                } catch (e) {
-                    logger.error('Failed to parse x-koreki-user-roles header', { headerUserRoles });
+                    identity = await verifyKeycloakToken(token);
+                } catch (error) {
+                    // Details bleiben serverseitig (Säule 4), Client bekommt eine generische Meldung.
+                    logger.security('Keycloak-Token abgelehnt', {
+                        url: req.url,
+                        reason: error instanceof Error ? error.message : String(error)
+                    });
+                    await logSecurityEvent('anonymous', null, 'AUTH_FAILURE', `Invalid Keycloak token for ${req.url}`, ip);
+                    return res.status(401).json({ error: 'Nicht angemeldet.' });
                 }
+
+                // Rollenprüfung gegen verifizierte Claims. Workspaces existieren in
+                // diesem Tier nicht, daher wird jede Admin-Anforderung gleich behandelt.
+                if (requireAdmin && !identity.roles.includes('ADMIN')) {
+                    await logSecurityEvent(identity.sub, null, 'ACCESS_DENIED', `Unauthorized admin access to ${req.url}`, ip);
+                    return res.status(403).json({ error: 'Administratorrechte erforderlich.' });
+                }
+
+                req.user = {
+                    isAuthenticated: true,
+                    claims: {
+                        sub: identity.sub,
+                        roles: identity.roles,
+                        iss: identity.issuer,
+                        aud: identity.clientId,
+                        exp: identity.expiresAt,
+                        iat: identity.issuedAt
+                    }
+                };
+                return await handler(req, res);
             }
 
+            // 🏮 DESKTOP TRUST-BYPASS
+            // Ein-Nutzer-Gerät ohne Netzwerkkontext: die lokale Identität ist
+            // implizit Admin. Bewusstes Trust-Modell, kein Bypass im Sinne von Säule 8.
             req.user = {
                 isAuthenticated: true,
                 claims: {
-                    sub: finalUserId,
-                    roles: roles,
+                    sub: 'local-desktop-user',
+                    roles: ['ADMIN'],
                     iss: 'koreki-local',
                     aud: 'koreki',
                     exp: Math.floor(Date.now() / 1000) + 3600,

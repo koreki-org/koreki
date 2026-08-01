@@ -21,7 +21,13 @@ services:
       # External OIDC Configuration
       NEXT_PUBLIC_OIDC_ISSUER: ${EXTERNAL_OIDC_ISSUER:-https://sso.example.com/realms/koreki}
       NEXT_PUBLIC_OIDC_CLIENT_ID: ${EXTERNAL_OIDC_CLIENT_ID:-koreki-app}
-      
+
+      # Externes Keycloak: JWKS wird über dieselbe URL abgeholt wie der Issuer.
+      # Nur setzen, falls der Server das SSO über einen abweichenden internen
+      # Pfad erreicht (z.B. Split-Horizon-DNS).
+      OIDC_ISSUER_INTERNAL: ${OIDC_ISSUER_INTERNAL:-}
+      OIDC_CLIENT_ID: ${EXTERNAL_OIDC_CLIENT_ID:-koreki-app}
+
       MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
       NEXT_PUBLIC_ENABLE_PAID_MODES: "false"
       DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"

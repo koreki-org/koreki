@@ -278,7 +278,6 @@ async function setupCommunityMulti(isDryRun) {
   const envPath = path.join(TARGET_DIR, '.env');
   let envContent = '';
   let appUrl = 'http://localhost:8080';
-  let envMode = 'dev';
   let isUpdate = false;
 
   if (fs.existsSync(envPath)) {
@@ -288,12 +287,9 @@ async function setupCommunityMulti(isDryRun) {
       isUpdate = true;
       envContent = fs.readFileSync(envPath, 'utf8');
       
-      // Extract APP_URL and ENVIRONMENT for the Keycloak realm injection later
+      // Extract APP_URL for the Keycloak realm injection later
       const matchAppUrl = envContent.match(/^APP_URL=(.*)$/m);
       if (matchAppUrl) appUrl = matchAppUrl[1].trim();
-      
-      const matchEnvMode = envContent.match(/^ENVIRONMENT=(.*)$/m);
-      if (matchEnvMode) envMode = matchEnvMode[1].trim();
 
       console.log(c('green', '✔ Proceeding with safe update (config and passwords preserved)...'));
     }
@@ -333,7 +329,6 @@ async function setupCommunityMulti(isDryRun) {
       publicPort = await askQuestion('Port auf diesem Server', '8080');
     }
 
-    envMode = await askQuestion('Environment (dev or prod)', 'dev');
     const mistralKey = await askQuestion('Mistral API Key (Optional)', '');
     
     adminPassword = generateSecret(12);
@@ -345,7 +340,6 @@ async function setupCommunityMulti(isDryRun) {
 
     envContent = `
 # Koreki Community Multi-User Configuration
-ENVIRONMENT=${envMode}
 APP_URL=${appUrl}
 APP_HOSTNAME=${appHostname}
 PUBLIC_PORT=${publicPort}
@@ -366,7 +360,7 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
 
   // Inject dynamic appUrl into keycloak realm config
   try {
-    const realmFile = path.join(TARGET_DIR, `keycloak/koreki-realm.${envMode}.json`);
+    const realmFile = path.join(TARGET_DIR, 'keycloak/koreki-realm.json');
     if (fs.existsSync(realmFile)) {
       const realmJson = JSON.parse(fs.readFileSync(realmFile, 'utf8'));
       if (realmJson.clients && Array.isArray(realmJson.clients)) {
@@ -393,6 +387,11 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
   console.log(`   • Keycloak Admin User:     ${c('green', 'admin')}`);
   console.log(`   • Keycloak Admin Password: ${c('yellow', adminPassword)}`);
   console.log(`   • Database Password:       ${c('dim', dbPassword)}`);
+
+  console.log('\n' + c('bold', '👤 Koreki App-Administrator:'));
+  console.log(`   Der Realm legt den Benutzer ${c('green', 'koreki')} mit Admin-Rolle an — bewusst OHNE Passwort,`);
+  console.log(`   damit keine Installation mit einem bekannten Standard-Zugang startet.`);
+  console.log(`   Passwort einmalig setzen unter: ${c('cyan', appUrl + '/auth')} (Login: admin)`);
 
   if (isDryRun) {
     console.log(c('yellow', '\n[DRY-RUN] Would write .env and run:'));

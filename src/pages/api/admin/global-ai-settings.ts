@@ -11,9 +11,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     }
 
     const { claims } = req.user;
-    // In Keycloak Community Mode, verify role
-    // In Desktop mode, everyone is implicitly admin
-    const isAdmin = claims.role === 'ADMIN' || process.env.NEXT_PUBLIC_AUTH_TYPE === 'NONE';
+    // Rollen stammen aus dem verifizierten Keycloak-Token (Community Multi-User)
+    // bzw. aus dem lokalen Trust-Modell (Desktop / Community Single-User).
+    const roles = (claims.roles as string[] | undefined) ?? [];
+    const isAdmin = roles.includes('ADMIN');
 
     if (!isAdmin) {
         return res.status(403).json({ message: 'Forbidden: Admin access required' });
