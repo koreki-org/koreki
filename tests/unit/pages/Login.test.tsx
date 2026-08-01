@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import LoginPage from '@/pages/login';
 import { signinOidc } from '@/lib/auth-keycloak';
 import { useRouter } from 'next/router';
@@ -64,15 +64,18 @@ describe('Login Page (Multi-Provider Logic)', () => {
         window.location.href = 'http://localhost';
     });
 
-    it('should trigger signinOidc when isKeycloakAuth returns true', async () => {
+    it('redirects to Keycloak automatically without showing the SaaS login card', async () => {
         mockIsKeycloakAuth.mockReturnValue(true);
-        
+
         render(<LoginPage />);
-        
-        const loginButton = screen.getByRole('button', { name: /Mit Account anmelden/i });
-        fireEvent.click(loginButton);
-        
-        expect(signinOidc).toHaveBeenCalled();
+
+        // Kein Klick nötig: der Redirect erfolgt beim Mount.
+        await waitFor(() => expect(signinOidc).toHaveBeenCalled());
+
+        // Die SaaS-Karte (Registrierung, Logto-Passwort-Reset) darf in diesem Tier
+        // nicht einmal kurz aufblitzen — sie ist hier fachlich falsch.
+        expect(screen.queryByRole('button', { name: /Mit Account anmelden/i })).toBeNull();
+        expect(screen.queryByText(/kostenlos registrieren/i)).toBeNull();
     });
 
     it('should NOT trigger signinOidc when isKeycloakAuth returns false', () => {

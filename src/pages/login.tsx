@@ -46,6 +46,57 @@ export default function Login() {
     }
   };
 
+  // 🏛️ COMMUNITY MULTI-USER (KEYCLOAK)
+  // Die SaaS-Login-Karte (Registrierung, Logto-Passwort-Reset) ist in diesem Tier
+  // fachlich falsch und blitzte bisher auf, bis der Auto-Redirect zu Keycloak griff.
+  // Stattdessen direkt der Ladezustand, konsistent mit dem AuthGuard.
+  if (isKeycloakAuth()) {
+    if (!isSecure) {
+      return (
+        <AppLayout>
+          <Head>
+            <title>Login | Koreki</title>
+          </Head>
+          <div className="flex-grow flex items-center justify-center p-6 text-center">
+            <div className="bg-white w-full max-w-[400px] p-10 rounded-2xl border border-border shadow-sm animate-fade-up">
+              <Logo showText textLarge size={72} className="mb-8" subtitle="Dein KI-Korrektur Assistent" />
+              <div className="p-4 bg-warning/5 border border-warning/20 rounded-xl text-left text-xs text-warning flex gap-3">
+                <AlertTriangle size={24} className="shrink-0 text-warning" />
+                <div>
+                  <p className="font-bold mb-1">Verbindung nicht sicher</p>
+                  <p className="leading-relaxed">
+                    Das Keycloak-Anmeldeverfahren erfordert eine sichere Verbindung. Bitte rufen Sie die Seite über HTTPS oder localhost auf, da der Browser andernfalls die Krypto-Funktionen blockiert.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </AppLayout>
+      );
+    }
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden font-outfit">
+        <Head>
+          <title>Anmeldung | Koreki</title>
+        </Head>
+        <div className="relative z-10 flex flex-col items-center gap-8 animate-fade-in">
+          <div className="relative">
+            <div className="absolute inset-0 bg-primary/20 blur-[40px] rounded-full scale-150 animate-pulse"></div>
+            <Logo size={72} className="relative z-10" />
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <span className="font-extrabold text-3xl tracking-tighter text-foreground leading-none">Koreki<span className="text-primary">.</span></span>
+            <p className="text-muted-foreground text-sm font-medium tracking-wide">Weiterleitung zur Anmeldung …</p>
+          </div>
+          <div className="w-48 h-1 bg-muted rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-primary via-indigo-500 to-primary rounded-full animate-loading-bar"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AppLayout>
       <Head>
