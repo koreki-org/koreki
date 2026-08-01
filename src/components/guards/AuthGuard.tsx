@@ -22,21 +22,31 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false })
     const retryAttempted = useRef(false);
 
     useEffect(() => {
-        // Redirect if definitively unauthenticated
-        if (isFetched && !authLoading && !userData) {
-            // 🛡️ Resilience: Retry auth check once before redirecting.
+        let cancelled = false;
+
+        /**
+         * 🛡️ Der Retry muss AUSGEWERTET werden, statt auf ein erneutes Feuern des
+         * Effects zu hoffen: Ein Refetch setzt nur isFetching, nicht isLoading —
+         * isFetched/authLoading/userData bleiben dabei unverändert. Ein früher
+         * `return` nach checkAuth() würde den Effect also nie wieder auslösen und
+         * die Seite dauerhaft im Ladezustand hängen lassen.
+         */
+        const resolveUnauthenticatedState = async () => {
+            if (!isFetched || authLoading || userData) return;
+
+            // Resilience: Retry auth check once before redirecting.
             // Handles transient Logto cookie race conditions on parallel API calls.
             if (!retryAttempted.current) {
                 retryAttempted.current = true;
-                checkAuth?.();
-                return;
+                const retry = await checkAuth?.();
+                if (cancelled || retry?.data) return;
             }
 
             if (isKeycloakAuth()) {
                 // 🛑 CRITICAL: Do not redirect if we are currently in the callback flow!
                 const url = typeof window !== 'undefined' ? window.location.href : '';
                 const isCallback = url.includes('code=') && url.includes('state=');
-                
+
                 if (isCallback) {
                     console.log("🛡️ AuthGuard: OIDC Callback detected. Waiting for hydration...");
                     return;
@@ -48,7 +58,9 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false })
                 console.log("🛡️ AuthGuard: Unauthenticated access detected. Redirecting to login...");
                 router.push('/login');
             }
-        }
+        };
+
+        resolveUnauthenticatedState();
 
         // Reset retry state when user becomes available
         if (userData) {
@@ -60,6 +72,8 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false })
             console.warn("🛡️ AuthGuard: Admin access required. Redirecting to landing page...");
             router.push('/');
         }
+
+        return () => { cancelled = true; };
     }, [isFetched, authLoading, userData, requireAdmin, router, checkAuth]);
 
     // --- LOADING STATE (Aesthetic consistency with app.tsx) ---
