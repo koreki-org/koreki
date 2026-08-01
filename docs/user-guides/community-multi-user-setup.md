@@ -128,9 +128,13 @@ Weitere Lehrkräfte werden im selben Menü angelegt und erhalten die Realm-Rolle
 ### Login klappt, aber die App meldet durchgehend „Nicht angemeldet" (401)
 Der Server verifiziert jedes Token gegen die Signaturschlüssel von Keycloak (JWKS). Schlägt der Abruf fehl, werden alle Anfragen abgelehnt.
 - Logs prüfen: `docker compose logs koreki | Select-String JWKS` (bzw. `grep JWKS`)
-- Erreichbarkeit aus dem App-Container testen:
+- Erreichbarkeit aus dem App-Container testen (erwartet: `sig-Keys: [ 'RS256' ]`):
   ```bash
-  docker compose -f docker-compose.community-multi-full.yml exec koreki wget -qO- http://gateway/auth/realms/koreki/protocol/openid-connect/certs
+  docker compose -f docker-compose.community-multi-full.yml exec -T koreki node -e "fetch('http://gateway/auth/realms/koreki/protocol/openid-connect/certs').then(r=>r.json()).then(j=>console.log('sig-Keys:',j.keys.filter(k=>k.use==='sig').map(k=>k.alg)))"
+  ```
+- Prüfen, ob der Issuer exakt `NEXT_PUBLIC_OIDC_ISSUER` entspricht:
+  ```bash
+  curl -s <APP_URL>/auth/realms/koreki/.well-known/openid-configuration | grep -o '"issuer":"[^"]*"'
   ```
 - Liefert das nichts, `OIDC_ISSUER_INTERNAL` in der Compose-Datei auf einen aus dem Container erreichbaren Pfad anpassen.
 
