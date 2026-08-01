@@ -50,12 +50,13 @@ Nach dem Login landest du im Dashboard. Hier siehst du deine letzten Sitzungen, 
 
 ---
 
-### 4a. Das Expert Center: Expertise, Erfahrungsschatz & Intelligenz
-Im **Expert Center** (oben rechts in der Menüleiste) stellst du die drei tragenden Säulen deiner KI-Korrektur ein:
+### 4a. Das Expert Center: Expertise, Skills, Erfahrungsschatz & Intelligenz
+Im **Expert Center** (oben rechts in der Menüleiste) stellst du die vier tragenden Säulen deiner KI-Korrektur ein:
 
 1. **Expertise (Fachprofile):** Hier definierst du deine fachlichen und pädagogischen Leitplanken (z. B. Fokus auf Fachsprache, Strenge der Bewertung), die die KI bei jeder Korrektur berücksichtigen soll.
-2. **Erfahrungsschatz (GradingMemory):** Hier kalibrierst du das fallbasierte Gedächtnis deiner KI. Hinterlege reale oder beispielhafte Korrekturfälle, damit die KI aus deinen früheren Bewertungen lernt und Folgefehler oder mathematische Äquivalenzen absolut konsistent nach deinen eigenen Maßstäben bewertet.
-3. **Intelligenz (KI-Parameter):** Steuere die Leistungskraft und Denkweise der KI. Aktiviere hier das **Deep Thinking (Hohe Genauigkeit)** für komplexe mathematische oder logische Prüfungen, oder passe Parameter wie die *Kreativität (Temperature)* an.
+2. **Skills (Kriterienkataloge):** Strukturiere deine Korrektur mit wiederverwendbaren Kompetenzbereichen. Lege pro Aufgabe spezifische Skills fest (z. B. Rechenketten, Textästhetik, Korrekturzeichen), um extrem differenzierte und konsistente Auswertungen für jeden Schüler zu erhalten.
+3. **Erfahrungsschatz (GradingMemory):** Hier kalibrierst du das fallbasierte Gedächtnis deiner KI. Hinterlege reale oder beispielhafte Korrekturfälle, damit die KI aus deinen früheren Bewertungen lernt und Folgefehler oder mathematische Äquivalenzen absolut konsistent nach deinen eigenen Maßstäben bewertet.
+4. **Intelligenz (KI-Parameter):** Steuere die Leistungskraft und Denkweise der KI. Aktiviere hier das **Deep Thinking (Hohe Genauigkeit)** für komplexe mathematische oder logische Prüfungen, oder passe Parameter wie die *Kreativität (Temperature)* an.
    > [!TIP]
    > **Modell-Empfehlung:** Für die beste Bilderkennung (OCR/Handschriften), das Layout-Mapping und die anschließende Korrektur empfehlen wir dringend die Nutzung von **Qwen 3.6** (speziell `qwen3.6:35b`). Dieses Modell liefert derzeit mit Abstand die präzisesten Ergebnisse und vermeidet strukturelle Parsing-Fehler.
 
