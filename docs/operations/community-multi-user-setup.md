@@ -35,8 +35,10 @@ sequenceDiagram
     App->>KC: Redirect zu OIDC Flow
     KC->>User: Login Maske
     User->>KC: Credentials
-    KC->>App: ID Token (sub, name, roles)
-    App->>API: API Request + X-Koreki-User-Id
+    KC->>App: Access Token (signiert)
+    App->>API: API Request + Authorization: Bearer <token>
+    API->>KC: JWKS abrufen (gecacht)
+    API->>API: Signatur, Issuer, Ablauf & Rollen prüfen
     API->>FS: Lade/Speichere profiles_${userId}.json
     API-->>User: Isolierte Experten-Prompts
 ```
@@ -62,25 +64,30 @@ Folgende Variablen müssen in der `.env` oder im Compose-File gesetzt sein:
 * `APP_URL`: Die finale Aufruf-URL inklusive http(s) und Port. (Muss in der `.env` stehen oder beim Befehl übergeben werden)
 * `NEXT_PUBLIC_KOREKI_MODE=community`: Aktiviert lokale Isolation.
 * `NEXT_PUBLIC_AUTH_TYPE=KEYCLOAK`: Aktiviert den OIDC/Keycloak-Pfad im Frontend.
-* `KEYCLOAK_ISSUER`: URL deines Keycloak Realms (z.B. `http://localhost:8080/realms/koreki`).
-* `KEYCLOAK_CLIENT_ID`: ID des Clients in Keycloak (Standard: `koreki-client`).
+* `NEXT_PUBLIC_OIDC_ISSUER`: URL deines Keycloak Realms (z.B. `${APP_URL}/auth/realms/koreki`). Gegen diesen Wert wird der `iss`-Claim jedes Tokens geprüft.
+* `NEXT_PUBLIC_OIDC_CLIENT_ID` / `OIDC_CLIENT_ID`: ID des Clients in Keycloak (Standard: `koreki-app`).
+* `OIDC_ISSUER_INTERNAL`: (Optional) Abweichender Pfad, über den der Server die Signaturschlüssel (JWKS) abruft — nötig, wenn die öffentliche URL aus dem Container heraus nicht auflösbar ist. Im mitgelieferten Stack: `http://gateway/auth/realms/koreki`.
 * `MISTRAL_API_KEY`: (Optional) Zentraler API-Key für Mistral. 
 * `MITTWALD_API_KEY`: (Optional) Zentraler API-Key für Qwen 3.6 / Mittwald.
 * `NEXT_PUBLIC_HAS_GLOBAL_AI=true`: Signalisiert dem Frontend, dass globale Keys vorhanden sind (unterdrückt das Setup-Modal für Endnutzer).
 
 ### Keycloak Konfiguration
-1. **Realm:** Erstelle einen Realm namens `koreki`.
-2. **Client:** Erstelle einen OIDC-Client `koreki-client`.
-   - **Access Type:** Public (für SPA Frontend) oder Confidential (falls Backend-Sync gewünscht).
-   - **Valid Redirect URIs:** `http://localhost:3000/*` (oder deine Domain).
-   - **Web Origins:** `http://localhost:3000`.
-3. **Roles:** (Optional) Erstelle die Rolle `koreki-admin` für erweiterten Zugriff auf KI-Einstellungen.
+Im mitgelieferten Stack wird der Realm automatisch aus `keycloak/koreki-realm.json` importiert (eine Datei für alle Umgebungen). Bei einem **externen** Keycloak entsprechend anlegen:
+1. **Realm:** `koreki`.
+2. **Client:** OIDC-Client `koreki-app`.
+   - **Access Type:** Public (SPA-Frontend mit PKCE `S256`).
+   - **Valid Redirect URIs:** deine `APP_URL` + `/*`.
+   - **Web Origins:** deine `APP_URL`.
+3. **Roles:** Realm-Rollen `koreki-user` (Standard) und `koreki-admin` (Zugriff auf KI-Einstellungen).
+
+> [!NOTE]
+> Ein Custom-Protocol-Mapper für Rollen ist **nicht** erforderlich. Der Server liest Rollen aus `realm_access.roles`, das Keycloak über den Standard-Client-Scope `roles` immer mitliefert.
 
 ---
 
 ## 4. Security & Compliance (Industrial Grade)
 > [!IMPORTANT]
-> Die Isolation basiert auf dem `sub`-Claim (Subject) des OIDC-Tokens. Dieser wird im `apiClient` automatisch als `X-Koreki-User-Id` injiziert.
+> Die Identität stammt ausschließlich aus dem **signierten Access Token**. Der Server verifiziert bei jedem Request Signatur (via JWKS), Issuer, Client-Bindung und Ablauf, bevor `sub` und Rollen verwendet werden. Client-gelieferte Identitäts-Header sind keine Vertrauensquelle.
 
 * **Datenverarbeitung:** Personenbezogene Daten der Schüler werden im RAM verarbeitet. Experten-Prompts werden verschlüsselt oder isoliert in `/app/data/prompts/profiles_${userId}.json` gespeichert.
 * **Authentifizierung:** Erfolgt über Keycloak. Passwörter werden niemals in der Koreki-Datenbank gespeichert.

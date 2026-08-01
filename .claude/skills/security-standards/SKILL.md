@@ -44,6 +44,13 @@ Jede schülerbezogene Datenverarbeitung muss unter Wahrung der **Datensparsamkei
 - **SysAdmin-Isolation**: Nur `User.role === 'ADMIN'` hat globalen Zugriff.
 - **OrgAdmin-Isolation**: Aktionsberechtigung ist auf den `workspaceId` Kontext in der `Membership` Tabelle begrenzt. Orga-Verwalter haben keinen globalen God-Mode.
 
+#### Tier-Ausnahme: Community (Desktop & Multi-User)
+Die Community Edition ist bewusst **datenbankfrei** (Zero-Ops-Ziel: keine Prisma-Migrationen im Schulbetrieb, siehe `docs/technical/community-edition-persistence.md`). Ein DB-Abgleich ist dort technisch nicht möglich. Es gilt stattdessen:
+- **Community Multi-User (Keycloak)**: Der Identity Provider ist die Source of Truth. Autorisierung erfolgt gegen **kryptografisch verifizierte** Token-Claims — Signatur (JWKS), Issuer, Client-Bindung und Ablauf werden bei jedem Request geprüft (`src/lib/auth-keycloak-server.ts`). Ungeprüfte oder client-gelieferte Claims sind niemals zulässig.
+- **Desktop / Community Single-User**: Ein-Nutzer-Gerät ohne Netzwerkkontext — die lokale Identität ist implizit Admin. Bewusstes Trust-Modell.
+- **Akzeptiertes Restrisiko**: Ohne Server-State existiert keine Token-Rücknahme. Rollenentzug in Keycloak wirkt erst nach Ablauf des Access Tokens. Gegenmaßnahme: kurze Token-Lifetime im Realm.
+- **Nicht verhandelbar**: Diese Ausnahme betrifft ausschließlich die *Quelle* der Rolleninformation. Der `withSecurity`-Wrapper bleibt für jede Route Pflicht.
+
 ## 4. Zero-Trust API Architecture
 - **withSecurity Wrapper**: Jede API-Route MUSS durch den `withSecurity` Wrapper geschützt sein.
 - **Mandatentrennung**: In Prisma-Abfragen konsequent `workspaceId` nutzen.

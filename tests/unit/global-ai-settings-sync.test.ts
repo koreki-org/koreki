@@ -4,8 +4,10 @@ import fs from 'fs';
 
 // Mock Security & Env Context
 jest.mock('../../src/lib/security', () => ({
+    // Spiegelt den Claims-Aufbau aus withSecurity: Rollen sind ein Array
+    // (aus dem verifizierten Keycloak-Token bzw. dem lokalen Trust-Modell).
     withSecurity: (handler: any) => async (req: any, res: any) => {
-        req.user = req.user || { claims: { sub: 'admin-id', role: 'ADMIN' } };
+        req.user = req.user || { claims: { sub: 'admin-id', roles: ['ADMIN'] } };
         return handler(req, res);
     }
 }));
@@ -86,7 +88,7 @@ describe('Global AI Settings Sync Unit & API Verification (Layer 1 & 2)', () => 
             (fs.existsSync as jest.Mock).mockReturnValue(true);
             (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(stored));
 
-            const req: any = { method: 'GET', user: { claims: { sub: 'admin', role: 'ADMIN' } } };
+            const req: any = { method: 'GET', user: { claims: { sub: 'admin', roles: ['ADMIN'] } } };
             await globalAiSettingsHandler(req, res);
 
             expect(res.status).toHaveBeenCalledWith(200);
@@ -100,7 +102,7 @@ describe('Global AI Settings Sync Unit & API Verification (Layer 1 & 2)', () => 
 
             const req: any = {
                 method: 'POST',
-                user: { claims: { sub: 'admin', role: 'ADMIN' } },
+                user: { claims: { sub: 'admin', roles: ['ADMIN'] } },
                 body: {
                     provider: 'ollama',
                     ollamaUrl: 'http://127.0.0.1:11434',

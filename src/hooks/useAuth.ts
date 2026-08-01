@@ -50,15 +50,10 @@ export const useAuth = () => {
                 await handleOidcCallback();
                 const oidcUser = await getOidcUser();
                 if (!oidcUser) {
-                    window.localStorage.removeItem('koreki_user_sub');
-                    window.localStorage.removeItem('koreki_user_roles');
                     return null; // Triggers redirect in AuthGuard
                 }
-
-                // Persist sub and roles for backend identification
-                window.localStorage.setItem('koreki_user_sub', oidcUser.profile.sub);
-                const roles = (oidcUser.profile as any).roles || [];
-                window.localStorage.setItem('koreki_user_roles', JSON.stringify(roles));
+                // 🛡️ Identität wird NICHT im LocalStorage gespiegelt. Der Backend-Zugriff
+                // erfolgt ausschließlich über das signierte Access Token (siehe api-client.ts).
             }
 
             // Standard Path: Fetch user data from backend (SaaS or Community Multi-User)

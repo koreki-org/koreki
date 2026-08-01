@@ -21,6 +21,9 @@ const customJestConfig = {
     modulePathIgnorePatterns: ['<rootDir>/.next/', '<rootDir>/tests/reports/'],
     coverageDirectory: 'tests/reports/coverage',
     moduleNameMapper: {
+        // jose liefert unter jsdom seinen ESM-Browser-Build aus, den Jest nicht parsen kann.
+        // Die Keycloak-Verifikation läuft ausschließlich serverseitig -> Node-CJS-Build erzwingen.
+        '^jose$': '<rootDir>/node_modules/jose/dist/node/cjs/index.js',
         '^@/(.*)$': '<rootDir>/src/$1',
         '^@/components/(.*)$': '<rootDir>/components/$1',
         '^@/pages/(.*)$': '<rootDir>/pages/$1',

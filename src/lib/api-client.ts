@@ -1,4 +1,5 @@
-import { isLocalInstance } from './env-context';
+import { isLocalInstance, isKeycloakAuth } from './env-context';
+import { getOidcUser } from './auth-keycloak';
 import { logger } from './logger';
 
 /**
@@ -45,19 +46,36 @@ export function validateNetworkTarget(url: string) {
 }
 
 /**
+ * Baut die Authorization-Header für Community Multi-User (Keycloak).
+ * 🛡️ Das signierte Access Token ist die einzige Identitätsquelle — es wird bei
+ * jedem Request frisch aus dem OIDC-Store gelesen, damit der Silent-Renew von
+ * oidc-client-ts greift und lange offene Tabs kein abgelaufenes Token senden.
+ */
+const buildAuthHeaders = async (): Promise<Record<string, string>> => {
+    if (typeof window === 'undefined' || !isKeycloakAuth()) return {};
+
+    try {
+        const oidcUser = await getOidcUser();
+        if (oidcUser?.access_token) {
+            return { Authorization: `Bearer ${oidcUser.access_token}` };
+        }
+    } catch (err) {
+        logger.error('[apiClient] OIDC Access Token konnte nicht gelesen werden', err);
+    }
+
+    return {};
+};
+
+/**
  * Standardized API Client Wrapper
  */
 export const apiClient = {
     fetch: async (url: string, options?: RequestInit): Promise<Response> => {
         validateNetworkTarget(url);
-        
-        // Industrial Identity Injection 🏮🛡️
+
         const headers = {
             ...options?.headers,
-            ...(typeof window !== 'undefined' ? { 
-                'x-koreki-user-id': window.localStorage.getItem('koreki_user_sub') || '',
-                'x-koreki-user-roles': window.localStorage.getItem('koreki_user_roles') || ''
-            } : {}),
+            ...(await buildAuthHeaders()),
         };
 
         const res = await fetch(url, { ...options, headers });
@@ -66,7 +84,12 @@ export const apiClient = {
         // Skips auth endpoints to avoid retry loops.
         if (res?.status === 401 && !url.includes('/api/logto/')) {
             await new Promise(resolve => setTimeout(resolve, 300));
-            const retryRes = await fetch(url, { ...options, headers });
+            // Token neu lesen: ein zwischenzeitlicher Silent-Renew kann das 401 bereits geheilt haben.
+            const retryHeaders = {
+                ...options?.headers,
+                ...(await buildAuthHeaders()),
+            };
+            const retryRes = await fetch(url, { ...options, headers: retryHeaders });
             return retryRes || res;
         }
 

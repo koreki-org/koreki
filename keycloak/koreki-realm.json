@@ -25,13 +25,6 @@
       "email": "koreki@koreki.local",
       "firstName": "Koreki",
       "lastName": "Admin",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "koreki",
-          "temporary": false
-        }
-      ],
       "realmRoles": [
         "koreki-admin",
         "koreki-user"
@@ -55,6 +48,12 @@
       ],
       "webOrigins": [
         "+"
+      ],
+      "defaultClientScopes": [
+        "web-origins",
+        "roles",
+        "profile",
+        "email"
       ],
       "attributes": {
         "pkce.code.challenge.method": "S256"

@@ -8,30 +8,26 @@ Diese Anleitung beschreibt, wie man die **Koreki Community Multi-User Edition** 
 - Node.js 18+ installiert (für den Setup-Wizard)
 
 ## 2. Das Environment-Konzept
-Wir nutzen ein **Multi-Environment-System**, um zwischen lokaler Entwicklung und echtem Server-Betrieb zu unterscheiden. Gesteuert wird dies über die `.env`.
+Die Konfiguration unterscheidet sich zwischen lokaler Entwicklung und echtem Server-Betrieb nur durch die URL-Angaben in der `.env`. Es gibt **eine** Realm-Datei (`keycloak/koreki-realm.json`) für alle Umgebungen.
 
 ### Entwicklung (Lokal / Localhost)
 Ideal für Tests auf dem eigenen Rechner.
 ```bash
-ENVIRONMENT=dev
 APP_URL=http://localhost:8080
 APP_HOSTNAME=localhost
 PUBLIC_PORT=8080
 KC_HOSTNAME_PORT=8080
 ```
-- Nutzt automatisch: `keycloak/koreki-realm.dev.json`
 - Erreichbar unter: `http://localhost:8080`
 
 ### Produktion (Server / Domain hinter Reverse Proxy)
 Für den Einsatz in der Schule mit eigener Domain hinter HAProxy, Traefik oder Nginx.
 ```bash
-ENVIRONMENT=prod
 APP_URL=https://koreki.deine-schule.de
 APP_HOSTNAME=koreki.deine-schule.de
 PUBLIC_PORT=8080
 KC_HOSTNAME_PORT=-1
 ```
-- Nutzt automatisch: `keycloak/koreki-realm.prod.json`
 - Erreichbar unter: `https://koreki.deine-schule.de`
 - `PUBLIC_PORT=8080`: Der Port, auf dem Docker den Nginx-Gateway auf dem Server bindet (HAProxy leitet Port 443 hierhin weiter)
 - `KC_HOSTNAME_PORT=-1`: Standardport (443/80) — Keycloak hängt keinen Port an URLs an
@@ -58,8 +54,7 @@ Der interaktive Setup-Wizard richtet das gesamte Multi-User-Environment inkl. Ke
 Der Wizard fragt:
 1. **Public URL** — z.B. `http://localhost:8080` oder `https://koreki.deine-schule.de`
 2. **Port auf diesem Server** — nur bei externen Domains (Default: `8080`)
-3. **Environment** — `dev` oder `prod`
-4. **Mistral API Key** — optional, für Cloud-AI-Modelle
+3. **Mistral API Key** — optional, für Cloud-AI-Modelle
 
 > [!TIP]
 > Bei wiederholter Ausführung aktualisiert der Installer automatisch auf die neueste Version (`git fetch + reset`). Ein manuelles Löschen des Ordners ist nicht nötig.
@@ -106,7 +101,17 @@ Internet → HAProxy (:443) → Nginx Gateway (:80/PUBLIC_PORT) → Koreki (:300
 - **Koreki UI:** `http://localhost:8080` (bzw. deine Domain)
 - **Keycloak Admin UI:** `http://localhost:8080/auth/admin`
 - **Standard-Admin (Keycloak):** `admin` / Passwort wird vom Wizard generiert (siehe `.env` → `KC_ADMIN_PASSWORD`)
-- **Standard-Nutzer (Koreki App):** `koreki` / `koreki` (bereits mit Admin-Rechten vorkonfiguriert)
+
+### Ersten Koreki-Nutzer freischalten
+
+Der Realm legt den Benutzer `koreki` mit Admin-Rolle an — **bewusst ohne Passwort**, damit keine Installation mit einem allgemein bekannten Standard-Zugang ans Netz geht.
+
+Einmalig nach der Installation:
+1. Keycloak Admin UI öffnen (`/auth/admin`), Login als `admin`
+2. Realm `koreki` → *Users* → `koreki` → Reiter *Credentials*
+3. Passwort setzen (empfohlen: *Temporary* = An, dann muss die Lehrkraft es beim ersten Login selbst ändern)
+
+Weitere Lehrkräfte werden im selben Menü angelegt und erhalten die Realm-Rolle `koreki-user`; für Administratoren zusätzlich `koreki-admin`.
 
 ---
 
@@ -119,6 +124,18 @@ Internet → HAProxy (:443) → Nginx Gateway (:80/PUBLIC_PORT) → Koreki (:300
 ### Redirect-Fehler (Invalid Parameter)
 - Prüfe, ob `APP_URL` in der `.env` exakt mit der URL übereinstimmt, die du im Browser aufrufst.
 - Führe den Installer erneut aus — er aktualisiert die Redirect-URIs automatisch.
+
+### Login klappt, aber die App meldet durchgehend „Nicht angemeldet" (401)
+Der Server verifiziert jedes Token gegen die Signaturschlüssel von Keycloak (JWKS). Schlägt der Abruf fehl, werden alle Anfragen abgelehnt.
+- Logs prüfen: `docker compose logs koreki | Select-String JWKS` (bzw. `grep JWKS`)
+- Erreichbarkeit aus dem App-Container testen:
+  ```bash
+  docker compose -f docker-compose.community-multi-full.yml exec koreki wget -qO- http://gateway/auth/realms/koreki/protocol/openid-connect/certs
+  ```
+- Liefert das nichts, `OIDC_ISSUER_INTERNAL` in der Compose-Datei auf einen aus dem Container erreichbaren Pfad anpassen.
+
+### Niemand hat Admin-Rechte
+Admin-Rechte hängen an der Realm-Rolle `koreki-admin`. Im Keycloak Admin UI unter *Users* → *Role mapping* prüfen, ob die Rolle zugewiesen ist. Nach einer Änderung muss sich die Lehrkraft neu anmelden, damit ein Token mit der neuen Rolle ausgestellt wird.
 
 ### CSS/JS lädt nicht (MIME type Fehler)
 - Container neu starten: `docker compose -f docker-compose.community-multi-full.yml restart gateway`

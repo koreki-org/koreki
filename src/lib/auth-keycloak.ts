@@ -81,6 +81,7 @@ export const signinOidc = async () => {
 export const signoutOidc = async () => {
     const mgr = getOidcManager();
     if (mgr) {
+        // Aufräumen der Identitäts-Spiegel aus Versionen vor der Bearer-Token-Umstellung.
         window.localStorage.removeItem('koreki_user_sub');
         window.localStorage.removeItem('koreki_user_roles');
         await mgr.signoutRedirect();
