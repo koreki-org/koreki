@@ -32,6 +32,20 @@ KC_HOSTNAME_PORT=-1
 - `PUBLIC_PORT=8080`: Der Port, auf dem Docker den Nginx-Gateway auf dem Server bindet (HAProxy leitet Port 443 hierhin weiter)
 - `KC_HOSTNAME_PORT=-1`: Standardport (443/80) — Keycloak hängt keinen Port an URLs an
 
+### Pflicht-Geheimnisse
+
+Zusätzlich zu den URL-Angaben **müssen** zwei Passwörter gesetzt sein:
+
+```bash
+KC_ADMIN_PASSWORD=<langes Zufallspasswort>
+KC_DB_PASSWORD=<langes Zufallspasswort>
+```
+
+Der Setup-Wizard erzeugt beide automatisch. Bei manueller Einrichtung selbst vergeben, zum Beispiel per `openssl rand -hex 16`.
+
+> [!IMPORTANT]
+> `KC_ADMIN_PASSWORD` schützt die Keycloak-Admin-Konsole unter `<APP_URL>/auth/admin` — also die vollständige Kontrolle über alle Nutzerkonten. Fehlt eine der beiden Variablen, bricht `docker compose` bewusst mit einer Fehlermeldung ab, statt ein Standardpasswort zu verwenden.
+
 > [!NOTE]
 > Die `redirectUris` in der Keycloak Realm-Datei werden vom Setup-Wizard **automatisch** auf Basis der `APP_URL` konfiguriert. Ein manuelles Editieren der JSON-Dateien ist nicht mehr nötig.
 
