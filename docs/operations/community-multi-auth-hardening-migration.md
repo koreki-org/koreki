@@ -68,9 +68,16 @@ curl -i -H "x-koreki-user-id: pruefung" \
         -H 'x-koreki-user-roles: ["ADMIN"]' \
         <APP_URL>/api/admin/global-ai-settings
 
-# 3. Erreichbarkeit der Signaturschlüssel aus dem App-Container:
-docker compose -f docker-compose.community-multi-full.yml exec koreki \
-  wget -qO- http://gateway/auth/realms/koreki/protocol/openid-connect/certs
+# 3. Erreichbarkeit der Signaturschlüssel aus dem App-Container.
+#    Läuft auch schon VOR dem Update und ist als Vorab-Prüfung empfohlen:
+docker compose -f docker-compose.community-multi-full.yml exec -T koreki \
+  node -e "fetch('http://gateway/auth/realms/koreki/protocol/openid-connect/certs').then(r=>r.json()).then(j=>console.log('sig-Keys:',j.keys.filter(k=>k.use==='sig').map(k=>k.alg)))"
+```
+
+Erwartet wird `sig-Keys: [ 'RS256' ]`. Zusätzlich muss der Issuer übereinstimmen — dieser Wert muss exakt `NEXT_PUBLIC_OIDC_ISSUER` entsprechen:
+
+```bash
+curl -s <APP_URL>/auth/realms/koreki/.well-known/openid-configuration | grep -o '"issuer":"[^"]*"'
 ```
 
 Liefert Schritt 2 etwas anderes als `401`, ist das Update nicht aktiv — Container mit `--build` neu bauen.
