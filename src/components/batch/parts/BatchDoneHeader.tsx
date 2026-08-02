@@ -3,7 +3,7 @@ import { AlertTriangle, Sparkles, Image as ImageIcon, ChevronDown } from 'lucide
 import { Button } from '../../ui/Button';
 import { Badge } from '../../ui/Badge';
 import { PopoverMenu } from '../../ui/PopoverMenu';
-import { BatchFile, AITask } from '../../../types';
+import { BatchFile, Task } from '../../../types';
 import { cn } from '@/lib/utils';
 
 interface BatchDoneHeaderProps {
@@ -34,7 +34,7 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
     // 🏮 INDUSTRIAL LOGIC: Springt zur passenden Task-Gruppe und scrollt zur Task-Card.
     // Extrahiert, da sowohl der Single-Treffer-Button als auch jedes Popover-Item
     // dieselbe Sprunglogik benötigen.
-    const jumpToTask = (t: AITask) => {
+    const jumpToTask = (t: Task) => {
         const match = t.name?.match(/^(.*?\d+)/);
         const mainGroup = match ? match[1].trim() : (t.name || "");
         onSetActiveGroupName(mainGroup);
@@ -126,9 +126,9 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
                                         <ChevronDown size={12} className="text-warning" />
                                     </Badge>
                                 }
-                                items={lowConfidenceTasks.map(t => ({
-                                    key: `warn-item-${t.name}`,
-                                    label: t.name,
+                                items={lowConfidenceTasks.map((t, i) => ({
+                                    key: `warn-item-${t.name || i}`,
+                                    label: t.name || 'Unbenannte Aufgabe',
                                     icon: <AlertTriangle size={12} />,
                                     className: 'hover:bg-warning/10 hover:text-warning',
                                     onSelect: () => jumpToTask(t),
