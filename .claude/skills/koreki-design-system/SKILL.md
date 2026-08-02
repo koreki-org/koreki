@@ -10,9 +10,10 @@ Dieses Dokument definiert das Erscheinungsbild und die Interaktionsstandards fü
 ## 1. Glassmorphism Principle
 - **Geltungsbereich**: Glassmorphism (`.glass-morphism`, `backdrop-blur-*`, `bg-white/NN`) ist explizit auf **Modals, Sidebars und Overlays** beschränkt — also Elemente, die schwebend über anderem Content liegen (inkl. schwebender Bild-/Screenshot-Rahmen).
 - **Marketing-Content-Cards**: Flache Content-, Feature- und Info-Karten mit Fließtext auf Marketing-Seiten nutzen **standardmäßig keine Glass-Optik**. Stattdessen: `bg-background` (nicht `bg-card` — dieser Token ist im Projekt aktuell nicht mit einer Farbe hinterlegt und resultiert in einem transparenten No-Op) + `border border-border` + `shadow-md`, ohne `backdrop-blur`.
-- **Backdrop Blur**: Nutze durchgängig `backdrop-blur-glass` für Modals, Sidebars und Overlays.
+- **Backdrop Blur (Modals & große Content-Cards)**: Nutze `backdrop-blur-glass` (12px, definiert in `tailwind.config.js` unter `theme.extend.backdropBlur.glass`) für die `fixed inset-0`-Backdrop-Ebene von Modals sowie für große Content-/Spotlight-Cards (z.B. `SettingsModal.tsx`, `ConfirmationModal.tsx`, `GlobalBillingSettings.tsx`, `marketing/ShowroomCard.tsx`).
 - **Transparenz**: Hintergründe sollten eine subtile Deckkraft aufweisen, um räumliche Tiefe zu erzeugen.
-- **Box Shadows**: Nutze den `shadow-glass` Effekt für eine schwebende Optik.
+- **Box Shadows (Modals & große Content-Cards)**: Nutze den `shadow-glass` Effekt (definiert in `tailwind.config.js` unter `theme.extend.boxShadow.glass`) für eine schwebende Optik.
+- **Kleine, verankerte Popover-Overlays (Ausnahme)**: Dropdowns, Tooltips, Kontextmenüs und andere klein-dimensionierte, an einem Trigger-Element verankerte Overlays (kein `fixed inset-0`-Backdrop, sondern `absolute`/`top-full` relativ zum Trigger) nutzen **nicht** die Glass-Tokens, sondern durchgängig `backdrop-blur-md` oder `backdrop-blur-xl` kombiniert mit `shadow-xl`/`shadow-2xl` (Referenzimplementierungen: `src/components/ui/Dropdown.tsx`, `src/components/ui/KorekiTooltip.tsx`, `src/components/ui/PopoverMenu.tsx`). Diese Ausnahme ist eine bewusste, etablierte Konvention — kein Verstoß gegen das "Verbotene Tailwind-Klassen"-Verbot von `backdrop-blur-md` unten (siehe dortige Anmerkung).
 
 ## 2. Color Mastery (HSL)
 - **Dynamik**: Nutze das Tailwind-System mit HSL-Variablen (`--primary`, `--background`), um Themenwechsel (Dark/Light Mode) und Branding-Anpassungen zu ermöglichen.
@@ -142,6 +143,7 @@ bg-slate-900, bg-black, bg-gray-900 für Buttons
 /* Glassmorphism ohne explizite Anforderung */
 backdrop-blur-md, bg-white/60, bg-slate-900/60
 → Nur wenn Glassmorphism explizit gefordert ist oder .glass-morphism genutzt wird
+→ Etablierte Ausnahme: kleine, verankerte Popover-Overlays (Dropdown/Tooltip/PopoverMenu, siehe Abschnitt 1) nutzen bewusst backdrop-blur-md/-xl + shadow-xl/-2xl statt der Glass-Tokens.
 
 /* Dekorative Hintergründe */
 blur-[100px], blur-[120px] Ambient-Blobs
