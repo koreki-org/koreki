@@ -1,8 +1,9 @@
 import React from 'react';
-import { AlertTriangle, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { AlertTriangle, Sparkles, Image as ImageIcon, ChevronDown } from 'lucide-react';
 import { Button } from '../../ui/Button';
 import { Badge } from '../../ui/Badge';
-import { BatchFile } from '../../../types';
+import { PopoverMenu } from '../../ui/PopoverMenu';
+import { BatchFile, AITask } from '../../../types';
 import { cn } from '@/lib/utils';
 
 interface BatchDoneHeaderProps {
@@ -29,7 +30,22 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
     onSetActiveGroupName
 }) => {
     const lowConfidenceTasks = item.result?.tasks.filter(t => (t.confidence || 0) < 90) || [];
-    
+
+    // 🏮 INDUSTRIAL LOGIC: Springt zur passenden Task-Gruppe und scrollt zur Task-Card.
+    // Extrahiert, da sowohl der Single-Treffer-Button als auch jedes Popover-Item
+    // dieselbe Sprunglogik benötigen.
+    const jumpToTask = (t: AITask) => {
+        const match = t.name?.match(/^(.*?\d+)/);
+        const mainGroup = match ? match[1].trim() : (t.name || "");
+        onSetActiveGroupName(mainGroup);
+
+        setTimeout(() => {
+            const safeTaskName = t.name?.replace(/\s+/g, '-').toLowerCase();
+            const el = document.getElementById(`task-card-${idx}-${safeTaskName}`);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    };
+
     return (
         <>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 border-b border-border mb-4 sm:mb-6 gap-3 w-full overflow-hidden">
@@ -80,33 +96,45 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
                 {/* RIGHT SIDE: Specific Review Recommendation */}
                 {lowConfidenceTasks.length > 0 && (
                     <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-700 shrink-0 border-l border-border pl-4 h-8">
-                        <Badge variant="secondary" className="hidden lg:flex bg-warning/10 text-warning border-warning/20 h-8 px-3 text-xxs font-black uppercase tracking-tight gap-1.5 shadow-sm rounded-lg">
-                            <AlertTriangle size={12} className="text-warning" /> Review empfohlen!
-                        </Badge>
-                        {/* RESTORATION: Specifically linkable task button */}
-                        {lowConfidenceTasks.slice(0, 1).map(t => (
-                            <Button 
-                                key={`warn-btn-${t.name}`}
-                                variant="outline" 
-                                size="sm" 
+                        {lowConfidenceTasks.length === 1 ? (
+                            // Genau ein Treffer: direkter Sprung-Button, kein Popover-Overhead nötig
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                title={lowConfidenceTasks[0].name}
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    // 🏮 INDUSTRIAL LOGIC (Wrapped for clarity)
-                                    const match = t.name?.match(/^(.*?\d+)/);
-                                    const mainGroup = match ? match[1].trim() : (t.name || "");
-                                    onSetActiveGroupName(mainGroup);
-                                    
-                                    setTimeout(() => {
-                                        const safeTaskName = t.name?.replace(/\s+/g, '-').toLowerCase();
-                                        const el = document.getElementById(`task-card-${idx}-${safeTaskName}`);
-                                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                    }, 100);
+                                    jumpToTask(lowConfidenceTasks[0]);
                                 }}
-                                className="h-8 px-4 text-xs font-bold text-muted-foreground border-border hover:bg-warning/10 hover:text-warning hover:border-warning/20 transition-all rounded-lg"
+                                className="h-8 px-4 text-xs font-bold text-warning border-warning/20 bg-warning/10 hover:bg-warning/20 transition-all rounded-lg gap-1.5 max-w-[220px] truncate"
                             >
-                                {t.name}
+                                <AlertTriangle size={12} className="shrink-0" /> {lowConfidenceTasks[0].name}
                             </Button>
-                        ))}
+                        ) : (
+                            // Mehrere Treffer: fixer Trigger-Footprint statt N Buttons in der Reihe -
+                            // wächst nicht mit der Trefferzahl, kein Kollisionsrisiko mit der Task-Navigation links.
+                            <PopoverMenu
+                                align="right"
+                                widthClass="w-72"
+                                trigger={
+                                    <Badge
+                                        variant="secondary"
+                                        className="bg-warning/10 text-warning border-warning/20 h-8 px-3 text-xxs font-black uppercase tracking-tight gap-1.5 shadow-sm rounded-lg cursor-pointer"
+                                    >
+                                        <AlertTriangle size={12} className="text-warning" />
+                                        {lowConfidenceTasks.length} Aufgaben: Review empfohlen!
+                                        <ChevronDown size={12} className="text-warning" />
+                                    </Badge>
+                                }
+                                items={lowConfidenceTasks.map(t => ({
+                                    key: `warn-item-${t.name}`,
+                                    label: t.name,
+                                    icon: <AlertTriangle size={12} />,
+                                    className: 'hover:bg-warning/10 hover:text-warning',
+                                    onSelect: () => jumpToTask(t),
+                                }))}
+                            />
+                        )}
                     </div>
                 )}
             </div>
