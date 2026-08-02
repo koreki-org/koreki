@@ -6,6 +6,37 @@ import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
 import { STANDARD_SKILL_PROFILES } from '../ai/standard-skills-profiles';
 import { isLocalInstance } from '../env-context';
 import { GradingMemoryCase, GradingMemory } from '../../types';
+import { readJsonArray, readJsonArrayForUpdate } from './json-vault';
+
+interface StoredExpertProfile {
+    id: string;
+    name: string;
+    correctionPrompt: string;
+    isSystem: boolean;
+}
+
+interface StoredAiProfile {
+    id: string;
+    name: string;
+    temperature: number;
+    topP: number;
+    maxTokens: number;
+    presencePenalty: number;
+    enableThinking: boolean;
+    visionTemperature: number;
+    visionTopP: number;
+    visionMaxTokens: number;
+    visionPresencePenalty: number;
+    ollamaNumCtx?: number;
+}
+
+interface StoredSkillProfile {
+    id: string;
+    name: string;
+    activeSkillIds: string[];
+    customSkills: Record<string, unknown>;
+    isSystem: boolean;
+}
 
 /**
  * Industrial Local Profile Service (Stage 10)
@@ -59,35 +90,20 @@ export const LocalProfileService = {
         }));
         
         try {
-            const storagePath = getStoragePath(userId);
-            if (fs.existsSync(storagePath)) {
-                const customRaw = fs.readFileSync(storagePath, 'utf-8');
-                const customProfiles = JSON.parse(customRaw);
-                
-                if (Array.isArray(customProfiles)) {
-                    // Industrial Cleaning: Filter out malformed entries
-                    const cleaned = customProfiles.filter(p => p && typeof p === 'object' && typeof p.name === 'string');
-                    return [...profiles, ...cleaned];
-                }
-            }
+            const customProfiles = readJsonArray<StoredExpertProfile>(getStoragePath(userId));
+            // Industrial Cleaning: Filter out malformed entries
+            const cleaned = customProfiles.filter(p => p && typeof p === 'object' && typeof p.name === 'string');
+            return [...profiles, ...cleaned];
         } catch (err) {
             logger.error('[LocalProfileService] Error reading profiles:', err);
         }
-        
+
         return profiles;
     },
 
     async upsertProfile(data: { name: string, correctionPrompt: string }, userId?: string) {
         const storagePath = getStoragePath(userId);
-        let customProfiles: any[] = [];
-        
-        if (fs.existsSync(storagePath)) {
-            try {
-                customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            } catch (e) {
-                customProfiles = [];
-            }
-        }
+        const customProfiles = readJsonArrayForUpdate<StoredExpertProfile>(storagePath);
 
         // Industrial Guard: Prevent [object Object] by forcing string type
         const safePrompt = typeof data.correctionPrompt === 'string' 
@@ -178,34 +194,19 @@ const getAiStoragePath = (userId?: string) => {
 export const LocalAiProfileService = {
     async getAvailableProfiles(userId?: string) {
         try {
-            const storagePath = getAiStoragePath(userId);
-            if (fs.existsSync(storagePath)) {
-                const customRaw = fs.readFileSync(storagePath, 'utf-8');
-                const customProfiles = JSON.parse(customRaw);
-                
-                if (Array.isArray(customProfiles)) {
-                    // Industrial Cleaning: Filter out malformed entries
-                    return customProfiles.filter(p => p && typeof p === 'object' && typeof p.name === 'string');
-                }
-            }
+            const customProfiles = readJsonArray<StoredAiProfile>(getAiStoragePath(userId));
+            // Industrial Cleaning: Filter out malformed entries
+            return customProfiles.filter(p => p && typeof p === 'object' && typeof p.name === 'string');
         } catch (err) {
             logger.error('[LocalAiProfileService] Error reading profiles:', err);
         }
-        
+
         return [];
     },
 
     async upsertProfile(data: any, userId?: string) {
         const storagePath = getAiStoragePath(userId);
-        let customProfiles: any[] = [];
-        
-        if (fs.existsSync(storagePath)) {
-            try {
-                customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            } catch (e) {
-                customProfiles = [];
-            }
-        }
+        const customProfiles = readJsonArrayForUpdate<StoredAiProfile>(storagePath);
 
         const existingIdx = customProfiles.findIndex(p => p.id === data.id || p.name === data.name);
         
@@ -301,34 +302,19 @@ const getGradingMemoryStoragePath = (userId?: string) => {
 export const LocalGradingMemoryService = {
     async getAvailableProfiles(userId?: string): Promise<GradingMemory[]> {
         try {
-            const storagePath = getGradingMemoryStoragePath(userId);
-            if (fs.existsSync(storagePath)) {
-                const customRaw = fs.readFileSync(storagePath, 'utf-8');
-                const customProfiles = JSON.parse(customRaw);
-                
-                if (Array.isArray(customProfiles)) {
-                    // Industrial Cleaning: Filter out malformed entries
-                    return customProfiles.filter(p => p && typeof p === 'object' && typeof p.name === 'string') as GradingMemory[];
-                }
-            }
+            const customProfiles = readJsonArray<GradingMemory>(getGradingMemoryStoragePath(userId));
+            // Industrial Cleaning: Filter out malformed entries
+            return customProfiles.filter(p => p && typeof p === 'object' && typeof p.name === 'string');
         } catch (err) {
             logger.error('[LocalGradingMemoryService] Error reading profiles:', err);
         }
-        
+
         return [];
     },
 
     async upsertProfile(data: Partial<GradingMemory> & { name: string, cases: GradingMemoryCase[] }, userId?: string): Promise<GradingMemory> {
         const storagePath = getGradingMemoryStoragePath(userId);
-        let customProfiles: GradingMemory[] = [];
-        
-        if (fs.existsSync(storagePath)) {
-            try {
-                customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            } catch (e) {
-                customProfiles = [];
-            }
-        }
+        const customProfiles = readJsonArrayForUpdate<GradingMemory>(storagePath);
 
         const existingIdx = customProfiles.findIndex(p => p.id === data.id || p.name === data.name);
         
@@ -419,34 +405,19 @@ export const LocalSkillProfileService = {
         const profiles = [...STANDARD_SKILL_PROFILES];
         
         try {
-            const storagePath = getSkillStoragePath(userId);
-            if (fs.existsSync(storagePath)) {
-                const customRaw = fs.readFileSync(storagePath, 'utf-8');
-                const customProfiles = JSON.parse(customRaw);
-                
-                if (Array.isArray(customProfiles)) {
-                    const cleaned = customProfiles.filter(p => p && typeof p === 'object' && typeof p.name === 'string');
-                    return [...profiles, ...cleaned];
-                }
-            }
+            const customProfiles = readJsonArray<StoredSkillProfile>(getSkillStoragePath(userId));
+            const cleaned = customProfiles.filter(p => p && typeof p === 'object' && typeof p.name === 'string');
+            return [...profiles, ...cleaned];
         } catch (err) {
             logger.error('[LocalSkillProfileService] Error reading profiles:', err);
         }
-        
+
         return profiles;
     },
 
     async upsertProfile(data: { name: string, activeSkillIds: string[], customSkills?: any }, userId?: string) {
         const storagePath = getSkillStoragePath(userId);
-        let customProfiles: any[] = [];
-        
-        if (fs.existsSync(storagePath)) {
-            try {
-                customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            } catch (e) {
-                customProfiles = [];
-            }
-        }
+        const customProfiles = readJsonArrayForUpdate<StoredSkillProfile>(storagePath);
 
         const existingIdx = customProfiles.findIndex(p => p.name === data.name);
         const activeSkillIds = Array.isArray(data.activeSkillIds) ? data.activeSkillIds : [];

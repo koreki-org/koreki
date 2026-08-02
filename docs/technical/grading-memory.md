@@ -150,7 +150,9 @@ Um Lehrkräften das Teilen von Erfahrungsschätzen zu ermöglichen, wurde ein Ma
 
 *   **Stilistische Anonymisierung (DSGVO-Härtung):** Da handschriftliche oder individuelle Formulierungen urheberrechtlich oder datenschutzrechtlich problematisch sein können, wird jede Schülerantwort vor dem Speichern mittels KI abstrahiert. Rhetorische Eigenheiten, Anekdoten und persönliche Schreibstile werden entfernt, um jeglichen Bezug zur Person unumkehrbar aufzuheben.
 *   **Personenbezogene Daten (PII):** Erfahrungsschätze enthalten standardmäßig **keine** Klarnamen oder sonstige Schüler-PII. Schülerantworten werden beim Hinzufügen zum Erfahrungsschatz anonymisiert (Referenzierung über IDs oder anonyme Avatare wie `CONCEPT_CONFUSION` [Verwechsler] oder `INCOMPLETE` [Unvollständige]).
-*   **Zero-Ops / Offline-Kompatibilität:** Im lokalen Desktop-Modus und Community-Modus werden Erfahrungsschätze vollständig im `LocalStorage` bzw. der lokalen SQLite-Datenbank des Nutzers gespeichert. Es findet keine Übertragung an Koreki-Zentralserver statt.
+*   **Zero-Ops / Offline-Kompatibilität:** Erfahrungsschätze verlassen die Instanz nicht — es findet keine Übertragung an Koreki-Zentralserver statt. Die Ablage unterscheidet sich je nach Tier:
+    *   **Desktop:** im `localStorage` der Tauri-Webview.
+    *   **Community (Single- und Multi-User):** als JSON auf dem Server-Dateisystem unter `/app/data/prompts/grading_memories_[SHA256_HASH_OF_USER_ID].json`, nutzerspezifisch getrennt (`LocalGradingMemoryService`). **Eine Datenbank — auch keine SQLite — kommt in diesem Tier bewusst nicht zum Einsatz**, siehe [Community Edition Persistence](./community-edition-persistence.md).
 *   **AVV-Verschlüsselung:** In der SaaS-Variante sind diese Datensätze durch die mit der Schule/Kommune geschlossene Auftragsdatenverarbeitung (AVV) geschützt und in isolierten Tenant-Datenbankstrukturen abgelegt.
 
 ---

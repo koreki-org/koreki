@@ -1,6 +1,23 @@
 import { logger } from '@/lib/logger';
 import fs from 'fs';
 import path from 'path';
+import { readJsonObject } from './json-vault';
+
+/** Systemweite KI-Routing-Parameter. Enthält bewusst KEINE Secrets (API-Keys). */
+export interface GlobalAiSettings {
+    provider?: string;
+    ollamaUrl?: string;
+    ollamaModel?: string;
+    customOllamaModel?: string;
+    ollamaNumCtx?: number;
+    openaiUrl?: string;
+    openaiModel?: string;
+    temperature?: number;
+    topP?: number;
+    maxTokens?: number;
+    presencePenalty?: number;
+    enableThinking?: boolean;
+}
 
 /**
  * Global Settings Service (Community Edition)
@@ -43,11 +60,8 @@ const getGlobalSettingsPath = () => {
 export const GlobalSettingsService = {
     async getSettings() {
         try {
-            const storagePath = getGlobalSettingsPath();
-            if (fs.existsSync(storagePath)) {
-                const raw = fs.readFileSync(storagePath, 'utf-8');
-                return JSON.parse(raw);
-            }
+            const stored = readJsonObject<GlobalAiSettings>(getGlobalSettingsPath());
+            if (stored) return stored;
         } catch (err) {
             logger.error('[GlobalSettingsService] Error reading settings:', err);
         }
@@ -68,20 +82,12 @@ export const GlobalSettingsService = {
         return envDefaults;
     },
 
-    async updateSettings(data: any) {
+    async updateSettings(data: GlobalAiSettings) {
         const storagePath = getGlobalSettingsPath();
-        let settings: any = {};
-        
-        if (fs.existsSync(storagePath)) {
-            try {
-                settings = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            } catch (e) {
-                settings = {};
-            }
-        }
+        const existing = readJsonObject<GlobalAiSettings>(storagePath, 'update') ?? {};
 
         // Merge existing with new
-        settings = { ...settings, ...data };
+        const settings: GlobalAiSettings = { ...existing, ...data };
 
         try {
             fs.writeFileSync(storagePath, JSON.stringify(settings, null, 2));
