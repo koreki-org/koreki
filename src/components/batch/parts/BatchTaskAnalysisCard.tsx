@@ -372,7 +372,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                     <div 
                         id={`task-card-${idx}-${safeTaskName}`} 
                         key={task.name} 
-                        className="bg-background rounded-2xl border border-border/60 shadow-glass p-4 sm:p-5 space-y-4 hover:border-primary/40 transition-all group/card"
+                        className="bg-background rounded-xl border border-border shadow-sm hover:shadow-md p-4 sm:p-5 space-y-4 hover:border-primary/40 transition-all group/card"
                     >
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-1.5 sm:gap-3">
