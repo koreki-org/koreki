@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import fs from 'fs';
 import path from 'path';
-import { readJsonObject, withFileMutex } from './json-vault';
+import { readJsonObject, withFileMutex, writeJsonAtomic } from './json-vault';
 
 /** Systemweite KI-Routing-Parameter. Enthält bewusst KEINE Secrets (API-Keys). */
 export interface GlobalAiSettings {
@@ -92,7 +92,7 @@ export const GlobalSettingsService = {
             const settings: GlobalAiSettings = { ...existing, ...data };
 
             try {
-                fs.writeFileSync(storagePath, JSON.stringify(settings, null, 2));
+                writeJsonAtomic(storagePath, settings);
                 return settings;
             } catch (err) {
                 logger.error('[GlobalSettingsService] Error writing settings:', err);

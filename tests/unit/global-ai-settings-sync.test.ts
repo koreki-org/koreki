@@ -22,9 +22,17 @@ jest.mock('fs', () => {
         ...actualFs,
         existsSync: jest.fn(),
         readFileSync: jest.fn(),
-        writeFileSync: jest.fn()
+        writeFileSync: jest.fn(),
+        // Schreibvorgänge laufen atomar über Temp-Datei + Umbenennen.
+        renameSync: jest.fn()
     };
 });
+
+/** Nutzlast des letzten Schreibvorgangs — unabhängig vom konkreten Zielpfad. */
+const lastWrittenPayload = () => {
+    const calls = (fs.writeFileSync as jest.Mock).mock.calls;
+    return JSON.parse(calls[calls.length - 1][1]);
+};
 
 describe('Global AI Settings Sync Unit & API Verification (Layer 1 & 2)', () => {
     let res: any;
@@ -72,14 +80,11 @@ describe('Global AI Settings Sync Unit & API Verification (Layer 1 & 2)', () => 
                 ollamaUrl: 'http://127.0.0.1:11434',
                 ollamaModel: 'qwen3.6:35b'
             });
-            expect(fs.writeFileSync).toHaveBeenCalledWith(
-                expect.any(String),
-                JSON.stringify({
-                    provider: 'ollama',
-                    ollamaUrl: 'http://127.0.0.1:11434',
-                    ollamaModel: 'qwen3.6:35b'
-                }, null, 2)
-            );
+            expect(lastWrittenPayload()).toEqual({
+                provider: 'ollama',
+                ollamaUrl: 'http://127.0.0.1:11434',
+                ollamaModel: 'qwen3.6:35b'
+            });
         });
 
     describe('GET /api/admin/global-ai-settings', () => {
@@ -116,7 +121,7 @@ describe('Global AI Settings Sync Unit & API Verification (Layer 1 & 2)', () => 
             expect(res.status).toHaveBeenCalledWith(200);
             expect(fs.writeFileSync).toHaveBeenCalled();
 
-            const writtenJson = JSON.parse((fs.writeFileSync as jest.Mock).mock.calls[0][1]);
+            const writtenJson = lastWrittenPayload();
             expect(writtenJson.provider).toBe('ollama');
             expect(writtenJson.ollamaUrl).toBe('http://127.0.0.1:11434');
             expect(writtenJson.ollamaModel).toBe('qwen3.6:35b');
