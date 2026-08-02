@@ -96,4 +96,47 @@ describe('Security Governance Audit', () => {
     });
   });
 
+  /**
+   * TEST: ENV-EXAMPLE AUDIT
+   * .env.example wird mit dem Repository veröffentlicht. Sie enthielt bereits
+   * einmal einen echten OpenAI-Schlüssel, der dadurch in die öffentliche
+   * Git-Historie geriet — dort ist er auch nach dem Entfernen noch abrufbar.
+   * Geprüft wird auf bekannte Schlüsselformate statt auf eine Platzhalter-
+   * Whitelist, damit beschreibende Platzhalter nicht fälschlich anschlagen.
+   */
+  it('ensures .env.example never contains a real-looking secret', () => {
+    const envExample = readFileSync(join(process.cwd(), '.env.example'), 'utf8');
+
+    const realSecretShapes = [
+      { name: 'OpenAI / kompatibel', pattern: /^sk-[A-Za-z0-9_-]{15,}/ },
+      { name: 'Stripe Secret', pattern: /^sk_(live|test)_[A-Za-z0-9]{15,}/ },
+      { name: 'Stripe Webhook', pattern: /^whsec_[A-Za-z0-9]{15,}/ },
+      { name: 'SendGrid', pattern: /^SG\.[A-Za-z0-9_.-]{15,}/ },
+      { name: 'Base64-Token', pattern: /^[A-Za-z0-9+/]{40,}={0,2}$/ }
+    ];
+
+    const offenders: string[] = [];
+
+    envExample.split(/\r?\n/).forEach(line => {
+      const match = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)$/);
+      if (!match) return;
+
+      const [, variable, rawValue] = match;
+      // Inline-Kommentare abschneiden, Anführungszeichen entfernen
+      const value = rawValue.split('#')[0].trim().replace(/^["']|["']$/g, '');
+      if (!value) return;
+
+      const hit = realSecretShapes.find(shape => shape.pattern.test(value));
+      if (hit) offenders.push(`${variable} (${hit.name})`);
+    });
+
+    if (offenders.length > 0) {
+      throw new Error(
+        `SECURITY BREACH: .env.example enthält echt aussehende Secrets: ${offenders.join(', ')}. ` +
+        `Durch Platzhalter ersetzen — und den betroffenen Schlüssel beim Anbieter widerrufen, ` +
+        `da er über die Git-Historie öffentlich bleibt.`
+      );
+    }
+  });
+
 });
