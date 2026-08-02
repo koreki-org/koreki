@@ -8,6 +8,7 @@
 import readline from 'node:readline';
 import { execSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import https from 'node:https';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import os from 'node:os';
@@ -474,6 +475,188 @@ STRIPE_TEST_MODE=true
   }
 }
 
+// Helper: Fetch JSON from a URL (follows redirects, sets required GitHub User-Agent)
+function fetchJson(url, redirectCount = 0) {
+  return new Promise((resolve, reject) => {
+    if (redirectCount > 5) return reject(new Error('Too many redirects'));
+    https.get(url, { headers: { 'User-Agent': 'koreki-cli-installer' } }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        res.resume();
+        return resolve(fetchJson(res.headers.location, redirectCount + 1));
+      }
+      if (res.statusCode !== 200) {
+        res.resume();
+        return reject(new Error(`HTTP ${res.statusCode}`));
+      }
+      let data = '';
+      res.on('data', (chunk) => (data += chunk));
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(data));
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }).on('error', reject);
+  });
+}
+
+// Helper: Download a file with a live progress indicator (follows redirects)
+function downloadFile(url, destPath, totalSize = 0, redirectCount = 0) {
+  return new Promise((resolve, reject) => {
+    if (redirectCount > 5) return reject(new Error('Too many redirects'));
+    https.get(url, { headers: { 'User-Agent': 'koreki-cli-installer' } }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        res.resume();
+        return resolve(downloadFile(res.headers.location, destPath, totalSize, redirectCount + 1));
+      }
+      if (res.statusCode !== 200) {
+        res.resume();
+        return reject(new Error(`HTTP ${res.statusCode}`));
+      }
+
+      const size = totalSize || parseInt(res.headers['content-length'] || '0', 10);
+      let downloaded = 0;
+      const file = fs.createWriteStream(destPath);
+
+      res.on('data', (chunk) => {
+        downloaded += chunk.length;
+        const mb = (downloaded / 1024 / 1024).toFixed(1);
+        if (size) {
+          const pct = Math.min(100, Math.round((downloaded / size) * 100));
+          process.stdout.write(`\r   ${pct}% (${mb} MB)`);
+        } else {
+          process.stdout.write(`\r   ${mb} MB`);
+        }
+      });
+
+      res.pipe(file);
+      file.on('finish', () => file.close(() => resolve()));
+      file.on('error', reject);
+    }).on('error', reject);
+  });
+}
+
+function printManualFallback(releasesUrl) {
+  console.log(c('bold', `\n👉 Please download and install manually from:\n   ${releasesUrl}`));
+}
+
+async function maybeOpenBrowser(platform, releasesUrl) {
+  const openBrowser = await askQuestion('\nWould you like to open the releases page in your browser? (y/N)', 'N');
+  if (openBrowser.toLowerCase() === 'y') {
+    const cmd = platform === 'win32' ? 'start' : platform === 'darwin' ? 'open' : 'xdg-open';
+    execSync(`${cmd} ${releasesUrl}`);
+  }
+}
+
+// Downloads the matching asset from the latest GitHub release and hands it to installFn.
+// Returns true if a matching asset was found (regardless of install success), false if it
+// fell back to onNotFound (no such asset published yet, or GitHub unreachable).
+async function installFromRelease(assetPattern, installFn, releasesUrl, onNotFound) {
+  // Note: intentionally NOT using /releases/latest — Koreki's releases are
+  // currently tagged as prereleases, which that endpoint always excludes (404).
+  const apiUrl = 'https://api.github.com/repos/koreki-org/koreki/releases?per_page=1';
+  const notFound = onNotFound || (() => printManualFallback(releasesUrl));
+
+  console.log(c('cyan', '\n🔎 Checking latest release on GitHub...'));
+  let release;
+  try {
+    const releases = await fetchJson(apiUrl);
+    release = Array.isArray(releases) ? releases[0] : null;
+    if (!release) throw new Error('No releases found');
+  } catch (err) {
+    console.log(c('red', `✖ Could not reach GitHub: ${err.message}`));
+    notFound();
+    return false;
+  }
+
+  const asset = (release.assets || []).find((a) => assetPattern.test(a.name));
+  if (!asset) {
+    console.log(c('yellow', '✖ No matching installer found in the latest release.'));
+    notFound();
+    return false;
+  }
+
+  const destPath = path.join(os.tmpdir(), asset.name);
+  console.log(c('bold', `⬇️  Downloading ${asset.name} (${release.tag_name})...`));
+
+  try {
+    await downloadFile(asset.browser_download_url, destPath, asset.size);
+    console.log(c('green', '\n✔ Download complete.'));
+  } catch (err) {
+    console.log(c('red', `\n✖ Download failed: ${err.message}`));
+    notFound();
+    return false;
+  }
+
+  try {
+    await installFn(destPath);
+    console.log(c('green', '\n✅ Koreki Desktop was installed successfully!'));
+  } catch (err) {
+    console.log(c('red', `\n✖ Installation failed: ${err.message}`));
+    console.log(c('yellow', `You can run the installer manually: ${destPath}`));
+  }
+  return true;
+}
+
+async function installWindows(installerPath) {
+  console.log(c('bold', '\n🚀 Running installer (silent mode, no admin rights required)...'));
+  const result = spawnSync(installerPath, ['/S'], { stdio: 'inherit' });
+  if (result.status !== 0) {
+    throw new Error(`Installer exited with code ${result.status}`);
+  }
+}
+
+async function installMacDmg(dmgPath) {
+  console.log(c('bold', '\n🚀 Mounting disk image...'));
+  const mountResult = spawnSync('hdiutil', ['attach', dmgPath, '-nobrowse', '-plist'], { encoding: 'utf8' });
+  if (mountResult.status !== 0) {
+    throw new Error(`hdiutil attach failed: ${mountResult.stderr || `exit code ${mountResult.status}`}`);
+  }
+
+  const mountMatch = mountResult.stdout.match(/<key>mount-point<\/key>\s*<string>([^<]+)<\/string>/);
+  const mountPoint = mountMatch ? mountMatch[1] : null;
+  if (!mountPoint) {
+    throw new Error('Could not determine the mount point of the disk image.');
+  }
+
+  try {
+    const appName = fs.readdirSync(mountPoint).find((f) => f.endsWith('.app'));
+    if (!appName) {
+      throw new Error('No .app bundle found inside the disk image.');
+    }
+
+    console.log(c('bold', `\n🚀 Installing ${appName} to /Applications...`));
+    const copyResult = spawnSync('cp', ['-R', path.join(mountPoint, appName), path.join('/Applications', appName)], { stdio: 'inherit' });
+    if (copyResult.status !== 0) {
+      throw new Error(`Copying to /Applications failed with exit code ${copyResult.status}`);
+    }
+  } finally {
+    spawnSync('hdiutil', ['detach', mountPoint, '-quiet'], { stdio: 'ignore' });
+  }
+}
+
+function printMacManualFallback(releasesUrl) {
+  console.log(`\nTo install Koreki Desktop on macOS via Homebrew:`);
+  console.log(c('cyan', c('bold', '  brew install --cask koreki')));
+  console.log(`\nOr download the latest .dmg directly from:`);
+  console.log(c('bold', `  ${releasesUrl}`));
+}
+
+async function installLinuxDeb(debPath) {
+  console.log(c('yellow', '\nThis installs Koreki Desktop system-wide via "sudo apt install" and will ask for your password.'));
+  const confirm = await askQuestion('Continue? (Y/n)', 'Y');
+  if (confirm.toLowerCase() === 'n') {
+    throw new Error('Installation cancelled by user.');
+  }
+
+  console.log(c('bold', '\n🚀 Installing .deb package via apt...'));
+  const result = spawnSync('sudo', ['apt', 'install', '-y', debPath], { stdio: 'inherit' });
+  if (result.status !== 0) {
+    throw new Error(`apt install exited with code ${result.status}`);
+  }
+}
+
 // Option 4: Desktop App
 async function setupDesktopApp(platform) {
   console.log(c('bold', '💻 Koreki Desktop Application Installer'));
@@ -481,24 +664,27 @@ async function setupDesktopApp(platform) {
   const releasesUrl = 'https://github.com/koreki-org/koreki/releases/latest';
 
   if (platform === 'win32') {
-    console.log(`\nTo install Koreki Desktop on Windows via WinGet:`);
-    console.log(c('cyan', c('bold', '  winget install Koreki.Desktop')));
-    console.log(`\nOr download the latest .msi installer directly from:`);
-    console.log(c('bold', `  ${releasesUrl}`));
+    await installFromRelease(/_x64-setup\.exe$/i, installWindows, releasesUrl);
+  } else if (platform === 'linux') {
+    if (isCommandAvailable('apt') || isCommandAvailable('apt-get')) {
+      await installFromRelease(/_amd64\.deb$/i, installLinuxDeb, releasesUrl);
+    } else {
+      console.log(c('yellow', '\nAutomatic install is currently only supported for Debian/Ubuntu (apt).'));
+      console.log(`Download the latest AppImage, .deb or .rpm package from:`);
+      console.log(c('bold', `  ${releasesUrl}`));
+      await maybeOpenBrowser(platform, releasesUrl);
+    }
   } else if (platform === 'darwin') {
-    console.log(`\nTo install Koreki Desktop on macOS via Homebrew:`);
-    console.log(c('cyan', c('bold', '  brew install --cask koreki')));
-    console.log(`\nOr download the latest .dmg directly from:`);
-    console.log(c('bold', `  ${releasesUrl}`));
+    // Tauri names macOS dmg assets by arch, e.g. koreki_x.y.z_aarch64.dmg / _x64.dmg
+    const arch = os.arch() === 'arm64' ? 'aarch64' : 'x64';
+    const assetPattern = new RegExp(`_${arch}\\.dmg$`, 'i');
+    const found = await installFromRelease(assetPattern, installMacDmg, releasesUrl, () => printMacManualFallback(releasesUrl));
+    if (!found) {
+      await maybeOpenBrowser(platform, releasesUrl);
+    }
   } else {
-    console.log(`\nDownload the latest AppImage or .deb package from:`);
-    console.log(c('bold', `  ${releasesUrl}`));
-  }
-
-  const openBrowser = await askQuestion('\nWould you like to open the releases page in your browser? (y/N)', 'N');
-  if (openBrowser.toLowerCase() === 'y') {
-    const cmd = platform === 'win32' ? 'start' : platform === 'darwin' ? 'open' : 'xdg-open';
-    execSync(`${cmd} ${releasesUrl}`);
+    printManualFallback(releasesUrl);
+    await maybeOpenBrowser(platform, releasesUrl);
   }
 }
 
