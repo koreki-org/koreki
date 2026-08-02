@@ -44,9 +44,9 @@ export const HighlightableTextArea: React.FC<HighlightableTextAreaProps> = ({ va
         <div className={cn("relative overflow-hidden flex flex-col", className)}>
             <div
                 ref={highlightRef}
-                className="absolute inset-0 p-4 text-sm font-mono whitespace-pre-wrap break-words pointer-events-none text-transparent overflow-hidden leading-relaxed border-0"
+                className="absolute inset-0 p-4 text-sm whitespace-pre-wrap break-words pointer-events-none text-transparent overflow-hidden leading-relaxed border-0"
                 style={{
-                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                     lineHeight: '1.625',
                     letterSpacing: 'normal',
                     wordSpacing: 'normal',
@@ -65,14 +65,14 @@ export const HighlightableTextArea: React.FC<HighlightableTextAreaProps> = ({ va
                 placeholder={placeholder}
                 spellCheck={false}
                 style={{
-                    fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+                    fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                     lineHeight: '1.625',
                     letterSpacing: 'normal',
                     wordSpacing: 'normal',
                     textRendering: 'optimizeLegibility',
                     WebkitFontSmoothing: 'antialiased'
                 }}
-                className="w-full flex-1 p-4 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm font-mono focus:outline-none transition-all resize-none shadow-inner leading-relaxed relative z-10"
+                className="w-full flex-1 p-4 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm focus:outline-none transition-all resize-none shadow-inner leading-relaxed relative z-10"
             />
         </div>
     );
