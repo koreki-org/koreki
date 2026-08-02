@@ -102,6 +102,62 @@ export function readJsonObject<T extends object>(storagePath: string, mode: Read
     return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as T) : null;
 }
 
+const RENAME_ATTEMPTS = 3;
+
+function removeIfPresent(target: string): void {
+    try {
+        if (fs.existsSync(target)) fs.unlinkSync(target);
+    } catch {
+        // Aufräumen ist Nebensache — ein liegengebliebenes Temp-File schadet nicht.
+    }
+}
+
+/**
+ * Schreibt JSON atomar: erst vollständig in eine Temp-Datei, dann umbenennen.
+ * Umbenennen ist eine atomare Operation — es existiert immer entweder der alte
+ * oder der neue Stand, nie ein halb geschriebener.
+ *
+ * Zuvor wurde direkt auf die Zieldatei geschrieben. Ein Absturz, eine volle
+ * Platte oder ein Redeploy mitten im Schreibvorgang hinterließ dadurch eine
+ * abgeschnittene, unlesbare Datei.
+ *
+ * Windows-Besonderheit: Das Umbenennen über eine bestehende Datei kann mit
+ * EPERM/EBUSY scheitern, wenn ein Virenscanner oder ein anderer Prozess sie
+ * kurzzeitig hält. Nach mehreren Versuchen fällt die Funktion deshalb auf einen
+ * direkten Schreibvorgang zurück — dann zwar ohne Atomarität, aber nie
+ * schlechter als der vorherige Zustand.
+ */
+export function writeJsonAtomic(storagePath: string, data: unknown): void {
+    const payload = JSON.stringify(data, null, 2);
+    const tempPath = `${storagePath}.tmp-${process.pid}-${Date.now()}`;
+
+    try {
+        fs.writeFileSync(tempPath, payload, 'utf-8');
+    } catch (err) {
+        removeIfPresent(tempPath);
+        throw err;
+    }
+
+    for (let attempt = 1; attempt <= RENAME_ATTEMPTS; attempt++) {
+        try {
+            fs.renameSync(tempPath, storagePath);
+            return;
+        } catch (err) {
+            if (attempt === RENAME_ATTEMPTS) {
+                const message = err instanceof Error ? err.message : String(err);
+                logger.warn('[JsonVault] Atomares Umbenennen fehlgeschlagen, schreibe direkt', { storagePath, message });
+
+                try {
+                    fs.writeFileSync(storagePath, payload, 'utf-8');
+                } finally {
+                    removeIfPresent(tempPath);
+                }
+                return;
+            }
+        }
+    }
+}
+
 const writeQueues = new Map<string, Promise<unknown>>();
 
 /**

@@ -6,7 +6,7 @@ import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
 import { STANDARD_SKILL_PROFILES } from '../ai/standard-skills-profiles';
 import { isLocalInstance } from '../env-context';
 import { GradingMemoryCase, GradingMemory } from '../../types';
-import { readJsonArray, readJsonArrayForUpdate } from './json-vault';
+import { readJsonArray, readJsonArrayForUpdate, writeJsonAtomic } from './json-vault';
 
 interface StoredExpertProfile {
     id: string;
@@ -123,7 +123,7 @@ export const LocalProfileService = {
             });
         }
 
-        fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+        writeJsonAtomic(storagePath, customProfiles);
         return { name: data.name, correctionPrompt: data.correctionPrompt };
     },
 
@@ -134,7 +134,7 @@ export const LocalProfileService = {
         try {
             let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
             customProfiles = customProfiles.filter((p: any) => p.id !== id);
-            fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+            writeJsonAtomic(storagePath, customProfiles);
         } catch (err) {
             logger.error('[LocalProfileService] Error deleting profile:', err);
         }
@@ -149,7 +149,7 @@ export const LocalProfileService = {
             customProfiles = customProfiles.map((p: any) => 
                 p.id === id ? { ...p, name: newName } : p
             );
-            fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+            writeJsonAtomic(storagePath, customProfiles);
         } catch (err) {
             logger.error('[LocalProfileService] Error renaming profile:', err);
         }
@@ -231,7 +231,7 @@ export const LocalAiProfileService = {
             customProfiles.push(profileData);
         }
 
-        fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+        writeJsonAtomic(storagePath, customProfiles);
         return profileData;
     },
 
@@ -242,7 +242,7 @@ export const LocalAiProfileService = {
         try {
             let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
             customProfiles = customProfiles.filter((p: any) => p.id !== id);
-            fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+            writeJsonAtomic(storagePath, customProfiles);
         } catch (err) {
             logger.error('[LocalAiProfileService] Error deleting profile:', err);
         }
@@ -257,7 +257,7 @@ export const LocalAiProfileService = {
             customProfiles = customProfiles.map((p: any) => 
                 p.id === id ? { ...p, name: newName } : p
             );
-            fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+            writeJsonAtomic(storagePath, customProfiles);
         } catch (err) {
             logger.error('[LocalAiProfileService] Error renaming profile:', err);
         }
@@ -332,7 +332,7 @@ export const LocalGradingMemoryService = {
             customProfiles.push(profileData);
         }
 
-        fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+        writeJsonAtomic(storagePath, customProfiles);
         return profileData;
     },
 
@@ -343,7 +343,7 @@ export const LocalGradingMemoryService = {
         try {
             let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
             customProfiles = customProfiles.filter((p: any) => p.id !== id);
-            fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+            writeJsonAtomic(storagePath, customProfiles);
         } catch (err) {
             logger.error('[LocalGradingMemoryService] Error deleting profile:', err);
         }
@@ -358,7 +358,7 @@ export const LocalGradingMemoryService = {
             customProfiles = customProfiles.map((p: any) => 
                 p.id === id ? { ...p, name: newName } : p
             );
-            fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+            writeJsonAtomic(storagePath, customProfiles);
         } catch (err) {
             logger.error('[LocalGradingMemoryService] Error renaming profile:', err);
         }
@@ -436,7 +436,7 @@ export const LocalSkillProfileService = {
             });
         }
 
-        fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+        writeJsonAtomic(storagePath, customProfiles);
         return { name: data.name, activeSkillIds, customSkills };
     },
 
@@ -447,7 +447,7 @@ export const LocalSkillProfileService = {
         try {
             let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
             customProfiles = customProfiles.filter((p: any) => p.id !== id);
-            fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+            writeJsonAtomic(storagePath, customProfiles);
         } catch (err) {
             logger.error('[LocalSkillProfileService] Error deleting profile:', err);
         }
@@ -462,7 +462,7 @@ export const LocalSkillProfileService = {
             customProfiles = customProfiles.map((p: any) => 
                 p.id === id ? { ...p, name: newName } : p
             );
-            fs.writeFileSync(storagePath, JSON.stringify(customProfiles, null, 2));
+            writeJsonAtomic(storagePath, customProfiles);
         } catch (err) {
             logger.error('[LocalSkillProfileService] Error renaming profile:', err);
         }

@@ -4,7 +4,13 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { readJsonArray, readJsonArrayForUpdate, readJsonObject, withFileMutex } from '@/lib/services/json-vault';
+import {
+    readJsonArray,
+    readJsonArrayForUpdate,
+    readJsonObject,
+    withFileMutex,
+    writeJsonAtomic
+} from '@/lib/services/json-vault';
 
 /**
  * Industrial Persistence Audit (Layer 1)
@@ -104,6 +110,56 @@ describe('JSON Vault — corruption handling', () => {
 
         // Ein Lesezugriff zerstört nichts und darf die Anzeige nicht blockieren.
         expect(readJsonArray(filePath('profiles.json'))).toEqual([]);
+    });
+});
+
+describe('JSON Vault — atomic writing', () => {
+
+    const tempArtefacts = () => fs.readdirSync(vaultDir).filter(f => f.includes('.tmp-'));
+
+    it('writes the payload and leaves no temporary artefacts behind', () => {
+        const target = filePath('profiles.json');
+        writeJsonAtomic(target, [{ name: 'Deutsch Oberstufe' }]);
+
+        expect(JSON.parse(fs.readFileSync(target, 'utf-8'))).toEqual([{ name: 'Deutsch Oberstufe' }]);
+        expect(tempArtefacts()).toHaveLength(0);
+    });
+
+    it('replaces existing content completely', () => {
+        const target = writeRaw('profiles.json', JSON.stringify([{ name: 'alt' }, { name: 'ebenfalls alt' }]));
+        writeJsonAtomic(target, [{ name: 'neu' }]);
+
+        expect(JSON.parse(fs.readFileSync(target, 'utf-8'))).toEqual([{ name: 'neu' }]);
+    });
+
+    it('leaves the previous content intact when serialisation fails', () => {
+        const target = writeRaw('profiles.json', JSON.stringify([{ name: 'unversehrt' }]));
+
+        const circular: Record<string, unknown> = {};
+        circular.self = circular;
+
+        expect(() => writeJsonAtomic(target, circular)).toThrow();
+        // Der alte Stand muss unangetastet bleiben — genau das leistet Temp+Rename.
+        expect(JSON.parse(fs.readFileSync(target, 'utf-8'))).toEqual([{ name: 'unversehrt' }]);
+        expect(tempArtefacts()).toHaveLength(0);
+    });
+
+    /**
+     * Unter Windows kann das Umbenennen über eine bestehende Datei mit EPERM
+     * scheitern (Virenscanner, offene Handles). Der Rückfall auf einen direkten
+     * Schreibvorgang darf die Funktion nicht verlieren.
+     */
+    it('falls back to a direct write when renaming keeps failing', () => {
+        const target = writeRaw('profiles.json', JSON.stringify([{ name: 'alt' }]));
+        const renameSpy = jest.spyOn(fs, 'renameSync').mockImplementation(() => {
+            throw new Error('EPERM: operation not permitted, rename');
+        });
+
+        writeJsonAtomic(target, [{ name: 'neu' }]);
+
+        expect(renameSpy).toHaveBeenCalledTimes(3);
+        expect(JSON.parse(fs.readFileSync(target, 'utf-8'))).toEqual([{ name: 'neu' }]);
+        expect(tempArtefacts()).toHaveLength(0);
     });
 });
 
