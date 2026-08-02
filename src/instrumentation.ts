@@ -19,6 +19,17 @@ export async function register() {
                 console.warn('[INSTRUMENTATION WARNING] Failed to set global undici dispatcher:', err.message);
             }
 
+            // --- TIER-GUARD ---
+            // Säule 6 setzt eine Koreki-Datenbank voraus. Community und Desktop
+            // persistieren bewusst dateibasiert (siehe community-edition-persistence.md);
+            // dort existiert weder eine PrivacyLog-Tabelle noch eine erreichbare
+            // DATABASE_URL. Der Aufräumjob scheiterte dort bislang bei jedem Start.
+            const { isLocalInstance } = await import('./lib/env-context');
+            if (isLocalInstance()) {
+                console.log('[INSTRUMENTATION] Local instance without database — skipping Pillar 6 retention.');
+                return;
+            }
+
             const cron = await import('node-cron');
             const { cleanupLogs } = await import('../prisma/scripts/cleanup-logs.js');
             const { default: prisma } = await import('./lib/prisma');

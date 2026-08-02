@@ -48,11 +48,15 @@ interface StoredSkillProfile {
 const getStoragePath = (userId?: string) => {
     let baseDir: string;
     
-    // 1. Desktop Mode (Tauri/Windows)
+    // 1. Node-Server unter Windows (lokale Entwicklung, `tauri dev`).
+    //    ACHTUNG: Die ausgelieferte Desktop-App erreicht diesen Service NIE —
+    //    sie wird als statischer Export gebaut (next.config.js: output 'export'),
+    //    hat also keine API-Routen und persistiert im localStorage der Webview
+    //    (siehe src/lib/local-vault.ts).
     if (process.env.APPDATA) {
         baseDir = path.join(process.env.APPDATA, 'koreki');
     } else {
-        // 2. Community Mode (Docker/Linux)
+        // 2. Community Mode (Docker/Linux) — der produktive Pfad dieses Services.
         baseDir = path.join(process.cwd(), 'data', 'prompts');
     }
 
@@ -159,11 +163,15 @@ export const LocalProfileService = {
 const getAiStoragePath = (userId?: string) => {
     let baseDir: string;
     
-    // 1. Desktop Mode (Tauri/Windows)
+    // 1. Node-Server unter Windows (lokale Entwicklung, `tauri dev`).
+    //    ACHTUNG: Die ausgelieferte Desktop-App erreicht diesen Service NIE —
+    //    sie wird als statischer Export gebaut (next.config.js: output 'export'),
+    //    hat also keine API-Routen und persistiert im localStorage der Webview
+    //    (siehe src/lib/local-vault.ts).
     if (process.env.APPDATA) {
         baseDir = path.join(process.env.APPDATA, 'koreki');
     } else {
-        // 2. Community Mode (Docker/Linux)
+        // 2. Community Mode (Docker/Linux) — der produktive Pfad dieses Services.
         baseDir = path.join(process.cwd(), 'data', 'prompts');
     }
 
@@ -267,11 +275,15 @@ export const LocalAiProfileService = {
 const getGradingMemoryStoragePath = (userId?: string) => {
     let baseDir: string;
     
-    // 1. Desktop Mode (Tauri/Windows)
+    // 1. Node-Server unter Windows (lokale Entwicklung, `tauri dev`).
+    //    ACHTUNG: Die ausgelieferte Desktop-App erreicht diesen Service NIE —
+    //    sie wird als statischer Export gebaut (next.config.js: output 'export'),
+    //    hat also keine API-Routen und persistiert im localStorage der Webview
+    //    (siehe src/lib/local-vault.ts).
     if (process.env.APPDATA) {
         baseDir = path.join(process.env.APPDATA, 'koreki');
     } else {
-        // 2. Community Mode (Docker/Linux)
+        // 2. Community Mode (Docker/Linux) — der produktive Pfad dieses Services.
         baseDir = path.join(process.cwd(), 'data', 'prompts');
     }
 
@@ -368,11 +380,15 @@ export const LocalGradingMemoryService = {
 const getSkillStoragePath = (userId?: string) => {
     let baseDir: string;
     
-    // 1. Desktop Mode (Tauri/Windows)
+    // 1. Node-Server unter Windows (lokale Entwicklung, `tauri dev`).
+    //    ACHTUNG: Die ausgelieferte Desktop-App erreicht diesen Service NIE —
+    //    sie wird als statischer Export gebaut (next.config.js: output 'export'),
+    //    hat also keine API-Routen und persistiert im localStorage der Webview
+    //    (siehe src/lib/local-vault.ts).
     if (process.env.APPDATA) {
         baseDir = path.join(process.env.APPDATA, 'koreki');
     } else {
-        // 2. Community Mode (Docker/Linux)
+        // 2. Community Mode (Docker/Linux) — der produktive Pfad dieses Services.
         baseDir = path.join(process.cwd(), 'data', 'prompts');
     }
 

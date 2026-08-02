@@ -3,6 +3,17 @@ import { AppSettings } from '@/types';
 import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
+import { readLocalArray, readLocalArrayForUpdate, writeLocalArray } from '@/lib/local-vault';
+
+const PROFILE_KEY = 'koreki_local_profiles';
+const AI_PROFILE_KEY = 'koreki_local_ai_profiles';
+
+interface LocalPromptProfile {
+    id: string;
+    name: string;
+    correctionPrompt: string;
+    isSystem?: boolean;
+}
 
 /**
  * Industrial Prompt Profile Hook (Stage 18)
@@ -42,11 +53,7 @@ export const usePromptProfiles = (
     const fetchProfiles = useCallback(async () => {
         // Desktop App (Tauri) uses pure localStorage
         if (isDesktopTarget()) {
-            const stored = localStorage.getItem('koreki_local_profiles');
-            let customProfiles = [];
-            if (stored) {
-                try { customProfiles = JSON.parse(stored); } catch(e) {}
-            }
+            const customProfiles = readLocalArray<LocalPromptProfile>(PROFILE_KEY);
             const systemExperts = Object.values(EXPERT_REGISTRY).map(entry => ({
                 id: entry.metadata.id,
                 name: entry.metadata.name,
@@ -147,11 +154,7 @@ export const usePromptProfiles = (
         setSaving(true);
         
         if (isDesktopTarget()) {
-            const stored = localStorage.getItem('koreki_local_profiles');
-            let customProfiles: any[] = [];
-            if (stored) {
-                try { customProfiles = JSON.parse(stored); } catch(e) {}
-            }
+            const customProfiles = readLocalArrayForUpdate<LocalPromptProfile>(PROFILE_KEY);
             const existingIdx = customProfiles.findIndex(p => p.name === nameToSave);
             if (existingIdx >= 0) {
                 customProfiles[existingIdx].correctionPrompt = correctionPrompt;
@@ -163,15 +166,13 @@ export const usePromptProfiles = (
                     isSystem: false
                 });
             }
-            localStorage.setItem('koreki_local_profiles', JSON.stringify(customProfiles));
-            
+            writeLocalArray(PROFILE_KEY, customProfiles);
+
             // Handle AI Profile Save
             if (createAiProfile && importedAiParams) {
-                const storedAi = localStorage.getItem('koreki_local_ai_profiles');
-                let customAiProfiles: any[] = [];
-                if (storedAi) { try { customAiProfiles = JSON.parse(storedAi); } catch(e) {} }
+                const customAiProfiles = readLocalArrayForUpdate<Record<string, unknown>>(AI_PROFILE_KEY);
                 customAiProfiles.push({ id: `local-ai-${Date.now()}`, name: nameToSave, ...importedAiParams, isSystem: false });
-                localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customAiProfiles));
+                writeLocalArray(AI_PROFILE_KEY, customAiProfiles);
             }
             
             await fetchProfiles();
@@ -243,19 +244,15 @@ export const usePromptProfiles = (
         if (!window.confirm("Dieses Profil wirklich dauerhaft löschen?")) return;
         
         if (isDesktopTarget()) {
-            const stored = localStorage.getItem('koreki_local_profiles');
-            if (stored) {
-                let customProfiles = JSON.parse(stored);
-                customProfiles = customProfiles.filter((p: any) => p.id !== id);
-                localStorage.setItem('koreki_local_profiles', JSON.stringify(customProfiles));
-                await fetchProfiles();
-                if (selectedProfileData?.id === id) {
-                    setSelectedProfile('Standard');
-                    const standard = profiles.find(p => p.name === 'Standard') || Object.values(EXPERT_REGISTRY)[0].promptSnippet;
-                    if (standard) {
-                        setCorrectionPrompt(standard.correctionPrompt);
-                        setLastSavedPrompt(standard.correctionPrompt);
-                    }
+            const remaining = readLocalArrayForUpdate<LocalPromptProfile>(PROFILE_KEY).filter(p => p.id !== id);
+            writeLocalArray(PROFILE_KEY, remaining);
+            await fetchProfiles();
+            if (selectedProfileData?.id === id) {
+                setSelectedProfile('Standard');
+                const standard = profiles.find(p => p.name === 'Standard') || Object.values(EXPERT_REGISTRY)[0].promptSnippet;
+                if (standard) {
+                    setCorrectionPrompt(standard.correctionPrompt);
+                    setLastSavedPrompt(standard.correctionPrompt);
                 }
             }
             return;
@@ -286,20 +283,16 @@ export const usePromptProfiles = (
         }
 
         if (isDesktopTarget()) {
-            const stored = localStorage.getItem('koreki_local_profiles');
-            if (stored) {
-                let customProfiles = JSON.parse(stored);
-                customProfiles = customProfiles.map((p: any) => 
-                    p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
-                );
-                localStorage.setItem('koreki_local_profiles', JSON.stringify(customProfiles));
-                const oldName = profiles.find(p => p.id === editingProfileId)?.name;
-                await fetchProfiles();
-                if (selectedProfile === oldName) {
-                    setSelectedProfile(editingName.trim());
-                }
-                setEditingProfileId(null);
+            const renamed = readLocalArrayForUpdate<LocalPromptProfile>(PROFILE_KEY).map(p =>
+                p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
+            );
+            writeLocalArray(PROFILE_KEY, renamed);
+            const oldName = profiles.find(p => p.id === editingProfileId)?.name;
+            await fetchProfiles();
+            if (selectedProfile === oldName) {
+                setSelectedProfile(editingName.trim());
             }
+            setEditingProfileId(null);
             return;
         }
 

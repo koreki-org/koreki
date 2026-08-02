@@ -29,11 +29,13 @@ export interface GlobalAiSettings {
 const getGlobalSettingsPath = () => {
     let baseDir: string;
     
-    // 1. Desktop Mode (Tauri/Windows)
+    // 1. Node-Server unter Windows (lokale Entwicklung, `tauri dev`).
+    //    Die ausgelieferte Desktop-App erreicht diesen Service nicht — sie wird
+    //    als statischer Export ohne API-Routen gebaut.
     if (process.env.APPDATA) {
         baseDir = path.join(process.env.APPDATA, 'koreki');
     } else {
-        // 2. Community Mode (Docker/Linux)
+        // 2. Community Mode (Docker/Linux) — der produktive Pfad dieses Services.
         baseDir = path.join(process.cwd(), 'data', 'prompts');
     }
 
