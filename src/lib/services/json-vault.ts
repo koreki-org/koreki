@@ -101,3 +101,35 @@ export function readJsonObject<T extends object>(storagePath: string, mode: Read
     const parsed = readJson<unknown>(storagePath, null, mode);
     return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? (parsed as T) : null;
 }
+
+const writeQueues = new Map<string, Promise<unknown>>();
+
+/**
+ * Serialisiert Read-Modify-Write-Zyklen auf dieselbe Datei.
+ *
+ * Ohne das gewinnt bei zwei fast gleichzeitigen Speichervorgängen der zuletzt
+ * schreibende vollständig — die andere Änderung verschwindet kommentarlos.
+ * Betrifft vor allem `global_ai_settings.json`, die einzige von mehreren
+ * Personen beschriebene Datei.
+ *
+ * Prozessintern und damit passend zur dokumentierten Topologie (ein Container).
+ * Mehrere Instanzen auf demselben Volume wären ohnehin nicht unterstützt und
+ * bräuchten ein echtes Dateilock.
+ */
+export function withFileMutex<T>(storagePath: string, task: () => T | Promise<T>): Promise<T> {
+    const previous = writeQueues.get(storagePath) ?? Promise.resolve();
+
+    // Der Nachfolger läuft unabhängig davon, ob der Vorgänger erfolgreich war.
+    const result = previous.then(() => task(), () => task());
+
+    const settled: Promise<unknown> = result
+        .then(() => undefined, () => undefined)
+        .then(() => {
+            if (writeQueues.get(storagePath) === settled) {
+                writeQueues.delete(storagePath);
+            }
+        });
+
+    writeQueues.set(storagePath, settled);
+    return result;
+}

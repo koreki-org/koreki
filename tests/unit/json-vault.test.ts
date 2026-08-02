@@ -4,7 +4,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { readJsonArray, readJsonArrayForUpdate, readJsonObject } from '@/lib/services/json-vault';
+import { readJsonArray, readJsonArrayForUpdate, readJsonObject, withFileMutex } from '@/lib/services/json-vault';
 
 /**
  * Industrial Persistence Audit (Layer 1)
@@ -104,6 +104,53 @@ describe('JSON Vault — corruption handling', () => {
 
         // Ein Lesezugriff zerstört nichts und darf die Anzeige nicht blockieren.
         expect(readJsonArray(filePath('profiles.json'))).toEqual([]);
+    });
+});
+
+describe('JSON Vault — write serialisation', () => {
+
+    /** Simuliert einen Read-Modify-Write-Zyklus mit einer Pause dazwischen. */
+    const appendEntry = async (target: string, name: string): Promise<void> => {
+        const current = readJsonArray<{ name: string }>(target);
+        await new Promise(resolve => setTimeout(resolve, 5));
+        fs.writeFileSync(target, JSON.stringify([...current, { name }]), 'utf-8');
+    };
+
+    it('keeps concurrent updates from overwriting each other', async () => {
+        const target = writeRaw('global_ai_settings.json', JSON.stringify([]));
+
+        await Promise.all([
+            withFileMutex(target, () => appendEntry(target, 'Admin A')),
+            withFileMutex(target, () => appendEntry(target, 'Admin B'))
+        ]);
+
+        // Ohne Serialisierung läge hier nur ein Eintrag — der Verlierer des Rennens.
+        const stored = readJsonArray<{ name: string }>(target);
+        expect(stored).toHaveLength(2);
+        expect(stored.map(e => e.name).sort()).toEqual(['Admin A', 'Admin B']);
+    });
+
+    it('runs the next task even after the previous one failed', async () => {
+        const target = writeRaw('global_ai_settings.json', JSON.stringify([]));
+
+        const failing = withFileMutex(target, () => Promise.reject(new Error('Platte voll')));
+        await expect(failing).rejects.toThrow('Platte voll');
+
+        await withFileMutex(target, () => appendEntry(target, 'Admin B'));
+        expect(readJsonArray<{ name: string }>(target)).toEqual([{ name: 'Admin B' }]);
+    });
+
+    it('serialises per file, so unrelated users are not blocked', async () => {
+        const a = writeRaw('profiles_a.json', JSON.stringify([]));
+        const b = writeRaw('profiles_b.json', JSON.stringify([]));
+
+        await Promise.all([
+            withFileMutex(a, () => appendEntry(a, 'Lehrkraft A')),
+            withFileMutex(b, () => appendEntry(b, 'Lehrkraft B'))
+        ]);
+
+        expect(readJsonArray<{ name: string }>(a)).toEqual([{ name: 'Lehrkraft A' }]);
+        expect(readJsonArray<{ name: string }>(b)).toEqual([{ name: 'Lehrkraft B' }]);
     });
 });
 
