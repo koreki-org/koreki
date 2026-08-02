@@ -3,6 +3,15 @@ import { useQueryClient } from '@tanstack/react-query';
 import { GradingMemory } from '../types';
 import { isDesktopTarget, isLocalInstance } from '../lib/env-context';
 import { apiClient } from '../lib/api-client';
+import { readLocalArray, readLocalArrayForUpdate, writeLocalArray } from '../lib/local-vault';
+
+const MEMORY_KEY = 'koreki_local_grading_memories';
+
+// Diese drei Schlüssel halten einfache Strings bzw. eine separate Fallliste und
+// laufen bewusst NICHT über den Array-Helfer.
+const ACTIVE_ID_KEY = 'koreki_active_grading_memory_id';
+const ACTIVE_NAME_KEY = 'koreki_active_grading_memory_name';
+const ACTIVE_CASES_KEY = 'koreki_active_grading_memory_cases';
 
 /**
  * Custom hook for managing "Erfahrungsschätze" (GradingMemory Profiles)
@@ -17,24 +26,17 @@ export const useGradingMemories = (userData?: any) => {
     const fetchMemories = useCallback(async (shouldNotify = true) => {
         setLoading(true);
         if (isDesktopTarget()) {
-            const stored = localStorage.getItem('koreki_local_grading_memories');
-            if (stored) {
-                try {
-                    const list = JSON.parse(stored);
-                    setMemories(list);
-                    
-                    const savedId = localStorage.getItem('koreki_active_grading_memory_id');
-                    if (savedId) {
-                        const activeMem = list.find((m: any) => m.id === savedId);
-                        if (activeMem) {
-                            localStorage.setItem('koreki_active_grading_memory_name', activeMem.name);
-                            if (activeMem.cases) {
-                                localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(activeMem.cases));
-                            }
-                        }
+            const list = readLocalArray<GradingMemory>(MEMORY_KEY);
+            setMemories(list);
+
+            const savedId = localStorage.getItem(ACTIVE_ID_KEY);
+            if (savedId) {
+                const activeMem = list.find(m => m.id === savedId);
+                if (activeMem) {
+                    localStorage.setItem(ACTIVE_NAME_KEY, activeMem.name);
+                    if (activeMem.cases) {
+                        localStorage.setItem(ACTIVE_CASES_KEY, JSON.stringify(activeMem.cases));
                     }
-                } catch (e) {
-                    setMemories([]);
                 }
             }
             setLoading(false);
@@ -132,17 +134,11 @@ export const useGradingMemories = (userData?: any) => {
         if (!window.confirm("Diesen Erfahrungsschatz wirklich dauerhaft löschen?")) return;
 
         if (isDesktopTarget()) {
-            const stored = localStorage.getItem('koreki_local_grading_memories');
-            if (stored) {
-                try {
-                    let list = JSON.parse(stored);
-                    list = list.filter((m: any) => m.id !== id);
-                    localStorage.setItem('koreki_local_grading_memories', JSON.stringify(list));
-                    setMemories(list);
-                    if (activeMemoryId === id) selectMemory(null);
-                    window.dispatchEvent(new CustomEvent('koreki-grading-memories-changed', { detail: { origin: 'deleteMemory' } }));
-                } catch (e) {}
-            }
+            const list = readLocalArrayForUpdate<GradingMemory>(MEMORY_KEY).filter(m => m.id !== id);
+            writeLocalArray(MEMORY_KEY, list);
+            setMemories(list);
+            if (activeMemoryId === id) selectMemory(null);
+            window.dispatchEvent(new CustomEvent('koreki-grading-memories-changed', { detail: { origin: 'deleteMemory' } }));
             return;
         }
 
@@ -159,18 +155,14 @@ export const useGradingMemories = (userData?: any) => {
 
     const addLocalMemory = (memory: GradingMemory) => {
         if (isDesktopTarget()) {
-            const stored = localStorage.getItem('koreki_local_grading_memories');
-            let list: GradingMemory[] = [];
-            if (stored) {
-                try { list = JSON.parse(stored); } catch (e) {}
-            }
+            const list = readLocalArrayForUpdate<GradingMemory>(MEMORY_KEY);
             const existingIdx = list.findIndex(m => m.id === memory.id || m.name === memory.name);
             if (existingIdx >= 0) {
                 list[existingIdx] = memory;
             } else {
                 list.push(memory);
             }
-            localStorage.setItem('koreki_local_grading_memories', JSON.stringify(list));
+            writeLocalArray(MEMORY_KEY, list);
             setMemories(list);
             selectMemory(memory.id || null);
             window.dispatchEvent(new CustomEvent('koreki-grading-memories-changed', { detail: { origin: 'addLocalMemory' } }));
