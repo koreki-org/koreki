@@ -127,7 +127,7 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
             </div>
 
             {/* Content Area */}
-            <div className="relative min-h-[100px] w-full rounded-xl overflow-hidden border border-border/50 bg-background/50 hover:border-primary/20 transition-all shadow-sm">
+            <div className="relative min-h-[100px] w-full rounded-xl overflow-hidden border border-border/50 bg-background hover:border-primary/20 transition-all shadow-sm">
                 {isEditing ? (
                     <HighlightableTextArea 
                         value={value}
