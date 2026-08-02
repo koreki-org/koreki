@@ -1,7 +1,7 @@
 import { logger } from '@/lib/logger';
 import fs from 'fs';
 import path from 'path';
-import { readJsonObject } from './json-vault';
+import { readJsonObject, withFileMutex } from './json-vault';
 
 /** Systemweite KI-Routing-Parameter. Enthält bewusst KEINE Secrets (API-Keys). */
 export interface GlobalAiSettings {
@@ -84,17 +84,20 @@ export const GlobalSettingsService = {
 
     async updateSettings(data: GlobalAiSettings) {
         const storagePath = getGlobalSettingsPath();
-        const existing = readJsonObject<GlobalAiSettings>(storagePath, 'update') ?? {};
 
-        // Merge existing with new
-        const settings: GlobalAiSettings = { ...existing, ...data };
+        // Lesen, Zusammenführen und Schreiben müssen zusammen im kritischen
+        // Abschnitt liegen — sonst überholt ein zweiter Admin den ersten.
+        return withFileMutex(storagePath, () => {
+            const existing = readJsonObject<GlobalAiSettings>(storagePath, 'update') ?? {};
+            const settings: GlobalAiSettings = { ...existing, ...data };
 
-        try {
-            fs.writeFileSync(storagePath, JSON.stringify(settings, null, 2));
-            return settings;
-        } catch (err) {
-            logger.error('[GlobalSettingsService] Error writing settings:', err);
-            throw err;
-        }
+            try {
+                fs.writeFileSync(storagePath, JSON.stringify(settings, null, 2));
+                return settings;
+            } catch (err) {
+                logger.error('[GlobalSettingsService] Error writing settings:', err);
+                throw err;
+            }
+        });
     }
 };
