@@ -40,7 +40,7 @@ export const GradingMemoryCalibrateScreen: React.FC<GradingMemoryCalibrateScreen
                                                 Kalibrierung: Fall {activeCaseIndex + 1} von {syntheticAnswers.length}
                                             </h4>
                                             <p className="text-xs text-muted-foreground font-bold uppercase tracking-wide">
-                                                Zugeordnete Aufgabe: <span className="text-primary font-extrabold">{activeCase.taskName || 'Allgemein'}</span>
+                                                Zugeordnete Aufgabe: <span className="text-primary font-extrabold">{cal.taskName || 'noch nicht zugeordnet'}</span>
                                             </p>
                                         </div>
                                     </div>
@@ -104,10 +104,14 @@ export const GradingMemoryCalibrateScreen: React.FC<GradingMemoryCalibrateScreen
                                                 Zugeordnete Aufgabe aus der Musterlösung:
                                             </label>
                                             {tasksLayout && tasksLayout.length > 0 ? (
-                                                <select 
+                                                <select
                                                     value={cal.taskName}
                                                     onChange={(e) => {
                                                         const selectedName = e.target.value;
+                                                        if (!selectedName) {
+                                                            handleUpdateCalibration(activeKey, { taskName: '' });
+                                                            return;
+                                                        }
                                                         const matched = tasksLayout.find(t => t.name === selectedName);
                                                         if (matched) {
                                                             const maxP = Number(matched.maxPoints || 5);
@@ -120,6 +124,9 @@ export const GradingMemoryCalibrateScreen: React.FC<GradingMemoryCalibrateScreen
                                                     }}
                                                     className="w-full bg-muted border border-border rounded-xl px-3.5 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/50 transition-all font-bold shadow-sm"
                                                 >
+                                                    {/* Sichtbarer Leerzustand: ohne ihn zeigt das Dropdown die erste Aufgabe an,
+                                                        obwohl gar keine Zuordnung gespeichert ist. */}
+                                                    <option value="">— bitte zuordnen —</option>
                                                     {tasksLayout.map(t => (
                                                         <option key={t.name} value={t.name}>
                                                             {t.name} (max. {t.maxPoints} Punkte)

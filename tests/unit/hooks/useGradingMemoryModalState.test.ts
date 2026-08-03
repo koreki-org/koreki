@@ -41,6 +41,30 @@ jest.mock('../../../src/lib/env-context', () => ({
     isDesktopTarget: jest.fn(() => false)
 }));
 
+const mockApiPost = jest.fn();
+jest.mock('../../../src/lib/api-client', () => ({
+    apiClient: {
+        post: (...args: unknown[]) => mockApiPost(...args)
+    }
+}));
+
+/** Antwort des Student-Simulators mit frei wählbarem Aufgabennamen. */
+const simulatorResponse = (taskName?: string) => ({
+    ok: true,
+    json: async () => ({
+        studentAnswers: [
+            {
+                character: 'TYPO',
+                text: 'Eine simulierte Schülerantwort.',
+                taskName,
+                pointsObtained: 6,
+                recommendedNotes: 'Kleiner Flüchtigkeitsfehler.',
+                recommendedFeedback: 'Achte auf die Schreibweise.'
+            }
+        ]
+    })
+});
+
 const STABLE_TASKS_LAYOUT = [
     { name: 'Aufgabe 1', maxPoints: 10 }
 ];
@@ -110,5 +134,41 @@ describe('useGradingMemoryModalState - Industrial Hook Verification', () => {
         renderHook(() => useGradingMemoryModalState(defaultProps));
 
         expect(mockOnActiveMemoryChange).toHaveBeenCalledWith('Test Memory Profile');
+    });
+
+    describe('Task assignment of simulated cases', () => {
+        const generateWith = async (taskName?: string) => {
+            mockApiPost.mockResolvedValueOnce(simulatorResponse(taskName));
+            const { result } = renderHook(() => useGradingMemoryModalState(defaultProps));
+
+            act(() => {
+                result.current.setSelectedTasks(['Aufgabe 1']);
+            });
+            await act(async () => {
+                await result.current.handleGenerate();
+            });
+
+            const uid = result.current.syntheticAnswers[0].uid;
+            return result.current.calibrations[uid];
+        };
+
+        it('adopts the canonical layout name when the simulator matches a task', async () => {
+            const cal = await generateWith('Aufgabe 1');
+
+            expect(cal.taskName).toBe('Aufgabe 1');
+            expect(cal.maxPoints).toBe(10);
+        });
+
+        it('leaves the assignment empty instead of inventing a task name', async () => {
+            const cal = await generateWith('Teilaufgabe C zur Netzplanung');
+
+            expect(cal.taskName).toBe('');
+        });
+
+        it('leaves the assignment empty when the simulator omits the task name', async () => {
+            const cal = await generateWith(undefined);
+
+            expect(cal.taskName).toBe('');
+        });
     });
 });

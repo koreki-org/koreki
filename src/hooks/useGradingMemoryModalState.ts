@@ -434,10 +434,18 @@ const handleSaveActiveMemoryChanges = async () => {
                 ansItems.forEach((ans: any) => {
                     const key = ans.uid;
                     
-                    let matchedTask = tasksLayout?.find(t => t.name?.toLowerCase() === ans.taskName?.toLowerCase())
-                                   || tasksLayout?.find(t => t.name?.toLowerCase().includes(ans.taskName?.toLowerCase() || ''));
+                    // Der Simulator paraphrasiert den Aufgabennamen gelegentlich, deshalb der Teilstring-Vergleich.
+                    // Er darf aber nur bei nicht-leerem Namen greifen: includes('') trifft sonst immer die erste Aufgabe.
+                    const simulatedName = (ans.taskName || '').trim().toLowerCase();
+                    const matchedTask = simulatedName
+                        ? (tasksLayout?.find(t => t.name?.toLowerCase() === simulatedName)
+                            || tasksLayout?.find(t => t.name?.toLowerCase().includes(simulatedName)))
+                        : undefined;
 
-                    const actualTaskName = matchedTask?.name || ans.taskName || 'Aufgabe 1';
+                    // Liegt ein Layout vor, ist ausschliesslich ein Treffer daraus eine gueltige Zuordnung.
+                    // Der paraphrasierte Name des Simulators wuerde sonst eine Aufgabe vortaeuschen, die es nicht gibt.
+                    const hasLayout = !!tasksLayout && tasksLayout.length > 0;
+                    const actualTaskName = hasLayout ? (matchedTask?.name || '') : (ans.taskName || '');
                     const actualMaxPoints = matchedTask ? Number(matchedTask.maxPoints || 5) : (ans.maxPoints || 5);
                     const actualPointsObtained = ans.pointsObtained !== undefined 
                         ? Math.min(actualMaxPoints, ans.pointsObtained) 
@@ -584,14 +592,19 @@ const handleSaveActiveMemoryChanges = async () => {
             const cases: GradingMemoryCase[] = actualAnswers.map((ans: any) => {
                 const key = ans.uid;
                 const cal = calibrations[key];
+                const assignedTaskName = cal?.taskName?.trim() || undefined;
+                // Das [Aufgabe: ...]-Praefix ist der Fallback-Anker von resolveTaskName().
+                // Ohne echte Zuordnung darf es nicht geschrieben werden, sonst wird "Allgemein"
+                // spaeter als hochkonfidenter Aufgabenname zurueckgelesen.
+                const notes = cal?.correctionNotes || '';
                 return {
                     id: `case-${key}-${Date.now()}`,
                     studentText: ans.text,
-                    taskName: cal?.taskName,
+                    taskName: assignedTaskName,
                     expectedCorrection: {
                         pointsObtained: cal?.pointsObtained || 0,
                         maxPoints: cal?.maxPoints,
-                        correctionNotes: `[Aufgabe: ${cal?.taskName || 'Allgemein'}] ${cal?.correctionNotes || ''}`,
+                        correctionNotes: assignedTaskName ? `[Aufgabe: ${assignedTaskName}] ${notes}` : notes,
                         feedback: cal?.feedback || undefined
                     }
                 };
