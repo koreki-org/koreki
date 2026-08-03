@@ -1,20 +1,36 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as pdfjs from 'pdfjs-dist';
+import { toPixelRects, toRelativeRects, RedactionRect as Rect, RedactionScope } from '../lib/privacy-utils';
 
 // Configure worker to use local file
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 
-interface Rect {
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-}
+/**
+ * Rechnet eine Rechteck-Sammlung seitenweise um — jede Seite gegen die Maße
+ * IHRES eigenen Bildes, da Seiten innerhalb eines Dokuments unterschiedlich
+ * groß sein können (z.B. eingescannte Beiblätter im Querformat).
+ */
+const mapRects = (
+    rects: Record<number, Rect[]> | undefined,
+    images: Record<number, HTMLImageElement>,
+    convert: (rects: Rect[], width: number, height: number) => Rect[]
+): Record<number, Rect[]> => {
+    if (!rects) return {};
+    const result: Record<number, Rect[]> = {};
+    Object.keys(rects).map(Number).forEach(page => {
+        const img = images[page];
+        // Ohne geladenes Bild fehlen die Bezugsmaße. Die Rechtecke werden dann
+        // unverändert durchgereicht statt verworfen — sonst verlöre ein Speichern
+        // stillschweigend eine bestehende Schwärzung.
+        result[page] = img ? convert(rects[page] || [], img.width, img.height) : (rects[page] || []);
+    });
+    return result;
+};
 
 /**
  * Industrial Redaction Engine (Stage 8)
  * 🏮🛡️🖋️
- * Encapsulates PDF-to-Image conversion, coordinate mapping, 
+ * Encapsulates PDF-to-Image conversion, coordinate mapping,
  * and multi-page redaction stitching.
  */
 export const useRedactionEngine = (
@@ -54,7 +70,10 @@ export const useRedactionEngine = (
         
         lastFileKey.current = currentKey;
         setLoading(true);
-        setAllPageRects(initialRects || {});
+        // Die gespeicherten Rechtecke sind relativ zur Seitengröße. Sie lassen
+        // sich erst in Leinwand-Koordinaten umrechnen, wenn die Seitenbilder
+        // geladen sind — deshalb hier leeren und unten nachziehen.
+        setAllPageRects({});
         setCurrentPage(0); // Only reset on fresh document load
         
         const loadFiles = async () => {
@@ -120,6 +139,7 @@ export const useRedactionEngine = (
                 if (!isMountedRef.current || lastFileKey.current !== currentKey) return;
 
                 setImages(loadedImages);
+                setAllPageRects(mapRects(initialRects, loadedImages, toPixelRects));
                 setLoading(false);
             } catch (err) {
                 if (!isMountedRef.current || lastFileKey.current !== currentKey) return;
@@ -171,7 +191,12 @@ export const useRedactionEngine = (
         setCurrentPos(pos);
     };
 
-    const handleEnd = () => {
+    /**
+     * @param scope Herkunft des neuen Balkens. Ergibt sich aus dem Haken
+     * „Auf alle Scans übernehmen" IM MOMENT DES ZIEHENS — so lassen sich
+     * gemeinsame und individuelle Schwärzungen in einem Durchgang setzen.
+     */
+    const handleEnd = (scope: RedactionScope = 'local') => {
         if (!isDrawing) return;
         setIsDrawing(false);
 
@@ -183,7 +208,7 @@ export const useRedactionEngine = (
         if (w > 2 && h > 2) {
             setAllPageRects(prev => ({
                 ...prev,
-                [currentPage]: [...(prev[currentPage] || []), { x, y, w, h }]
+                [currentPage]: [...(prev[currentPage] || []), { x, y, w, h, scope }]
             }));
         }
     };
@@ -235,7 +260,9 @@ export const useRedactionEngine = (
             results.push(dataUrl);
         }
 
-        onSave(results, allPageRects);
+        // Nach außen immer relativ: Die Koordinaten werden später auf andere
+        // Auflösungen angewendet (Vorschaubilder, fremde Schülerarbeiten).
+        onSave(results, mapRects(allPageRects, images, toRelativeRects));
     };
 
     return {
