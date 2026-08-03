@@ -3,7 +3,7 @@ title: "Troubleshooting: Login 401 Unauthorized (Logto Cookie Problem)"
 description: "Koreki Dokumentation: Troubleshooting: Login 401 Unauthorized (Logto Cookie Problem)"
 author: "@principal_architect"
 date: "2026-04-05"
-last_updated: "2026-07-29"
+last_updated: "2026-08-03"
 status: "Approved"
 domain: "support"
 security_classification: "Public"
@@ -13,7 +13,19 @@ security_classification: "Public"
 
 ## 1. Executive Summary & Kontext
 
-> Gelöst am **17.03.2026** – Dieses Dokument beschreibt Ursache, Diagnose und Lösung der 401-Fehler beim Logto-Login im Produktionsbetrieb (Coolify/Docker).
+> Dieses Dokument beschreibt Ursache, Diagnose und Lösung der 401-Fehler beim Logto-Login im Produktionsbetrieb (Coolify/Docker).
+
+Es dokumentiert **zwei getrennte Vorfälle**:
+
+| Vorfall | Datum | Kern |
+|---|---|---|
+| I — Session-Infrastruktur | 17.03.2026 | Cookie-Secret, Session-Races, Callback-Duplikate (Abschnitte 1–3) |
+| II — `/api/user/grading-memories` | 03.08.2026 | Fehlendes Auth-Gate + Request-Verstärkung im Client (Abschnitt 4) |
+
+> [!IMPORTANT]
+> Vorfall I wurde serverseitig behoben, Vorfall II clientseitig. Wer ein neues 401
+> untersucht, sollte zuerst klären, **ob der Request überhaupt hätte gesendet werden
+> dürfen** — bei Vorfall II war nicht die Session kaputt, sondern der Aufruf verfrüht.
 
 ---
 
@@ -29,7 +41,7 @@ Der Login über Logto funktionierte lokal, aber im Docker-Container hinter dem R
 
 ---
 
-## Ursachen (3 Probleme)
+## Vorfall I — Ursachen (3 Probleme)
 
 ### 1. Hardcoded `LOGTO_COOKIE_SECRET` Fallback
 
@@ -93,6 +105,105 @@ if (action === 'sign-in-callback' && typeof state === 'string') {
 
 ---
 
+## Vorfall II — `/api/user/grading-memories` (03.08.2026)
+
+Behoben in `ab20e5b`.
+
+### Symptom
+
+`GET https://<host>/api/user/grading-memories 401 (Unauthorized)` in der Browser-Konsole —
+zuverlässig beim Login, darüber hinaus sporadisch.
+
+> [!NOTE]
+> Die Konsolenzeile stammt vom **Netzwerk-Stack des Browsers**, nicht vom App-Code.
+> [api-client.ts](../../src/lib/api-client.ts) wiederholt nach 300ms, und der Hook prüft
+> nur `res.ok`. Das Feature funktionierte deshalb in der Regel trotzdem — die Meldung
+> blieb aber stehen. Ein 401 in der Konsole heißt nicht automatisch, dass etwas kaputt ist.
+
+### Ursache 4a — Governance-Hook ohne Auth-Gate
+
+`useGradingMemories` war der einzige der vier Governance-Hooks ohne Gate:
+
+| Hook | Gate |
+|---|---|
+| `usePromptGovernance` | `if (authLoading \|\| !isHydrated \|\| !userData?.id) return;` |
+| `useSkillGovernance` | dito |
+| `useAiGovernance` | dito |
+| `useGradingMemories` | **fehlte** |
+
+Verschärfend: Der Hook wird in [app.tsx](../../src/pages/app.tsx) im **Component-Body**
+aufgerufen, `<AuthGuard>` beginnt erst im JSX. React-Hooks laufen unabhängig davon, was
+der Guard rendert — der Fetch war also auch dann unterwegs, wenn der Guard noch lud oder
+gerade zum Login umleitete. Ergebnis: garantiertes 401.
+
+**Fix:** Auth-Gate im Netzwerkpfad. Der Desktop-Pfad bleibt bewusst ungegated, da er
+netzwerkfrei ist und ohne `userData` auskommt.
+
+### Ursache 4b — Request-Verstärkung N + N²
+
+Der Hook hatte zwei Effects, die sich gegenseitig triggerten:
+
+1. Mount-Fetch → dispatcht `koreki-grading-memories-changed`
+2. Listener auf genau dieses Event → löst einen weiteren Fetch aus
+
+Da der Hook **mehrfach gleichzeitig gemountet** ist (`app.tsx`, `GradingMemoryModal`,
+je eine Instanz pro `BatchTaskAnalysisCard`), ergab das bei N Instanzen `N + N²` Requests
+auf denselben Endpunkt. Batch-Done-Ansicht mit 5 Tasks: 56 statt 7.
+
+Das erklärt, warum ausgerechnet dieser Endpunkt auffiel und `prompt-profiles` oder
+`skill-profiles` nicht.
+
+**Fix:** Der Mount-Fetch notifiziert nicht mehr. Die Mutations-Dispatches
+(`selectMemory` / `deleteMemory` / `addLocalMemory`) bleiben erhalten — dort ist die
+Cross-Instanz-Synchronisation der eigentliche Zweck.
+
+**Gemessen** (Playwright gegen den lokalen Dev-Server, `/app` geladen, 6s beobachtet):
+
+| | Requests auf `/api/user/grading-memories` |
+|---|---|
+| vor dem Fix | 9 |
+| nach dem Fix | 3 (= Anzahl gemounteter Instanzen) |
+
+### Staffelungs-Delays zentralisiert
+
+Die vier „Cookie Settling"-Delays lagen als lose `setTimeout`-Aufrufe in vier Hook-Dateien
+und waren bereits auseinandergelaufen (drei dokumentierten sich als „Slot n/3", während
+längst ein vierter existierte). Sie liegen jetzt in
+[session-settling.ts](../../src/lib/session-settling.ts) und wurden halbiert
+(letzter Slot 1500ms → 750ms).
+
+> [!WARNING]
+> **Nicht bewiesen:** Die Delays mitigieren eine vermutete Token-Refresh-Race in Logto
+> (bei Refresh-Token-Rotation gewinnt bei parallelen Requests einer, die übrigen bekommen
+> `invalid_grant`). Diese Race wurde **nie durch Logs belegt** — sie ist eine plausible
+> Erklärung für die sporadische Variante, mehr nicht. Deshalb wurden die Delays halbiert
+> statt entfernt. Wer sie ganz entfernen will, sollte vorher die Audit-Abfrage unten über
+> mindestens einen Token-Ablauf-Zyklus laufen lassen.
+
+### Verifikation via Audit-Log
+
+`logSecurityEvent` schreibt **nicht** in eine `SecurityEvent`-Tabelle, sondern in
+`PrivacyLog` ([audit-service.ts](../../src/lib/audit-service.ts)), mit dem Event-Typ im
+`action`-Feld:
+
+```sql
+SELECT "createdAt", "confirmedText", "ip"
+FROM "PrivacyLog"
+WHERE "action" = 'SECURITY_EVENT: AUTH_FAILURE'
+  AND "confirmedText" LIKE '%grading-memories%'
+ORDER BY "createdAt" DESC
+LIMIT 50;
+```
+
+> [!NOTE]
+> Das 401 aus Vorfall II ist **lokal nicht reproduzierbar**: `.env.local` setzt
+> `NEXT_PUBLIC_KOREKI_MODE=community` und `NEXT_PUBLIC_AUTH_TYPE=NONE`, damit greift
+> serverseitig der lokale Trust-Bypass in `withSecurity` und es gibt gar keine
+> Logto-Session. Die Request-Verstärkung (4b) ist dagegen modus-unabhängig und lokal
+> messbar.
+
+---
+
 ## Zusätzliche Fixes
 
 | Commit | Beschreibung |
@@ -114,29 +225,50 @@ if (action === 'sign-in-callback' && typeof state === 'string') {
 5. **Callback-Duplikate:** Der Deduplizierungsschutz in `[action].ts` fängt doppelte Hits ab.
 6. **Transiente 401-Fehler:** Der `apiClient` retried automatisch einmal nach 300ms. Falls das Problem persistiert, liegt es NICHT an Race Conditions.
 7. **Falsche Logouts:** Der `AuthGuard` retried `checkAuth()` einmal bevor er zum Login redirected. Erst bei doppeltem Fehlschlag wird redirected.
+8. **Durfte der Request überhaupt raus?** Vor jeder Session-Analyse prüfen, ob der aufrufende Hook ein Auth-Gate hat (`!userData?.id → return`) und ob er außerhalb des `AuthGuard` im Component-Body hängt. Hooks laufen unabhängig davon, was der Guard rendert.
+9. **Wie oft feuert der Endpunkt?** Im Network-Tab die Treffer pro Endpunkt zählen. Mehr Requests als gemountete Komponenten deuten auf eine Event-Rückkopplung (siehe 4b), nicht auf ein Session-Problem.
+10. **Konsole ≠ Defekt.** Der `apiClient`-Retry heilt transiente 401 still; die Browser-Konsole zeigt den Fehlversuch trotzdem. Vor der Fehlersuche klären, ob das Feature tatsächlich kaputt ist.
 
 ---
 
 ## Betroffene Dateien
 
-- [logto.ts](../src/lib/logto.ts) – Cookie-Secret Konfiguration
-- [ai-status.ts](../src/pages/api/ai-status.ts) – Leichtgewichtiger Auth-Check
-- [[action].ts](../src/pages/api/logto/[action].ts) – Callback-Deduplizierung
-- [prompt-profiles.ts](../src/pages/api/admin/prompt-profiles.ts) – Auth-Variablen Fix
-- [Dockerfile](../Dockerfile) – `TRUST_PROXY` und `HOSTNAME`
-- [api-client.ts](../src/lib/api-client.ts) – Globaler 401-Retry (Resilience Layer)
-- [AuthGuard.tsx](../src/components/guards/AuthGuard.tsx) – Retry vor Login-Redirect
+- [logto.ts](../../src/lib/logto.ts) – Cookie-Secret Konfiguration
+- [ai-status.ts](../../src/pages/api/ai-status.ts) – Leichtgewichtiger Auth-Check
+- [[action].ts](../../src/pages/api/logto/[action].ts) – Callback-Deduplizierung
+- [prompt-profiles.ts](../../src/pages/api/user/prompt-profiles.ts) – Auth-Variablen Fix (die Route lag zum Zeitpunkt von Vorfall I unter `api/admin/` und ist seither nach `api/user/` verschoben)
+- [Dockerfile](../../Dockerfile) – `TRUST_PROXY` und `HOSTNAME`
+- [api-client.ts](../../src/lib/api-client.ts) – Globaler 401-Retry (Resilience Layer)
+- [AuthGuard.tsx](../../src/components/guards/AuthGuard.tsx) – Retry vor Login-Redirect
+
+**Vorfall II:**
+
+- [useGradingMemories.ts](../../src/hooks/useGradingMemories.ts) – Auth-Gate, Ende der Event-Verstärkung
+- [session-settling.ts](../../src/lib/session-settling.ts) – Zentralisierte Staffelungs-Slots
+- [usePromptGovernance.ts](../../src/hooks/usePromptGovernance.ts), [useSkillGovernance.ts](../../src/hooks/useSkillGovernance.ts), [useAiGovernance.ts](../../src/hooks/useAiGovernance.ts) – auf die zentralen Slots umgestellt
+- [app.tsx](../../src/pages/app.tsx) – Aufrufort des Hooks (Component-Body, außerhalb `AuthGuard`)
 
 
 ---
 
 ## X. Security & Compliance (Mandatory for Industrial Grade)
 > [!IMPORTANT]
-> Keine Komponente ohne Security-Betrachtung. (TBD)
+> Keine Komponente ohne Security-Betrachtung.
 
-* **Datenverarbeitung:** TBD
-* **Authentifizierung/Autorisierung:** TBD
-* **Audit-Logs:** TBD
+* **Datenverarbeitung:** Die hier beschriebenen Fixes betreffen ausschließlich den
+  Zeitpunkt und die Anzahl von API-Aufrufen, nicht deren Inhalt. `GradingMemory`-Fälle
+  enthalten allerdings Schülertexte (`GradingMemoryCase.studentText`) und damit
+  personenbezogene Daten — die Reduktion von 9 auf 3 Requests verringert entsprechend
+  auch die Übertragungshäufigkeit dieser Daten.
+* **Authentifizierung/Autorisierung:** Unverändert serverseitig autoritativ. `withSecurity`
+  ([security.ts](../../src/lib/security.ts)) bleibt die einzige Instanz, die über Zugriff
+  entscheidet. Das clientseitige Auth-Gate ist **reine Vermeidung sinnloser Requests, kein
+  Sicherheitsmechanismus** — es darf nie als solcher behandelt oder als Begründung für eine
+  Lockerung serverseitiger Prüfungen herangezogen werden.
+* **Audit-Logs:** Fehlgeschlagene Authentifizierungen landen als
+  `SECURITY_EVENT: AUTH_FAILURE` in `PrivacyLog` (Abfrage siehe Vorfall II). Durch das
+  Auth-Gate entfallen die bisherigen Fehlalarme aus verfrühten Client-Aufrufen — die
+  verbleibenden Einträge sind damit aussagekräftiger.
 
 ---
 
@@ -144,6 +276,16 @@ if (action === 'sign-in-callback' && typeof state === 'string') {
 > [!WARNING]
 > Verlinke hier zwingend auf zugehörige GitHub PRs, Tasks oder Architektur-Entscheidungen (ADR).
 
-* **Verwandte Dokumente:** TBD
-* **Test-Coverage:** TBD
-* **Externe Referenzen:** TBD
+* **Verwandte Dokumente:** [grading-memory.md](../technical/grading-memory.md),
+  [direct-grading-memory-integration.md](../concepts/direct-grading-memory-integration.md)
+* **Test-Coverage:**
+  * [useGradingMemories.saas.test.tsx](../../tests/unit/hooks/useGradingMemories.saas.test.tsx)
+    — Auth-Gate und Verstärkungs-Regression. Gegen den Stand vor dem Fix verifiziert
+    (12 statt 3 Requests bei 3 Instanzen, 2 statt 0 ohne Session).
+  * [session-settling.test.ts](../../tests/unit/lib/session-settling.test.ts) — sichert die
+    Invariante der Staffelung (Slots echt aufsteigend, paarweise verschieden, konstanter
+    Abstand), nicht die konkreten Millisekunden.
+  * [useGradingMemories.desktop.test.tsx](../../tests/unit/hooks/useGradingMemories.desktop.test.tsx)
+    — deckt ausschließlich den Desktop-Pfad ab.
+  * **Lücke:** Kein E2E-Spec für Grading Memory unter `tests/e2e/`.
+* **Externe Referenzen:** [Logto Next.js SDK](https://docs.logto.io/quick-starts/next)

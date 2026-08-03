@@ -36,9 +36,14 @@ const lastWrittenPayload = () => {
 
 describe('Global AI Settings Sync Unit & API Verification (Layer 1 & 2)', () => {
     let res: any;
+    let envSnapshot: NodeJS.ProcessEnv;
 
     beforeEach(() => {
         jest.clearAllMocks();
+        // Wiederherstellung über afterEach statt über manuelles delete am Testende:
+        // Letzteres läuft nicht mehr, sobald eine Assertion vorher wirft, und leckt
+        // dann in die Folgetests.
+        envSnapshot = { ...process.env };
         res = {
             status: jest.fn().mockReturnThis(),
             json: jest.fn().mockReturnThis(),
@@ -46,7 +51,19 @@ describe('Global AI Settings Sync Unit & API Verification (Layer 1 & 2)', () => 
         };
     });
 
+    afterEach(() => {
+        process.env = envSnapshot;
+    });
+
         it('should return env fallbacks when no settings file exists yet', async () => {
+            // getSettings() liest die Fallbacks ALLER Provider aus der Umgebung, nicht
+            // nur die hier gesetzten. Ohne explizites Leeren hing das Ergebnis von der
+            // lokalen .env.local ab (die OPENAI_API_BASE/OPENAI_API_MODEL setzt) — der
+            // Test war damit maschinenabhängig: grün in CI, rot auf Entwicklerrechnern.
+            for (const key of ['OPENAI_API_BASE', 'OPENAI_API_URL', 'OPENAI_API_MODEL', 'OPENAI_MODEL', 'DEFAULT_PROVIDER']) {
+                delete process.env[key];
+            }
+
             process.env.DEFAULT_AI_PROVIDER = 'ollama';
             process.env.OLLAMA_BASE_URL = 'http://127.0.0.1:11434';
             process.env.OLLAMA_MODEL = 'qwen3.6:35b';
@@ -60,10 +77,6 @@ describe('Global AI Settings Sync Unit & API Verification (Layer 1 & 2)', () => 
                 ollamaUrl: 'http://127.0.0.1:11434',
                 ollamaModel: 'qwen3.6:35b'
             });
-
-            delete process.env.DEFAULT_AI_PROVIDER;
-            delete process.env.OLLAMA_BASE_URL;
-            delete process.env.OLLAMA_MODEL;
         });
 
         it('should correctly merge and persist settings without corrupting existing fields', async () => {
