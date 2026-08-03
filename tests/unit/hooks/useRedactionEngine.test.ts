@@ -12,6 +12,77 @@ describe('useRedactionEngine - Industrial Hook Verification', () => {
         jest.clearAllMocks();
     });
 
+    /**
+     * REGRESSIONSTESTS für einen Ladevorgang, der seine Komponente überlebt.
+     *
+     * DashboardModals rendert das RedactionModal bedingt — Schließen hängt es aus,
+     * auch mitten im Laden. Vorher lief `loadFiles` danach weiter, schrieb State auf
+     * der ausgehängten Komponente und protokollierte einen Fehler für ein Dokument,
+     * das niemand mehr sieht. Unter jsdom kam das zusätzlich erst nach dem Abbau der
+     * Testumgebung an ("Cannot log after tests are done") und färbte die gesamte
+     * Suite mit Exit-Code 1 rot, obwohl kein einziger Test fehlschlug.
+     *
+     * jsdom lädt keine Bilder — ohne den Mock unten feuert weder `onload` noch
+     * `onerror`, der Ladevorgang erreicht die kritische Stelle also nie und der Test
+     * wäre wertlos (er bestünde auch ohne den Fix).
+     */
+    describe('Ladevorgang überlebt die Komponente', () => {
+        const OriginalImage = global.Image;
+
+        beforeEach(() => {
+            class FailingImage {
+                onload: (() => void) | null = null;
+                onerror: ((e: any) => void) | null = null;
+                private _src = '';
+                set src(value: string) {
+                    this._src = value;
+                    setTimeout(() => this.onerror?.(new Event('error')), 0);
+                }
+                get src() { return this._src; }
+            }
+            (global as any).Image = FailingImage;
+        });
+
+        afterEach(() => {
+            (global as any).Image = OriginalImage;
+        });
+
+        const pngFile = () => new File(['dummy content'], 'test.png', { type: 'image/png' });
+
+        const settle = async () => {
+            await act(async () => {
+                await new Promise(resolve => setTimeout(resolve, 50));
+            });
+        };
+
+        it('protokolliert nichts mehr, nachdem die Komponente während des Ladens ausgehängt wurde', async () => {
+            const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+            const { unmount } = renderHook(() => useRedactionEngine(true, pngFile()));
+            unmount();
+
+            await settle();
+
+            expect(errorSpy).not.toHaveBeenCalled();
+            errorSpy.mockRestore();
+        });
+
+        /**
+         * Gegenprobe: Der Fix darf Fehler nicht generell verschlucken. Solange die
+         * Komponente steht, muss ein fehlgeschlagener Ladevorgang sichtbar bleiben.
+         */
+        it('meldet Ladefehler weiterhin, solange die Komponente steht', async () => {
+            const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+            renderHook(() => useRedactionEngine(true, pngFile()));
+
+            await settle();
+
+            expect(errorSpy).toHaveBeenCalled();
+            errorSpy.mockRestore();
+        });
+    });
+
     it('should initialize with default empty state when not open', () => {
         const { result } = renderHook(() => useRedactionEngine(false, null));
 

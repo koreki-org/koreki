@@ -527,43 +527,46 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
 
     return (
         <Card className="flex flex-col border-border/50 bg-background/60 backdrop-blur-xl shadow-xl shadow-foreground/5 rounded-hero overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-border/50">
-                <CardTitle className="text-xl font-bold flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-xl text-primary">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 pb-3 border-b border-border/50">
+                <CardTitle className="text-lg sm:text-xl font-bold flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="p-2 bg-primary/10 rounded-xl text-primary shrink-0">
                         <FileText size={18} />
                     </div>
-                    Musterlösung
+                    <span className="truncate">Musterlösung</span>
                     <KorekiTooltip
                         title="PRO TIPP"
                         content="Eine gute Musterlösung ist das Herzstück. Dokumentieren Sie hier alle Erwartungen und Punkte pro Teilaufgabe."
                         position="bottom"
                         align="left"
-                        className="inline-flex ml-2"
+                        className="inline-flex shrink-0"
                     />
                 </CardTitle>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     {hasModel && (
                         <>
                             <input type="file" accept=".pdf,.txt,.jpg,.jpeg,.png" ref={modelInputRef} onChange={onModelUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
                             <Button
                                 variant="chip"
                                 size="xs"
-                                className="flex items-center gap-2 transition-all"
+                                className="flex items-center gap-2 transition-all shrink-0"
                                 onClick={() => modelInputRef.current?.click()}
+                                title="Musterlösung ändern"
+                                aria-label="Musterlösung ändern"
                             >
                                 <RefreshCw size={12} className={extractingLayout ? "animate-spin" : ""} />
-                                <span>Ändern</span>
+                                <span className="hidden sm:inline">Ändern</span>
                             </Button>
-                            
+
                             <Button
                                 variant="chip"
                                 size="xs"
-                                className="flex items-center gap-2 transition-all animate-fade-in"
+                                className="flex items-center gap-2 transition-all animate-fade-in shrink-0"
                                 onClick={handleExportModelSolution}
                                 title="Musterlösung als Zwischenstand exportieren (.koreki)"
+                                aria-label="Musterlösung exportieren"
                             >
                                 <Download size={12} />
-                                <span>Exportieren</span>
+                                <span className="hidden sm:inline">Exportieren</span>
                             </Button>
                         </>
                     )}
