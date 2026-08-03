@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
-import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
+import { isDesktopTarget } from '@/lib/env-context';
+import { awaitSettlingSlot, SettlingSlot } from '@/lib/session-settling';
 import { STANDARD_SKILL_PROFILES } from '@/lib/ai/standard-skills-profiles';
 
 /**
@@ -104,12 +105,7 @@ export const useSkillGovernance = (
                 }
             }
 
-            // 🛡️ Staggered Cookie Settling Delay (SaaS Only — Slot 2/3)
-            // Serializes Logto session cookie reads across governance hooks to prevent
-            // parallel withLogtoApiRoute calls from corrupting each other's session state.
-            if (!isLocalInstance()) {
-                await new Promise(resolve => setTimeout(resolve, 600));
-            }
+            await awaitSettlingSlot(SettlingSlot.SKILL_PROFILES);
 
             try {
                 let res = await apiClient.get('/api/user/skill-profiles');

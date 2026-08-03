@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
 import { STANDARD_AI_PROFILE, MATH_AI_PROFILE } from './useAiProfiles';
-import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
+import { isDesktopTarget } from '@/lib/env-context';
+import { awaitSettlingSlot, SettlingSlot } from '@/lib/session-settling';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 
 /**
@@ -45,12 +46,7 @@ export const useAiGovernance = (
                     } catch (e) {}
                 }
             } else if (userData) {
-                // 🛡️ Staggered Cookie Settling Delay (SaaS Only — Slot 3/3)
-                // Serializes Logto session cookie reads across governance hooks to prevent
-                // parallel withLogtoApiRoute calls from corrupting each other's session state.
-                if (!isLocalInstance()) {
-                    await new Promise(resolve => setTimeout(resolve, 1050));
-                }
+                await awaitSettlingSlot(SettlingSlot.AI_PROFILES);
 
                 try {
                     let res = await apiClient.get('/api/user/ai-profiles');

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
-import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
+import { isDesktopTarget } from '@/lib/env-context';
+import { awaitSettlingSlot, SettlingSlot } from '@/lib/session-settling';
 import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
 
 /**
@@ -111,12 +112,7 @@ export const usePromptGovernance = (
                 }
             }
 
-            // 🛡️ Staggered Cookie Settling Delay (SaaS Only — Slot 1/3)
-            // Serializes Logto session cookie reads across governance hooks to prevent
-            // parallel withLogtoApiRoute calls from corrupting each other's session state.
-            if (!isLocalInstance()) {
-                await new Promise(resolve => setTimeout(resolve, 150));
-            }
+            await awaitSettlingSlot(SettlingSlot.PROMPT_PROFILES);
 
             try {
                 let res = await apiClient.get('/api/user/prompt-profiles');
