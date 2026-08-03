@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { GradingMemory } from '../types';
-import { isDesktopTarget, isLocalInstance } from '../lib/env-context';
+import { isDesktopTarget } from '../lib/env-context';
+import { awaitSettlingSlot, SettlingSlot } from '../lib/session-settling';
 import { apiClient } from '../lib/api-client';
 import { readLocalArray, readLocalArrayForUpdate, writeLocalArray } from '../lib/local-vault';
 
@@ -47,12 +48,20 @@ export const useGradingMemories = (userData?: any) => {
         }
 
 
-        // 🛡️ Staggered Cookie Settling Delay (SaaS Only — Slot 4)
-        // Serializes Logto session cookie reads across governance hooks to prevent
-        // parallel withLogtoApiRoute calls from corrupting each other's session state.
-        if (!isLocalInstance()) {
-            await new Promise(resolve => setTimeout(resolve, 1500));
+        // 🛡️ Auth-Gate (SaaS / Community Multi-User)
+        // Ohne aufgelöste Session landet der Request garantiert im 401: withSecurity
+        // antwortet für nicht-authentifizierte Aufrufe mit "Nicht angemeldet.".
+        // Der Hook wird in app.tsx im Component-Body aufgerufen und läuft damit auch,
+        // während der AuthGuard noch lädt oder zum Login umleitet.
+        // Identisches Muster wie usePromptGovernance / useSkillGovernance / useAiGovernance;
+        // `!userData?.id` deckt deren `authLoading` mit ab, da userData solange null ist.
+        // Der Desktop-Pfad oben bleibt bewusst ungegated — er ist netzwerkfrei.
+        if (!userData?.id) {
+            setLoading(false);
+            return;
         }
+
+        await awaitSettlingSlot(SettlingSlot.GRADING_MEMORIES);
 
         try {
             const res = await apiClient.get('/api/user/grading-memories');
@@ -79,12 +88,20 @@ export const useGradingMemories = (userData?: any) => {
                 window.dispatchEvent(new CustomEvent('koreki-grading-memories-changed', { detail: { origin: 'fetchMemories' } }));
             }
         }
-    }, [userData?.activeGradingMemoryId]);
+    }, [userData?.id, userData?.activeGradingMemoryId]);
 
     useEffect(() => {
-        fetchMemories();
-        const savedId = !isDesktopTarget() && userData?.activeGradingMemoryId 
-            ? userData.activeGradingMemoryId 
+        // Kein Notify beim Initial-Load: Der Hook ist mehrfach gleichzeitig gemountet
+        // (app.tsx, GradingMemoryModal, je eine Instanz pro BatchTaskAnalysisCard).
+        // Ein notifizierender Mount-Fetch löst über den Listener unten in JEDER
+        // Instanz einen weiteren Fetch aus — bei N Instanzen also N + N² Requests
+        // auf denselben Endpoint. Die Instanzen laden hier ohnehin alle selbst,
+        // das Event ist zum Mount-Zeitpunkt reine Verstärkung.
+        // Die Mutations-Dispatches (selectMemory/deleteMemory/addLocalMemory) bleiben
+        // erhalten — dort ist die Cross-Instanz-Synchronisation der eigentliche Zweck.
+        fetchMemories(false);
+        const savedId = !isDesktopTarget() && userData?.activeGradingMemoryId
+            ? userData.activeGradingMemoryId
             : localStorage.getItem('koreki_active_grading_memory_id');
         if (savedId) setActiveMemoryId(savedId);
     }, [fetchMemories, userData?.activeGradingMemoryId]);
