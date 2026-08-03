@@ -1,6 +1,7 @@
 import React from 'react';
-import { Info } from 'lucide-react';
+import { Info, Highlighter } from 'lucide-react';
 import { BatchFile, Task, AppSettings } from '../types';
+import { Button } from './ui/Button';
 import { Card, CardContent } from './ui/Card';
 import ConfirmationModal from './ConfirmationModal';
 import { ExportToolbar } from './batch/ExportToolbar';
@@ -91,6 +92,10 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     const { groupedTasks, groupNames, CONFIRM_TEXT } = logic;
     const { handleConfirmAction, handleReviewPointChange, handleReviewFeedbackChange, handleReviewPointAndFeedbackChange, getPreviewUrl } = handlers;
 
+    // Einstieg für die Sammel-Schwärzung aus der Datenschutz-Warnung heraus: der
+    // erste noch ungeschwärzte Scan dient als Vorlage für alle weiteren.
+    const firstUnredactedScanIdx = batchFiles.findIndex(f => f.documentType === 'scanned' && !f.isRedacted);
+
     const getConfidenceColor = (conf: number = 0) => {
         if (conf >= 90) return "bg-success text-white";
         if (conf >= 50) return "bg-warning text-white";
@@ -118,6 +123,16 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                                     <div>
                                         <p className="font-bold mb-1">Hinweis zur Anonymisierung</p>
                                         <p>Du hast {unredactedScansCount} Scan(s) hochgeladen, aber noch nicht manuell geschwärzt. Bitte stelle sicher, dass keine personenbezogenen Daten (z.B. Namen) sichtbar sind.</p>
+                                        {firstUnredactedScanIdx >= 0 && (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => { setShowConfirm(null); onRedact(firstUnredactedScanIdx); }}
+                                                className="mt-3 h-8 gap-2 text-xs font-bold border-warning/30 text-warning hover:bg-warning hover:text-warning-foreground transition-all"
+                                            >
+                                                <Highlighter size={14} /> Jetzt schwärzen
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                             )}

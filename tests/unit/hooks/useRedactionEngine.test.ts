@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useRedactionEngine } from '../../../src/hooks/useRedactionEngine';
 
 // Mock pdfjs
@@ -92,15 +92,90 @@ describe('useRedactionEngine - Industrial Hook Verification', () => {
         expect(result.current.state.allPageRects).toEqual({});
     });
 
-    it('should initialize with provided initialRects when passed', () => {
-        const initialRects = {
-            0: [{ x: 10, y: 10, w: 100, h: 50 }]
+    /**
+     * `initialRects` liegen relativ zur Seitengröße vor und lassen sich erst in
+     * Leinwand-Koordinaten umrechnen, wenn das Seitenbild geladen ist. Vorher
+     * bleibt der Zustand leer — sonst würden Rechtecke kurzzeitig an falscher
+     * Stelle gezeichnet.
+     */
+    it('übernimmt initialRects erst nach dem Laden und rechnet sie in Pixel um', async () => {
+        const OriginalImage = global.Image;
+        class LoadingImage {
+            onload: (() => void) | null = null;
+            onerror: ((e: any) => void) | null = null;
+            width = 800;
+            height = 1000;
+            private _src = '';
+            set src(value: string) {
+                this._src = value;
+                setTimeout(() => this.onload?.(), 0);
+            }
+            get src() { return this._src; }
+        }
+        (global as any).Image = LoadingImage;
+
+        try {
+            // Relativ: halbe Breite, ein Zehntel der Höhe, am linken oberen Rand.
+            const initialRects = { 0: [{ x: 0, y: 0, w: 0.5, h: 0.1 }] };
+            const mockFile = new File(['dummy content'], 'test.png', { type: 'image/png' });
+
+            const { result } = renderHook(() => useRedactionEngine(true, mockFile, undefined, initialRects));
+
+            expect(result.current.state.allPageRects).toEqual({});
+
+            await waitFor(() => {
+                expect(result.current.state.allPageRects).toEqual({
+                    0: [{ x: 0, y: 0, w: 400, h: 100 }]
+                });
+            });
+        } finally {
+            (global as any).Image = OriginalImage;
+        }
+    });
+
+    /**
+     * Der Haken „Auf alle Scans übernehmen" wirkt beim ZIEHEN, nicht erst beim
+     * Speichern. Nur so lassen sich gemeinsame und individuelle Schwärzungen in
+     * einem Durchgang setzen, ohne dass der Einzelfall auf dem ganzen Stapel
+     * landet.
+     */
+    it('markiert die Herkunft eines Balkens anhand des Haken-Zustands beim Ziehen', () => {
+        const { result } = renderHook(() => useRedactionEngine(false, null));
+
+        const mockCanvas = {
+            width: 1000,
+            height: 1000,
+            getBoundingClientRect: () => ({ left: 0, top: 0, width: 500, height: 500 })
+        } as unknown as HTMLCanvasElement;
+        const mockImage = {} as HTMLImageElement;
+
+        const draw = (from: number, to: number, scope?: 'shared' | 'local') => {
+            act(() => { result.current.handlers.handleStart({ clientX: from, clientY: from }, mockCanvas, mockImage); });
+            act(() => { result.current.handlers.handleMove({ clientX: to, clientY: to }, mockCanvas, mockImage); });
+            act(() => { result.current.handlers.handleEnd(scope); });
         };
-        const mockFile = new File(['dummy content'], 'test.png', { type: 'image/png' });
 
-        const { result } = renderHook(() => useRedactionEngine(true, mockFile, undefined, initialRects));
+        draw(10, 100, 'shared');  // Haken gesetzt
+        draw(150, 250, 'local');  // Haken wieder entfernt
 
-        expect(result.current.state.allPageRects).toEqual(initialRects);
+        expect(result.current.state.allPageRects[0].map(r => r.scope)).toEqual(['shared', 'local']);
+    });
+
+    it('behandelt Balken ohne ausdrückliche Herkunft als lokal', () => {
+        const { result } = renderHook(() => useRedactionEngine(false, null));
+
+        const mockCanvas = {
+            width: 1000,
+            height: 1000,
+            getBoundingClientRect: () => ({ left: 0, top: 0, width: 500, height: 500 })
+        } as unknown as HTMLCanvasElement;
+        const mockImage = {} as HTMLImageElement;
+
+        act(() => { result.current.handlers.handleStart({ clientX: 10, clientY: 10 }, mockCanvas, mockImage); });
+        act(() => { result.current.handlers.handleMove({ clientX: 100, clientY: 100 }, mockCanvas, mockImage); });
+        act(() => { result.current.handlers.handleEnd(); });
+
+        expect(result.current.state.allPageRects[0][0].scope).toBe('local');
     });
 
     it('should allow changing current page index via setCurrentPage', () => {
@@ -151,7 +226,7 @@ describe('useRedactionEngine - Industrial Hook Verification', () => {
 
         expect(result.current.state.isDrawing).toBe(false);
         expect(result.current.state.allPageRects[0]).toEqual([
-            { x: 100, y: 100, w: 200, h: 200 }
+            { x: 100, y: 100, w: 200, h: 200, scope: 'local' }
         ]);
 
         // 4. Test Undo - should remove the added rect
@@ -175,7 +250,7 @@ describe('useRedactionEngine - Industrial Hook Verification', () => {
         });
 
         expect(result.current.state.allPageRects[0]).toEqual([
-            { x: 20, y: 20, w: 180, h: 180 }
+            { x: 20, y: 20, w: 180, h: 180, scope: 'local' }
         ]);
 
         act(() => {

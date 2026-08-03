@@ -53,7 +53,9 @@ describe('useRedactionEngine (Industrial Math Tests) 🖋️📐', () => {
 
         const rects = result.current.state.allPageRects[0] || [];
         expect(rects).toHaveLength(1);
-        expect(rects[0]).toEqual({ x: 100, y: 100, w: 100, h: 100 });
+        // `scope` kennzeichnet die Herkunft: ohne gesetzten Haken „Auf alle Scans
+        // übernehmen" gilt ein Balken nur für die aktuelle Arbeit.
+        expect(rects[0]).toEqual({ x: 100, y: 100, w: 100, h: 100, scope: 'local' });
     });
 
     it('should correctly perform undo operations', () => {

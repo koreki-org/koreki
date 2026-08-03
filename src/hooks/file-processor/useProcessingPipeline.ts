@@ -187,9 +187,12 @@ export const useProcessingPipeline = (
                                 });
                                 
                                 const h = Math.round(img.height * 0.0673); // ~2 cm proportional on A4 A-series ratio
-                                const rect = { x: 0, y: 0, w: img.width, h };
-                                rects[pageIdx] = [rect];
-                                
+                                // Relativ ablegen (Anteil der Seitenkante), damit der
+                                // Balken beim späteren Öffnen im Schwärzungs-Modal und
+                                // beim Übertragen auf andere Arbeiten deckungsgleich
+                                // sitzt — Modal und Vorschau rendern unterschiedlich groß.
+                                rects[pageIdx] = [{ x: 0, y: 0, w: 1, h: 0.0673 }];
+
                                 const canvas = document.createElement('canvas');
                                 canvas.width = img.width;
                                 canvas.height = img.height;
@@ -210,9 +213,16 @@ export const useProcessingPipeline = (
                         } catch (err) {
                             console.error("Failed auto-redaction during extraction", err);
                         }
-                    } else if (isRedacted && redactionRects && previewDataUrls && previewDataUrls.length > 0) {
+                    } else if (redactionRects && Object.keys(redactionRects).length > 0 && previewDataUrls && previewDataUrls.length > 0) {
+                        // Deckt zwei Fälle ab: das Wiederherstellen nach einem
+                        // .koreki-Import UND vorgemerkte Rechtecke aus einer
+                        // Sammel-Übertragung, die mangels Vorschaubildern noch
+                        // nicht aufgetragen werden konnten. Erst wenn der Abzug
+                        // wirklich existiert, wird `isRedacted` gesetzt — sonst
+                        // griffe resolveOCRSource auf das Original zurück.
                         try {
                             redactedDataUrls = await applyRedactionsToPreviews(previewDataUrls, redactionRects);
+                            isRedacted = true;
                         } catch (err) {
                             console.error("Failed to re-apply redactions", err);
                         }

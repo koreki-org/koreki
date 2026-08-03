@@ -18,6 +18,7 @@ import AiSetupModal from '../AiSetupModal';
 import { AiParamsModal } from '../AiParamsModal';
 import { AppSettings, Task, BatchFile } from '../../types';
 import { isLocalInstance } from '../../lib/env-context';
+import { useRedactionBroadcast, isBroadcastTarget } from '../../hooks/useRedactionBroadcast';
 
 interface DashboardModalsProps {
     userData: any;
@@ -116,6 +117,13 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
 }) => {
     const queryClient = useQueryClient();
     const { tasksLayout, setTasksLayout } = useDashboardStore();
+    const { applyRedaction } = useRedactionBroadcast(batchFiles, setBatchFiles);
+
+    // Weitere Scans, auf die eine Schwärzung übertragen werden kann (ohne den
+    // gerade geöffneten).
+    const otherScanCount = redactIdx === null
+        ? 0
+        : batchFiles.filter((f, i) => i !== redactIdx && isBroadcastTarget(f)).length;
 
     return (
         <>
@@ -308,22 +316,12 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                     fileName={batchFiles[redactIdx].name}
                     pageRange={batchFiles[redactIdx].pageRange}
                     initialRects={batchFiles[redactIdx].redactionRects}
+                    otherScanCount={otherScanCount}
                     onClose={() => setRedactIdx(null)}
-                    onSave={(redactedDataUrls, rects) => {
-                        setBatchFiles(prev => {
-                            const next = [...prev];
-                            next[redactIdx!] = { 
-                                ...next[redactIdx!], 
-                                redactedDataUrls, 
-                                redactionRects: rects,
-                                isRedacted: true,
-                                fileText: "",
-                                ocrDone: false,
-                                documentType: 'scanned'
-                            };
-                            return next;
-                        });
+                    onSave={(redactedDataUrls, rects, applyToAllScans) => {
+                        const sourceIdx = redactIdx!;
                         setRedactIdx(null);
+                        void applyRedaction(sourceIdx, redactedDataUrls, rects, applyToAllScans);
                     }}
                 />
             )}

@@ -1,7 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { X, Trash2, Check, RotateCcw, ChevronLeft, ChevronRight, PenTool, Loader2 } from 'lucide-react';
+import { X, Trash2, Check, RotateCcw, ChevronLeft, ChevronRight, PenTool, Loader2, Users } from 'lucide-react';
 import { Button } from './ui/Button';
+import { Checkbox } from './ui/Checkbox';
 import { useRedactionEngine } from '../hooks/useRedactionEngine';
+import { RedactionRectMap, RedactionScope, buildRedactionTemplate } from '../lib/privacy-utils';
 
 /**
  * Industrial Redaction Modal (Stage 8)
@@ -10,19 +12,37 @@ import { useRedactionEngine } from '../hooks/useRedactionEngine';
  * All heavy logic (PDF, Canvas, Math) is delegated to useRedactionEngine.
  */
 
+/**
+ * Liest den Primärton aus den Design-Tokens, damit die Leinwand demselben
+ * Farbsystem folgt wie das übrige UI (CSS-Variablen sind in Canvas nicht direkt
+ * verwendbar).
+ */
+const readPrimaryColor = (): string => {
+    if (typeof window === 'undefined') return 'hsl(239 84% 67%)';
+    const token = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+    return token ? `hsl(${token})` : 'hsl(239 84% 67%)';
+};
+
 interface RedactionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (redactedDataUrls: string[], rects: Record<number, { x: number, y: number, w: number, h: number }[]>) => void;
+    onSave: (
+        redactedDataUrls: string[],
+        rects: RedactionRectMap,
+        applyToAllScans: boolean
+    ) => void;
     file: File | null;
     fileName: string;
     pageRange?: [number, number];
-    initialRects?: Record<number, { x: number, y: number, w: number, h: number }[]>;
+    initialRects?: RedactionRectMap;
+    /** Anzahl weiterer Scans im Stapel, auf die übertragen werden kann. */
+    otherScanCount?: number;
 }
 
-const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave, file, fileName, pageRange, initialRects }) => {
+const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave, file, fileName, pageRange, initialRects, otherScanCount = 0 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [tool, setTool] = useState<'pen' | 'hand'>('pen');
+    const [applyToAllScans, setApplyToAllScans] = useState(false);
 
     // --- STAGE 8: INDUSTRIAL REDACTION ENGINE ---
     const { state, handlers } = useRedactionEngine(isOpen, file, pageRange, initialRects);
@@ -30,6 +50,29 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
 
     const activeImage = images[currentPage];
     const rects = allPageRects[currentPage] || [];
+
+    /**
+     * 🏮 Die Absicht „auf alle Scans" wird aus den GESPEICHERTEN Balken abgeleitet,
+     * nicht allein aus dem Haken-Zustand. Ein als `shared` markierter Balken ist
+     * nur entstanden, wenn der Haken beim Ziehen gesetzt war — das ist die
+     * verlässlichere Quelle, weil sie am übergebenen Argument hängt und nicht an
+     * einem separat mitgeführten Schalter. Der Haken bleibt als zusätzlicher
+     * Auslöser erhalten, damit er auch ohne neu gezogenen Balken wirkt.
+     */
+    const handleSave = (redactedDataUrls: string[], savedRects: RedactionRectMap) => {
+        const hasSharedRects = Object.values(savedRects)
+            .some(pageRects => pageRects?.some(r => r.scope === 'shared'));
+
+        onSave(redactedDataUrls, savedRects, applyToAllScans || hasSharedRects);
+    };
+
+    // Der Haken wirkt beim ZIEHEN, nicht erst beim Speichern: Nur was mit
+    // gesetztem Haken gezogen wurde, gilt als gemeinsame Vorlage.
+    const drawScope: RedactionScope = applyToAllScans ? 'shared' : 'local';
+
+    // Was tatsächlich übertragen würde — vor dem Klick sichtbar, damit niemand
+    // versehentlich eine individuelle Stelle auf den ganzen Stapel legt.
+    const templateSize = buildRedactionTemplate(allPageRects).length;
 
     // Set canvas dimensions only when image changes
     useEffect(() => {
@@ -46,19 +89,40 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
+        const primary = readPrimaryColor();
+
         // Clear and redraw
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(activeImage, 0, 0, canvas.width, canvas.height);
 
-        // Draw existing rects (Slate Black)
-        ctx.fillStyle = '#0f172a';
+        // 🏮 Die Einfärbung und die Beschriftung existieren AUSSCHLIESSLICH hier
+        // in der Vorschau. Der gespeicherte Abzug entsteht in einer eigenen
+        // Leinwand (processAndAnonymize) und ist durchgehend schwarz — Text im
+        // Bild würde von der Bilderkennung mit-transkribiert und landete als
+        // Fremdwort in der Schülerarbeit.
+        const fontSize = Math.max(12, Math.round(canvas.width / 55));
+        ctx.textBaseline = 'middle';
+
         rects.forEach(r => {
+            const isShared = r.scope === 'shared';
+            ctx.fillStyle = isShared ? primary : '#0f172a';
             ctx.fillRect(r.x, r.y, r.w, r.h);
+
+            const label = isShared ? 'ALLE SCANS' : 'NUR HIER';
+            ctx.font = `700 ${fontSize}px Inter, sans-serif`;
+            const labelWidth = ctx.measureText(label).width;
+
+            // Nur beschriften, wenn der Balken den Text trägt — schmale Streifen
+            // bleiben unbeschriftet, dort trägt allein die Farbe die Information.
+            if (r.w > labelWidth * 1.4 && r.h > fontSize * 1.6) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+                ctx.fillText(label, r.x + fontSize * 0.6, r.y + r.h / 2);
+            }
         });
 
         // Draw current drag rect
         if (isDrawing) {
-            ctx.strokeStyle = 'var(--blue-600)';
+            ctx.strokeStyle = primary;
             const displayWidth = canvas.clientWidth || 1;
             ctx.lineWidth = Math.max(2, (2 * canvas.width) / displayWidth);
 
@@ -95,8 +159,8 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                         <Button 
                             variant="default" 
                             size="icon" 
-                            className="sm:hidden h-10 w-10 rounded-xl transition-all shadow-sm" 
-                            onClick={() => handlers.processAndAnonymize(onSave)}
+                            className="sm:hidden h-10 w-10 rounded-xl transition-all shadow-sm"
+                            onClick={() => handlers.processAndAnonymize(handleSave)}
                             disabled={loading || Object.keys(images).length === 0}
                             title="Schwärzung anwenden"
                         >
@@ -110,28 +174,51 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                 </div>
 
                 {/* Info & Tool Selection */}
-                <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="text-sm text-primary leading-relaxed font-medium">
-                        <p className="mb-1">Ziehe Rechtecke über die Stellen, die Du unkenntlich machen möchtest.</p>
-                        <p className="text-xxs opacity-70 italic font-normal">Hinweis: Bilderkennung (OCR) ist für dieses Dokument anschließend erforderlich.</p>
+                <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 mb-6">
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="text-sm text-primary leading-relaxed font-medium">
+                            <p className="mb-1">Ziehe Rechtecke über die Stellen, die Du unkenntlich machen möchtest.</p>
+                            <p className="text-xxs opacity-70 italic font-normal">Hinweis: Bilderkennung (OCR) ist für dieses Dokument anschließend erforderlich.</p>
+                        </div>
+
+                        <div className="flex bg-background p-1 rounded-xl border border-border shadow-sm shrink-0">
+                            <Button
+                                variant="ghost"
+                                onClick={() => setTool('hand')}
+                                className={`flex h-auto items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${tool === 'hand' ? 'bg-primary text-white shadow-md hover:text-white hover:bg-primary' : 'text-muted-foreground hover:bg-muted'}`}
+                            >
+                                <RotateCcw size={14} className="rotate-45" /> Bewegen
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => setTool('pen')}
+                                className={`flex h-auto items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${tool === 'pen' ? 'bg-primary text-white shadow-md hover:text-white hover:bg-primary' : 'text-muted-foreground hover:bg-muted'}`}
+                            >
+                                <PenTool size={14} /> Schwärzen
+                            </Button>
+                        </div>
                     </div>
 
-                    <div className="flex bg-background p-1 rounded-xl border border-border shadow-sm shrink-0">
-                        <Button
-                            variant="ghost"
-                            onClick={() => setTool('hand')}
-                            className={`flex h-auto items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${tool === 'hand' ? 'bg-primary text-white shadow-md hover:text-white hover:bg-primary' : 'text-muted-foreground hover:bg-muted'}`}
-                        >
-                            <RotateCcw size={14} className="rotate-45" /> Bewegen
-                        </Button>
-                        <Button
-                            variant="ghost"
-                            onClick={() => setTool('pen')}
-                            className={`flex h-auto items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${tool === 'pen' ? 'bg-primary text-white shadow-md hover:text-white hover:bg-primary' : 'text-muted-foreground hover:bg-muted'}`}
-                        >
-                            <PenTool size={14} /> Schwärzen
-                        </Button>
-                    </div>
+                    {otherScanCount > 0 && (
+                        <label className="mt-4 pt-4 border-t border-primary/10 flex items-start gap-3 cursor-pointer select-none group">
+                            <Checkbox
+                                checked={applyToAllScans}
+                                onChange={(e) => setApplyToAllScans(e.target.checked)}
+                                className="mt-0.5"
+                            />
+                            <div className="flex flex-col">
+                                <span className="text-sm font-bold text-primary flex items-center gap-2">
+                                    <Users size={14} className="shrink-0" />
+                                    Auf alle {otherScanCount + 1} Scans übernehmen
+                                </span>
+                                <span className="text-xxs text-primary/70 font-medium leading-normal">
+                                    {applyToAllScans
+                                        ? 'Ab jetzt gezogene Balken gelten für alle Scans und werden farbig markiert. Vorher gezogene bleiben nur bei dieser Arbeit.'
+                                        : 'Balken, die Du bei gesetztem Haken ziehst, landen auf jeder Seite aller Scans. Bereits einzeln geschwärzte Stellen bleiben erhalten.'}
+                                </span>
+                            </div>
+                        </label>
+                    )}
                 </div>
 
                 {/* Canvas Container */}
@@ -146,10 +233,10 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                         ref={canvasRef}
                         onMouseDown={e => tool === 'pen' && handlers.handleStart(e, canvasRef.current, activeImage)}
                         onMouseMove={e => tool === 'pen' && handlers.handleMove(e, canvasRef.current, activeImage)}
-                        onMouseUp={handlers.handleEnd}
+                        onMouseUp={() => handlers.handleEnd(drawScope)}
                         onTouchStart={e => tool === 'pen' && handlers.handleStart(e, canvasRef.current, activeImage)}
                         onTouchMove={e => tool === 'pen' && handlers.handleMove(e, canvasRef.current, activeImage)}
-                        onTouchEnd={handlers.handleEnd}
+                        onTouchEnd={() => handlers.handleEnd(drawScope)}
                         className={`${tool === 'pen' ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing'} shadow-md bg-white rounded-md mx-auto transition-all`}
                         style={{
                             maxWidth: '100%',
@@ -159,6 +246,21 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                         }}
                     />
                 </div>
+
+                {/* Legende — nur relevant, sobald es überhaupt zwei Herkünfte geben kann */}
+                {otherScanCount > 0 && rects.length > 0 && (
+                    <div className="flex items-center gap-4 mt-3 text-xxs font-bold text-muted-foreground">
+                        <span className="flex items-center gap-1.5">
+                            <span className="w-3 h-3 rounded-sm bg-primary shrink-0" /> Alle Scans
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                            <span className="w-3 h-3 rounded-sm bg-foreground shrink-0" /> Nur diese Arbeit
+                        </span>
+                        <span className="italic font-medium opacity-70 hidden sm:inline">
+                            Im gespeicherten Dokument sind alle Balken schwarz.
+                        </span>
+                    </div>
+                )}
 
                 {/* Footer Actions */}
                 <div className="flex flex-wrap sm:flex-nowrap justify-between items-center mt-4 sm:mt-6 gap-3 sm:gap-4 border-t border-border pt-4 sm:pt-6">
@@ -201,8 +303,11 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                         <Button variant="outline" onClick={onClose} className="h-10 px-5 font-semibold hidden sm:flex">
                             Abbrechen
                         </Button>
-                        <Button onClick={() => handlers.processAndAnonymize(onSave)} disabled={loading || Object.keys(images).length === 0} className="h-10 px-6 font-bold flex-1 sm:flex-none shadow-lg shadow-primary/20 gap-2">
-                            <Check size={18} /> Schwärzen anwenden
+                        <Button onClick={() => handlers.processAndAnonymize(handleSave)} disabled={loading || Object.keys(images).length === 0} className="h-10 px-6 font-bold flex-1 sm:flex-none shadow-lg shadow-primary/20 gap-2">
+                            <Check size={18} />
+                            {applyToAllScans
+                                ? `${templateSize} Balken auf ${otherScanCount + 1} Scans`
+                                : 'Schwärzen anwenden'}
                         </Button>
                     </div>
                 </div>

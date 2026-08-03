@@ -155,6 +155,33 @@ import { promisePool } from './ai/promise-pool';
  * Converts PDF pages to JPEG images (Base64).
  * Industrial Parallel Rendering (Concurrency: 2)
  */
+/**
+ * Rendert die Seiten eines Dokuments als Data-URLs — bei Bedarf und unabhängig
+ * davon, ob die Verarbeitungs-Pipeline bereits Vorschaubilder erzeugt hat.
+ *
+ * 🏮 Hintergrund: `extractTextFromFile` liefert für Bild-Uploads (JPG/PNG)
+ * bewusst keine `previewDataUrls`. Wer Schwärzungen auf einen ganzen Stapel
+ * überträgt, braucht die Seitenbilder aber für JEDEN Scan — sonst bliebe
+ * ausgerechnet der Bild-Upload ungeschwärzt.
+ */
+export const renderDocumentPages = async (file: File, pageRange?: [number, number]): Promise<string[]> => {
+    if (file.type === 'application/pdf') {
+        const { buffers } = await convertPdfToImage(file, pageRange);
+        return buffers.map(b => `data:image/jpeg;base64,${b}`);
+    }
+
+    if (file.type.startsWith('image/')) {
+        return [await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target?.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        })];
+    }
+
+    return [];
+};
+
 export const convertPdfToImage = async (file: File, pageRange?: [number, number]): Promise<{ buffers: string[], mimeType: string }> => {
     const arrayBuffer = await file.arrayBuffer();
     const loadingTask = pdfjsLib.getDocument({ 
