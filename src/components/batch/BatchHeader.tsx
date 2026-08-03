@@ -66,19 +66,23 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                 </CardTitle>
             </div>
             
-            <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
-                {/* OCR Strategy Toggle (Mistral -> Qwen Override for High Accuracy / Slower Correction) */}
-                {!isLocalInstance() && settings?.provider === 'mistral' && setOcrStrategy && (
+            {/* OCR Strategy Toggle (Mistral -> Qwen Override for High Accuracy / Slower Correction) */}
+            {!isLocalInstance() && settings?.provider === 'mistral' && setOcrStrategy && (
+                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
                     <div className={cn(
-                        "flex items-center gap-2.5 px-3 py-1.5 bg-muted/30 border border-border rounded-xl shadow-xs transition-all duration-300",
+                        "flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3 py-1.5 bg-muted/30 border border-border rounded-xl shadow-xs transition-all duration-300",
+                        "w-full sm:w-auto",
                         lockStrategy && "opacity-50 pointer-events-none"
                     )}>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1 sm:flex-none">
                             <Brain size={14} className={cn(
-                                "transition-colors duration-300",
+                                "shrink-0 transition-colors duration-300",
                                 ocrStrategy === 'handwriting' ? "text-primary animate-pulse" : "text-muted-foreground"
                             )} />
-                            <span className="text-xs font-bold text-muted-foreground select-none">Hohe Genauigkeit (langsamer)</span>
+                            <span className="text-xs font-bold text-muted-foreground select-none truncate">
+                                <span className="hidden sm:inline">Hohe Genauigkeit (langsamer)</span>
+                                <span className="sm:hidden">Hohe Genauigkeit</span>
+                            </span>
                         </div>
                         <button
                             type="button"
@@ -125,9 +129,8 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                             className="shrink-0"
                         />
                     </div>
-                )}
-
-            </div>
+                </div>
+            )}
 
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto sm:justify-end sm:items-center">
                 {activeBatchController ? (

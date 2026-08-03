@@ -34,6 +34,16 @@ export const useRedactionEngine = (
 
     const lastFileKey = useRef<string>("");
 
+    // Das Laden unten ist asynchron und kann die Komponente überleben: DashboardModals
+    // rendert das RedactionModal bedingt, Schließen hängt es also aus — auch mitten im
+    // Ladevorgang. Ohne diese Markierung schreibt der Vorgang danach noch State und
+    // protokolliert Fehler für ein Dokument, das niemand mehr sieht.
+    const isMountedRef = useRef(true);
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => { isMountedRef.current = false; };
+    }, []);
+
     // --- Document Loading Logic ---
     useEffect(() => {
         if (!isOpen || !file) return;
@@ -74,7 +84,7 @@ export const useRedactionEngine = (
                             await new Promise((resolve, reject) => {
                                 img.onload = resolve;
                                 img.onerror = (e) => {
-                                    console.error("Failed to load PDF page image:", e);
+                                    if (isMountedRef.current) console.error("Failed to load PDF page image:", e);
                                     reject(e);
                                 };
                                 img.src = tempCanvas.toDataURL('image/jpeg', 0.9);
@@ -93,16 +103,27 @@ export const useRedactionEngine = (
                     await new Promise((resolve, reject) => {
                         img.onload = resolve;
                         img.onerror = (e) => {
-                            console.error("Failed to load file image:", e);
+                            if (isMountedRef.current) console.error("Failed to load file image:", e);
                             reject(e);
                         };
                         img.src = dataUrl;
                     });
                     loadedImages[0] = img;
                 }
+                // Bewusst an Mount-Zustand UND Datei-Key gebunden, nicht an den
+                // Effect-Lauf: `pageRange` und `initialRects` kommen als Objekte aus
+                // dem batchFiles-State und wechseln bei jedem Ersetzen die Identität.
+                // Der Effect läuft dadurch auch mitten im Laden neu — ein am
+                // Effect-Cleanup hängendes Abbruch-Flag würde hier einen völlig
+                // legitimen Ladevorgang abwürgen. Der Key-Vergleich verwirft dagegen
+                // gezielt nur Ergebnisse eines inzwischen abgelösten Dokuments.
+                if (!isMountedRef.current || lastFileKey.current !== currentKey) return;
+
                 setImages(loadedImages);
                 setLoading(false);
             } catch (err) {
+                if (!isMountedRef.current || lastFileKey.current !== currentKey) return;
+
                 console.error("Error loading file for redaction:", err);
                 setLoading(false);
             }
