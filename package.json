@@ -75,7 +75,7 @@
     "remark-math": "^6.0.0",
     "stripe": "^20.4.0",
     "tailwind-merge": "^1.14.0",
-    "undici": "^8.5.0",
+    "undici": "^8.9.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz",
     "zod": "^4.3.6",
     "zustand": "^5.0.12"
@@ -110,7 +110,7 @@
     "postcss": "^8.5.18",
     "@hono/node-server": "^1.19.13",
     "dompurify": "^3.2.4",
-    "fast-uri": "^3.1.4",
+    "fast-uri": "^3.1.5",
     "axios": "^1.19.0",
     "sharp": "^0.35.0"
   }
