@@ -1,4 +1,5 @@
 import { Task, GradingMemoryCase, CustomSkillDefinition } from '../../types';
+import { groupCasesByTask } from '../grading-memory-utils';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
 import { getAvailablePluginManifest } from '../grading/graph-generator';
@@ -271,32 +272,60 @@ export function buildCorrectionPrompt(
  
     let examplesText = '';
     if (gradingMemory && Array.isArray(gradingMemory) && gradingMemory.length > 0) {
-        logger.debug(`[PromptBuilder] Injecting ${gradingMemory.length} grading memory cases into correction prompt.`);
+        // Die Faelle werden nach Aufgabe gruppiert, damit das Modell die Zuordnung
+        // Beispiel -> Aufgabe nicht selbst herleiten muss. Die Gruppen folgen der
+        // Reihenfolge des Layouts, die Ueberschriften tragen exakt die Aufgabennamen
+        // aus der Aufgabenliste im System-Prompt.
+        const { groups, unassigned } = groupCasesByTask(gradingMemory, tasksLayout);
+        logger.debug(`[PromptBuilder] Injecting ${gradingMemory.length} grading memory cases (${groups.length} task groups, ${unassigned.length} unassigned).`);
+
+        // Innerhalb einer Aufgabengruppe sagt die Ueberschrift bereits, um welche Aufgabe es geht.
+        // Ausserhalb bleibt der gespeicherte Name die einzige Kontextinformation und muss erhalten bleiben.
+        const renderExample = (item: GradingMemoryCase, id: string, showTaskName = false): string => {
+            let block = `<example id="${id}">\n`;
+            if (showTaskName && item.taskName) {
+                block += `[Betrifft Aufgabe]\n"${item.taskName}"\n\n`;
+            }
+            block += `[Schülerantwort]\n"${item.studentText}"\n\n`;
+            block += `[Erwartete Bewertung]\n`;
+            block += `- Vergebene Punkte: ${item.expectedCorrection.pointsObtained}`;
+            if (item.expectedCorrection.maxPoints !== undefined && item.expectedCorrection.maxPoints !== null) {
+                block += ` von ${item.expectedCorrection.maxPoints}`;
+            }
+            block += `\n`;
+            block += `- Begründung (correctionNotes): "${item.expectedCorrection.correctionNotes}"\n`;
+            if (item.expectedCorrection.feedback) {
+                block += `- Feedback: "${item.expectedCorrection.feedback}"\n`;
+            }
+            block += '</example>\n\n';
+            return block;
+        };
+
         examplesText = '\n\n### WICHTIGER PÄDAGOGISCHER ERFAHRUNGSSCHATZ (BENOTUNGS-REFERENZ):\n';
         examplesText += 'Diese Beispiele zeigen dir, wie der Lehrer in der Vergangenheit bestimmte Typen von Fehlern bewertet hat. Sie dienen als Orientierung für deinen Bewertungsmaßstab (z. B. wie kulant oder streng du bei bestimmten Abweichungen sein sollst) und für die Formulierung deines Feedbacks.\n\n';
         examplesText += 'RICHTLINIEN FÜR DIE ANWENDUNG:\n';
+        examplesText += '- Die Beispiele sind nach Aufgaben gruppiert. Bewertest du eine Aufgabe, ist ausschließlich die Gruppe mit genau diesem Aufgabennamen maßgeblich.\n';
+        examplesText += '- Beispiele aus der Gruppe einer anderen Aufgabe gelten für die aktuelle Aufgabe NICHT.\n';
         examplesText += '- Nutze dieselben Kriterien und Abzugsprinzipien für ähnliche Fehler des Schülers.\n';
         examplesText += '- Übernimm die pädagogischen Kernpunkte und Hinweise für dein Feedback, wenn der Schüler den gleichen konzeptionellen Fehler gemacht hat. Passe die Formulierung jedoch an die konkrete Schreibweise und die Variablen des aktuellen Schülers an.\n';
         examplesText += '- Vermeide das blinde Kopieren von Werten (wie IP-Adressen oder Zahlen) aus anderen Aufgabenstellungen, wenn diese für die aktuelle Aufgabe nicht relevant sind.\n\n';
-        
-        gradingMemory.forEach((item, index) => {
-            examplesText += `<example id="${index + 1}">\n`;
-            if (item.taskName) {
-                examplesText += `[Betrifft Aufgabe]\n"${item.taskName}"\n\n`;
-            }
-            examplesText += `[Schülerantwort]\n"${item.studentText}"\n\n`;
-            examplesText += `[Erwartete Bewertung]\n`;
-            examplesText += `- Vergebene Punkte: ${item.expectedCorrection.pointsObtained}`;
-            if (item.expectedCorrection.maxPoints !== undefined && item.expectedCorrection.maxPoints !== null) {
-                examplesText += ` von ${item.expectedCorrection.maxPoints}`;
-            }
-            examplesText += `\n`;
-            examplesText += `- Begründung (correctionNotes): "${item.expectedCorrection.correctionNotes}"\n`;
-            if (item.expectedCorrection.feedback) {
-                examplesText += `- Feedback: "${item.expectedCorrection.feedback}"\n`;
-            }
-            examplesText += '</example>\n\n';
+
+        groups.forEach((group, groupIndex) => {
+            examplesText += `<task_reference task="${group.taskName}">\n`;
+            group.cases.forEach((item, caseIndex) => {
+                examplesText += renderExample(item, `${groupIndex + 1}.${caseIndex + 1}`);
+            });
+            examplesText += `</task_reference>\n\n`;
         });
+
+        if (unassigned.length > 0) {
+            examplesText += '<unassigned_reference>\n';
+            examplesText += 'Diese Beispiele sind keiner konkreten Aufgabe zugeordnet. Nutze sie nur als allgemeinen Hinweis auf den Bewertungsmaßstab des Lehrers, nicht als verbindliche Punktevorgabe für eine bestimmte Aufgabe.\n\n';
+            unassigned.forEach((item, index) => {
+                examplesText += renderExample(item, `allgemein-${index + 1}`, true);
+            });
+            examplesText += '</unassigned_reference>\n\n';
+        }
     } else {
         logger.debug('[PromptBuilder] No active grading memory cases to inject (gradingMemory is empty or null).');
     }
