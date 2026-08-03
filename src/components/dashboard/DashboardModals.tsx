@@ -72,7 +72,7 @@ interface DashboardModalsProps {
     // Split/Redact
     splitIdx: number | null;
     setSplitIdx: (i: number | null) => void;
-    executeSplit: (students: any[], autoRedact?: boolean) => void; // Finalized for Industrial Grade Stage 3
+    executeSplit: (students: any[]) => void;
     redactIdx: number | null;
     setRedactIdx: (i: number | null) => void;
     batchFiles: BatchFile[];
@@ -305,7 +305,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                     fileName={batchFiles[splitIdx].name}
                     totalPageCount={batchFiles[splitIdx].pageCount || 1}
                     onClose={() => setSplitIdx(null)}
-                    onSplit={(students, autoRedact) => executeSplit(students, autoRedact)}
+                    onSplit={(students) => executeSplit(students)}
                 />
             )}
 

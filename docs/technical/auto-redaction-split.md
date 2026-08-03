@@ -3,13 +3,20 @@ title: "Architektur-Konzept: Automatische Schwärzung im PDF-Aufteilungs-Prozess
 description: "Machbarkeitsstudie und technisches Design zur automatisierten Anonymisierung der oberen 2 cm von PDF-Scans während des Split-Vorgangs."
 author: "@principal_architect"
 date: "2026-05-17"
-last_updated: "2026-05-17"
-status: "Approved"
+last_updated: "2026-08-03"
+status: "Deprecated"
 domain: "technical"
 security_classification: "Internal"
 ---
 
 # Architektur-Konzept: Automatische Schwärzung im PDF-Aufteilungs-Prozess
+
+> [!WARNING]
+> **Abgelöst am 2026-08-03.** Die hier beschriebene Funktion ist aus dem Produkt entfernt worden; dieses Dokument bleibt ausschließlich als Entscheidungsprotokoll bestehen. Der beschriebene Code (`autoRedactTop2cm`, die Checkbox im `PDFSplitModal`, der Auto-Pfad in `useProcessingPipeline`) existiert nicht mehr.
+>
+> **Warum:** Die Option hing ausschließlich am Split-Dialog. Wer seine Schülerarbeiten bereits vereinzelt hochlädt — Einzel-PDFs, Bilddateien, Moodle-Export — durchlief diesen Dialog nie und bekam die Anonymisierungs-Hilfe damit gar nicht zu sehen. Hinzu kam, dass die Schwärzung eine geratene Zone traf (obere 2 cm) statt der Stelle, an der der Name auf dem konkreten Formular tatsächlich steht.
+>
+> **Nachfolger:** Die Schwärzung sitzt vollständig im Schwärzungs-Modal (`RedactionModal`), das aus jeder Scan-Zeile der Stapelverarbeitung erreichbar ist — unabhängig vom Upload-Pfad. Die Lehrkraft zieht die Balken dort, wo die Daten wirklich stehen, und überträgt sie per Haken auf jede Seite aller Scans des Stapels (`useRedactionBroadcast`). Balken tragen eine Herkunft (`scope: shared | local`), sodass gemeinsame und individuelle Schwärzungen in einem Durchgang nebeneinander bestehen. Koordinaten werden relativ zur Seitengröße gespeichert, damit dieselbe Schwärzung über unterschiedliche Auflösungen und Dokumente hinweg deckungsgleich sitzt.
 
 ## 1. Executive Summary & Kontext
 > [!NOTE]

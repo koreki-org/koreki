@@ -161,7 +161,6 @@ export interface BatchFile {
         sourceFileName?: string;
     };
     inferenceDuration?: number;
-    autoRedactTop2cm?: boolean;
 }
 
 export interface KorekiExport {

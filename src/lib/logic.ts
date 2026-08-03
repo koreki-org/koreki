@@ -91,8 +91,7 @@ export function reindexBatchFiles(files: any[]): any[] {
 export function generateSplitBatchItems(
     originalFile: any,
     splits: { firstName?: string, lastName?: string, name?: string, pageCount: number }[],
-    baseIdx: number,
-    autoRedact: boolean = false
+    baseIdx: number
 ): any[] {
     if (!originalFile || !splits) return [];
     
@@ -121,7 +120,6 @@ export function generateSplitBatchItems(
             pageRange: [currentStartPage, currentStartPage + s.pageCount - 1] as [number, number],
             ocrDone: false,
             selected: true,
-            autoRedactTop2cm: autoRedact,
             splitInfo: {
                 originalIdx: baseIdx,
                 originalName: originalFile.name,
