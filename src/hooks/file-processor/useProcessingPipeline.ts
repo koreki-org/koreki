@@ -6,7 +6,8 @@ import { calculateGrade } from '../../lib/logic';
 import { splitTextByTasks } from '../../lib/task-utils';
 import { promisePool } from '../../lib/ai/promise-pool';
 import { runExtractionStrategy } from '../../lib/ai/extraction-logic';
-import { extractTextFromFile } from '../../lib/file-utils';
+import { extractTextFromFile, renderDocumentPages } from '../../lib/file-utils';
+import { logger } from '../../lib/logger';
 import { useBatchStore } from '../store/useBatchStore';
 import { isDesktopTarget } from '../../lib/env-context';
 import { apiClient } from '../../lib/api-client';
@@ -171,18 +172,46 @@ export const useProcessingPipeline = (
                     let redactionRects = items[i].redactionRects;
                     let isRedacted = items[i].isRedacted;
                     
-                    if (redactionRects && Object.keys(redactionRects).length > 0 && previewDataUrls && previewDataUrls.length > 0) {
+                    if (redactionRects && Object.keys(redactionRects).length > 0) {
                         // Deckt zwei Fälle ab: das Wiederherstellen nach einem
                         // .koreki-Import UND vorgemerkte Rechtecke aus einer
                         // Sammel-Übertragung, die mangels Vorschaubildern noch
-                        // nicht aufgetragen werden konnten. Erst wenn der Abzug
-                        // wirklich existiert, wird `isRedacted` gesetzt — sonst
-                        // griffe resolveOCRSource auf das Original zurück.
+                        // nicht aufgetragen werden konnten.
+                        //
+                        // 🏮 Der `.koreki`-Export enthält bewusst nur die
+                        // Koordinaten, nicht die geschwärzten Bilder. Ohne
+                        // Seitenbilder ließen sich die Balken nie auftragen —
+                        // bei Bild-Uploads (JPG/PNG) liefert extractTextFromFile
+                        // grundsätzlich keine. Deshalb werden sie hier notfalls
+                        // selbst gerendert.
+                        let basis = previewDataUrls;
+                        if (!basis?.length) {
+                            try {
+                                basis = await renderDocumentPages(mainFile, items[i].pageRange);
+                                previewDataUrls = basis;
+                            } catch (err) {
+                                logger.warn("Seitenbilder für Schwärzung nicht renderbar", { message: String(err) });
+                            }
+                        }
+
                         try {
-                            redactedDataUrls = await applyRedactionsToPreviews(previewDataUrls, redactionRects);
-                            isRedacted = true;
+                            if (basis?.length) {
+                                redactedDataUrls = await applyRedactionsToPreviews(basis, redactionRects);
+                                isRedacted = true;
+                            } else {
+                                // 🏮 Niemals als geschwärzt ausweisen, ohne dass ein
+                                // anonymisierter Abzug existiert: resolveOCRSource
+                                // fiele auf das ORIGINAL zurück, während die Liste
+                                // ein grünes GESCHWÄRZT zeigte. Lieber sichtbar
+                                // ungeschützt — dann greift die Datenschutz-Warnung
+                                // vor dem Absenden.
+                                isRedacted = false;
+                                redactedDataUrls = undefined;
+                            }
                         } catch (err) {
                             console.error("Failed to re-apply redactions", err);
+                            isRedacted = false;
+                            redactedDataUrls = undefined;
                         }
                     }
 
