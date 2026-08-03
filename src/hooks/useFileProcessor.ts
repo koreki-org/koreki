@@ -83,12 +83,12 @@ export const useFileProcessor = (
         }
     }, [batchFiles, pdfTypeQueue, startExtraction, setBatchFiles, setPdfTypeQueue]);
 
-    const executeSplit = useCallback((students: { firstName?: string, lastName?: string, name?: string, pageCount: number }[], autoRedact: boolean = false) => {
+    const executeSplit = useCallback((students: { firstName?: string, lastName?: string, name?: string, pageCount: number }[]) => {
         if (splitIdx === null) return;
         const target = batchFiles[splitIdx];
         if (!target.files || target.files.length === 0) return;
 
-        const newItems = generateSplitBatchItems(target, students, splitIdx, autoRedact);
+        const newItems = generateSplitBatchItems(target, students, splitIdx);
         const updated = [...batchFiles];
         updated.splice(splitIdx, 1, ...newItems);
         const finalBatch = reindexBatchFiles(updated);

@@ -14,12 +14,11 @@ interface PDFSplitModalProps {
     fileName: string;
     totalPageCount: number;
     onClose: () => void;
-    onSplit: (students: any[], autoRedact: boolean) => void;
+    onSplit: (students: any[]) => void;
 }
 
 const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount, onClose, onSplit }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [autoRedact, setAutoRedact] = useState(false);
     const [students, setStudents] = useState<StudentConfig[]>([
         { firstName: '', lastName: 'Schüler #1', pageCount: totalPageCount }
     ]);
@@ -151,7 +150,7 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
 
     const handleSplit = () => {
         if (assignedPages === 0 || assignedPages > totalPageCount) return;
-        onSplit(students, autoRedact);
+        onSplit(students);
         onClose();
     };
 
@@ -267,20 +266,6 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                         )}
                     </div>
 
-                    <label className="flex items-center gap-3 p-3 bg-muted/20 hover:bg-muted/40 rounded-xl border border-border cursor-pointer transition-all">
-                        <input
-                            type="checkbox"
-                            checked={autoRedact}
-                            onChange={(e) => setAutoRedact(e.target.checked)}
-                            className="w-4 h-4 rounded text-primary focus:ring-primary/20 border-border transition-all cursor-pointer"
-                        />
-                        <div className="flex flex-col">
-                            <span className="text-sm font-bold text-foreground">Automatische Schwärzung</span>
-                            <span className="text-xxs text-muted-foreground font-medium leading-normal">
-                                Obere 2 cm auf allen Seiten automatisch mit einem schwarzen Balken schwärzen.
-                            </span>
-                        </div>
-                    </label>
                 </div>
 
                 <div className="flex gap-4 mt-auto pt-4 border-t border-border shrink-0">

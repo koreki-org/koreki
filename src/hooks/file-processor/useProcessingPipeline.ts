@@ -171,49 +171,7 @@ export const useProcessingPipeline = (
                     let redactionRects = items[i].redactionRects;
                     let isRedacted = items[i].isRedacted;
                     
-                    if (items[i].autoRedactTop2cm && previewDataUrls && previewDataUrls.length > 0 && !items[i].isRedacted) {
-                        try {
-                            const rects: Record<number, { x: number, y: number, w: number, h: number }[]> = {};
-                            const redactedUrls: string[] = [];
-                            
-                            for (let pageIdx = 0; pageIdx < previewDataUrls.length; pageIdx++) {
-                                if (signal.aborted) break;
-                                const url = previewDataUrls[pageIdx];
-                                const img = new Image();
-                                await new Promise((resolve, reject) => {
-                                    img.onload = resolve;
-                                    img.onerror = reject;
-                                    img.src = url;
-                                });
-                                
-                                const h = Math.round(img.height * 0.0673); // ~2 cm proportional on A4 A-series ratio
-                                // Relativ ablegen (Anteil der Seitenkante), damit der
-                                // Balken beim späteren Öffnen im Schwärzungs-Modal und
-                                // beim Übertragen auf andere Arbeiten deckungsgleich
-                                // sitzt — Modal und Vorschau rendern unterschiedlich groß.
-                                rects[pageIdx] = [{ x: 0, y: 0, w: 1, h: 0.0673 }];
-
-                                const canvas = document.createElement('canvas');
-                                canvas.width = img.width;
-                                canvas.height = img.height;
-                                const ctx = canvas.getContext('2d');
-                                if (ctx) {
-                                    ctx.drawImage(img, 0, 0);
-                                    ctx.fillStyle = '#0f172a'; // Slate-900 / Black-out
-                                    ctx.fillRect(0, 0, img.width, h);
-                                    redactedUrls.push(canvas.toDataURL('image/jpeg', 0.9));
-                                } else {
-                                    redactedUrls.push(url);
-                                }
-                            }
-                            
-                            redactionRects = rects;
-                            redactedDataUrls = redactedUrls;
-                            isRedacted = true;
-                        } catch (err) {
-                            console.error("Failed auto-redaction during extraction", err);
-                        }
-                    } else if (redactionRects && Object.keys(redactionRects).length > 0 && previewDataUrls && previewDataUrls.length > 0) {
+                    if (redactionRects && Object.keys(redactionRects).length > 0 && previewDataUrls && previewDataUrls.length > 0) {
                         // Deckt zwei Fälle ab: das Wiederherstellen nach einem
                         // .koreki-Import UND vorgemerkte Rechtecke aus einer
                         // Sammel-Übertragung, die mangels Vorschaubildern noch

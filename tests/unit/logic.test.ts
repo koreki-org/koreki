@@ -144,27 +144,25 @@ describe('Logic module tests', () => {
             expect(part2.pageRange).toEqual([3, 5]);
         });
 
-        it('should correctly attach the autoRedactTop2cm flag when autoRedact is true', () => {
+        /**
+         * Die pauschale 2-cm-Schwärzung beim Aufteilen wurde entfernt. Sie war nur
+         * über den Split-Dialog erreichbar und blieb damit allen verborgen, die
+         * ihre Arbeiten bereits vereinzelt hochladen; zudem schwärzte sie blind
+         * eine geratene Zone statt der Stelle, an der der Name wirklich steht.
+         * Anonymisiert wird ausschließlich über das Schwärzungs-Modal, das die
+         * Schwärzung auf Wunsch auf alle Scans des Stapels überträgt.
+         */
+        it('versieht Teilstücke nicht mehr mit einer pauschalen Schwärzungs-Markierung', () => {
             const { generateSplitBatchItems } = require('../../src/lib/logic');
             const originalFile = { name: 'Schüler #1' };
             const splits = [{ name: 'A', pageCount: 1 }, { name: 'B', pageCount: 2 }];
 
-            const result = generateSplitBatchItems(originalFile, splits, 0, true);
-
-            expect(result.length).toBe(2);
-            expect(result[0].autoRedactTop2cm).toBe(true);
-            expect(result[1].autoRedactTop2cm).toBe(true);
-        });
-
-        it('should default autoRedactTop2cm to false when autoRedact is omitted', () => {
-            const { generateSplitBatchItems } = require('../../src/lib/logic');
-            const originalFile = { name: 'Schüler #1' };
-            const splits = [{ name: 'A', pageCount: 1 }];
-
             const result = generateSplitBatchItems(originalFile, splits, 0);
 
-            expect(result.length).toBe(1);
-            expect(result[0].autoRedactTop2cm).toBe(false);
+            expect(result.length).toBe(2);
+            expect(result[0]).not.toHaveProperty('autoRedactTop2cm');
+            expect(result[1]).not.toHaveProperty('autoRedactTop2cm');
+            expect(result.every((r: any) => !r.isRedacted)).toBe(true);
         });
 
         it('should preserve user-provided split name in originalName to survive reindexing', () => {
