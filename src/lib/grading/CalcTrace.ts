@@ -405,15 +405,29 @@ export function evaluateCalcTrace(
         } else {
           const comparison = compareWithUnit(step.result, step.unit, expected, expectedUnit, TOLERANCE);
           if (comparison.isExactMatch) {
+            const labelMatchesExpectation = !!step.unit
+              && normalizeUnitString(step.unit) === normalizeUnitString(expectedUnit);
+
+            if (labelMatchesExpectation) {
+              // Bester denkbarer Treffer: Wert stimmt UND die Einheitsbezeichnung ist die erwartete.
+              bestMatch = { ...comparison, stepId: step.id };
+              break;
+            }
+
             if (!step.unit) {
               // Lenient exact match (value matches, student forgot unit) -> keep but keep looking for a better one with unit
               if (!bestMatch || !bestMatch.studentUnit) {
                 bestMatch = { ...comparison, stepId: step.id };
               }
             } else {
-              // True exact match with unit -> set and break
-              bestMatch = { ...comparison, stepId: step.id };
-              break;
+              // Physikalisch gleichwertig, aber in einer anderen Einheit notiert (z. B. 750000 KiB
+              // statt 732,42 MiB). Als Treffer merken, aber weitersuchen: Ein spaeterer Schritt in
+              // der erwarteten Einheit ist die aussagekraeftigere Fundstelle. Ohne dieses
+              // Weitersuchen meldet der Beweis einen Zwischenschritt in fremder Einheit, und das
+              // LLM kann den Punkt fuer das Endergebnis nicht vergeben.
+              if (!bestMatch || !bestMatch.isExactMatch || !bestMatch.studentUnit) {
+                bestMatch = { ...comparison, stepId: step.id };
+              }
             }
           }
           if (comparison.isPrefixError) {
