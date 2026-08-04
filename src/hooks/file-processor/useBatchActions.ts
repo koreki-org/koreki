@@ -11,7 +11,8 @@ export const useBatchActions = (
     settings: AppSettings,
     startExtraction: (items: BatchFile[]) => Promise<void>,
     setModelSolution?: React.Dispatch<React.SetStateAction<string>>,
-    setTasksLayout?: React.Dispatch<React.SetStateAction<Task[]>>
+    setTasksLayout?: React.Dispatch<React.SetStateAction<Task[]>>,
+    setModelSolutionContext?: React.Dispatch<React.SetStateAction<string>>
 ) => {
     const {
         batchFiles, setBatchFiles,
@@ -41,6 +42,8 @@ export const useBatchActions = (
                 }
                 if (data.modelSolution && setModelSolution) setModelSolution(data.modelSolution);
                 if (data.tasksLayout && setTasksLayout) setTasksLayout(data.tasksLayout);
+                // Aeltere .koreki-Dateien kennen das Feld nicht — dann bleibt der Rahmen leer.
+                if (setModelSolutionContext) setModelSolutionContext(typeof data.modelSolutionContext === 'string' ? data.modelSolutionContext : '');
             }
 
             setBatchFiles(importedFiles);
@@ -50,7 +53,7 @@ export const useBatchActions = (
             alert("Import fehlgeschlagen: " + err.message);
             return null;
         }
-    }, [setBatchFiles, setIsImportedSession, setModelSolution, setTasksLayout]);
+    }, [setBatchFiles, setIsImportedSession, setModelSolution, setTasksLayout, setModelSolutionContext]);
 
     const handleStudentUpload = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files) return;

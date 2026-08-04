@@ -34,6 +34,13 @@ Verteile den fachlichen Inhalt der Musterlösung PRÄZISE auf die jeweiligen Auf
 - Wenn eine Aufgabe Unteraufgaben hat, teile den Text entsprechend auf die Unteraufgaben auf.
 - Ein leeres "content" Feld bei einer Aufgabe ist ein Fehler, wenn im Gesamtdokument eine Lösung dafür existiert.
 
+WICHTIG (Gemeinsamer fachlicher Rahmen — Feld "context"):
+Manche Dokumente enthalten fachlichen Text, der zu keiner einzelnen Aufgabe gehört, aber für die Bewertung mehrerer Aufgaben gilt. Typische Formen: eine Szenario- oder Fallbeschreibung, ein übergreifender Arbeitsauftrag, gemeinsame Rahmenbedingungen, Annahmen und Vereinfachungen (z. B. "X wird vernachlässigt", "gehen Sie von Y aus") sowie Daten, Tabellen oder Abbildungen, auf die sich mehrere Aufgaben beziehen.
+- Solcher Text gehört in das Feld "context" auf oberster Ebene, NICHT in "tasks[].content".
+- Nimm dort ausschließlich fachlich relevanten Rahmen auf. Formularfelder, Kopf- und Fußzeilen, Namens-, Datums- und Notenfelder gehören dort NICHT hinein — sie werden wie oben beschrieben ignoriert.
+- Wiederhole den Rahmen nicht zusätzlich in jeder Aufgabe.
+- Existiert kein solcher Rahmen, gib "context": "" zurück. Erfinde niemals einen.
+
 WICHTIG (Mathematik & Formeln):
 - Falls die Musterlösung mathematische Formeln enthält, stelle sicher, dass diese sauber in LaTeX-Delimitern eingeschlossen sind.
 - Nutze `$...$` für Inline-Formeln und `$$...$$` für freigestellte Formeln auf eigener Zeile.
@@ -64,6 +71,7 @@ WICHTIG (Berechnungs-Struktur - suggestGraph):
 
 Antworte EXAKT im folgenden JSON-Format:
 {
+  "context": "Gemeinsamer fachlicher Rahmen aller Aufgaben, oder \"\" wenn es keinen gibt.",
   "tasks": [
     {
       "name": "Eindeutiger Name (z.B. Aufgabe 1a)",

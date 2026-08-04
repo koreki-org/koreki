@@ -7,6 +7,7 @@ import { StudentWorkCard } from './upload/StudentWorkCard';
 
 interface UploadGridProps {
     modelSolution: string;
+    modelSolutionContext?: string;
     batchFilesCount: number;
     tasksLayout: Task[];
     extractingLayout: boolean;
@@ -14,6 +15,7 @@ interface UploadGridProps {
     onStudentUpload: (e: ChangeEvent<HTMLInputElement>) => void;
     onReExtractLayout: () => void;
     onModelSolutionChange?: (newVal: string) => void;
+    onModelSolutionContextChange?: (newVal: string) => void;
     onTasksChange?: (newTasks: Task[]) => void;
     isPureMode?: boolean;
     isLocked?: boolean;
@@ -27,6 +29,7 @@ interface UploadGridProps {
 
 const UploadGrid: React.FC<UploadGridProps> = ({
     modelSolution,
+    modelSolutionContext,
     batchFilesCount,
     tasksLayout,
     extractingLayout,
@@ -34,6 +37,7 @@ const UploadGrid: React.FC<UploadGridProps> = ({
     onStudentUpload,
     onReExtractLayout,
     onModelSolutionChange,
+    onModelSolutionContextChange,
     onTasksChange,
     isPureMode = false,
     isLocked = false,
@@ -49,10 +53,12 @@ const UploadGrid: React.FC<UploadGridProps> = ({
             {/* Musterlösung Card */}
             <ModelSolutionCard
                 modelSolution={modelSolution}
+                modelSolutionContext={modelSolutionContext}
                 tasksLayout={tasksLayout}
                 extractingLayout={extractingLayout}
                 onModelUpload={onModelUpload}
                 onModelSolutionChange={onModelSolutionChange}
+                onModelSolutionContextChange={onModelSolutionContextChange}
                 onTasksChange={onTasksChange}
                 isLocked={isLocked}
                 settings={settings}

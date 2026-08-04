@@ -57,8 +57,9 @@ export default function Home() {
         data.tasksLayout, 
         setUserData, 
         sessionProfileName,
-        data.setModelSolution, 
-        data.setTasksLayout
+        data.setModelSolution,
+        data.setTasksLayout,
+        data.setModelSolutionContext
     );
 
     const { saveSettings, handleModeSelect, handleUnlockExpert } = useDashboardActions(userData, setUserData, aiSettings, setAiSettings, fetchAiStatus);
@@ -234,6 +235,7 @@ export default function Home() {
         ];
         const fullSolution = `Musterlösung zum Thema "Demokratie und Mitbestimmung":\n\n` + demoTasks.map(t => `### ${t.name} ###\n${t.content}`).join('\n\n');
         data.setModelSolution(fullSolution);
+        data.setModelSolutionContext("");
         data.setTasksLayout(demoTasks);
         const demoStudentText = `=== TASK: Aufgabe 1 ===\nDie vier Wahlrechtsgrundsätze sind: allgemein, unmittelbar, frei und geheim. Ich glaube, gleich gehört auch noch dazu.\n\n=== TASK: Aufgabe 2 ===\nWahlen sind wichtig, weil das Volk so bestimmen kann, wer regiert. Ohne Wahlen gäbe es keine Kontrolle und jemand könnte einfach immer an der Macht bleiben. Das wäre dann wie eine Diktatur. Durch Wahlen wird die Regierung also legitimiert.\n\n=== TASK: Aufgabe 3 ===\nDemokratie heißt Herrschaft des Volkes. Das stimmt einerseits, weil wir wählen gehen. Aber andererseits haben Reiche und Lobbyisten oft mehr zu sagen als normale Bürger. Außerdem gehen viele Leute gar nicht wählen, dann entscheidet ja nicht das ganze Volk. Trotzdem ist es die beste Form, die wir haben.`;
 
@@ -258,6 +260,7 @@ export default function Home() {
             if (confirm("Möchtest du wirklich alle aktuellen Daten löschen und eine neue Korrektur starten?")) {
                 fileProcessor.setBatchFiles([]);
                 data.setModelSolution("");
+                data.setModelSolutionContext("");
                 data.setTasksLayout([]);
                 setIsUploadSectionCollapsed(false);
             }
@@ -443,7 +446,8 @@ export default function Home() {
                             if (res) {
                                 if (res.tasks) data.setTasksLayout(res.tasks);
                                 if (res.cleanedText) data.setModelSolution(res.cleanedText);
-                                
+                                data.setModelSolutionContext(typeof res.context === 'string' ? res.context.trim() : '');
+
                                 // Industrial Credit Deduction for Re-Extraction
                                 const pageCount = (data as any).modelSolutionPageCount || 1;
                                 if (userData?.appMode !== 'PURE') {
@@ -452,6 +456,8 @@ export default function Home() {
                             }
                         }}
                         onModelSolutionChange={data.setModelSolution}
+                        onModelSolutionContextChange={data.setModelSolutionContext}
+                        modelSolutionContext={data.modelSolutionContext}
                         onTasksChange={data.setTasksLayout}
                         isPureMode={userData?.appMode === 'PURE'}
                         isLocked={fileProcessor.batchFiles.some(f => f.status === 'done' || f.status === 'processing')}
