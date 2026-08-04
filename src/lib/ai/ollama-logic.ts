@@ -510,6 +510,140 @@ function validateOllamaResponse(parsed: any, action: AIAction): any {
     return parsed;
 }
 
+/**
+ * Maskiert Anführungszeichen, die ein lokales Modell innerhalb eines JSON-Strings
+ * unmaskiert gelassen hat.
+ *
+ * Der Scanner unterscheidet dafür zwischen Schlüssel- und Wert-Strings, weil nur so
+ * eindeutig ist, welches Anführungszeichen einen String wirklich beendet:
+ * - in einem Schlüssel beendet ausschließlich ein folgendes ":" den String
+ * - in einem Wert beenden ausschließlich ",", "}" oder "]" den String
+ *
+ * Ohne diese Unterscheidung wird ein Zitat im Fließtext wie `die klassische "Falle":`
+ * als Schlüsselende gelesen — der String bricht dort ab und der Rest wird zu Syntaxmüll.
+ *
+ * Bewusste Grenze: Ein Anführungszeichen, dem im Fließtext ein Komma folgt
+ * (`er sagte "hallo", dann ging er`), bleibt mit lokalem Lookahead unentscheidbar
+ * und wird weiterhin als Stringende gewertet.
+ */
+export function escapeInnerQuotes(jsonStr: string): string {
+    let result = '';
+    let inString = false;
+    let stringIsKey = false;
+    const containers: string[] = [];
+    let lastMeaningful = '';
+
+    const nextNonWhitespaceFrom = (from: number): { char: string; index: number } => {
+        let k = from;
+        while (k < jsonStr.length) {
+            const c = jsonStr[k];
+            if (c !== ' ' && c !== '\t' && c !== '\n' && c !== '\r') {
+                return { char: c, index: k };
+            }
+            k++;
+        }
+        return { char: '', index: -1 };
+    };
+
+    let i = 0;
+    while (i < jsonStr.length) {
+        const char = jsonStr[i];
+
+        if (char !== '"') {
+            result += char;
+            if (!inString) {
+                if (char === '{' || char === '[') {
+                    containers.push(char);
+                } else if (char === '}' || char === ']') {
+                    containers.pop();
+                }
+                if (char !== ' ' && char !== '\t' && char !== '\n' && char !== '\r') {
+                    lastMeaningful = char;
+                }
+            }
+            i++;
+            continue;
+        }
+
+        let backslashes = 0;
+        let j = i - 1;
+        while (j >= 0 && jsonStr[j] === '\\') {
+            backslashes++;
+            j--;
+        }
+        const isEscaped = backslashes % 2 === 1;
+
+        if (!inString) {
+            // Ein Schlüssel steht nur direkt hinter "{" oder "," innerhalb eines Objekts.
+            inString = true;
+            stringIsKey = containers[containers.length - 1] === '{'
+                && (lastMeaningful === '{' || lastMeaningful === ',');
+            result += char;
+            lastMeaningful = char;
+            i++;
+            continue;
+        }
+
+        const { char: nextNonWhitespace, index: nextIdx } = nextNonWhitespaceFrom(i + 1);
+
+        let isStructural = stringIsKey
+            ? nextNonWhitespace === ':'
+            : nextNonWhitespace === ',' || nextNonWhitespace === '}' || nextNonWhitespace === ']';
+
+        // Fehlendes Komma zwischen Wert und folgendem Schlüssel: "...wert" "key": ...
+        let nextKeyMatched = false;
+        if (!isStructural && !stringIsKey && nextNonWhitespace === '"') {
+            let nextQuoteIdx = -1;
+            let m = nextIdx + 1;
+            while (m < jsonStr.length) {
+                if (jsonStr[m] === '"' && jsonStr[m - 1] !== '\\') {
+                    nextQuoteIdx = m;
+                    break;
+                }
+                m++;
+            }
+            if (nextQuoteIdx !== -1 && nextNonWhitespaceFrom(nextQuoteIdx + 1).char === ':') {
+                isStructural = true;
+                nextKeyMatched = true;
+            }
+        }
+
+        if (isStructural) {
+            if (isEscaped && result.endsWith('\\')) {
+                result = result.slice(0, -1);
+            }
+            inString = false;
+            result += char;
+            lastMeaningful = char;
+            if (nextKeyMatched) {
+                result += ',';
+                lastMeaningful = ',';
+            }
+        } else if (isEscaped) {
+            result += char;
+        } else {
+            result += '\\"';
+        }
+        i++;
+    }
+    return result;
+}
+
+/**
+ * Repariert die typischen JSON-Verstöße lokaler Modelle, bevor JSON.parse greift.
+ */
+export function repairJsonString(jsonStr: string): string {
+    // 1. Unmaskierte Anführungszeichen innerhalb von Strings maskieren
+    let repaired = escapeInnerQuotes(jsonStr);
+    // 2. Unmaskierte Backslashes reparieren (LaTeX, Pfade)
+    repaired = repaired.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
+    // 3. Echte Zeilenumbrüche innerhalb von Strings maskieren
+    repaired = repaired.replace(/"((?:[^"\\]|\\[\s\S])*)"/g, (match, p1) => {
+        return '"' + p1.replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '"';
+    });
+    return repaired;
+}
+
 function processOllamaResponse(content: string | null | undefined, action: AIAction, modelName: string) {
     if (content === null || content === undefined) {
         throw new Error(`Ollama hat eine leere Antwort geliefert. \nGrund: Der Backend-Proxy hat keine Daten vom Modell empfangen.`);
@@ -547,109 +681,6 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
             return match ? match[0] : rawJson;
         }
     })();
-
-    const escapeInnerQuotes = (jsonStr: string): string => {
-        let result = '';
-        let inString = false;
-        let i = 0;
-        while (i < jsonStr.length) {
-            const char = jsonStr[i];
-            if (char === '"') {
-                let isEscaped = false;
-                let backslashes = 0;
-                let j = i - 1;
-                while (j >= 0 && jsonStr[j] === '\\') {
-                    backslashes++;
-                    j--;
-                }
-                if (backslashes % 2 === 1) {
-                    isEscaped = true;
-                }
-
-                // Look ahead to check if the quote is structural
-                let nextNonWhitespace = '';
-                let k = i + 1;
-                while (k < jsonStr.length) {
-                    const c = jsonStr[k];
-                    if (c !== ' ' && c !== '\t' && c !== '\n' && c !== '\r') {
-                        nextNonWhitespace = c;
-                        break;
-                    }
-                    k++;
-                }
-
-                let isStructural = nextNonWhitespace === ',' || 
-                                     nextNonWhitespace === '}' || 
-                                     nextNonWhitespace === ']' || 
-                                     nextNonWhitespace === ':';
-
-                let nextKeyMatched = false;
-                if (nextNonWhitespace === '"') {
-                    let nextQuoteIdx = -1;
-                    let m = k + 1;
-                    while (m < jsonStr.length) {
-                        if (jsonStr[m] === '"' && jsonStr[m - 1] !== '\\') {
-                            nextQuoteIdx = m;
-                            break;
-                        }
-                        m++;
-                    }
-                    if (nextQuoteIdx !== -1) {
-                        let afterNextQuote = '';
-                        let n = nextQuoteIdx + 1;
-                        while (n < jsonStr.length) {
-                            const c = jsonStr[n];
-                            if (c !== ' ' && c !== '\t' && c !== '\n' && c !== '\r') {
-                                afterNextQuote = c;
-                                break;
-                            }
-                            n++;
-                        }
-                        if (afterNextQuote === ':') {
-                            isStructural = true;
-                            nextKeyMatched = true;
-                        }
-                    }
-                }
-
-                if (isStructural) {
-                    if (isEscaped) {
-                        if (result.endsWith('\\')) {
-                            result = result.slice(0, -1);
-                        }
-                    }
-                    inString = false;
-                    result += char;
-                    if (nextKeyMatched) {
-                        result += ',';
-                    }
-                } else if (isEscaped) {
-                    result += char;
-                } else if (!inString) {
-                    inString = true;
-                    result += char;
-                } else {
-                    result += '\\"';
-                }
-            } else {
-                result += char;
-            }
-            i++;
-        }
-        return result;
-    };
-
-    const repairJsonString = (jsonStr: string): string => {
-        // 1. Escape literal unescaped double quotes inside strings
-        let repaired = escapeInnerQuotes(jsonStr);
-        // 2. Repair unescaped backslashes (like in LaTeX or paths)
-        repaired = repaired.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
-        // 3. Escape literal newlines and carriage returns inside double-quoted string values
-        repaired = repaired.replace(/"((?:[^"\\]|\\[\s\S])*)"/g, (match, p1) => {
-            return '"' + p1.replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '"';
-        });
-        return repaired;
-    };
 
     try {
         return validateOllamaResponse(JSON.parse(repairJsonString(standardJson)), action);
@@ -709,7 +740,8 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
                     fs.writeFileSync(path.join(scratchDir, 'raw_ollama_error.json'), cleaned, 'utf-8');
                 } catch (err) {}
             }
-            
+
+
             throw new Error(`Ollama JSON-Parse fehlgeschlagen (${errorMsg}). \n\nAnfang: [${start}]\n\nEnde: [${end}]\n\nLänge: ${cleaned.length}`);
         }
     }
