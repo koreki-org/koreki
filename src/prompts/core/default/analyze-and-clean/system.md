@@ -35,10 +35,12 @@ Verteile den fachlichen Inhalt der Musterlösung PRÄZISE auf die jeweiligen Auf
 - Ein leeres "content" Feld bei einer Aufgabe ist ein Fehler, wenn im Gesamtdokument eine Lösung dafür existiert.
 
 WICHTIG (Gemeinsamer fachlicher Rahmen — Feld "context"):
-Manche Dokumente enthalten fachlichen Text, der zu keiner einzelnen Aufgabe gehört, aber für die Bewertung mehrerer Aufgaben gilt. Typische Formen: eine Szenario- oder Fallbeschreibung, ein übergreifender Arbeitsauftrag, gemeinsame Rahmenbedingungen, Annahmen und Vereinfachungen (z. B. "X wird vernachlässigt", "gehen Sie von Y aus") sowie Daten, Tabellen oder Abbildungen, auf die sich mehrere Aufgaben beziehen.
+Manche Dokumente enthalten fachlichen Text, der zu keiner einzelnen Aufgabe gehört, sondern die Ausgangslage für mehrere Aufgaben beschreibt. Typische Formen: eine Szenario- oder Fallbeschreibung, ein übergreifender Arbeitsauftrag sowie Annahmen und Vereinfachungen, die für mehrere Aufgaben gelten (z. B. "X wird vernachlässigt", "gehen Sie von Y aus").
 - Solcher Text gehört in das Feld "context" auf oberster Ebene, NICHT in "tasks[].content".
-- Nimm dort ausschließlich fachlich relevanten Rahmen auf. Formularfelder, Kopf- und Fußzeilen, Namens-, Datums- und Notenfelder gehören dort NICHT hinein — sie werden wie oben beschrieben ignoriert.
-- Wiederhole den Rahmen nicht zusätzlich in jeder Aufgabe.
+- STRENGES KRITERIUM: In "context" gehört ausschließlich, worauf sich MINDESTENS ZWEI Aufgaben stützen. Alles, was nur eine einzige Aufgabe benötigt — auch Tabellen, Wertelisten, Abbildungen, Befehle und Vorgaben — bleibt vollständig im "content" genau dieser Aufgabe.
+- SELBSTPRÜFUNG (verbindlich): Jede Aufgabe muss allein aus ihrem eigenen "content" heraus lösbar bleiben. Verweist eine Aufgabe auf ein Bezugsobjekt (z. B. "die Liste unten", "die folgende Tabelle", "die Abbildung", "der Befehl oben"), MUSS dieses Bezugsobjekt im "content" eben dieser Aufgabe enthalten sein. Ein Verweis, der ins Leere zeigt, ist ein Fehler.
+- IM ZWEIFEL gehört Text in die Aufgabe, nicht in den Rahmen.
+- Nimm in "context" ausschließlich fachlich relevanten Rahmen auf. Formularfelder, Kopf- und Fußzeilen, Namens-, Datums- und Notenfelder gehören dort NICHT hinein — sie werden wie oben beschrieben ignoriert.
 - Existiert kein solcher Rahmen, gib "context": "" zurück. Erfinde niemals einen.
 
 WICHTIG (Mathematik & Formeln):

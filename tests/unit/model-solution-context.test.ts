@@ -54,6 +54,22 @@ describe('Analyse-Prompt: Vertrag für das context-Feld', () => {
         expect(analyzeCleanSystem).toContain('Erfinde niemals einen.');
     });
 
+    it('restricts the frame to material at least two tasks rely on', () => {
+        // Ohne harte Untergrenze zieht das Modell auch aufgabeneigene Tabellen in den Rahmen.
+        expect(analyzeCleanSystem).toContain('MINDESTENS ZWEI Aufgaben');
+    });
+
+    it('demands that references inside a task resolve inside that task', () => {
+        // "Wählen Sie aus der Liste unten" darf nicht ins Leere zeigen, weil die Liste
+        // in den Rahmen gewandert ist.
+        expect(analyzeCleanSystem).toContain('SELBSTPRÜFUNG');
+        expect(analyzeCleanSystem).toContain('Ein Verweis, der ins Leere zeigt, ist ein Fehler.');
+    });
+
+    it('defaults to the task when the assignment is unclear', () => {
+        expect(analyzeCleanSystem).toContain('IM ZWEIFEL gehört Text in die Aufgabe');
+    });
+
     it('keeps the existing rule that content stays task-specific', () => {
         // Regression: das neue Feld darf die bestehende Zuordnungsregel nicht verdrängen.
         expect(analyzeCleanSystem).toContain('darf NIEMALS den gesamten Text des Dokuments enthalten');
