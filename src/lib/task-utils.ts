@@ -115,3 +115,18 @@ export function composeModelSolution(context: string | undefined, sections: stri
     if (!trimmedContext) return body;
     return `${MODEL_SOLUTION_CONTEXT_HEADING}\n${trimmedContext}\n\n${body}`;
 }
+
+/**
+ * Baut die Musterlösung, die an die Korrektur geht: gemeinsamer Rahmen plus die
+ * Aufgabeninhalte aus der Analyse.
+ *
+ * Bewusst ohne Rückfall auf den Rohtext. Die strukturierte Fassung ist die einzige
+ * Quelle — nach Aufgaben gegliedert, mit rekonstruierten Tabellen, gesetzten Formeln
+ * und von der Analyse reparierten OCR-Fehlern. Und sie ist identisch mit dem, was die
+ * Lehrkraft im Dashboard sieht und bearbeitet. Liefert die Analyse eine Aufgabe ohne
+ * Inhalt, ist das ein sichtbarer Fehler (leerer Abschnitt in der Karte), der behoben
+ * und nicht durch stilles Umschalten auf Roh-OCR überdeckt gehört.
+ */
+export function buildModelSolutionFromTasks(context: string | undefined, tasks: Task[]): string {
+    return composeModelSolution(context, tasks.map(t => t.content || ''), tasks);
+}

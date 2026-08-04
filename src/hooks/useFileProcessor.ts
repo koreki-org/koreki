@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { Task, AppSettings, BatchFile } from '../types';
 import { reindexBatchFiles, generateSplitBatchItems } from '../lib/logic';
 import { runExtractionStrategy } from '../lib/ai/extraction-logic';
+import { buildModelSolutionFromTasks } from '../lib/task-utils';
 import { useDashboardStore } from './store/useDashboardStore';
 
 // Sub-Hooks
@@ -127,15 +128,18 @@ export const useFileProcessor = (
             // Layout analysis via pipeline logic (or direct AI call)
             const data = await pipeline.cleanAndExtractLayout?.(text, settings, pageCount, isScan);
             if (data?.tasks && data.tasks.length > 0) {
-                // Der gemeinsame Rahmen gehoert zu keiner Aufgabe und wuerde ohne eigenes
-                // Feld aus der Analyse fallen. Der Rohtext bleibt vorerst die Musterloesung,
-                // bis belegt ist, dass das Feld verlaesslich gefuellt wird.
+                // Der gemeinsame Rahmen gehoert zu keiner Aufgabe und faellt ohne eigenes Feld
+                // aus der Analyse heraus.
                 const analysisContext = typeof data.context === 'string' ? data.context.trim() : '';
-                console.debug(`[Analyse] ${data.tasks.length} Aufgaben, gemeinsamer Rahmen: ${analysisContext ? `${analysisContext.length} Zeichen` : 'leer'}`);
                 if (setModelSolutionContext) setModelSolutionContext(analysisContext);
 
+                // Die strukturierte Fassung ist ab hier die Musterloesung: gegliederte Aufgaben,
+                // rekonstruierte Tabellen, reparierte OCR-Fehler, kein Formularrauschen — und
+                // identisch mit dem, was die Lehrkraft im Dashboard sieht.
+                console.debug(`[Analyse] ${data.tasks.length} Aufgaben, Rahmen: ${analysisContext ? `${analysisContext.length} Zeichen` : 'leer'}`);
+
                 setTasksLayout(data.tasks);
-                setModelSolution(text); // Industrial Standard: Use raw OCR as visual baseline, AI cleans tasks
+                setModelSolution(buildModelSolutionFromTasks(analysisContext, data.tasks));
             } else {
                 throw new Error("Koreki konnte keine Aufgabenstruktur in diesem Dokument erkennen. Bitte prüfe die PDF-Qualität.");
             }

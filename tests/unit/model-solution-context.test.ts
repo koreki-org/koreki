@@ -1,4 +1,9 @@
-import { composeModelSolution, joinTaskSections, MODEL_SOLUTION_CONTEXT_HEADING } from '../../src/lib/task-utils';
+import {
+    composeModelSolution,
+    joinTaskSections,
+    buildModelSolutionFromTasks,
+    MODEL_SOLUTION_CONTEXT_HEADING
+} from '../../src/lib/task-utils';
 import { Task } from '../../src/types';
 import analyzeCleanSystem from '../../src/prompts/core/default/analyze-and-clean/system.md';
 
@@ -37,6 +42,38 @@ describe('composeModelSolution', () => {
 
         expect(twice).toBe(once);
         expect(once.split(MODEL_SOLUTION_CONTEXT_HEADING)).toHaveLength(2);
+    });
+});
+
+describe('buildModelSolutionFromTasks', () => {
+    const analysed: Task[] = [
+        { name: 'Aufgabe 1', maxPoints: 6, content: 'Erläutern Sie ... Lösung: ... (1 Pkt)' },
+        { name: 'Aufgabe 2', maxPoints: 4, content: 'Berechnen Sie ... Lösung: ... (2 Pkt)' }
+    ];
+
+    it('carries the frame and every task into the correction input', () => {
+        const text = buildModelSolutionFromTasks('Ein Unternehmen betreibt einen Server.', analysed);
+
+        expect(text).toContain(MODEL_SOLUTION_CONTEXT_HEADING);
+        expect(text).toContain('Ein Unternehmen betreibt einen Server.');
+        expect(text).toContain('### Aufgabe 1 ###');
+        expect(text).toContain('### Aufgabe 2 ###');
+        expect(text).toContain('(1 Pkt)');
+        expect(text).toContain('(2 Pkt)');
+    });
+
+    it('leaves out the frame heading when there is no frame', () => {
+        const text = buildModelSolutionFromTasks('', analysed);
+
+        expect(text).not.toContain(MODEL_SOLUTION_CONTEXT_HEADING);
+        expect(text).toContain('### Aufgabe 1 ###');
+    });
+
+    it('keeps an empty task visible as an empty section instead of hiding it', () => {
+        // Fehlender Inhalt ist ein sichtbarer Analysefehler und wird nicht kaschiert.
+        const text = buildModelSolutionFromTasks('', [...analysed, { name: 'Aufgabe 3', maxPoints: 2, content: '' }]);
+
+        expect(text).toContain('### Aufgabe 3 ###');
     });
 });
 
