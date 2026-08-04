@@ -17,7 +17,8 @@ export const useFileProcessor = (
     setUserData: React.Dispatch<React.SetStateAction<any>>,
     profileName?: string,
     setModelSolution?: React.Dispatch<React.SetStateAction<string>>,
-    setTasksLayout?: React.Dispatch<React.SetStateAction<Task[]>>
+    setTasksLayout?: React.Dispatch<React.SetStateAction<Task[]>>,
+    setModelSolutionContext?: React.Dispatch<React.SetStateAction<string>>
 ) => {
     // 1. Initial State
     const state = useBatchState();
@@ -50,7 +51,8 @@ export const useFileProcessor = (
         settings, 
         startExtraction,
         setModelSolution,
-        setTasksLayout
+        setTasksLayout,
+        setModelSolutionContext
     );
     const {
         handleStudentUpload,
@@ -125,6 +127,13 @@ export const useFileProcessor = (
             // Layout analysis via pipeline logic (or direct AI call)
             const data = await pipeline.cleanAndExtractLayout?.(text, settings, pageCount, isScan);
             if (data?.tasks && data.tasks.length > 0) {
+                // Der gemeinsame Rahmen gehoert zu keiner Aufgabe und wuerde ohne eigenes
+                // Feld aus der Analyse fallen. Der Rohtext bleibt vorerst die Musterloesung,
+                // bis belegt ist, dass das Feld verlaesslich gefuellt wird.
+                const analysisContext = typeof data.context === 'string' ? data.context.trim() : '';
+                console.debug(`[Analyse] ${data.tasks.length} Aufgaben, gemeinsamer Rahmen: ${analysisContext ? `${analysisContext.length} Zeichen` : 'leer'}`);
+                if (setModelSolutionContext) setModelSolutionContext(analysisContext);
+
                 setTasksLayout(data.tasks);
                 setModelSolution(text); // Industrial Standard: Use raw OCR as visual baseline, AI cleans tasks
             } else {

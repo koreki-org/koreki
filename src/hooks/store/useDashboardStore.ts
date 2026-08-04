@@ -8,7 +8,11 @@ type Setter<T> = (val: T | ((prev: T) => T)) => void;
 interface DashboardStateStore {
     modelSolution: string;
     setModelSolution: Setter<string>;
-    
+
+    /** Fachlicher Rahmen, der zu keiner einzelnen Aufgabe gehört (Szenario, Arbeitsauftrag, gemeinsame Annahmen). */
+    modelSolutionContext: string;
+    setModelSolutionContext: Setter<string>;
+
     tasksLayout: Task[];
     setTasksLayout: Setter<Task[]>;
     
@@ -38,7 +42,10 @@ const createSetter = <K extends keyof DashboardStateStore>(
 export const useDashboardStore = create<DashboardStateStore>((set, get) => ({
     modelSolution: '',
     setModelSolution: createSetter(set, 'modelSolution'),
-    
+
+    modelSolutionContext: '',
+    setModelSolutionContext: createSetter(set, 'modelSolutionContext'),
+
     tasksLayout: [],
     setTasksLayout: createSetter(set, 'tasksLayout'),
     

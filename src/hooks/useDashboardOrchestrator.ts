@@ -21,6 +21,7 @@ export const useDashboardOrchestrator = (
     // --- Core Settings State (Consolidated via Store) ---
     const {
         modelSolution, setModelSolution,
+        modelSolutionContext, setModelSolutionContext,
         tasksLayout, setTasksLayout,
         aiSettings, setAiSettings,
         isHydrated,
@@ -155,6 +156,7 @@ export const useDashboardOrchestrator = (
         data: {
             settings: aiSettings, setSettings: setAiSettings,
             modelSolution, setModelSolution,
+            modelSolutionContext, setModelSolutionContext,
             tasksLayout, setTasksLayout,
             pureApiKey: aiSettings.mistralKey, setPureApiKey: (k: any) => setAiSettings((prev: any) => ({ ...prev, mistralKey: k })),
             upgrading, setUpgrading,

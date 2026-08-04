@@ -12,7 +12,7 @@ import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
 import { PointInput } from '@/components/ui/PointInput';
 import { EditableMathArea } from '@/components/ui/EditableMathArea';
 import { cn } from '@/lib/utils';
-import { groupTasksByMain, splitTextByTasks, joinTaskSections } from '@/lib/task-utils';
+import { groupTasksByMain, splitTextByTasks, composeModelSolution } from '@/lib/task-utils';
 import { GradingGraphModal } from '../batch/GradingGraphModal';
 import { CalcTraceModal } from '../batch/CalcTraceModal';
 import { SKILL_REGISTRY } from '@/prompts/skills';
@@ -26,10 +26,13 @@ import { downloadFile } from '@/lib/file-utils';
 
 interface ModelSolutionCardProps {
     modelSolution: string;
+    /** Fachlicher Rahmen, der zu keiner einzelnen Aufgabe gehört. */
+    modelSolutionContext?: string;
     tasksLayout: Task[];
     extractingLayout: boolean;
     onModelUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onModelSolutionChange?: (newVal: string) => void;
+    onModelSolutionContextChange?: (newVal: string) => void;
     onTasksChange?: (newTasks: Task[] | ((prevTasks: Task[]) => Task[])) => void;
     isLocked?: boolean;
     settings?: AppSettings;
@@ -42,10 +45,12 @@ interface ModelSolutionCardProps {
 
 export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
     modelSolution,
+    modelSolutionContext = '',
     tasksLayout,
     extractingLayout,
     onModelUpload,
     onModelSolutionChange,
+    onModelSolutionContextChange,
     onTasksChange,
     isLocked = false,
     settings,
@@ -491,7 +496,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         }
         
         if (onModelSolutionChange) {
-            onModelSolutionChange(joinTaskSections(updatedTasks.map(t => t.content || ""), updatedTasks));
+            onModelSolutionChange(composeModelSolution(modelSolutionContext, updatedTasks.map(t => t.content || ""), updatedTasks));
         }
     }, [tasksLayout, onTasksChange, onModelSolutionChange, getDefaultGradingGraph]);
 
@@ -499,6 +504,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         const exportData = {
             version: '2.0',
             modelSolution,
+            modelSolutionContext,
             tasksLayout,
             timestamp: new Date().toISOString(),
             metadata: {
@@ -594,6 +600,21 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                     </div>
                 ) : hasTaskStructure ? (
                     <div className="space-y-6">
+                        {/* Gemeinsamer Rahmen: gehört zu keiner Aufgabe und hätte sonst keinen sichtbaren Ort. */}
+                        <div className="flex flex-col gap-2">
+                            <div className="flex items-center justify-between gap-3 px-1">
+                                <p className="text-xxs font-black uppercase tracking-[0.2em] text-muted-foreground">Gemeinsamer Rahmen</p>
+                                <span className="text-xxs font-bold text-muted-foreground/70">gilt für alle Aufgaben</span>
+                            </div>
+                            <Textarea
+                                value={modelSolutionContext}
+                                onChange={(e) => onModelSolutionContextChange?.(e.target.value)}
+                                disabled={isLocked}
+                                placeholder="Szenario, übergreifender Arbeitsauftrag oder gemeinsame Annahmen — leer lassen, wenn es keine gibt."
+                                className="min-h-[80px] p-4 rounded-2xl bg-background/50 border-border shadow-inner text-sm resize-y"
+                            />
+                        </div>
+
                         <div className="flex flex-col gap-4">
                             <p className="text-xxs font-black uppercase tracking-[0.2em] text-muted-foreground px-1">Aufgabenstruktur</p>
 
@@ -881,7 +902,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                                         };
                                                         onTasksChange?.(updatedTasks);
                                                         if (onModelSolutionChange) {
-                                                            onModelSolutionChange(joinTaskSections(updatedTasks.map(t => t.content || ""), updatedTasks));
+                                                            onModelSolutionChange(composeModelSolution(modelSolutionContext, updatedTasks.map(t => t.content || ""), updatedTasks));
                                                         }
                                                     }}
                                                     disabled={isLocked}

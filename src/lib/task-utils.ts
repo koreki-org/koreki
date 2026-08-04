@@ -98,3 +98,20 @@ export function splitTextByTasks(text: string, tasks: Task[]): string[] {
 export function joinTaskSections(sections: string[], tasks: Task[]): string {
     return sections.map((s, i) => `### ${tasks[i].name} ###\n${s}`).join('\n\n');
 }
+
+/** Überschrift des gemeinsamen Rahmens in der zusammengesetzten Musterlösung. */
+export const MODEL_SOLUTION_CONTEXT_HEADING = '### Gemeinsamer Rahmen ###';
+
+/**
+ * Setzt die Musterlösung aus dem gemeinsamen Rahmen und den Aufgabenabschnitten zusammen.
+ *
+ * Der Rahmen (Szenario, Arbeitsauftrag, gemeinsame Annahmen) gehört zu keiner einzelnen
+ * Aufgabe und hat deshalb keinen Platz in `tasks[].content`. Ohne ihn hier voranzustellen
+ * ginge er beim Neuaufbau aus den Abschnitten verloren.
+ */
+export function composeModelSolution(context: string | undefined, sections: string[], tasks: Task[]): string {
+    const body = joinTaskSections(sections, tasks);
+    const trimmedContext = (context || '').trim();
+    if (!trimmedContext) return body;
+    return `${MODEL_SOLUTION_CONTEXT_HEADING}\n${trimmedContext}\n\n${body}`;
+}
