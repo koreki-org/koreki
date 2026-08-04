@@ -175,7 +175,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
 
                 {/* Info & Tool Selection */}
                 <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 mb-6">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="min-w-0 text-sm text-primary leading-relaxed font-medium">
                             <p className="mb-1">Ziehe Rechtecke über die Stellen, die Du unkenntlich machen möchtest.</p>
                             <p className="text-xxs opacity-70 italic font-normal">Hinweis: Bilderkennung (OCR) ist für dieses Dokument anschließend erforderlich.</p>
@@ -237,13 +237,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                         onTouchStart={e => tool === 'pen' && handlers.handleStart(e, canvasRef.current, activeImage)}
                         onTouchMove={e => tool === 'pen' && handlers.handleMove(e, canvasRef.current, activeImage)}
                         onTouchEnd={() => handlers.handleEnd(drawScope)}
-                        className={`${tool === 'pen' ? 'cursor-crosshair' : 'cursor-grab active:cursor-grabbing'} shadow-md bg-white rounded-md mx-auto transition-all`}
-                        style={{
-                            maxWidth: '100%',
-                            height: 'auto',
-                            display: 'block',
-                            touchAction: tool === 'pen' ? 'none' : 'auto'
-                        }}
+                        className={`${tool === 'pen' ? 'cursor-crosshair touch-none' : 'cursor-grab active:cursor-grabbing touch-auto'} block max-w-full h-auto shadow-md bg-white rounded-md mx-auto transition-all`}
                     />
                 </div>
 
@@ -262,8 +256,13 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                     </div>
                 )}
 
-                {/* Footer Actions */}
-                <div className="flex flex-wrap justify-between items-center mt-4 sm:mt-6 gap-3 sm:gap-4 border-t border-border pt-4 sm:pt-6">
+                {/* Footer Actions
+                    🏮 Erst ab `lg` einreihig: Undo/Reset, Seitenwahl und die Aktionen sind
+                    allesamt `flex-none` und können daher nicht unter ihre Inhaltsbreite
+                    schrumpfen (zusammen ~675px). Der Modal-Innenraum misst aber nur
+                    `min(vw-32, 900) - 64` — unter ~771px Viewport lief der rechte Block
+                    deshalb aus dem Modal heraus und wurde abgeschnitten. */}
+                <div className="flex flex-wrap lg:flex-nowrap justify-between items-center mt-4 sm:mt-6 gap-3 sm:gap-4 border-t border-border pt-4 sm:pt-6">
                     <div className="flex gap-2 w-full sm:w-auto">
                         <Button variant="outline" onClick={handlers.handleUndo} disabled={rects.length === 0} className="flex-1 sm:flex-none h-9 sm:h-10 px-3 sm:px-4 gap-2 text-xs sm:text-sm">
                             <RotateCcw size={16} /> Undo
@@ -274,7 +273,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                     </div>
 
                     {Object.keys(images).length > 1 && (
-                        <div className="flex items-center justify-center gap-2 sm:gap-3 bg-muted/30 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-border shadow-sm order-first sm:order-none w-full sm:w-auto">
+                        <div className="flex items-center justify-center gap-2 sm:gap-3 bg-muted/30 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-border shadow-sm order-first lg:order-none w-full lg:w-auto">
                             <Button
                                 variant="ghost"
                                 size="icon"
