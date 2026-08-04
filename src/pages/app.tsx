@@ -18,6 +18,7 @@ import { useGradingMemories } from '@/hooks/useGradingMemories';
 import { useDashboardActions } from '@/hooks/useDashboardActions';
 import { useDashboardOrchestrator } from '@/hooks/useDashboardOrchestrator';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
+import { buildModelSolutionFromTasks } from '@/lib/task-utils';
 import { performAIRequest } from '@/lib/ai/ai-orchestrator';
 
 // Libs
@@ -445,8 +446,9 @@ export default function Home() {
                             const res = await fileProcessor.cleanAndExtractLayout(data.modelSolution, aiSettings);
                             if (res) {
                                 if (res.tasks) data.setTasksLayout(res.tasks);
-                                if (res.cleanedText) data.setModelSolution(res.cleanedText);
-                                data.setModelSolutionContext(typeof res.context === 'string' ? res.context.trim() : '');
+                                const reExtractedContext = typeof res.context === 'string' ? res.context.trim() : '';
+                                data.setModelSolutionContext(reExtractedContext);
+                                if (res.tasks) data.setModelSolution(buildModelSolutionFromTasks(reExtractedContext, res.tasks));
 
                                 // Industrial Credit Deduction for Re-Extraction
                                 const pageCount = (data as any).modelSolutionPageCount || 1;
