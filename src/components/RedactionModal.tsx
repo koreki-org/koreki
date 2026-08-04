@@ -176,7 +176,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                 {/* Info & Tool Selection */}
                 <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 mb-6">
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="text-sm text-primary leading-relaxed font-medium">
+                        <div className="min-w-0 text-sm text-primary leading-relaxed font-medium">
                             <p className="mb-1">Ziehe Rechtecke über die Stellen, die Du unkenntlich machen möchtest.</p>
                             <p className="text-xxs opacity-70 italic font-normal">Hinweis: Bilderkennung (OCR) ist für dieses Dokument anschließend erforderlich.</p>
                         </div>
@@ -206,7 +206,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                                 onChange={(e) => setApplyToAllScans(e.target.checked)}
                                 className="mt-0.5"
                             />
-                            <div className="flex flex-col">
+                            <div className="min-w-0 flex flex-col">
                                 <span className="text-sm font-bold text-primary flex items-center gap-2">
                                     <Users size={14} className="shrink-0" />
                                     Auf alle {otherScanCount + 1} Scans übernehmen
@@ -249,7 +249,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
 
                 {/* Legende — nur relevant, sobald es überhaupt zwei Herkünfte geben kann */}
                 {otherScanCount > 0 && rects.length > 0 && (
-                    <div className="flex items-center gap-4 mt-3 text-xxs font-bold text-muted-foreground">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-xxs font-bold text-muted-foreground">
                         <span className="flex items-center gap-1.5">
                             <span className="w-3 h-3 rounded-sm bg-primary shrink-0" /> Alle Scans
                         </span>
@@ -263,7 +263,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                 )}
 
                 {/* Footer Actions */}
-                <div className="flex flex-wrap sm:flex-nowrap justify-between items-center mt-4 sm:mt-6 gap-3 sm:gap-4 border-t border-border pt-4 sm:pt-6">
+                <div className="flex flex-wrap justify-between items-center mt-4 sm:mt-6 gap-3 sm:gap-4 border-t border-border pt-4 sm:pt-6">
                     <div className="flex gap-2 w-full sm:w-auto">
                         <Button variant="outline" onClick={handlers.handleUndo} disabled={rects.length === 0} className="flex-1 sm:flex-none h-9 sm:h-10 px-3 sm:px-4 gap-2 text-xs sm:text-sm">
                             <RotateCcw size={16} /> Undo
