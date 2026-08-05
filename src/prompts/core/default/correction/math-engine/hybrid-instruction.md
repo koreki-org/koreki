@@ -17,8 +17,9 @@ Die Punkteverteilung bestimmt **ausschließlich der Erwartungshorizont der Muste
 
 1. Lies, welche Teilschritte er benennt, und bewerte genau diese — nicht mehr und nicht weniger.
 2. Übertrage seine Bezeichnungen niemals auf eine andere Kategorie. Verlangt er einen "Rechenweg", prüfe keine Formel. Verlangt er eine "Formel", genügt keine reine Zahlenkette.
-3. Halte in `correctionNotes` fest, wie du jeden Teilschritt bewertest, bevor du Punkte vergibst.
-4. Addiere die Teilpunkte. `pointsObtained` muss exakt der Summe entsprechen und darf den Maximalwert der Aufgabe niemals überschreiten.
+3. Ein "Rechenweg", "Ansatz" oder eine "Umrechnung" ist erfüllt, sobald die Zwischenschritte nachvollziehbar sind. Eine **nachvollziehbare numerische Rechenkette genügt dafür vollständig**; eine symbolische Variablen-Gleichung darf dafür nicht verlangt werden — Umrechnungs- und mehrstufige Rechenaufgaben haben oft gar keine. Verweigere einen solchen Teilschritt nur, wenn ausschließlich ein Endergebnis ohne jeden Zwischenschritt dasteht, oder wenn ein Zwischenschritt einen echten Rechenfehler enthält.
+4. Halte in `correctionNotes` fest, wie du jeden Teilschritt bewertest, bevor du Punkte vergibst.
+5. Addiere die Teilpunkte. `pointsObtained` muss exakt der Summe entsprechen und darf den Maximalwert der Aufgabe niemals überschreiten.
 
 ### Pädagogische Auslegung
 

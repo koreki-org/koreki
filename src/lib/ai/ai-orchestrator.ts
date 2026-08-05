@@ -69,11 +69,25 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                 const criteria = targetGoal.criteria;
 
                 if (aiTask && criteria && Array.isArray(criteria) && criteria.length > 0) {
+                    // Primaerquelle ist das strukturierte Feld. Die correctionNotes bleiben nur
+                    // Rueckfallebene: Sie sind Freitext, und aktive Skills schreiben ihnen ein
+                    // eigenes Format vor — als Datenkanal sind sie unzuverlaessig.
+                    const structuredScores: Record<string, number> = {};
+                    (aiTask.criteriaScores || []).forEach(entry => {
+                        if (entry && typeof entry.id === 'string') {
+                            structuredScores[entry.id.trim()] = Number(entry.points);
+                        }
+                    });
+
                     const notes = aiTask.correctionNotes || '';
-                    const parsedScores = parseCriteriaScoresFromNotes(notes);
+                    const parsedScores = { ...parseCriteriaScoresFromNotes(notes), ...structuredScores };
 
                     let computedSum = 0;
                     const finalCriteriaNotes: string[] = [];
+                    // Sandbox-belegte Kriterien sind bindend und bilden die Untergrenze.
+                    let sandboxFloor = 0;
+                    // Kriterien, deren Punktzahl sich nicht aus den Notizen lesen liess.
+                    let unreadableCriteria = 0;
 
                     criteria.forEach((crit: GradingCriterion) => {
                         const idx = (crit.targetIndex !== undefined && crit.targetIndex !== null) ? crit.targetIndex : 0;
@@ -108,21 +122,46 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                                 justification = 'Einsetzung fehlerhaft oder fehlt';
                             }
                         } else {
-                            // LLM-evaluated qualitative criteria (e.g. formulas): Use score from LLM notes
-                            pts = parsedScores[crit.id] !== undefined ? parsedScores[crit.id] : 0;
-                            // Clamp to max points of criterion
-                            pts = Math.min(crit.punktwert, Math.max(0, pts));
-                            justification = 'KI-Einschätzung';
+                            // Qualitative Kriterien beurteilt das LLM. Seine Punktzahl steht nur in den
+                            // correctionNotes und muss dort herausgeparst werden.
+                            const parsed = parsedScores[crit.id];
+                            if (parsed === undefined) {
+                                // Notizen nicht im erwarteten Format (z. B. weil aktive Skills eine
+                                // andere Schreibweise verlangen). Frueher hiess das stillschweigend
+                                // 0 Punkte — die Einschaetzung des Modells ging dabei verloren.
+                                unreadableCriteria++;
+                                pts = 0;
+                                justification = 'KI-Einschätzung nicht auswertbar';
+                            } else {
+                                pts = Math.min(crit.punktwert, Math.max(0, parsed));
+                                justification = 'KI-Einschätzung';
+                            }
                         }
-                        
+
+                        if (isProof || isWerteKriterium) {
+                            sandboxFloor += pts;
+                        }
                         computedSum += pts;
                         finalCriteriaNotes.push(`- ${crit.id}: ${pts} / ${crit.punktwert} (${justification})`);
                     });
-                    
+
                     enginePoints = computedSum;
+
+                    // Rueckfall, wenn mindestens ein LLM-Kriterium unlesbar war: die Gesamtpunktzahl
+                    // des Modells heranziehen, statt dessen Urteil auf 0 zu setzen. Sandbox-belegte
+                    // Kriterien bleiben dabei Untergrenze, das Aufgabenmaximum Obergrenze.
+                    if (unreadableCriteria > 0 && typeof aiTask.pointsObtained === 'number') {
+                        const maxPoints = Number(layoutTask.maxPoints ?? 0);
+                        const modelTotal = Math.min(maxPoints, Math.max(0, Number(aiTask.pointsObtained)));
+                        enginePoints = Math.max(computedSum, Math.max(sandboxFloor, modelTotal));
+
+                        if (enginePoints !== computedSum) {
+                            finalCriteriaNotes.push(`- Hinweis: ${unreadableCriteria} Kriterium/Kriterien ohne lesbare Einzelwertung — Gesamtpunktzahl der KI (${modelTotal}) herangezogen.`);
+                        }
+                    }
                     
                     // Re-write correctionNotes cleanly to prevent rounding errors or incorrect sums
-                    const cleanNotes = `[Kriterien-Bewertung]\n${finalCriteriaNotes.join('\n')}\n\nGesamtsumme: ${computedSum} Punkte`;
+                    const cleanNotes = `[Kriterien-Bewertung]\n${finalCriteriaNotes.join('\n')}\n\nGesamtsumme: ${enginePoints} Punkte`;
                     aiTask.correctionNotes = cleanNotes;
                 } else {
                     enginePoints = aiTask && aiTask.pointsObtained !== undefined && aiTask.pointsObtained !== null
@@ -276,6 +315,7 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
             if (aiTask) {
                 const obtained = Number(aiTask.pointsObtained || 0);
                 totalObtained += obtained;
+
                 
                 let confidence = Number(aiTask.confidence || 0);
                 

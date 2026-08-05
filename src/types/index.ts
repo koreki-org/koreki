@@ -241,6 +241,9 @@ export interface AITask {
     maxPoints?: number;
     feedback?: string;
     correctionNotes?: string;
+    /** Punktzahl je Bewertungskriterium. Strukturierter Kanal — die correctionNotes sind
+     *  Freitext und werden von aktiven Skills überschrieben, taugen also nicht als Datenquelle. */
+    criteriaScores?: { id: string; points: number }[];
     confidence?: number;
     content?: string;
     /** Set to true by parseCorrectionResult when the mathematical sandbox (CalcTrace) was bypassed

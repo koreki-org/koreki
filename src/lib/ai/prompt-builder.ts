@@ -223,7 +223,15 @@ export function buildCorrectionPrompt(
                         
                         criteriaBlock += `- Kriterium "${crit.id}" (${crit.label} - ${crit.punktwert} Punkte max): ${statusText}\n`;
                     });
-                    
+
+                    criteriaBlock += `\nGib fuer JEDES dieser Kriterien einen Eintrag im Feld "criteriaScores" zurueck — mit der exakten Kriterium-ID von oben und den vergebenen Punkten. "pointsObtained" muss der Summe dieser Eintraege entsprechen.\n`;
+
+                    // Kriterien mit "von dir zu beurteilen" ueberlassen dem Modell die Entscheidung.
+                    // Ohne die Engine-Anweisung fehlt ihm dabei jede Definition — etwa, dass eine
+                    // nachvollziehbare Rechenkette einen "Rechenweg" erfuellt. Sie gehoert deshalb
+                    // in beide Pfade, nicht nur in den Legacy-Zweig.
+                    criteriaBlock += `\n` + mathHybridInstruction;
+
                     calcTraceVorevaluierungBlock += `\n` + criteriaBlock;
                 } else {
                     // Legacy path fallback
@@ -340,8 +348,8 @@ export function buildCorrectionPrompt(
 
     user = user.replace('{{studentText}}', studentText);
 
-    return { 
-        system, 
+    return {
+        system,
         user,
         options: { temperature: 0.2, topP: 1.0 } // Pedagogical Flexibility
     };
