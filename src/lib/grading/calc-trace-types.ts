@@ -37,12 +37,38 @@ export interface TargetGoal {
   criteria?: GradingCriterion[];
 }
 
+/**
+ * Wer ueber ein Kriterium entscheidet. Das Feld ist die EINZIGE Zuordnungsquelle —
+ * weder Prompt-Aufbau noch Punktevergabe duerfen sie aus id oder label ableiten.
+ *
+ * - `proofB`      — Zielwert erreicht (Engine)
+ * - `proofA`      — Rechenweg zum Ziel fehlerfrei (Engine)
+ * - `proofValues` — Werte korrekt eingesetzt (Engine, prueft `hasCorrectValues`)
+ * - `llm`         — Ermessensfrage, die nur das Modell beantworten kann (z. B. Formelstrenge)
+ */
+export type CriterionSource = 'llm' | 'proofA' | 'proofB' | 'proofValues';
+
+/** Von der Engine entschiedene Quellen — das Modell wird dazu nicht befragt. */
+export type EngineCriterionSource = Exclude<CriterionSource, 'llm'>;
+
 export interface GradingCriterion {
   id: string;
   label: string;
   punktwert: number;
-  source: 'llm' | 'proofA' | 'proofB';
+  source: CriterionSource;
   targetIndex: number;
+}
+
+/** Auswertungsergebnis der Engine fuer einen einzelnen Zielwert */
+export interface PerTargetResult {
+  targetIndex: number;
+  /** Der Zielwert wurde im Rechenweg des Schuelers gefunden */
+  reached: boolean;
+  /** Die Zahlen VOR dem Gleichheitszeichen wurden korrekt eingesetzt */
+  hasCorrectValues?: boolean;
+  /** In der Rechenkette zu diesem Ziel steckt ein echter Rechenfehler */
+  hasCalculationError: boolean;
+  associatedStepIds: string[];
 }
 
 export interface CriterionClassification {
@@ -59,14 +85,23 @@ export interface UnitComparisonDetail {
   expectedUnit: string;
   /** Die vom Schüler notierte Einheit (z.B. "A") — undefined wenn nicht extrahiert */
   studentUnit?: string;
-  /** Der Zahlenwert stimmt (exakt oder via SI-Normalisierung) */
+  /**
+   * Der Zahlenwert stimmt (exakt oder via SI-Normalisierung) — unabhängig davon, ob die
+   * Einheit trägt. Diese Tatsache bleibt auch bei Einheitenfehlern erhalten, damit der
+   * Beweistext melden kann, dass richtig gerechnet wurde.
+   */
   isValueMatch: boolean;
-  /** Exakter Match: Zahlenwert UND Einheit stimmen überein */
+  /**
+   * Zahlenwert UND Einheit sind tragfähig. NUR hierauf stützt sich die Zielerreichung —
+   * ein Einheitenfehler (falsch oder fehlend) ist kein Treffer.
+   */
   isExactMatch: boolean;
-  /** Zahlenwert ist physikalisch äquivalent, aber Einheit/Präfix abweichend */
+  /** Zahlenwert stimmt, aber die Einheit weicht ab oder fehlt */
   isUnitMismatch: boolean;
   /** Der Schüler hat den exakten Zahlenwert notiert, aber ein physikalisch falsches SI-Präfix (z.B. 1.846 A statt 1.846 mA) */
   isPrefixError?: boolean;
+  /** Der Zahlenwert stimmt, aber der Schüler hat gar keine Einheit notiert */
+  isMissingUnit?: boolean;
   /** Die AST-Schritt-ID, in der dieser Match stattgefunden hat (z.B. "step_1") */
   stepId?: string;
 }
@@ -90,11 +125,5 @@ export interface CalcTraceResult {
   /** Detail-Informationen zum Einheitsvergleich (für LLM-Prompt) */
   unitDetails?: UnitComparisonDetail[];
   /** Auswertungsergebnisse pro Ziel-Index */
-  perTargetResult?: Array<{
-    targetIndex: number;
-    reached: boolean;
-    hasCorrectValues?: boolean;
-    hasCalculationError: boolean;
-    associatedStepIds: string[];
-  }>;
+  perTargetResult?: PerTargetResult[];
 }

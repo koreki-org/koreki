@@ -3,6 +3,8 @@ import { groupCasesByTask } from '../grading-memory-utils';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
 import { getAvailablePluginManifest } from '../grading/graph-generator';
+import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source';
+import type { GradingCriterion } from '../grading/calc-trace-types';
 import { logger } from '../logger';
 
 /**
@@ -171,60 +173,47 @@ export function buildCorrectionPrompt(
                     let criteriaBlock = `\n### STRUKTURIERTE BEWERTUNGSKRITERIEN FÜR "${t.name}":\n`;
                     criteriaBlock += `Du MUSST die Punkte anhand der folgenden Liste vergeben. Bereits vorab durch die Sandbox aufgelöste Kriterien sind bindend und dürfen nicht verändert werden. Addiere die Punktwerte aller Kriterien exakt wie angegeben. WICHTIG - Zielgrößen-Isolation: Bewerte jedes Kriterium AUSSCHLIESSLICH anhand der ihm zugeordneten Zielgröße. Ein Rechen-, Werte- oder Ergebnisfehler bei EINER Zielgröße darf die Bewertung der Kriterien ANDERER Zielgrößen derselben Aufgabe unter keinen Umständen beeinflussen:\n\n`;
                     
-                    criteria.forEach((crit: any) => {
+                    // Nur Kriterien, die tatsaechlich das Modell entscheidet. Alles andere ist
+                    // bereits entschieden und wird nur noch mitgeteilt — es waere sinnlos, dafuer
+                    // eine Punktzahl anzufordern, die anschliessend verworfen wird.
+                    const zuBeurteilendeIds: string[] = [];
+
+                    criteria.forEach((crit: GradingCriterion) => {
                         const idx = (crit.targetIndex !== undefined && crit.targetIndex !== null) ? crit.targetIndex : 0;
                         const pt = t.calcTraceResult.perTargetResult?.find((r: any) => r.targetIndex === idx);
                         let statusText = '';
-                        
-                        if (crit.source === 'proofB') {
-                             if (pt && pt.reached && !pt.hasCalculationError) {
-                                 statusText = `✓ ERFÜLLT -> ZWINGEND GENAU ${crit.punktwert} PUNKTE GEBEN (Sandbox-bestätigt für Schritt: ${pt.associatedStepIds.join(', ')})`;
-                             } else if (pt && pt.reached && pt.hasCalculationError) {
-                                 const errSteps = pt.associatedStepIds.filter((id: string) => t.calcTraceResult.sandboxErrors.some((err: string) => err.includes(id)));
-                                 statusText = `✗ NICHT ERFÜLLT -> ZWINGEND 0 PUNKTE GEBEN (Rechenfehler in Schritten: ${errSteps.join(', ')})`;
-                             } else {
-                                 statusText = `✗ NICHT ERFÜLLT -> ZWINGEND 0 PUNKTE GEBEN (Zielwert nicht erreicht/nicht notiert)`;
-                             }
-                         } else if (crit.source === 'proofA') {
-                             if (pt && pt.reached && !pt.hasCalculationError) {
-                                 statusText = `✓ ERFÜLLT -> ZWINGEND GENAU ${crit.punktwert} PUNKTE GEBEN (Sandbox-bestätigt: keine Rechenfehler im Rechenweg)`;
-                             } else if (pt && pt.reached && pt.hasCalculationError) {
-                                 const errSteps = pt.associatedStepIds.filter((id: string) => t.calcTraceResult.sandboxErrors.some((err: string) => err.includes(id)));
-                                 statusText = `✗ NICHT ERFÜLLT -> ZWINGEND 0 PUNKTE GEBEN (Rechenfehler im Rechenweg in Schritten: ${errSteps.join(', ')})`;
-                             } else {
-                                 statusText = `✗ NICHT ERFÜLLT -> ZWINGEND 0 PUNKTE GEBEN (Rechenweg nicht vorhanden)`;
-                             }
-                         } else {
-                              // LLM criterion or values/formula pre-resolution
-                              if (crit.id === 'einsetzen' || crit.id.endsWith('_werte') || crit.id.endsWith('_einsetzen')) {
-                                  if (pt && pt.hasCorrectValues) {
-                                      statusText = `✓ ERFÜLLT -> ZWINGEND GENAU ${crit.punktwert} PUNKTE GEBEN (Sandbox-bestätigt: Werte korrekt eingesetzt in Schritt: ${pt.associatedStepIds.join(', ')})`;
-                                  } else {
-                                      statusText = `✗ NICHT ERFÜLLT -> ZWINGEND 0 PUNKTE GEBEN (Keine korrekte Werteeinsetzung für diesen Zielwert gefunden)`;
-                                  }
-                              } else if (crit.id === 'formel' || crit.id.endsWith('_formel')) {
-                                  if (!pt || pt.associatedStepIds.length === 0) {
-                                      statusText = `✗ NICHT ERFÜLLT (Keine Schritte für diesen Zielwert im Schülertext gefunden)`;
-                                  } else {
-                                      const stepsStr = ` anhand der Schritte: ${pt.associatedStepIds.join(', ')}`;
-                                      const pointsLabel = `${crit.punktwert} Punkt${crit.punktwert === 1 ? '' : 'e'}`;
-                                      const hint = ` - HINWEIS: Formeln sind als ERFÜLLT (${pointsLabel}) zu werten, wenn die mathematische Struktur stimmt, auch bei Auslassung der linken Seite (z. B. nur U/R) oder bei Nutzung von Basis-Variablen wie R statt Rges!`;
-                                      statusText = `[von dir zu beurteilen${stepsStr}${hint}]`;
-                                  }
-                              } else {
-                                  if (!pt || pt.associatedStepIds.length === 0) {
-                                      statusText = `✗ NICHT ERFÜLLT (Keine Schritte für diesen Zielwert im Schülertext gefunden)`;
-                                  } else {
-                                      const stepsStr = ` anhand der Schritte: ${pt.associatedStepIds.join(', ')}`;
-                                      statusText = `[von dir zu beurteilen${stepsStr}]`;
-                                  }
-                              }
-                         }
-                        
+
+                        if (isEngineOwned(crit.source)) {
+                            const verdict = resolveEngineVerdict(crit.source, idx, t.calcTraceResult);
+                            statusText = verdict.erfuellt
+                                ? `✓ ERFÜLLT — ${crit.punktwert} Punkte, bereits von der Sandbox entschieden (${verdict.begruendung})`
+                                : `✗ NICHT ERFÜLLT — 0 Punkte, bereits von der Sandbox entschieden (${verdict.begruendung})`;
+                        } else {
+                            zuBeurteilendeIds.push(crit.id);
+
+                            if (!pt || pt.associatedStepIds.length === 0) {
+                                statusText = `[von dir zu beurteilen — Achtung: Für diesen Zielwert wurden keine Schritte im Schülertext gefunden]`;
+                            } else {
+                                const stepsStr = ` anhand der Schritte: ${pt.associatedStepIds.join(', ')}`;
+                                // Formulierungshilfe, keine Zustaendigkeitsregel: Das Modell entscheidet
+                                // hier so oder so, es bekommt nur den fachlichen Massstab dazu.
+                                const istFormelKriterium = crit.id === 'formel' || crit.id.endsWith('_formel');
+                                const pointsLabel = `${crit.punktwert} Punkt${crit.punktwert === 1 ? '' : 'e'}`;
+                                const hint = istFormelKriterium
+                                    ? ` - HINWEIS: Formeln sind als ERFÜLLT (${pointsLabel}) zu werten, wenn die mathematische Struktur stimmt, auch bei Auslassung der linken Seite (z. B. nur U/R) oder bei Nutzung von Basis-Variablen wie R statt Rges!`
+                                    : '';
+                                statusText = `[von dir zu beurteilen${stepsStr}${hint}]`;
+                            }
+                        }
+
                         criteriaBlock += `- Kriterium "${crit.id}" (${crit.label} - ${crit.punktwert} Punkte max): ${statusText}\n`;
                     });
 
-                    criteriaBlock += `\nGib fuer JEDES dieser Kriterien einen Eintrag im Feld "criteriaScores" zurueck — mit der exakten Kriterium-ID von oben und den vergebenen Punkten. "pointsObtained" muss der Summe dieser Eintraege entsprechen.\n`;
+                    if (zuBeurteilendeIds.length > 0) {
+                        criteriaBlock += `\nGib im Feld "criteriaScores" ausschliesslich Eintraege fuer die von DIR zu beurteilenden Kriterien zurueck: ${zuBeurteilendeIds.map(id => `"${id}"`).join(', ')}. Die uebrigen Kriterien sind bereits entschieden — bewerte sie nicht erneut. "pointsObtained" ist die Summe aller Kriterien (die bereits entschiedenen plus die von dir bewerteten).\n`;
+                    } else {
+                        criteriaBlock += `\nAlle Kriterien dieser Aufgabe sind bereits von der Sandbox entschieden. Gib keine "criteriaScores" zurueck. "pointsObtained" ist die Summe der oben ausgewiesenen Punkte.\n`;
+                    }
 
                     // Kriterien mit "von dir zu beurteilen" ueberlassen dem Modell die Entscheidung.
                     // Ohne die Engine-Anweisung fehlt ihm dabei jede Definition — etwa, dass eine

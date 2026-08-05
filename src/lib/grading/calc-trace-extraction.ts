@@ -14,6 +14,23 @@ import type { StudentASTStep } from './calc-trace-types';
 import type { AppSettings } from '../../types';
 import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '../ai/constants';
 
+/**
+ * Signalisiert, dass die Extraktion technisch fehlgeschlagen ist (API-Fehler, unlesbare
+ * Antwort, fehlender Key) — im Unterschied zu einer erfolgreichen Extraktion ohne Schritte.
+ *
+ * Die Unterscheidung ist bewertungsrelevant: Ein leerer AST heisst "der Schueler hat nichts
+ * gerechnet" und fuehrt zu 0 Punkten. Ein Fehler heisst "nicht pruefbar" und muss in die
+ * manuelle Nachkontrolle laufen, statt als Schuelerversagen ausgewertet zu werden.
+ */
+export class CalcTraceExtractionError extends Error {
+  constructor(message: string, public readonly originalError?: unknown) {
+    super(message);
+    this.name = 'CalcTraceExtractionError';
+    // tsconfig target ist es5 — ohne das schlaegt `instanceof` bei Error-Subklassen fehl.
+    Object.setPrototypeOf(this, CalcTraceExtractionError.prototype);
+  }
+}
+
 export const STUDENT_AST_SCHEMA = {
   type: "object",
   properties: {
@@ -166,19 +183,29 @@ WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt M
           });
         }
       } else {
-        return [];
+        throw new CalcTraceExtractionError('Serverseitige Extraktion wurde im Browser aufgerufen.');
       }
     }
 
     if (typeof extracted === 'string') {
         try {
             extracted = JSON.parse(extracted);
-        } catch(e) {}
+        } catch (e) {
+            throw new CalcTraceExtractionError('Antwort der Extraktions-KI ist kein gueltiges JSON.', e);
+        }
     }
 
-    return extracted?.steps || [];
+    // Ein leeres steps-Array ist ein gueltiges Ergebnis (Schueler hat nicht gerechnet).
+    // Eine Antwort ohne steps-Array ist dagegen kaputt und darf nicht als solches gelten.
+    if (!extracted || !Array.isArray(extracted.steps)) {
+      throw new CalcTraceExtractionError('Antwort der Extraktions-KI enthaelt kein "steps"-Array.');
+    }
+
+    return extracted.steps;
   } catch (err) {
     logger.error('[CalcTrace AST Extraction] LLM failed:', err);
-    return [];
+    throw err instanceof CalcTraceExtractionError
+      ? err
+      : new CalcTraceExtractionError('Die Extraktion des Rechenwegs ist fehlgeschlagen.', err);
   }
 }

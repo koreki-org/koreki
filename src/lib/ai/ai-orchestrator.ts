@@ -11,6 +11,7 @@ import { parseGeneratedGraph, validateGraphDeterminism, GRADING_GRAPH_SCHEMA } f
 import { formatPluginFeedback } from '../grading/feedback-formatter';
 import { GradingGraph, StepResult, VariableDefinition } from '../grading/types';
 import { TargetGoal, GradingCriterion } from '../grading/calc-trace-types';
+import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { splitSkillSnippet } from './prompt-library';
 import { splitTextByTasks } from '../task-utils';
@@ -95,35 +96,16 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                         
                         let pts = 0;
                         let justification = '';
-                        
-                        const isProof = crit.source === 'proofB' || crit.source === 'proofA';
-                        const isWerteKriterium = crit.id.endsWith('_werte') || 
-                                                 crit.id.includes('werte') || 
-                                                 crit.label.toLowerCase().includes('einsetzen') || 
-                                                 crit.label.toLowerCase().includes('eingesetzt') || 
-                                                 crit.label.toLowerCase().includes('werte');
-                        
-                        if (isProof) {
-                            if (pt && pt.reached && !pt.hasCalculationError) {
-                                pts = crit.punktwert;
-                                justification = 'Sandbox-bestätigt';
-                            } else {
-                                pts = 0;
-                                justification = pt && pt.reached && pt.hasCalculationError 
-                                    ? 'Rechenfehler im Rechenweg' 
-                                    : 'Zielwert nicht erreicht/nicht notiert';
-                            }
-                        } else if (isWerteKriterium) {
-                            if (pt && pt.hasCorrectValues) {
-                                pts = crit.punktwert;
-                                justification = 'Sandbox-bestätigt: Werte eingesetzt';
-                            } else {
-                                pts = 0;
-                                justification = 'Einsetzung fehlerhaft oder fehlt';
-                            }
+
+                        if (isEngineOwned(crit.source)) {
+                            // Exakt dasselbe Urteil, das der Prompt als bereits entschieden
+                            // angekuendigt hat — beide Seiten lesen dieselbe Funktion.
+                            const verdict = resolveEngineVerdict(crit.source, idx, layoutTask.calcTraceResult!);
+                            pts = verdict.erfuellt ? crit.punktwert : 0;
+                            justification = verdict.begruendung;
+                            sandboxFloor += pts;
                         } else {
-                            // Qualitative Kriterien beurteilt das LLM. Seine Punktzahl steht nur in den
-                            // correctionNotes und muss dort herausgeparst werden.
+                            // Ermessensfrage: Hier zaehlt die Punktzahl des Modells.
                             const parsed = parsedScores[crit.id];
                             if (parsed === undefined) {
                                 // Notizen nicht im erwarteten Format (z. B. weil aktive Skills eine
@@ -138,9 +120,6 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                             }
                         }
 
-                        if (isProof || isWerteKriterium) {
-                            sandboxFloor += pts;
-                        }
                         computedSum += pts;
                         finalCriteriaNotes.push(`- ${crit.id}: ${pts} / ${crit.punktwert} (${justification})`);
                     });
@@ -660,7 +639,23 @@ export async function performAIRequest(
                     const taskSpecificText = (studentTaskText && studentTaskText.trim().length > 0) ? studentTaskText : studentText;
                     
                     const targetGoal = task.targetGoal || customSkills[task.taskType]?.targetGoal || { targetValue: 0, maxPoints: task.maxPoints || 0 };
-                    
+
+                    // Vor der Extraktion setzen: Scheitert sie, muss die Aufgabe trotzdem als
+                    // CalcTrace-Aufgabe erkennbar bleiben, sonst greift der Warnhinweis nicht
+                    // (betrifft Ziele, die aus einem eigenen Skill statt von der Aufgabe kommen).
+                    task.targetGoal = targetGoal;
+
+                    // Die in der Oberflaeche gesetzte Punktzahl der Aufgabe hat Vorrang. Sie stammt
+                    // von der Lehrkraft; die des TargetGoals ist bestenfalls daraus abgeleitet.
+                    const eigenePunkte = Number(task.maxPoints ?? 0);
+                    if (eigenePunkte > 0) {
+                        if (targetGoal.maxPoints && targetGoal.maxPoints !== eigenePunkte) {
+                            logger.warn(`[Client] TargetGoal für "${task.name}" nennt ${targetGoal.maxPoints} Punkte, die Aufgabe ${eigenePunkte}. Es gilt die Aufgabe.`);
+                        }
+                    } else {
+                        task.maxPoints = targetGoal.maxPoints || task.maxPoints;
+                    }
+
                     let astResult = await extractStudentAST(taskSpecificText, appMode, settings, task.name);
                     let calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
                     
@@ -676,17 +671,24 @@ export async function performAIRequest(
                         logger.warn(`[Client] CalcTrace Sandbox validation failed (extraction errors). Retrying self-correction (${retryCount + 1}/${maxRetries}):`, extractionErrors);
                         
                         const correctionInstruction = `Die mathematische Sandbox hat Fehler in deinem extrahierten AST gefunden:\n${extractionErrors.join('\n')}\nBitte extrahiere den AST neu, beachte die Syntax für mathjs, und erfinde keine Rechenschritte, die der Schüler nicht gemacht hat.`;
-                        astResult = await extractStudentAST(taskSpecificText, appMode, settings, task.name, astResult, correctionInstruction);
+                        try {
+                            astResult = await extractStudentAST(taskSpecificText, appMode, settings, task.name, astResult, correctionInstruction);
+                        } catch (retryErr: unknown) {
+                            // Der erste Durchlauf hat ein verwertbares Ergebnis geliefert. Ein
+                            // gescheiterter Nachbesserungsversuch darf es nicht verwerfen.
+                            logger.warn('[Client] CalcTrace self-correction retry failed, keeping previous result.', retryErr);
+                            break;
+                        }
                         calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
                         retryCount++;
                     }
-                    
-                    task.calcTraceResult = calcTraceResult;
-                    task.targetGoal = targetGoal;
+
                     // Die Engine vergibt keine Punkte mehr, das macht das LLM.
-                    task.maxPoints = targetGoal.maxPoints || task.maxPoints;
+                    task.calcTraceResult = calcTraceResult;
                 } catch (err: unknown) {
-                    logger.error('Error in client-side CalcTrace execution', err);
+                    // Kein calcTraceResult -> die Aufgabe laeuft in den Warnhinweis "ohne
+                    // Sandbox-Pruefung, bitte manuell gegenpruefen" statt in 0 Punkte.
+                    logger.error('[Client] CalcTrace execution failed — task falls back to manual review.', err);
                 }
             }
         }

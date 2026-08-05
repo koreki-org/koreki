@@ -8,6 +8,7 @@ Für diese Aufgabe liegt ein deterministischer Beweis der CalcTrace-Sandbox vor.
 - **Proof A ✗** — In einem benannten Teilschritt steckt ein echter Rechenfehler. Der dort notierte Zahlenwert ist nicht das Ergebnis der angegebenen Rechnung.
 - **Proof B — Zielwert gefunden** — Ein Schritt des Schülers trifft einen Zielwert der Musterlösung. Angegeben ist, in welchem Schritt und mit welcher Einheit.
 - **Proof B — NICHT erreicht** — Kein Schritt des Schülers trifft diesen Zielwert.
+- **Proof B — Einheitenfehler** — Der Zahlenwert stimmt, aber die Einheit fehlt oder ist falsch. Der Zielwert gilt damit als nicht erreicht. Eine fehlende Einheit wird genauso behandelt wie eine falsche. Wichtig für das Feedback: Das ist **kein Rechenfehler**. Benenne dem Schüler die fehlende oder falsche Einheit und erkenne an, dass die Rechnung selbst stimmte.
 
 Diese Feststellungen sind bindend. Überstimme sie nicht, weder zugunsten noch zulasten des Schülers, und repariere keine Rechnung im Kopf.
 

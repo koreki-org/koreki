@@ -13,6 +13,8 @@ import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '@/lib/ai/constants';
 const GenerateCalcTraceSchema = z.object({
     taskText: z.string().min(1, 'Aufgabentext darf nicht leer sein.'),
     userNotes: z.string().optional(),
+    /** Punktzahl der Aufgabe aus der Oberflaeche — verhindert, dass das Modell sie raten muss. */
+    maxPoints: z.number().positive().optional(),
     settings: z.object({
         provider: z.string().optional(),
         mistralKey: z.string().optional(),
@@ -38,7 +40,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             return res.status(400).json({ error: validation.error.issues[0].message });
         }
 
-        const { taskText, userNotes, settings } = validation.data;
+        const { taskText, userNotes, maxPoints, settings } = validation.data;
         const useOpenAI = settings?.provider === 'openai-compatible';
         let rawResult: Record<string, unknown> | null = null;
         let trace: any = null;
@@ -60,7 +62,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 if (settings?.provider === 'ollama') {
                     rawResult = await executeOllamaRequest(
                         'generate-calc-trace',
-                        { taskText, userNotes: dynamicUserNotes },
+                        { taskText, userNotes: dynamicUserNotes, maxPoints },
                         settings as AppSettings,
                         undefined,
                         { responseSchema: TARGET_GOAL_SCHEMA }
@@ -74,7 +76,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
                     rawResult = await executeMistralRequest(
                         'generate-calc-trace',
-                        { taskText, userNotes: dynamicUserNotes },
+                        { taskText, userNotes: dynamicUserNotes, maxPoints },
                         apiKey,
                         {
                             model: mistralModel,
@@ -94,7 +96,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
                     rawResult = await executeOpenAIRequest(
                         'generate-calc-trace',
-                        { taskText, userNotes: dynamicUserNotes },
+                        { taskText, userNotes: dynamicUserNotes, maxPoints },
                         baseUrl,
                         apiKey,
                         {
@@ -109,7 +111,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 }
 
                 if (rawResult) {
-                    trace = parseGeneratedCalcTrace(JSON.stringify(rawResult));
+                    trace = parseGeneratedCalcTrace(JSON.stringify(rawResult), maxPoints);
                 }
             } catch (err: any) {
                 lastError = err;

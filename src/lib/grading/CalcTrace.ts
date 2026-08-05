@@ -12,6 +12,7 @@
 
 import { create, all, type MathJsInstance } from 'mathjs';
 import { logger } from '@/lib/logger';
+import { stepHasSandboxError } from './criterion-source';
 import type {
   StudentASTStep,
   TargetGoal,
@@ -189,9 +190,13 @@ function compareWithUnit(
   // 1. Exact numeric match (same prefix) — check if units also match
   const isExactNumeric = isWithinTolerance(studentValue, expectedValue, tolerance);
   if (isExactNumeric) {
-    // If no student unit extracted, or units match → exact match
-    if (!studentUnit || normalizeUnitString(studentUnit) === normalizeUnitString(expectedUnit)) {
+    if (studentUnit && normalizeUnitString(studentUnit) === normalizeUnitString(expectedUnit)) {
       return { ...base, isValueMatch: true, isExactMatch: true };
+    }
+    // Keine Einheit notiert. Der Zahlenwert stimmt, die Angabe ist aber unvollstaendig —
+    // und wird genauso behandelt wie eine falsche Einheit (kein Treffer).
+    if (!studentUnit) {
+      return { ...base, isValueMatch: true, isExactMatch: false, isUnitMismatch: true, isMissingUnit: true };
     }
     // Same number but different unit (e.g. student wrote "230 mA" but target is "230 V")
     // Check if they're even the same dimension
@@ -200,7 +205,7 @@ function compareWithUnit(
     }
     // Same dimension, same number, different prefix (e.g. 6.5 Ω vs 6.5 kΩ)
     // → the student clearly has the wrong magnitude
-    return { ...base, isValueMatch: false, isExactMatch: false, isUnitMismatch: true, isPrefixError: true };
+    return { ...base, isValueMatch: true, isExactMatch: false, isUnitMismatch: true, isPrefixError: true };
   }
 
   // 2. SI normalization: check if value matches after unit conversion
@@ -221,8 +226,8 @@ function compareWithUnit(
       // Student's unit makes the value wrong (e.g. 0.001846 mA ≠ 1.846 mA)
       return { ...base, isValueMatch: true, isExactMatch: false, isUnitMismatch: true };
     }
-    // No student unit → value matches SI base, but we can't confirm the unit label
-    return { ...base, isValueMatch: true, isExactMatch: false, isUnitMismatch: true };
+    // Keine Einheit notiert — die nackte Zahl entspricht dem SI-Basiswert des Ziels.
+    return { ...base, isValueMatch: true, isExactMatch: false, isUnitMismatch: true, isMissingUnit: true };
   }
 
   // 3. If student provided a unit, try full physical comparison
@@ -386,8 +391,38 @@ export function evaluateCalcTrace(
       const expectedUnit = unitsPerValue[i];
       let bestMatch: UnitComparisonDetail | null = null;
 
-      // 1. Check all steps for student result match
-      for (const step of ast) {
+      if (expectedUnit) {
+        // 0a. Ein Schritt, der den Zielwert in der ERWARTETEN Einheit nennt, ist immer die
+        //     aussagekraeftigste Fundstelle — unabhaengig von seiner Position im Rechenweg.
+        for (const step of ast) {
+          if (!step.unit || normalizeUnitString(step.unit) !== normalizeUnitString(expectedUnit)) continue;
+          const treffer = compareWithUnit(step.result, step.unit, expected, expectedUnit, TOLERANCE);
+          if (treffer.isExactMatch) {
+            bestMatch = { ...treffer, stepId: step.id };
+            break;
+          }
+        }
+
+        // 0b. Sonst entscheidet die Endantwort — der letzte Schritt —, sofern sie den Zielwert
+        //     zahlenmaessig trifft. Ohne diesen Vorrang rettet ein gleichwertiger
+        //     Zwischenschritt eine unvollstaendige Endantwort: Bei
+        //     "... = 750000 KiB / 1024 = 732,42" (ohne Einheit) wuerde das physikalisch
+        //     gleichwertige "750000 KiB" als Treffer gelten und der fehlende Einheiten-Zusatz
+        //     am Endergebnis nie auffallen.
+        if (!bestMatch) {
+          const letzterSchritt = ast[ast.length - 1];
+          const endAntwort = compareWithUnit(
+            letzterSchritt.result, letzterSchritt.unit, expected, expectedUnit, TOLERANCE
+          );
+          if (endAntwort.isValueMatch) {
+            bestMatch = { ...endAntwort, stepId: letzterSchritt.id };
+          }
+        }
+      }
+
+      // 1. Nur wenn die Endantwort nichts geliefert hat: alle Schritte durchsuchen.
+      const zuDurchsuchen = bestMatch ? [] : ast;
+      for (const step of zuDurchsuchen) {
         if (!expectedUnit) {
           const isMatch = isWithinTolerance(step.result, expected, TOLERANCE);
           if (isMatch) {
@@ -404,41 +439,23 @@ export function evaluateCalcTrace(
           }
         } else {
           const comparison = compareWithUnit(step.result, step.unit, expected, expectedUnit, TOLERANCE);
+          const detail: UnitComparisonDetail = { ...comparison, stepId: step.id };
+
+          // Treffer in der erwarteten Einheit und die Endantwort sind oben (0a/0b) bereits
+          // abgehandelt. Hier bleiben nur noch Zwischenschritte:
+          //   1. physikalisch gleichwertig in anderer Einheit (z. B. 750000 KiB statt 732,42 MiB)
+          //   2. Zahlenwert stimmt, Einheit falsch oder fehlend
           if (comparison.isExactMatch) {
-            const labelMatchesExpectation = !!step.unit
-              && normalizeUnitString(step.unit) === normalizeUnitString(expectedUnit);
-
-            if (labelMatchesExpectation) {
-              // Bester denkbarer Treffer: Wert stimmt UND die Einheitsbezeichnung ist die erwartete.
-              bestMatch = { ...comparison, stepId: step.id };
-              break;
+            if (!bestMatch || !bestMatch.isExactMatch) {
+              bestMatch = detail;
             }
-
-            if (!step.unit) {
-              // Lenient exact match (value matches, student forgot unit) -> keep but keep looking for a better one with unit
-              if (!bestMatch || !bestMatch.studentUnit) {
-                bestMatch = { ...comparison, stepId: step.id };
-              }
-            } else {
-              // Physikalisch gleichwertig, aber in einer anderen Einheit notiert (z. B. 750000 KiB
-              // statt 732,42 MiB). Als Treffer merken, aber weitersuchen: Ein spaeterer Schritt in
-              // der erwarteten Einheit ist die aussagekraeftigere Fundstelle. Ohne dieses
-              // Weitersuchen meldet der Beweis einen Zwischenschritt in fremder Einheit, und das
-              // LLM kann den Punkt fuer das Endergebnis nicht vergeben.
-              if (!bestMatch || !bestMatch.isExactMatch || !bestMatch.studentUnit) {
-                bestMatch = { ...comparison, stepId: step.id };
-              }
-            }
+            continue;
           }
-          if (comparison.isPrefixError) {
-            if (!bestMatch || (!bestMatch.isExactMatch || !bestMatch.studentUnit)) {
-              bestMatch = { ...comparison, stepId: step.id };
-            }
-          }
-          if (comparison.isValueMatch) {
-            if (!bestMatch || (!bestMatch.isExactMatch && !bestMatch.isPrefixError && !bestMatch.isValueMatch)) {
-              bestMatch = { ...comparison, stepId: step.id };
-            }
+
+          // Zahlenwert stimmt, aber die Einheit traegt nicht. Kein Treffer — die Fundstelle wird
+          // trotzdem gemerkt, damit der Beweistext melden kann, dass richtig gerechnet wurde.
+          if (comparison.isValueMatch && (!bestMatch || (!bestMatch.isExactMatch && !bestMatch.isValueMatch))) {
+            bestMatch = detail;
           }
         }
       }
@@ -476,18 +493,24 @@ export function evaluateCalcTrace(
       if (targetStepId) {
         const chain = traceStepChain(targetStepId, ast);
         associatedStepIds = Array.from(chain);
-        hasCalculationError = associatedStepIds.some(id => 
-          sandboxErrors.some(err => err.includes(id))
-        );
+        hasCalculationError = associatedStepIds.some(id => stepHasSandboxError(id, sandboxErrors));
       }
 
-      if (bestMatch && bestMatch.isValueMatch) {
-        reached = true;
-        reachedTargets.push(roundSig(expected));
+      if (bestMatch) {
+        // Der Befund wird IMMER gemeldet, auch wenn er kein Treffer ist. Sonst ginge die
+        // Tatsache "der Zahlenwert stimmte" verloren und der Beweistext koennte nur
+        // "nicht erreicht" melden, ohne den Einheitenfehler zu benennen.
+        unitDetails.push(bestMatch);
         if (bestMatch.isUnitMismatch) {
           hasUnitMismatch = true;
         }
-        unitDetails.push(bestMatch);
+      }
+
+      // Zielerreichung setzt Zahlenwert UND tragfaehige Einheit voraus. Eine fehlende Einheit
+      // wird dabei genauso behandelt wie eine falsche.
+      if (bestMatch && bestMatch.isExactMatch) {
+        reached = true;
+        reachedTargets.push(roundSig(expected));
       } else {
         missedTargets.push(roundSig(expected));
       }
@@ -588,20 +611,24 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
       const studentUnitStr = detail.studentUnit ? ` (Schüler notierte: ${detail.studentUnit})` : (detail.isExactMatch ? '' : ' (keine Einheit angegeben)');
       
       // Check if this specific step had a sandbox error
-      const hasErrorInStep = detail.stepId ? sandboxErrors.some(err => err.includes(detail.stepId!)) : false;
+      const hasErrorInStep = detail.stepId ? stepHasSandboxError(detail.stepId, sandboxErrors) : false;
       const logicIndicator = hasErrorInStep ? `⚠ Rechenweg für diesen Schritt enthält Rechenfehler (siehe Proof A)` : `✓ Rechenweg für diesen Schritt fehlerfrei`;
 
       if (detail.isExactMatch) {
         lines.push(`* Zielwert ${targetStr}: Gefunden${stepStr}${studentUnitStr} -> EXAKTER MATCH (Wert & Einheit physikalisch korrekt)`);
         lines.push(`  → ${logicIndicator}`);
+      } else if (detail.isMissingUnit) {
+        lines.push(`* Zielwert ${targetStr}: Zahlenwert gefunden${stepStr}, aber OHNE EINHEIT notiert -> Zielwert gilt als NICHT erreicht`);
+        lines.push(`  → ${logicIndicator}`);
+        lines.push(`  → Der Schüler hat richtig gerechnet, die Angabe ist aber unvollständig. Benenne im Feedback den fehlenden Einheiten-Zusatz — nicht einen Rechenfehler.`);
       } else if (detail.isPrefixError) {
-        lines.push(`* Zielwert ${targetStr}: Gefunden${stepStr}${studentUnitStr} -> PRÄFIX-FEHLER (Zahlenwert stimmt als nackte Zahl, aber SI-Präfix/Größenordnung ist falsch)`);
+        lines.push(`* Zielwert ${targetStr}: Zahlenwert gefunden${stepStr}${studentUnitStr}, aber FALSCHE GRÖSSENORDNUNG (SI-Präfix) -> Zielwert gilt als NICHT erreicht`);
         lines.push(`  → ${logicIndicator}`);
-        lines.push(`  → Prüfe die Einheitsbezeichnung im Schülertext. Rechenweg-Punkt: JA, Einheits-Punkt: abhängig vom Erwartungshorizont.`);
+        lines.push(`  → Der Schüler hat richtig gerechnet, die Einheit passt aber nicht zum Wert. Benenne im Feedback den Einheitenfehler — nicht einen Rechenfehler.`);
       } else if (detail.isUnitMismatch) {
-        lines.push(`* Zielwert ${targetStr}: Gefunden${stepStr}${studentUnitStr} -> UNIT-MISMATCH (Zahlenwert stimmt physikalisch, aber Einheitsbezeichnung weicht ab)`);
+        lines.push(`* Zielwert ${targetStr}: Zahlenwert gefunden${stepStr}${studentUnitStr}, aber EINHEIT WEICHT AB -> Zielwert gilt als NICHT erreicht`);
         lines.push(`  → ${logicIndicator}`);
-        lines.push(`  → Prüfe die Einheitsbezeichnung im Schülertext. Rechenweg-Punkt: JA, Einheits-Punkt: abhängig vom Erwartungshorizont.`);
+        lines.push(`  → Der Schüler hat richtig gerechnet, die Einheitsbezeichnung stimmt aber nicht. Benenne im Feedback den Einheitenfehler — nicht einen Rechenfehler.`);
       } else {
         lines.push(`* Zielwert ${targetStr}: NICHT erreicht oder übersprungen`);
       }
@@ -609,7 +636,7 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
       // Pure numeric target (no unit expected)
       const matchingStep = ast.find(step => isWithinTolerance(step.result, expected, TOLERANCE));
       if (matchingStep) {
-        const hasErrorInStep = sandboxErrors.some(err => err.includes(matchingStep.id));
+        const hasErrorInStep = stepHasSandboxError(matchingStep.id, sandboxErrors);
         const logicIndicator = hasErrorInStep ? `⚠ Rechenweg für diesen Schritt enthält Rechenfehler (siehe Proof A)` : `✓ Rechenweg für diesen Schritt fehlerfrei`;
         lines.push(`* Zielwert ${targetStr}: Gefunden in ${matchingStep.id} -> MATCH (Reiner Zahlenwert-Abgleich)`);
         lines.push(`  → ${logicIndicator}`);
