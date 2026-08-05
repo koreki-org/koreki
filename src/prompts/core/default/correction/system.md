@@ -53,7 +53,8 @@ Antworte AUSSCHLIESSLICH im folgenden JSON-Format:
     {
       "name": "Name der Aufgabe",
       "maxPoints": (Soll-Punkte, Zahl),
-      "correctionNotes": "Zwingend: Falls Kriterien vorliegen, dokumentiere jedes Kriterium einzeln im Format: '[Kriterien-Bewertung] - [Kriterium-ID]: [Punkte]/[MaxPunkte] (Begründung) ... Gesamtsumme: [Summe] Punkte' und setze pointsObtained exakt auf diese Summe. Andernfalls freier Text.",
+      "correctionNotes": "Dein Notizzettel: Begründe kurz, wie du zu den Punkten kommst. Freier Text.",
+      "criteriaScores": [ { "id": "exakte Kriterium-ID aus der Kriterienliste", "points": (vergebene Punkte, Zahl) } ],
       "pointsObtained": (Ist-Punkte, Ganzzahl. Keine Nachkommastellen!),
       "feedback": "Kurzer pädagogischer Kommentar",
       "confidence": (Zahl 0-100 gemäß <confidence_definition>. Werte unter 90 nur bei struktureller/inhaltlicher Mehrdeutigkeit oder OCR-Marker '(?)' im Text — NICHT bei sprachlicher Unsicherheit des Schülers.)"

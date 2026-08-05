@@ -103,6 +103,19 @@ export const AIAnalysisResultSchema = z.object({
                 return isNaN(num) ? undefined : num;
             }, z.number().optional()),
             content: z.preprocess(toSafeString, z.string()).optional(),
+            // Punktzahl je Bewertungskriterium — strukturiert statt aus den correctionNotes geparst.
+            criteriaScores: z.preprocess(
+                (val) => (Array.isArray(val) ? val : undefined),
+                z.array(
+                    z.object({
+                        id: z.preprocess(toSafeString, z.string()),
+                        points: z.preprocess((val) => {
+                            const num = Number(val);
+                            return isNaN(num) ? 0 : num;
+                        }, z.number())
+                    }).passthrough()
+                ).optional()
+            ),
         }).passthrough()
     ).optional()),
 }).passthrough();
