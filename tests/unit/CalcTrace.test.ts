@@ -12,7 +12,7 @@ describe('CalcTrace Sandbox V6', () => {
 
   it('should grant full points if the math is correct and matches the target', () => {
     const ast: StudentASTStep[] = [
-      { id: 'step_1', formula: '10 * 12', result: 120 }
+      { id: 'step_1', formula: '10 * 12', result: 120, unit: 'V' }
     ];
 
     const result = evaluateCalcTrace(ast, target);
@@ -49,7 +49,7 @@ describe('CalcTrace Sandbox V6', () => {
   it('should allow consecutive calculations referencing previous step ids', () => {
     const ast: StudentASTStep[] = [
       { id: 'step_1', formula: '10 * 2', result: 20 },
-      { id: 'step_2', formula: 'step_1 * 6', result: 120 }
+      { id: 'step_2', formula: 'step_1 * 6', result: 120, unit: 'V' }
     ];
 
     const result = evaluateCalcTrace(ast, target);

@@ -112,9 +112,13 @@ export default function Home() {
 
     const handleGenerateCalcTraceForTask = async (taskIndex: number, taskText: string, userNotes?: string) => {
         try {
+            // Die Punktzahl der Aufgabe ist hier bekannt. Ohne sie muesste die KI sie aus dem
+            // Aufgabentext raten — und eine falsch geratene Summe verbiegt alle Einzelpunkte.
+            const taskMaxPoints = Number(data.tasksLayout[taskIndex]?.maxPoints ?? 0);
+
             const response = await performAIRequest(
                 'generate-calc-trace',
-                { taskText, userNotes },
+                { taskText, userNotes, maxPoints: taskMaxPoints > 0 ? taskMaxPoints : undefined },
                 userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
                 aiSettings
             );

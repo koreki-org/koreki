@@ -118,15 +118,34 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                             logger.warn(`[Server] CalcTrace Sandbox validation failed (extraction errors). Retrying self-correction (${retryCount + 1}/${maxRetries}):`, extractionErrors);
                             
                             const correctionInstruction = `Die mathematische Sandbox hat Fehler in deinem extrahierten AST gefunden:\n${extractionErrors.join('\n')}\nBitte extrahiere den AST neu, beachte die Syntax für mathjs, und erfinde keine Rechenschritte, die der Schüler nicht gemacht hat.`;
-                            astResult = await extractStudentAST(taskSpecificText, 'STANDARD', settings as unknown as AppSettings, task.name, astResult, correctionInstruction);
+                            try {
+                                astResult = await extractStudentAST(taskSpecificText, 'STANDARD', settings as unknown as AppSettings, task.name, astResult, correctionInstruction);
+                            } catch (retryErr: unknown) {
+                                // Der erste Durchlauf hat ein verwertbares Ergebnis geliefert. Ein
+                                // gescheiterter Nachbesserungsversuch darf es nicht verwerfen.
+                                const retryMessage = retryErr instanceof Error ? retryErr.message : String(retryErr);
+                                logger.warn('[Server] CalcTrace self-correction retry failed, keeping previous result.', { taskName: task.name, error: retryMessage });
+                                break;
+                            }
                             calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
                             retryCount++;
                         }
                         
                         task.calcTraceResult = calcTraceResult;
-                        task.maxPoints = targetGoal.maxPoints || task.maxPoints;
+
+                        // Vorrang hat die in der Oberflaeche gesetzte Punktzahl der Aufgabe.
+                        const eigenePunkte = Number(task.maxPoints ?? 0);
+                        if (eigenePunkte > 0) {
+                            if (targetGoal.maxPoints && targetGoal.maxPoints !== eigenePunkte) {
+                                logger.warn(`[Server] TargetGoal nennt ${targetGoal.maxPoints} Punkte, die Aufgabe ${eigenePunkte}. Es gilt die Aufgabe.`, { taskName: task.name });
+                            }
+                        } else {
+                            task.maxPoints = targetGoal.maxPoints || task.maxPoints;
+                        }
                     } catch (err: any) {
-                        logger.error('Error in server-side CalcTrace execution', { taskName: task.name, error: err.message });
+                        // Kein calcTraceResult -> die Aufgabe laeuft in den Warnhinweis "ohne
+                        // Sandbox-Pruefung, bitte manuell gegenpruefen" statt in 0 Punkte.
+                        logger.error('[Server] CalcTrace execution failed — task falls back to manual review.', { taskName: task.name, error: err.message });
                     }
                 }
             }

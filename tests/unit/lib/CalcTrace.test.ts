@@ -7,7 +7,7 @@
  * - 3-tier model: Perfect / Unit-Mismatch / Wrong
  */
 
-import { evaluateCalcTrace } from '@/lib/grading/CalcTrace';
+import { evaluateCalcTrace, formatCalcTraceForPrompt } from '@/lib/grading/CalcTrace';
 import type { StudentASTStep, TargetGoal } from '@/lib/grading/calc-trace-types';
 
 describe('CalcTrace Engine V7 - Core (Proof A & B)', () => {
@@ -153,10 +153,11 @@ describe('CalcTrace Engine V7 — Unit-Aware Grading (3-Tier Model)', () => {
     expect(result.unitMismatch).toBeUndefined();
   });
 
-  test('Tier B: Unit mismatch — student computes in A, target is mA', () => {
-    // Student: 12/6500 = 0.001846 mA (wrong unit! should be A)
+  test('Falsche Einheitsbezeichnung: Zielwert gilt als nicht erreicht', () => {
+    // Student: 12/6500 = 0.001846 mA (falsche Einheit! Richtig waere A)
     // Target: 1.846 mA
-    // The raw number 0.001846 matches the SI base of 1.846 mA
+    // Die nackte Zahl 0.001846 passt zum SI-Basiswert, mit "mA" ist die Groesse aber um
+    // Faktor 1000 daneben. Kein Treffer — aber der Zahlenwert-Befund bleibt erhalten.
     const ast: StudentASTStep[] = [
       { id: 'step_1', formula: '12 / 6500', result: 0.001846, unit: 'mA' },
     ];
@@ -170,12 +171,13 @@ describe('CalcTrace Engine V7 — Unit-Aware Grading (3-Tier Model)', () => {
     const result = evaluateCalcTrace(ast, target);
 
     expect(result.sandboxErrors).toHaveLength(0);
-    expect(result.isGoalReached).toBe(true);
-    // NOT auto-assigned because unit label is wrong
+    expect(result.isGoalReached).toBe(false);
     expect(result).not.toHaveProperty('totalPoints');
     expect(result.unitMismatch).toBe(true);
     expect(result.unitDetails).toBeDefined();
     expect(result.unitDetails![0].isUnitMismatch).toBe(true);
+    // Die Tatsache "richtig gerechnet" darf nicht verloren gehen.
+    expect(result.unitDetails![0].isValueMatch).toBe(true);
   });
 
   test('Tier B: Student computes in A (correct), target is mA', () => {
@@ -257,10 +259,11 @@ describe('CalcTrace Engine V7 — Unit-Aware Grading (3-Tier Model)', () => {
     expect(result.sandboxErrors).toHaveLength(0);
   });
 
-  test('No unit on student step: SI-only match defers to LLM', () => {
-    // Student: 12/6500 = 0.001846 (NO unit written)
+  test('Fehlende Einheit: Zielwert gilt als nicht erreicht — wie bei falscher Einheit', () => {
+    // Student: 12/6500 = 0.001846 (KEINE Einheit notiert)
     // Target: 1.846 mA
-    // Value matches SI base but no student unit to verify
+    // Eine fehlende Angabe wird genauso behandelt wie eine falsche. Frueher zaehlte das
+    // als voller Treffer — wer nichts hinschrieb, stand besser da als wer sich vertat.
     const ast: StudentASTStep[] = [
       { id: 'step_1', formula: '12 / 6500', result: 0.001846 },
     ];
@@ -274,10 +277,84 @@ describe('CalcTrace Engine V7 — Unit-Aware Grading (3-Tier Model)', () => {
     const result = evaluateCalcTrace(ast, target);
 
     expect(result.sandboxErrors).toHaveLength(0);
-    expect(result.isGoalReached).toBe(true);
-    // No student unit → can't verify label → unitMismatch, defer to LLM
+    expect(result.isGoalReached).toBe(false);
     expect(result).not.toHaveProperty('totalPoints');
     expect(result.unitMismatch).toBe(true);
+    expect(result.unitDetails![0].isMissingUnit).toBe(true);
+    expect(result.unitDetails![0].isValueMatch).toBe(true);
+  });
+
+  test('Fehlende Einheit wird im Beweistext als solche benannt, nicht als Rechenfehler', () => {
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '12 / 6500', result: 0.001846 },
+    ];
+
+    const target: TargetGoal = { targetValue: 1.846, unit: 'mA', maxPoints: 3 };
+
+    const text = formatCalcTraceForPrompt(evaluateCalcTrace(ast, target), target);
+
+    expect(text).toContain('OHNE EINHEIT');
+    expect(text).toContain('NICHT erreicht');
+    expect(text).toContain('richtig gerechnet');
+  });
+
+  test('Ein gleichwertiger Zwischenschritt rettet keine einheitenlose Endantwort', () => {
+    // Realfall: "1500000 x 512 = 768000000 Byte / 1024 = 750000 KiB / 1024 = 732,42"
+    // step_2 (750000 KiB) ist physikalisch exakt 732,422 MiB und galt als Treffer — dadurch
+    // wurde die Endantwort in step_3, die gar keine Einheit hat, nie geprueft.
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '1500000 * 512', result: 768000000, unit: 'Byte' },
+      { id: 'step_2', formula: '768000000 / 1024', result: 750000, unit: 'KiB' },
+      { id: 'step_3', formula: '750000 / 1024', result: 732.42 },
+    ];
+
+    const target: TargetGoal = { targetValue: 732.422, unit: 'MiB', maxPoints: 2 };
+    const result = evaluateCalcTrace(ast, target);
+
+    expect(result.sandboxErrors).toHaveLength(0);
+    expect(result.isGoalReached).toBe(false);
+    expect(result.unitDetails![0].stepId).toBe('step_3');
+    expect(result.unitDetails![0].isMissingUnit).toBe(true);
+    expect(result.unitDetails![0].isValueMatch).toBe(true);
+  });
+
+  test('Rechnet der Schüler durchgehend in einer gleichwertigen Einheit, zählt das weiterhin', () => {
+    // Ohne einheitenlose Endantwort bleibt die Umrechnungs-Toleranz erhalten:
+    // Wer sein Ergebnis in KiB statt MiB angibt, hat die Aufgabe gelöst.
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '1500000 * 512', result: 768000000, unit: 'Byte' },
+      { id: 'step_2', formula: '768000000 / 1024', result: 750000, unit: 'KiB' },
+    ];
+
+    const target: TargetGoal = { targetValue: 732.422, unit: 'MiB', maxPoints: 2 };
+    const result = evaluateCalcTrace(ast, target);
+
+    expect(result.isGoalReached).toBe(true);
+    expect(result.unitDetails![0].stepId).toBe('step_2');
+  });
+
+  test('Endantwort mit korrekter Einheit bleibt ein Treffer', () => {
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '768000000 / 1024', result: 750000, unit: 'KiB' },
+      { id: 'step_2', formula: '750000 / 1024', result: 732.42, unit: 'MiB' },
+    ];
+
+    const target: TargetGoal = { targetValue: 732.422, unit: 'MiB', maxPoints: 2 };
+    const result = evaluateCalcTrace(ast, target);
+
+    expect(result.isGoalReached).toBe(true);
+    expect(result.unitDetails![0].stepId).toBe('step_2');
+  });
+
+  test('Ohne erwartete Einheit bleibt der reine Zahlenvergleich unberührt', () => {
+    // Kein Einheiten-Ziel -> die Verschaerfung darf hier nicht greifen.
+    const ast: StudentASTStep[] = [
+      { id: 'step_1', formula: '10 * 12', result: 120 },
+    ];
+
+    const result = evaluateCalcTrace(ast, { targetValue: 120, maxPoints: 2 });
+
+    expect(result.isGoalReached).toBe(true);
   });
 
   test('Multi-target with mixed units (Rges + I)', () => {

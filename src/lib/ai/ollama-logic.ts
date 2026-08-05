@@ -111,7 +111,7 @@ export async function executeOllamaRequest(
     } else if (action === 'variable-extraction') {
         promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions, payload.taskName);
     } else if (action === 'generate-calc-trace') {
-        promptObj = buildCalcTraceGenerationPrompt(payload.taskText, payload.discipline, payload.userNotes);
+        promptObj = buildCalcTraceGenerationPrompt(payload.taskText, payload.discipline, payload.userNotes, payload.maxPoints);
     } else if (action === 'refine-calc-trace') {
         promptObj = buildCalcTraceRefinementPrompt(payload.taskText, payload.currentTrace, payload.userInstruction, payload.discipline);
     } else if (action === 'calc-trace-extraction') {

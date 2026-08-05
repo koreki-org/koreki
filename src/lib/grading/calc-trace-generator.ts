@@ -1,4 +1,5 @@
 import { TargetGoal } from './calc-trace-types';
+import { isEngineOwned, normalizeCriterionSource } from './criterion-source';
 import calcTraceGenSystemDefault from '../../prompts/core/default/calc-trace-generation/system.md';
 import { logger } from '../logger';
 
@@ -11,14 +12,14 @@ export const TARGET_GOAL_SCHEMA = {
     gradingRubric: { type: "string", description: "Ein kurzer Text für die KI-Bewertung, der festlegt, wofür es Teilpunkte gibt (z.B. '1P für Formel, 1P fürs Einsetzen, 1P für Ergebnis')." },
     criteria: {
       type: "array",
-      description: "Eine strukturierte Kriterienliste für die Teilpunktebewertung. Jedes Kriterium hat id, label, punktwert, source ('llm' | 'proofA' | 'proofB') und optional targetIndex. Die Summe der punktwert-Felder MUSS exakt maxPoints entsprechen.",
+      description: "Eine strukturierte Kriterienliste für die Teilpunktebewertung. Jedes Kriterium hat id, label, punktwert, source ('llm' | 'proofA' | 'proofB' | 'proofValues') und optional targetIndex. Die Summe der punktwert-Felder MUSS exakt maxPoints entsprechen.",
       items: {
         type: "object",
         properties: {
           id: { type: "string" },
           label: { type: "string" },
           punktwert: { type: "number" },
-          source: { type: "string", enum: ["llm", "proofA", "proofB"] },
+          source: { type: "string", enum: ["llm", "proofA", "proofB", "proofValues"] },
           targetIndex: { type: "number", description: "Der 0-basierte Index im targetValue-Array, auf das sich dieses Kriterium bezieht. Jedes Kriterium muss zwingend einem Zielwert zugeordnet sein." }
         },
         required: ["id", "label", "punktwert", "source"]
@@ -31,10 +32,23 @@ export const TARGET_GOAL_SCHEMA = {
 // Legacy Export for existing AI provider imports (we don't use tool calling anymore)
 export const VALIDATE_CALC_TRACE_TOOL = {};
 
-export function buildCalcTraceGenerationPrompt(taskText: string, discipline: string, userNotes?: string) {
-    const system = calcTraceGenSystemDefault + (userNotes ? `\n\nZusätzliche Instruktion vom Nutzer: ${userNotes}` : '');
+export function buildCalcTraceGenerationPrompt(taskText: string, discipline: string, userNotes?: string, maxPoints?: number) {
+    let system = calcTraceGenSystemDefault;
+
+    // Die Punktzahl der Aufgabe ist in der App bekannt. Wird sie nicht mitgegeben, muss das Modell
+    // sie aus dem Fliesstext raten — und eine falsch geratene Gesamtsumme verzerrt anschliessend
+    // jeden einzelnen Kriterien-Punktwert, weil die Summe zwingend passen muss.
+    if (typeof maxPoints === 'number' && maxPoints > 0) {
+        system += `\n\nVERBINDLICHE GESAMTPUNKTZAHL: Diese Aufgabe hat exakt ${maxPoints} Punkte.
+- Setze "maxPoints" auf genau ${maxPoints}. Rate die Gesamtpunktzahl NICHT aus dem Text.
+- Die Summe aller Kriterien-Punktwerte muss exakt ${maxPoints} ergeben.
+- Formulierungen wie "jeweils 1 P Rechenweg, 1 P Ergebnis" beschreiben die Aufteilung INNERHALB dieser ${maxPoints} Punkte, niemals eine höhere Gesamtsumme.
+- Übernimm die im Text genannten Einzelpunktwerte unverändert. Erhöhe niemals einen einzelnen Kriterien-Punktwert, nur damit die Summe aufgeht — wenn sie nicht aufgeht, fehlt dir ein Kriterium.`;
+    }
+
+    system += (userNotes ? `\n\nZusätzliche Instruktion vom Nutzer: ${userNotes}` : '');
     const user = `Analysiere folgenden Text der Aufgabe/Musterlösung und extrahiere das 'TargetGoal':\n\n${taskText}`;
-    
+
     return { system, user };
 }
 
@@ -83,7 +97,8 @@ export function compileRubricRegex(rubric: string, target: Omit<TargetGoal, 'cri
       if (fPts + ePts + resPts === target.maxPoints) {
         return [
           { id: 'formel', label: 'Formel fachlich korrekt', punktwert: fPts, source: 'llm', targetIndex: 0 },
-          { id: 'einsetzen', label: 'Einsetzen der Werte korrekt', punktwert: ePts, source: 'llm', targetIndex: 0 },
+          // Ob die richtigen Zahlen eingesetzt wurden, weiss die Sandbox (hasCorrectValues).
+          { id: 'einsetzen', label: 'Einsetzen der Werte korrekt', punktwert: ePts, source: 'proofValues', targetIndex: 0 },
           { id: 'ergebnis', label: 'Endergebnis erreicht', punktwert: resPts, source: 'proofB', targetIndex: 0 }
         ];
       }
@@ -107,7 +122,7 @@ function normalizeTargetValue(targetVal: any): string {
     return String(targetVal);
 }
 
-export function parseGeneratedCalcTrace(rawOutput: any): TargetGoal | null {
+export function parseGeneratedCalcTrace(rawOutput: any, expectedMaxPoints?: number): TargetGoal | null {
     if (!rawOutput) return null;
     let data = rawOutput;
     if (typeof data === 'string') {
@@ -144,12 +159,29 @@ export function parseGeneratedCalcTrace(rawOutput: any): TargetGoal | null {
         }
     }
 
+    const hasExpectedPoints = typeof expectedMaxPoints === 'number' && expectedMaxPoints > 0;
+    if (hasExpectedPoints) {
+        // Die Punktzahl der Aufgabe ist gesetzt — sie ist die Wahrheit, nicht die Schaetzung des Modells.
+        target.maxPoints = expectedMaxPoints!;
+    }
+
     // Resilient validation of parsed criteria list
     if (target.criteria && target.criteria.length > 0) {
-        // 1. Align maxPoints dynamically with the sum of generated criteria points
-        // to prevent pedagogical distortion caused by arbitrary scaling or rounding.
         const sum = target.criteria.reduce((acc, c) => acc + (c.punktwert || 0), 0);
-        if (sum !== target.maxPoints) {
+
+        if (hasExpectedPoints) {
+            if (sum !== expectedMaxPoints) {
+                // Nicht stillschweigend uebernehmen: Eine falsche Gesamtsumme entsteht dadurch, dass
+                // das Modell einzelne Kriterien aufblaeht, um auf eine geratene Summe zu kommen.
+                // Der Aufrufer faengt das ab und laesst neu generieren.
+                throw new Error(
+                    `Die Summe der Kriterien-Punkte (${sum}) weicht von der Punktzahl der Aufgabe (${expectedMaxPoints}) ab. ` +
+                    `Verteile die Punkte so, dass sie exakt ${expectedMaxPoints} ergeben, und erhöhe dafür keinen einzelnen Kriterien-Punktwert über den im Erwartungshorizont genannten Wert hinaus.`
+                );
+            }
+        } else if (sum !== target.maxPoints) {
+            // 1. Align maxPoints dynamically with the sum of generated criteria points
+            // to prevent pedagogical distortion caused by arbitrary scaling or rounding.
             logger.warn(`[Resilience] Updating maxPoints from ${target.maxPoints} to match sum of criteria points ${sum}`);
             target.maxPoints = sum;
         }
@@ -160,7 +192,15 @@ export function parseGeneratedCalcTrace(rawOutput: any): TargetGoal | null {
           : String(target.targetValue).split(',').length;
 
         for (const crit of target.criteria) {
-            const isProof = crit.source === 'proofA' || crit.source === 'proofB';
+            // Zustaendigkeit EINMAL hier festschreiben. Danach lesen Prompt-Aufbau und
+            // Punktevergabe nur noch dieses Feld — sie leiten nichts mehr aus id/label ab.
+            const normalizedSource = normalizeCriterionSource(crit);
+            if (normalizedSource !== crit.source) {
+                logger.warn(`[Resilience] Criterion "${crit.id}" carried an unusable source (${JSON.stringify(crit.source)}); resolved to "${normalizedSource}".`);
+                crit.source = normalizedSource;
+            }
+
+            const isProof = isEngineOwned(crit.source);
             if (isProof) {
                 if (crit.targetIndex === undefined || crit.targetIndex === null) {
                     logger.warn(`[Resilience] Criterion "${crit.id}" (source: ${crit.source}) is missing targetIndex. Defaulting to final goal (0).`);
