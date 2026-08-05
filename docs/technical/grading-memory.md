@@ -3,7 +3,7 @@ title: "Koreki Grading Memory (Erfahrungsschatz)"
 description: "Technische und fachliche Dokumentation des Koreki Erfahrungsschatz-Systems zur personalisierten KI-Benotung via Few-Shot Learning."
 author: "@principal_architect"
 date: "2026-05-12"
-last_updated: "2026-06-13"
+last_updated: "2026-08-05"
 status: "Approved"
 domain: "technical"
 security_classification: "Internal"
@@ -16,7 +16,7 @@ security_classification: "Internal"
 > **Zusammenfassung:** Die *Grading Memory (Erfahrungsschatz)*-Funktion ermöglicht es Lehrkräften, konkrete, reale Bewertungs-Fallbeispiele (Schülerantwort + exakte Punktevergabe + Begründungstext) zu pflegen. Diese Beispiele werden als Few-Shot-Kontext in den KI-Prompt injiziert, um die Benotungs-Systematik der KI exakt an den persönlichen Bewertungsstil des Lehrers anzugleichen.
 > **Zielgruppe:** Entwickler, Product Manager, QA Engineers.
 
-In klassischen KI-Korrekturmodellen tendiert die KI zu generischen Bewertungen. Durch den *Erfahrungsschatz* wird dieses Problem gelöst: Anstatt allgemeine Prompts zu schreiben, gibt die Lehrkraft konkrete Beispiele vor („Bei dieser speziellen Formulierung ziehe ich 1 Punkt ab“). Dies führt zu einer drastischen Steigerung der Korrektur-Präzision und verringert manuellen Nachbesserungsaufwand um bis zu 80%.
+In klassischen KI-Korrekturmodellen tendiert die KI zu generischen Bewertungen. Durch den *Erfahrungsschatz* wird dieses Problem gelöst: Anstatt allgemeine Prompts zu schreiben, gibt die Lehrkraft konkrete Beispiele vor (�?zBei dieser speziellen Formulierung ziehe ich 1 Punkt ab�?o). Dies führt zu einer drastischen Steigerung der Korrektur-Präzision und verringert manuellen Nachbesserungsaufwand um bis zu 80%.
 
 ---
 
@@ -86,41 +86,49 @@ export interface GradingMemoryCase {
 ## 3. Implementierung & Nutzung
 
 ### Prompt-Generierung (`prompt-builder.ts`)
-Die Fallbeispiele werden dynamisch am Ende des User-Prompts als konkrete Korrektur-Fallbeispiele angehängt:
 
-```typescript
-if (gradingMemory && Array.isArray(gradingMemory) && gradingMemory.length > 0) {
-    examplesText = '\n\n### WICHTIGER PÄDAGOGISCHER ERFAHRUNGSSCHATZ (BENOTUNGS-REFERENZ):\n';
-    examplesText += 'Diese Beispiele zeigen dir, wie der Lehrer in der Vergangenheit bestimmte Typen von Fehlern bewertet hat. Sie dienen als Orientierung für deinen Bewertungsmaßstab (z. B. wie kulant oder streng du bei bestimmten Abweichungen sein sollst) und für die Formulierung deines Feedbacks.\n\n';
-    examplesText += 'RICHTLINIEN FÜR DIE ANWENDUNG:\n';
-    examplesText += '- Nutze dieselben Kriterien und Abzugsprinzipien für ähnliche Fehler des Schülers.\n';
-    examplesText += '- Übernimm die pädagogischen Kernpunkte und Hinweise für dein Feedback, wenn der Schüler den gleichen konzeptionellen Fehler gemacht hat. Passe die Formulierung jedoch an die konkrete Schreibweise und die Variablen des aktuellen Schülers an.\n';
-    examplesText += '- Vermeide das blinde Kopieren von Werten (wie IP-Adressen oder Zahlen) aus anderen Aufgabenstellungen, wenn diese für die aktuelle Aufgabe nicht relevant sind.\n\n';
-    
-    gradingMemory.forEach((item, index) => {
-        examplesText += `BEISPIEL ${index + 1}:\n`;
-        if (item.taskName) {
-            examplesText += `[Betrifft Aufgabe]\n"${item.taskName}"\n\n`;
-        }
-        examplesText += `[Schülerantwort]\n"${item.studentText}"\n\n`;
-        examplesText += `[Erwartete Bewertung]\n`;
-        examplesText += `- Vergebene Punkte: ${item.expectedCorrection.pointsObtained}`;
-        if (item.expectedCorrection.maxPoints !== undefined && item.expectedCorrection.maxPoints !== null) {
-            examplesText += ` von ${item.expectedCorrection.maxPoints}`;
-        }
-        examplesText += `\n`;
-        examplesText += `- Begründung (correctionNotes): "${item.expectedCorrection.correctionNotes}"\n`;
-        if (item.expectedCorrection.feedback) {
-            examplesText += `- Feedback: "${item.expectedCorrection.feedback}"\n`;
-        }
-        examplesText += '\n-------------------\n\n';
-    });
-}
+Die Fallbeispiele werden **nach Aufgabe gruppiert** in den User-Prompt injiziert, nicht als flache Liste. Grund: Bei einer flachen Liste muss das Modell bei jedem Schüler selbst herleiten, welches Beispiel zu welcher Aufgabe gehört. Diese Zuordnung fällt dann potenziell jedes Mal anders aus, und Beispiele fremder Aufgaben strahlen auf die aktuelle Bewertung ab. Die Zuordnung wird deshalb beim Prompt-Bau berechnet und ist im Prompt explizit.
+
 ```
+<grading_memory>
+### WICHTIGER P�"DAGOGISCHER ERFAHRUNGSSCHATZ (BENOTUNGS-REFERENZ):
+RICHTLINIEN F�oR DIE ANWENDUNG:
+- Die Beispiele sind nach Aufgaben gruppiert. Bewertest du eine Aufgabe, ist ausschlie�Ylich
+  die Gruppe mit genau diesem Aufgabennamen ma�Ygeblich.
+- Beispiele aus der Gruppe einer anderen Aufgabe gelten für die aktuelle Aufgabe NICHT.
+  ...
+
+<task_reference task="Aufgabe 1a">
+<example id="1.1">
+[Schülerantwort] ...
+[Erwartete Bewertung] ...
+</example>
+</task_reference>
+
+<task_reference task="Aufgabe 2b">
+  ...
+</task_reference>
+
+<unassigned_reference>
+  (nur wenn Fälle ohne verlässliche Zuordnung existieren)
+</unassigned_reference>
+</grading_memory>
+```
+
+Die Gruppen folgen der Reihenfolge des `tasksLayout`, und ihre �oberschriften tragen exakt die Aufgabennamen aus der Aufgabenliste im System-Prompt.
+
+**Zuordnung der Fälle** (`src/lib/grading-memory-utils.ts`):
+
+1. `resolveTaskName()` ermittelt die Aufgabe eines Falls �?" aus dem gespeicherten `taskName`, ersatzweise aus dem `[Aufgabe: �?�]`-Präfix in den `correctionNotes`, ersatzweise über Wort-�oberlappung gegen `t.name` und `t.content`.
+2. `canonicalizeTaskName()` bildet das Ergebnis auf den kanonischen Namen des Layouts ab. `normalizeTaskName()` fängt abweichende Schreibweisen ab �?" aus `"Aufgabe 2b"`, `"2b)"` und `"AUFGABE 2 B"` wird derselbe Schlüssel. Punkte bleiben dabei erhalten, damit `1.1` und `11` nicht kollidieren.
+3. Ohne verlässlichen Treffer landet der Fall in `<unassigned_reference>` und behält dort seinen gespeicherten Aufgabennamen. Er wird ausdrücklich als **nicht verbindlich** für eine einzelne Aufgabe gekennzeichnet �?" statt bei einer falschen Aufgabe zu landen.
+
+> [!IMPORTANT]
+> Ein Fall trägt entweder einen kanonischen Namen aus dem Layout oder gar keinen. Der Kalibrierungs-Wizard erfindet keine Zuordnung mehr: Findet der Abgleich gegen das `tasksLayout` keinen Treffer, bleibt das Feld leer und das Dropdown zeigt �?z�?" bitte zuordnen �?"". Früher wurde in diesem Fall stillschweigend �?zAufgabe 1" gesetzt.
 
 ### On-The-Fly Kalibrierung (Loop-Closing Feedback Channel)
 Ab Version 12 wurde eine direkte Feedbackschleife aus der laufenden Korrekturoberfläche (`BatchTaskAnalysisCard.tsx`) integriert:
-1. **Zweck:** Weicht die Einschätzung der KI von der gewünschten pädagogischen Bewertung ab, kann die Lehrkraft die Punkte und das Feedback editieren und diesen Fall mit nur einem Klick (**„In Erfahrungsschatz übernehmen“**) direkt als neues Few-Shot-Beispiel anlernen.
+1. **Zweck:** Weicht die Einschätzung der KI von der gewünschten pädagogischen Bewertung ab, kann die Lehrkraft die Punkte und das Feedback editieren und diesen Fall mit nur einem Klick (**�?zIn Erfahrungsschatz übernehmen�?o**) direkt als neues Few-Shot-Beispiel anlernen.
 2. **Stilistische Anonymisierung & PII-Scrubbing (Neu in v0.9.67):** Vor dem Anlernen eines Beispiels wird die Schülerantwort über den API-Endpunkt `/api/user/grading-memories/anonymize` stilistisch anonymisiert. Rhetorische Eigenheiten, Anekdoten und persönliche Schreibstile werden über einen KI-Zwischenschritt entfernt, während das fachliche Kernargument im Indikativ erhalten bleibt. Dies löst DSGVO/GDPR-Herausforderungen bezüglich der Speicherung von Schüleroriginaldaten im System vollständig. Lehrkräfte erhalten eine interaktive Vorab-Vergleichsansicht (modal), um die anonymisierte Version vor dem Sichern zu reviewen und anzupassen.
 3. **Plattform-Weichenstellung (Drei-Wege-Persistenz):**
    - **SaaS Cloud:** Sichert den Fall sicher in der PostgreSQL-Datenbank über den Next.js-Endpunkt `/api/user/grading-memories/append`. Der Zugriff ist über Logto-Session-Claims (RBAC) gegen unbefugten Fremdzugriff geschützt.
@@ -139,7 +147,7 @@ Um Lehrkräften das Teilen von Erfahrungsschätzen zu ermöglichen, wurde ein Ma
 
 **Erwartete Bewertung:**
 - Punkte: 1
-- Begründung: "Richtig, aber unvollständig. Es schützt auch vor Überspannungen und filtert Netzstörungen."
+- Begründung: "Richtig, aber unvollständig. Es schützt auch vor �oberspannungen und filtert Netzstörungen."
 ```
 
 ---
@@ -149,10 +157,10 @@ Um Lehrkräften das Teilen von Erfahrungsschätzen zu ermöglichen, wurde ein Ma
 > **Datenschutz an Schulen (DSGVO/GDPR):** Da Schülerarbeiten verarbeitet werden, gelten höchste Compliance-Ansprüche.
 
 *   **Stilistische Anonymisierung (DSGVO-Härtung):** Da handschriftliche oder individuelle Formulierungen urheberrechtlich oder datenschutzrechtlich problematisch sein können, wird jede Schülerantwort vor dem Speichern mittels KI abstrahiert. Rhetorische Eigenheiten, Anekdoten und persönliche Schreibstile werden entfernt, um jeglichen Bezug zur Person unumkehrbar aufzuheben.
-*   **Personenbezogene Daten (PII):** Erfahrungsschätze enthalten standardmäßig **keine** Klarnamen oder sonstige Schüler-PII. Schülerantworten werden beim Hinzufügen zum Erfahrungsschatz anonymisiert (Referenzierung über IDs oder anonyme Avatare wie `CONCEPT_CONFUSION` [Verwechsler] oder `INCOMPLETE` [Unvollständige]).
-*   **Zero-Ops / Offline-Kompatibilität:** Erfahrungsschätze verlassen die Instanz nicht — es findet keine Übertragung an Koreki-Zentralserver statt. Die Ablage unterscheidet sich je nach Tier:
+*   **Personenbezogene Daten (PII):** Erfahrungsschätze enthalten standardmä�Yig **keine** Klarnamen oder sonstige Schüler-PII. Schülerantworten werden beim Hinzufügen zum Erfahrungsschatz anonymisiert (Referenzierung über IDs oder anonyme Avatare wie `CONCEPT_CONFUSION` [Verwechsler] oder `INCOMPLETE` [Unvollständige]).
+*   **Zero-Ops / Offline-Kompatibilität:** Erfahrungsschätze verlassen die Instanz nicht �?" es findet keine �obertragung an Koreki-Zentralserver statt. Die Ablage unterscheidet sich je nach Tier:
     *   **Desktop:** im `localStorage` der Tauri-Webview.
-    *   **Community (Single- und Multi-User):** als JSON auf dem Server-Dateisystem unter `/app/data/prompts/grading_memories_[SHA256_HASH_OF_USER_ID].json`, nutzerspezifisch getrennt (`LocalGradingMemoryService`). **Eine Datenbank — auch keine SQLite — kommt in diesem Tier bewusst nicht zum Einsatz**, siehe [Community Edition Persistence](./community-edition-persistence.md).
+    *   **Community (Single- und Multi-User):** als JSON auf dem Server-Dateisystem unter `/app/data/prompts/grading_memories_[SHA256_HASH_OF_USER_ID].json`, nutzerspezifisch getrennt (`LocalGradingMemoryService`). **Eine Datenbank �?" auch keine SQLite �?" kommt in diesem Tier bewusst nicht zum Einsatz**, siehe [Community Edition Persistence](./community-edition-persistence.md).
 *   **AVV-Verschlüsselung:** In der SaaS-Variante sind diese Datensätze durch die mit der Schule/Kommune geschlossene Auftragsdatenverarbeitung (AVV) geschützt und in isolierten Tenant-Datenbankstrukturen abgelegt.
 
 ---
@@ -160,11 +168,11 @@ Um Lehrkräften das Teilen von Erfahrungsschätzen zu ermöglichen, wurde ein Ma
 ## 5. Testing & Referenzen
 
 *   **Verwandte Dokumente:**
-    *   [AI Pedagogy Framework](./ai-pedagogy-framework.md) — Generelles Framework zur pädagogischen Ausrichtung
-    *   [Correction Workflow](./correction-workflow.md) — Der detaillierte Korrekturablauf der KI
+    *   [AI Pedagogy Framework](./ai-pedagogy-framework.md) �?" Generelles Framework zur pädagogischen Ausrichtung
+    *   [Correction Workflow](./correction-workflow.md) �?" Der detaillierte Korrekturablauf der KI
 *   **Test-Coverage:**
     *   Validierungsschemata sind über Jest Unit-Tests in `tests/unit/` gegen die Zod-Schemata abgesichert.
     *   Die Markdown-Parser wurden mit dedizierten Unit-Tests (`markdown-grading-memory-parser.test.ts`) für fehlerfreie Konvertierung verifiziert.
 *   **API-Routen:**
-    *   `GET/POST /api/user/grading-memories` — Verwaltung der Erfahrungsschätze
-    *   `POST /api/ai-correct` — Ausführung der Korrektur (akzeptiert optionales `gradingMemory`-Array)
+    *   `GET/POST /api/user/grading-memories` �?" Verwaltung der Erfahrungsschätze
+    *   `POST /api/ai-correct` �?" Ausführung der Korrektur (akzeptiert optionales `gradingMemory`-Array)
