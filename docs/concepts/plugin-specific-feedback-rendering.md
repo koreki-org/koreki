@@ -3,7 +3,7 @@ title: "Plugin-spezifisches Feedback & Visual-Rendering für strukturierte Graph
 description: "Technisches Design zur Anpassung des Look & Feel des Feedbacks basierend auf dem genutzten Graph-Skill-Plugin (z.B. VLSM-Matrix mit [r]/[f]/[FF]-Zellindikatoren)."
 author: "@principal_architect"
 date: "2026-05-24"
-last_updated: "2026-05-26"
+last_updated: "2026-08-05"
 status: "Approved"
 domain: "technical"
 security_classification: "Internal"
@@ -13,7 +13,7 @@ security_classification: "Internal"
 
 ## 1. Executive Summary & Kontext
 > [!NOTE]
-> **Zusammenfassung:** Dieses Konzept beschreibt die finale, zukunftssichere Architektur zur dynamischen und deterministischen Visualisierung von 2D-strukturierten Korrekturergebnissen (wie VLSM-Subnetting-Tabellen, RAID-Systemen oder Messdaten). Anstelle statischer RegEx-Lösungen oder manueller Prompt-Programmierung nutzt Koreki eine performante, pure TypeScript-Pipeline im Frontend/API-Gateway, die das Tabellenlayout vollständig generisch aus der mathematischen Graphen-Struktur ableitet.
+> **Zusammenfassung:** Dieses Konzept beschreibt die finale, zukunftssichere Architektur zur dynamischen und deterministischen Visualisierung von 2D-strukturierten Korrekturergebnissen (wie VLSM-Subnetting-Tabellen oder Messdaten). Anstelle statischer RegEx-Lösungen oder manueller Prompt-Programmierung nutzt Koreki eine performante, pure TypeScript-Pipeline im Frontend/API-Gateway, die das Tabellenlayout vollständig generisch aus der mathematischen Graphen-Struktur ableitet.
 > **Zielgruppe:** @product_manager (Sizing & Roadmap), @ui_expert (Tailwind-Tabellen & UX), @qa_engineer (Smoke-Tests).
 
 ### Der konkrete Anwendungsfall (Problemstellung)

@@ -1140,7 +1140,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                 </div>
                                 <div>
                                     <h4 className="text-sm font-bold text-foreground group-hover:text-success font-outfit">Rechengraph (PANG)</h4>
-                                    <p className="text-xs text-muted-foreground mt-1">Für strukturierte Netzwerke (z.B. VLSM), RAID oder grafisch vernetzte Variablen.</p>
+                                    <p className="text-xs text-muted-foreground mt-1">Für strukturierte Netzwerke (z.B. VLSM) oder grafisch vernetzte Variablen.</p>
                                 </div>
                             </button>
 

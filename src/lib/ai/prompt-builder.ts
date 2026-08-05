@@ -9,7 +9,7 @@ import { logger } from '../logger';
 
 /**
  * Helper to determine whether deterministic PANG engine point awarding should be disabled (default true for custom tasks).
- * Enforces strict PANG scoring for system VLSM/RAID skills, unless explicitly overridden in the graph metadata.
+ * Enforces strict PANG scoring for system VLSM skills, unless explicitly overridden in the graph metadata.
  */
 export function shouldDisablePoints(taskType?: string, gradingGraph?: any): boolean {
     if (gradingGraph && typeof gradingGraph.disablePoints === 'boolean') {

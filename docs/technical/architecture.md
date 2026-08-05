@@ -105,7 +105,7 @@ graph TD
 
 ### 3.2 Dual-Engine Assessment (PANG vs. CalcTrace) 📐⚙️
 Um eine präzise mathematisch-technische Bewertung mit didaktischer Folgefehler-Kompensation zu garantieren, verfügt Koreki über zwei spezialisierte Bewertungs-Engines:
-*   **PANG Engine (Graph-basiert):** Wird für komplexe, netzwerkartige oder abhängige Tabellenstrukturen (wie VLSM-Subnetting oder RAID-Kapazitäten) eingesetzt. Sie baut einen topologisch sortierten gerichteten Graphen (`GradingGraph`) auf und nutzt `expr-eval` zur Formelauflösung.
+*   **PANG Engine (Graph-basiert):** Wird für komplexe, netzwerkartige oder abhängige Tabellenstrukturen (wie VLSM-Subnetting) eingesetzt. Sie baut einen topologisch sortierten gerichteten Graphen (`GradingGraph`) auf und nutzt `expr-eval` zur Formelauflösung.
 *   **CalcTrace Engine (Rechenketten-basiert):** Wird für lineare Formeln in MINT-Fächern (wie Elektrotechnik, Physik) verwendet. Sie evaluiert eine flache Kette von Berechnungsschritten (`CalcTrace`) sequenziell und nutzt eine sandboxed mathjs-AST-Prüfung (`validateAST`) zum Schutz vor Prompt-Injection in generierten Formeln.
 
 Beide Engines propagieren Fehler mithilfe eines Dual-Context-Modells (Musterlösung vs. Schüler-Kontext), um folgerichtige Folgeschritte mit vollen Kulanzpunkten zu bewerten.
