@@ -3,7 +3,7 @@ title: "Architektonische Evaluation: Koreki Graph-Skill-System vs. OpenClaw AI"
 description: "Vergleichende Analyse des deterministischen MINT-Graph-Bewertungssystems von Koreki und des prozeduralen Agenten-Playbook-Systems von OpenClaw AI zur Ableitung strategischer Produkt-Leitlinien."
 author: "@principal_architect"
 date: "2026-05-24"
-last_updated: "2026-05-24"
+last_updated: "2026-08-05"
 status: "In Review"
 domain: "technical"
 security_classification: "Internal"
@@ -30,7 +30,7 @@ graph TD
         K_Start["Schülerantwort (Freitext/Tabelle)"] --> K_Ext["1. Isomorphe Extraktion (LLM/Regex)"]
         K_Ext -->|Student Values| K_Runner["2. GraphRunner.ts (Interpreter)"]
         K_Graph["GradingGraph (Topologischer Baum)"] --> K_Runner
-        K_Runner -->|Formelauswertung| K_Plugins["3. Rechen-Plugins (plugins.ts: math, network, raid)"]
+        K_Runner -->|Formelauswertung| K_Plugins["3. Rechen-Plugins (plugins.ts: math, network)"]
         K_Plugins -->|Kompensation| K_Final["Didaktisch korrektes Folgefehler-Feedback"]
     end
 
@@ -54,7 +54,7 @@ graph TD
    * **OpenClaw AI:** Ein **Skill** ist ein prozedurales Dokument in verständlichem Markdown (`SKILL.md`), das dem LLM Schritt für Schritt erklärt, wie es eine Aufgabe manuell mit Tools löst.
 
 3. **Die Rolle von "Plugins":**
-   * **Koreki:** Plugins sind fachspezifische mathematische Bibliotheken (`networkPlugin`, `raidPlugin`), die formelbasierte Zwischenergebnisse berechnen.
+   * **Koreki:** Plugins sind fachspezifische mathematische Bibliotheken (`networkPlugin`), die formelbasierte Zwischenergebnisse berechnen.
    * **OpenClaw AI:** Plugins sind System-Erweiterungen (z. B. WhatsApp/Discord-Kanal-Konnektoren oder neue AI-Provider-Schnittstellen).
 
 ---
@@ -137,7 +137,9 @@ Eine kritische Analyse unseres aktuellen Codes zeigt, dass wir die Kernprozesse 
 
 ### 1. Der Flaschenhals: Hardcodierte Fach-Plugins in TypeScript (`plugins.ts`)
 *   **Der Ist-Zustand:** 
-    Aktuell sind unsere Berechnungsregeln (z. B. `networkPlugin`, `raidPlugin`) fest im TypeScript-Code einprogrammiert. Möchte das LLM einen Bewertungsgraphen für ein neues Fachgebiet (z. B. Physik mit dem Ohmschen Gesetz oder Wirtschaft mit Zinsrechnung) generieren, scheitert dies: Unser Parser in `graph-generator.ts` muss alle Ausdrücke, die nicht in `plugins.ts` fest hinterlegt sind, aus Sicherheitsgründen **strikte verwerfen und überspringen**, um Runtime-Crashes zu verhindern.
+    Aktuell sind unsere Berechnungsregeln (z. B. `networkPlugin`) fest im TypeScript-Code einprogrammiert. Möchte das LLM einen Bewertungsgraphen für ein neues Fachgebiet (z. B. Physik mit dem Ohmschen Gesetz oder Wirtschaft mit Zinsrechnung) generieren, scheitert dies: Unser Parser in `graph-generator.ts` muss alle Ausdrücke, die nicht in `plugins.ts` fest hinterlegt sind, aus Sicherheitsgründen **strikte verwerfen und überspringen**, um Runtime-Crashes zu verhindern.
+    >
+    > **Nachtrag (2026-08-05):** Für den Fall "eine Formel, ein Zielwert mit Einheit" (Physik, Wirtschaft, allgemeine Mathematik) wurde dieser Flaschenhals durch CalcTrace bereits aufgelöst — dort wertet eine unitbewusste `mathjs`-Sandbox freie Rechenwege ohne Domänen-Plugin aus (siehe [calc-trace-engine.md](../technical/calc-trace-engine.md)). Der hier beschriebene Flaschenhals betrifft PANG nur noch dort, wo echte strukturelle Mehrfach-Slot-Abhängigkeiten mit nicht-numerischen Werten nötig sind (aktuell: `network`/VLSM) — dafür bleibt echter TypeScript-Code nötig, ein generischer Formel-Parser würde z. B. eine Broadcast-Adresse nicht berechnen können.
 *   **Die Vereinfachung (Deklaratives Dynamic Sandboxing):**
     Wir sollten die Notwendigkeit, neue Domänen-Plugins in TypeScript zu kompilieren, komplett auflösen. 
     *   **Konzept:** Wir führen einen leichtgewichtigen, sicheren Formel-Parser (z. B. über eine sandboxed Math-Bibliothek) im `GraphRunner.ts` ein. 
@@ -164,7 +166,7 @@ Da unser System bereits darauf ausgelegt ist, den Grading-Graphen vollautomatisc
 > Da Koreki im sensiblen Bildungssektor operiert und OpenClaw im lokalen System-Management agiert, ergeben sich fundamentale Unterschiede in der Risikobewertung.
 
 *   **Datenverarbeitung & DSGVO (Koreki):**
-    Unsere Graph-Skills verarbeiten ausschließlich anonymisierte fachliche Datenpunkte (Zahlenwerte, IP-Adressen, RAID-Level). Es werden standardmäßig **keine personenbezogenen Daten (PII)** verarbeitet. Auf Tauri-Desktop-Systemen erfolgt die gesamte Auswertung zudem zu 100 % lokal (isomorphe Offline-Sicherheit).
+    Unsere Graph-Skills verarbeiten ausschließlich anonymisierte fachliche Datenpunkte (Zahlenwerte, IP-Adressen). Es werden standardmäßig **keine personenbezogenen Daten (PII)** verarbeitet. Auf Tauri-Desktop-Systemen erfolgt die gesamte Auswertung zudem zu 100 % lokal (isomorphe Offline-Sicherheit).
 *   **Shadow AI & Systemprivilegien (OpenClaw):**
     OpenClaw AI benötigt weitreichende Lese- und Schreibrechte auf dem Host-System (ausführbare Shell-Commands `exec`, Dateizugriffe). Die Installation von Drittanbieter-Skills aus öffentlichen Registern (wie *ClawHub*) birgt immense Sicherheitsrisiken (z. B. Schadcode-Ausführung unter Benutzerrechten).
 *   **Write-Protection & Injection-Schutz (Koreki):**

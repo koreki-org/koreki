@@ -443,7 +443,7 @@ export async function extractStudentAnswersWithLLM(
     if (!extractionInstructions && graph.discipline) {
         let skillKey = '';
         if (graph.discipline === 'networking') skillKey = 'skill-calc-vlsm';
-        // Add more disciplines here as the system grows (e.g., 'raid' -> 'skill-calc-raid')
+        // Add more disciplines here as the system grows
         
         if (skillKey) {
             const skillEntry = SKILL_REGISTRY[skillKey];

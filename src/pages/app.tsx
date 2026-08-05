@@ -102,7 +102,7 @@ export default function Home() {
             const msg = error.message || error || '';
             const msgLower = String(msg).toLowerCase();
             if (msgLower.includes('422') || msgLower.includes('validation') || msgLower.includes('keinen') || msgLower.includes('bewertungs') || msgLower.includes('gültig')) {
-                alert(`Fehler bei der Graph-Generierung:\n\nDie KI konnte keinen Bewertungs-Graphen erstellen.\n\nHinweis: Das PANG-System ist für mathematisch-numerische Aufgaben (z. B. Subnetting, RAID, Berechnungen) optimiert. Für rein textuelle/konzeptionelle Fragen (wie z. B. Freitext-Erklärungen) ist kein Rechengraph erforderlich – nutze hierfür einfach die Standard-Korrektur ohne Graph.`);
+                alert(`Fehler bei der Graph-Generierung:\n\nDie KI konnte keinen Bewertungs-Graphen erstellen.\n\nHinweis: Das PANG-System ist für strukturierte, netzwerkartige Aufgaben (z. B. Subnetting) optimiert. Für rein textuelle/konzeptionelle Fragen (wie z. B. Freitext-Erklärungen) ist kein Rechengraph erforderlich – nutze hierfür einfach die Standard-Korrektur ohne Graph.`);
             } else {
                 alert(`Fehler bei der Graph-Generierung: ${msg}`);
             }
@@ -158,7 +158,7 @@ export default function Home() {
             const msg = error.message || error || '';
             const msgLower = String(msg).toLowerCase();
             if (msgLower.includes('422') || msgLower.includes('validation') || msgLower.includes('keinen') || msgLower.includes('bewertungs') || msgLower.includes('gültig')) {
-                alert(`Fehler bei der Graph-Generierung:\n\nDie KI konnte keinen Bewertungs-Graphen erstellen.\n\nHinweis: Das PANG-System ist für mathematisch-numerische Aufgaben (z. B. Subnetting, RAID, Berechnungen) optimiert. Für rein textuelle/konzeptionelle Fragen (wie z. B. Freitext-Erklärungen) ist kein Rechengraph erforderlich – nutze hierfür einfach die Standard-Korrektur ohne Graph.`);
+                alert(`Fehler bei der Graph-Generierung:\n\nDie KI konnte keinen Bewertungs-Graphen erstellen.\n\nHinweis: Das PANG-System ist für strukturierte, netzwerkartige Aufgaben (z. B. Subnetting) optimiert. Für rein textuelle/konzeptionelle Fragen (wie z. B. Freitext-Erklärungen) ist kein Rechengraph erforderlich – nutze hierfür einfach die Standard-Korrektur ohne Graph.`);
             } else {
                 alert(`Fehler bei der Graph-Generierung: ${msg}`);
             }

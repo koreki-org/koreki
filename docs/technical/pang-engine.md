@@ -16,7 +16,7 @@ security_classification: "Internal"
 > **Zusammenfassung:** Die PANG Engine (**P**ath-based **A**nd **N**ested **G**rading Engine) ist ein modularer, mathematisch-logischer Korrektur-Interpreter zur hochpräzisen Folgefehler-Kompensation (Consecutive Error Compensation) in Schülerarbeiten. Sie ermöglicht didaktisch korrekte Teilpunkte-Bewertungen bei mathematischen Berechnungen, Tabellen und Kettenaufgaben.
 > **Zielgruppe:** Core-Entwickler, QA-Ingenieure und Product Manager zur Einordnung der mathematischen Graph-Evaluation.
 
-Die PANG Engine löst das Problem, dass herkömmliche Sprachmodelle bei der Bewertung von Zahlenwerten in MINT-Fächern (z. B. Subnetting, RAID-Kapazitäten, physikalische Formeln) unzuverlässig sind und Folgefehler fehlerhafter Zwischenschritte oft fälschlicherweise als Primärfehler bestrafen. Mithilfe eines deterministischen mathematischen Bewertungsgraphen (`GradingGraph`) und isomorpher LLM-gestützter Variablenextraktion führt Koreki eine faire, didaktisch einwandfreie Korrektur durch.
+Die PANG Engine löst das Problem, dass herkömmliche Sprachmodelle bei der Bewertung strukturierter, mehrstufiger MINT-Aufgaben (z. B. VLSM-Subnetting) unzuverlässig sind und Folgefehler fehlerhafter Zwischenschritte oft fälschlicherweise als Primärfehler bestrafen. Mithilfe eines deterministischen mathematischen Bewertungsgraphen (`GradingGraph`) und isomorpher LLM-gestützter Variablenextraktion führt Koreki eine faire, didaktisch einwandfreie Korrektur durch.
 
 ---
 
@@ -43,7 +43,29 @@ graph TD
 1. **Verbatim & Intent Extraction:** Ein spezialisiertes, schlankes LLM-Prompting extrahiert die tatsächlichen Werte, die der Schüler verwendet oder errechnet hat (ohne diese zu korrigieren). Fällt das LLM aus oder wirft der API-Aufruf Fehler, fängt das System dies sicher ab, und nicht angegebene Werte werden deterministisch als Omissionen (0 Punkte, primary_error) deklariert, um fehlerhafte heuristische Zuordnungen auszuschließen.
 2. **Deterministic Evaluation (PANG Interpreter):** Ein zustandsfreier Interpreter läuft durch den topologisch sortierten Graphen. Berechnet der Schüler einen Zwischenschritt falsch, wird sein fehlerhafter Wert in alle Folgeformeln eingesetzt. Ergibt sich daraus ein folgerichtiges Ergebnis, erhält der Schüler für die nachfolgenden Schritte volle Kulanzpunkte (Folgefehler-Kompensation).
 
-### 2.1 Härtung der Variablenextraktion (MINT- & Binär-Normalisierung)
+### 2.1 Engine-Routing: Wann aktiviert sich PANG statt CalcTrace?
+> [!IMPORTANT]
+> Die Wahl zwischen PANG und [CalcTrace](./calc-trace-engine.md) ist **keine KI-Entscheidung zur Korrektur-Laufzeit**. Sie ist eine deterministische Datenprüfung auf `task.gradingGraph` vs. `task.targetGoal`, die vorher — beim Hochladen der Musterlösung — feststeht.
+
+**1. Automatische Vorklassifizierung beim Upload:** Der `clean-and-analyze`-Prompt klassifiziert jede Aufgabe in `suggestGraph` (bool) und `predictedPluginDomain` (`"network"` | `"math"` | `null`). Die erlaubten Domänen werden dynamisch aus `PLUGIN_MANIFEST` in [plugins.ts](../../src/lib/grading/plugins.ts) gezogen (`getAvailablePluginManifest()`) — die KI kann also nur Domänen vorschlagen, für die tatsächlich Plugin-Funktionen registriert sind.
+
+**2. Deterministische Zwangsweiche (kein UI, keine Wahl):** In [`useProcessingPipeline.ts`](../../src/hooks/file-processor/useProcessingPipeline.ts) greift direkt danach eine hartkodierte Regel:
+```ts
+taskType: task.predictedPluginDomain === 'math' ? 'calc-trace' : 'default'
+```
+Jede als `"math"` klassifizierte Aufgabe (Physik, Elektrotechnik, allgemeine Mathematik, Prozentrechnung — alles außer Netzwerk-/Subnetz-Berechnungen) wird **sofort und ohne Rückfrage** auf CalcTrace geroutet. Der Lehrkraft wird dafür keine Engine-Wahl angezeigt, weil es strukturell keine sinnvolle PANG-Alternative gibt: eine einzelne Formel zu einem Zielwert mit Einheit ist exakt CalcTrace' Kernfall.
+
+**3. Netzwerk-Domäne bleibt offen:** Nur bei `"network"` bleibt `taskType: 'default'`. Hier erscheint lediglich ein Vorschlag (der `suggestGraph`-Nudge auf der Musterlösungs-Karte), kein Zwang — nicht jede Netzwerkaufgabe braucht PANGs Mehr-Slot-Struktur (z. B. ist „Wie viele nutzbare Hosts hat ein /26-Netz?" ein CalcTrace-Fall trotz Netzwerk-Domäne).
+
+**4. Manuelle Override-Möglichkeit für jede Aufgabe:** Unabhängig von der automatischen Klassifikation kann die Lehrkraft über das „Evaluierungs-Engine auswählen"-Modal in [`ModelSolutionCard.tsx`](../../src/components/upload/ModelSolutionCard.tsx) jederzeit explizit zwischen PANG-Rechengraph und CalcTrace-Rechenkette wechseln.
+
+**5. Der eigentliche Dispatch bei der Korrektur:** In [`ai-orchestrator.ts`](../../src/lib/ai/ai-orchestrator.ts) prüft der Orchestrator zur Korrektur-Zeit nur noch Datenpräsenz, keine Domäne mehr:
+```ts
+if (task.gradingGraph)                              → PANG (GraphRunner)
+else if (task.targetGoal || task.calcTrace || ...)   → CalcTrace
+```
+
+### 2.2 Härtung der Variablenextraktion (MINT- & Binär-Normalisierung)
 Da der mathematische Bewertungsgraph zur Vermeidung von Einheiten-Konflikten in Formelketten deterministisch mit physikalischen SI-Basiseinheiten (z. B. Ohm [$\Omega$], Ampere [$A$], Volt [$V$], Watt [$W$]) rechnet oder bestimmte Datenmengen-Ziel-Einheiten erwartet, die Schüler jedoch flexibel mit oder ohne Vorsatzzeichen und in unterschiedlichen Einheiten rechnen dürfen, greift in Phase 1 eine spezialisierte **Präfix-Härtung** im System-Prompt der LLM-Variablenextraktion (`system.md` Rule 10):
 
 * **Deterministische Präfix-Normalisierung (Dezimal & Binär):** Das LLM extrahiert Einheiten-Präfixe nicht mehr rein syntaktisch, sondern übersetzt Schülerwerte mit Vorsatzzeichen vor der Übergabe an den Graphen deterministisch in die mathematische SI-Basiseinheit oder die vom Graphen erwartete Ziel-Einheit:
@@ -76,7 +98,7 @@ Die PANG Engine unterstützt die voll-dynamische Auswertung komplexer mathematis
 Der Parser liest mathematische Zeichenketten ein, setzt die Werte der referenzierten Graphenvariablen aus dem aktuellen Kontext ein und wertet das Ergebnis sicher aus. Er unterstützt standardmäßig:
 *   Standardoperatoren (`+`, `-`, `*`, `/`, `^`, `%`) und Klammern.
 *   Mathematische Kernfunktionen (`sqrt`, `abs`, `sin`, `cos`, `tan`, `acos`, `asin`, `atan`, `min`, `max`, `ceil`, `floor`, `log2`) und Konstanten (`pi`, `e`).
-*   Ternäre Bedingungen (`condition ? true : false`) für komplexe RAID-Kapazitätsprüfungen.
+*   Ternäre Bedingungen (`condition ? true : false`) für strukturelle Alternativ-Fälle (siehe 3.3, Subnetz-Rotationen).
 *   Zusätzliche globale Domänenfunktionen für IP-Umrechnungen (`ipToLong` und `longToIp`).
 
 #### Plugin Manifest & LLM Introspection (SOLID)
@@ -88,7 +110,10 @@ Gemäß dem **Single Responsibility Principle (SRP)** und **Open/Closed Principl
 > Sprachmodelle neigen bei MINT-Aufgaben zu Halluzinationen (z. B. Übergabe einer Broadcast-Adresse anstatt einer Netz-ID an `calculateNetId`). Die `description`-Felder im Manifest müssen daher idiotensicher und restriktiv formuliert sein (z. B. *"Erwartet zwingend die VORHERIGE NETZ-ID ... und NIEMALS eine Broadcast-Adresse!"*).
 
 #### Abwärtskompatibilität für Domänen-Plugins:
-Um bestehende Graphen-Presets weiterhin fehlerfrei auszuführen, registriert das System alle konventionellen Plugin-Funktionen (`networkPlugin`, `raidPlugin`) beim App-Start automatisch im Parser. Vorkommen von Punkten (wie `network.calculateMask(...)`) werden transparent auf die registrierten Funktionen (z. B. `network_calculateMask`) umgemappt:
+Um bestehende Graphen-Presets weiterhin fehlerfrei auszuführen, registriert das System alle konventionellen Plugin-Funktionen (`networkPlugin`) beim App-Start automatisch im Parser. Vorkommen von Punkten (wie `network.calculateMask(...)`) werden transparent auf die registrierten Funktionen (z. B. `network_calculateMask`) umgemappt:
+
+> [!NOTE]
+> **RAID entfernt (2026-08-05):** `raidPlugin` wurde vollständig entfernt (Plugin, Registrierung und `raid.`→`raid_`-Mapping). Es gab keine gespeicherten Musterlösungen, die darauf angewiesen waren. RAID-Kapazitätsrechnungen (eine Formel, ein Zielwert mit Einheit) passen strukturell ohnehin besser zu CalcTrace als zu PANG.
 
 ```typescript
 import { Parser } from 'expr-eval';
@@ -113,7 +138,6 @@ export function evaluateExpression(expression: string, context: Record<string, a
   // Mapping für Abwärtskompatibilität der alten Dot-Syntax
   const sanitizedExpression = expression
     .replace(/network\./g, 'network_')
-    .replace(/raid\./g, 'raid_')
     .replace(/math\./g, 'math_');
 
   return parser.evaluate(sanitizedExpression, context);
@@ -166,7 +190,7 @@ Um zu verhindern, dass ein Schüler dieselbe IP doppelt verwendet (was bei unabh
 Um die didaktische Starrheit bei der Korrektur von Freitexten zu reduzieren, unterstützt die PANG Engine ein differenziertes **Hybrid-Grading**. Dies wird über das optionale Feld `disablePoints?: boolean` im `GradingGraph`-Schema gesteuert:
 
 #### A) Differentiated Defaults (Differenzierte Standards)
-*   **Strenge Punktevergabe (`disablePoints = false`):** Bei komplexen IT-Systemskills (wie `vlsm` / `skill-calc-vlsm` oder `skill-calc-raid`) sind mathematische Fehler unverzeihlich und müssen absolut präzise bestraft werden. Hier bestimmt PANG die Punkte starr und überschreibt jegliche LLM-Punktevergabe.
+*   **Strenge Punktevergabe (`disablePoints = false`):** Bei komplexen IT-Systemskills (wie `vlsm` / `skill-calc-vlsm`) sind mathematische Fehler unverzeihlich und müssen absolut präzise bestraft werden. Hier bestimmt PANG die Punkte starr und überschreibt jegliche LLM-Punktevergabe.
 *   **Hybrid-Grading (`disablePoints = true`):** Bei allgemeinen mathematischen/naturwissenschaftlichen Aufgaben (z. B. Physikrechnungen) soll die KI kulant und didaktisch flexibel reagieren. PANG ermittelt nur die Fehler und Folgefehler-Kompensationen, während das LLM die finalen Punkte didaktisch tolerant auf Basis des Modells und der PANG-Engine-Auswertung vergibt.
 
 #### B) UI & UX-Integration im Graph-Designer

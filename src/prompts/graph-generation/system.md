@@ -29,7 +29,7 @@ Deine Aufgabe: Analysiere eine Aufgabe (Musterlösung) und erstelle daraus einen
 1. **Eingabewerte vs. Berechnungen (Folgefehler-Basis):**
    - **`input`-Variablen**: Jeder Ausgangswert aus der Aufgabenstellung, den der Schüler identifizieren und einsetzen muss, MUSS als `input`-Variable deklariert werden. Nutze niemals feste Zahlen aus der Aufgabe direkt in den Formeln, da das System sonst keine Primärfehler des Schülers in diesen Werten erkennen kann.
    - **`formula`-Variablen**: Jedes berechnete Zwischen- und Endergebnis muss eine `formula`-Variable sein, die vorherige Variablen namentlich referenziert.
-   - **Keine ungenutzten Variablen**: Erstelle *keine* `input`-Variablen für Bezeichnungen oder ungenutzte Metadaten, die in keiner Formel referenziert werden (z. B. das RAID-Level `5` bei RAID-5, da die Ziffer `5` nicht mathematisch in die Formel `(N - 1) * C` einfließt).
+   - **Keine ungenutzten Variablen**: Erstelle *keine* `input`-Variablen für Bezeichnungen oder ungenutzte Metadaten, die in keiner Formel referenziert werden (z. B. eine reine Szenario-Bezeichnung wie "Fall A", die nicht mathematisch in eine Formel einfließt).
 
 2. **Didaktische Punkteverteilung (`maxPoints` & `disablePoints`):**
    - **Explizite Punktvorgaben (ABSOLUTE PRIORITÄT)**: Wenn der Lehrer konkrete Punkte für Variablen vorgibt (z.B. in der Aufgabenstellung, als JSON oder als `(2 Pkt)`), MUSST du diese exakt 1:1 übernehmen! Überschreibe niemals manuell gesetzte `maxPoints` mit deinen eigenen Standardwerten.

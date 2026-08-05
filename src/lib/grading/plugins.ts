@@ -118,56 +118,6 @@ export const networkPlugin = {
   }
 };
 
-// Global Plugin Registry
-export const raidPlugin = {
-  /**
-   * Calculates net capacity for RAID levels 0, 1, 5, 6, 10
-   */
-  calculateNetCapacity(level: number | string, disks: number, size: number): number {
-    const lvl = typeof level === 'string' ? parseInt(level, 10) : level;
-    switch (lvl) {
-      case 0:
-        return disks * size;
-      case 1:
-        return size;
-      case 5:
-        return Math.max(0, disks - 1) * size;
-      case 6:
-        return Math.max(0, disks - 2) * size;
-      case 10:
-        return Math.floor(disks / 2) * size;
-      default:
-        throw new Error(`Unsupported RAID level: ${level}`);
-    }
-  },
-
-  /**
-   * Calculates fault tolerance (maximum fail-safe disk loss) for RAID levels 0, 1, 5, 6, 10
-   */
-  calculateFaultTolerance(level: number | string, disks: number): number {
-    const lvl = typeof level === 'string' ? parseInt(level, 10) : level;
-    switch (lvl) {
-      case 0:
-        return 0;
-      case 1:
-        return Math.max(0, disks - 1);
-      case 5:
-        return disks >= 3 ? 1 : 0;
-      case 6:
-        return disks >= 4 ? 2 : 0;
-      case 10:
-        return disks >= 4 ? 1 : 0; // Guaranteed minimum is 1
-      default:
-        throw new Error(`Unsupported RAID level: ${level}`);
-    }
-  },
-
-  // Aliases for LLM resilience
-  calculateCapacity(level: number | string, disks: number, size: number): number {
-    return this.calculateNetCapacity(level, disks, size);
-  }
-};
-
 // Math Domain Engine
 export const mathPlugin = {
   add(a: number | string, b: number | string): number {
@@ -206,7 +156,6 @@ export const mathPlugin = {
 
 export const plugins: Record<string, Record<string, Function>> = {
   network: networkPlugin,
-  raid: raidPlugin,
   math: mathPlugin,
   // Future extensions:
   // physics: physicsPlugin,
@@ -245,7 +194,6 @@ export function evaluateExpression(expression: string, context: Record<string, a
   // Map dots to underscores to support old format backward compatibility
   const sanitizedExpression = expression
     .replace(/network\./g, 'network_')
-    .replace(/raid\./g, 'raid_')
     .replace(/math\./g, 'math_');
 
   return parser.evaluate(sanitizedExpression, context);

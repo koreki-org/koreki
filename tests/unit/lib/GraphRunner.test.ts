@@ -118,102 +118,43 @@ describe('GradingGraph Engine - VLSM Subnetting Tests', () => {
     expect(bBroadcastStep.points).toBe(0);
   });
 
-});
-
-describe('GradingGraph Engine - RAID Capacity Tests', () => {
-  const raidGraph: GradingGraph = {
-    taskId: 'raid-exam-task-1',
-    discipline: 'computer-science-storage',
-    variables: [
-      { id: 'raid_level', type: 'input', defaultValue: 5, validationType: 'exact' },
-      { id: 'disk_count', type: 'input', defaultValue: 4, validationType: 'exact' },
-      { id: 'disk_size', type: 'input', defaultValue: 1000, validationType: 'exact' },
-      { id: 'net_capacity', type: 'formula', expression: 'raid.calculateNetCapacity(raid_level, disk_count, disk_size)', validationType: 'exact' },
-      { id: 'fault_tolerance', type: 'formula', expression: 'raid.calculateFaultTolerance(raid_level, disk_count)', validationType: 'exact' }
-    ]
-  };
-
-  test('Test Case 1: Perfect RAID Student Answer (100% correct)', () => {
-    const perfectStudentResults = {
-      raid_level: 5,
-      disk_count: 4,
-      disk_size: 1000,
-      net_capacity: 3000,
-      fault_tolerance: 1
-    };
-
-    const result = GraphRunner.grade(raidGraph, perfectStudentResults);
-
-    expect(result.totalPoints).toBe(5);
-    expect(result.maxPoints).toBe(5);
-    
-    result.stepResults.forEach(step => {
-      expect(step.status).toBe('correct');
-    });
-  });
-
-  test('Test Case 2: One Initial Primary Error with Perfect RAID Follow-Through (Consecutive Compensation)', () => {
-    // Student makes error: disk_count = 3 (expected: 4)
-    // Based on disk_count = 3, net_capacity should follow-through to 2000 (i.e. (3-1) * 1000)
-    // fault_tolerance is 1
-    const errorStudentResults = {
-      raid_level: 5,
-      disk_count: 3, // PRIMARY ERROR
-      disk_size: 1000,
-      net_capacity: 2000, // CONSECUTIVE CORRECT (propagated from disk_count = 3)
-      fault_tolerance: 1 // CONSECUTIVE CORRECT
-    };
-
-    const result = GraphRunner.grade(raidGraph, errorStudentResults);
-
-    expect(result.totalPoints).toBe(4); // 4/5 points (1 penalty for disk_count)
-    expect(result.maxPoints).toBe(5);
-
-    const diskCountStep = result.stepResults.find(s => s.variableId === 'disk_count')!;
-    expect(diskCountStep.status).toBe('primary_error');
-
-    const netCapacityStep = result.stepResults.find(s => s.variableId === 'net_capacity')!;
-    expect(netCapacityStep.status).toBe('consecutive_correct');
-    expect(netCapacityStep.points).toBe(1);
-
-    const faultToleranceStep = result.stepResults.find(s => s.variableId === 'fault_tolerance')!;
-    expect(faultToleranceStep.status).toBe('correct');
-  });
-
   test('Test Case 4: Symmetrical Input Fallback (omitted inputs in student results)', () => {
-    // If student results omit raid_level, disk_count, disk_size:
-    // They should be automatically treated as correct and propagated downstream.
+    // If student results omit subnetA_hosts, subnetA_netId, subnetB_hosts:
+    // They should be automatically treated as correct (defaults) and propagated downstream.
     const studentResults = {
-      net_capacity: 3000,
-      fault_tolerance: 1
+      subnetA_mask: '/26',
+      subnetA_broadcast: '192.168.1.63',
+      subnetB_mask: '/27',
+      subnetB_netId: '192.168.1.64',
+      subnetB_broadcast: '192.168.1.95'
     };
 
-    const result = GraphRunner.grade(raidGraph, studentResults);
+    const result = GraphRunner.grade(vlsmGraph, studentResults);
 
-    // Total points should be 2/5 (0 points for the 3 omitted inputs, 2 points for the correct formulas)
-    expect(result.totalPoints).toBe(2);
-    expect(result.maxPoints).toBe(5);
+    // Total points should be 5/8 (0 points for the 3 omitted inputs, 5 points for the correct formulas)
+    expect(result.totalPoints).toBe(5);
+    expect(result.maxPoints).toBe(8);
 
-    // raid_level, disk_count, disk_size should have status 'primary_error' (omitted) and 0 points
-    const levelStep = result.stepResults.find(s => s.variableId === 'raid_level')!;
-    expect(levelStep.status).toBe('primary_error');
-    expect(levelStep.studentValue).toBeNull(); // default propagated in math context, but null in studentValue
-    expect(levelStep.points).toBe(0);
+    // subnetA_hosts, subnetA_netId, subnetB_hosts should have status 'primary_error' (omitted) and 0 points
+    const hostsStep = result.stepResults.find(s => s.variableId === 'subnetA_hosts')!;
+    expect(hostsStep.status).toBe('primary_error');
+    expect(hostsStep.studentValue).toBeNull(); // default propagated in math context, but null in studentValue
+    expect(hostsStep.points).toBe(0);
 
-    const diskCountStep = result.stepResults.find(s => s.variableId === 'disk_count')!;
-    expect(diskCountStep.status).toBe('primary_error');
-    expect(diskCountStep.studentValue).toBeNull(); // default propagated in math context, but null in studentValue
-    expect(diskCountStep.points).toBe(0);
+    const netIdStep = result.stepResults.find(s => s.variableId === 'subnetA_netId')!;
+    expect(netIdStep.status).toBe('primary_error');
+    expect(netIdStep.studentValue).toBeNull(); // default propagated in math context, but null in studentValue
+    expect(netIdStep.points).toBe(0);
 
-    const diskSizeStep = result.stepResults.find(s => s.variableId === 'disk_size')!;
-    expect(diskSizeStep.status).toBe('primary_error');
-    expect(diskSizeStep.studentValue).toBeNull(); // default propagated in math context, but null in studentValue
-    expect(diskSizeStep.points).toBe(0);
+    const subnetBHostsStep = result.stepResults.find(s => s.variableId === 'subnetB_hosts')!;
+    expect(subnetBHostsStep.status).toBe('primary_error');
+    expect(subnetBHostsStep.studentValue).toBeNull(); // default propagated in math context, but null in studentValue
+    expect(subnetBHostsStep.points).toBe(0);
 
-    // net_capacity is formula and student got 3000, which matches expected (4-1)*1000
-    const capStep = result.stepResults.find(s => s.variableId === 'net_capacity')!;
-    expect(capStep.status).toBe('correct');
-    expect(capStep.points).toBe(1);
+    // subnetA_mask is a formula and the student got '/26', matching the default-derived value
+    const maskStep = result.stepResults.find(s => s.variableId === 'subnetA_mask')!;
+    expect(maskStep.status).toBe('correct');
+    expect(maskStep.points).toBe(1);
   });
 });
 

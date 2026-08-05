@@ -21,6 +21,9 @@ In MINT-Fächern hängen Berechnungen oft sequenziell voneinander ab, und Schül
 
 ---
 
+> [!NOTE]
+> **Wann aktiviert sich CalcTrace statt PANG?** Diese Weiche ist zentral in [pang-engine.md §2.1](./pang-engine.md) dokumentiert (Engine-Routing). Kurzfassung: Aufgaben, die der Upload-Klassifikator als `predictedPluginDomain: "math"` einstuft, werden deterministisch auf CalcTrace geroutet — ohne Rückfrage an die Lehrkraft, da eine einzelne Formel zu einem Zielwert mit Einheit strukturell keine PANG-Alternative braucht.
+
 ## 2. Architektur & Systemdesign
 
 Die Auswertung basiert auf zwei Phasen: **Extraktion** und **Sandbox-Evaluierung**.
