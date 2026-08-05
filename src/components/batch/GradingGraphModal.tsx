@@ -16,6 +16,7 @@ import { cn } from '@/lib/utils';
 import { AppSettings } from '../../types';
 import { apiClient } from '@/lib/api-client';
 import { performAIRequest } from '@/lib/ai/ai-orchestrator';
+import { isLocalInstance } from '@/lib/env-context';
 
 interface GradingGraphModalProps {
     isOpen: boolean;
@@ -98,6 +99,10 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     const [isRefining, setIsRefining] = useState(false);
     const [initialUserNotes, setInitialUserNotes] = useState("");
     const [showAdvancedInspector, setShowAdvancedInspector] = useState(false);
+
+    // Nur im SaaS-Betrieb kosten KI-Aktionen Credits. PURE (eigener Key), Community und
+    // Desktop rechnen nicht ab — dort waere ein Preis-Hinweis schlicht falsch.
+    const showsCreditCost = !isLocalInstance() && (appMode === 'STANDARD' || appMode === 'TRIAL');
 
     const [skillName, setSkillName] = useState(() => {
         if (taskType && taskType.startsWith('custom-skill-') && customSkills?.[taskType]) {
@@ -664,6 +669,9 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                         <Sparkles size={14} />
                                                     )}
                                                     <span>{isGenerating ? "Erstelle Graph..." : "🪄 Graph mit KI generieren"}</span>
+                                                    {!isGenerating && showsCreditCost && (
+                                                        <span className="bg-white/20 rounded px-1 text-xs font-black leading-none py-0.5">1 C</span>
+                                                    )}
                                                 </Button>
                                             )}
                                         </div>
@@ -750,30 +758,37 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         </div>
 
                                         {/* Chat Input Bar */}
-                                        <div className="flex items-end gap-2 shrink-0 pt-2 border-t border-slate-100">
-                                            <Textarea
-                                                value={chatInput}
-                                                disabled={isRefining || isLocked}
-                                                onChange={(e) => setChatInput(e.target.value)}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' && !e.shiftKey) {
-                                                        e.preventDefault();
-                                                        if (chatInput.trim() && !isLocked) {
-                                                            handleRefineGraph();
+                                        <div className="flex flex-col gap-1.5 shrink-0 pt-2 border-t border-slate-100">
+                                            <div className="flex items-end gap-2">
+                                                <Textarea
+                                                    value={chatInput}
+                                                    disabled={isRefining || isLocked}
+                                                    onChange={(e) => setChatInput(e.target.value)}
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                                            e.preventDefault();
+                                                            if (chatInput.trim() && !isLocked) {
+                                                                handleRefineGraph();
+                                                            }
                                                         }
-                                                    }
-                                                }}
-                                                rows={1}
-                                                placeholder={isLocked ? "Graph ist schreibgeschützt..." : "z.B. Erhöhe Toleranzen..."}
-                                                className="flex-grow min-h-[38px] max-h-[120px] px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 bg-white placeholder-slate-400 disabled:opacity-60 transition-all duration-200 resize-none custom-scrollbar leading-relaxed"
-                                            />
-                                            <button
-                                                onClick={handleRefineGraph}
-                                                disabled={isRefining || !chatInput.trim() || isLocked}
-                                                className="h-9 w-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center transition-all duration-200 shadow-sm shrink-0 mb-0.5"
-                                            >
-                                                <Send size={13} className="relative -left-0.5" />
-                                            </button>
+                                                    }}
+                                                    rows={1}
+                                                    placeholder={isLocked ? "Graph ist schreibgeschützt..." : "z.B. Erhöhe Toleranzen..."}
+                                                    className="flex-grow min-h-[38px] max-h-[120px] px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-none focus:border-indigo-500 bg-white placeholder-slate-400 disabled:opacity-60 transition-all duration-200 resize-none custom-scrollbar leading-relaxed"
+                                                />
+                                                <button
+                                                    onClick={handleRefineGraph}
+                                                    disabled={isRefining || !chatInput.trim() || isLocked}
+                                                    className="h-9 w-9 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white disabled:bg-slate-200 disabled:text-slate-400 flex items-center justify-center transition-all duration-200 shadow-sm shrink-0 mb-0.5"
+                                                >
+                                                    <Send size={13} className="relative -left-0.5" />
+                                                </button>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground font-medium px-1">
+                                                {showsCreditCost
+                                                    ? '* Jede Änderungsanweisung kostet 1 Credit'
+                                                    : '* Offline/Community/Pure Modus (0 Credits)'}
+                                            </p>
                                         </div>
                                     </div>
 

@@ -11,6 +11,8 @@ import { SKILL_REGISTRY } from '@/prompts/skills';
 import { GradingGraphModal } from '../batch/GradingGraphModal';
 import { CalcTraceModal } from '../batch/CalcTraceModal';
 import { cn } from '@/lib/utils';
+import { isLocalInstance } from '@/lib/env-context';
+import { useAuth } from '@/hooks/useAuth';
 
 
 interface SkillsSidebarProps {
@@ -255,7 +257,11 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     customSkills, onSaveCustomSkill, onDeleteCustomSkill,
     onStartNew, onImportParsedProfile, onGenerateGraph, onGenerateCalcTrace
 }) => {
-    
+
+    // Nur im SaaS-Betrieb kosten KI-Aktionen Credits (siehe GradingGraphModal).
+    const { userData } = useAuth();
+    const showsCreditCost = !isLocalInstance() && (userData?.appMode === 'STANDARD' || userData?.appMode === 'TRIAL');
+
     // Collapsible Categories State
     const [expandedCategories, setExpandedCategories] = React.useState<Record<string, boolean>>({});
 
@@ -841,7 +847,7 @@ ${skill.prompt || ''}`;
                                                     ) : (
                                                         <Sparkles size={13} />
                                                     )}
-                                                    {isGeneratingGraph ? 'Generiere...' : 'KI-Graph generieren'}
+                                                    {isGeneratingGraph ? 'Generiere...' : `KI-Graph generieren${showsCreditCost ? ' (1 C)' : ''}`}
                                                 </Button>
                                             )}
                                             <Button
@@ -904,7 +910,7 @@ ${skill.prompt || ''}`;
                                                     ) : (
                                                         <Sparkles size={13} />
                                                     )}
-                                                    {isGeneratingTrace ? 'Generiere...' : 'KI-Kette generieren'}
+                                                    {isGeneratingTrace ? 'Generiere...' : `KI-Kette generieren${showsCreditCost ? ' (1 C)' : ''}`}
                                                 </Button>
                                             )}
                                             <Button
@@ -996,6 +1002,7 @@ ${skill.prompt || ''}`;
                     initialGraph={editingSkillData?.gradingGraph}
                     taskName={editingSkillData?.name || "Benutzerdefinierter Skill"}
                     taskContent={editingSkillData?.taskText || editingSkillData?.description || editingSkillData?.name || ""}
+                    appMode={userData?.appMode === 'UNSET' ? undefined : userData?.appMode}
                     onSave={(updatedGraph) => {
                         setEditingSkillData({
                             ...editingSkillData,

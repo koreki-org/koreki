@@ -9,6 +9,7 @@ import { isLocalInstance } from '@/lib/env-context';
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 import { z } from 'zod';
 import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '@/lib/ai/constants';
+import { performBillingAction } from '@/lib/billing';
 
 const GenerateCalcTraceSchema = z.object({
     taskText: z.string().min(1, 'Aufgabentext darf nicht leer sein.'),
@@ -134,9 +135,27 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             dryRunChecked: true
         };
 
+        // --- ATOMIC BILLING (SaaS only) ---
+        // 1 Credit pro Generierungs-Aufruf — also fuer die komplette Rechenkette inkl. aller
+        // Meilensteine und Kriterien, nicht pro Teilziel. Bewusst hier unten platziert: die
+        // Retry-Schleife oben kostet nichts extra, und ein gescheiterter Versuch (422) gar nichts.
+        // Analog zur Bepreisung von generate-graph.ts fuer den strukturell gleichen PANG-Graphen.
+        if (!isLocalInstance()) {
+            const logtoId = req.user.claims.sub;
+            await performBillingAction({
+                logtoId,
+                module: 'correction',
+                inputTokens: 0,
+                outputTokens: 0,
+                creditCost: 1
+            });
+        }
+
         return res.status(200).json(trace);
     } catch (error: any) {
+        const message = error.message || 'Internal Server Error';
+        const isCreditsError = typeof message === 'string' && message.includes('Credits');
         logger.error('API Generate CalcTrace Fatal Error:', error);
-        return res.status(500).json({ error: error.message || 'Internal Server Error' });
+        return res.status(isCreditsError ? 402 : 500).json({ error: message });
     }
 });
