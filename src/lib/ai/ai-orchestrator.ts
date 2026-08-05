@@ -579,7 +579,7 @@ export async function extractStudentAnswersWithLLM(
  * Orchestrates AI requests (Correction, Layout, Vision), choosing between direct Mistral API (PURE) or Koreki Backend (STANDARD).
  */
 export async function performAIRequest(
-    action: 'correction' | 'clean-and-analyze' | 'vision' | 'clean-and-map' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'calc-trace-extraction',
+    action: 'correction' | 'clean-and-analyze' | 'vision' | 'clean-and-map' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace',
     payload: any, // ARCH: any required because payload structure varies by action (Correction vs Layout)
     appMode: 'PURE' | 'STANDARD' | 'TRIAL' | undefined,
     settings: AppSettings,
@@ -958,8 +958,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                             action === 'generate-graph' ? '/api/generate-graph' :
                                 action === 'refine-graph' ? '/api/refine-graph' :
                                     action === 'generate-calc-trace' ? '/api/generate-calc-trace' :
-                                        action === 'calc-trace-extraction' ? '/api/calc-trace-extraction' :
-                                            '/api/extract-image';
+                                        '/api/extract-image';
 
         const res = await apiClient.post(endpoint, { 
             ...payload, 

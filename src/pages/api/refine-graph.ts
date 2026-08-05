@@ -9,6 +9,7 @@ import { isLocalInstance } from '@/lib/env-context';
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 import { z } from 'zod';
 import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '@/lib/ai/constants';
+import { performBillingAction } from '@/lib/billing';
 
 const RefineGraphSchema = z.object({
     taskText: z.string().optional().default(''),
@@ -133,6 +134,19 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         const explanation = typeof rawResult.explanation === 'string' ? rawResult.explanation : '';
 
+        // --- ATOMIC BILLING (SaaS only) ---
+        // 1 Credit pro Verfeinerungs-Anweisung (local/community Instanzen sind befreit).
+        if (!isLocalInstance()) {
+            const logtoId = req.user.claims.sub;
+            await performBillingAction({
+                logtoId,
+                module: 'correction',
+                inputTokens: 0,
+                outputTokens: 0,
+                creditCost: 1
+            });
+        }
+
         return res.status(200).json({
             graph,
             explanation: explanation || `Graph erfolgreich verfeinert!\nEs wurden ${graph.variables.length} Variablen deklariert.`
@@ -140,7 +154,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
     } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Unbekannter Fehler';
+        const isCreditsError = message.includes('Credits');
+        const statusCode = isCreditsError ? 402 : 500;
         logger.error('Graph refinement failed', { error: message });
-        return res.status(500).json({ error: `Graph-Verfeinerung fehlgeschlagen: ${message}` });
+        return res.status(statusCode).json({ error: isCreditsError ? message : `Graph-Verfeinerung fehlgeschlagen: ${message}` });
     }
 });
