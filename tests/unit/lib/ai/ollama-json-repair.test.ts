@@ -104,18 +104,56 @@ describe('Ollama JSON Repair (Layer 1)', () => {
         });
     });
 
-    describe('Bekannte Grenzen', () => {
-        it('documents that single-escaped LaTeX collides with JSON escapes', () => {
-            // \t ist in JSON ein gültiges Escape (Tab). Schreibt das Modell LaTeX
-            // einfach maskiert (\text, \times, \frac), ist nicht entscheidbar, ob ein
-            // Steuerzeichen oder ein LaTeX-Befehl gemeint war — der Befehl wird zerstört.
-            // Eigener Fehler, unabhängig von der Anführungszeichen-Reparatur.
-            const raw = '{"content":"$$1.550\\text{ W}$$"}';
+    describe('Einfach maskiertes LaTeX', () => {
+        // \t ist in JSON ein Tabulator, \f ein Seitenvorschub. Schreibt das Modell LaTeX
+        // nur einfach maskiert, zerstörte JSON.parse den Befehl bisher stillschweigend.
+        it('rescues commands that start with a JSON escape letter', () => {
+            const raw = '{"content":"$$1.550\\text{ W} \\times 1,25 = 1.937,5\\text{ W}$$"}';
 
-            expect(parseRepaired(raw).content).toBe('$$1.550\text{ W}$$');
-            expect(parseRepaired(raw).content).not.toContain('\\text');
+            expect(parseRepaired(raw).content).toContain('\\text{ W}');
+            expect(parseRepaired(raw).content).toContain('\\times');
+            expect(parseRepaired(raw).content).not.toContain('\t');
         });
 
+        it('rescues a fraction that would otherwise become a form feed', () => {
+            const raw = '{"content":"$$\\frac{768.000.000}{1.048.576} = 732,42$$"}';
+
+            expect(parseRepaired(raw).content).toContain('\\frac{768.000.000}');
+            expect(parseRepaired(raw).content).not.toContain('\f');
+        });
+
+        it('covers the other colliding leading letters', () => {
+            const raw = '{"content":"\\beta \\nabla \\rightarrow \\bar{x}"}';
+            const content = parseRepaired(raw).content;
+
+            expect(content).toBe('\\beta \\nabla \\rightarrow \\bar{x}');
+        });
+
+        it('leaves already double-escaped LaTeX untouched', () => {
+            const raw = '{"content":"$$1.550\\\\text{ W}$$"}';
+
+            expect(parseRepaired(raw).content).toBe('$$1.550\\text{ W}$$');
+        });
+
+        it('still treats genuine control characters as control characters', () => {
+            // \t vor beliebigem Text bleibt ein Tabulator — nur bekannte LaTeX-Befehle
+            // werden gerettet, nicht jede Buchstabenfolge.
+            const raw = '{"content":"Spalte1\\tSpalte2\\nZeile2"}';
+            const content = parseRepaired(raw).content;
+
+            expect(content).toContain('\t');
+            expect(content).toContain('\n');
+            expect(content).not.toContain('\\t');
+        });
+
+        it('does not rescue a look-alike that is not a known command', () => {
+            const raw = '{"content":"\\telefon"}';
+
+            expect(parseRepaired(raw).content).toContain('\t');
+        });
+    });
+
+    describe('Bekannte Grenzen', () => {
         it('documents that a quote followed by a comma stays ambiguous', () => {
             // Lokaler Lookahead kann hier nicht zwischen Stringende und Fließtext
             // unterscheiden. Der Fall bleibt kaputt — bewusst festgehalten, damit eine

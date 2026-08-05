@@ -630,14 +630,43 @@ export function escapeInnerQuotes(jsonStr: string): string {
 }
 
 /**
+ * LaTeX-Befehle, deren erster Buchstabe zugleich eine gültige JSON-Escape-Sequenz bildet.
+ *
+ * `\text` ist aus Sicht von JSON.parse ein Tabulator gefolgt von "ext", `\frac` ein
+ * Seitenvorschub gefolgt von "rac". Schreibt ein Modell LaTeX nur einfach maskiert,
+ * wird der Befehl beim Parsen still zerstört — die Rechnung in der Musterlösung ist
+ * danach unlesbar. Nur Befehle nach \b \f \n \r \t sind betroffen; alle anderen
+ * (z. B. `\alpha`) deckt die allgemeine Backslash-Reparatur darunter bereits ab.
+ */
+const LATEX_COMMANDS_COLLIDING_WITH_JSON_ESCAPES = [
+    // \t
+    'text', 'textbf', 'textit', 'times', 'theta', 'tau', 'tan', 'tfrac', 'to', 'top', 'triangle',
+    // \f
+    'frac', 'forall', 'flat', 'frown',
+    // \b
+    'beta', 'bar', 'binom', 'bmod', 'boxed', 'bullet', 'big', 'bigg',
+    // \n
+    'nabla', 'neq', 'not', 'nu', 'nrightarrow',
+    // \r
+    'rightarrow', 'right', 'rho', 'rangle', 'rfloor', 'rceil'
+];
+
+const LATEX_ESCAPE_COLLISION_PATTERN = new RegExp(
+    `(?<!\\\\)\\\\(?=(?:${LATEX_COMMANDS_COLLIDING_WITH_JSON_ESCAPES.join('|')})(?![a-zA-Z]))`,
+    'g'
+);
+
+/**
  * Repariert die typischen JSON-Verstöße lokaler Modelle, bevor JSON.parse greift.
  */
 export function repairJsonString(jsonStr: string): string {
     // 1. Unmaskierte Anführungszeichen innerhalb von Strings maskieren
     let repaired = escapeInnerQuotes(jsonStr);
-    // 2. Unmaskierte Backslashes reparieren (LaTeX, Pfade)
+    // 2. Einfach maskierte LaTeX-Befehle retten, bevor JSON sie als Steuerzeichen liest
+    repaired = repaired.replace(LATEX_ESCAPE_COLLISION_PATTERN, '\\\\');
+    // 3. Unmaskierte Backslashes reparieren (LaTeX, Pfade)
     repaired = repaired.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
-    // 3. Echte Zeilenumbrüche innerhalb von Strings maskieren
+    // 4. Echte Zeilenumbrüche innerhalb von Strings maskieren
     repaired = repaired.replace(/"((?:[^"\\]|\\[\s\S])*)"/g, (match, p1) => {
         return '"' + p1.replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '"';
     });
