@@ -492,20 +492,34 @@ const getActiveSelectionPath = (userId?: string) => {
     return path.join(path.dirname(skillPath), path.basename(skillPath).replace(/^skill_profiles/, 'active_selection'));
 };
 
-interface StoredActiveSelection {
+/**
+ * Die zuletzt zugewiesenen Profile eines Nutzers — je eines pro Kategorie.
+ *
+ * Die Feldnamen sind absichtlich identisch mit den Spalten im User-Modell und mit dem,
+ * was `/api/user` ausliefert. So liest die Oberflaeche in jeder Edition denselben
+ * Schluessel, egal ob der Wert aus der Datenbank oder aus dieser Datei kommt.
+ */
+export interface StoredActiveSelection {
+    activePromptProfileId?: string;
     activeSkillProfileId?: string;
+    activeAiProfileId?: string;
+    activeGradingMemoryId?: string;
 }
 
 /**
- * Merkt sich, WELCHES Profil ein Nutzer zuletzt zugewiesen hat.
+ * Merkt sich, WELCHE Profile ein Nutzer zuletzt zugewiesen hat.
  *
- * Die Profile selbst liegen laengst pro Nutzer als JSON auf dem Server — nur der Zeiger
- * darauf lebte bisher ausschliesslich im localStorage des Browsers. In der Community-
+ * Die Profile selbst liegen laengst pro Nutzer als JSON auf dem Server — nur die Zeiger
+ * darauf lebten ausschliesslich im localStorage des Browsers. In der Community-
  * Mehrbenutzer-Variante war das inkonsistent: Am zweiten Geraet standen zwar alle
- * eigenen Profile bereit, die Auswahl fiel aber aufs Standardprofil zurueck.
+ * eigenen Profile bereit, die Auswahl fiel aber auf die Standardwerte zurueck.
+ *
+ * Alle vier Kategorien liegen in EINER Datei und werden ueber `set` zusammengefuehrt.
+ * Eine Kategorie gesondert zu behandeln waere genau die Asymmetrie, die dieser Service
+ * beseitigen soll.
  *
  * Bewusst eine eigene Datei statt eines Feldes in `skill_profiles.json`: Dort liegt ein
- * Array von Profilen: eine nutzerbezogene Einstellung gehoert nicht als Sonderfall
+ * Array von Profilen — eine nutzerbezogene Einstellung gehoert nicht als Sonderfall
  * zwischen dessen Elemente.
  */
 export const LocalActiveSelectionService = {
@@ -518,11 +532,23 @@ export const LocalActiveSelectionService = {
         }
     },
 
-    setSkillProfile(profileId: string | null, userId?: string): void {
+    /**
+     * Schreibt die genannten Kategorien und laesst die uebrigen unangetastet.
+     * `null` loescht eine Zuordnung ausdruecklich — ein fehlendes Feld aendert nichts.
+     */
+    set(patch: Record<keyof StoredActiveSelection, string | null | undefined>
+        | Partial<Record<keyof StoredActiveSelection, string | null | undefined>>,
+        userId?: string): void {
         const storagePath = getActiveSelectionPath(userId);
         try {
             const current = readJsonObject<StoredActiveSelection>(storagePath, 'update') || {};
-            writeJsonAtomic(storagePath, { ...current, activeSkillProfileId: profileId || undefined });
+            const next: StoredActiveSelection = { ...current };
+            (Object.keys(patch) as (keyof StoredActiveSelection)[]).forEach(key => {
+                const value = patch[key];
+                if (value === undefined) return;
+                next[key] = value || undefined;
+            });
+            writeJsonAtomic(storagePath, next);
         } catch (err) {
             logger.error('[LocalActiveSelectionService] Error writing selection:', err);
         }
