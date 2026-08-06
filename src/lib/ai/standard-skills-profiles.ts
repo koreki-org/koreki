@@ -11,6 +11,9 @@ export interface StandardSkillProfile {
     isSystem: boolean;
 }
 
+/** Name des Profils, das gilt, solange der Nutzer keines ausgewaehlt hat. */
+export const DEFAULT_SKILL_PROFILE_NAME = 'MINT Standard (Allgemein)';
+
 export const STANDARD_SKILL_PROFILES: StandardSkillProfile[] = [
     {
         name: "Grundschule Mathematik",
@@ -20,8 +23,11 @@ export const STANDARD_SKILL_PROFILES: StandardSkillProfile[] = [
     },
     {
         name: "MINT Standard (Allgemein)",
-        description: "Standardkonfiguration für Mathematik, Physik und Chemie. Enthält Folgefehler-Tracking, mathematische Äquivalenz, Rechenweg-Ergebnis-Trennung und aktives Nachrechnen.",
-        activeSkillIds: ["skill-consecutive-errors", "skill-math-equivalence", "skill-math-isolated-grading", "skill-math-scratchpad"],
+        description: "Standardkonfiguration für Mathematik, Physik und Chemie. Enthält Folgefehler-Tracking, mathematische Äquivalenz, Rechenweg-Ergebnis-Trennung, aktives Nachrechnen sowie klassische Korrekturzeichen mit allgemeinem Feedback.",
+        // Ohne ein Korrekturzeichen-Skill sind die Kuerzel im Feedback nirgends definiert — das
+        // Modell erfindet sie dann aus eigenem Weltwissen und setzt sie uneinheitlich ein.
+        // skill-feedback-general setzt skill-marks-classic voraus, beide gehoeren deshalb zusammen.
+        activeSkillIds: ["skill-consecutive-errors", "skill-math-equivalence", "skill-math-isolated-grading", "skill-math-scratchpad", "skill-marks-classic", "skill-feedback-general"],
         isSystem: true
     },
     {
@@ -43,3 +49,15 @@ export const STANDARD_SKILL_PROFILES: StandardSkillProfile[] = [
         isSystem: true
     }
 ];
+
+/**
+ * Skill-Set, mit dem ein neu angelegtes Profil startet.
+ *
+ * Bewusst aus dem Standard-Profil abgeleitet statt als eigene Liste gepflegt: Eine zweite,
+ * handgepflegte Kopie laeuft mit der Zeit auseinander — dann startet ein neues Profil
+ * stillschweigend ohne Skills, die im Standard laengst gesetzt sind.
+ */
+export function getDefaultSkillIds(): string[] {
+    const standard = STANDARD_SKILL_PROFILES.find(p => p.name === DEFAULT_SKILL_PROFILE_NAME);
+    return [...(standard?.activeSkillIds || [])];
+}

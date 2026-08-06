@@ -19,7 +19,7 @@ import { SKILL_REGISTRY } from '@/prompts/skills';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
-import { STANDARD_SKILL_PROFILES } from '@/lib/ai/standard-skills-profiles';
+import { STANDARD_SKILL_PROFILES, getDefaultSkillIds } from '@/lib/ai/standard-skills-profiles';
 import { downloadFile } from '@/lib/file-utils';
 
 
@@ -259,7 +259,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(localProfiles));
             } else {
                 const matchingSystem = STANDARD_SKILL_PROFILES.find(p => p.name === activeProfileId || p.isSystem);
-                const baseSkillIds = matchingSystem ? [...matchingSystem.activeSkillIds] : ["skill-consecutive-errors", "skill-math-equivalence", "skill-math-isolated-grading", "skill-math-scratchpad"];
+                const baseSkillIds = matchingSystem ? [...matchingSystem.activeSkillIds] : getDefaultSkillIds();
                 
                 const newProfileId = `local-skill-${Date.now()}`;
                 const newProfileName = `Mein Skill-Profil`;
@@ -303,7 +303,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             }
                         });
                     } else {
-                        const baseSkillIds = activeProfile ? [...activeProfile.activeSkillIds] : ["skill-consecutive-errors", "skill-math-equivalence", "skill-math-isolated-grading", "skill-math-scratchpad"];
+                        const baseSkillIds = activeProfile ? [...activeProfile.activeSkillIds] : getDefaultSkillIds();
                         const newProfileName = `Mein Skill-Profil`;
                         
                         const createRes = await apiClient.post('/api/user/skill-profiles', {

@@ -15,8 +15,24 @@ interface EditableMathAreaProps {
     leftAction?: React.ReactNode;
 }
 
+/** Welche Engine den technischen Block erzeugt hat — bestimmt seine Beschriftung. */
+export type FeedbackEngine = 'PANG' | 'AGS' | 'CalcTrace';
+
+/**
+ * Anzeigename je Engine. Ohne diese Zuordnung trug jeder technische Block das Label
+ * "PANG", auch wenn ihn die CalcTrace-Rechenkette erzeugt hatte — die beiden Engines
+ * sind aber verschieden (Rechengraph vs. Rechenkette) und duerfen nicht gleich heissen.
+ */
+const ENGINE_LABELS: Record<FeedbackEngine, string> = {
+    PANG: 'Technische PANG-Detailanalyse einblenden',
+    AGS: 'Technische AGS-Detailanalyse einblenden',
+    CalcTrace: 'Technische Rechenketten-Detailanalyse einblenden'
+};
+
 interface SplitFeedback {
     technical?: string;
+    /** Nur gesetzt, wenn `technical` vorhanden ist. */
+    engine?: FeedbackEngine;
     pedagogical: string;
 }
 
@@ -32,12 +48,16 @@ export function splitFeedback(text: string): SplitFeedback {
     const calcIndex = text.indexOf('[📐 CalcTrace Engine');
     
     let engineIndex = -1;
+    let engine: FeedbackEngine | undefined;
     if (pangIndex !== -1) {
         engineIndex = pangIndex;
+        engine = 'PANG';
     } else if (agsIndex !== -1) {
         engineIndex = agsIndex;
+        engine = 'AGS';
     } else if (calcIndex !== -1) {
         engineIndex = calcIndex;
+        engine = 'CalcTrace';
     }
 
     if (engineIndex === -1) {
@@ -78,6 +98,7 @@ export function splitFeedback(text: string): SplitFeedback {
 
     return {
         technical: technical || undefined,
+        engine: technical ? engine : undefined,
         pedagogical: pedagogical
     };
 }
@@ -98,7 +119,7 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
 }) => {
     const [isEditing, setIsEditing] = useState(initialEditMode);
 
-    const { technical, pedagogical } = splitFeedback(value);
+    const { technical, engine, pedagogical } = splitFeedback(value);
 
     return (
         <div className={cn("relative group w-full", className)}>
@@ -146,7 +167,7 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
                                                 <div className="flex items-center justify-center w-5 h-5 rounded-md bg-primary/15 dark:bg-primary/15 text-primary dark:text-primary">
                                                     <Settings size={12} className="transition-transform duration-500 group-open:rotate-90" />
                                                 </div>
-                                                <span>Technische PANG-Detailanalyse einblenden</span>
+                                                <span>{engine ? ENGINE_LABELS[engine] : 'Technische Detailanalyse einblenden'}</span>
                                             </div>
                                             <ChevronDown size={14} className="text-primary dark:text-primary transition-transform duration-300 group-open:rotate-180" />
                                         </summary>
