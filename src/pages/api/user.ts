@@ -110,6 +110,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     avvAccepted: activeWorkspace?.avvAccepted || false,
                     activeWorkspaceId: user.activeWorkspaceId,
                     activePromptProfileId: user.activePromptProfileId,
+                    // Wird von /api/user/update-skill-profile laengst geschrieben, fehlte hier
+                    // aber im Payload — dadurch fand die Sitzung auf einem zweiten Geraet die
+                    // getroffene Wahl nicht wieder und fiel aufs Standardprofil zurueck.
+                    activeSkillProfileId: user.activeSkillProfileId,
                     activeAiProfileId: user.activeAiProfileId,
                     activeGradingMemoryId: (user as any).activeGradingMemoryId,
                     logtoId: user.logtoId,

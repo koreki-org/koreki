@@ -4,7 +4,7 @@ import { AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
 import { isDesktopTarget } from '@/lib/env-context';
 import { awaitSettlingSlot, SettlingSlot } from '@/lib/session-settling';
-import { STANDARD_SKILL_PROFILES } from '@/lib/ai/standard-skills-profiles';
+import { STANDARD_SKILL_PROFILES, DEFAULT_SKILL_PROFILE_NAME } from '@/lib/ai/standard-skills-profiles';
 
 /**
  * Skill Profile Governance Hook (Industrial Standard)
@@ -66,7 +66,7 @@ export const useSkillGovernance = (
                 }
 
                 // Fallback: MINT Standard profile
-                const standard = allProfiles.find((p: any) => p.name === 'MINT Standard (Allgemein)');
+                const standard = allProfiles.find((p: any) => p.name === DEFAULT_SKILL_PROFILE_NAME);
                 if (standard) {
                     setSessionSkillsProfileName('MINT Standard (Allgemein)');
                     setSettings(prev => {
@@ -118,18 +118,35 @@ export const useSkillGovernance = (
                         || userData?.activeSkillProfileId
                         || (typeof window !== 'undefined' ? localStorage.getItem('koreki_active_skill_profile_id') : null);
 
-                    if (currentActiveId) {
-                        const profile = data.find(
-                            (p: any) => p.id === currentActiveId || p.name === currentActiveId
-                        );
-                        if (profile) {
-                            setSessionSkillsProfileName(profile.name);
+                    const profile = currentActiveId
+                        ? data.find((p: any) => p.id === currentActiveId || p.name === currentActiveId)
+                        : undefined;
+
+                    if (profile) {
+                        setSessionSkillsProfileName(profile.name);
+                        setSettings(prev => {
+                            if (prev.activeSkillProfileId === currentActiveId) return prev;
+                            return {
+                                ...prev,
+                                activeSkillProfileId: currentActiveId,
+                                activeSkillIds: profile.activeSkillIds || [],
+                                customSkills: customSkills
+                            };
+                        });
+                    } else {
+                        // Ohne ausdrueckliche Wahl blieben activeSkillIds bisher leer — die Kopfzeile
+                        // zeigte "MINT Standard", der Prompt bekam aber keinen einzigen Skill
+                        // (prompt-builder ueberspringt eine leere Liste). Damit fehlten auch die
+                        // Definitionen der Korrekturzeichen, die das Modell dann frei erfand.
+                        // Der Desktop-Pfad kennt diesen Rueckfall bereits; hier fehlte er.
+                        const standard = data.find((p: any) => p.name === DEFAULT_SKILL_PROFILE_NAME);
+                        if (standard) {
+                            setSessionSkillsProfileName(standard.name);
                             setSettings(prev => {
-                                if (prev.activeSkillProfileId === currentActiveId) return prev;
+                                if (prev.activeSkillIds && prev.activeSkillIds.length > 0) return prev;
                                 return {
                                     ...prev,
-                                    activeSkillProfileId: currentActiveId,
-                                    activeSkillIds: profile.activeSkillIds || [],
+                                    activeSkillIds: standard.activeSkillIds || [],
                                     customSkills: customSkills
                                 };
                             });

@@ -6,6 +6,7 @@ import AppLayout from '@/layouts/AppLayout';
 import UploadGrid from '@/components/UploadGrid';
 import BatchProcessor from '@/components/BatchProcessor';
 import { DashboardModals } from '@/components/dashboard/DashboardModals';
+import { DemoHintBanner } from '@/components/dashboard/DemoHintBanner';
 import { GradingMemoryModal } from '@/components/batch/GradingMemoryModal';
 
 // Hooks
@@ -17,6 +18,7 @@ import { useAiGovernance } from '@/hooks/useAiGovernance';
 import { useGradingMemories } from '@/hooks/useGradingMemories';
 import { useDashboardActions } from '@/hooks/useDashboardActions';
 import { useDashboardOrchestrator } from '@/hooks/useDashboardOrchestrator';
+import { useDemoScenario } from '@/hooks/useDemoScenario';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { buildModelSolutionFromTasks } from '@/lib/task-utils';
 import { performAIRequest } from '@/lib/ai/ai-orchestrator';
@@ -213,52 +215,49 @@ export default function Home() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
+    const { showDemoHint, loadDemoData, dismissDemoHint } = useDemoScenario({
+        setModelSolution: data.setModelSolution,
+        setModelSolutionContext: data.setModelSolutionContext,
+        setTasksLayout: data.setTasksLayout,
+        setBatchFiles: fileProcessor.setBatchFiles
+    });
+
     // Auto-Scroll Logic: Smooth scroll to BatchProcessor once files are added
     const prevFilesCount = React.useRef(0);
     // Auto-Collapse: Once the first student file lands, fold the upload cards
     // away to give the BatchProcessor more visual room. Reopened via the
     // per-card chevron (CollapseToggleButton) or a full "Neu starten" reset.
     const [isUploadSectionCollapsed, setIsUploadSectionCollapsed] = React.useState(false);
+    // Der Demo-Banner und das Einklappen der Upload-Karten wollen beide die Aufmerksamkeit
+    // direkt nach dem Laden — das kollabiert bisher im selben Moment und "erschlaegt" den
+    // Banner. Waehrend der Banner sichtbar ist, wird das Einklappen zurueckgestellt und erst
+    // nachgeholt, sobald er verschwindet (Auto-Timeout oder manuelles Schliessen).
+    const demoCollapsePending = React.useRef(false);
+    const collapseUploadAndScroll = () => {
+        setIsUploadSectionCollapsed(true);
+        setTimeout(() => {
+            const element = document.getElementById('batch-processor-anchor');
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }, 100);
+    };
     useEffect(() => {
         if (fileProcessor.batchFiles.length > 0 && prevFilesCount.current === 0) {
-            setIsUploadSectionCollapsed(true);
-            setTimeout(() => {
-                const element = document.getElementById('batch-processor-anchor');
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }, 100);
+            if (showDemoHint) {
+                demoCollapsePending.current = true;
+            } else {
+                collapseUploadAndScroll();
+            }
         }
         prevFilesCount.current = fileProcessor.batchFiles.length;
     }, [fileProcessor.batchFiles.length]);
-
-    const loadDemoData = () => {
-        const demoTasks = [
-            { name: "Aufgabe 1", maxPoints: 4, content: `### Aufgabe 1: Wahlen (AFB I) (4 P) ###\nFragestellung: Nenne vier Wahlrechtsgrundsätze der Bundesrepublik Deutschland.\n\nMusterlösung: Erwartet wird die Nennung von vier Wahlrechtsgrundsätzen (z.B. allgemein, unmittelbar, frei, gleich, geheim). Für jeden korrekten Grundsatz gibt es 1 Punkt.` },
-            { name: "Aufgabe 2", maxPoints: 6, content: `### Aufgabe 2: Bedeutung von Wahlen (AFB II) (6 P) ###\nFragestellung: Erkläre, warum regelmäßige Wahlen für das Funktionieren einer Demokratie essenziell sind.\n\nMusterlösung: Erwartet wird eine Erklärung, warum Wahlen für eine Demokratie wichtig sind (z.B. Legitimation der Macht, Kontrolle der Regierung, friedlicher Machtwechsel, Repräsentation des Volkswillens). Die Erklärung sollte strukturiert und schlüssig sein.` },
-            { name: "Aufgabe 3", maxPoints: 10, content: `### Aufgabe 3: Herrschaft des Volkes (AFB III) (10 P) ###\nFragestellung: Setze dich kritisch mit der Aussage "Demokratie ist die Herrschaft des Volkes" auseinander.\n\nMusterlösung: Erwartet wird eine kritische Auseinandersetzung mit der Aussage "Demokratie ist die Herrschaft des Volkes".\nMögliche Aspekte:\n- Pro: Wahlen, Volksbegehren, repräsentative Demokratie (Volksvertreter).\n- Contra: Einfluss von Lobbyismus, geringe Wahlbeteiligung, komplexe Entscheidungsprozesse, in denen sich Einzelne oft nicht wiederfinden.\n- Fazit: Eine differenzierte Bewertung, die zeigt, dass das Volk die Macht legitimiert, aber nicht direkt jeden Schritt lenkt.` }
-        ];
-        const fullSolution = `Musterlösung zum Thema "Demokratie und Mitbestimmung":\n\n` + demoTasks.map(t => `### ${t.name} ###\n${t.content}`).join('\n\n');
-        data.setModelSolution(fullSolution);
-        data.setModelSolutionContext("");
-        data.setTasksLayout(demoTasks);
-        const demoStudentText = `=== TASK: Aufgabe 1 ===\nDie vier Wahlrechtsgrundsätze sind: allgemein, unmittelbar, frei und geheim. Ich glaube, gleich gehört auch noch dazu.\n\n=== TASK: Aufgabe 2 ===\nWahlen sind wichtig, weil das Volk so bestimmen kann, wer regiert. Ohne Wahlen gäbe es keine Kontrolle und jemand könnte einfach immer an der Macht bleiben. Das wäre dann wie eine Diktatur. Durch Wahlen wird die Regierung also legitimiert.\n\n=== TASK: Aufgabe 3 ===\nDemokratie heißt Herrschaft des Volkes. Das stimmt einerseits, weil wir wählen gehen. Aber andererseits haben Reiche und Lobbyisten oft mehr zu sagen als normale Bürger. Außerdem gehen viele Leute gar nicht wählen, dann entscheidet ja nicht das ganze Volk. Trotzdem ist es die beste Form, die wir haben.`;
-
-        fileProcessor.setBatchFiles([{
-            name: "Schüler #1",
-            originalName: "Moritz Beispielfeld",
-            status: 'pending',
-            result: null,
-            error: null,
-            fileText: demoStudentText,
-            tasks: [],
-            documentType: 'typed',
-            pageCount: 1,
-            estimatedCredits: 1,
-            selected: true,
-            ocrDone: true
-        }]);
-    };
+    useEffect(() => {
+        if (!showDemoHint && demoCollapsePending.current) {
+            demoCollapsePending.current = false;
+            collapseUploadAndScroll();
+        }
+    }, [showDemoHint]);
 
     const handleStartNew = () => {
         if (fileProcessor.batchFiles.length > 0 || data.modelSolution) {
@@ -354,7 +353,9 @@ export default function Home() {
                         onShowGradingMemory={() => setShowGradingMemory(true)}
                     />
 
-                    <DashboardModals 
+                    <DemoHintBanner isOpen={showDemoHint} onDismiss={dismissDemoHint} />
+
+                    <DashboardModals
                         userData={userData!}
                         settings={aiSettings}
                         setSettings={setAiSettings}

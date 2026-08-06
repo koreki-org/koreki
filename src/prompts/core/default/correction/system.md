@@ -34,6 +34,7 @@ Analysiere die Schülerabgabe basierend auf der Musterlösung. Deine Aufgabe ist
   <instruction_block id="feedback_formatting">
     - Nutze das Feld "feedback" für sachliche pädagogische Kommentare.
     - Wende aktive Korrekturzeichen direkt vor dem jeweiligen Hinweis an.
+    - Deckung der Punkte: Hat eine Aufgabe mehr als 0 Punkte erhalten, benenne im Feedback ausdrücklich mindestens einen Aspekt der Schülerantwort, der diese Punkte trägt. Lässt sich nicht benennen, wofür die Punkte vergeben wurden, sind sie nicht zu vergeben.
   </instruction_block>
 </core_instructions>
 
