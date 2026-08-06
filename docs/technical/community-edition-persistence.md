@@ -3,7 +3,7 @@ title: "Community Edition: Keycloak Auth & Filesystem Persistence"
 description: "Sicherheits- und Persistenzkonzept für die selbstgehostete Koreki-Instanz ohne externe Datenbank."
 author: "@principal_architect"
 date: "2026-04-28"
-last_updated: "2026-04-28"
+last_updated: "2026-08-06"
 status: "Approved"
 domain: "technical"
 security_classification: "Internal"
@@ -68,7 +68,14 @@ Anstatt den flüchtigen `localStorage` des Browsers zu nutzen, speichert die Com
    * **Pfad**: `/data/prompts/profiles_[SHA256_HASH_OF_USER_ID].json`
    * **Isolierung**: Die Dateinamen basieren auf dem SHA-256 Hash der OIDC-Sub (UserID). Dies verhindert Path-Traversal-Angriffe und garantiert strikte Datentrennung zwischen Lehrern.
 
-2. **Globale AI-Einstellungen (Routing & Provider):** Der `GlobalSettingsService` speichert systemweite Parameter (wie Ollama-URL, Ollama-Modell oder Standard-Provider):
+2. **Zuletzt gewählte Profile (Zeiger, nicht Inhalte):** Der `LocalActiveSelectionService` merkt sich, *welches* Profil ein Lehrer zuletzt zugewiesen hat:
+   * **Pfad**: `/data/prompts/active_selection_[SHA256_HASH_OF_USER_ID].json`
+   * **Inhalt**: Alle vier Kategorien in einer Datei — `activePromptProfileId`, `activeSkillProfileId`, `activeAiProfileId`, `activeGradingMemoryId`. `set` schreibt gezielt einzelne Felder und lässt die übrigen unangetastet.
+   * **Warum getrennt von den Profilen**: In `skill_profiles_*.json` liegt ein *Array* von Profilen. Eine nutzerbezogene Einstellung gehört nicht als Sonderfall zwischen dessen Elemente.
+   * **Feldnamen = DB-Spalten**: Die Schlüssel sind identisch mit den Spalten im `User`-Modell der SaaS-Edition und mit dem, was `/api/user` ausliefert. Dadurch liest das Frontend in jeder Edition denselben Schlüssel, unabhängig davon, ob der Wert aus Postgres oder aus dieser Datei stammt.
+   * **Abgrenzung Desktop**: Die ausgelieferte Desktop-App ist ein statischer Export ohne API-Routen und erreicht diesen Service konstruktionsbedingt nie — dort bleibt die Zuordnung an die Installation gebunden (`localStorage` der Webview).
+
+3. **Globale AI-Einstellungen (Routing & Provider):** Der `GlobalSettingsService` speichert systemweite Parameter (wie Ollama-URL, Ollama-Modell oder Standard-Provider):
    * **Pfad**: `/data/prompts/global_ai_settings.json`
    * **Vollständiger Sync**: Sämtliche Admin-Änderungen in allen Setup-Dialogen (`SettingsModal`, `AiSetupModal`, `AiParamsModal`) speichern atomar das vollständige Routing-Setup (Provider, URLs, Modell-Tags, Thinking-Flags) via `/api/admin/global-ai-settings`.
    * **` .env` Fallback**: Existiert noch keine `global_ai_settings.json` (z. B. nach einer frischen Installation, bevor ein Admin im UI speichert), liest der Service automatisch Umgebungsvariablen (`DEFAULT_AI_PROVIDER`, `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, `OPENAI_API_BASE`, `OPENAI_API_MODEL`) aus der `.env` als initialen Standard aus.

@@ -101,7 +101,11 @@ function bewerteRechenweg(targetIndex: number, evidence: EngineEvidence): Engine
     return { erfuellt: false, begruendung: 'Kein nachvollziehbarer Rechenweg notiert', stepIds: [] };
   }
 
-  const fehlerhaft = gerechnet.filter(id => stepHasSandboxError(id, sandboxErrors));
+  // Nur echte Rechenfehler belasten den Schueler. Ein Schritt, den die Sandbox nicht parsen
+  // konnte, sagt nichts ueber seine Richtigkeit aus — ihn als Fehler zu werten hiesse, dem
+  // Schueler eine Grenze unserer Auswertung anzulasten.
+  const echteRechenfehler = sandboxErrors.filter(err => err.startsWith('Rechenfehler'));
+  const fehlerhaft = gerechnet.filter(id => stepHasSandboxError(id, echteRechenfehler));
   if (fehlerhaft.length > 0) {
     return {
       erfuellt: false,

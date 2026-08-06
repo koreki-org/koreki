@@ -110,7 +110,26 @@ function normalizeUnitString(unit: string): string {
   u = u.replace(/\bOhm\b/g, 'ohm');
   u = u.replace(/€/g, 'EUR');
   u = u.replace(/\$/g, 'USD');
-  return UNIT_ALIASES[u] || u;
+  return UNIT_ALIASES[u] || normalizeSuperscripts(u);
+}
+
+/** Hochgestellte Ziffern, wie sie in Flaechen- und Volumeneinheiten vorkommen. */
+const SUPERSCRIPT_DIGITS: Record<string, string> = {
+  '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
+  '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9'
+};
+
+/**
+ * Schreibt "m²" als "m^2" — die einzige Potenzschreibweise, die mathjs versteht.
+ *
+ * Gilt fuer Formeln UND fuer Einheiten: Beide Wege muenden in denselben Parser. Wird nur
+ * einer davon umgeschrieben, scheitert stattdessen die Umrechnung — mit derselben Folge,
+ * dass ein fehlerfreier Rechenweg als Fehler gemeldet wird.
+ */
+function normalizeSuperscripts(text: string): string {
+  return text.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]+/g, match =>
+    '^' + Array.from(match).map(c => SUPERSCRIPT_DIGITS[c]).join('')
+  );
 }
 
 /** Normalize unit symbols inside a formula string using UNIT_ALIASES */
@@ -120,6 +139,9 @@ function normalizeExpressionFormula(formula: string): string {
   for (const key of keys) {
     f = f.split(key).join(UNIT_ALIASES[key]);
   }
+  // Schueler und Musterloesungen schreiben "m²" oder "cm³". Ohne diese Umschrift scheitert
+  // schon das Parsen, und ein fehlerfreier Rechenweg wird als Fehler angelastet.
+  f = normalizeSuperscripts(f);
   // Additionally clean up other Ohm variants, currency and standard unit capitals
   f = f.replace(/[ΩΩ]/g, 'ohm');
   f = f.replace(/\bOhm\b/g, 'ohm');
@@ -590,8 +612,25 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
     lines.push(`✓ Der extrahierte Schüler-AST ist mathematisch in sich vollkommen fehlerfrei.`);
     lines.push(`  [DEBUG-AST]: ${JSON.stringify(ast)}`);
   } else {
-    lines.push(`✗ Die Sandbox hat interne Verrechner im Weg des Schülers gefunden:\n`);
-    sandboxErrors.forEach(err => lines.push(`* ${err}`));
+    // Ein Schritt, den die Sandbox nicht PARSEN konnte, ist kein Rechenfehler des Schuelers,
+    // sondern eine Grenze unserer Auswertung (z. B. eine symbolische Formelzeile ohne Zahlen).
+    // Beides zusammen als "Verrechner im Weg des Schuelers" zu melden, hat das Modell
+    // veranlasst, korrekt gerechnete Wege als fehlerhaft zu bewerten.
+    const rechenfehler = sandboxErrors.filter(err => err.startsWith('Rechenfehler'));
+    const nichtAuswertbar = sandboxErrors.filter(err => !err.startsWith('Rechenfehler'));
+
+    if (rechenfehler.length > 0) {
+      lines.push(`✗ Die Sandbox hat interne Verrechner im Weg des Schülers gefunden:\n`);
+      rechenfehler.forEach(err => lines.push(`* ${err}`));
+    } else {
+      lines.push(`✓ In den auswertbaren Schritten hat die Sandbox keinen Rechenfehler gefunden.`);
+    }
+
+    if (nichtAuswertbar.length > 0) {
+      lines.push(`\nNicht maschinell auswertbare Schritte (KEIN Schülerfehler — die Sandbox konnte sie nur nicht nachrechnen, z. B. reine Formelzeilen ohne eingesetzte Zahlen):`);
+      nichtAuswertbar.forEach(err => lines.push(`* ${err}`));
+      lines.push(`→ Werte diese Schritte fachlich selbst und ziehe dafür keine Punkte ab.`);
+    }
   }
 
   // ── Proof B ──
