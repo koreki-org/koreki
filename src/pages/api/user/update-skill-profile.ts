@@ -3,6 +3,7 @@ import prisma from '../../../lib/prisma';
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
+import { LocalActiveSelectionService } from '../../../lib/services/local-profile-service';
 
 /**
  * Update User Active Skill Profile API
@@ -18,7 +19,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     const { profileId } = req.body;
 
     if (isLocalInstance()) {
-        return res.status(200).json({ success: true, message: 'Lokaler Modus: Profil-Zuordnung nur im Browser aktiv' });
+        // Ohne DB, aber nicht ohne Gedaechtnis: Die Zuordnung wandert in dieselbe
+        // nutzerbezogene JSON-Ablage wie die Profile selbst. Vorher lebte sie nur im
+        // localStorage — am zweiten Geraet war die Wahl damit verloren.
+        LocalActiveSelectionService.setSkillProfile(profileId || null, logtoId);
+        return res.status(200).json({ success: true });
     }
 
     try {

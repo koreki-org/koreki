@@ -6,7 +6,7 @@ import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
 import { STANDARD_SKILL_PROFILES } from '../ai/standard-skills-profiles';
 import { isLocalInstance } from '../env-context';
 import { GradingMemoryCase, GradingMemory } from '../../types';
-import { readJsonArray, readJsonArrayForUpdate, writeJsonAtomic } from './json-vault';
+import { readJsonArray, readJsonArrayForUpdate, readJsonObject, writeJsonAtomic } from './json-vault';
 
 interface StoredExpertProfile {
     id: string;
@@ -475,12 +475,56 @@ export const LocalSkillProfileService = {
 
         try {
             let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            customProfiles = customProfiles.map((p: any) => 
+            customProfiles = customProfiles.map((p: any) =>
                 p.id === id ? { ...p, name: newName } : p
             );
             writeJsonAtomic(storagePath, customProfiles);
         } catch (err) {
             logger.error('[LocalSkillProfileService] Error renaming profile:', err);
+        }
+    }
+};
+
+const getActiveSelectionPath = (userId?: string) => {
+    const skillPath = getSkillStoragePath(userId);
+    // Neben die Profile desselben Nutzers legen: getSkillStoragePath hat den Basisordner
+    // bereits angelegt und den Pfad gegen Traversal geprueft.
+    return path.join(path.dirname(skillPath), path.basename(skillPath).replace(/^skill_profiles/, 'active_selection'));
+};
+
+interface StoredActiveSelection {
+    activeSkillProfileId?: string;
+}
+
+/**
+ * Merkt sich, WELCHES Profil ein Nutzer zuletzt zugewiesen hat.
+ *
+ * Die Profile selbst liegen laengst pro Nutzer als JSON auf dem Server — nur der Zeiger
+ * darauf lebte bisher ausschliesslich im localStorage des Browsers. In der Community-
+ * Mehrbenutzer-Variante war das inkonsistent: Am zweiten Geraet standen zwar alle
+ * eigenen Profile bereit, die Auswahl fiel aber aufs Standardprofil zurueck.
+ *
+ * Bewusst eine eigene Datei statt eines Feldes in `skill_profiles.json`: Dort liegt ein
+ * Array von Profilen: eine nutzerbezogene Einstellung gehoert nicht als Sonderfall
+ * zwischen dessen Elemente.
+ */
+export const LocalActiveSelectionService = {
+    get(userId?: string): StoredActiveSelection {
+        try {
+            return readJsonObject<StoredActiveSelection>(getActiveSelectionPath(userId)) || {};
+        } catch (err) {
+            logger.error('[LocalActiveSelectionService] Error reading selection:', err);
+            return {};
+        }
+    },
+
+    setSkillProfile(profileId: string | null, userId?: string): void {
+        const storagePath = getActiveSelectionPath(userId);
+        try {
+            const current = readJsonObject<StoredActiveSelection>(storagePath, 'update') || {};
+            writeJsonAtomic(storagePath, { ...current, activeSkillProfileId: profileId || undefined });
+        } catch (err) {
+            logger.error('[LocalActiveSelectionService] Error writing selection:', err);
         }
     }
 };
