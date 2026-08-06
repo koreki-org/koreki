@@ -6,6 +6,7 @@ import { withSecurity, AuthenticatedRequest } from '../../lib/security';
 import { logger } from '../../lib/logger';
 import { isLocalInstance, getKorekiMode } from '../../lib/env-context';
 import { GlobalSettingsService } from '../../lib/services/global-settings-service';
+import { LocalActiveSelectionService } from '../../lib/services/local-profile-service';
 
 /**
  * User Status & Sync API
@@ -51,6 +52,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         avvAccepted: true,
                         canEditPrompts: true,
                         canBuyCredits: false,
+                        // Gegenstueck zum SaaS-Zweig: ohne diesen Wert faende die Sitzung die
+                        // zuletzt getroffene Profilwahl nur im localStorage desselben Browsers.
+                        activeSkillProfileId: LocalActiveSelectionService.get(logtoId).activeSkillProfileId,
                         hasGlobalAiKey: !!process.env.MISTRAL_API_KEY || !!process.env.MITTWALD_API_KEY || !!process.env.OPENAI_API_KEY
                     },
                     aiStatus: { ocrBrakeActive: false, correctionBrakeActive: false },
