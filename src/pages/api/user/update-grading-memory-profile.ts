@@ -3,6 +3,7 @@ import prisma from '../../../lib/prisma';
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
+import { LocalActiveSelectionService } from '../../../lib/services/local-profile-service';
 
 /**
  * Update User Active GradingMemory Profile API
@@ -18,7 +19,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     const { gradingMemoryId } = req.body;
 
     if (isLocalInstance()) {
-        return res.status(200).json({ success: true, message: 'Lokaler Modus: Erfahrungsschatz-Zuordnung nur im Browser aktiv' });
+        // Ohne DB, aber nicht ohne Gedaechtnis: Die Zuordnung wandert in dieselbe
+        // nutzerbezogene JSON-Ablage wie die Profile selbst (siehe Prompt-/Skill-/AI-Pendant).
+        LocalActiveSelectionService.set({ activeGradingMemoryId: gradingMemoryId || null }, logtoId);
+        return res.status(200).json({ success: true });
     }
 
     try {

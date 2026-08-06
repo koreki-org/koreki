@@ -22,7 +22,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // Ohne DB, aber nicht ohne Gedaechtnis: Die Zuordnung wandert in dieselbe
         // nutzerbezogene JSON-Ablage wie die Profile selbst. Vorher lebte sie nur im
         // localStorage — am zweiten Geraet war die Wahl damit verloren.
-        LocalActiveSelectionService.setSkillProfile(profileId || null, logtoId);
+        LocalActiveSelectionService.set({ activeSkillProfileId: profileId || null }, logtoId);
         return res.status(200).json({ success: true });
     }
 

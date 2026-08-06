@@ -52,9 +52,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         avvAccepted: true,
                         canEditPrompts: true,
                         canBuyCredits: false,
-                        // Gegenstueck zum SaaS-Zweig: ohne diesen Wert faende die Sitzung die
+                        // Gegenstueck zum SaaS-Zweig: ohne diese Werte faende die Sitzung die
                         // zuletzt getroffene Profilwahl nur im localStorage desselben Browsers.
-                        activeSkillProfileId: LocalActiveSelectionService.get(logtoId).activeSkillProfileId,
+                        // Alle vier Kategorien gemeinsam — eine davon auszulassen waere genau
+                        // die Asymmetrie, die der Service beseitigt.
+                        ...LocalActiveSelectionService.get(logtoId),
                         hasGlobalAiKey: !!process.env.MISTRAL_API_KEY || !!process.env.MITTWALD_API_KEY || !!process.env.OPENAI_API_KEY
                     },
                     aiStatus: { ocrBrakeActive: false, correctionBrakeActive: false },
