@@ -41,7 +41,7 @@ export const PerformanceSection: React.FC = () => {
                     <span className="text-gradient">Effizienz.</span>
                 </h2>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
-                    Messbare Zeitersparnis für Ihren Schulalltag. Koreki liefert Ergebnisse in Sekunden, nicht in Stunden.
+                    Wie lange eine Korrektur dauert, hängt vor allem von deiner Hardware ab. Das sind die Werte, die wir gemessen haben – inklusive der langsamen Fälle.
                 </p>
                 <p className="text-xs text-muted-foreground font-bold uppercase tracking-widest mt-6 bg-muted inline-block px-4 py-2 rounded-full border border-border">
                     * Basis: Kleine Klassenarbeit (5 Aufgaben) pro Schüler

@@ -3,7 +3,7 @@
 
 ![Koreki Dashboard](public/screenshots/4_koreki_app_overview.png)
 
-Koreki ist das hochprofessionelle Werkzeug zur Korrektur von Klassenarbeiten, das pädagogische Expertise mit modernster KI-Intelligenz vereint. Es transformiert den Korrekturprozess von Stunden auf Minuten, ohne die fachliche Kontrolle aus der Hand zu geben.
+Koreki ist das hochprofessionelle Werkzeug zur Korrektur von Klassenarbeiten, das pädagogische Expertise mit modernster KI-Intelligenz vereint. Es entlastet den Korrekturprozess, ohne die fachliche Kontrolle aus der Hand zu geben.
 
 ---
 

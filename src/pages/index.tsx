@@ -44,7 +44,7 @@ export default function LandingPage() {
                         <span className="text-gradient pr-2">Feedback.</span>
                     </h1>
                     <p className="text-xl leading-relaxed text-muted-foreground mb-10 max-w-[90%] font-medium">
-                        Koreki nutzt modernste KI, um deine Korrekturzeit deutlich zu senken. Objektive Bewertungen und persönliche Rückmeldungen helfen deinen Schülern, schneller zu lernen – während du entlastet wirst.
+                        Koreki unterstützt dich beim Korrigieren – mit unvoreingenommenen Bewertungen und persönlichen Rückmeldungen, die deinen Schülern helfen, schneller zu lernen. Die pädagogische Entscheidung bleibt bei dir.
                     </p>
 
                     <div className="mb-6">
