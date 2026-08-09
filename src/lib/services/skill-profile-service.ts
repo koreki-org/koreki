@@ -1,5 +1,6 @@
 import prisma from '../prisma';
 import { STANDARD_SKILL_PROFILES } from '../ai/standard-skills-profiles';
+import { isSameName, nameTakenMessage } from './profile-naming';
 
 /**
  * Industrial Skill Profile Service
@@ -82,12 +83,25 @@ export const SkillProfileService = {
         const activeSkillIdsJson = data.activeSkillIds;
         const customSkillsJson = data.customSkills || {};
 
+        // 🏮 Die Eindeutigkeits-Sperre der Datenbank vergleicht exakt, die
+        // Rückfrage vor dem Überschreiben aber nach `isSameName`. Ohne diese
+        // Auflösung entstünde bei abweichender Schreibweise eine zweite Zeile,
+        // obwohl der Nutzer dem Überschreiben zugestimmt hat. Die Liste ist je
+        // Nutzer kurz — ein Vergleich in JS ist billiger als eine
+        // datenbankspezifische Sortierregel (SQLite kennt kein
+        // `mode: 'insensitive'`).
+        const eigene = await prisma.skillProfile.findMany({
+            where: { userId },
+            select: { name: true }
+        });
+        const zielName = eigene.find(p => isSameName(p.name, data.name))?.name || data.name;
+
         return prisma.skillProfile.upsert({
-            where: { 
-                name_userId: { 
-                    name: data.name, 
-                    userId: userId 
-                } 
+            where: {
+                name_userId: {
+                    name: zielName,
+                    userId: userId
+                }
             },
             update: { 
                 activeSkillIds: activeSkillIdsJson,
@@ -118,13 +132,14 @@ export const SkillProfileService = {
             throw new Error('System-Skill-Profile können nicht umbenannt werden');
         }
 
-        // Duplicate check
-        const duplicate = await prisma.skillProfile.findFirst({
-            where: { name: newName, userId: userId }
+        // Duplicate check — nach derselben Namensgleichheit wie überall sonst.
+        const eigene = await prisma.skillProfile.findMany({
+            where: { userId },
+            select: { id: true, name: true }
         });
-        
-        if (duplicate && duplicate.id !== id) {
-            throw new Error('Ein Skill-Profil mit diesem Namen existiert bereits');
+
+        if (eigene.some(p => p.id !== id && isSameName(p.name, newName))) {
+            throw new Error(nameTakenMessage('Skill-Profil'));
         }
 
         return prisma.skillProfile.update({

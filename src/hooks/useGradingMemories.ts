@@ -5,6 +5,7 @@ import { isDesktopTarget } from '../lib/env-context';
 import { awaitSettlingSlot, SettlingSlot } from '../lib/session-settling';
 import { apiClient } from '../lib/api-client';
 import { readLocalArray, readLocalArrayForUpdate, writeLocalArray } from '../lib/local-vault';
+import { isSameName } from '../lib/services/profile-naming';
 
 const MEMORY_KEY = 'koreki_local_grading_memories';
 
@@ -173,7 +174,8 @@ export const useGradingMemories = (userData?: any) => {
     const addLocalMemory = (memory: GradingMemory) => {
         if (isDesktopTarget()) {
             const list = readLocalArrayForUpdate<GradingMemory>(MEMORY_KEY);
-            const existingIdx = list.findIndex(m => m.id === memory.id || m.name === memory.name);
+            // Namensgleichheit wie in der Rückfrage vor dem Überschreiben.
+            const existingIdx = list.findIndex(m => (memory.id && m.id === memory.id) || isSameName(m.name, memory.name));
             if (existingIdx >= 0) {
                 list[existingIdx] = memory;
             } else {

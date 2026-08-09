@@ -7,6 +7,7 @@ import { STANDARD_SKILL_PROFILES } from '../ai/standard-skills-profiles';
 import { isLocalInstance } from '../env-context';
 import { GradingMemoryCase, GradingMemory } from '../../types';
 import { readJsonArray, readJsonArrayForUpdate, readJsonObject, writeJsonAtomic } from './json-vault';
+import { isSameName, nameTakenMessage } from './profile-naming';
 
 interface StoredExpertProfile {
     id: string;
@@ -46,16 +47,10 @@ interface StoredSkillProfile {
  */
 
 /**
- * 🏮 Verhindert zwei gleichnamige Einträge beim Umbenennen.
- *
- * Gespeichert wird über den NAMEN (`upsertProfile` sucht per `findIndex(p =>
- * p.name === ...)`), ausgewählt ebenfalls (`selectedProfile` in den Hooks ist
- * ein Name). Ein zweiter Eintrag mit demselben Namen ist danach unerreichbar:
- * Jede Bearbeitung landet beim ersten Treffer, in der Liste stehen zwei
- * scheinbar identische, gleichzeitig markierte Sets. Die Datenbank-Dienste
- * verbieten das seit jeher — die lokale Ablage tat es bisher nicht, weshalb
- * ein Umbenennen auf einen vergebenen Namen stillschweigend eine Dublette
- * erzeugte.
+ * 🏮 Verhindert zwei gleichnamige Einträge beim Umbenennen — die Regel und ihre
+ * Begründung stehen in profile-naming.ts. Die Datenbank erzwingt sie über
+ * `@@unique([name, userId])`; hier gibt es keinen solchen Zwang, also muss der
+ * Dienst selbst prüfen.
  */
 const assertNameIsFree = (
     profiles: { id?: string; name?: string }[],
@@ -63,29 +58,9 @@ const assertNameIsFree = (
     newName: string,
     label: string
 ): void => {
-    const gesucht = newName.trim().toLowerCase();
-    const kollision = profiles.find(p => p?.id !== id && (p?.name || '').trim().toLowerCase() === gesucht);
-    if (kollision) {
-        throw new Error(`Ein ${label} mit diesem Namen existiert bereits`);
+    if (profiles.some(p => p?.id !== id && isSameName(p?.name, newName))) {
+        throw new Error(nameTakenMessage(label));
     }
-};
-
-/**
- * Übersetzt die fachlichen Fehler dieser Ablage in eine HTTP-Antwort.
- *
- * Der Sammel-`catch` der API-Routen beantwortete bisher jeden Fehler mit einem
- * generischen 500 — die Namenskollision kam damit als „Lokaler Fehler" beim
- * Nutzer an, obwohl sie eine klare, behebbare Ursache hat. Alles Unerwartete
- * bleibt bewusst unspezifisch, damit keine Dateipfade nach außen dringen.
- */
-export const toLocalProfileHttpError = (
-    err: unknown,
-    fallbackMessage: string
-): { status: number; message: string } => {
-    const message = err instanceof Error ? err.message : '';
-    if (message.includes('existiert bereits')) return { status: 409, message };
-    if (message.includes('nicht gefunden')) return { status: 404, message };
-    return { status: 500, message: fallbackMessage };
 };
 
 const getStoragePath = (userId?: string) => {
@@ -157,8 +132,11 @@ export const LocalProfileService = {
             ? data.correctionPrompt 
             : String(data.correctionPrompt || '');
 
-        const existingIdx = customProfiles.findIndex(p => p.name === data.name);
-        
+        // Namensgleichheit wie in der Rückfrage vor dem Überschreiben (isSameName):
+        // Ein exakter Vergleich legte hier bei abweichender Schreibweise eine
+        // Dublette an, obwohl der Nutzer dem Überschreiben zugestimmt hatte.
+        const existingIdx = customProfiles.findIndex(p => isSameName(p.name, data.name));
+
         if (existingIdx >= 0) {
             customProfiles[existingIdx].correctionPrompt = safePrompt;
         } else {
@@ -258,7 +236,7 @@ export const LocalAiProfileService = {
         const storagePath = getAiStoragePath(userId);
         const customProfiles = readJsonArrayForUpdate<StoredAiProfile>(storagePath);
 
-        const existingIdx = customProfiles.findIndex(p => p.id === data.id || p.name === data.name);
+        const existingIdx = customProfiles.findIndex(p => (data.id && p.id === data.id) || isSameName(p.name, data.name));
         
         const profileData = {
             id: data.id || `local-ai-${Date.now()}`,
@@ -369,7 +347,7 @@ export const LocalGradingMemoryService = {
         const storagePath = getGradingMemoryStoragePath(userId);
         const customProfiles = readJsonArrayForUpdate<GradingMemory>(storagePath);
 
-        const existingIdx = customProfiles.findIndex(p => p.id === data.id || p.name === data.name);
+        const existingIdx = customProfiles.findIndex(p => (data.id && p.id === data.id) || isSameName(p.name, data.name));
         
         const profileData: GradingMemory = {
             id: data.id || `local-grading-memory-${Date.now()}`,
@@ -402,25 +380,18 @@ export const LocalGradingMemoryService = {
         }
     },
 
-    /**
-     * Bewusst OHNE `assertNameIsFree`: Beim Erfahrungsschatz sind gleiche Namen
-     * erlaubt — das Speichern fragt ausdrücklich, ob überschrieben oder ein
-     * zweiter Eintrag gleichen Namens angelegt werden soll (siehe
-     * useGradingMemoryModalState). Die Identität hängt hier an der `id`.
-     */
     async renameProfile(id: string, newName: string, userId?: string): Promise<void> {
         const storagePath = getGradingMemoryStoragePath(userId);
-        if (!fs.existsSync(storagePath)) return;
+        if (!fs.existsSync(storagePath)) throw new Error('Erfahrungsschatz nicht gefunden');
 
-        try {
-            let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            customProfiles = customProfiles.map((p: any) => 
-                p.id === id ? { ...p, name: newName } : p
-            );
-            writeJsonAtomic(storagePath, customProfiles);
-        } catch (err) {
-            logger.error('[LocalGradingMemoryService] Error renaming profile:', err);
-        }
+        const customProfiles = readJsonArrayForUpdate<GradingMemory>(storagePath);
+        const ziel = customProfiles.find(p => p.id === id);
+        if (!ziel) throw new Error('Erfahrungsschatz nicht gefunden');
+
+        assertNameIsFree(customProfiles, id, newName, 'Erfahrungsschatz');
+
+        ziel.name = newName.trim();
+        writeJsonAtomic(storagePath, customProfiles);
     }
 };
 
@@ -482,7 +453,7 @@ export const LocalSkillProfileService = {
         const storagePath = getSkillStoragePath(userId);
         const customProfiles = readJsonArrayForUpdate<StoredSkillProfile>(storagePath);
 
-        const existingIdx = customProfiles.findIndex(p => p.name === data.name);
+        const existingIdx = customProfiles.findIndex(p => isSameName(p.name, data.name));
         const activeSkillIds = Array.isArray(data.activeSkillIds) ? data.activeSkillIds : [];
         const customSkills = data.customSkills || {};
         

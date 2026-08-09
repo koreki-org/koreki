@@ -2,7 +2,8 @@ import type { NextApiResponse } from 'next';
 import prisma from '../../../lib/prisma';
 import { z } from 'zod';
 import { PromptProfileService } from '../../../lib/services/prompt-profile-service';
-import { LocalProfileService, toLocalProfileHttpError } from '../../../lib/services/local-profile-service';
+import { LocalProfileService } from '../../../lib/services/local-profile-service';
+import { toProfileHttpError } from '../../../lib/services/profile-naming';
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
@@ -61,7 +62,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 return res.status(200).json({ success: true });
             }
         } catch (err) {
-            const { status, message } = toLocalProfileHttpError(err, 'Lokaler Fehler beim Verarbeiten der Profile');
+            const { status, message } = toProfileHttpError(err, 'Lokaler Fehler beim Verarbeiten der Profile');
             if (status === 500) {
                 logger.error('[API:PromptProfiles] Local error', {
                     endpoint: req.url,

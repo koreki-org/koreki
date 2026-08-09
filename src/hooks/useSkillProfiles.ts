@@ -4,6 +4,7 @@ import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { STANDARD_SKILL_PROFILES } from '@/lib/ai/standard-skills-profiles';
 import { findNameCollision } from '@/lib/local-vault';
+import { isSameName, nameTakenMessage, overwriteQuestion } from '@/lib/services/profile-naming';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 
 /**
@@ -443,6 +444,30 @@ export const useSkillProfiles = (
             return;
         }
 
+        // Beide Prüfungen gelten NUR fürs Neuanlegen. Das Speichern eines bereits
+        // gewählten Sets ist der reguläre Aktualisierungspfad — inklusive der
+        // System-Vorlagen, die in SaaS ein ADMIN bearbeiten darf.
+        if (isCreatingNew) {
+            const vergleichsName = nameToSave.toLowerCase();
+            const istSystemName = profiles.some(p => p.isSystem && (p.name || '').trim().toLowerCase() === vergleichsName);
+
+            // Die Datenbank lehnt das Speichern unter einem System-Namen ab; die
+            // dateibasierte und die Desktop-Ablage legten bisher ein gleichnamiges
+            // Nutzerprofil daneben — es erschien dann in beiden Listen-Abschnitten.
+            if (istSystemName) {
+                alert('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
+                return;
+            }
+
+            // Speichern ist ein Upsert über den NAMEN. Beim Neuanlegen traf das
+            // bisher ohne Rückfrage ein bestehendes gleichnamiges Set — dessen
+            // Skills waren damit weg.
+            const belegt = profiles.some(p => !p.isSystem && (p.name || '').trim().toLowerCase() === vergleichsName);
+            if (belegt && !window.confirm(overwriteQuestion('Skill-Profil', nameToSave))) {
+                return;
+            }
+        }
+
         setSaving(true);
         
         // 1. Fetch freshest custom skills directly from localStorage to prevent stale state overwrites
@@ -468,7 +493,9 @@ export const useSkillProfiles = (
             if (stored) {
                 try { customProfiles = JSON.parse(stored); } catch(e) {}
             }
-            const existingIdx = customProfiles.findIndex(p => p.name === nameToSave);
+            // Dieselbe Namensgleichheit wie in der Rückfrage oben — sonst legte
+            // ein „Überschreiben" bei abweichender Schreibweise eine Dublette an.
+            const existingIdx = customProfiles.findIndex(p => isSameName(p.name, nameToSave));
             if (existingIdx >= 0) {
                 customProfiles[existingIdx].activeSkillIds = activeSkillIds;
                 customProfiles[existingIdx].customSkills = activeCustomSkills;
@@ -585,7 +612,7 @@ export const useSkillProfiles = (
             if (stored) {
                 let customProfiles = JSON.parse(stored);
                 if (findNameCollision(customProfiles, editingProfileId, editingName)) {
-                    alert('Ein Skill-Profil mit diesem Namen existiert bereits');
+                    alert(nameTakenMessage('Skill-Profil'));
                     return;
                 }
                 customProfiles = customProfiles.map((p: any) =>

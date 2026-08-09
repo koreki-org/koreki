@@ -6,6 +6,8 @@ import { apiClient } from '../lib/api-client';
 import { downloadFile } from '../lib/file-utils';
 import { exportGradingMemoryToMarkdown, parseMarkdownGradingMemory } from '../lib/parsers/markdown-grading-memory-parser';
 import { resolveTaskName, resolveMaxPoints } from '../lib/grading-memory-utils';
+import { findNameCollision } from '../lib/local-vault';
+import { nameTakenMessage, overwriteQuestion } from '../lib/services/profile-naming';
 
 export interface UseGradingMemoryModalStateProps {
     isOpen: boolean;
@@ -245,8 +247,12 @@ export function useGradingMemoryModalState({
                 const stored = localStorage.getItem('koreki_local_grading_memories');
                 if (stored) {
                     let list = JSON.parse(stored);
-                    list = list.map((m: any) => 
-                        m.id === editingMemoryId ? { ...m, name: editingName } : m
+                    if (findNameCollision(list, editingMemoryId, editingName)) {
+                        alert(nameTakenMessage('Erfahrungsschatz'));
+                        return;
+                    }
+                    list = list.map((m: any) =>
+                        m.id === editingMemoryId ? { ...m, name: editingName.trim() } : m
                     );
                     localStorage.setItem('koreki_local_grading_memories', JSON.stringify(list));
                     refreshMemories();
@@ -258,14 +264,17 @@ export function useGradingMemoryModalState({
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         id: editingMemoryId,
-                        newName: editingName
+                        newName: editingName.trim()
                     })
                 });
                 if (response.ok) {
                     refreshMemories();
                     setEditingMemoryId(null);
                 } else {
-                    throw new Error("Fehler beim Umbenennen im Backend.");
+                    // Der Grund steht in der Antwort — etwa die Namenskollision.
+                    // Ihn zu verwerfen ließ jeden Fall gleich aussehen.
+                    const data = await response.json().catch(() => ({}));
+                    throw new Error(data.message || 'Fehler beim Umbenennen im Backend.');
                 }
             }
         } catch (e: any) {
@@ -482,7 +491,10 @@ const handleSaveActiveMemoryChanges = async () => {
 
         const existing = memories.find(m => m.name.toLowerCase() === profileName.trim().toLowerCase());
         if (existing) {
-            const proceed = window.confirm(`Ein Erfahrungsschatz mit dem Namen "${profileName}" existiert bereits. Möchtest du ihn wirklich überschreiben oder einen neuen Eintrag mit dem gleichen Namen erstellen?`);
+            // Der Text versprach zuvor die Wahl zwischen Überschreiben und einem
+            // zweiten Eintrag gleichen Namens. Beide Ablagen überschreiben aber
+            // immer — die Datenbank erzwingt Eindeutigkeit je Nutzer.
+            const proceed = window.confirm(overwriteQuestion('Erfahrungsschatz', profileName.trim()));
             if (!proceed) {
                 return;
             }
@@ -579,7 +591,10 @@ const handleSaveActiveMemoryChanges = async () => {
 
         const existing = memories.find(m => m.name.toLowerCase() === profileName.trim().toLowerCase());
         if (existing) {
-            const proceed = window.confirm(`Ein Erfahrungsschatz mit dem Namen "${profileName}" existiert bereits. Möchtest du ihn wirklich überschreiben oder einen neuen Eintrag mit dem gleichen Namen erstellen?`);
+            // Der Text versprach zuvor die Wahl zwischen Überschreiben und einem
+            // zweiten Eintrag gleichen Namens. Beide Ablagen überschreiben aber
+            // immer — die Datenbank erzwingt Eindeutigkeit je Nutzer.
+            const proceed = window.confirm(overwriteQuestion('Erfahrungsschatz', profileName.trim()));
             if (!proceed) {
                 setIsSaving(false);
                 return;

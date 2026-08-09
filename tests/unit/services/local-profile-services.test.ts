@@ -1,4 +1,5 @@
-import { LocalProfileService, LocalAiProfileService, LocalGradingMemoryService, LocalSkillProfileService, toLocalProfileHttpError } from '../../../src/lib/services/local-profile-service';
+import { LocalProfileService, LocalAiProfileService, LocalGradingMemoryService, LocalSkillProfileService } from '../../../src/lib/services/local-profile-service';
+import { toProfileHttpError } from '../../../src/lib/services/profile-naming';
 import fs from 'fs';
 import path from 'path';
 
@@ -146,6 +147,26 @@ describe('Local Profile & AI Parameter Services 🧪🏮🛡️', () => {
             ).rejects.toThrow('existiert bereits');
         });
 
+        /**
+         * Die Rückfrage vor dem Überschreiben prüft nach `isSameName`. Verglich
+         * der Schreibpfad danach exakt, entstand trotz Zusage eine Dublette —
+         * genau die Falle, die der Umbenennen-Schutz verhindern soll.
+         */
+        it('trifft beim Speichern den bestehenden Eintrag auch bei anderer Schreibweise', async () => {
+            (fs.existsSync as jest.Mock).mockReturnValue(true);
+            (fs.readFileSync as jest.Mock).mockReturnValue(zweiSkillSets);
+            const mockWrite = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+
+            await LocalSkillProfileService.upsertProfile(
+                { name: 'fisi-skills', activeSkillIds: ['neu'] },
+                'teacher-123'
+            );
+
+            const writtenData = JSON.parse(mockWrite.mock.calls[0][1] as string);
+            expect(writtenData).toHaveLength(2);
+            expect(writtenData[0].activeSkillIds).toEqual(['neu']);
+        });
+
         it('lässt einen freien Namen zu', async () => {
             (fs.existsSync as jest.Mock).mockReturnValue(true);
             (fs.readFileSync as jest.Mock).mockReturnValue(zweiSkillSets);
@@ -166,6 +187,21 @@ describe('Local Profile & AI Parameter Services 🧪🏮🛡️', () => {
 
             const writtenData = JSON.parse(mockWrite.mock.calls[0][1] as string);
             expect(writtenData[0].name).toBe('FISI-SKILLS');
+        });
+
+        it('schützt auch den Erfahrungsschatz', async () => {
+            (fs.existsSync as jest.Mock).mockReturnValue(true);
+            (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify([
+                { id: 'mem-1', name: 'Klausur 1', cases: [] },
+                { id: 'mem-2', name: 'Klausur 2', cases: [] }
+            ]));
+            const mockWrite = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+
+            await expect(
+                LocalGradingMemoryService.renameProfile('mem-2', 'Klausur 1', 'teacher-123')
+            ).rejects.toThrow('existiert bereits');
+
+            expect(mockWrite).not.toHaveBeenCalled();
         });
 
         it('schützt Prompt- und KI-Profile nach derselben Regel', async () => {
@@ -202,13 +238,25 @@ describe('Local Profile & AI Parameter Services 🧪🏮🛡️', () => {
         });
 
         it('übersetzt die fachlichen Fehler in HTTP-Antworten', () => {
-            expect(toLocalProfileHttpError(new Error('Ein Skill-Profil mit diesem Namen existiert bereits'), 'fallback'))
+            expect(toProfileHttpError(new Error('Ein Skill-Profil mit diesem Namen existiert bereits'), 'fallback'))
                 .toEqual({ status: 409, message: 'Ein Skill-Profil mit diesem Namen existiert bereits' });
-            expect(toLocalProfileHttpError(new Error('Skill-Profil nicht gefunden'), 'fallback'))
+            expect(toProfileHttpError(new Error('Skill-Profil nicht gefunden'), 'fallback'))
                 .toEqual({ status: 404, message: 'Skill-Profil nicht gefunden' });
             // Unerwartetes bleibt unspezifisch — sonst gerieten Dateipfade nach außen.
-            expect(toLocalProfileHttpError(new Error('EACCES: permission denied, open C:\\Users\\...'), 'fallback'))
+            expect(toProfileHttpError(new Error('EACCES: permission denied, open C:\\Users\\...'), 'fallback'))
                 .toEqual({ status: 500, message: 'fallback' });
+        });
+
+        /**
+         * SaaS-Pfad: Dort prüfen die Routen vorher selbst, zwischen Prüfung und
+         * Schreibvorgang bleibt aber ein Wettlauf-Fenster. Die Sperre der
+         * Datenbank darf den Nutzer nicht als „Interner Serverfehler" erreichen.
+         */
+        it('erkennt die Eindeutigkeits-Sperre der Datenbank (Prisma P2002)', () => {
+            const prismaFehler = Object.assign(new Error('Unique constraint failed on the fields: (`name`,`userId`)'), { code: 'P2002' });
+
+            expect(toProfileHttpError(prismaFehler, 'Interner Serverfehler', 'Erfahrungsschatz'))
+                .toEqual({ status: 409, message: 'Ein Erfahrungsschatz mit diesem Namen existiert bereits' });
         });
     });
 

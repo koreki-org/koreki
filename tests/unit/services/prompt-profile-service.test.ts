@@ -73,6 +73,7 @@ describe('PromptProfileService 🧪🏮🛡️', () => {
 
         it('should allow admins to edit system profiles via upsert', async () => {
             (prisma.promptProfile.findFirst as jest.Mock).mockResolvedValue({ name: 'Standard', isSystem: true });
+            (prisma.promptProfile.findMany as jest.Mock).mockResolvedValue([]);
             (prisma.promptProfile.upsert as jest.Mock).mockResolvedValue({ id: 'p1' });
 
             const result = await PromptProfileService.upsertProfile('u1', { name: 'Standard', correctionPrompt: 'New' }, 'ADMIN');
@@ -81,10 +82,29 @@ describe('PromptProfileService 🧪🏮🛡️', () => {
 
         it('should allow users to create personal profiles', async () => {
             (prisma.promptProfile.findFirst as jest.Mock).mockResolvedValue(null);
+            (prisma.promptProfile.findMany as jest.Mock).mockResolvedValue([]);
             (prisma.promptProfile.upsert as jest.Mock).mockResolvedValue({ id: 'p2' });
 
             const result = await PromptProfileService.upsertProfile('u1', { name: 'My Profile', correctionPrompt: 'Custom' }, 'USER');
             expect(result.id).toBe('p2');
+        });
+
+        /**
+         * Der Nutzer hat dem Überschreiben zugestimmt (Rückfrage nach
+         * `isSameName`) — der Upsert muss dann auch den bestehenden Datensatz
+         * treffen und nicht wegen abweichender Schreibweise eine zweite Zeile
+         * anlegen.
+         */
+        it('should target the existing record when only the case differs', async () => {
+            (prisma.promptProfile.findFirst as jest.Mock).mockResolvedValue(null);
+            (prisma.promptProfile.findMany as jest.Mock).mockResolvedValue([{ name: 'Deutsch LK' }]);
+            (prisma.promptProfile.upsert as jest.Mock).mockResolvedValue({ id: 'p3' });
+
+            await PromptProfileService.upsertProfile('u1', { name: 'deutsch lk', correctionPrompt: 'Custom' }, 'USER');
+
+            expect(prisma.promptProfile.upsert).toHaveBeenCalledWith(expect.objectContaining({
+                where: { name_userId: { name: 'Deutsch LK', userId: 'u1' } }
+            }));
         });
     });
 
@@ -103,15 +123,35 @@ describe('PromptProfileService 🧪🏮🛡️', () => {
 
         it('should block renaming to existing duplicate name', async () => {
             (prisma.promptProfile.findUnique as jest.Mock).mockResolvedValue({ id: 'p1', userId: 'u1', name: 'Old' });
-            (prisma.promptProfile.findFirst as jest.Mock).mockResolvedValue({ id: 'p2', name: 'Duplicate' });
-            
+            (prisma.promptProfile.findMany as jest.Mock).mockResolvedValue([
+                { id: 'p1', name: 'Old' },
+                { id: 'p2', name: 'Duplicate' }
+            ]);
+
             await expect(PromptProfileService.renameProfile('u1', 'p1', 'Duplicate'))
+                .rejects.toThrow('Ein Profil mit diesem Namen existiert bereits');
+        });
+
+        /**
+         * Zwei Profile, die sich nur in der Schreibweise unterscheiden, sind in
+         * der Seitenleiste nicht auseinanderzuhalten. Die Eindeutigkeits-Sperre
+         * der Datenbank vergleicht exakt und ließe sie zu — deshalb prüft der
+         * Dienst selbst nach `isSameName`.
+         */
+        it('should block renaming to a name that differs only in case', async () => {
+            (prisma.promptProfile.findUnique as jest.Mock).mockResolvedValue({ id: 'p1', userId: 'u1', name: 'Old' });
+            (prisma.promptProfile.findMany as jest.Mock).mockResolvedValue([
+                { id: 'p1', name: 'Old' },
+                { id: 'p2', name: 'Deutsch LK' }
+            ]);
+
+            await expect(PromptProfileService.renameProfile('u1', 'p1', '  deutsch lk '))
                 .rejects.toThrow('Ein Profil mit diesem Namen existiert bereits');
         });
 
         it('should allow renaming owned non-system profiles', async () => {
             (prisma.promptProfile.findUnique as jest.Mock).mockResolvedValue({ id: 'p1', userId: 'u1', name: 'Old' });
-            (prisma.promptProfile.findFirst as jest.Mock).mockResolvedValue(null);
+            (prisma.promptProfile.findMany as jest.Mock).mockResolvedValue([{ id: 'p1', name: 'Old' }]);
             (prisma.promptProfile.update as jest.Mock).mockResolvedValue({ id: 'p1', name: 'New' });
 
             await PromptProfileService.renameProfile('u1', 'p1', 'New');

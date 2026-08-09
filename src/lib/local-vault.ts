@@ -1,4 +1,5 @@
 import { logger } from './logger';
+import { isSameName } from './services/profile-naming';
 
 /**
  * Local Vault Utilities (Desktop Persistence)
@@ -90,6 +91,5 @@ export function findNameCollision<T extends { id?: string; name?: string }>(
     id: string,
     newName: string
 ): T | undefined {
-    const gesucht = newName.trim().toLowerCase();
-    return entries.find(e => e?.id !== id && (e?.name || '').trim().toLowerCase() === gesucht);
+    return entries.find(e => e?.id !== id && isSameName(e?.name, newName));
 }

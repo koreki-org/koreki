@@ -1,5 +1,6 @@
 import prisma from '../prisma';
 import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
+import { isSameName, nameTakenMessage } from './profile-naming';
 
 /**
  * Industrial Prompt Profile Service (Stage 16)
@@ -83,12 +84,22 @@ export const PromptProfileService = {
             throw new Error('System-Profile können nicht direkt geändert werden.');
         }
 
+        // 🏮 Siehe SkillProfileService.upsertProfile: Die Sperre der Datenbank
+        // vergleicht exakt, die Rückfrage vor dem Überschreiben nach
+        // `isSameName`. Ohne diese Auflösung entstünde bei abweichender
+        // Schreibweise eine zweite Zeile.
+        const eigene = await prisma.promptProfile.findMany({
+            where: { userId },
+            select: { name: true }
+        });
+        const zielName = eigene.find(p => isSameName(p.name, data.name))?.name || data.name;
+
         return prisma.promptProfile.upsert({
-            where: { 
-                name_userId: { 
-                    name: data.name, 
-                    userId: userId 
-                } 
+            where: {
+                name_userId: {
+                    name: zielName,
+                    userId: userId
+                }
             },
             update: { 
                 correctionPrompt: data.correctionPrompt,
@@ -117,13 +128,14 @@ export const PromptProfileService = {
             throw new Error('System-Profile können nicht umbenannt werden');
         }
 
-        // Duplicate check
-        const duplicate = await prisma.promptProfile.findFirst({
-            where: { name: newName, userId: userId }
+        // Duplicate check — nach derselben Namensgleichheit wie überall sonst.
+        const eigene = await prisma.promptProfile.findMany({
+            where: { userId },
+            select: { id: true, name: true }
         });
-        
-        if (duplicate && duplicate.id !== id) {
-            throw new Error('Ein Profil mit diesem Namen existiert bereits');
+
+        if (eigene.some(p => p.id !== id && isSameName(p.name, newName))) {
+            throw new Error(nameTakenMessage('Profil'));
         }
 
         return prisma.promptProfile.update({

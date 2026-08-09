@@ -3,6 +3,7 @@ import { AppSettings, AiProfile } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { findNameCollision } from '@/lib/local-vault';
+import { nameTakenMessage } from '@/lib/services/profile-naming';
 
 /**
  * Standard default AI model profile values.
@@ -355,7 +356,7 @@ export const useAiProfiles = (
             if (stored) {
                 let customProfiles = JSON.parse(stored);
                 if (findNameCollision(customProfiles, editingProfileId, editingName)) {
-                    alert('Ein KI-Profil mit diesem Namen existiert bereits');
+                    alert(nameTakenMessage('KI-Profil'));
                     return;
                 }
                 customProfiles = customProfiles.map((p: any) =>

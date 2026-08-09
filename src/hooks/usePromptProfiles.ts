@@ -4,6 +4,7 @@ import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
 import { findNameCollision, readLocalArray, readLocalArrayForUpdate, writeLocalArray } from '@/lib/local-vault';
+import { isSameName, nameTakenMessage, overwriteQuestion } from '@/lib/services/profile-naming';
 
 const PROFILE_KEY = 'koreki_local_profiles';
 const AI_PROFILE_KEY = 'koreki_local_ai_profiles';
@@ -151,11 +152,29 @@ export const usePromptProfiles = (
             return;
         }
 
+        const vergleichsName = nameToSave.toLowerCase();
+
+        // Nur fürs Neuanlegen — das Speichern eines gewählten Profils ist der
+        // reguläre Aktualisierungspfad (System-Vorlagen inklusive, die in SaaS
+        // ein ADMIN bearbeiten darf). Siehe useSkillProfiles.
+        if (isCreatingNew) {
+            if (profiles.some(p => p.isSystem && (p.name || '').trim().toLowerCase() === vergleichsName)) {
+                alert('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
+                return;
+            }
+
+            const belegt = profiles.some(p => !p.isSystem && (p.name || '').trim().toLowerCase() === vergleichsName);
+            if (belegt && !window.confirm(overwriteQuestion('Profil', nameToSave))) {
+                return;
+            }
+        }
+
         setSaving(true);
-        
+
         if (isDesktopTarget()) {
             const customProfiles = readLocalArrayForUpdate<LocalPromptProfile>(PROFILE_KEY);
-            const existingIdx = customProfiles.findIndex(p => p.name === nameToSave);
+            // Dieselbe Namensgleichheit wie in der Rückfrage oben.
+            const existingIdx = customProfiles.findIndex(p => isSameName(p.name, nameToSave));
             if (existingIdx >= 0) {
                 customProfiles[existingIdx].correctionPrompt = correctionPrompt;
             } else {
@@ -170,8 +189,17 @@ export const usePromptProfiles = (
 
             // Handle AI Profile Save
             if (createAiProfile && importedAiParams) {
-                const customAiProfiles = readLocalArrayForUpdate<Record<string, unknown>>(AI_PROFILE_KEY);
-                customAiProfiles.push({ id: `local-ai-${Date.now()}`, name: nameToSave, ...importedAiParams, isSystem: false });
+                // 🏮 Zuvor wurde blind angehängt: Zweimal Speichern erzeugte zwei
+                // gleichnamige KI-Profile — genau die Dublette, die das
+                // Umbenennen inzwischen verhindert.
+                const customAiProfiles = readLocalArrayForUpdate<{ id?: string; name?: string }>(AI_PROFILE_KEY);
+                const aiIdx = customAiProfiles.findIndex(p => isSameName(p.name, nameToSave));
+                const aiProfil = { id: `local-ai-${Date.now()}`, name: nameToSave, ...importedAiParams, isSystem: false };
+                if (aiIdx >= 0) {
+                    customAiProfiles[aiIdx] = { ...aiProfil, id: customAiProfiles[aiIdx].id || aiProfil.id };
+                } else {
+                    customAiProfiles.push(aiProfil);
+                }
                 writeLocalArray(AI_PROFILE_KEY, customAiProfiles);
             }
             
@@ -285,7 +313,7 @@ export const usePromptProfiles = (
         if (isDesktopTarget()) {
             const gespeicherte = readLocalArrayForUpdate<LocalPromptProfile>(PROFILE_KEY);
             if (findNameCollision(gespeicherte, editingProfileId, editingName)) {
-                alert('Ein Profil mit diesem Namen existiert bereits');
+                alert(nameTakenMessage('Profil'));
                 return;
             }
             const renamed = gespeicherte.map(p =>

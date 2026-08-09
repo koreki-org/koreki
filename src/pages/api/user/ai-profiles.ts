@@ -4,7 +4,8 @@ import { z } from 'zod';
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
-import { LocalAiProfileService, toLocalProfileHttpError } from '../../../lib/services/local-profile-service';
+import { LocalAiProfileService } from '../../../lib/services/local-profile-service';
+import { isSameName, nameTakenMessage, toProfileHttpError } from '../../../lib/services/profile-naming';
 
 /**
  * AI Profiles API Controller (Stage 18)
@@ -63,7 +64,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             }
             return res.status(405).json({ message: 'Method not allowed' });
         } catch (err) {
-            const { status, message } = toLocalProfileHttpError(err, 'Lokaler Fehler beim Verarbeiten der Profile');
+            const { status, message } = toProfileHttpError(err, 'Lokaler Fehler beim Verarbeiten der Profile');
             if (status === 500) {
                 logger.error('[API:AiProfiles] Local error', {
                     endpoint: req.url,
@@ -135,6 +136,17 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 return res.status(403).json({ message: 'Nicht autorisiert' });
             }
 
+            // Ohne diese Prüfung liefe das Umbenennen auf einen vergebenen Namen
+            // in die Eindeutigkeits-Sperre der Datenbank und käme als
+            // „Interner Serverfehler" beim Nutzer an.
+            const eigene = await prisma.aiProfile.findMany({
+                where: { userId: dbUserId },
+                select: { id: true, name: true }
+            });
+            if (eigene.some(p => p.id !== id && isSameName(p.name, newName))) {
+                return res.status(409).json({ message: nameTakenMessage('KI-Profil') });
+            }
+
             const updated = await prisma.aiProfile.update({
                 where: { id },
                 data: { name: newName }
@@ -157,7 +169,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         return res.status(405).json({ message: 'Method not allowed' });
     } catch (err: any) {
-        logger.error('[API:AiProfiles] Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
-        return res.status(500).json({ message: err.message || 'Interner Serverfehler' });
+        const { status, message } = toProfileHttpError(err, 'Interner Serverfehler', 'KI-Profil');
+        if (status === 500) {
+            logger.error('[API:AiProfiles] Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
+        }
+        return res.status(status).json({ message });
     }
 });

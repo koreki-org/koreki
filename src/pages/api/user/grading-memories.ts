@@ -2,6 +2,7 @@ import type { NextApiResponse } from 'next';
 import { z } from 'zod';
 import prisma from '../../../lib/prisma';
 import { LocalGradingMemoryService } from '../../../lib/services/local-profile-service';
+import { isSameName, nameTakenMessage, toProfileHttpError } from '../../../lib/services/profile-naming';
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
@@ -82,8 +83,15 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
             return res.status(405).json({ message: 'Method not allowed' });
         } catch (err: any) {
-            logger.error('[API:GradingMemories:Local] Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
-            return res.status(500).json({ message: 'Interner lokaler Fehler beim Verarbeiten des Erfahrungsschatzes' });
+            const { status, message } = toProfileHttpError(
+                err,
+                'Interner lokaler Fehler beim Verarbeiten des Erfahrungsschatzes',
+                'Erfahrungsschatz'
+            );
+            if (status === 500) {
+                logger.error('[API:GradingMemories:Local] Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
+            }
+            return res.status(status).json({ message });
         }
     }
 
@@ -117,10 +125,20 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 });
             }
             
+            // 🏮 Siehe SkillProfileService.upsertProfile: Die Sperre der Datenbank
+            // vergleicht exakt, die Rückfrage vor dem Überschreiben nach
+            // `isSameName`. Ohne diese Auflösung entstünde bei abweichender
+            // Schreibweise eine zweite Zeile.
+            const eigene = await prisma.gradingMemory.findMany({
+                where: { userId: dbUserId },
+                select: { name: true }
+            });
+            const zielName = eigene.find(m => isSameName(m.name, validation.data.name))?.name || validation.data.name;
+
             const memory = await prisma.gradingMemory.upsert({
                 where: {
                     name_userId: {
-                        name: validation.data.name,
+                        name: zielName,
                         userId: dbUserId
                     }
                 },
@@ -152,6 +170,16 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 return res.status(403).json({ message: 'Nicht autorisiert.' });
             }
 
+            // Ohne diese Prüfung liefe das Umbenennen auf einen vergebenen Namen
+            // in die Eindeutigkeits-Sperre der Datenbank und käme als
+            // „Interner SaaS-Fehler" beim Nutzer an.
+            const duplicate = await prisma.gradingMemory.findFirst({
+                where: { name: validation.data.newName, userId: dbUserId }
+            });
+            if (duplicate && duplicate.id !== validation.data.id) {
+                return res.status(409).json({ message: nameTakenMessage('Erfahrungsschatz') });
+            }
+
             await prisma.gradingMemory.update({
                 where: { id: validation.data.id },
                 data: { name: validation.data.newName }
@@ -178,7 +206,14 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         return res.status(405).json({ message: 'Method not allowed' });
     } catch (err: any) {
-        logger.error('[API:GradingMemories:SaaS] Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
-        return res.status(500).json({ message: 'Interner SaaS-Fehler beim Verarbeiten des Erfahrungsschatzes' });
+        const { status, message } = toProfileHttpError(
+            err,
+            'Interner SaaS-Fehler beim Verarbeiten des Erfahrungsschatzes',
+            'Erfahrungsschatz'
+        );
+        if (status === 500) {
+            logger.error('[API:GradingMemories:SaaS] Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
+        }
+        return res.status(status).json({ message });
     }
 });
