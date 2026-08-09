@@ -208,6 +208,17 @@ h1.xs { font-size: 62px; line-height: 1.02; }
 }
 .swipe .arrow { font-size: 30px; line-height: 1; }
 
+/* Verkleinerter Feed-Post fuer Story-Reposts */
+.repost {
+    display: block; width: 620px; margin: 0 auto;
+    border: 1px solid var(--line); border-radius: 22px;
+    box-shadow: var(--shadow-float);
+}
+
+/* Freigehaltene Flaeche fuer Instagram-Sticker (Umfrage, Frage, Link).
+   Bleibt bewusst leer — der Sticker wird beim Posten dort platziert. */
+.sticker-zone { flex: 0 0 auto; height: 560px; }
+
 /* CTA mit anschliessendem Anreiz-Text auf einer Zeile */
 .cta-row { display: flex; align-items: center; gap: 26px; flex-wrap: wrap; }
 .cta-note { font-size: 21px; font-weight: 600; color: var(--muted); }

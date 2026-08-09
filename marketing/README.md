@@ -69,6 +69,24 @@ Zwei Regeln aus der Praxis: Bildkanten sauber treffen (`sx + sw = iw`), sonst
 entsteht ein Spalt am Rand. Und unter etwa `sw = 1000` wird UI-Text auf dem
 Handy unleserlich — lieber enger croppen als kleiner skalieren.
 
+## Story-Rahmen
+
+Stories sind keine hochkant gestellten Feed-Posts. Jeder Rahmen hat genau eine
+Aufgabe, und der Platz für Instagrams eigene Elemente ist Teil des Layouts.
+
+| Datei | Aufgabe |
+| :--- | :--- |
+| `story-poll.html` | trägt einen Umfrage- oder Frage-Sticker |
+| `story-repost.html` | verweist auf den aktuellen Feed-Post |
+
+Bei `story-poll.html` bleibt die Fläche `.sticker-zone` **absichtlich leer** —
+dort wird beim Posten der Sticker platziert. Nicht mit Inhalt füllen.
+
+`story-repost.html` bindet `out/post1.png` ein, also selbst ein Renderergebnis.
+`render.js` arbeitet alphabetisch, `post1.html` liegt vor `story-repost.html` —
+bei einem vollständigen Lauf passt die Reihenfolge. Wer nur
+`node render.js story` aufruft, braucht vorher einmal `node render.js post1`.
+
 ## Neuen Post anlegen
 
 1. Text zuerst schreiben, erst dann gestalten.

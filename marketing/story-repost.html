@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="de">
+<head><meta charset="utf-8"><link rel="stylesheet" href="brand.css"></head>
+<body data-format="story">
+<!--
+    Story-Rahmen, der auf den aktuellen Feed-Post verweist.
+
+    ACHTUNG Reihenfolge: Das eingebettete Bild ist out/post1.png, also selbst
+    ein Renderergebnis. render.js arbeitet die Dateien alphabetisch ab —
+    "post1.html" liegt vor "story-repost.html", bei einem vollstaendigen Lauf
+    existiert das PNG also rechtzeitig. Wer nur `node render.js story` aufruft,
+    braucht vorher einmal `node render.js post1`.
+
+    Fuer einen anderen Post einfach den src-Pfad tauschen.
+-->
+<div class="slide">
+
+    <div class="brandbar">
+        <div class="lockup">
+            <img src="../public/koreki-icon-transparent.png" alt="">
+            <div class="wordmark">Koreki<span>.</span></div>
+        </div>
+        <div class="handle">koreki.org</div>
+    </div>
+
+    <div class="h44"></div>
+
+    <div class="eyebrow">Frisch gepostet</div>
+    <div class="h20"></div>
+    <h1 class="s">Weniger Rotstift.</h1>
+
+    <div class="h44"></div>
+
+    <img class="repost" src="out/post1.png" alt="">
+
+    <div class="spacer"></div>
+
+    <div class="swipe">Ganzer Post im Feed <span class="arrow">→</span></div>
+
+</div>
+</body>
+</html>
