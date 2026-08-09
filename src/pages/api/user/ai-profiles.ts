@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
-import { LocalAiProfileService } from '../../../lib/services/local-profile-service';
+import { LocalAiProfileService, toLocalProfileHttpError } from '../../../lib/services/local-profile-service';
 
 /**
  * AI Profiles API Controller (Stage 18)
@@ -63,7 +63,14 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             }
             return res.status(405).json({ message: 'Method not allowed' });
         } catch (err) {
-            return res.status(500).json({ message: 'Lokaler Fehler beim Verarbeiten der Profile' });
+            const { status, message } = toLocalProfileHttpError(err, 'Lokaler Fehler beim Verarbeiten der Profile');
+            if (status === 500) {
+                logger.error('[API:AiProfiles] Local error', {
+                    endpoint: req.url,
+                    message: err instanceof Error ? err.message : String(err)
+                });
+            }
+            return res.status(status).json({ message });
         }
     }
 

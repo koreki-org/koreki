@@ -3,6 +3,7 @@ import { AppSettings } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { STANDARD_SKILL_PROFILES } from '@/lib/ai/standard-skills-profiles';
+import { findNameCollision } from '@/lib/local-vault';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 
 /**
@@ -583,7 +584,11 @@ export const useSkillProfiles = (
             const stored = localStorage.getItem('koreki_local_skill_profiles');
             if (stored) {
                 let customProfiles = JSON.parse(stored);
-                customProfiles = customProfiles.map((p: any) => 
+                if (findNameCollision(customProfiles, editingProfileId, editingName)) {
+                    alert('Ein Skill-Profil mit diesem Namen existiert bereits');
+                    return;
+                }
+                customProfiles = customProfiles.map((p: any) =>
                     p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
                 );
                 localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(customProfiles));

@@ -1,4 +1,4 @@
-import { LocalProfileService, LocalAiProfileService, LocalGradingMemoryService } from '../../../src/lib/services/local-profile-service';
+import { LocalProfileService, LocalAiProfileService, LocalGradingMemoryService, LocalSkillProfileService, toLocalProfileHttpError } from '../../../src/lib/services/local-profile-service';
 import fs from 'fs';
 import path from 'path';
 
@@ -109,6 +109,106 @@ describe('Local Profile & AI Parameter Services 🧪🏮🛡️', () => {
             const writtenData = JSON.parse(mockWrite.mock.calls[0][1] as string);
             expect(writtenData.length).toBe(1);
             expect(writtenData[0].id).toBe('ai-2');
+        });
+    });
+
+    /**
+     * REGRESSION: Umbenennen legte einen zweiten Eintrag mit demselben Namen an,
+     * wenn der Name bereits vergeben war. Gespeichert und ausgewählt wird über
+     * den NAMEN — die Dublette war danach unerreichbar, jede Bearbeitung landete
+     * beim ersten Treffer. Die Datenbank-Dienste verbieten das seit jeher.
+     */
+    describe('Umbenennen: Namenskollision (Dubletten-Schutz)', () => {
+        const zweiSkillSets = JSON.stringify([
+            { id: 'local-skill-1', name: 'FISI-Skills', activeSkillIds: ['a'], customSkills: {}, isSystem: false },
+            { id: 'local-skill-2', name: 'Mein Skill-Profil', activeSkillIds: ['b'], customSkills: {}, isSystem: false }
+        ]);
+
+        it('weist ein Skill-Profil auf einen bereits vergebenen Namen zurück', async () => {
+            (fs.existsSync as jest.Mock).mockReturnValue(true);
+            (fs.readFileSync as jest.Mock).mockReturnValue(zweiSkillSets);
+            const mockWrite = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+
+            await expect(
+                LocalSkillProfileService.renameProfile('local-skill-2', 'FISI-Skills', 'teacher-123')
+            ).rejects.toThrow('existiert bereits');
+
+            expect(mockWrite).not.toHaveBeenCalled();
+        });
+
+        it('prüft den Namen unabhängig von Groß-/Kleinschreibung und Leerzeichen', async () => {
+            (fs.existsSync as jest.Mock).mockReturnValue(true);
+            (fs.readFileSync as jest.Mock).mockReturnValue(zweiSkillSets);
+            jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+
+            await expect(
+                LocalSkillProfileService.renameProfile('local-skill-2', '  fisi-skills ', 'teacher-123')
+            ).rejects.toThrow('existiert bereits');
+        });
+
+        it('lässt einen freien Namen zu', async () => {
+            (fs.existsSync as jest.Mock).mockReturnValue(true);
+            (fs.readFileSync as jest.Mock).mockReturnValue(zweiSkillSets);
+            const mockWrite = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+
+            await LocalSkillProfileService.renameProfile('local-skill-2', 'FISI-Skills 2026', 'teacher-123');
+
+            const writtenData = JSON.parse(mockWrite.mock.calls[0][1] as string);
+            expect(writtenData.map((p: any) => p.name)).toEqual(['FISI-Skills', 'FISI-Skills 2026']);
+        });
+
+        it('erlaubt das Umbenennen auf den eigenen Namen (nur Schreibweise geändert)', async () => {
+            (fs.existsSync as jest.Mock).mockReturnValue(true);
+            (fs.readFileSync as jest.Mock).mockReturnValue(zweiSkillSets);
+            const mockWrite = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+
+            await LocalSkillProfileService.renameProfile('local-skill-1', 'FISI-SKILLS', 'teacher-123');
+
+            const writtenData = JSON.parse(mockWrite.mock.calls[0][1] as string);
+            expect(writtenData[0].name).toBe('FISI-SKILLS');
+        });
+
+        it('schützt Prompt- und KI-Profile nach derselben Regel', async () => {
+            (fs.existsSync as jest.Mock).mockReturnValue(true);
+            jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+
+            (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify([
+                { id: 'p-1', name: 'Deutsch LK', correctionPrompt: '', isSystem: false },
+                { id: 'p-2', name: 'Mathe GK', correctionPrompt: '', isSystem: false }
+            ]));
+            await expect(
+                LocalProfileService.renameProfile('p-2', 'Deutsch LK', 'teacher-123')
+            ).rejects.toThrow('existiert bereits');
+
+            (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify([
+                { id: 'ai-1', name: 'Optimized Gemma' },
+                { id: 'ai-2', name: 'Schnell' }
+            ]));
+            await expect(
+                LocalAiProfileService.renameProfile('ai-2', 'Optimized Gemma', 'teacher-123')
+            ).rejects.toThrow('existiert bereits');
+        });
+
+        it('meldet einen unbekannten Eintrag, statt stillschweigend nichts zu tun', async () => {
+            (fs.existsSync as jest.Mock).mockReturnValue(true);
+            (fs.readFileSync as jest.Mock).mockReturnValue(zweiSkillSets);
+            const mockWrite = jest.spyOn(fs, 'writeFileSync').mockImplementation(() => {});
+
+            await expect(
+                LocalSkillProfileService.renameProfile('gibt-es-nicht', 'Egal', 'teacher-123')
+            ).rejects.toThrow('nicht gefunden');
+
+            expect(mockWrite).not.toHaveBeenCalled();
+        });
+
+        it('übersetzt die fachlichen Fehler in HTTP-Antworten', () => {
+            expect(toLocalProfileHttpError(new Error('Ein Skill-Profil mit diesem Namen existiert bereits'), 'fallback'))
+                .toEqual({ status: 409, message: 'Ein Skill-Profil mit diesem Namen existiert bereits' });
+            expect(toLocalProfileHttpError(new Error('Skill-Profil nicht gefunden'), 'fallback'))
+                .toEqual({ status: 404, message: 'Skill-Profil nicht gefunden' });
+            // Unerwartetes bleibt unspezifisch — sonst gerieten Dateipfade nach außen.
+            expect(toLocalProfileHttpError(new Error('EACCES: permission denied, open C:\\Users\\...'), 'fallback'))
+                .toEqual({ status: 500, message: 'fallback' });
         });
     });
 

@@ -45,6 +45,49 @@ interface StoredSkillProfile {
  * when no database is available (Community & Desktop editions).
  */
 
+/**
+ * 🏮 Verhindert zwei gleichnamige Einträge beim Umbenennen.
+ *
+ * Gespeichert wird über den NAMEN (`upsertProfile` sucht per `findIndex(p =>
+ * p.name === ...)`), ausgewählt ebenfalls (`selectedProfile` in den Hooks ist
+ * ein Name). Ein zweiter Eintrag mit demselben Namen ist danach unerreichbar:
+ * Jede Bearbeitung landet beim ersten Treffer, in der Liste stehen zwei
+ * scheinbar identische, gleichzeitig markierte Sets. Die Datenbank-Dienste
+ * verbieten das seit jeher — die lokale Ablage tat es bisher nicht, weshalb
+ * ein Umbenennen auf einen vergebenen Namen stillschweigend eine Dublette
+ * erzeugte.
+ */
+const assertNameIsFree = (
+    profiles: { id?: string; name?: string }[],
+    id: string,
+    newName: string,
+    label: string
+): void => {
+    const gesucht = newName.trim().toLowerCase();
+    const kollision = profiles.find(p => p?.id !== id && (p?.name || '').trim().toLowerCase() === gesucht);
+    if (kollision) {
+        throw new Error(`Ein ${label} mit diesem Namen existiert bereits`);
+    }
+};
+
+/**
+ * Übersetzt die fachlichen Fehler dieser Ablage in eine HTTP-Antwort.
+ *
+ * Der Sammel-`catch` der API-Routen beantwortete bisher jeden Fehler mit einem
+ * generischen 500 — die Namenskollision kam damit als „Lokaler Fehler" beim
+ * Nutzer an, obwohl sie eine klare, behebbare Ursache hat. Alles Unerwartete
+ * bleibt bewusst unspezifisch, damit keine Dateipfade nach außen dringen.
+ */
+export const toLocalProfileHttpError = (
+    err: unknown,
+    fallbackMessage: string
+): { status: number; message: string } => {
+    const message = err instanceof Error ? err.message : '';
+    if (message.includes('existiert bereits')) return { status: 409, message };
+    if (message.includes('nicht gefunden')) return { status: 404, message };
+    return { status: 500, message: fallbackMessage };
+};
+
 const getStoragePath = (userId?: string) => {
     let baseDir: string;
     
@@ -146,17 +189,16 @@ export const LocalProfileService = {
 
     async renameProfile(id: string, newName: string, userId?: string) {
         const storagePath = getStoragePath(userId);
-        if (!fs.existsSync(storagePath)) return;
+        if (!fs.existsSync(storagePath)) throw new Error('Profil nicht gefunden');
 
-        try {
-            let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            customProfiles = customProfiles.map((p: any) => 
-                p.id === id ? { ...p, name: newName } : p
-            );
-            writeJsonAtomic(storagePath, customProfiles);
-        } catch (err) {
-            logger.error('[LocalProfileService] Error renaming profile:', err);
-        }
+        const customProfiles = readJsonArrayForUpdate<StoredExpertProfile>(storagePath);
+        const ziel = customProfiles.find(p => p.id === id);
+        if (!ziel) throw new Error('Profil nicht gefunden');
+
+        assertNameIsFree(customProfiles, id, newName, 'Profil');
+
+        ziel.name = newName.trim();
+        writeJsonAtomic(storagePath, customProfiles);
     }
 };
 
@@ -258,17 +300,16 @@ export const LocalAiProfileService = {
 
     async renameProfile(id: string, newName: string, userId?: string) {
         const storagePath = getAiStoragePath(userId);
-        if (!fs.existsSync(storagePath)) return;
+        if (!fs.existsSync(storagePath)) throw new Error('KI-Profil nicht gefunden');
 
-        try {
-            let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            customProfiles = customProfiles.map((p: any) => 
-                p.id === id ? { ...p, name: newName } : p
-            );
-            writeJsonAtomic(storagePath, customProfiles);
-        } catch (err) {
-            logger.error('[LocalAiProfileService] Error renaming profile:', err);
-        }
+        const customProfiles = readJsonArrayForUpdate<StoredAiProfile>(storagePath);
+        const ziel = customProfiles.find(p => p.id === id);
+        if (!ziel) throw new Error('KI-Profil nicht gefunden');
+
+        assertNameIsFree(customProfiles, id, newName, 'KI-Profil');
+
+        ziel.name = newName.trim();
+        writeJsonAtomic(storagePath, customProfiles);
     }
 };
 
@@ -361,6 +402,12 @@ export const LocalGradingMemoryService = {
         }
     },
 
+    /**
+     * Bewusst OHNE `assertNameIsFree`: Beim Erfahrungsschatz sind gleiche Namen
+     * erlaubt — das Speichern fragt ausdrücklich, ob überschrieben oder ein
+     * zweiter Eintrag gleichen Namens angelegt werden soll (siehe
+     * useGradingMemoryModalState). Die Identität hängt hier an der `id`.
+     */
     async renameProfile(id: string, newName: string, userId?: string): Promise<void> {
         const storagePath = getGradingMemoryStoragePath(userId);
         if (!fs.existsSync(storagePath)) return;
@@ -471,17 +518,16 @@ export const LocalSkillProfileService = {
 
     async renameProfile(id: string, newName: string, userId?: string) {
         const storagePath = getSkillStoragePath(userId);
-        if (!fs.existsSync(storagePath)) return;
+        if (!fs.existsSync(storagePath)) throw new Error('Skill-Profil nicht gefunden');
 
-        try {
-            let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            customProfiles = customProfiles.map((p: any) =>
-                p.id === id ? { ...p, name: newName } : p
-            );
-            writeJsonAtomic(storagePath, customProfiles);
-        } catch (err) {
-            logger.error('[LocalSkillProfileService] Error renaming profile:', err);
-        }
+        const customProfiles = readJsonArrayForUpdate<StoredSkillProfile>(storagePath);
+        const ziel = customProfiles.find(p => p.id === id);
+        if (!ziel) throw new Error('Skill-Profil nicht gefunden');
+
+        assertNameIsFree(customProfiles, id, newName, 'Skill-Profil');
+
+        ziel.name = newName.trim();
+        writeJsonAtomic(storagePath, customProfiles);
     }
 };
 

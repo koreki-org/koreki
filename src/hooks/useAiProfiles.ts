@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppSettings, AiProfile } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
+import { findNameCollision } from '@/lib/local-vault';
 
 /**
  * Standard default AI model profile values.
@@ -353,7 +354,11 @@ export const useAiProfiles = (
             const stored = localStorage.getItem('koreki_local_ai_profiles');
             if (stored) {
                 let customProfiles = JSON.parse(stored);
-                customProfiles = customProfiles.map((p: any) => 
+                if (findNameCollision(customProfiles, editingProfileId, editingName)) {
+                    alert('Ein KI-Profil mit diesem Namen existiert bereits');
+                    return;
+                }
+                customProfiles = customProfiles.map((p: any) =>
                     p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
                 );
                 localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));

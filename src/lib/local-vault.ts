@@ -76,3 +76,20 @@ export function writeLocalArray(key: string, data: unknown[]): void {
     if (typeof window === 'undefined') return;
     window.localStorage.setItem(key, JSON.stringify(data));
 }
+
+/**
+ * Sucht einen fremden Eintrag gleichen Namens — Gegenstück zu `assertNameIsFree`
+ * in local-profile-service.ts für die Desktop-App, die keine API-Routen kennt.
+ *
+ * 🏮 Gespeichert und ausgewählt wird über den NAMEN. Zwei gleichnamige Profile
+ * sind danach ununterscheidbar: Bearbeitungen landen stets beim ersten Treffer,
+ * der zweite Eintrag bleibt als Karteileiche in der Liste stehen.
+ */
+export function findNameCollision<T extends { id?: string; name?: string }>(
+    entries: T[],
+    id: string,
+    newName: string
+): T | undefined {
+    const gesucht = newName.trim().toLowerCase();
+    return entries.find(e => e?.id !== id && (e?.name || '').trim().toLowerCase() === gesucht);
+}

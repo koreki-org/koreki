@@ -3,7 +3,7 @@ import { AppSettings } from '@/types';
 import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
-import { readLocalArray, readLocalArrayForUpdate, writeLocalArray } from '@/lib/local-vault';
+import { findNameCollision, readLocalArray, readLocalArrayForUpdate, writeLocalArray } from '@/lib/local-vault';
 
 const PROFILE_KEY = 'koreki_local_profiles';
 const AI_PROFILE_KEY = 'koreki_local_ai_profiles';
@@ -283,7 +283,12 @@ export const usePromptProfiles = (
         }
 
         if (isDesktopTarget()) {
-            const renamed = readLocalArrayForUpdate<LocalPromptProfile>(PROFILE_KEY).map(p =>
+            const gespeicherte = readLocalArrayForUpdate<LocalPromptProfile>(PROFILE_KEY);
+            if (findNameCollision(gespeicherte, editingProfileId, editingName)) {
+                alert('Ein Profil mit diesem Namen existiert bereits');
+                return;
+            }
+            const renamed = gespeicherte.map(p =>
                 p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
             );
             writeLocalArray(PROFILE_KEY, renamed);
