@@ -6,8 +6,8 @@ Wir agieren als **einheitliches High-Performance Team**. Keine Aufgabe erfolgt i
 ## Hierarchy & Roles
 
 ### 1. Strategic Direction (The "Why")
-- **Lead:** `product-manager` ([.claude/agents/product-manager.md](.claude/agents/product-manager.md))
-- **Fokus:** Produktvision, User-Value, Roadmap.
+- **Lead:** `product-manager` ([.claude/agents/product-manager.md](.claude/agents/product-manager.md)) | Skills: `product-strategy`, `marketing-communication`
+- **Fokus:** Produktvision, User-Value, Roadmap, Aussendarstellung.
 - **Entscheidungsgewalt:** Der PM hat das letzte Wort über den funktionalen Scope und die Priorisierung.
 
 ### 2. Technical Leadership (The "How")
@@ -16,8 +16,8 @@ Wir agieren als **einheitliches High-Performance Team**. Keine Aufgabe erfolgt i
 - **Entscheidungsgewalt:** Der Architekt entscheidet über technische Pfade und die Einhaltung der System-Integrität.
 
 ### 3. Execution & Domain Experts
-- **Interface Lead:** `ui-expert` | Skill: `koreki-design-system`
-  - *Action:* Verantwortung für Frontend, UX-Konsistenz und Tailwind-Komponenten.
+- **Interface Lead:** `ui-expert` | Skills: `koreki-design-system`, `marketing-communication`
+  - *Action:* Verantwortung für Frontend, UX-Konsistenz und Tailwind-Komponenten. Marketing-Grafiken folgen demselben Design System — Koreki hat keinen Dark Mode.
 - **Data Expert:** `database-expert` | Skill: `database-infrastructure`
   - *Action:* Implementierung von Prisma-Schemas, Migrationen und effizientem Datenfluss unter Leitung des Architekten.
 - **AI/Prompt Expert:** `prompt-engineer` | Skill: `prompt-engineering`
