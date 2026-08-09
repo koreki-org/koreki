@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Twitter, Linkedin, Github, Mail, ShieldCheck } from 'lucide-react';
+import { Instagram, Linkedin, Github, Mail, ShieldCheck } from 'lucide-react';
 import Logo from '../Logo';
 import { LEGAL_CONFIG } from '@/config/legal-contact';
 import { getKorekiMode } from '@/lib/env-context';
@@ -25,7 +25,7 @@ const MarketingFooter: React.FC = () => {
                             Die intelligente Korrektur-Infrastruktur für Bildungs- und Prüfungsinstitutionen.
                         </p>
                         <div className="flex gap-4 items-center">
-                            <a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"><Twitter className="w-5 h-5" /></a>
+                            <a href="https://www.instagram.com/koreki_org/" target="_blank" rel="noopener noreferrer" aria-label="Koreki auf Instagram" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"><Instagram className="w-5 h-5" /></a>
                             <a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"><Linkedin className="w-5 h-5" /></a>
                             <a href="https://github.com/koreki-org/koreki" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"><Github className="w-5 h-5" /></a>
                         </div>
