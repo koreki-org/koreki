@@ -22,6 +22,24 @@ import {
 export const isBroadcastTarget = (item: BatchFile): boolean =>
     item.documentType === 'scanned' && item.status === 'pending';
 
+const countRects = (rects?: RedactionRectMap): number =>
+    Object.values(rects || {}).reduce((summe, seite) => summe + (seite?.length || 0), 0);
+
+/**
+ * Entscheidet, ob eine bereits gelaufene Bilderkennung verworfen werden muss.
+ *
+ * 🏮 Erkannter Text stammt aus dem Bild, das zum Zeitpunkt der Erkennung
+ * vorlag. Kommen Balken hinzu (oder war das Dokument vorher gar nicht
+ * geschwärzt), kann der Text noch Klarnamen enthalten — dann MUSS er weg.
+ *
+ * Ändert sich dagegen nichts an den Balken eines bereits geschwärzten Scans,
+ * wäre das Verwerfen reine Zerstörung: Der Lehrer verliert erkannten Text samt
+ * seiner manuellen Korrekturen und zahlt die Bilderkennung ein zweites Mal.
+ * Genau das passierte bisher bei jeder Sammel-Übertragung dem ganzen Stapel.
+ */
+const invalidatesOcr = (item: BatchFile, merged: RedactionRectMap): boolean =>
+    !item.isRedacted || countRects(merged) !== countRects(item.redactionRects);
+
 export const useRedactionBroadcast = (
     batchFiles: BatchFile[],
     setBatchFiles: React.Dispatch<React.SetStateAction<BatchFile[]>>
@@ -38,13 +56,13 @@ export const useRedactionBroadcast = (
             logger.debug("[Schwärzung] Nur dieses Dokument (Haken nicht gesetzt)", { index: sourceIdx });
             setBatchFiles(prev => {
                 const next = [...prev];
+                const verwirftOcr = invalidatesOcr(next[sourceIdx], rects);
                 next[sourceIdx] = {
                     ...next[sourceIdx],
                     redactedDataUrls,
                     redactionRects: rects,
                     isRedacted: true,
-                    fileText: "",
-                    ocrDone: false,
+                    ...(verwirftOcr ? { fileText: "", ocrDone: false } : {}),
                     documentType: 'scanned'
                 };
                 return next;
@@ -123,12 +141,12 @@ export const useRedactionBroadcast = (
                     continue;
                 }
 
+                const verwirftOcr = invalidatesOcr(item, merged);
                 updates.set(i, {
                     redactedDataUrls: await applyRedactionsToPreviews(basis, merged),
                     redactionRects: merged,
                     isRedacted: true,
-                    fileText: "",
-                    ocrDone: false,
+                    ...(verwirftOcr ? { fileText: "", ocrDone: false } : {}),
                     documentType: 'scanned'
                 });
             }
@@ -136,7 +154,8 @@ export const useRedactionBroadcast = (
             const aktualisiert = Array.from(updates.keys());
             logger.debug("[Schwärzung] Übertragung abgeschlossen", {
                 aktualisiert,
-                gekennzeichnet: aktualisiert.filter(i => updates.get(i)?.isRedacted)
+                gekennzeichnet: aktualisiert.filter(i => updates.get(i)?.isRedacted),
+                ocrVerworfen: aktualisiert.filter(i => updates.get(i)?.ocrDone === false)
             });
 
             setBatchFiles(prev => prev.map((item, i) => {

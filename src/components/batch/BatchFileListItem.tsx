@@ -44,7 +44,8 @@ interface BatchFileListItemProps {
     handleReviewPointAndFeedbackChange?: (idx: number, name: string, pts: number, fb: string) => void;
     onProcessSingleFile?: (idx: number) => void;
     onProcessSingleOCR?: (idx: number) => void;
-    isOcrBatchFinished?: boolean;
+    /** Eine Bilderkennung ist bereits gelaufen — Einzel-Nachläufe sind erlaubt. */
+    canRerunSingleOcr?: boolean;
     settings?: AppSettings;
 }
 
@@ -59,7 +60,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
         item, idx, currentProcessingIndex, loading, expandedIdx, onToggleExpand,
         onToggleSelect, onToggleType, onRemoveFile, onSplit, onRedact, 
         mobileViewMode, onSetMobileViewMode, onProcessSingleFile,
-        onProcessSingleOCR, isOcrBatchFinished
+        onProcessSingleOCR, canRerunSingleOcr
     } = props;
 
     const { 
@@ -130,7 +131,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
 
                         {item.documentType === 'scanned' && 
                         (item.status === 'pending' || (item.status === 'error' && !item.ocrDone)) && 
-                        isOcrBatchFinished && 
+                        canRerunSingleOcr &&
                         !isProcessing && 
                         onProcessSingleOCR && (
                             <Button 

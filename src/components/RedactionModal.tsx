@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { X, Trash2, Check, RotateCcw, ChevronLeft, ChevronRight, PenTool, Loader2, Users } from 'lucide-react';
+import { X, Trash2, Check, RotateCcw, ChevronLeft, ChevronRight, PenTool, Loader2, Users, AlertTriangle } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Checkbox } from './ui/Checkbox';
 import { useRedactionEngine } from '../hooks/useRedactionEngine';
@@ -37,9 +37,13 @@ interface RedactionModalProps {
     initialRects?: RedactionRectMap;
     /** Anzahl weiterer Scans im Stapel, auf die übertragen werden kann. */
     otherScanCount?: number;
+    /** Diese Arbeit ist bereits erkannt — neue Balken verwerfen den Text. */
+    hasRecognizedText?: boolean;
+    /** Weitere bereits erkannte Scans, die eine Sammel-Übertragung träfe. */
+    otherRecognizedCount?: number;
 }
 
-const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave, file, fileName, pageRange, initialRects, otherScanCount = 0 }) => {
+const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave, file, fileName, pageRange, initialRects, otherScanCount = 0, hasRecognizedText = false, otherRecognizedCount = 0 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [tool, setTool] = useState<'pen' | 'hand'>('pen');
     const [applyToAllScans, setApplyToAllScans] = useState(false);
@@ -73,6 +77,12 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
     // Was tatsächlich übertragen würde — vor dem Klick sichtbar, damit niemand
     // versehentlich eine individuelle Stelle auf den ganzen Stapel legt.
     const templateSize = buildRedactionTemplate(allPageRects).length;
+
+    // 🏮 Nachträgliches Schwärzen entwertet eine bereits gelaufene Erkennung:
+    // Der erkannte Text stammt vom ungeschwärzten Bild. Das kostet Credits und
+    // manuelle Textkorrekturen — es gehört VOR den Klick, nicht danach.
+    const betroffeneErkennungen = (hasRecognizedText ? 1 : 0)
+        + (applyToAllScans ? otherRecognizedCount : 0);
 
     // Set canvas dimensions only when image changes
     useEffect(() => {
@@ -198,6 +208,19 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                             </Button>
                         </div>
                     </div>
+
+                    {betroffeneErkennungen > 0 && (
+                        <div className="mt-4 flex items-start gap-3 rounded-xl border border-warning/20 bg-warning/5 p-3 text-warning">
+                            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                            <div className="min-w-0 text-xs font-medium leading-relaxed">
+                                <span className="font-bold">Bereits erkannter Text geht verloren.</span>{' '}
+                                {betroffeneErkennungen === 1
+                                    ? 'Diese Arbeit ist bereits erkannt — neue Balken verwerfen den Text samt manueller Korrekturen.'
+                                    : `${betroffeneErkennungen} Arbeiten sind bereits erkannt — neue Balken verwerfen deren Texte samt manueller Korrekturen.`}
+                                {' '}Die Bilderkennung läuft danach erneut und kostet erneut Credits.
+                            </div>
+                        </div>
+                    )}
 
                     {otherScanCount > 0 && (
                         <label className="mt-4 pt-4 border-t border-primary/10 flex items-start gap-3 cursor-pointer select-none group">

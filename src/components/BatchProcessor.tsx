@@ -94,7 +94,12 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
 
     // Einstieg für die Sammel-Schwärzung aus der Datenschutz-Warnung heraus: der
     // erste noch ungeschwärzte Scan dient als Vorlage für alle weiteren.
-    const firstUnredactedScanIdx = batchFiles.findIndex(f => f.documentType === 'scanned' && !f.isRedacted);
+    // `selected !== false` spiegelt `unredactedScansCount`: sonst öffnete der
+    // Knopf eine abgewählte Arbeit, die die Warnung gar nicht ausgelöst hat.
+    const firstUnredactedScanIdx = batchFiles.findIndex(f => f.documentType === 'scanned' && !f.isRedacted && f.selected !== false);
+
+    // Nachträgliches Schwärzen entwertet eine bereits gelaufene Bilderkennung.
+    const redactionDiscardsOcr = batchFiles.some(f => f.documentType === 'scanned' && !f.isRedacted && f.ocrDone && f.selected !== false);
 
     const getConfidenceColor = (conf: number = 0) => {
         if (conf >= 90) return "bg-success text-white";
@@ -123,6 +128,11 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                                     <div>
                                         <p className="font-bold mb-1">Hinweis zur Anonymisierung</p>
                                         <p>Du hast {unredactedScansCount} Scan(s) hochgeladen, aber noch nicht manuell geschwärzt. Bitte stelle sicher, dass keine personenbezogenen Daten (z.B. Namen) sichtbar sind.</p>
+                                        {redactionDiscardsOcr && (
+                                            <p className="mt-2 text-xxs font-medium opacity-90">
+                                                Achtung: Wer jetzt noch schwärzt, verwirft den bereits erkannten Text dieser Arbeiten — die Bilderkennung muss dafür erneut laufen und kostet erneut Credits.
+                                            </p>
+                                        )}
                                         {firstUnredactedScanIdx >= 0 && (
                                             <Button
                                                 variant="outline"
@@ -229,7 +239,13 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                                 handleReviewPointAndFeedbackChange={handleReviewPointAndFeedbackChange}
                                 onProcessSingleFile={onProcessSingleFile}
                                 onProcessSingleOCR={onProcessSingleOCR}
-                                isOcrBatchFinished={!loading && batchFiles.every(f => f.documentType !== 'scanned' || f.selected === false || f.ocrDone || f.status === 'error')}
+                                /* 🏮 Einzel-Nachlauf freigeben, sobald überhaupt schon
+                                   eine Erkennung gelaufen ist. Die frühere Bedingung
+                                   („ALLE Scans erkannt") ließ den Knopf stapelweit
+                                   verschwinden, sobald ein einzelnes Dokument seine
+                                   Erkennung wieder verlor — etwa durch nachträgliches
+                                   Schwärzen. Übrig blieb nur der große Stapellauf. */
+                                canRerunSingleOcr={!loading && batchFiles.some(f => f.documentType === 'scanned' && f.ocrDone)}
                                 settings={settings}
                             />
                         ))}

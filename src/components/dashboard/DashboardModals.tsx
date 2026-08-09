@@ -125,6 +125,12 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
         ? 0
         : batchFiles.filter((f, i) => i !== redactIdx && isBroadcastTarget(f)).length;
 
+    // Bereits erkannte Arbeiten, deren Text eine nachträgliche Schwärzung
+    // verwirft — das Modal warnt damit vor dem Klick statt danach.
+    const otherRecognizedCount = redactIdx === null
+        ? 0
+        : batchFiles.filter((f, i) => i !== redactIdx && isBroadcastTarget(f) && f.ocrDone).length;
+
     return (
         <>
             {showSettings && (
@@ -317,6 +323,8 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                     pageRange={batchFiles[redactIdx].pageRange}
                     initialRects={batchFiles[redactIdx].redactionRects}
                     otherScanCount={otherScanCount}
+                    hasRecognizedText={!!batchFiles[redactIdx].ocrDone}
+                    otherRecognizedCount={otherRecognizedCount}
                     onClose={() => setRedactIdx(null)}
                     onSave={(redactedDataUrls, rects, applyToAllScans) => {
                         const sourceIdx = redactIdx!;

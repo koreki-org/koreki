@@ -136,6 +136,78 @@ describe('useRedactionBroadcast', () => {
     });
 
     /**
+     * 🏮 Erkannter Text eines NOCH NICHT geschwärzten Scans stammt vom
+     * ungeschwärzten Bild und kann Klarnamen enthalten. Er muss weichen.
+     */
+    it('verwirft die Bilderkennung eines noch ungeschwärzten Scans', async () => {
+        const files = [
+            scan('Schüler #1'),
+            scan('Schüler #2', { ocrDone: true, fileText: 'Antwort mit Klarname' })
+        ];
+
+        const next = await broadcast(files, 0, { 0: [header] }, true);
+
+        expect(next[1].ocrDone).toBe(false);
+        expect(next[1].fileText).toBe('');
+    });
+
+    /**
+     * REGRESSION: Eine Sammel-Übertragung setzte pauschal `ocrDone: false` für
+     * JEDEN Scan im Stapel — auch für solche, deren Balken sich gar nicht
+     * änderten. Ergebnis: „Korrigieren" war gesperrt, der erkannte Text samt
+     * manueller Korrekturen war weg und die Bilderkennung kostete erneut
+     * Credits. Ändert sich nichts, bleibt die Erkennung gültig.
+     */
+    it('erhält die Bilderkennung, wenn sich die Balken nicht ändern', async () => {
+        const files = [
+            scan('Schüler #1'),
+            scan('Schüler #2', {
+                isRedacted: true,
+                redactionRects: { 0: [sharedHeader], 1: [sharedHeader] },
+                ocrDone: true,
+                fileText: 'Bereits geprüfter Text'
+            })
+        ];
+
+        const next = await broadcast(files, 0, { 0: [header] }, true);
+
+        expect(next[1].ocrDone).toBe(true);
+        expect(next[1].fileText).toBe('Bereits geprüfter Text');
+    });
+
+    it('erhält die Bilderkennung des bearbeiteten Dokuments bei unveränderten Balken', async () => {
+        const files = [
+            scan('Schüler #1', {
+                isRedacted: true,
+                redactionRects: { 0: [header] },
+                ocrDone: true,
+                fileText: 'Bereits geprüfter Text'
+            })
+        ];
+
+        const next = await broadcast(files, 0, { 0: [header] }, false);
+
+        expect(next[0].ocrDone).toBe(true);
+        expect(next[0].fileText).toBe('Bereits geprüfter Text');
+    });
+
+    it('verwirft die Bilderkennung des bearbeiteten Dokuments bei neuen Balken', async () => {
+        const files = [
+            scan('Schüler #1', {
+                isRedacted: true,
+                redactionRects: { 0: [header] },
+                ocrDone: true,
+                fileText: 'Bereits geprüfter Text'
+            })
+        ];
+
+        const next = await broadcast(files, 0, { 0: [header, { x: 0.5, y: 0.5, w: 0.2, h: 0.05 }] }, false);
+
+        expect(next[0].ocrDone).toBe(false);
+        expect(next[0].fileText).toBe('');
+    });
+
+    /**
      * 🏮 Lässt sich wirklich kein Seitenbild erzeugen, existiert kein
      * anonymisierter Abzug. `isRedacted` darf dann NICHT gesetzt werden, weil
      * `resolveOCRSource` sonst auf das Original zurückfällt und ungeschwärzte
