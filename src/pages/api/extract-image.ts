@@ -103,7 +103,20 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             if (!apiKey) throw new AIConfigError('Mistral API-Key fehlt.');
 
             const pageResults = await promisePool(buffers, 1, async (b) => {
-                // TODO: DEPRECATED - Mistral Vision / Handwriting is temporarily disabled in favor of Qwen3.6
+                // Bewusst festverdrahtet auf den dedizierten OCR-Endpunkt (/v1/ocr).
+                //
+                // Dieser Zweig IST die Schalterstellung "Hohe Genauigkeit aus" und damit
+                // Mistrals Aufgabe. Der auskommentierte Vision-Pfad unten stammt aus der
+                // Zeit vor Qwen: Mistrals 'vision'-Aktion laeuft ueber /chat/completions
+                // mit mistral-large-latest und ist NICHT der OCR-Pfad.
+                //
+                // Handschrift traegt Mistral OCR derzeit nicht — auf Wortebene verfaelscht
+                // es genau die Fachbegriffe, an denen die Bewertung haengt. Handschrift
+                // laeuft deshalb ausschliesslich ueber Qwen (Schalter an); ein
+                // automatischer Rueckfall existiert bewusst nicht.
+                //
+                // Messung, Begruendung und Ausloeser zur Neubewertung:
+                // docs/technical/ai-provider-infrastructure.md, Abschnitt 5.
                 // const action = (isComplex && mimeType?.startsWith('image/')) ? 'vision' : 'ocr';
                 const action = 'ocr';
                 const result = await executeMistralRequest(

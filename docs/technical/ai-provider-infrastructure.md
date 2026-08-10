@@ -3,7 +3,7 @@ title: "Unified AI Provider Infrastructure & Reasoning Mode"
 description: "Dokumentation der provider-agnostischen KI-Architektur, des Qwen 3.6 'Thinking Mode' und der tier-spezifischen Konfigurationslogik."
 author: "@principal_architect"
 date: "2026-04-30"
-last_updated: "2026-05-27"
+last_updated: "2026-08-10"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -106,7 +106,49 @@ Um die absolute Integrität von Schülerabgaben zu schützen und unerwünschte �
 
 ---
 
-## 5. Desktop Hardening: Der Generic AI Proxy 🛡️
+## 5. OCR-Strategie: Der Umschalter »Hohe Genauigkeit« 🖋️
+
+> [!IMPORTANT]
+> **Kurzfassung:** Die Schalterstellung *aus* ist für **Mistral OCR** vorgesehen. Für Handschriften reicht dessen Qualität derzeit nicht, deshalb läuft Handschrift ausschließlich über Qwen/Mittwald (Schalter *an*). Ein automatischer Rückfall existiert bewusst nicht.
+
+### Was der Schalter tut
+
+| Stellung | Bilderkennung | Korrektur |
+| :--- | :--- | :--- |
+| **Aus** (Standard) | Mistral, dedizierter Endpunkt `POST /v1/ocr`, Modell `MISTRAL_OCR_MODEL` | Mistral `mistral-medium-latest` |
+| **An** (Hohe Genauigkeit) | Qwen 3.6 über Mittwald (`/chat/completions` mit `image_url`) | Qwen 3.6 über Mittwald |
+
+Entscheidungsstellen im Code: Sichtbarkeit in `BatchHeader.tsx` (`!isLocalInstance() && provider === 'mistral'`), OCR-Routing in `extract-image.ts`, Korrektur-Routing in `ai-correct.ts`.
+
+**Warum es den Schalter nur im SaaS gibt:** Auf Desktop- und Community-Instanzen wählt der Betreiber sein Modell ohnehin direkt in den Einstellungen — eine „Eskalation" wäre dort sinnlos. Der Schalter ist die einzige Schreibstelle für `ocrStrategy`, und der Batch-Store hält den Wert nur im Speicher (kein `persist`, Vorgabe `'standard'`). Auf lokalen Instanzen kann `isComplex` daher **strukturell nie** `true` werden. Wer diese Annahme ändert, muss die Routing-Bedingungen in beiden Endpunkten erneut prüfen.
+
+### Warum Mistral OCR die Handschrift derzeit nicht trägt
+
+`MISTRAL_OCR_MODEL` zeigt auf `mistral-ocr-latest`. Dieser Alias ist inzwischen auf die **vierte OCR-Generation** weitergerollt (`mistral-ocr-4-1`); die ursprüngliche Ablehnungsentscheidung fiel noch gegen eine ältere Generation. Ein erneuter Test am 10.08.2026 gegen `tests/fixtures/schuelerloesung.pdf` (echte Handschrift, 4 Seiten, ~59 s) zeigt:
+
+* Seitenstruktur und Aufgabenzuordnung werden zuverlässig erkannt.
+* Auf **Wortebene** bricht die Erkennung an genau den fachlich tragenden Stellen: „auf alle Datenträger verteilt" wurde zu „auf alle Daten-träge verkelt", „Vorteil: Höhere Geschwindigkeit" zu „vorkel: Höher Geschwindigkeit".
+
+Für eine Bewertung ist das disqualifizierend: Ein verlesener Fachbegriff kostet den Schüler den Punkt. Mistral OCR bleibt damit für getippte und sauber gescannte Dokumente gesetzt, für Handschrift jedoch nicht ausreichend.
+
+### Bewusste Entscheidung: kein Rückfall
+
+Fällt Mittwald aus (ungültiger Schlüssel, erschöpftes Kontingent, Nichterreichbarkeit), weicht Koreki **nicht** selbsttätig auf Mistral OCR aus. Handschrift-Erkennung ist damit von Mittwald einfach abhängig — ein bekannter Single Point of Failure, kein Versehen.
+
+Begründung:
+
+1. **Prinzipientreue:** Ein automatischer Wechsel wäre ein stiller Fallback und widerspricht der Leitplanke »Keine stillen Fallbacks« im Abschnitt *Community Mode & Multi-User Isolation*. Bei einer Bewertung wiegt das schwerer als bei einer Verbindung — die Lehrkraft bekäme eine Note, die auf schlechter erkanntem Text beruht, ohne es zu bemerken.
+2. **Die Qualität trägt es nicht:** Ein Sicherheitsnetz, das systematisch Fachbegriffe verfälscht, ersetzt einen Ausfall durch einen schwerer erkennbaren Fehler.
+3. **Der Ausfall ist inzwischen lesbar:** Seit der Vereinheitlichung der Fehlerübersetzung (`provider-error.ts`) meldet ein Anbieter-Ausfall sich als **502** mit klarem Text („Zugang abgelehnt … Kontingent aufgebraucht") statt als generischer 500. Die Lehrkraft kann den Schalter bewusst ausschalten und mit Standard-OCR weiterarbeiten.
+
+> [!NOTE]
+> **Auslöser zur Neubewertung:** Sobald Mistral eine neue OCR-Generation veröffentlicht (`mistral-ocr-5*` oder ein neuer `-latest`-Alias), ist der Test oben zu wiederholen. Trägt die Handschrift-Qualität dann, kann diese Entscheidung fallen — dann aber als *sichtbarer* Rückfall mit Markierung der betroffenen Abgaben, nicht als stiller.
+
+Der auskommentierte Vision-Zweig in `extract-image.ts` stammt aus der Zeit vor Qwen: Mistrals `vision`-Aktion läuft über `/chat/completions` mit `mistral-large-latest` und ist **nicht** der OCR-Pfad. Er ist bewusst stillgelegt, nicht vergessen.
+
+---
+
+## 6. Desktop Hardening: Der Generic AI Proxy 🛡️
 
 Aufgrund der **Same-Origin-Policy (SOP)** im Browser können Custom-KI-Endpunkte oft nicht direkt aus der Webview aufgerufen werden (CORS-Fehler).
 
@@ -116,11 +158,11 @@ Aufgrund der **Same-Origin-Policy (SOP)** im Browser können Custom-KI-Endpunkte
 
 ---
 
-## 6. Konfiguration (Operations)
+## 7. Konfiguration (Operations)
 
 ### SaaS Environment Variables
 Für die globale Bereitstellung von Mittwald/Qwen im SaaS-Modus sind folgende Variablen erforderlich:
 *   `MITTWALD_API_KEY`: Globaler Schlüssel für den Standard-Reasoning-Provider.
 
 ---
-*Dokument ID: KOREKI-TECH-012 | Revision: 1.1* 🏛️
+*Dokument ID: KOREKI-TECH-012 | Revision: 1.2* 🏛️
