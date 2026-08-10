@@ -25,28 +25,41 @@ export const SkillProfileService = {
         const results = [];
 
         for (const p of defaults) {
-            const existing = await prisma.skillProfile.findFirst({
-                where: { name: p.name, isSystem: true }
+            // 🏮 Die Zeile traegt jetzt den Slug aus der Registry als ID. Zuvor
+            // vergab Prisma eine `cuid()` — in jeder Umgebung eine andere, und
+            // im Desktop-Modus existierte die Zeile ueberhaupt nicht. Eine
+            // gespeicherte Auswahl konnte sich deshalb nur auf den Namen
+            // berufen. Der Slug ist in allen drei Modi derselbe.
+            //
+            // Altbestand: Dieselbe Vorlage liegt womoeglich noch unter einer
+            // `cuid()` in der Tabelle. Sie traegt keine Nutzerdaten (Skills
+            // kommen aus der Registry, `customSkills` bleibt leer) und wird
+            // entfernt — sonst erschiene jede Vorlage doppelt in der Liste.
+            const legacy = await prisma.skillProfile.findMany({
+                where: { name: p.name, isSystem: true, NOT: { id: p.id } },
+                select: { id: true }
             });
-
-            // Convert string[] to a database JSON-compatible string or array
-            const activeSkillIdsJson = p.activeSkillIds;
-
-            if (existing) {
-                results.push(await prisma.skillProfile.update({
-                    where: { id: existing.id },
-                    data: { activeSkillIds: activeSkillIdsJson }
-                }));
-            } else {
-                results.push(await prisma.skillProfile.create({
-                    data: { 
-                        name: p.name, 
-                        isSystem: true, 
-                        activeSkillIds: activeSkillIdsJson, 
-                        userId: null 
-                    }
-                }));
+            if (legacy.length > 0) {
+                await prisma.skillProfile.deleteMany({
+                    where: { id: { in: legacy.map(l => l.id) } }
+                });
             }
+
+            results.push(await prisma.skillProfile.upsert({
+                where: { id: p.id },
+                update: {
+                    name: p.name,
+                    activeSkillIds: p.activeSkillIds,
+                    isSystem: true
+                },
+                create: {
+                    id: p.id,
+                    name: p.name,
+                    isSystem: true,
+                    activeSkillIds: p.activeSkillIds,
+                    userId: null
+                }
+            }));
         }
         return results;
     },

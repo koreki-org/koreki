@@ -19,7 +19,8 @@ import { SKILL_REGISTRY } from '@/prompts/skills';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
-import { STANDARD_SKILL_PROFILES, getDefaultSkillIds } from '@/lib/ai/standard-skills-profiles';
+import { STANDARD_SKILL_PROFILES, getDefaultSkillIds, DEFAULT_SKILL_PROFILE_ID } from '@/lib/ai/standard-skills-profiles';
+import { resolveProfileRef } from '@/lib/services/profile-naming';
 import { downloadFile } from '@/lib/file-utils';
 
 
@@ -236,7 +237,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         });
 
         // 4. Symmetrical Profile Synchronization (SaaS / Desktop Parity):
-        const activeProfileId = settings?.activeSkillProfileId || localStorage.getItem('koreki_active_skill_profile_id') || 'system-mint-standard';
+        const activeProfileId = settings?.activeSkillProfileId || localStorage.getItem('koreki_active_skill_profile_id') || DEFAULT_SKILL_PROFILE_ID;
 
         if (isDesktopTarget()) {
             // --- DESKTOP APP (TAURI / OFFLINE) PERSISTENCE ---
@@ -246,7 +247,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 try { localProfiles = JSON.parse(localProfilesStored); } catch (e) {}
             }
 
-            const activeLocalProfile = localProfiles.find(p => p.id === activeProfileId);
+            const activeLocalProfile = resolveProfileRef(localProfiles, activeProfileId);
             if (activeLocalProfile && !activeLocalProfile.isSystem) {
                 const activeSkillIds = Array.isArray(activeLocalProfile.activeSkillIds) ? activeLocalProfile.activeSkillIds : [];
                 if (!activeSkillIds.includes(id)) {
@@ -258,7 +259,12 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 };
                 localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(localProfiles));
             } else {
-                const matchingSystem = STANDARD_SKILL_PROFILES.find(p => p.name === activeProfileId || p.isSystem);
+                // Zuvor `p.name === activeProfileId || p.isSystem`: Da jede Vorlage
+                // `isSystem` traegt, gewann bei einer nicht passenden Referenz
+                // IMMER der erste Registry-Eintrag — das neue Profil startete also
+                // mit den Skills der Grundschul-Vorlage statt mit denen der aktiven.
+                // Mit den Slugs laesst sich die Referenz jetzt sauber aufloesen.
+                const matchingSystem = resolveProfileRef(STANDARD_SKILL_PROFILES, activeProfileId);
                 const baseSkillIds = matchingSystem ? [...matchingSystem.activeSkillIds] : getDefaultSkillIds();
                 
                 const newProfileId = `local-skill-${Date.now()}`;
@@ -288,7 +294,10 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 const res = await apiClient.get('/api/user/skill-profiles');
                 if (res.ok) {
                     const profilesList = await res.json();
-                    const activeProfile = profilesList.find((p: any) => p.id === activeProfileId);
+                    // Ueber den Aufloeser, damit auch eine noch namensbasierte
+                    // Altreferenz das aktive Profil trifft — sonst landete der
+                    // neue Skill in einem frisch angelegten „Mein Skill-Profil".
+                    const activeProfile = resolveProfileRef<any>(profilesList, activeProfileId);
 
                     if (activeProfile && !activeProfile.isSystem) {
                         const activeSkillIds = Array.isArray(activeProfile.activeSkillIds) ? activeProfile.activeSkillIds : [];

@@ -179,7 +179,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                     <label className="text-xxs uppercase font-bold text-muted-foreground tracking-widest px-2">System-Vorlagen</label>
                     {profiles.filter(p => p.isSystem).map(p => (
                         <div
-                            key={p.name}
+                            key={p.id || p.name}
                             onClick={() => onSelectProfile(p)}
                             className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
                         >

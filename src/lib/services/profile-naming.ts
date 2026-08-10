@@ -37,6 +37,30 @@ export const isSameName = (a?: string, b?: string): boolean =>
 export const findByName = <T extends { name?: string }>(entries: T[], name: string): T | undefined =>
     entries.find(e => isSameName(e?.name, name));
 
+/**
+ * Loest eine gespeicherte Profil-Referenz auf — ID zuerst, Name als Rueckfall.
+ *
+ * 🏮 Migrationsbruecke, kein Dauerzustand. In `activeSkillProfileId` &
+ * Verwandten steckt gemischter Altbestand: eine `cuid()` aus der Datenbank,
+ * ein Profilname (so wurde es fuer System-Vorlagen ohne ID gespeichert) oder
+ * der frueher fest verdrahtete String `system-mint-standard`. Letzterer ist
+ * inzwischen ein echter Slug und loest sich damit von selbst auf.
+ *
+ * Die Reihenfolge ist wesentlich: Erst ueber ALLE Eintraege per ID gehen, dann
+ * erst per Name. Andernfalls gewaenne ein zufaellig namensgleicher Eintrag
+ * gegen den eindeutig referenzierten.
+ *
+ * Aufrufer sollten die ID des Treffers zurueckschreiben (`profile.id`) — dann
+ * heilt sich der Bestand mit jeder Sitzung selbst.
+ */
+export const resolveProfileRef = <T extends { id?: string; name?: string }>(
+    profiles: T[],
+    ref?: string | null
+): T | undefined => {
+    if (!ref) return undefined;
+    return profiles.find(p => p.id === ref) || profiles.find(p => isSameName(p.name, ref));
+};
+
 /** Einheitlicher Wortlaut — die Meldung erscheint in vier Modalen. */
 export const nameTakenMessage = (label: string): string =>
     `Ein ${label} mit diesem Namen existiert bereits`;

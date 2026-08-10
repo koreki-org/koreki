@@ -549,8 +549,11 @@ export const useSkillProfiles = (
 
     const handleApplyToSession = () => {
         const profile = profiles.find(p => p.name === selectedProfile);
+        // Seit die System-Vorlagen Slugs tragen, liefert `id` in allen drei Modi
+        // eine stabile Kennung. Der Name bleibt nur als letzter Rueckfall stehen
+        // — er bricht, sobald jemand das Profil umbenennt.
         const profileId = profile?.id || profile?.name;
-        
+
         onSave({
             ...settings,
             activeSkillProfileId: profileId,

@@ -4,7 +4,8 @@ import { AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
 import { isDesktopTarget } from '@/lib/env-context';
 import { awaitSettlingSlot, SettlingSlot } from '@/lib/session-settling';
-import { STANDARD_SKILL_PROFILES, DEFAULT_SKILL_PROFILE_NAME } from '@/lib/ai/standard-skills-profiles';
+import { STANDARD_SKILL_PROFILES, DEFAULT_SKILL_PROFILE_NAME, DEFAULT_SKILL_PROFILE_ID } from '@/lib/ai/standard-skills-profiles';
+import { resolveProfileRef } from '@/lib/services/profile-naming';
 
 /**
  * Skill Profile Governance Hook (Industrial Standard)
@@ -46,34 +47,37 @@ export const useSkillGovernance = (
                 setProfiles(allProfiles);
 
                 const activeSkillId = localStorage.getItem('koreki_active_skill_profile_id');
-                if (activeSkillId) {
-                    const profile = allProfiles.find(
-                        (p: any) => p.id === activeSkillId || p.name === activeSkillId
-                    );
-                    if (profile) {
-                        setSessionSkillsProfileName(profile.name);
-                        setSettings(prev => {
-                            if (prev.activeSkillProfileId === activeSkillId) return prev;
-                            return {
-                                ...prev,
-                                activeSkillProfileId: activeSkillId,
-                                activeSkillIds: profile.activeSkillIds || [],
-                                customSkills: customSkills
-                            };
-                        });
-                        return;
+                const profile = resolveProfileRef(allProfiles, activeSkillId);
+                if (profile) {
+                    // Die kanonische ID zurueckschreiben: Wurde die Referenz nur
+                    // ueber den Namen aufgeloest (Altbestand), steht ab jetzt die
+                    // ID dort — ein spaeteres Umbenennen bricht sie nicht mehr.
+                    const kanonischeId = profile.id || activeSkillId!;
+                    if (kanonischeId !== activeSkillId) {
+                        localStorage.setItem('koreki_active_skill_profile_id', kanonischeId);
                     }
+                    setSessionSkillsProfileName(profile.name);
+                    setSettings(prev => {
+                        if (prev.activeSkillProfileId === kanonischeId) return prev;
+                        return {
+                            ...prev,
+                            activeSkillProfileId: kanonischeId,
+                            activeSkillIds: profile.activeSkillIds || [],
+                            customSkills: customSkills
+                        };
+                    });
+                    return;
                 }
 
                 // Fallback: MINT Standard profile
-                const standard = allProfiles.find((p: any) => p.name === DEFAULT_SKILL_PROFILE_NAME);
+                const standard = allProfiles.find((p: any) => p.id === DEFAULT_SKILL_PROFILE_ID);
                 if (standard) {
-                    setSessionSkillsProfileName('MINT Standard (Allgemein)');
+                    setSessionSkillsProfileName(DEFAULT_SKILL_PROFILE_NAME);
                     setSettings(prev => {
-                        if (prev.activeSkillProfileId === 'system-mint-standard') return prev;
+                        if (prev.activeSkillProfileId === DEFAULT_SKILL_PROFILE_ID) return prev;
                         return {
                             ...prev,
-                            activeSkillProfileId: 'system-mint-standard',
+                            activeSkillProfileId: DEFAULT_SKILL_PROFILE_ID,
                             activeSkillIds: standard.activeSkillIds || [],
                             customSkills: customSkills
                         };
@@ -87,22 +91,18 @@ export const useSkillGovernance = (
                 || userData?.activeSkillProfileId
                 || (typeof window !== 'undefined' ? localStorage.getItem('koreki_active_skill_profile_id') : null);
 
-            if (activeSkillId) {
-                const standardProfile = STANDARD_SKILL_PROFILES.find(
-                    (p: any) => p.id === activeSkillId || p.name === activeSkillId
-                );
-                if (standardProfile) {
-                    setSessionSkillsProfileName(standardProfile.name);
-                    setSettings(prev => {
-                        if (prev.activeSkillProfileId === activeSkillId) return prev;
-                        return {
-                            ...prev,
-                            activeSkillProfileId: activeSkillId,
-                            activeSkillIds: standardProfile.activeSkillIds || [],
-                            customSkills: customSkills
-                        };
-                    });
-                }
+            const standardProfile = resolveProfileRef(STANDARD_SKILL_PROFILES, activeSkillId);
+            if (standardProfile) {
+                setSessionSkillsProfileName(standardProfile.name);
+                setSettings(prev => {
+                    if (prev.activeSkillProfileId === standardProfile.id) return prev;
+                    return {
+                        ...prev,
+                        activeSkillProfileId: standardProfile.id,
+                        activeSkillIds: standardProfile.activeSkillIds || [],
+                        customSkills: customSkills
+                    };
+                });
             }
 
             await awaitSettlingSlot(SettlingSlot.SKILL_PROFILES);
@@ -118,17 +118,19 @@ export const useSkillGovernance = (
                         || userData?.activeSkillProfileId
                         || (typeof window !== 'undefined' ? localStorage.getItem('koreki_active_skill_profile_id') : null);
 
-                    const profile = currentActiveId
-                        ? data.find((p: any) => p.id === currentActiveId || p.name === currentActiveId)
-                        : undefined;
+                    const profile = resolveProfileRef<any>(data, currentActiveId);
 
                     if (profile) {
+                        const kanonischeId = profile.id || currentActiveId;
+                        if (typeof window !== 'undefined' && kanonischeId !== currentActiveId) {
+                            localStorage.setItem('koreki_active_skill_profile_id', kanonischeId);
+                        }
                         setSessionSkillsProfileName(profile.name);
                         setSettings(prev => {
-                            if (prev.activeSkillProfileId === currentActiveId) return prev;
+                            if (prev.activeSkillProfileId === kanonischeId) return prev;
                             return {
                                 ...prev,
-                                activeSkillProfileId: currentActiveId,
+                                activeSkillProfileId: kanonischeId,
                                 activeSkillIds: profile.activeSkillIds || [],
                                 customSkills: customSkills
                             };
@@ -139,7 +141,8 @@ export const useSkillGovernance = (
                         // (prompt-builder ueberspringt eine leere Liste). Damit fehlten auch die
                         // Definitionen der Korrekturzeichen, die das Modell dann frei erfand.
                         // Der Desktop-Pfad kennt diesen Rueckfall bereits; hier fehlte er.
-                        const standard = data.find((p: any) => p.name === DEFAULT_SKILL_PROFILE_NAME);
+                        const standard = resolveProfileRef(data, DEFAULT_SKILL_PROFILE_ID)
+                            || data.find((p: any) => p.name === DEFAULT_SKILL_PROFILE_NAME);
                         if (standard) {
                             setSessionSkillsProfileName(standard.name);
                             setSettings(prev => {
