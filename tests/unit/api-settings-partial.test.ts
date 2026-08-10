@@ -20,7 +20,9 @@ jest.mock('../../src/lib/security', () => ({
     withSecurity: (handler: any) => async (req: any, res: any) => {
         req.user = { claims: { sub: 'admin-logto-id' } };
         return handler(req, res);
-    }
+    },
+    // Zusicherung des Wrappers: hinter withSecurity ist die Identitaet gesetzt.
+    requireUserId: (req: any) => req.user?.claims?.sub
 }));
 
 describe('Admin Settings API - Partial Update Verification (Layer 2)', () => {

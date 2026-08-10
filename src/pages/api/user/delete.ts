@@ -5,15 +5,14 @@ import { deleteLogtoUser } from '../../../lib/logto-mgmt';
 import { logger } from '../../../lib/logger';
 import { z } from 'zod';
 
-import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/security';
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method not allowed' });
     }
 
-    const { claims } = req.user;
-    const logtoId = claims.sub;
+    const logtoId = requireUserId(req);
 
     try {
         // Find User

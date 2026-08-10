@@ -1,6 +1,13 @@
 /**
- * Core cleanup logic for automated data retention (Pillar 6). 
+ * Core cleanup logic for automated data retention (Pillar 6).
  * Now exportable for both CLI and in-app use.
+ *
+ * Ohne die Typangabe leitet TypeScript aus dem Standardwert `null` ab, dass der
+ * Parameter NUR null sein darf — die Aufrufe aus instrumentation.ts, die eine
+ * bestehende Verbindung weiterreichen, galten damit als Fehler.
+ *
+ * @param {import('@prisma/client').PrismaClient | null} [existingPrisma]
+ *        Bestehende Verbindung; ohne Angabe wird eine eigene aufgebaut.
  */
 async function cleanupLogs(existingPrisma = null) {
     const { PrismaClient } = require('@prisma/client');

@@ -42,7 +42,7 @@ describe('Security Hub: RBAC & Pillar Verification', () => {
             // Logic would be tested through withSecurity calls in a real integration test, 
             // but we verify the return logic here.
             const dbUser = await prisma.user.findUnique({ where: { logtoId: 'user-1' } });
-            expect(dbUser.role).toBe('ADMIN');
+            expect(dbUser?.role).toBe('ADMIN');
         });
 
         it('should distinguish between OrgAdmin and Regular User', async () => {

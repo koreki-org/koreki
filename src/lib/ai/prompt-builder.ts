@@ -165,6 +165,7 @@ export function buildCorrectionPrompt(
         let calcTraceVorevaluierungBlock = '';
         tasksLayout.forEach(t => {
             if (t.calcTraceResult) {
+                const calcTraceResult = t.calcTraceResult; // const: Verengung gilt sonst nicht im Callback
                 const targetGoal: any = t.targetGoal || {};
                 const criteria = targetGoal.criteria;
 
@@ -180,11 +181,11 @@ export function buildCorrectionPrompt(
 
                     criteria.forEach((crit: GradingCriterion) => {
                         const idx = (crit.targetIndex !== undefined && crit.targetIndex !== null) ? crit.targetIndex : 0;
-                        const pt = t.calcTraceResult.perTargetResult?.find((r: any) => r.targetIndex === idx);
+                        const pt = calcTraceResult.perTargetResult?.find((r: any) => r.targetIndex === idx);
                         let statusText = '';
 
                         if (isEngineOwned(crit.source)) {
-                            const verdict = resolveEngineVerdict(crit.source, idx, t.calcTraceResult);
+                            const verdict = resolveEngineVerdict(crit.source, idx, calcTraceResult);
                             statusText = verdict.erfuellt
                                 ? `✓ ERFÜLLT — ${crit.punktwert} Punkte, bereits von der Sandbox entschieden (${verdict.begruendung})`
                                 : `✗ NICHT ERFÜLLT — 0 Punkte, bereits von der Sandbox entschieden (${verdict.begruendung})`;
@@ -227,7 +228,7 @@ export function buildCorrectionPrompt(
                     const disablePointsActive = shouldDisablePoints(t.taskType, t.targetGoal);
 
                     let templateStr = calcTraceTemplate;
-                    templateStr = templateStr.replace('{{TASK_NAME}}', t.name);
+                    templateStr = templateStr.replace('{{TASK_NAME}}', t.name ?? '');
                     templateStr = templateStr.replace('{{MATH_FALLBACK_INSTRUCTION}}', disablePointsActive ? mathHybridHeader : `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!\n\n${mathFallbackInstruction}`);
 
                     if (disablePointsActive) {
@@ -273,7 +274,7 @@ export function buildCorrectionPrompt(
         // Beispiel -> Aufgabe nicht selbst herleiten muss. Die Gruppen folgen der
         // Reihenfolge des Layouts, die Ueberschriften tragen exakt die Aufgabennamen
         // aus der Aufgabenliste im System-Prompt.
-        const { groups, unassigned } = groupCasesByTask(gradingMemory, tasksLayout);
+        const { groups, unassigned } = groupCasesByTask(gradingMemory, tasksLayout ?? undefined);
         logger.debug(`[PromptBuilder] Injecting ${gradingMemory.length} grading memory cases (${groups.length} task groups, ${unassigned.length} unassigned).`);
 
         // Innerhalb einer Aufgabengruppe sagt die Ueberschrift bereits, um welche Aufgabe es geht.

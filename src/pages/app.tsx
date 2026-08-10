@@ -392,7 +392,7 @@ export default function Home() {
                         sessionAiProfileName={sessionAiProfileName}
                         setSessionAiProfileName={setSessionAiProfileName}
                         profiles={profiles}
-                        pureApiKey={data.pureApiKey}
+                        pureApiKey={data.pureApiKey ?? null}
                         setPureApiKey={data.setPureApiKey}
                         pendingModelFile={data.pendingModelFile}
                         setPendingModelFile={data.setPendingModelFile}

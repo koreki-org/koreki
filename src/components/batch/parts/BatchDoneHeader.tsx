@@ -29,7 +29,7 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
     activeGroupName,
     onSetActiveGroupName
 }) => {
-    const lowConfidenceTasks = item.result?.tasks.filter(t => (t.confidence || 0) < 90) || [];
+    const lowConfidenceTasks = item.result?.tasks?.filter(t => (t.confidence || 0) < 90) || [];
 
     // 🏮 INDUSTRIAL LOGIC: Springt zur passenden Task-Gruppe und scrollt zur Task-Card.
     // Extrahiert, da sowohl der Single-Treffer-Button als auch jedes Popover-Item

@@ -204,10 +204,11 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         setShowSkillsSettings(false);
 
                         // SYNC BRIDGE: Update tasksLayout inline graphs/traces with updated custom skill configurations
-                        if (tasksLayout && newSettings.customSkills) {
+                        const customSkills = newSettings.customSkills; // const: Verengung gilt sonst nicht im Callback
+                        if (tasksLayout && customSkills) {
                             const updatedTasks = tasksLayout.map(t => {
-                                if (t.taskType && t.taskType.startsWith('custom-skill-') && newSettings.customSkills[t.taskType]) {
-                                    const customSkill = newSettings.customSkills[t.taskType];
+                                if (t.taskType && t.taskType.startsWith('custom-skill-') && customSkills[t.taskType]) {
+                                    const customSkill = customSkills[t.taskType];
                                     return {
                                         ...t,
                                         gradingGraph: customSkill.isCalcTrace ? undefined : customSkill.gradingGraph,

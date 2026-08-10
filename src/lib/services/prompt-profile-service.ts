@@ -28,7 +28,8 @@ export const PromptProfileService = {
      */
     async syncSystemProfiles() {
         const defaults = this.getSystemDefaults();
-        const results = [];
+        // Typ aus dem Prisma-Aufruf abgeleitet; ohne Angabe waere es `never[]`.
+        const results: Awaited<ReturnType<typeof prisma.promptProfile.upsert>>[] = [];
 
         for (const p of defaults) {
             // 🏮 Wie bei den Skill-Vorlagen: Die Zeile traegt die Kennung aus der

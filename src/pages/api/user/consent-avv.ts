@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import prisma from '../../../lib/prisma';
 import { logger } from '../../../lib/logger';
-import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/security';
 import { getCurrentAVV } from '../../../config/legal';
 import { getLatestLegalDocument } from '../../../lib/legal';
 
@@ -13,8 +13,7 @@ import { getLatestLegalDocument } from '../../../lib/legal';
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-    const { claims } = req.user;
-    const logtoId = claims.sub;
+    const logtoId = requireUserId(req);
     const { workspaceId } = req.body; 
 
     try {

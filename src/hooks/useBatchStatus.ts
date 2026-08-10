@@ -146,8 +146,10 @@ export const useBatchStatus = (
     // --- Review Handlers ---
     const handleReviewPointChange = useCallback((idx: number, taskName: string, points: number) => {
         const item = batchFiles[idx];
-        if (!item?.result) return;
-        const newTasks = item.result.tasks.map(t => 
+        // Ohne Aufgabenliste gibt es nichts zu aendern — `tasks` ist optional,
+        // weil eine Analyse ohne erkannte Aufgaben zurueckkommen kann.
+        if (!item?.result?.tasks) return;
+        const newTasks = item.result.tasks.map(t =>
             t.name === taskName ? { ...t, pointsObtained: points } : t
         );
         onUpdateText(idx, item.fileText || '', newTasks);
@@ -155,8 +157,8 @@ export const useBatchStatus = (
 
     const handleReviewFeedbackChange = useCallback((idx: number, taskName: string, feedback: string) => {
         const item = batchFiles[idx];
-        if (!item?.result) return;
-        const newTasks = item.result.tasks.map(t => 
+        if (!item?.result?.tasks) return;
+        const newTasks = item.result.tasks.map(t =>
             t.name === taskName ? { ...t, feedback } : t
         );
         onUpdateText(idx, item.fileText || '', newTasks);
@@ -164,8 +166,8 @@ export const useBatchStatus = (
 
     const handleReviewPointAndFeedbackChange = useCallback((idx: number, taskName: string, points: number, feedback: string) => {
         const item = batchFiles[idx];
-        if (!item?.result) return;
-        const newTasks = item.result.tasks.map(t => 
+        if (!item?.result?.tasks) return;
+        const newTasks = item.result.tasks.map(t =>
             t.name === taskName ? { ...t, pointsObtained: points, feedback } : t
         );
         onUpdateText(idx, item.fileText || '', newTasks);

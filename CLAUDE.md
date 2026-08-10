@@ -38,8 +38,8 @@ Die Personas oben sind als Claude-Code-Subagenten unter [.claude/agents/](.claud
 4. **Gate:** Audit durch Security und QA gegen die "Industrial Standards".
 5. **Agent Compliance Gate (MANDATORY):** Bevor eine Aufgabe an den User zurückgegeben wird, MUSS folgende Checkliste abgehakt werden:
    - [x] Wurden `console.log` im Backend durch den `logger` ersetzt? — *erzwungen durch ESLint (`no-console: error` für `pages/api` und `lib`)*
-   - [x] Sind Null-Faelle geprüft? — *erzwungen durch `npm run typecheck:strict` ([scripts/typecheck-strict.mjs](scripts/typecheck-strict.mjs), im Pre-Push-Hook). Bereits saubere Dateien dürfen nicht zurückfallen; die Altlast ist per Ratsche eingefroren und darf nur schrumpfen. Ist sie leer, kann `strictNullChecks` dauerhaft in die `tsconfig.json`.*
-   - [ ] Sind alle Typen strikt (`: any` durch Interfaces ersetzt)? — *noch NICHT erzwungen: `tsconfig.json` steht auf `strict: false`, 433 `any` im Bestand*
+   - [x] Sind Null-Faelle geprüft? — *erzwungen durch den Compiler: `strictNullChecks: true` steht in der [tsconfig.json](tsconfig.json). Die Übergangs-Ratsche ist entfallen, nachdem alle 104 Altfälle behoben waren.*
+   - [ ] Sind alle Typen strikt (`: any` durch Interfaces ersetzt)? — *noch NICHT erzwungen: `strict: false`, 433 `any` im Bestand. Nächster Schritt wäre `noImplicitAny`.*
    - [x] Bleiben neue Dateien unter der Größengrenze? — *erzwungen durch [tests/unit/file-size-governance.test.ts](tests/unit/file-size-governance.test.ts): 300 Zeilen für `components/`, `hooks/`, `pages/`, 500 für `lib/`, max. 10 Hook-Aufrufe pro Komponente. Altlasten sind per Ratsche eingefroren und dürfen nur schrumpfen.*
    - [ ] Werden Secrets / URLs aus `.env` statt Hardcoding geladen?
 

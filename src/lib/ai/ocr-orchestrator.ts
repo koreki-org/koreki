@@ -73,10 +73,14 @@ export async function performOCRRequest(
                 // If isComplex is explicitly false, force 'ocr' action
                 const finalAction = isComplex === false ? 'ocr' : action;
 
+                // Die Pruefung oben deckt diesen Zweig ab; hier lokal wiederholt,
+                // damit die Zusicherung am Aufrufort sichtbar und geprueft ist.
+                if (!mistralKey) throw new Error("PURE_KEY_MISSING");
+
                 const data = await executeMistralRequest(
-                    finalAction, 
-                    { buffer: b64, mimeType }, 
-                    mistralKey, 
+                    finalAction,
+                    { buffer: b64, mimeType },
+                    mistralKey,
                     { isScan, model: settings.model, signal }
                 );
                 return data.text;

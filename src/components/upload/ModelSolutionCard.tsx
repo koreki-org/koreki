@@ -750,7 +750,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                     const originalIdx = tasksLayout.findIndex(t => t === task);
                                     const content = taskSections[originalIdx];
                                     const isCustomSkill = !!(task.taskType && task.taskType.startsWith('custom-skill-'));
-                                    const customSkillData = isCustomSkill ? settings?.customSkills?.[task.taskType] : null;
+                                    const customSkillData = isCustomSkill && task.taskType ? settings?.customSkills?.[task.taskType] : null;
                                     const isCalcTrace = !!task.targetGoal || 
                                                         !!customSkillData?.isCalcTrace || 
                                                         task.taskType === 'calc-trace' || 

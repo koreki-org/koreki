@@ -1,6 +1,6 @@
 import type { NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
-import { withSecurity, AuthenticatedRequest } from '@/lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
 
@@ -10,8 +10,7 @@ import { isLocalInstance } from '@/lib/env-context';
  * Migrated to Pillar 8 Security Wrapper.
  */
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
-    const { claims } = req.user;
-    const logtoId = claims.sub;
+    const logtoId = requireUserId(req);
 
     if (isLocalInstance()) {
         return res.status(200).json({

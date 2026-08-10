@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import prisma from '../../../lib/prisma';
 import { z } from 'zod';
-import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 
 const workspaceSchema = z.object({
@@ -23,8 +23,7 @@ const actionSchema = z.object({
  * Pillar 8: DB-Authoritative RBAC (SysAdmin only).
  */
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
-    const { claims } = req.user;
-    const logtoId = claims.sub;
+    const logtoId = requireUserId(req);
 
     if (req.method === 'GET') {
         try {

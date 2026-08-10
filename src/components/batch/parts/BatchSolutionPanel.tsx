@@ -90,7 +90,7 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
                         
                         // Priority 1: Edited text stored in the AI Result (item.result.tasks)
                         if (item.status === 'done' && item.result) {
-                            const aiTask = item.result.tasks.find(t => t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
+                            const aiTask = item.result?.tasks?.find(t => t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
                             if (aiTask && aiTask.content) {
                                 sectionText = aiTask.content;
                             }
@@ -106,7 +106,7 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
                                     value={sectionText}
                                     onChange={(newText) => {
                                         if (onUpdateText) {
-                                            const baseTasks = (item.status === 'done' && item.result) ? item.result.tasks : (item.tasks || []);
+                                            const baseTasks = (item.status === 'done' && item.result) ? (item.result.tasks || []) : (item.tasks || []);
                                             const updatedTasks = [...baseTasks];
                                             const taskIdxInItem = updatedTasks.findIndex(t => t.name === task.name);
                                             if (taskIdxInItem !== -1) {

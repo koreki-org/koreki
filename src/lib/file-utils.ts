@@ -194,7 +194,7 @@ export const convertPdfToImage = async (file: File, pageRange?: [number, number]
     const startPage = pageRange ? pageRange[0] : 1;
     const endPage = pageRange ? pageRange[1] : numPages;
 
-    const pageIndices = [];
+    const pageIndices: number[] = [];
     for (let i = startPage; i <= endPage; i++) pageIndices.push(i);
 
     const buffers = await promisePool(pageIndices, 2, async (pageNum) => {

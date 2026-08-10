@@ -55,7 +55,7 @@ describe('Data Integrity Integration (Layer 2)', () => {
 
         // ASSERTIONS FOR INDUSTRIAL STABILITY:
         // A. The results are updated
-        expect(updatedItem.result?.tasks[0].pointsObtained).toBe(8);
+        expect(updatedItem.result?.tasks?.[0].pointsObtained).toBe(8);
         
         // B. THE SMOKING GUN: The 'tasks' field (manual content) remains pristine!
         // This ensures the left panel still sees 'Studentischer Inhalt' and correctly splits the tasks.

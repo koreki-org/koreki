@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import { z } from 'zod';
-import { withSecurity, AuthenticatedRequest } from '@/lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { logger } from '@/lib/logger';
 
 const settingsSchema = z.object({
@@ -18,8 +18,7 @@ const settingsSchema = z.object({
 
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
-    const { claims } = req.user;
-    const logtoId = claims.sub;
+    const logtoId = requireUserId(req);
 
     // Fetch local user to verify role
     const user = await prisma.user.findUnique({ where: { logtoId } });

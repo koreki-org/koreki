@@ -251,7 +251,8 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                                               </label>
                                                               <div className="bg-background border border-border rounded-xl p-3.5 max-h-36 overflow-y-auto space-y-2.5 shadow-sm">
                                                                   {tasksLayout.map((task) => {
-                                                                      const isChecked = selectedTasks.includes(task.name);
+                                                                      const taskName = task.name ?? '';
+                                                                      const isChecked = selectedTasks.includes(taskName);
                                                                       return (
                                                                           <label key={task.name} className="flex items-center gap-2.5 text-xs font-bold text-foreground cursor-pointer hover:text-primary transition-colors">
                                                                               <input 
@@ -259,9 +260,9 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                                                                   checked={isChecked}
                                                                                   onChange={() => {
                                                                                       if (isChecked) {
-                                                                                          setSelectedTasks(prev => prev.filter(name => name !== task.name));
+                                                                                          setSelectedTasks(prev => prev.filter(name => name !== taskName));
                                                                                       } else {
-                                                                                          setSelectedTasks(prev => [...prev, task.name]);
+                                                                                          setSelectedTasks(prev => [...prev, taskName]);
                                                                                       }
                                                                                   }}
                                                                                   className="w-4 h-4 rounded text-primary border-border focus:ring-primary transition-all"

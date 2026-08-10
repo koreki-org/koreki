@@ -115,7 +115,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
 
 
                         
-                        <BatchItemStatusSummary item={item} isDone={isDone} onToggleType={onToggleType} idx={idx} itemHasWarnings={itemHasWarnings} />
+                        <BatchItemStatusSummary item={item} isDone={isDone} onToggleType={onToggleType} idx={idx} itemHasWarnings={!!itemHasWarnings} />
                         
                         {item.status === 'error' && item.ocrDone && onProcessSingleFile && !isProcessing && (
                             <Button 

@@ -13,7 +13,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     const { claims } = req.user;
     // Rollen stammen aus dem verifizierten Keycloak-Token (Community Multi-User)
     // bzw. aus dem lokalen Trust-Modell (Desktop / Community Single-User).
-    const roles = (claims.roles as string[] | undefined) ?? [];
+    const roles = (claims?.roles as string[] | undefined) ?? [];
     const isAdmin = roles.includes('ADMIN');
 
     if (!isAdmin) {

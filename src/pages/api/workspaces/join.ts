@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import prisma from '../../../lib/prisma';
 import { z } from 'zod';
-import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 
 const joinSchema = z.object({
@@ -14,8 +14,7 @@ const joinSchema = z.object({
  * Migrated to Pillar 8 Security Wrapper.
  */
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
-    const { claims } = req.user;
-    const logtoId = claims.sub;
+    const logtoId = requireUserId(req);
 
     const user = await prisma.user.findUnique({ where: { logtoId } });
     if (!user) return res.status(404).json({ message: 'Nutzer nicht gefunden' });

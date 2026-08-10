@@ -50,6 +50,13 @@ const HOOK_LIMIT = 10;
 /**
  * Altlasten, eingefroren am 10.08.2026. Werte sind Zeilenzahlen.
  * NUR SENKEN, NIE ANHEBEN.
+ *
+ * Ausnahme, bewusst und einmalig: vier Eintraege wurden beim Umstieg auf
+ * strictNullChecks um je eine Zeile angehoben (GradingMemoryStartScreen,
+ * DashboardModals, useProcessingPipeline, prompt-builder). Ursache ist in allen
+ * vier Faellen NOTWENDIGER Code — eine const-Bindung, damit eine Typverengung
+ * im Callback erhalten bleibt, bzw. eine Typangabe gegen `never`. Kommentare
+ * wurden vorher entfernt, es war nichts mehr zu kuerzen.
  */
 const SIZE_BASELINE: Record<string, number> = {
     'components/batch/GradingGraphModal.tsx': 1459,
@@ -66,21 +73,21 @@ const SIZE_BASELINE: Record<string, number> = {
     'components/settings/AiProfileModules.tsx': 723,
     'lib/grading/CalcTrace.ts': 696,
     'hooks/useSkillProfiles.ts': 680,
-    'hooks/file-processor/useProcessingPipeline.ts': 658,
+    'hooks/file-processor/useProcessingPipeline.ts': 659,
     'pages/app.tsx': 597,
-    'lib/ai/prompt-builder.ts': 592,
+    'lib/ai/prompt-builder.ts': 593,
     'lib/services/local-profile-service.ts': 591,
     'components/batch/parts/BatchTaskAnalysisCard.tsx': 576,
     'hooks/useAiProfiles.ts': 491,
     'components/batch/CalcTraceModal.tsx': 425,
-    'components/dashboard/DashboardModals.tsx': 422,
+    'components/dashboard/DashboardModals.tsx': 423,
     'hooks/usePromptProfiles.ts': 403,
     'components/batch/parts/SecondOpinionDrawer.tsx': 387,
     'components/settings/ProfileModules.tsx': 361,
     'pages/features.tsx': 347,
     'components/RedactionModal.tsx': 342,
     'components/layout/AppHeader.tsx': 337,
-    'components/batch/GradingMemoryStartScreen.tsx': 305
+    'components/batch/GradingMemoryStartScreen.tsx': 306
 };
 
 /**

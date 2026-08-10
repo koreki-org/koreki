@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { BatchFile, Task, AppSettings } from '../../types';
+import { BatchFile, Task, AppSettings, GradingMemoryCase } from '../../types';
 import { performAIRequest } from '../../lib/ai-logic';
 import { resolveOCRSource, applyRedactionsToPreviews } from '../../lib/privacy-utils';
 import { calculateGrade } from '../../lib/logic';
@@ -129,8 +129,9 @@ export const useProcessingPipeline = (
                 setCurrentProcessingIndex(i);
                 
                 // Moodle/Digital Path: If no physical file but text is present, go straight to mapping
-                if ((!items[i].files || items[i].files.length === 0) && items[i].fileText) {
-                    await internalProcessMapping(i, items[i].fileText, 1, 1, {}, signal);
+                const current = items[i];
+                if ((!current.files || current.files.length === 0) && current.fileText) {
+                    await internalProcessMapping(i, current.fileText, 1, 1, {}, signal);
                     continue;
                 }
 
@@ -397,7 +398,7 @@ export const useProcessingPipeline = (
             await ensureActiveGradingMemorySynced();
 
             const startTime = performance.now();
-            let gradingMemoryCases = undefined;
+            let gradingMemoryCases: GradingMemoryCase[] | undefined = undefined;
             try {
                 const storedCases = localStorage.getItem('koreki_active_grading_memory_cases');
                 if (storedCases) {

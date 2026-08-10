@@ -19,7 +19,7 @@ describe('useCorrectionStatistics Hook', () => {
                     { name: 'Aufgabe 2', pointsObtained: 5, maxPoints: 10, feedback: 'Mittel' }
                 ]
             },
-            error: undefined
+            error: null
         },
         {
             name: 'Student 2',
@@ -34,7 +34,7 @@ describe('useCorrectionStatistics Hook', () => {
                     { name: 'Aufgabe 2', pointsObtained: 3, maxPoints: 10, feedback: 'Schlecht' }
                 ]
             },
-            error: undefined
+            error: null
         },
         {
             name: 'Student 3 (Pending)',
@@ -42,7 +42,7 @@ describe('useCorrectionStatistics Hook', () => {
             selected: true,
             ocrDone: false,
             result: null,
-            error: undefined
+            error: null
         }
     ];
 
@@ -51,7 +51,7 @@ describe('useCorrectionStatistics Hook', () => {
         expect(result.current).toBeNull();
 
         const pendingOnly: BatchFile[] = [
-            { name: 'S1', status: 'pending', selected: true, ocrDone: false, result: null, error: undefined }
+            { name: 'S1', status: 'pending', selected: true, ocrDone: false, result: null, error: null }
         ];
         const { result: res2 } = renderHook(() => useCorrectionStatistics(pendingOnly));
         expect(res2.current).toBeNull();
@@ -122,7 +122,7 @@ describe('useCorrectionStatistics Hook', () => {
                     { name: 'T1', pointsObtained: undefined as any, maxPoints: 10 } // Undefined points -> 0
                 ]
             },
-            error: undefined
+            error: null
         }];
         
         const { result } = renderHook(() => useCorrectionStatistics(brokenFiles));

@@ -532,7 +532,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                     className="h-8 w-full sm:w-44 rounded-xl border border-slate-200 text-xs font-bold px-2.5 focus:border-indigo-500 bg-white disabled:opacity-60 disabled:cursor-not-allowed"
                                 />
                                 <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
-                                    {(onSaveCustomSkill || onSave) && !isLocked && (
+                                    {!isLocked && (
                                         <Button
                                             onClick={() => {
                                                 if (!skillName.trim()) {

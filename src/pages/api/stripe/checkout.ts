@@ -2,7 +2,7 @@ import stripe from '../../../lib/stripe';
 import prisma from '../../../lib/prisma';
 import { logger } from '../../../lib/logger';
 import { z } from 'zod';
-import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/security';
 import type { NextApiResponse } from 'next';
 
 const checkoutSchema = z.object({
@@ -20,8 +20,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         return res.status(405).json({ message: 'Method not allowed' });
     }
 
-    const { claims } = req.user;
-    const logtoId = claims.sub;
+    const logtoId = requireUserId(req);
 
     const validation = checkoutSchema.safeParse(req.body);
     if (!validation.success) {

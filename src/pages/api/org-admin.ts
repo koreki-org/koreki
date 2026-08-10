@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../lib/prisma';
-import { withSecurity, AuthenticatedRequest } from '../../lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '../../lib/security';
 import { logger } from '../../lib/logger';
 
 /**
@@ -11,8 +11,7 @@ import { logger } from '../../lib/logger';
  */
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     try {
-        const { claims } = req.user;
-        const logtoId = claims.sub;
+        const logtoId = requireUserId(req);
         
         // 1. Fetch User (needed for Dashboard context)
         const user = await prisma.user.findUnique({

@@ -163,7 +163,7 @@ export function useGradingMemoryModalState({
             
             // Default select all tasks from tasksLayout
             if (tasksLayout && Array.isArray(tasksLayout)) {
-                setSelectedTasks(tasksLayout.map(t => t.name).filter(Boolean));
+                setSelectedTasks(tasksLayout.map(t => t.name).filter((name): name is string => !!name));
             } else {
                 setSelectedTasks([]);
             }

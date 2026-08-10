@@ -14,7 +14,7 @@ describe('GradingMemory Prompt Builder - Unit Tests (Layer 1)', () => {
         
         expect(prompt.user).toContain(mockModelSolution);
         expect(prompt.user).toContain('Keine explizite Struktur vorhanden. Nimm Standardaufgaben an.');
-        expect(prompt.options.temperature).toBe(0.7);
+        expect(prompt.options?.temperature).toBe(0.7);
     });
 
     it('should inject correct layout structure when tasksLayout is provided', () => {

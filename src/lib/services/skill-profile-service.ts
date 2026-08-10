@@ -22,7 +22,8 @@ export const SkillProfileService = {
      */
     async syncSystemProfiles() {
         const defaults = this.getSystemDefaults();
-        const results = [];
+        // Typ aus dem Prisma-Aufruf abgeleitet; ohne Angabe waere es `never[]`.
+        const results: Awaited<ReturnType<typeof prisma.skillProfile.upsert>>[] = [];
 
         for (const p of defaults) {
             // 🏮 Die Zeile traegt jetzt den Slug aus der Registry als ID. Zuvor

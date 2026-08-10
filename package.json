@@ -21,7 +21,6 @@
     "migrate:generate": "ts-node prisma/scripts/generate-migration.ts",
     "prisma:generate": "prisma generate",
     "security-check": "node scripts/security-audit.js && npm test tests/unit/security-audit.test.ts",
-    "typecheck:strict": "node scripts/typecheck-strict.mjs",
     "db:cleanup": "node prisma/scripts/cleanup-logs.js",
     "tauri": "tauri",
     "dev:desktop": "cross-env NEXT_PUBLIC_KOREKI_DESKTOP=true tauri dev",

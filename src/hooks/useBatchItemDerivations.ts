@@ -60,7 +60,7 @@ export const useBatchItemDerivations = ({
 
     // Check if correction review is recommended (Industrial logic: confidence < 90%)
     const reviewRecommended = useMemo(() => {
-        return item.result?.tasks.some(t => (t.confidence || 0) < 90) || false;
+        return item.result?.tasks?.some(t => (t.confidence || 0) < 90) || false;
     }, [item.result]);
 
     // Calculate result percentage (Industrial Logic: from overallMatchPercentage)

@@ -1,6 +1,6 @@
 import type { NextApiResponse } from 'next';
 import prisma from '../../../lib/prisma';
-import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
 import { LocalActiveSelectionService } from '../../../lib/services/local-profile-service';
@@ -13,8 +13,7 @@ import { LocalActiveSelectionService } from '../../../lib/services/local-profile
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
 
-    const { claims } = req.user;
-    const logtoId = claims.sub;
+    const logtoId = requireUserId(req);
 
     const { gradingMemoryId } = req.body;
 
