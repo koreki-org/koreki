@@ -17,10 +17,31 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const validation = removeSchema.safeParse(req.body);
         if (!validation.success) return res.status(400).json(validation.error);
 
-        const { membershipId, targetUserId } = validation.data;
+        const { membershipId, targetUserId, workspaceId } = validation.data;
 
-        // Pillar 8: DB-Authoritative RBAC has already verified that 
-        // the requester is an ADMIN of the workspace provided in req.body.workspaceId.
+        // Pillar 8: withSecurity hat verifiziert, dass der Aufrufer ADMIN/OWNER
+        // von genau diesem workspaceId ist (das Schema macht das Feld zur
+        // Pflicht, der activeWorkspaceId-Fallback im Wrapper greift also nie).
+        //
+        // Diese Verifikation sagt aber NICHTS ueber das Ziel aus. Ohne die
+        // folgende Bindung koennte jeder Nutzer seinen eigenen persoenlichen
+        // Workspace mitschicken — dort ist er per JIT-Provisioning OWNER — und
+        // damit Mitglieder fremder Organisationen entfernen.
+        const targetMembership = await (prisma as any).membership.findUnique({
+            where: { id: membershipId }
+        });
+
+        if (!targetMembership || targetMembership.workspaceId !== workspaceId) {
+            return res.status(404).json({ message: 'Mitgliedschaft nicht gefunden' });
+        }
+
+        // Die Zielidentitaet stammt aus der verifizierten Mitgliedschaft, nicht
+        // aus dem Body — `targetUserId` im Request ist damit nur noch Beiwerk.
+        const effectiveTargetUserId: string = targetMembership.userId ?? targetUserId;
+
+        if (targetMembership.role === 'OWNER') {
+            return res.status(403).json({ message: 'Der Eigentümer der Organisation kann nicht entfernt werden' });
+        }
 
         // 2. Perform the Removal & Downgrade in a Transaction
         await prisma.$transaction(async (tx) => {
@@ -33,7 +54,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
             // B. Downgrade the target user
             await tx.user.update({
-                where: { id: targetUserId },
+                where: { id: effectiveTargetUserId },
                 data: {
                     role: 'USER', // Loses expert status (Auto-Expert logic)
                     appMode: 'TRIAL', // Reset to sandbox
@@ -44,7 +65,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             // C. Reset the user's Personal Workspace credits to 0
             const personalMemberships = await txAny.membership.findMany({
                 where: {
-                    userId: targetUserId,
+                    userId: effectiveTargetUserId,
                     workspace: { type: 'PERSONAL' },
                     role: 'OWNER'
                 }

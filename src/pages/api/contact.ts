@@ -35,6 +35,18 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         }
 
         // 3. Construct Email
+        // Das Formular ist anonym erreichbar; die Felder landen unveraendert im
+        // internen Support-Postfach. Ohne Maskierung koennte ein Absender dort
+        // eigenes Markup platzieren und die Nachricht als etwas anderes
+        // erscheinen lassen, als sie ist.
+        const escapeHtml = (value: string) =>
+            value
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+
         const msg = {
             to: receiver,
             from: sender,
@@ -44,11 +56,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
                     <h2 style="color: #2563eb; margin-top: 0;">Neue Kontaktanfrage</h2>
-                    <p><strong>Name:</strong> ${validatedData.name}</p>
-                    <p><strong>E-Mail:</strong> ${validatedData.email}</p>
-                    <p><strong>Betreff:</strong> ${validatedData.subject}</p>
+                    <p><strong>Name:</strong> ${escapeHtml(validatedData.name)}</p>
+                    <p><strong>E-Mail:</strong> ${escapeHtml(validatedData.email)}</p>
+                    <p><strong>Betreff:</strong> ${escapeHtml(validatedData.subject)}</p>
                     <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-                    <p style="white-space: pre-wrap;">${validatedData.message}</p>
+                    <p style="white-space: pre-wrap;">${escapeHtml(validatedData.message)}</p>
                 </div>
             `,
         };

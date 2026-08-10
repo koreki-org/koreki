@@ -10,6 +10,7 @@ import { logger } from '@/lib/logger';
 import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '@/lib/ai/constants';
 
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
+import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 
 const cleanAndAnalyzeSchema = z.object({
     modelSolution: z.string().min(1, 'Musterlösung fehlt.'),
@@ -49,7 +50,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         return res.status(400).json({ error: validation.error.issues[0].message });
     }
 
-    const { modelSolution, settings, isInclusive, pageCount, isScan } = validation.data;
+    const { modelSolution, settings: clientSettings, isInclusive, pageCount, isScan } = validation.data;
+
+    // Im SaaS stammen Anbieter-Endpunkt und -Schluessel ausschliesslich aus der
+    // Server-Env; lokale Instanzen behalten ihre eigene Konfiguration.
+    const settings = sanitizeClientAiSettings(clientSettings, req.url);
 
     const effectivePageCount = Math.max(1, pageCount || 1);
 
@@ -110,4 +115,4 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const { status, message } = resolveAiHttpError(error, 'Fehler beim Analysieren der Musterlösung.');
         res.status(status).json({ error: message });
     }
-});
+}, { isAi: true });

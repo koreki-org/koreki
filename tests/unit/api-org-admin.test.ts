@@ -195,7 +195,9 @@ describe('Organization Admin API Routes', () => {
 
             (prisma.membership.findUnique as jest.Mock).mockResolvedValue({
                 id: 'm-target',
-                workspaceId: 'ws-1'
+                workspaceId: 'ws-1',
+                userId: 'u-target',
+                role: 'MEMBER'
             });
 
             await removeMemberHandler(req, res);

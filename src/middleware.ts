@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isLocalInstance } from './lib/env-context';
 
 export function middleware(request: NextRequest) {
     const response = NextResponse.next();
@@ -12,10 +13,16 @@ export function middleware(request: NextRequest) {
         }
     } catch (e) {}
     
-    // Read the user-configured Ollama and OpenAI URLs from cookies
-    const ollamaUrlRaw = request.cookies.get('koreki_ollama_url')?.value;
-    const openaiUrlRaw = request.cookies.get('koreki_openai_url')?.value;
-    
+    // Nutzerkonfigurierte Ollama-/OpenAI-Adressen erweitern die connect-src.
+    //
+    // Das ist ausschliesslich ein Feature lokaler Instanzen: dort gehoert der
+    // Endpunkt dem Nutzer selbst. Im SaaS wuerde dieselbe Mechanik bedeuten,
+    // dass ein gesetztes Cookie die Exfiltrations-Schranke der CSP aufhebt —
+    // die Allowlist bleibt dort deshalb fest.
+    const allowsUserEndpoints = isLocalInstance();
+    const ollamaUrlRaw = allowsUserEndpoints ? request.cookies.get('koreki_ollama_url')?.value : undefined;
+    const openaiUrlRaw = allowsUserEndpoints ? request.cookies.get('koreki_openai_url')?.value : undefined;
+
     const extraConnects: string[] = [];
     if (ollamaUrlRaw) {
         try {

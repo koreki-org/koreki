@@ -75,7 +75,7 @@ describe('withSecurity — Community Multi-User Authorization', () => {
         mockVerifyKeycloakToken.mockResolvedValue(verifiedIdentity(['USER']));
         const res = createResponse();
 
-        await withSecurity(handler, { requireAdmin: true })(
+        await withSecurity(handler, { requireAdmin: 'SYS' })(
             createRequest({ authorization: 'Bearer gueltiges-token' }),
             res as unknown as NextApiResponse
         );
@@ -91,7 +91,7 @@ describe('withSecurity — Community Multi-User Authorization', () => {
         mockVerifyKeycloakToken.mockResolvedValue(verifiedIdentity(['ADMIN', 'USER']));
         const res = createResponse();
 
-        await withSecurity(handler, { requireAdmin: true })(
+        await withSecurity(handler, { requireAdmin: 'SYS' })(
             createRequest({ authorization: 'Bearer gueltiges-token' }),
             res as unknown as NextApiResponse
         );
@@ -122,7 +122,7 @@ describe('withSecurity — Community Multi-User Authorization', () => {
             'x-koreki-user-roles': '["ADMIN"]'
         });
 
-        await withSecurity(handler, { requireAdmin: true })(req, res as unknown as NextApiResponse);
+        await withSecurity(handler, { requireAdmin: 'SYS' })(req, res as unknown as NextApiResponse);
 
         // Die gefälschten Header dürfen weder Identität noch Rolle beeinflussen.
         expect(res.status).toHaveBeenCalledWith(403);

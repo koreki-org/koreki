@@ -10,8 +10,18 @@ import { isLocalInstance, isKeycloakAuth } from './env-context';
 import { extractBearerToken, verifyKeycloakToken, type VerifiedKeycloakIdentity } from './auth-keycloak-server';
 
 export type SecurityOptions = {
+    /**
+     * Muss auf jeder Route gesetzt sein, die einen KI-Anbieter aufruft.
+     * Schaltet vom globalen Limiter (100/min) auf den AI-Limiter (10/min).
+     */
     isAi?: boolean;
-    requireAdmin?: 'SYS' | 'ORG' | boolean;
+    /**
+     * 'SYS' = globaler System-Admin, 'ORG' = Admin/Owner des uebergebenen
+     * workspaceId. Der frühere Boolean-Wert ist entfallen: er pruefte gegen
+     * Token-Claims ODER die Datenbank und widersprach damit Saeule 8
+     * (DB-authoritative). Keine Route hat ihn genutzt.
+     */
+    requireAdmin?: 'SYS' | 'ORG';
     allowAnonymous?: boolean;
 };
 
@@ -226,14 +236,12 @@ export function withSecurity(
                             await logSecurityEvent(internalUserId, workspaceId, 'ACCESS_DENIED', `Unauthorized ORG-ADMIN access to ${req.url}`, ip);
                             return res.status(403).json({ error: 'Organisations-Administratorrechte erforderlich.' });
                         }
-                    } 
-                    // Legacy / General Admin Check
+                    }
+                    // Deny-by-default: ein unbekannter requireAdmin-Wert darf
+                    // niemals zum Durchlassen fuehren.
                     else {
-                        const roles = (claims.roles as string[]) || [];
-                        if (!roles.includes('ADMIN') && dbUser.role !== 'ADMIN') {
-                            await logSecurityEvent(internalUserId, null, 'ACCESS_DENIED', `Unauthorized access to ${req.url}`, ip);
-                            return res.status(403).json({ error: 'Administratorrechte erforderlich.' });
-                        }
+                        await logSecurityEvent(internalUserId, null, 'SECURITY_ANOMALY', `Unknown requireAdmin value for ${req.url}`, ip);
+                        return res.status(403).json({ error: 'Administratorrechte erforderlich.' });
                     }
                 }
 

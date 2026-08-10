@@ -7,7 +7,8 @@ import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
 import { CorrectionSchema } from '@/lib/validation';
 import { AppSettings } from '@/types';
-import { performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
+import { checkCreditsAvailable, performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
+import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
 import { GraphRunner } from '@/lib/grading/GraphRunner';
@@ -25,15 +26,19 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             return res.status(400).json({ error: validation.error.issues[0].message });
         }
 
-        const { 
-            modelSolution, 
-            studentText, 
-            settings, 
-            tasksLayout, 
-            pageCount, 
+        const {
+            modelSolution,
+            studentText,
+            settings: clientSettings,
+            tasksLayout,
+            pageCount,
             expertProfileName,
             gradingMemory
         } = validation.data;
+
+        // Im SaaS stammen Anbieter-Endpunkt und -Schluessel ausschliesslich aus
+        // der Server-Env; lokale Instanzen behalten ihre eigene Konfiguration.
+        const settings = sanitizeClientAiSettings(clientSettings, req.url);
 
         const { claims } = req.user;
         const logtoId = claims.sub;
@@ -159,6 +164,13 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             return res.status(400).json({ error: 'Einstellungen fehlen.' });
         }
 
+        // Guthaben VOR dem Anbieter-Aufruf pruefen — die Abrechnung unten laeuft
+        // erst danach und wuerde die Kosten sonst bereits ausgeloest haben.
+        const creditError = await checkCreditsAvailable(logtoId!, requiredCredits);
+        if (creditError) {
+            return res.status(402).json({ error: creditError });
+        }
+
         // --- AI Cost Brake Check ---
         if (!isLocalInstance()) {
             const systemSettings = await prisma.systemSettings.findUnique({ where: { id: 'singleton' } });
@@ -257,4 +269,4 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const { status, message } = resolveAiHttpError(error, 'Fehler bei der KI-Analyse.');
         res.status(status).json({ error: message });
     }
-});
+}, { isAi: true });

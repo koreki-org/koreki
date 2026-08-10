@@ -90,4 +90,4 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     }
 
     return res.status(405).json({ message: 'Method not allowed' });
-});
+}, { requireAdmin: 'SYS' });

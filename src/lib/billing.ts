@@ -37,6 +37,37 @@ export async function resolveActiveWorkspace(logtoId: string) {
 }
 
 /**
+ * Guthaben-Vorpruefung VOR dem Anbieter-Aufruf.
+ *
+ * performBillingAction prueft das Guthaben ebenfalls, laeuft aber erst nach dem
+ * bezahlten Provider-Request. Ohne diese Vorpruefung erzeugt ein Konto ohne
+ * Credits echte Anbieterkosten und erhaelt die Ablehnung erst danach — die
+ * Kosten bleiben trotzdem stehen.
+ *
+ * Bewusst keine Reservierung: der Betrag wird nur geprueft, abgerechnet wird
+ * weiterhin transaktional in performBillingAction. Parallele Anfragen koennen
+ * damit im Grenzfall ins Minus laufen; das ist gegenueber einer vollen
+ * Reserve-and-Settle-Mechanik der bewusst einfachere Weg.
+ */
+export async function checkCreditsAvailable(
+    logtoId: string,
+    creditCost: number
+): Promise<string | null> {
+    if (isLocalInstance() || creditCost <= 0) return null;
+
+    const workspace = await resolveActiveWorkspace(logtoId);
+    if (!workspace) {
+        return 'Kein gültiger Workspace gefunden.';
+    }
+
+    if (workspace.credits < creditCost) {
+        return `Nicht genügend Credits. Benötigt: ${creditCost}, Vorhanden: ${workspace.credits}`;
+    }
+
+    return null;
+}
+
+/**
  * High-level function to check credits, perform action billing, and track token usage.
  * Replaces processBillingAndUsage and manual workspace resolution.
  */

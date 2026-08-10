@@ -5,7 +5,8 @@ import { z } from 'zod';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
-import { performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
+import { checkCreditsAvailable, performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
+import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { logger } from '@/lib/logger';
 import { promisePool } from '../../lib/ai/promise-pool';
 import { isLocalInstance } from '@/lib/env-context';
@@ -58,7 +59,12 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             return res.status(400).json({ error: validation.error.issues[0].message });
         }
 
-        const { buffer, buffers: buffersFromReq, mimeType, settings, pageCount, pageRange, isComplex } = validation.data;
+        const { buffer, buffers: buffersFromReq, mimeType, settings: clientSettings, pageCount, pageRange, isComplex } = validation.data;
+
+        // Im SaaS stammen Anbieter-Endpunkt und -Schluessel ausschliesslich aus
+        // der Server-Env; lokale Instanzen behalten ihre eigene Konfiguration.
+        const settings = sanitizeClientAiSettings(clientSettings, req.url);
+
         let dataBuffer: Buffer[];
 
         if (buffersFromReq && Array.isArray(buffersFromReq)) {
@@ -209,6 +215,13 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             };
         };
 
+        // Guthaben VOR dem Anbieter-Aufruf pruefen — die Abrechnung unten laeuft
+        // erst danach und wuerde die Kosten sonst bereits ausgeloest haben.
+        const creditError = await checkCreditsAvailable(logtoId, OCR_CREDIT_COST);
+        if (creditError) {
+            return res.status(402).json({ error: creditError });
+        }
+
         // Route to selected AI provider
         let resultData;
         if (settings?.provider === 'ollama') {
@@ -235,4 +248,4 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const { status, message } = resolveAiHttpError(error, 'Fehler bei der Bilderkennung (OCR).');
         res.status(status).json({ error: message });
     }
-});
+}, { isAi: true });

@@ -37,9 +37,18 @@ if (typeof window === 'undefined') {
 }
 
 // 🛡️ SECURITY GUARD: Hard crash at runtime if cookie secret is missing in production.
-// The BUILD_PLACEHOLDER fallback above is intentionally non-functional.
-// During `next build`, this module is imported server-side — we detect this via
-// the absence of a request context (NEXT_PHASE) to avoid crashing the build itself.
+// The BUILD_PLACEHOLDER fallback above ist bewusst funktionsunfaehig — sein Wert
+// steht im oeffentlichen Repository. Laeuft die Produktion damit, signiert Logto
+// jedes Session-Cookie mit einem allgemein bekannten Geheimnis; Sessions waeren
+// faelschbar und die Authentifizierung damit wirkungslos.
+//
+// Diese Stelle hat frueher nur geloggt und den Start trotzdem zugelassen — genau
+// das Gegenteil der dokumentierten Absicht. Der Prozess bricht jetzt ab (fail
+// closed), damit eine fehlende Variable im Deployment sofort auffaellt statt
+// still eine unsichere Instanz zu betreiben.
+//
+// Waehrend `next build` wird das Modul serverseitig importiert; die NEXT_PHASE-
+// Pruefung verhindert, dass der Build selbst daran scheitert.
 if (
     process.env.NEXT_PUBLIC_AUTH_TYPE === 'LOGTO' &&
     !process.env.LOGTO_COOKIE_SECRET &&
@@ -48,8 +57,12 @@ if (
     process.env.NEXT_PHASE !== 'phase-production-build'
 ) {
     logger.error(
-        '[SECURITY] WARNING: LOGTO_COOKIE_SECRET is not set. ' +
-        'Falling back to placeholder. Session persistence may fail.'
+        '[SECURITY] LOGTO_COOKIE_SECRET fehlt in der Produktionsumgebung. ' +
+        'Start abgebrochen, um keine faelschbaren Sessions auszuliefern.'
+    );
+    throw new Error(
+        'LOGTO_COOKIE_SECRET ist nicht gesetzt. Die Anwendung startet nicht mit dem ' +
+        'oeffentlich bekannten Platzhalter-Geheimnis.'
     );
 }
 

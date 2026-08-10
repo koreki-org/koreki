@@ -22,17 +22,20 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const validation = toggleSchema.safeParse(req.body);
         if (!validation.success) return res.status(400).json(validation.error);
 
-        const { membershipId, targetRole } = validation.data;
+        const { membershipId, targetRole, workspaceId } = validation.data;
 
         // 1. Fetch target membership to verify context
         const targetMembership = await (prisma as any).membership.findUnique({
             where: { id: membershipId }
         });
 
-        if (!targetMembership) return res.status(404).json({ message: 'Mitgliedschaft nicht gefunden' });
-
-        // Pillar 8 Gatekeeper (withSecurity) has already verified that 
-        // the requester has ADMIN/OWNER rights for the workspaceId provided.
+        // Pillar 8: withSecurity hat die Rechte des Aufrufers am mitgeschickten
+        // workspaceId geprueft — nicht die Zugehoerigkeit des Ziels. Ohne diese
+        // Bindung liesse sich mit dem eigenen persoenlichen Workspace (dort ist
+        // jeder Nutzer OWNER) die Rollenvergabe fremder Organisationen steuern.
+        if (!targetMembership || targetMembership.workspaceId !== workspaceId) {
+            return res.status(404).json({ message: 'Mitgliedschaft nicht gefunden' });
+        }
 
         // Prevent demoting the OWNER
         if (targetMembership.role === 'OWNER') {

@@ -6,6 +6,7 @@ import { executeOpenAIRequest } from '../../lib/ai/openai-provider';
 import { executeOllamaRequest } from '../../lib/ai/ollama-logic';
 import { logger } from '../../lib/logger';
 import { withSecurity, AuthenticatedRequest } from '../../lib/security';
+import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { checkAndDeductCredits } from '../../lib/billing';
 import { isLocalInstance } from '../../lib/env-context';
 import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '../../lib/ai/constants';
@@ -68,8 +69,12 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             chatHistory,
             activeSkillIds,
             correctionPrompt,
-            settings
+            settings: clientSettings
         } = validation.data;
+
+        // Im SaaS stammen Anbieter-Endpunkt und -Schluessel ausschliesslich aus
+        // der Server-Env; lokale Instanzen behalten ihre eigene Konfiguration.
+        const settings = sanitizeClientAiSettings(clientSettings, req.url);
 
         const { claims } = req.user;
         const userId = claims?.sub;
@@ -140,4 +145,4 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const { status, message } = resolveAiHttpError(error, 'Fehler beim Einholen der Zweitmeinung.');
         return res.status(status).json({ error: message });
     }
-});
+}, { isAi: true });

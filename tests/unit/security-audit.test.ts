@@ -32,15 +32,18 @@ describe('Security Governance Audit', () => {
 
   /**
    * TEST: API WRAPPER AUDIT
-   * Verifiziert, dass jede Datei in src/pages/api/ (außer logto-interna) den unified withSecurity Wrapper nutzt.
+   * Verifiziert, dass JEDE Datei in src/pages/api/ den unified withSecurity
+   * Wrapper nutzt.
+   *
+   * Frueher waren 'logto' und 'auth' pauschal ueber den Pfad ausgenommen. Genau
+   * diese Ausnahme hat den Auth-Flow der Pruefung dauerhaft entzogen — eine
+   * Route verschwand allein dadurch aus dem Audit, dass sie im richtigen
+   * Verzeichnis lag. Ausnahmen laufen jetzt ausschliesslich ueber den
+   * expliziten `// @security-audit-exclude`-Tag IN der Datei: er zwingt zu einer
+   * Begruendung an Ort und Stelle und ist im Diff sichtbar.
    */
   it('verifies that all sensitive API routes are protected with the unified withSecurity wrapper', () => {
-    const apiFiles = getFilesRecursively(apiDir).filter(f => 
-      f.endsWith('.ts') && 
-      !f.includes('logto') && 
-      !f.includes('_middleware') &&
-      !f.includes('auth') // Public auth helpers are excluded
-    );
+    const apiFiles = getFilesRecursively(apiDir).filter(f => f.endsWith('.ts'));
 
     apiFiles.forEach(filePath => {
       const content = readFileSync(filePath, 'utf8');
@@ -56,6 +59,80 @@ describe('Security Governance Audit', () => {
 
       if (!hasWrapper && !isStripeWebhook && !isPublicEndpoint) {
         throw new Error(`SECURITY BREACH: API Route '${fileName}' has no visible withSecurity wrapper, Stripe Validation, or Exclusion-Tag!`);
+      }
+    });
+  });
+
+  /**
+   * TEST: ADMIN-ROUTE AUDIT
+   *
+   * Der Wrapper-Test oben prüft nur, DASS `withSecurity(` vorkommt — nicht, mit
+   * welchen Optionen. Genau dadurch blieb `admin/users.ts` unentdeckt: die Route
+   * war umschlossen, aber ohne `requireAdmin`, sodass jede angemeldete Lehrkraft
+   * Rollen setzen, Credits vergeben und Konten löschen konnte.
+   *
+   * Routen unter api/admin/** müssen die Rolle daher nachweislich prüfen —
+   * entweder über die Wrapper-Option oder mit einem eigenen Check im Handler.
+   */
+  it('verifies that every admin route enforces a role check', () => {
+    const adminFiles = getFilesRecursively(join(apiDir, 'admin')).filter(f => f.endsWith('.ts'));
+
+    expect(adminFiles.length).toBeGreaterThan(0);
+
+    adminFiles.forEach(filePath => {
+      const content = readFileSync(filePath, 'utf8');
+      const fileName = filePath.split(/[\\/]/).pop();
+
+      const hasWrapperOption = /requireAdmin\s*:/.test(content);
+      // Eigenständige Prüfung im Handler (z. B. admin/settings.ts, global-ai-settings.ts)
+      const hasHandlerCheck = /role\s*!==\s*'ADMIN'|roles\.includes\('ADMIN'\)/.test(content);
+
+      if (!hasWrapperOption && !hasHandlerCheck) {
+        throw new Error(
+          `SECURITY BREACH: Admin-Route '${fileName}' erzwingt keine Rollenprüfung ` +
+          `(weder requireAdmin-Option noch Handler-Check)!`
+        );
+      }
+    });
+  });
+
+  /**
+   * TEST: AI-ROUTE AUDIT
+   *
+   * Zwei Pflichten für jede Route, die einen KI-Anbieter aufruft:
+   *
+   * 1. `isAi: true` — sonst greift der globale Limiter (100/min) statt des
+   *    AI-Limiters (10/min) und die teuersten Endpunkte sind am schwächsten
+   *    geschützt (Säule 1).
+   * 2. `sanitizeClientAiSettings` — client-gelieferte Verbindungsdaten dürfen im
+   *    SaaS nicht an den Provider durchgereicht werden, sonst lässt sich der
+   *    Server-Schlüssel an eine fremde Adresse ausleiten.
+   */
+  it('verifies that every AI provider route is rate-limited and strips client connection settings', () => {
+    const apiFiles = getFilesRecursively(apiDir).filter(f => f.endsWith('.ts'));
+    const providerCall = /execute(OpenAI|Mistral|Ollama)Request/;
+
+    const aiRoutes = apiFiles.filter(f => providerCall.test(readFileSync(f, 'utf8')));
+
+    expect(aiRoutes.length).toBeGreaterThan(0);
+
+    aiRoutes.forEach(filePath => {
+      const content = readFileSync(filePath, 'utf8');
+      const fileName = filePath.split(/[\\/]/).pop();
+
+      if (!/isAi\s*:\s*true/.test(content)) {
+        throw new Error(
+          `SECURITY BREACH: KI-Route '${fileName}' läuft ohne 'isAi: true' im ` +
+          `globalen Rate-Limit statt im AI-Limit!`
+        );
+      }
+
+      // Nur relevant, wenn die Route überhaupt Settings aus dem Request annimmt.
+      if (/settings/.test(content) && !content.includes('sanitizeClientAiSettings')) {
+        throw new Error(
+          `SECURITY BREACH: KI-Route '${fileName}' reicht client-gelieferte ` +
+          `settings ungefiltert an den Provider weiter (sanitizeClientAiSettings fehlt)!`
+        );
       }
     });
   });

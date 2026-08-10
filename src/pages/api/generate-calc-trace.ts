@@ -8,6 +8,7 @@ import { logger } from '@/lib/logger';
 import { AppSettings } from '@/types';
 import { isLocalInstance } from '@/lib/env-context';
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
+import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { z } from 'zod';
 import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '@/lib/ai/constants';
 import { performBillingAction } from '@/lib/billing';
@@ -42,7 +43,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             return res.status(400).json({ error: validation.error.issues[0].message });
         }
 
-        const { taskText, userNotes, maxPoints, settings } = validation.data;
+        const { taskText, userNotes, maxPoints, settings: clientSettings } = validation.data;
+
+        // Im SaaS stammen Anbieter-Endpunkt und -Schluessel ausschliesslich aus
+        // der Server-Env; lokale Instanzen behalten ihre eigene Konfiguration.
+        const settings = sanitizeClientAiSettings(clientSettings, req.url);
         const useOpenAI = settings?.provider === 'openai-compatible';
         let rawResult: Record<string, unknown> | null = null;
         let trace: any = null;
@@ -158,4 +163,4 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const { status, message } = resolveAiHttpError(error, 'Fehler beim Generieren des Rechenwegs.');
         return res.status(status).json({ error: message });
     }
-});
+}, { isAi: true });

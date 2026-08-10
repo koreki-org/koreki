@@ -7,7 +7,9 @@ import { isLocalInstance } from '../../src/lib/env-context';
 
 jest.mock('../../src/lib/billing', () => ({
     resolveActiveWorkspace: jest.fn(async () => ({ activeWorkspaceId: 'ws-1' })),
-    performBillingAction: jest.fn(async () => true)
+    performBillingAction: jest.fn(async () => true),
+    // Guthaben-Vorpruefung vor dem Anbieter-Aufruf: null = ausreichend gedeckt.
+    checkCreditsAvailable: jest.fn(async () => null)
 }));
 
 jest.mock('../../src/lib/prisma', () => ({

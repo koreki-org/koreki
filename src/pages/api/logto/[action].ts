@@ -3,6 +3,17 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { logger } from '@/lib/logger';
 
+// @security-audit-exclude
+// Diese Route IST der Anmeldevorgang und kann den withSecurity-Wrapper nicht
+// nutzen: der Wrapper setzt eine bestehende Logto-Session voraus, die hier erst
+// entsteht. Die Ausnahme ist damit strukturell, nicht historisch.
+//
+// Was die Route dennoch sicher macht:
+// - `redirectUri` und `postRedirectUri` sind serverseitige Konstanten aus
+//   NEXT_PUBLIC_BASE_URL. Es gibt keinen Query-Parameter, der das Ziel steuert —
+//   ein Open Redirect ueber diesen Endpunkt ist nicht moeglich.
+// - `action` wird gegen eine feste Liste geprueft, alles andere endet in 404.
+// - Brute-Force-Schutz und Ratenbegrenzung des Logins liegen bei Logto selbst.
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { action } = req.query;
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
