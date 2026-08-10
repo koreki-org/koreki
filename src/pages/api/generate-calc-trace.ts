@@ -7,7 +7,7 @@ import { parseGeneratedCalcTrace, TARGET_GOAL_SCHEMA } from '@/lib/grading/calc-
 import { logger } from '@/lib/logger';
 import { AppSettings } from '@/types';
 import { isLocalInstance } from '@/lib/env-context';
-import { withSecurity, AuthenticatedRequest } from '@/lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { z } from 'zod';
 import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
@@ -60,7 +60,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             return res.status(429).json({ error: budgetError });
         }
 
-        const creditError = await checkCreditsAvailable(req.user.claims.sub!, CREDIT_COST);
+        const creditError = await checkCreditsAvailable(requireUserId(req), CREDIT_COST);
         if (creditError) {
             return res.status(402).json({ error: creditError });
         }
@@ -159,7 +159,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // Retry-Schleife oben kostet nichts extra, und ein gescheiterter Versuch (422) gar nichts.
         // Analog zur Bepreisung von generate-graph.ts fuer den strukturell gleichen PANG-Graphen.
         if (!isLocalInstance()) {
-            const logtoId = req.user.claims.sub;
+            const logtoId = requireUserId(req);
             await performBillingAction({
                 logtoId,
                 module: 'correction',

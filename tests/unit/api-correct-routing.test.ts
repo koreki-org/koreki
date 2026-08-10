@@ -58,7 +58,9 @@ jest.mock('../../src/lib/security', () => ({
     withSecurity: (handler: any) => async (req: any, res: any) => {
         req.user = { claims: { sub: 'user-id-123' } };
         return handler(req, res);
-    }
+    },
+    // Zusicherung des Wrappers: hinter withSecurity ist die Identitaet gesetzt.
+    requireUserId: (req: any) => req.user?.claims?.sub
 }));
 
 describe('ai-correct API Provider Routing Guards (Layer 1 & 2)', () => {

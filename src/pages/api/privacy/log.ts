@@ -1,7 +1,7 @@
 import type { NextApiResponse } from 'next';
 import { z } from 'zod';
 import prisma from '@/lib/prisma';
-import { withSecurity, AuthenticatedRequest } from '@/lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { logger } from '@/lib/logger';
 
 /**
@@ -31,8 +31,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         const { action, confirmedText } = validation.data;
 
-        const { claims } = req.user;
-        const logtoId = claims.sub;
+        const logtoId = requireUserId(req);
 
         const user = await prisma.user.findUnique({ where: { logtoId } });
         if (!user) {

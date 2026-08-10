@@ -16,7 +16,7 @@ import { splitTextByTasks } from '@/lib/task-utils';
 import { evaluateCalcTrace } from '@/lib/grading/CalcTrace';
 import { extractStudentAST } from '@/lib/grading/calc-trace-extraction';
 
-import { withSecurity, AuthenticatedRequest } from '@/lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
@@ -40,8 +40,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // der Server-Env; lokale Instanzen behalten ihre eigene Konfiguration.
         const settings = sanitizeClientAiSettings(clientSettings, req.url);
 
-        const { claims } = req.user;
-        const logtoId = claims.sub;
+        const logtoId = requireUserId(req);
 
         logger.info('[API:ai-correct] Received correction request', {
             hasModelSolution: !!modelSolution,

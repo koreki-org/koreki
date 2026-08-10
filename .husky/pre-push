@@ -5,4 +5,5 @@ echo "🛡️ Running pre-push checks..."
 npm run security-check
 node scripts/ui-audit.js
 npx tsc --noEmit
+npm run typecheck:strict
 echo "✅ Pre-push checks passed!"

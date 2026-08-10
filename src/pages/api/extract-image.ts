@@ -19,7 +19,7 @@ export const config = {
     },
 };
 
-import { withSecurity, AuthenticatedRequest } from '@/lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
 
 const extractImageSchema = z.object({
@@ -69,12 +69,16 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         if (buffersFromReq && Array.isArray(buffersFromReq)) {
             dataBuffer = buffersFromReq.map((b: string) => Buffer.from(b, 'base64'));
-        } else {
+        } else if (buffer) {
             dataBuffer = [Buffer.from(buffer, 'base64')];
+        } else {
+            // Das Zod-Schema schliesst diesen Fall bereits aus; die Pruefung macht
+            // die Zusicherung fuer den Compiler sichtbar, statt sie mit `!` zu
+            // behaupten.
+            return res.status(400).json({ error: 'Bilddaten fehlen (buffer oder buffers erforderlich).' });
         }
 
-        const { claims } = req.user;
-        const logtoId = claims.sub!; // sub is guaranteed if authenticated
+        const logtoId = requireUserId(req);
 
 
 
@@ -181,13 +185,16 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             };
         };
 
-        const tryOllama = async (buffers: Buffer[]) => {
+        // Die Einstellungen kommen als Parameter herein, damit die Verengung aus
+        // `settings?.provider === 'ollama'` am Aufrufort erhalten bleibt — sonst
+        // sieht der Compiler hier wieder das optionale Feld.
+        const tryOllama = async (buffers: Buffer[], ollamaSettings: NonNullable<typeof settings>) => {
 
             const pageResults = await promisePool(buffers, 1, async (b) => {
                 const result = await executeOllamaRequest(
                     'vision',
                     { buffer: b.toString('base64'), mimeType },
-                    settings
+                    ollamaSettings
                 );
 
                 return {
@@ -216,7 +223,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // Route to selected AI provider
         let resultData;
         if (settings?.provider === 'ollama') {
-            resultData = await tryOllama(dataBuffer);
+            resultData = await tryOllama(dataBuffer, settings);
         } else {
             const useOpenAI = settings?.provider === 'openai-compatible' || isComplex;
             resultData = useOpenAI 

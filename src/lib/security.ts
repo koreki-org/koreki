@@ -34,6 +34,23 @@ export interface AuthenticatedRequest extends NextApiRequest {
 }
 
 /**
+ * Nutzer-ID einer authentifizierten Anfrage.
+ *
+ * `LogtoContext.claims` ist optional typisiert, weil es anonyme Anfragen gibt.
+ * Hinter `withSecurity` ohne `allowAnonymous` ist die Identitaet aber garantiert —
+ * der Wrapper bricht sonst mit 401 ab. Statt diese Zusicherung in jeder Route
+ * mit `!` stumm zu schalten, wird sie hier einmal wirklich geprueft: unter
+ * strictNullChecks faellt sonst genau dieser Fall an 15 Stellen auf.
+ */
+export function requireUserId(req: AuthenticatedRequest): string {
+    const sub = req.user?.claims?.sub;
+    if (!sub) {
+        throw new Error('Nutzer-ID fehlt.');
+    }
+    return sub;
+}
+
+/**
  * Utility to reliably extract the client IP address.
  * Standardized for Koreki Infrastructure (Traefik/Coolify/IONOS).
  */

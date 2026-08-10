@@ -9,7 +9,7 @@ import { checkAiBudget, checkCreditsAvailable, performBillingAction, resolveActi
 import { logger } from '@/lib/logger';
 import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
 
-import { withSecurity, AuthenticatedRequest } from '@/lib/security';
+import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 
 const cleanAndAnalyzeSchema = z.object({
@@ -35,8 +35,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         return res.status(405).json({ message: 'Method not allowed' });
     }
 
-    const { claims } = req.user;
-    const logtoId = claims.sub;
+    const logtoId = requireUserId(req);
 
     // --- COMPLIANCE EARLY GATEKEEPER ---
     try {
