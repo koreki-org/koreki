@@ -55,7 +55,7 @@ const SIZE_BASELINE: Record<string, number> = {
     'components/batch/GradingGraphModal.tsx': 1459,
     'components/upload/ModelSolutionCard.tsx': 1205,
     'components/settings/SkillsModules.tsx': 1032,
-    'lib/ai/ai-orchestrator.ts': 1008,
+    'lib/ai/ai-orchestrator.ts': 1003,
     'lib/ai/ollama-logic.ts': 896,
     'hooks/useGradingMemoryModalState.ts': 757,
     'components/settings/AiProfileModules.tsx': 723,

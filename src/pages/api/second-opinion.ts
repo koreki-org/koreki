@@ -9,7 +9,7 @@ import { withSecurity, AuthenticatedRequest } from '../../lib/security';
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { checkAndDeductCredits } from '../../lib/billing';
 import { isLocalInstance } from '../../lib/env-context';
-import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '../../lib/ai/constants';
+import { requireOpenAiConnection } from '../../lib/ai/provider-connection';
 
 /**
  * Pedagogical Double-Check API (Zweitblick)
@@ -111,11 +111,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 settings
             );
         } else if (settings.provider === 'openai-compatible') {
-            const baseUrl = settings.openaiUrl || process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || DEFAULT_OPENAI_COMPATIBLE_BASE_URL;
-            const apiKey = settings.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
-            const model = settings.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
-            
-            if (!apiKey) throw new AIConfigError('OpenAI/Mittwald API-Key fehlt.');
+            const { baseUrl, apiKey, model } = requireOpenAiConnection(settings);
 
             result = await executeOpenAIRequest(
                 'second-opinion',

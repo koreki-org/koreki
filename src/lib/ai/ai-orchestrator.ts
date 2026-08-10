@@ -18,7 +18,7 @@ import { splitTextByTasks } from '../task-utils';
 import { evaluateCalcTrace, formatCalcTraceForPrompt } from '../grading/CalcTrace';
 import { extractStudentAST } from '../grading/calc-trace-extraction';
 import { shouldDisablePoints } from './prompt-builder';
-import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from './constants';
+import { requireOpenAiConnection } from './provider-connection';
 
 export { shouldDisablePoints };
 
@@ -516,12 +516,7 @@ export async function extractStudentAnswersWithLLM(
                         }
                     );
                 } else {
-                    const baseUrl = settings.openaiUrl || process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || DEFAULT_OPENAI_COMPATIBLE_BASE_URL;
-                    const apiKey = settings.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
-                    const model = settings.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
-                    if (!apiKey) throw new Error('OpenAI/Mittwald API-Key fehlt.');
-
-
+                    const { baseUrl, apiKey, model } = requireOpenAiConnection(settings);
 
                     extracted = await executeOpenAIRequest(
                         'variable-extraction',

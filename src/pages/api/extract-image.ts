@@ -20,7 +20,7 @@ export const config = {
 };
 
 import { withSecurity, AuthenticatedRequest } from '@/lib/security';
-import { DEFAULT_OPENAI_COMPATIBLE_BASE_URL } from '@/lib/ai/constants';
+import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
 
 const extractImageSchema = z.object({
     buffer: z.string().optional(),
@@ -151,11 +151,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         };
 
         const tryOpenAI = async (buffers: Buffer[]) => {
-            const baseUrl = settings?.openaiUrl || process.env.OPENAI_API_BASE || process.env.OPENAI_API_URL || DEFAULT_OPENAI_COMPATIBLE_BASE_URL;
-            const apiKey = settings?.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
-            const model = settings?.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
-            
-            if (!apiKey) throw new AIConfigError('Mittwald/OpenAI API-Key fehlt.');
+            const { baseUrl, apiKey, model } = requireOpenAiConnection(settings);
 
             const pageResults = await promisePool(buffers, 1, async (b) => {
                 const result = await executeOpenAIRequest(
