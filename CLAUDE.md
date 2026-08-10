@@ -37,10 +37,12 @@ Die Personas oben sind als Claude-Code-Subagenten unter [.claude/agents/](.claud
 3. **Build:** Experten (UI, DB, Prompt) implementieren synchronisiert.
 4. **Gate:** Audit durch Security und QA gegen die "Industrial Standards".
 5. **Agent Compliance Gate (MANDATORY):** Bevor eine Aufgabe an den User zurückgegeben wird, MUSS folgende Checkliste abgehakt werden:
-   - [ ] Wurden `console.log` im Backend durch den `logger` ersetzt?
-   - [ ] Sind alle Typen strikt (`: any` durch Interfaces ersetzt)?
-   - [ ] Bleiben alle neuen Komponenten unter 300 Zeilen Code?
+   - [x] Wurden `console.log` im Backend durch den `logger` ersetzt? — *erzwungen durch ESLint (`no-console: error` für `pages/api` und `lib`)*
+   - [ ] Sind alle Typen strikt (`: any` durch Interfaces ersetzt)? — *noch NICHT erzwungen: `tsconfig.json` steht auf `strict: false`*
+   - [x] Bleiben neue Dateien unter der Größengrenze? — *erzwungen durch [tests/unit/file-size-governance.test.ts](tests/unit/file-size-governance.test.ts): 300 Zeilen für `components/`, `hooks/`, `pages/`, 500 für `lib/`, max. 10 Hook-Aufrufe pro Komponente. Altlasten sind per Ratsche eingefroren und dürfen nur schrumpfen.*
    - [ ] Werden Secrets / URLs aus `.env` statt Hardcoding geladen?
+
+> **Regeln brauchen Wächter.** Jede Regel oben, die automatisch geprüft wird, wird zu 100 % eingehalten; jede ungeprüfte driftet. Wer hier eine Regel ergänzt, ergänzt den Test oder die Lint-Regel dazu — sonst ist es eine Absichtserklärung, keine Regel.
 
 ## Collaboration Rules
 - **Architectural Supremacy:** Bei Konflikten zwischen UI/DB/Prompt-Vorschlägen und der Vision entscheidet der `principal-architect`.

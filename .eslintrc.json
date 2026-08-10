@@ -4,13 +4,13 @@
     {
       "files": ["src/pages/api/**/*.ts", "src/lib/**/*.ts"],
       "rules": {
-        "no-console": "warn"
+        "no-console": "error"
       }
     },
     {
-      "files": ["src/components/**/*.tsx"],
+      "files": ["src/lib/logger.ts"],
       "rules": {
-        "max-lines": ["warn", 300]
+        "no-console": "off"
       }
     },
     {
