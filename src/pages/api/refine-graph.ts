@@ -11,7 +11,10 @@ import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { z } from 'zod';
 import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
-import { performBillingAction } from '@/lib/billing';
+import { checkAiBudget, checkCreditsAvailable, performBillingAction } from '@/lib/billing';
+
+/** Kosten eines Verfeinerungs-Laufs. Vorpruefung und Abrechnung nutzen denselben Wert. */
+const CREDIT_COST = 1;
 
 const RefineGraphSchema = z.object({
     taskText: z.string().optional().default(''),
@@ -52,6 +55,19 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // Im SaaS stammen Anbieter-Endpunkt und -Schluessel ausschliesslich aus
         // der Server-Env; lokale Instanzen behalten ihre eigene Konfiguration.
         const settings = sanitizeClientAiSettings(clientSettings, req.url);
+
+        // --- AI Cost Brake (Saeule 7) + Guthaben VOR dem Anbieter-Aufruf ---
+        // Beide Pruefungen steigen bei lokalen Instanzen von selbst aus, der
+        // isLocalInstance-Guard der Abrechnung unten wird hier nicht gebraucht.
+        const budgetError = await checkAiBudget('correction');
+        if (budgetError) {
+            return res.status(429).json({ error: budgetError });
+        }
+
+        const creditError = await checkCreditsAvailable(req.user.claims.sub!, CREDIT_COST);
+        if (creditError) {
+            return res.status(402).json({ error: creditError });
+        }
 
 
 
@@ -145,7 +161,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 module: 'correction',
                 inputTokens: 0,
                 outputTokens: 0,
-                creditCost: 1
+                creditCost: CREDIT_COST
             });
         }
 

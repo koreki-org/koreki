@@ -5,7 +5,7 @@ import prisma from '../../lib/prisma';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
-import { performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
+import { checkAiBudget, checkCreditsAvailable, performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
 import { logger } from '@/lib/logger';
 import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
 
@@ -64,6 +64,24 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
     const effectivePageCount = Math.max(1, pageCount || 1);
 
+    // Einmal abgeleitet und unten unveraendert weitergereicht, damit Vorpruefung
+    // und Abrechnung nicht auseinanderlaufen koennen. Inklusive Laeufe kosten
+    // bewusst nichts — checkCreditsAvailable steigt bei 0 sofort aus.
+    const creditCost = isInclusive ? 0 : effectivePageCount;
+
+    // --- AI Cost Brake (Saeule 7): absoluter Monatsdeckel der Instanz ---
+    const budgetError = await checkAiBudget('correction');
+    if (budgetError) {
+        return res.status(429).json({ error: budgetError });
+    }
+
+    // Guthaben VOR dem Anbieter-Aufruf pruefen — sonst entstehen echte Kosten,
+    // die anschliessend ohnehin abgelehnt werden.
+    const creditError = await checkCreditsAvailable(logtoId!, creditCost);
+    if (creditError) {
+        return res.status(402).json({ error: creditError });
+    }
+
     try {
         let result: any;
 
@@ -99,13 +117,12 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         }
 
         // --- BILLING & TRACKING ---
-        const CREDIT_COST = effectivePageCount * 1;
         await performBillingAction({
             logtoId,
             module: 'correction',
             inputTokens: result.usage?.prompt_tokens || 0,
             outputTokens: result.usage?.completion_tokens || 0,
-            creditCost: isInclusive ? 0 : CREDIT_COST
+            creditCost
         });
 
         // Cleanup usage from response

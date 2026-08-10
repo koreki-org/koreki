@@ -17,7 +17,10 @@ const mockLogSecurityEvent = jest.fn();
 jest.mock('@/lib/logto', () => ({ logtoClient: { withLogtoApiRoute: jest.fn() } }));
 jest.mock('@/lib/prisma', () => ({ __esModule: true, default: {} }));
 jest.mock('@/lib/services/user-service', () => ({ UserService: { ensureUserExists: jest.fn() } }));
-jest.mock('@/lib/rate-limit', () => ({ checkRateLimit: jest.fn().mockResolvedValue(true) }));
+jest.mock('@/lib/rate-limit', () => ({
+    checkIpFloodLimit: jest.fn().mockResolvedValue(true),
+    checkSubjectLimit: jest.fn().mockResolvedValue(true)
+}));
 // Die Factories werden gehoist — Zugriff auf die Mocks daher nur verzögert, innerhalb einer Funktion.
 jest.mock('@/lib/audit-service', () => ({
     logSecurityEvent: (...args: unknown[]) => mockLogSecurityEvent(...args)

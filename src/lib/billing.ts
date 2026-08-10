@@ -37,6 +37,41 @@ export async function resolveActiveWorkspace(logtoId: string) {
 }
 
 /**
+ * Saeule 7: absoluter Monatsdeckel in Euro.
+ *
+ * Anders als die Credits ist das keine Grenze pro Mandant, sondern die
+ * Notbremse fuer die Instanz als Ganzes — sie schuetzt Koreki davor, dass ein
+ * einzelner Monat die Anbieterkosten entgleisen laesst. Vom Credit-Modell
+ * voellig unabhaengig: Aufrufe, die bewusst keine Credits kosten (kombinierte
+ * Abrechnung), zaehlen hier trotzdem mit, weil sie beim Anbieter echtes Geld
+ * kosten.
+ *
+ * Diese Pruefung stand vorher inline in genau zwei Routen. Die anderen acht
+ * KI-Routen hatten damit gar keinen absoluten Deckel — dieselbe Lektion wie bei
+ * der Anbieter-Verbindung: was kopiert wird, fehlt irgendwo.
+ *
+ * @returns Fehlermeldung, oder null wenn Budget vorhanden.
+ */
+export async function checkAiBudget(module: BillingModule): Promise<string | null> {
+    if (isLocalInstance()) return null;
+
+    const settings = await prisma.systemSettings.findUnique({ where: { id: 'singleton' } });
+    if (!settings) return null;
+
+    const spent = module === 'ocr'
+        ? (settings.ocrMonthlyUsage / 1_000_000) * settings.ocrPricePerMillion
+        : (settings.correctionMonthlyUsage / 1_000_000) * settings.correctionPricePerMillion;
+
+    const budget = module === 'ocr' ? settings.ocrBudget : settings.correctionBudget;
+
+    if (spent >= budget) {
+        return 'Aktuell zu hohe Auslastung, bitte versuchen Sie es später erneut.';
+    }
+
+    return null;
+}
+
+/**
  * Guthaben-Vorpruefung VOR dem Anbieter-Aufruf.
  *
  * performBillingAction prueft das Guthaben ebenfalls, laeuft aber erst nach dem

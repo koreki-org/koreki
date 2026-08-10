@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import type { LogtoContext } from '@logto/next';
 import { logtoClient } from './logto';
-import { checkRateLimit } from './rate-limit';
+import { checkIpFloodLimit, checkSubjectLimit } from './rate-limit';
 import { logSecurityEvent } from './audit-service';
 import { logger } from './logger';
 import prisma from './prisma';
@@ -63,11 +63,15 @@ export function withSecurity(
         req.ip = ip;
         const { isAi = false, requireAdmin = false, allowAnonymous = false } = options;
 
-        // 🛡️ Pillar 1: Rate Limiting (Applied to ALL instances for consistency)
-        const isAllowed = await checkRateLimit(ip, isAi);
-        if (!isAllowed) {
-            await logSecurityEvent('anonymous', null, 'RATE_LIMIT_EXCEEDED', `IP: ${ip}, Endpoint: ${req.url}`, ip);
+        const tooManyRequests = async (subject: string) => {
+            await logSecurityEvent('anonymous', null, 'RATE_LIMIT_EXCEEDED', `Subject: ${subject}, Endpoint: ${req.url}`, ip);
             return res.status(429).json({ error: 'Zu viele Anfragen. Bitte warten Sie eine Minute.' });
+        };
+
+        // 🛡️ Pillar 1, Stufe 1: Flut-Schutz vor der Authentifizierung.
+        // Bewusst weit — hinter dieser IP kann ein ganzes Kollegium sitzen.
+        if (!await checkIpFloodLimit(ip)) {
+            return tooManyRequests(ip);
         }
 
         if (isLocalInstance()) {
@@ -80,6 +84,10 @@ export function withSecurity(
 
                 if (!token) {
                     if (allowAnonymous) {
+                        // Ohne Identitaet bleibt die IP die einzige Handhabe.
+                        if (!await checkSubjectLimit(ip, false, isAi)) {
+                            return tooManyRequests(ip);
+                        }
                         req.user = {
                             isAuthenticated: false,
                             claims: {} as any
@@ -109,6 +117,12 @@ export function withSecurity(
                     return res.status(403).json({ error: 'Administratorrechte erforderlich.' });
                 }
 
+                // 🛡️ Pillar 1, Stufe 2: Community Multi-User teilt sich einen
+                // Server — hier zaehlt die Lehrkraft, nicht die Schul-IP.
+                if (!await checkSubjectLimit(identity.sub, true, isAi)) {
+                    return tooManyRequests(identity.sub);
+                }
+
                 req.user = {
                     isAuthenticated: true,
                     claims: {
@@ -126,6 +140,11 @@ export function withSecurity(
             // 🏮 DESKTOP TRUST-BYPASS
             // Ein-Nutzer-Gerät ohne Netzwerkkontext: die lokale Identität ist
             // implizit Admin. Bewusstes Trust-Modell, kein Bypass im Sinne von Säule 8.
+            //
+            // Bewusst OHNE Subjekt-Limit: der Nutzer betreibt die Instanz selbst,
+            // auf eigener Hardware und mit eigenem Anbieter-Schluessel. Ein Limit
+            // wuerde hier nichts schuetzen, aber eine Stapelverarbeitung ausbremsen.
+            // Der IP-Flutschutz oben greift weiterhin.
             req.user = {
                 isAuthenticated: true,
                 claims: {
@@ -154,9 +173,13 @@ export function withSecurity(
                 // 1. AUTHENTICATION (Basic Shield)
                 if (!isAuthenticated) {
                     if (allowAnonymous) {
+                        // Ohne Identitaet bleibt die IP die einzige Handhabe.
+                        if (!await checkSubjectLimit(ip, false, isAi)) {
+                            return tooManyRequests(ip);
+                        }
                         return await handler(req, res);
                     }
-                    
+
                     // Industrial Debugging for Auth Failures 🔍
                     // Capture state of body to detect Zod-failing patterns
                     const bodyType = typeof req.body;
@@ -164,6 +187,12 @@ export function withSecurity(
 
                     await logSecurityEvent('anonymous', null, 'AUTH_FAILURE', `Unauthenticated access to ${req.url} (Type: ${bodyType}, Preview: ${bodyPreview})`, ip);
                     return res.status(401).json({ error: 'Nicht angemeldet.' });
+                }
+
+                // 🛡️ Pillar 1, Stufe 2: ab hier zaehlt die Lehrkraft, nicht die
+                // IP — eine Schule hinter NAT teilt sich sonst ein Kontingent.
+                if (!await checkSubjectLimit(userId!, true, isAi)) {
+                    return tooManyRequests(userId!);
                 }
 
                 // 2. RESOURCE & FAIRNESS (Pillar 5)

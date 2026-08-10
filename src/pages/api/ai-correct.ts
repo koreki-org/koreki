@@ -7,7 +7,7 @@ import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
 import { CorrectionSchema } from '@/lib/validation';
 import { AppSettings } from '@/types';
-import { checkCreditsAvailable, performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
+import { checkAiBudget, checkCreditsAvailable, performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
@@ -171,15 +171,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             return res.status(402).json({ error: creditError });
         }
 
-        // --- AI Cost Brake Check ---
-        if (!isLocalInstance()) {
-            const systemSettings = await prisma.systemSettings.findUnique({ where: { id: 'singleton' } });
-            if (systemSettings) {
-                const correctionCost = (systemSettings.correctionMonthlyUsage / 1_000_000) * systemSettings.correctionPricePerMillion;
-                if (correctionCost >= systemSettings.correctionBudget) {
-                    return res.status(429).json({ error: "Aktuell zu hohe Auslastung, bitte versuchen Sie es später erneut." });
-                }
-            }
+        // --- AI Cost Brake (Saeule 7): absoluter Monatsdeckel der Instanz ---
+        const budgetError = await checkAiBudget('correction');
+        if (budgetError) {
+            return res.status(429).json({ error: budgetError });
         }
 
         let analysis: any;

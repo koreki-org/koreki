@@ -107,6 +107,13 @@ describe('Security Governance Audit', () => {
    * 2. `sanitizeClientAiSettings` — client-gelieferte Verbindungsdaten dürfen im
    *    SaaS nicht an den Provider durchgereicht werden, sonst lässt sich der
    *    Server-Schlüssel an eine fremde Adresse ausleiten.
+   * 3. `checkAiBudget` — der absolute Monatsdeckel (Säule 7). Die Prüfung stand
+   *    inline in zwei Routen kopiert; die anderen acht hatten dadurch gar keine
+   *    Obergrenze.
+   * 4. Eine Guthabenprüfung VOR dem Anbieter-Aufruf, entweder über
+   *    `checkCreditsAvailable` oder über den vorgezogenen Abzug
+   *    `checkAndDeductCredits`. Ohne sie entstehen echte Anbieterkosten für
+   *    Anfragen, die anschließend ohnehin abgelehnt werden.
    */
   it('verifies that every AI provider route is rate-limited and strips client connection settings', () => {
     const apiFiles = getFilesRecursively(apiDir).filter(f => f.endsWith('.ts'));
@@ -132,6 +139,23 @@ describe('Security Governance Audit', () => {
         throw new Error(
           `SECURITY BREACH: KI-Route '${fileName}' reicht client-gelieferte ` +
           `settings ungefiltert an den Provider weiter (sanitizeClientAiSettings fehlt)!`
+        );
+      }
+
+      if (!content.includes('checkAiBudget')) {
+        throw new Error(
+          `COST GOVERNANCE: KI-Route '${fileName}' läuft ohne absoluten Monatsdeckel ` +
+          `(checkAiBudget fehlt) — Säule 7 greift dort nicht!`
+        );
+      }
+
+      const hasPreCheck =
+        content.includes('checkCreditsAvailable') || content.includes('checkAndDeductCredits');
+
+      if (!hasPreCheck) {
+        throw new Error(
+          `COST GOVERNANCE: KI-Route '${fileName}' prüft das Guthaben nicht vor dem ` +
+          `Anbieter-Aufruf — Kosten entstehen auch bei leerem Konto!`
         );
       }
     });

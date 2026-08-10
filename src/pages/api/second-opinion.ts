@@ -7,7 +7,7 @@ import { executeOllamaRequest } from '../../lib/ai/ollama-logic';
 import { logger } from '../../lib/logger';
 import { withSecurity, AuthenticatedRequest } from '../../lib/security';
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
-import { checkAndDeductCredits } from '../../lib/billing';
+import { checkAiBudget, checkAndDeductCredits } from '../../lib/billing';
 import { isLocalInstance } from '../../lib/env-context';
 import { requireOpenAiConnection } from '../../lib/ai/provider-connection';
 
@@ -78,6 +78,12 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         const { claims } = req.user;
         const userId = claims?.sub;
+
+        // --- AI Cost Brake (Saeule 7): absoluter Monatsdeckel der Instanz ---
+        const budgetError = await checkAiBudget('correction');
+        if (budgetError) {
+            return res.status(429).json({ error: budgetError });
+        }
 
         if (!isLocalInstance()) {
             if (!userId) throw new Error('Nutzer-ID fehlt.');

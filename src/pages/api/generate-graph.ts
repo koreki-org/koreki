@@ -4,7 +4,10 @@ import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
 import { parseGeneratedGraph, validateGraphDeterminism, GRADING_GRAPH_SCHEMA } from '@/lib/grading/graph-generator';
-import { performBillingAction } from '@/lib/billing';
+import { checkAiBudget, checkCreditsAvailable, performBillingAction } from '@/lib/billing';
+
+/** Kosten eines Graph-Laufs. Vorpruefung und Abrechnung nutzen denselben Wert. */
+const CREDIT_COST = 1;
 import { logger } from '@/lib/logger';
 import { AppSettings } from '@/types';
 import { isLocalInstance } from '@/lib/env-context';
@@ -47,6 +50,19 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // Im SaaS stammen Anbieter-Endpunkt und -Schluessel ausschliesslich aus
         // der Server-Env; lokale Instanzen behalten ihre eigene Konfiguration.
         const settings = sanitizeClientAiSettings(clientSettings, req.url);
+
+        // --- AI Cost Brake (Saeule 7) + Guthaben VOR dem Anbieter-Aufruf ---
+        // Beide Pruefungen steigen bei lokalen Instanzen von selbst aus, der
+        // isLocalInstance-Guard der Abrechnung unten wird hier nicht gebraucht.
+        const budgetError = await checkAiBudget('correction');
+        if (budgetError) {
+            return res.status(429).json({ error: budgetError });
+        }
+
+        const creditError = await checkCreditsAvailable(req.user.claims.sub!, CREDIT_COST);
+        if (creditError) {
+            return res.status(402).json({ error: creditError });
+        }
 
 
 
@@ -215,7 +231,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                 module: 'correction',
                 inputTokens: 0,
                 outputTokens: 0,
-                creditCost: 1
+                creditCost: CREDIT_COST
             });
         }
 
