@@ -23,6 +23,27 @@ import { isDesktopTarget } from '@/lib/env-context';
 import type { GradingMemoryCase, CustomSkillDefinition } from '@/types';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
 import { logger } from '@/lib/logger';
+import { AIProviderError } from './provider-error';
+
+/**
+ * Liest den Fehlertext einer abgelehnten Antwort für den Server-Log aus.
+ * Darf selbst nicht werfen — sonst verdeckt das Lesen des Fehlers den Fehler.
+ */
+async function readErrorDetail(response: Response): Promise<string> {
+    try {
+        // Nicht jede Antwort, die hier ankommt, ist eine vollwertige `Response`:
+        // Der Desktop-Proxy und Testdoubles liefern schlankere Objekte. Fehlt der
+        // Header oder `text()`, wird der JSON-Pfad versucht statt aufgegeben.
+        const contentType = response.headers?.get?.('content-type') || '';
+        if (contentType.includes('application/json') || typeof response.text !== 'function') {
+            const data = await response.json();
+            return data?.error?.message || response.statusText || '';
+        }
+        return (await response.text()).slice(0, 500) || response.statusText || '';
+    } catch {
+        return response.statusText || '';
+    }
+}
 
 export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
 
@@ -254,26 +275,7 @@ export async function executeMistralRequest(
             });
 
             if (!response.ok) {
-                let errorMessage = `Mistral API Error: ${response.status}`;
-                try {
-                    const contentType = response.headers.get('content-type');
-                    if (contentType && contentType.includes('application/json')) {
-                        const errorData = await response.json();
-                        errorMessage = errorData.error?.message || errorMessage;
-                    } else {
-                        const errorText = await response.text();
-                        if (errorText.toLowerCase().includes('bad gateway')) {
-                            errorMessage = "Der KI-Server ist aktuell nicht erreichbar (Bad Gateway). Bitte versuchen Sie es in Kürze erneut.";
-                        } else if (response.status === 504) {
-                            errorMessage = "Zeitüberschreitung bei der KI-Anfrage (Gateway Timeout). Die Musterlösung ist eventuell zu komplex.";
-                        } else {
-                            errorMessage = `Server-Fehler (${response.status}). Bitte versuchen Sie es erneut.`;
-                        }
-                    }
-                } catch (e) {
-                    errorMessage = `Kritischer API-Fehler (${response.status}).`;
-                }
-                throw new Error(errorMessage);
+                throw new AIProviderError('Mistral', response.status, await readErrorDetail(response));
             }
             responseData = await response.json();
         }
@@ -450,24 +452,7 @@ async function handleOCRRequest(payload: any, apiKey: string, isScan: boolean = 
         });
 
         if (!response.ok) {
-            let errorMessage = `Mistral OCR API Error: ${response.status}`;
-            try {
-                const contentType = response.headers.get('content-type');
-                if (contentType && contentType.includes('application/json')) {
-                    const err = await response.json();
-                    errorMessage = err.error?.message || errorMessage;
-                } else {
-                    const text = await response.text();
-                    if (text.toLowerCase().includes('bad gateway')) {
-                        errorMessage = "Der OCR-Server ist aktuell nicht erreichbar (Bad Gateway).";
-                    } else {
-                        errorMessage = `OCR-Server-Fehler (${response.status}).`;
-                    }
-                }
-            } catch (e) {
-                errorMessage = `Kritischer OCR-Fehler (${response.status}).`;
-            }
-            throw new Error(errorMessage);
+            throw new AIProviderError('Mistral OCR', response.status, await readErrorDetail(response));
         }
         responseData = await response.json();
     }

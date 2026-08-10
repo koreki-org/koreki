@@ -1,3 +1,4 @@
+import { AIConfigError, resolveAiHttpError } from '@/lib/ai/provider-error';
 import type { NextApiResponse } from 'next';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
@@ -68,7 +69,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             );
         } else if (!useOpenAI) {
             const apiKey = settings?.mistralKey || process.env.MISTRAL_API_KEY;
-            if (!apiKey) throw new Error('Mistral API-Key fehlt.');
+            if (!apiKey) throw new AIConfigError('Mistral API-Key fehlt.');
 
             rawResult = await executeMistralRequest(
                 'refine-graph',
@@ -88,7 +89,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const apiKey = settings?.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
             const model = settings?.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
 
-            if (!apiKey) throw new Error('Mittwald/OpenAI API-Key fehlt.');
+            if (!apiKey) throw new AIConfigError('Mittwald/OpenAI API-Key fehlt.');
 
             rawResult = await executeOpenAIRequest(
                 'refine-graph',
@@ -153,10 +154,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         });
 
     } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Unbekannter Fehler';
-        const isCreditsError = message.includes('Credits');
-        const statusCode = isCreditsError ? 402 : 500;
-        logger.error('Graph refinement failed', { error: message });
-        return res.status(statusCode).json({ error: isCreditsError ? message : `Graph-Verfeinerung fehlgeschlagen: ${message}` });
+        logger.error('Graph refinement failed', { error: err instanceof Error ? err.message : String(err) });
+        const { status, message } = resolveAiHttpError(err, 'Graph-Verfeinerung fehlgeschlagen.');
+        return res.status(status).json({ error: message });
     }
 });

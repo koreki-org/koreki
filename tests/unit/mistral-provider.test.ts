@@ -1,4 +1,5 @@
 import { executeMistralRequest } from '../../src/lib/ai/mistral-provider';
+import { AIProviderError } from '../../src/lib/ai/provider-error';
 import * as constants from '../../src/lib/ai/constants';
 
 // Mock fetchWithRetry to avoid real API calls
@@ -129,15 +130,22 @@ describe('Mistral Provider (Bridge) - Unit Tests', () => {
     });
 
     describe('executeMistralRequest - Error Handling', () => {
-        it('should throw Error with API message on non-ok response', async () => {
+        // Der Upstream-Status muss den Wurf ueberleben: Frueher steckte er nur als
+        // Text im Error ("Kritischer API-Fehler (401)."), womit die API-Routen ihn
+        // nicht mehr auswerten konnten und jeden Anbieter-Fehler zu einem 500 machten.
+        it('bewahrt den Upstream-Status als AIProviderError bei non-ok response', async () => {
             mockFetchWithRetry.mockResolvedValueOnce({
                 ok: false,
                 status: 401,
                 json: async () => ({ error: { message: 'Unauthorized Access' } })
             });
 
-            await expect(executeMistralRequest('correction', { modelSolution: '', studentText: '' }, API_KEY))
-                .rejects.toThrow('Kritischer API-Fehler (401).');
+            const promise = executeMistralRequest('correction', { modelSolution: '', studentText: '' }, API_KEY);
+            await expect(promise).rejects.toBeInstanceOf(AIProviderError);
+            await expect(promise).rejects.toMatchObject({
+                upstreamStatus: 401,
+                upstreamDetail: 'Unauthorized Access'
+            });
         });
     });
 

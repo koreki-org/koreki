@@ -101,13 +101,8 @@ Um die absolute Integrität von Schülerabgaben zu schützen und unerwünschte �
 * **Thinking-Governance (Selektive Deaktivierung):**
   * **Didaktische Aktionen (Thinking AN):** Der Thinking-Modus wird standardmäßig ausschließlich für didaktische Kernbereiche verwendet, die menschliche Bewertung und Freitext-Feedback erfordern. Dies betrifft die Aktionen `correction` und `second-opinion`.
   * **Strukturelle Systemaktionen & Tool-Calling (Thinking AUS):** Um massive Latenz-Verzögerungen (z. B. bei Mittwald) und unvollständige JSON-Generierungen zu unterbinden, ist Thinking für alle rein strukturellen Aktionen standardmäßig global **deaktiviert** (sowohl bei Ollama als auch beim OpenAI-Provider). Dies betrifft `generate-graph`, `refine-graph`, `generate-calc-trace`, `refine-calc-trace`, `calc-trace-extraction` und `variable-extraction`. Diese Aktionen erzeugen direkt kompakte JSONs oder Tool-Calls in wenigen Sekunden.
-  * **vLLM-Konformität (Mittwald):** Da Mittwalds Inferenz-Engine auf **vLLM** basiert, wird das Deaktivieren/Aktivieren des Thinking-Modes im OpenAI-Provider nicht über das herkömmliche `enable_thinking` Flag geregelt (welches vLLM stillschweigend überliest), sondern über das vLLM-spezifische `chat_template_kwargs` Objekt im Request-Body:
-    ```json
-    "chat_template_kwargs": {
-        "enable_thinking": false
-    }
-    ```
-  * Wird `enableThinking` im KI-Intelligenz-Modal deaktiviert, überschreibt das System die Reasoning-Engine (`enable_thinking: false` bzw. `enable_thinking: false` in `chat_template_kwargs`) global für alle nachgelagerten Aufrufe, um maximale Kontrolle zu bieten.
+  * **vLLM-Konformität (Mittwald) — überholt:** Frühere Revisionen dieses Dokuments beschrieben, der Thinking-Modus werde über das vLLM-spezifische `chat_template_kwargs`-Objekt gesteuert. **Das ist nicht mehr der Fall.** Mittwalds LiteLLM-Proxy stürzt bei nicht-standardisierten Zusatzfeldern (`chat_template_kwargs`, `enable_thinking`) ab, weil er die Anfrage fälschlich einem Anthropic-/Custom-Katalog zuordnet. `openai-provider.ts` sendet diese Felder deshalb bewusst **nicht** mehr; das Reasoning-Verhalten ergibt sich aus dem System-Prompt und dem nativen Modellverhalten.
+  * `enableThinking` steuert damit beim OpenAI-kompatiblen Provider ausschließlich die Inferenz-Parameter (Temperatur, `top_p`, `max_tokens`), nicht mehr ein eigenes Request-Feld.
 
 ---
 

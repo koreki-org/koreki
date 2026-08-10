@@ -1,3 +1,4 @@
+import { AIConfigError, resolveAiHttpError } from '@/lib/ai/provider-error';
 import type { NextApiResponse } from 'next';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
@@ -70,7 +71,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     );
                 } else if (!useOpenAI) {
                     const apiKey = settings?.mistralKey || process.env.MISTRAL_API_KEY;
-                    if (!apiKey) throw new Error('Mistral API-Key fehlt.');
+                    if (!apiKey) throw new AIConfigError('Mistral API-Key fehlt.');
 
                     // Always use the highly capable medium model for complex extraction tasks when using Mistral
                     const mistralModel = settings?.model || 'mistral-medium-latest';
@@ -93,7 +94,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     const apiKey = settings?.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
                     const model = settings?.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
 
-                    if (!apiKey) throw new Error('Mittwald/OpenAI API-Key fehlt.');
+                    if (!apiKey) throw new AIConfigError('Mittwald/OpenAI API-Key fehlt.');
 
                     rawResult = await executeOpenAIRequest(
                         'generate-calc-trace',
@@ -153,9 +154,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         return res.status(200).json(trace);
     } catch (error: any) {
-        const message = error.message || 'Internal Server Error';
-        const isCreditsError = typeof message === 'string' && message.includes('Credits');
         logger.error('API Generate CalcTrace Fatal Error:', error);
-        return res.status(isCreditsError ? 402 : 500).json({ error: message });
+        const { status, message } = resolveAiHttpError(error, 'Fehler beim Generieren des Rechenwegs.');
+        return res.status(status).json({ error: message });
     }
 });

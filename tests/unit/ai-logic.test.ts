@@ -7,6 +7,7 @@ import {
   performAIRequest
 } from '../../src/lib/ai-logic';
 import { createTask } from '../../src/test/factories';
+import { AIProviderError } from '../../src/lib/ai/provider-error';
 
 // Mock fetch
 global.fetch = jest.fn();
@@ -182,13 +183,15 @@ describe('AI Logic tests', () => {
         expect(ocrBody.messages[1].content[1].image_url.url).toContain('data:image/png;base64,b64data');
     });
 
-    it('should throw Error if Mistral OCR response is not ok', async () => {
+    it('should throw AIProviderError if Mistral OCR response is not ok', async () => {
         (global.fetch as jest.Mock).mockResolvedValueOnce({
             ok: false,
+            status: 401,
             json: async () => ({ error: { message: 'Api Fail' } })
         });
-        await expect(performOCRRequest('b64', 'mime', false, 'PURE', { provider: 'mistral', mistralKey: 'key' }))
-            .rejects.toThrow('Kritischer OCR-Fehler (undefined).');
+        const promise = performOCRRequest('b64', 'mime', false, 'PURE', { provider: 'mistral', mistralKey: 'key' } as any);
+        await expect(promise).rejects.toBeInstanceOf(AIProviderError);
+        await expect(promise).rejects.toMatchObject({ upstreamStatus: 401, upstreamDetail: 'Api Fail' });
     });
 
     it('should handle multiple PDF pages with throttling', async () => {

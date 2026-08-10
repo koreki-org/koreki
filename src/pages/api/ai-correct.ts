@@ -1,3 +1,4 @@
+import { AIConfigError, resolveAiHttpError } from '@/lib/ai/provider-error';
 import type { NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import { parseCorrectionResult, extractStudentAnswersWithLLM, shouldDisablePoints } from '@/lib/ai/ai-orchestrator';
@@ -186,7 +187,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             );
         } else if (!useOpenAI) {
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
-            if (!apiKey) throw new Error('Mistral API-Key fehlt.');
+            if (!apiKey) throw new AIConfigError('Mistral API-Key fehlt.');
 
             const mistralModel = 'mistral-medium-latest';
 
@@ -211,7 +212,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const apiKey = settings.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
             const model = settings.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
             
-            if (!apiKey) throw new Error('Mittwald/OpenAI API-Key fehlt.');
+            if (!apiKey) throw new AIConfigError('Mittwald/OpenAI API-Key fehlt.');
  
              analysis = await executeOpenAIRequest(
                 'correction',
@@ -253,15 +254,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
     } catch (error: any) {
         logger.error('AI Correct Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
-        const isComplianceError = error.message?.includes('Compliance') || error.message?.includes('AVV');
-        const isCreditsError = error.message?.includes('Credits');
-        const isRateLimit = error.message?.includes('429') || error.message?.toLowerCase().includes('rate limit');
-
-        const statusCode = isCreditsError ? 402 : isComplianceError ? 403 : isRateLimit ? 429 : 500;
-        res.status(statusCode).json({ 
-            error: isRateLimit 
-                ? 'KI-Server überlastet. Bitte warten Sie ca. 30 Sekunden und versuchen es erneut.' 
-                : (error.message || 'Fehler bei der KI-Analyse.')
-        });
+        const { status, message } = resolveAiHttpError(error, 'Fehler bei der KI-Analyse.');
+        res.status(status).json({ error: message });
     }
 });

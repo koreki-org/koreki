@@ -1,3 +1,4 @@
+import { AIConfigError, resolveAiHttpError } from '@/lib/ai/provider-error';
 import type { NextApiResponse } from 'next';
 import { z } from 'zod';
 import { executeMistralRequest } from '../../lib/ai/mistral-provider';
@@ -109,7 +110,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const apiKey = settings.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
             const model = settings.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
             
-            if (!apiKey) throw new Error('OpenAI/Mittwald API-Key fehlt.');
+            if (!apiKey) throw new AIConfigError('OpenAI/Mittwald API-Key fehlt.');
 
             result = await executeOpenAIRequest(
                 'second-opinion',
@@ -120,7 +121,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             );
         } else {
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
-            if (!apiKey) throw new Error('Mistral API-Key fehlt.');
+            if (!apiKey) throw new AIConfigError('Mistral API-Key fehlt.');
 
             result = await executeMistralRequest(
                 'second-opinion',
@@ -136,9 +137,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
     } catch (error: any) {
         logger.error('[API:SecondOpinion] Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
-        const isRateLimit = error.message?.includes('429') || error.message?.toLowerCase().includes('rate limit');
-        return res.status(isRateLimit ? 429 : 500).json({ 
-            error: error.message || 'Fehler beim Einholen der Zweitmeinung.' 
-        });
+        const { status, message } = resolveAiHttpError(error, 'Fehler beim Einholen der Zweitmeinung.');
+        return res.status(status).json({ error: message });
     }
 });

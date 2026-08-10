@@ -1,3 +1,4 @@
+import { AIConfigError, resolveAiHttpError } from '@/lib/ai/provider-error';
 import prisma from '@/lib/prisma';
 import type { NextApiResponse } from 'next';
 import { z } from 'zod';
@@ -99,7 +100,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         const tryMistral = async (buffers: Buffer[]) => {
             const apiKey = settings?.mistralKey || process.env.MISTRAL_API_KEY;
-            if (!apiKey) throw new Error('Mistral API-Key fehlt.');
+            if (!apiKey) throw new AIConfigError('Mistral API-Key fehlt.');
 
             const pageResults = await promisePool(buffers, 1, async (b) => {
                 // TODO: DEPRECATED - Mistral Vision / Handwriting is temporarily disabled in favor of Qwen3.6
@@ -135,7 +136,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const apiKey = settings?.openaiKey || process.env.OPENAI_API_KEY || process.env.MITTWALD_API_KEY;
             const model = settings?.openaiModel || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
             
-            if (!apiKey) throw new Error('Mittwald/OpenAI API-Key fehlt.');
+            if (!apiKey) throw new AIConfigError('Mittwald/OpenAI API-Key fehlt.');
 
             const pageResults = await promisePool(buffers, 1, async (b) => {
                 const result = await executeOpenAIRequest(
@@ -218,17 +219,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         return res.status(200).json({ text: resultData.text });
     } catch (error: any) {
         logger.error('[API/extract-image] OCR Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
-        const isComplianceError = error.message?.includes('Compliance') || error.message?.includes('AVV');
-        const isCreditsError = error.message?.includes('Credits');
-        const isRateLimit = error.message?.includes('429') || error.message?.toLowerCase().includes('rate limit');
-        
-        let statusCode = 500;
-        if (isCreditsError) statusCode = 402;
-        else if (isComplianceError) statusCode = 403;
-        else if (isRateLimit) statusCode = 429;
-
-        res.status(statusCode).json({ 
-            error: error.message || 'Fehler bei der Bilderkennung (OCR).' 
-        });
+        const { status, message } = resolveAiHttpError(error, 'Fehler bei der Bilderkennung (OCR).');
+        res.status(status).json({ error: message });
     }
 });

@@ -16,6 +16,7 @@ import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_
 import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
 import { AppSettings } from '../../types';
 import { isDesktopTarget } from '@/lib/env-context';
+import { AIProviderError } from './provider-error';
 
 export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
 
@@ -353,7 +354,7 @@ export async function executeOllamaRequest(
 
         if (!response.ok) {
             const errText = await response.text().catch(() => '');
-            throw new Error(`Ollama Error: ${response.status}${errText ? ` - ${errText}` : ''}`);
+            throw new AIProviderError('Ollama', response.status, errText || response.statusText);
         }
 
         fullContent = '';

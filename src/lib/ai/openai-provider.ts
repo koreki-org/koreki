@@ -16,6 +16,7 @@ import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_
 import { logger } from '@/lib/logger';
 import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
 import { isDesktopTarget } from '@/lib/env-context';
+import { AIProviderError } from './provider-error';
 import type { GradingMemoryCase, CustomSkillDefinition } from '@/types';
 import type { PromptLibraryEntry } from './prompt-library';
 
@@ -267,7 +268,11 @@ export async function executeOpenAIRequest(
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(`KI-Provider Fehler (${response.status}): ${errorData.error?.message || response.statusText}`);
+                throw new AIProviderError(
+                    'OpenAI-kompatibler Anbieter',
+                    response.status,
+                    errorData.error?.message || response.statusText
+                );
             }
 
             currentData = await response.json();
