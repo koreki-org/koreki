@@ -55,7 +55,12 @@ const SIZE_BASELINE: Record<string, number> = {
     'components/batch/GradingGraphModal.tsx': 1459,
     'components/upload/ModelSolutionCard.tsx': 1205,
     'components/settings/SkillsModules.tsx': 1032,
-    'lib/ai/ai-orchestrator.ts': 1003,
+    // Bewusst von 1003 angehoben: der strictNullChecks-Durchgang hat hier eine
+    // echte Luecke geschlossen (Mistral-Rueckfall ohne Schluessel schickte
+    // `Bearer undefined`). Der Waechter plus Begruendung kostet 7 Zeilen. Die
+    // Datei bleibt der groesste Brocken im Repo und gehoert zerlegt — dann faellt
+    // dieser Eintrag ohnehin weg.
+    'lib/ai/ai-orchestrator.ts': 1010,
     'lib/ai/ollama-logic.ts': 896,
     'hooks/useGradingMemoryModalState.ts': 757,
     'components/settings/AiProfileModules.tsx': 723,

@@ -285,11 +285,11 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
             // is absent on the client-side tasksLayout (it's a server-only intermediate state).
             const calcTraceAlreadyFormatted = !!(aiTask?.feedback?.includes('[📐 CalcTrace Engine') ||
                 aiTask?.feedback?.includes('DETERMINISTISCHER BEWEIS (SANDBOX)'));
-            const isSandboxBypassed = isCalcTraceTask && !calcTraceAlreadyFormatted && (
-                !layoutTask.calcTraceResult || 
-                !layoutTask.calcTraceResult.ast || 
-                layoutTask.calcTraceResult.ast.length === 0
-            );
+            // Zusaetzliche Pruefungen auf `calcTraceResult` standen hier frueher,
+            // waren aber toter Code: der Zweig `if (layoutTask.calcTraceResult)`
+            // oben kehrt auf jedem Pfad zurueck, der Wert ist hier beweisbar
+            // undefined (von strictNullChecks als `never` aufgedeckt).
+            const isSandboxBypassed = isCalcTraceTask && !calcTraceAlreadyFormatted;
 
             if (aiTask) {
                 const obtained = Number(aiTask.pointsObtained || 0);
@@ -320,9 +320,8 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
                     sandboxBypassed: isSandboxBypassed ? true : undefined
                 };
             } else {
-                const nearMiss = (analysis.tasks || []).find((t: AITask) =>
-                    t.name?.toLowerCase().trim() === layoutTask.name.toLowerCase().trim()
-                );
+                const layoutName = (layoutTask.name ?? '').toLowerCase().trim();
+                const nearMiss = layoutName ? (analysis.tasks || []).find((t: AITask) => t.name?.toLowerCase().trim() === layoutName) : undefined;
 
                 if (nearMiss) {
                     // SOFT ERROR: Case mismatch or whitespace issues -> Keep Confidence, but show warning
@@ -386,9 +385,8 @@ export function parseMappingResult(result: any, tasksLayout?: Task[] | null): an
         if (aiTask) {
             return aiTask;
         } else {
-            const nearMiss = (result.tasks || []).find((t: any) => 
-                t.name?.toLowerCase().trim() === layoutTask.name.toLowerCase().trim()
-            );
+            const layoutName = (layoutTask.name ?? '').toLowerCase().trim();
+            const nearMiss = layoutName ? (result.tasks || []).find((t: any) => t.name?.toLowerCase().trim() === layoutName) : undefined;
 
             return {
                 name: layoutTask.name,
@@ -703,6 +701,15 @@ export async function performAIRequest(
         const mistralKey = settings?.mistralKey;
         if (!mistralKey && settings?.provider === 'mistral') throw new Error("PURE_KEY_MISSING");
 
+        // Die Pruefung darueber greift nur bei `provider === 'mistral'`. Mistral
+        // ist unten aber der RUECKFALL und laeuft auch ohne gesetzten Provider —
+        // dort ging bisher `Bearer undefined` raus, der Nutzer sah einen 401 des
+        // Anbieters statt des klaren Konfigurationsfehlers.
+        const requireMistralKey = (): string => {
+            if (!mistralKey) throw new Error("PURE_KEY_MISSING");
+            return mistralKey;
+        };
+
         let result: any;
 
         if (action === 'vision') {
@@ -726,7 +733,7 @@ export async function performAIRequest(
                         presencePenalty: settings.visionPresencePenalty
                     });
                 } else {
-                    ocrData = await executeMistralRequest('vision', { ...payload, buffer: b64 }, mistralKey);
+                    ocrData = await executeMistralRequest('vision', { ...payload, buffer: b64 }, requireMistralKey());
                 }
                 combinedText += (combinedText ? "\n\n" : "") + (ocrData.text || "");
             }
@@ -748,7 +755,7 @@ export async function performAIRequest(
                         responseSchema: GRADING_GRAPH_SCHEMA
                     });
                 } else {
-                    genResult = await executeMistralRequest('generate-graph', payload, mistralKey, {
+                    genResult = await executeMistralRequest('generate-graph', payload, requireMistralKey(), {
                         model: settings?.model,
                         enableThinking: settings?.enableThinking,
                         temperature: 0.2,
@@ -805,7 +812,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                                 responseSchema: GRADING_GRAPH_SCHEMA
                             });
                         } else {
-                            correctionResult = await executeMistralRequest('refine-graph', correctionPayload, mistralKey, {
+                            correctionResult = await executeMistralRequest('refine-graph', correctionPayload, requireMistralKey(), {
                                 model: settings?.model,
                                 temperature: 0.0,
                                 topP: 1.0,
@@ -851,7 +858,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                         responseSchema: GRADING_GRAPH_SCHEMA
                     });
                 } else {
-                    refineResult = await executeMistralRequest('refine-graph', payload, mistralKey, {
+                    refineResult = await executeMistralRequest('refine-graph', payload, requireMistralKey(), {
                         model: settings?.model,
                         temperature: 0.0,
                         topP: 1.0,
@@ -906,7 +913,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                     signal
                 });
             } else {
-                result = await executeMistralRequest(action, payload, mistralKey, {
+                result = await executeMistralRequest(action, payload, requireMistralKey(), {
                     customPrompt: settings?.correctionPrompt,
                     gradingMemory: payload.gradingMemory,
                     model: settings?.model,
