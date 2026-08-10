@@ -65,7 +65,11 @@ export default function StudentFeedbackView() {
         );
     }
 
-    if (error || (isPinRequired && !data)) {
+    // `!data` deckt zwei Faelle ab: die PIN-Abfrage (dann greift der Zweig
+    // unten) und den Rest — kein Fehler gesetzt, kein PIN verlangt, aber auch
+    // keine Daten. Frueher fiel dieser Fall bis in die Ausgabe durch und las
+    // `data.studentName` auf null: weisser Bildschirm statt Fehlermeldung.
+    if (error || !data) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center p-6 font-outfit">
                 {isPinRequired ? (
@@ -117,7 +121,9 @@ export default function StudentFeedbackView() {
                         </div>
                         <CardContent className="p-8 text-center">
                             <h1 className="text-xl font-bold text-foreground mb-2">Hoppla!</h1>
-                            <p className="text-muted-foreground mb-6">{error}</p>
+                            <p className="text-muted-foreground mb-6">
+                                {error || 'Das Feedback konnte nicht geladen werden. Bitte scanne den QR-Code erneut.'}
+                            </p>
                             <Button 
                                 onClick={() => window.location.reload()}
                                 className="bg-primary hover:bg-primary/90 text-white px-6 py-2 rounded-xl font-bold shadow-sm border-none transition-all active:scale-95"

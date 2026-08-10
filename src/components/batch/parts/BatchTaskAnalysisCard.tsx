@@ -3,7 +3,7 @@ import { Sparkles, GraduationCap, X, Check, Loader2, Lock, AlertCircle, RefreshC
 import { PointInput } from '../../ui/PointInput';
 import { Button } from '@/components/ui/Button';
 import { EditableMathArea } from '@/components/ui/EditableMathArea';
-import { BatchFile, AppSettings } from '../../../types';
+import { BatchFile, AppSettings, GradingMemory } from '../../../types';
 import { cn } from '@/lib/utils';
 import { useGradingMemories } from '@/hooks/useGradingMemories';
 import { apiClient } from '@/lib/api-client';
@@ -244,7 +244,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
         try {
             if (isDesktopTarget()) {
                 // --- TAURI CLIENT-SIDE LOCAL STORAGE SYNC ---
-                let list = [];
+                let list: GradingMemory[] = []; // Typangabe noetig: sonst leitet TS `never[]` ab
                 const stored = localStorage.getItem('koreki_local_grading_memories');
                 if (stored) {
                     try {
@@ -359,7 +359,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
             </div>
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar space-y-4">
                 {(activeGroupName && groupedTasks[activeGroupName] ? groupedTasks[activeGroupName] : (item.result?.tasks || [])).map((task) => {
-                const aiResult = item.result?.tasks.find(t => 
+                const aiResult = item.result?.tasks?.find(t =>
                     t.name === task.name || 
                     t.name?.toLowerCase() === task.name?.toLowerCase() ||
                     task.name?.toLowerCase().includes(t.name?.toLowerCase() || '') ||
@@ -472,7 +472,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                                                             const sIdx = (tasksLayout || []).findIndex(t => t.name === task.name);
                                                             let studentAnswer = '';
                                                             if (item.status === 'done' && item.result) {
-                                                                const aiTask = item.result.tasks.find(t => t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
+                                                                const aiTask = item.result?.tasks?.find(t => t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
                                                                 if (aiTask && aiTask.content) {
                                                                     studentAnswer = aiTask.content;
                                                                 }
@@ -511,7 +511,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                                                 const sIdx = (tasksLayout || []).findIndex(t => t.name === task.name);
                                                 let studentAnswer = '';
                                                 if (item.status === 'done' && item.result) {
-                                                    const aiTask = item.result.tasks.find(t => t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
+                                                    const aiTask = item.result?.tasks?.find(t => t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
                                                     if (aiTask && aiTask.content) {
                                                         studentAnswer = aiTask.content;
                                                     }
