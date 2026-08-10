@@ -31,7 +31,6 @@ import { execSync } from 'node:child_process';
 
 /** Altlasten, eingefroren am 10.08.2026. Werte sind Fehlerzahlen. NUR SENKEN. */
 const BASELINE = {
-    'src/lib/task-utils.ts': 11,
     'src/lib/ai/ai-orchestrator.ts': 9,
     'src/pages/view.tsx': 8,
     'src/components/batch/parts/BatchTaskAnalysisCard.tsx': 7,

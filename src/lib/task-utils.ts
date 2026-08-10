@@ -18,8 +18,12 @@ export function groupTasksByMain(tasks: Task[]): Record<string, Task[]> {
         // Example: "Aufgabe 1a" -> Match "Aufgabe 1"
         // Example: "1.1" -> Match "1"
         // Example: "A 3.1" -> Match "A 3"
-        const match = task.name.match(/^(.*?\d+)/);
-        const baseName = match ? match[1].trim() : task.name;
+        // `Task.name` ist optional, weil die KI-Antwort sie weglassen kann.
+        // Namenlose Aufgaben landen gesammelt unter dem leeren Schluessel,
+        // statt die Gruppierung mit einem Laufzeitfehler abzubrechen.
+        const name = task.name ?? '';
+        const match = name.match(/^(.*?\d+)/);
+        const baseName = match ? match[1].trim() : name;
 
         if (!groups[baseName]) groups[baseName] = [];
         groups[baseName].push(task);
@@ -56,9 +60,12 @@ export function splitTextByTasks(text: string, tasks: Task[]): string[] {
     const markerRegex = /===\s*TASK[E]?:?\s*(.+?)\s*===/gi;
     const matches = Array.from(text.matchAll(markerRegex));
 
-    if (matches.length > 0 && matches.some(m => tasks.some(t => t.name.toLowerCase() === m[1].trim().toLowerCase()))) {
+    if (matches.length > 0 && matches.some(m => tasks.some(t => t.name?.toLowerCase() === m[1].trim().toLowerCase()))) {
         return tasks.map(task => {
-            const matchIndex = matches.findIndex(m => m[1].trim().toLowerCase() === task.name.trim().toLowerCase());
+            const taskName = (task.name ?? '').trim().toLowerCase();
+            const matchIndex = taskName
+                ? matches.findIndex(m => m[1].trim().toLowerCase() === taskName)
+                : -1;
             if (matchIndex === -1) return "";
 
             const contentStart = matches[matchIndex].index! + matches[matchIndex][0].length;
@@ -70,12 +77,21 @@ export function splitTextByTasks(text: string, tasks: Task[]): string[] {
     }
 
     // 3. Fallback: Regex Search for task names
-    const taskNames = tasks.map(t => t.name);
+    //
+    // `taskNames` bleibt positionsgleich zu `tasks`, weil der Rueckgabewert
+    // index-weise zu den Aufgaben passen muss. Gesucht wird dagegen nur nach
+    // den nicht-leeren Namen: ein leerer Name im Regex-Alternativ ergaebe
+    // `(a|b|)` und wuerde ueberall die leere Zeichenkette treffen.
+    const taskNames = tasks.map(t => t.name ?? '');
+    const searchableNames = taskNames.filter(name => name.length > 0);
+
+    if (searchableNames.length === 0) return tasks.map(() => "");
+
     // Sort names by length descending to match full names before prefixes (e.g. "Aufgabe 1a" before "Aufgabe 1")
-    const sortedNames = [...taskNames].sort((a, b) => b.length - a.length);
+    const sortedNames = [...searchableNames].sort((a, b) => b.length - a.length);
     const escapedNames = sortedNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
     const pattern = new RegExp(`(${escapedNames.join('|')})`, 'gi');
-    
+
     const parts = text.split(pattern);
     const sections: Record<string, string> = {};
     
