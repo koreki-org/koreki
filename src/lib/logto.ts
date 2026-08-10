@@ -1,5 +1,6 @@
 import LogtoClient, { LogtoNextConfig } from '@logto/next';
 import { logger } from './logger';
+import { getAuthType } from './env-context';
 
 /**
  * LOGTO SDK Configuration
@@ -49,8 +50,14 @@ if (typeof window === 'undefined') {
 //
 // Waehrend `next build` wird das Modul serverseitig importiert; die NEXT_PHASE-
 // Pruefung verhindert, dass der Build selbst daran scheitert.
+//
+// Die Auth-Art kommt bewusst aus getAuthType() und NICHT aus der rohen
+// Variable: NEXT_PUBLIC_AUTH_TYPE ist optional, und getAuthType() faellt fuer
+// den SaaS-Modus von selbst auf 'LOGTO' zurueck. Wer die Variable nicht setzt,
+// betreibt also eine vollwertige Logto-Instanz — mit der rohen Abfrage waere
+// der Waechter dort stillschweigend inaktiv gewesen.
 if (
-    process.env.NEXT_PUBLIC_AUTH_TYPE === 'LOGTO' &&
+    getAuthType() === 'LOGTO' &&
     !process.env.LOGTO_COOKIE_SECRET &&
     process.env.NODE_ENV === 'production' &&
     typeof window === 'undefined' &&
