@@ -123,7 +123,7 @@ export const LocalProfileService = {
         return profiles;
     },
 
-    async upsertProfile(data: { name: string, correctionPrompt: string }, userId?: string) {
+    async upsertProfile(data: { id?: string, name: string, correctionPrompt: string }, userId?: string) {
         const storagePath = getStoragePath(userId);
         const customProfiles = readJsonArrayForUpdate<StoredExpertProfile>(storagePath);
 
@@ -132,24 +132,30 @@ export const LocalProfileService = {
             ? data.correctionPrompt 
             : String(data.correctionPrompt || '');
 
-        // Namensgleichheit wie in der Rückfrage vor dem Überschreiben (isSameName):
-        // Ein exakter Vergleich legte hier bei abweichender Schreibweise eine
-        // Dublette an, obwohl der Nutzer dem Überschreiben zugestimmt hatte.
-        const existingIdx = customProfiles.findIndex(p => isSameName(p.name, data.name));
+        // Mit Kennung ist der Datensatz eindeutig; ohne ist es ein Neuanlegen,
+        // bei dem der Name entscheidet — dann aber nach `isSameName`, damit ein
+        // zugesagtes Ueberschreiben nicht doch eine Dublette anlegt.
+        const existingIdx = data.id
+            ? customProfiles.findIndex(p => p.id === data.id)
+            : customProfiles.findIndex(p => isSameName(p.name, data.name));
 
+        let gespeichert: StoredExpertProfile;
         if (existingIdx >= 0) {
             customProfiles[existingIdx].correctionPrompt = safePrompt;
+            gespeichert = customProfiles[existingIdx];
         } else {
-            customProfiles.push({
+            gespeichert = {
                 id: `local-${Date.now()}`,
                 name: data.name,
                 correctionPrompt: safePrompt,
                 isSystem: false
-            });
+            };
+            customProfiles.push(gespeichert);
         }
 
         writeJsonAtomic(storagePath, customProfiles);
-        return { name: data.name, correctionPrompt: data.correctionPrompt };
+        // Die Kennung gehoert in die Antwort — der Client richtet seine Auswahl danach aus.
+        return gespeichert;
     },
 
     async deleteProfile(id: string, userId?: string) {
@@ -449,29 +455,38 @@ export const LocalSkillProfileService = {
         return profiles;
     },
 
-    async upsertProfile(data: { name: string, activeSkillIds: string[], customSkills?: any }, userId?: string) {
+    async upsertProfile(data: { id?: string, name: string, activeSkillIds: string[], customSkills?: any }, userId?: string) {
         const storagePath = getSkillStoragePath(userId);
         const customProfiles = readJsonArrayForUpdate<StoredSkillProfile>(storagePath);
 
-        const existingIdx = customProfiles.findIndex(p => isSameName(p.name, data.name));
+        // Mit Kennung ist der Datensatz eindeutig; ohne ist es ein Neuanlegen,
+        // bei dem weiterhin der Name entscheidet (der Client fragt vorher).
+        const existingIdx = data.id
+            ? customProfiles.findIndex(p => p.id === data.id)
+            : customProfiles.findIndex(p => isSameName(p.name, data.name));
         const activeSkillIds = Array.isArray(data.activeSkillIds) ? data.activeSkillIds : [];
         const customSkills = data.customSkills || {};
         
+        let gespeichert: StoredSkillProfile;
         if (existingIdx >= 0) {
             customProfiles[existingIdx].activeSkillIds = activeSkillIds;
             customProfiles[existingIdx].customSkills = customSkills;
+            gespeichert = customProfiles[existingIdx];
         } else {
-            customProfiles.push({
+            gespeichert = {
                 id: `local-skill-${Date.now()}`,
                 name: data.name,
                 activeSkillIds: activeSkillIds,
                 customSkills: customSkills,
                 isSystem: false
-            });
+            };
+            customProfiles.push(gespeichert);
         }
 
         writeJsonAtomic(storagePath, customProfiles);
-        return { name: data.name, activeSkillIds, customSkills };
+        // Die Kennung gehoert in die Antwort: Der Client richtet seine Auswahl
+        // danach aus. Zuvor kamen nur Name und Skills zurueck.
+        return gespeichert;
     },
 
     async deleteProfile(id: string, userId?: string) {

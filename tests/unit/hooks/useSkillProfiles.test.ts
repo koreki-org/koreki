@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useSkillProfiles, sortObjectKeys, deduplicateCustomSkills } from '../../../src/hooks/useSkillProfiles';
 import { AppSettings } from '../../../src/types';
 
@@ -58,26 +58,65 @@ describe('useSkillProfiles - Industrial Hook Verification', () => {
     });
 
     describe('useSkillProfiles Hook Behavior', () => {
-        it('should initialize with correct default state', () => {
-            const { result } = renderHook(() => 
-                useSkillProfiles(defaultSettings, mockOnSave, mockOnClose, 'MINT Standard (Allgemein)')
+        /** Zwei gleichnamige Sets — vor dem Umbau ununterscheidbar. */
+        const zweiGleichnamige = [
+            { id: 'system-mint-standard', name: 'MINT Standard (Allgemein)', activeSkillIds: ['a'], isSystem: true },
+            { id: 'local-skill-1', name: 'FISI-Skills', activeSkillIds: ['b'], isSystem: false },
+            { id: 'local-skill-2', name: 'FISI-Skills', activeSkillIds: ['c'], isSystem: false }
+        ];
+
+        const mitProfilen = (profile: any[]) => {
+            mockApiClientGet.mockResolvedValue({ ok: true, json: async () => profile });
+        };
+
+        it('should initialize with correct default state', async () => {
+            mitProfilen(zweiGleichnamige);
+
+            const { result } = renderHook(() =>
+                useSkillProfiles(defaultSettings, mockOnSave, mockOnClose, 'system-mint-standard')
             );
 
+            await waitFor(() => expect(result.current.selectedProfileId).toBe('system-mint-standard'));
             expect(result.current.selectedProfile).toBe('MINT Standard (Allgemein)');
             expect(result.current.isCreatingNew).toBe(false);
             expect(result.current.saving).toBe(false);
         });
 
-        it('should update selectedProfile and toggling state', () => {
-            const { result } = renderHook(() => 
-                useSkillProfiles(defaultSettings, mockOnSave, mockOnClose)
+        /**
+         * Altbestand: Vor den festen Kennungen wurde der NAME als aktive Auswahl
+         * gespeichert. Der Hook muss ihn weiterhin annehmen — und intern sofort
+         * auf die Kennung umstellen.
+         */
+        it('löst einen gespeicherten Namen auf die Kennung auf', async () => {
+            mitProfilen(zweiGleichnamige);
+
+            const { result } = renderHook(() =>
+                useSkillProfiles(defaultSettings, mockOnSave, mockOnClose, 'MINT Standard (Allgemein)')
             );
 
+            await waitFor(() => expect(result.current.selectedProfileId).toBe('system-mint-standard'));
+        });
+
+        /**
+         * 🏮 Der Kern des Umbaus: Zwei gleichnamige Sets sind ueber ihre Kennung
+         * unterscheidbar. Zuvor haette die Auswahl beide getroffen — die
+         * Seitenleiste markierte beide, und ein Speichern landete beim ersten.
+         */
+        it('unterscheidet gleichnamige Sets über die Kennung', async () => {
+            mitProfilen(zweiGleichnamige);
+
+            const { result } = renderHook(() =>
+                useSkillProfiles(defaultSettings, mockOnSave, mockOnClose, 'system-mint-standard')
+            );
+            await waitFor(() => expect(result.current.profiles.length).toBe(3));
+
             act(() => {
-                result.current.setSelectedProfile('Informatik Python');
+                result.current.handleSelectProfile(zweiGleichnamige[2]);
             });
 
-            expect(result.current.selectedProfile).toBe('Informatik Python');
+            expect(result.current.selectedProfileId).toBe('local-skill-2');
+            expect(result.current.selectedProfile).toBe('FISI-Skills');
+            expect(result.current.activeSkillIds).toEqual(['c']);
         });
 
         it('should allow creating a new profile input mode', () => {

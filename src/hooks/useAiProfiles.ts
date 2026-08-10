@@ -3,7 +3,7 @@ import { AppSettings, AiProfile } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { findNameCollision } from '@/lib/local-vault';
-import { nameTakenMessage } from '@/lib/services/profile-naming';
+import { nameTakenMessage, resolveProfileRef } from '@/lib/services/profile-naming';
 
 /**
  * Standard default AI model profile values.
@@ -52,7 +52,8 @@ export const useAiProfiles = (
     currentProfileId: string = 'system-standard'
 ) => {
     const [profiles, setProfiles] = useState<any[]>([]);
-    const [selectedProfile, setSelectedProfile] = useState<string>('Standard');
+    /** 🏮 Identitaet ueber die Kennung — Begruendung siehe useSkillProfiles. */
+    const [selectedProfileId, setSelectedProfileId] = useState<string>('');
     const [isCreatingNew, setIsCreatingNew] = useState(false);
     const [newProfileName, setNewProfileName] = useState('');
     const [saving, setSaving] = useState(false);
@@ -101,8 +102,10 @@ export const useAiProfiles = (
         }
     };
 
-    const selectedProfileData = profiles.find(p => p.name === selectedProfile);
-    const isSystemSelected = selectedProfile === 'Standard' || selectedProfileData?.isSystem;
+    const selectedProfileData = profiles.find(p => p.id === selectedProfileId);
+    /** Reine Anzeige. */
+    const selectedProfile = selectedProfileData?.name || '';
+    const isSystemSelected = !!selectedProfileData?.isSystem;
 
     const isLocal = isDesktopTarget();
 
@@ -160,10 +163,9 @@ export const useAiProfiles = (
     // Initial Hydration matching settings.activeAiProfileId
     useEffect(() => {
         if (profiles.length > 0 && !hasHydratedRef.current) {
-            const activeId = settings.activeAiProfileId || currentProfileId;
-            const found = profiles.find(p => p.id === activeId || p.name === activeId);
+            const found = resolveProfileRef<any>(profiles, settings.activeAiProfileId || currentProfileId);
             if (found) {
-                setSelectedProfile(found.name);
+                setSelectedProfileId(found.id);
                 setTemperature(found.temperature);
                 setTopP(found.topP);
                 setMaxTokensState(found.maxTokens);
@@ -181,8 +183,8 @@ export const useAiProfiles = (
 
     const handleSelectProfile = (profile: any) => {
         setIsCreatingNew(false);
-        setSelectedProfile(profile.name);
-        
+        setSelectedProfileId(profile.id);
+
         setTemperature(profile.temperature);
         setTopP(profile.topP);
         setMaxTokensState(profile.maxTokens);
@@ -199,8 +201,8 @@ export const useAiProfiles = (
 
     const handleStartNew = (template?: any) => {
         setIsCreatingNew(true);
-        setSelectedProfile('');
-        
+        setSelectedProfileId('');
+
         if (template) {
             setNewProfileName(`Kopie von ${template.name}`);
             setTemperature(template.temperature ?? 0.2);
@@ -233,7 +235,9 @@ export const useAiProfiles = (
     };
 
     const handleSaveProfile = async () => {
-        const nameToSave = isCreatingNew ? newProfileName.trim() : selectedProfile;
+        // Beim Bearbeiten entscheidet die Kennung, nicht der Name.
+        const zielId = isCreatingNew ? '' : selectedProfileId;
+        const nameToSave = isCreatingNew ? newProfileName.trim() : (selectedProfileData?.name || '');
         if (!nameToSave) {
             alert("Bitte gib einen Namen für das KI-Profil ein.");
             return;
@@ -242,7 +246,7 @@ export const useAiProfiles = (
         setSaving(true);
 
         const payload = {
-            id: isCreatingNew ? undefined : selectedProfileData?.id,
+            id: zielId || undefined,
             name: nameToSave,
             temperature,
             topP,
@@ -273,10 +277,12 @@ export const useAiProfiles = (
                 localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));
                 setIsCreatingNew(false);
                 setNewProfileName('');
+                setSelectedProfileId(newId);
                 await fetchProfiles();
-                setSelectedProfile(nameToSave);
             } else {
-                const existingIdx = customProfiles.findIndex(p => p.name === selectedProfile);
+                // Ueber die Kennung statt ueber den Namen — ein gleichnamiges
+                // Profil kann das bearbeitete nicht mehr verdraengen.
+                const existingIdx = customProfiles.findIndex(p => p.id === zielId);
                 if (existingIdx >= 0) {
                     customProfiles[existingIdx] = {
                         ...customProfiles[existingIdx],
@@ -296,8 +302,8 @@ export const useAiProfiles = (
             const data = await res.json();
 
             if (res.ok) {
+                setSelectedProfileId(data.id);
                 await fetchProfiles();
-                setSelectedProfile(data.name);
                 setIsCreatingNew(false);
                 setNewProfileName('');
                 alert("KI-Profil erfolgreich gespeichert!");
@@ -363,11 +369,8 @@ export const useAiProfiles = (
                     p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
                 );
                 localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));
-                const oldName = profiles.find(p => p.id === editingProfileId)?.name;
+                // Die Auswahl haengt an der Kennung — kein Nachziehen noetig.
                 await fetchProfiles();
-                if (selectedProfile === oldName) {
-                    setSelectedProfile(editingName.trim());
-                }
                 setEditingProfileId(null);
             }
             return;
@@ -381,11 +384,7 @@ export const useAiProfiles = (
             });
 
             if (res.ok) {
-                const oldName = profiles.find(p => p.id === editingProfileId)?.name;
                 await fetchProfiles();
-                if (selectedProfile === oldName) {
-                    setSelectedProfile(editingName.trim());
-                }
                 setEditingProfileId(null);
             } else {
                 const data = await res.json();
@@ -397,7 +396,7 @@ export const useAiProfiles = (
     };
 
     const handleApplyToSession = () => {
-        const profile = profiles.find(p => p.name === selectedProfile);
+        const profile = selectedProfileData;
         onSave({
             ...settings,
             temperature,
@@ -426,8 +425,10 @@ export const useAiProfiles = (
 
     return {
         profiles,
+        /** Kennung des gewaehlten KI-Profils — die Identitaet. */
+        selectedProfileId,
+        /** Name des gewaehlten KI-Profils — reine Anzeige. */
         selectedProfile,
-        setSelectedProfile,
         selectedProfileData,
         isSystemSelected,
         isCreatingNew,

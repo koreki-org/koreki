@@ -31,25 +31,35 @@ export const PromptProfileService = {
         const results = [];
 
         for (const p of defaults) {
-            const existing = await prisma.promptProfile.findFirst({
-                where: { name: p.name, isSystem: true }
+            // 🏮 Wie bei den Skill-Vorlagen: Die Zeile traegt die Kennung aus der
+            // Registry (`id-standard` & Co.), damit dieselbe Vorlage in SaaS,
+            // Community und Desktop identisch adressierbar ist. Altzeilen mit
+            // `cuid()` werden entfernt — sie erschienen sonst als Doppel.
+            const legacy = await prisma.promptProfile.findMany({
+                where: { name: p.name, isSystem: true, NOT: { id: p.id } },
+                select: { id: true }
             });
-
-            if (existing) {
-                results.push(await prisma.promptProfile.update({
-                    where: { id: existing.id },
-                    data: { correctionPrompt: p.correctionPrompt }
-                }));
-            } else {
-                results.push(await prisma.promptProfile.create({
-                    data: { 
-                        name: p.name, 
-                        isSystem: true, 
-                        correctionPrompt: p.correctionPrompt, 
-                        userId: null 
-                    }
-                }));
+            if (legacy.length > 0) {
+                await prisma.promptProfile.deleteMany({
+                    where: { id: { in: legacy.map(l => l.id) } }
+                });
             }
+
+            results.push(await prisma.promptProfile.upsert({
+                where: { id: p.id },
+                update: {
+                    name: p.name,
+                    correctionPrompt: p.correctionPrompt,
+                    isSystem: true
+                },
+                create: {
+                    id: p.id,
+                    name: p.name,
+                    isSystem: true,
+                    correctionPrompt: p.correctionPrompt,
+                    userId: null
+                }
+            }));
         }
         return results;
     },
@@ -74,7 +84,7 @@ export const PromptProfileService = {
      * Upserts a personal or system profile.
      * Enforces permission rules: only admins can edit system profiles.
      */
-    async upsertProfile(userId: string, data: { name: string, correctionPrompt: string }, userRole: string = 'USER') {
+    async upsertProfile(userId: string, data: { id?: string, name: string, correctionPrompt: string }, userRole: string = 'USER') {
         // Enforce system-profile protection
         const existingSystem = await prisma.promptProfile.findFirst({
             where: { name: data.name, isSystem: true }
@@ -82,6 +92,23 @@ export const PromptProfileService = {
 
         if (existingSystem && userRole !== 'ADMIN') {
             throw new Error('System-Profile können nicht direkt geändert werden.');
+        }
+
+        // 🏮 Siehe SkillProfileService: Mit Kennung ist der Datensatz eindeutig,
+        // ohne ist es ein Neuanlegen — nur dann entscheidet der Name.
+        if (data.id) {
+            const bestehend = await prisma.promptProfile.findUnique({ where: { id: data.id } });
+            if (!bestehend || (bestehend.userId !== userId && !bestehend.isSystem)) {
+                throw new Error('Profil nicht gefunden oder kein Zugriff');
+            }
+            if (bestehend.isSystem && userRole !== 'ADMIN') {
+                throw new Error('System-Profile können nicht direkt geändert werden.');
+            }
+
+            return prisma.promptProfile.update({
+                where: { id: data.id },
+                data: { correctionPrompt: data.correctionPrompt }
+            });
         }
 
         // 🏮 Siehe SkillProfileService.upsertProfile: Die Sperre der Datenbank

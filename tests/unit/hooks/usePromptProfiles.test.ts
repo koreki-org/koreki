@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePromptProfiles } from '../../../src/hooks/usePromptProfiles';
 import { AppSettings } from '../../../src/types';
 
@@ -36,14 +36,22 @@ describe('usePromptProfiles - Industrial Hook Verification', () => {
         localStorage.clear();
     });
 
-    it('should initialize with correct default state and settings prompt', () => {
+    it('should initialize with correct default state and settings prompt', async () => {
+        mockApiClientGet.mockResolvedValue({
+            ok: true,
+            json: async () => [
+                { id: 'id-standard', name: 'Allgemeine Korrektur', correctionPrompt: 'Vorlage', isSystem: true }
+            ]
+        });
+
         const { result } = renderHook(() =>
-            usePromptProfiles(defaultSettings, mockOnSave, mockOnClose, 'Standard')
+            usePromptProfiles(defaultSettings, mockOnSave, mockOnClose, 'id-standard')
         );
 
-        expect(result.current.selectedProfile).toBe('Standard');
+        // Die Auswahl wird aus dem Verweis aufgeloest, nicht als Name vorbelegt.
+        await waitFor(() => expect(result.current.selectedProfileId).toBe('id-standard'));
+        expect(result.current.selectedProfile).toBe('Allgemeine Korrektur');
         expect(result.current.correctionPrompt).toBe('Standard System Prompt');
-        expect(result.current.isDirty).toBe(false);
         expect(result.current.isCreatingNew).toBe(false);
     });
 
@@ -65,11 +73,17 @@ describe('usePromptProfiles - Industrial Hook Verification', () => {
             usePromptProfiles(defaultSettings, mockOnSave, mockOnClose)
         );
 
+        // Die Auswahl laeuft ueber die Kennung — zwei gleichnamige Profile sind
+        // damit unterscheidbar, und ein Umbenennen bricht sie nicht.
         act(() => {
-            result.current.setSelectedProfile('Mathematik Spezial');
+            result.current.handleSelectProfile({
+                id: 'local-42',
+                name: 'Mathematik Spezial',
+                correctionPrompt: 'Achte auf Rechenwege.'
+            });
         });
 
-        expect(result.current.selectedProfile).toBe('Mathematik Spezial');
+        expect(result.current.selectedProfileId).toBe('local-42');
 
         act(() => {
             result.current.setIsCreatingNew(true);

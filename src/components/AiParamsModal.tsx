@@ -32,6 +32,7 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
     // --- STATE & CRUD VIA OUR RE-ENGINEERED HOOK ---
     const {
         profiles,
+        selectedProfileId,
         selectedProfile,
         isCreatingNew,
         setIsCreatingNew,
@@ -134,9 +135,9 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                 {/* Main Content: Two Columns */}
                 <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                     <div className={`${showEditorMobile ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-b md:border-b-0 md:border-r border-border bg-muted/50 flex-col overflow-hidden`}>
-                        <AiProfileSidebar 
+                        <AiProfileSidebar
                             profiles={profiles}
-                            selectedProfile={selectedProfile}
+                            selectedProfileId={selectedProfileId}
                             isCreatingNew={isCreatingNew}
                             editingProfileId={editingProfileId}
                             editingName={editingName}

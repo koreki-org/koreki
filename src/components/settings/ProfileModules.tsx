@@ -12,7 +12,8 @@ import { downloadFile } from '@/lib/file-utils';
 
 interface SidebarProps {
     profiles: any[];
-    selectedProfile: string;
+    /** Kennung des gewaehlten Profils — die Markierung haengt daran, nicht am Namen. */
+    selectedProfileId: string;
     isCreatingNew: boolean;
     editingProfileId: string | null;
     editingName: string;
@@ -28,8 +29,8 @@ interface SidebarProps {
 
 export const ProfileSidebar: React.FC<SidebarProps> = ({
     profiles, 
-    selectedProfile, 
-    isCreatingNew, 
+    selectedProfileId,
+    isCreatingNew,
     editingProfileId, 
     editingName,
     onStartNew, 
@@ -120,10 +121,10 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
                         <div
                             key={p.id}
                             onClick={() => onSelectProfile(p)}
-                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
+                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfileId === p.id ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
                         >
                             <div className="flex items-center gap-3 flex-1 min-w-0 relative pr-2">
-                                <FileText size={18} className={selectedProfile === p.name ? 'text-primary' : 'text-muted-foreground'} />
+                                <FileText size={18} className={selectedProfileId === p.id ? 'text-primary' : 'text-muted-foreground'} />
                                 {editingProfileId === p.id ? (
                                     <Input 
                                         autoFocus value={editingName} onChange={(e) => setEditingName(e.target.value)}
@@ -132,7 +133,7 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
                                     />
                                 ) : (
                                     <span 
-                                        className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-primary' : 'text-foreground'} group-hover:pr-[110px]`}
+                                        className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfileId === p.id ? 'text-primary' : 'text-foreground'} group-hover:pr-[110px]`}
                                         title={p.name}
                                     >
                                         {p.name}
@@ -184,12 +185,12 @@ ${p.correctionPrompt || p.prompt}`;
                     <div
                         key={p.name}
                         onClick={() => onSelectProfile(p)}
-                        className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfile === p.name ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
+                        className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfileId === p.id ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
                     >
                         <div className="flex items-center gap-3 flex-1 min-w-0 relative pr-2">
-                            <FileText size={18} className={selectedProfile === p.name ? 'text-primary' : 'text-muted-foreground'} />
+                            <FileText size={18} className={selectedProfileId === p.id ? 'text-primary' : 'text-muted-foreground'} />
                             <span 
-                                className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-primary' : 'text-foreground'} group-hover:pr-[60px]`}
+                                className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfileId === p.id ? 'text-primary' : 'text-foreground'} group-hover:pr-[60px]`}
                                 title={p.name}
                             >
                                 {p.name}

@@ -4,7 +4,10 @@ import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
 import { findNameCollision, readLocalArray, readLocalArrayForUpdate, writeLocalArray } from '@/lib/local-vault';
-import { isSameName, nameTakenMessage, overwriteQuestion } from '@/lib/services/profile-naming';
+import { isSameName, nameTakenMessage, overwriteQuestion, resolveProfileRef } from '@/lib/services/profile-naming';
+
+/** Kennung der Standard-Vorlage aus der Experten-Registry. */
+const DEFAULT_EXPERT_PROFILE_ID = 'id-standard';
 
 const PROFILE_KEY = 'koreki_local_profiles';
 const AI_PROFILE_KEY = 'koreki_local_ai_profiles';
@@ -26,10 +29,12 @@ export const usePromptProfiles = (
     settings: AppSettings, 
     onSave: (newSettings: AppSettings, profileName?: string, profileId?: string) => void,
     onClose: () => void,
-    currentProfileName: string = 'Standard'
+    /** Verweis auf das aktive Profil — Kennung ODER Name (Altbestand). */
+    currentProfileRef: string = DEFAULT_EXPERT_PROFILE_ID
 ) => {
     const [profiles, setProfiles] = useState<any[]>([]);
-    const [selectedProfile, setSelectedProfile] = useState<string>(currentProfileName);
+    /** 🏮 Identitaet ueber die Kennung — Begruendung siehe useSkillProfiles. */
+    const [selectedProfileId, setSelectedProfileId] = useState<string>('');
     const [isCreatingNew, setIsCreatingNew] = useState(false);
     const [newProfileName, setNewProfileName] = useState('');
     const [correctionPrompt, setCorrectionPrompt] = useState<string>(
@@ -48,8 +53,20 @@ export const usePromptProfiles = (
     const [createAiProfile, setCreateAiProfile] = useState(true);
 
     const isDirty = correctionPrompt !== lastSavedPrompt;
-    const selectedProfileData = profiles.find(p => p.name === selectedProfile);
-    const isSystemSelected = selectedProfileData?.isSystem || selectedProfile === 'Standard';
+    const selectedProfileData = profiles.find(p => p.id === selectedProfileId);
+    /** Reine Anzeige. */
+    const selectedProfile = selectedProfileData?.name || '';
+    const isSystemSelected = !!selectedProfileData?.isSystem;
+
+    /** Setzt die Liste und richtet die Auswahl auf den Verweis des Aufrufers aus. */
+    const uebernehmeProfile = useCallback((alle: any[]) => {
+        setProfiles(alle);
+        const current = resolveProfileRef<any>(alle, selectedProfileId || currentProfileRef);
+        if (current) {
+            setSelectedProfileId(current.id);
+            setLastSavedPrompt(current.correctionPrompt);
+        }
+    }, [selectedProfileId, currentProfileRef]);
 
     const fetchProfiles = useCallback(async () => {
         // Desktop App (Tauri) uses pure localStorage
@@ -61,10 +78,7 @@ export const usePromptProfiles = (
                 isSystem: true,
                 correctionPrompt: entry.promptSnippet
             }));
-            const allProfiles = [...systemExperts, ...customProfiles];
-            setProfiles(allProfiles);
-            const current = allProfiles.find((p: any) => p.name === selectedProfile);
-            if (current) setLastSavedPrompt(current.correctionPrompt);
+            uebernehmeProfile([...systemExperts, ...customProfiles]);
             return;
         }
 
@@ -72,32 +86,29 @@ export const usePromptProfiles = (
         try {
             const res = await apiClient.get('/api/user/prompt-profiles');
             if (res.ok) {
-                const data = await res.json();
-                setProfiles(data);
-                const current = data.find((p: any) => p.name === selectedProfile);
-                if (current) setLastSavedPrompt(current.correctionPrompt);
+                uebernehmeProfile(await res.json());
             }
         } catch (err) {
             console.error("Fehler beim Laden der Profile", err);
         }
-    }, [selectedProfile]);
+    }, [uebernehmeProfile]);
 
     useEffect(() => {
         fetchProfiles();
     }, [fetchProfiles]);
 
     useEffect(() => {
-        if (selectedProfile === 'Standard' && !correctionPrompt) {
-            const standardInDB = profiles.find(p => p.name === 'Standard');
-            if (standardInDB) {
-                setCorrectionPrompt(standardInDB.correctionPrompt);
-            }
+        // Der Vergleich lief zuvor gegen den Namen 'Standard' — den es gar nicht
+        // gibt (die Vorlage heisst "Allgemeine Korrektur"). Ueber die Kennung
+        // greift der Rueckfall jetzt tatsaechlich.
+        if (selectedProfileId === DEFAULT_EXPERT_PROFILE_ID && !correctionPrompt && selectedProfileData) {
+            setCorrectionPrompt(selectedProfileData.correctionPrompt);
         }
-    }, [profiles, selectedProfile, correctionPrompt]);
+    }, [selectedProfileId, selectedProfileData, correctionPrompt]);
 
     const handleSelectProfile = (profile: any) => {
         setIsCreatingNew(false);
-        setSelectedProfile(profile.name);
+        setSelectedProfileId(profile.id);
         setCorrectionPrompt(profile.correctionPrompt);
         setLastSavedPrompt(profile.correctionPrompt);
         setShowEditorMobile(true);
@@ -105,7 +116,7 @@ export const usePromptProfiles = (
 
     const handleStartNew = (initialPrompt?: string | any, initialName?: string) => {
         setIsCreatingNew(true);
-        setSelectedProfile('');
+        setSelectedProfileId('');
         const promptString = typeof initialPrompt === 'string' ? initialPrompt : "Achte bei der Korrektur besonders auf...";
         setCorrectionPrompt(promptString);
         setLastSavedPrompt("");
@@ -115,7 +126,7 @@ export const usePromptProfiles = (
 
     const handleImportParsedProfile = (parsed: { metadata: any, correctionPrompt: string }) => {
         setIsCreatingNew(true);
-        setSelectedProfile('');
+        setSelectedProfileId('');
         setCorrectionPrompt(parsed.correctionPrompt);
         setLastSavedPrompt("");
         setNewProfileName(parsed.metadata.name || "Importierter Prompt");
@@ -142,7 +153,9 @@ export const usePromptProfiles = (
     };
 
     const handleSaveToDB = async () => {
-        const nameToSave = isCreatingNew ? newProfileName.trim() : selectedProfile;
+        // Beim Bearbeiten entscheidet die Kennung, nicht der Name.
+        const zielId = isCreatingNew ? '' : selectedProfileId;
+        const nameToSave = isCreatingNew ? newProfileName.trim() : (selectedProfileData?.name || '');
         if (!nameToSave) {
             alert("Bitte gib einen Namen für das Profil ein.");
             return;
@@ -173,13 +186,20 @@ export const usePromptProfiles = (
 
         if (isDesktopTarget()) {
             const customProfiles = readLocalArrayForUpdate<LocalPromptProfile>(PROFILE_KEY);
-            // Dieselbe Namensgleichheit wie in der Rückfrage oben.
-            const existingIdx = customProfiles.findIndex(p => isSameName(p.name, nameToSave));
+            // Bearbeiten trifft die Kennung; nur beim Neuanlegen entscheidet der
+            // Name, ob ueberschrieben wird — dem hat der Nutzer oben zugestimmt.
+            const existingIdx = zielId
+                ? customProfiles.findIndex(p => p.id === zielId)
+                : customProfiles.findIndex(p => isSameName(p.name, nameToSave));
+
+            let gespeicherteId = zielId;
             if (existingIdx >= 0) {
                 customProfiles[existingIdx].correctionPrompt = correctionPrompt;
+                gespeicherteId = customProfiles[existingIdx].id;
             } else {
+                gespeicherteId = `local-${Date.now()}`;
                 customProfiles.push({
-                    id: `local-${Date.now()}`,
+                    id: gespeicherteId,
                     name: nameToSave,
                     correctionPrompt,
                     isSystem: false
@@ -203,8 +223,8 @@ export const usePromptProfiles = (
                 writeLocalArray(AI_PROFILE_KEY, customAiProfiles);
             }
             
+            setSelectedProfileId(gespeicherteId);
             await fetchProfiles();
-            setSelectedProfile(nameToSave);
             setLastSavedPrompt(correctionPrompt);
             setIsCreatingNew(false);
             setNewProfileName('');
@@ -216,6 +236,7 @@ export const usePromptProfiles = (
 
         try {
             const res = await apiClient.post('/api/user/prompt-profiles', {
+                id: zielId || undefined,
                 name: nameToSave,
                 correctionPrompt
             });
@@ -235,8 +256,8 @@ export const usePromptProfiles = (
                     }
                 }
 
+                setSelectedProfileId(data.id);
                 await fetchProfiles();
-                setSelectedProfile(data.name);
                 setLastSavedPrompt(data.correctionPrompt);
                 setIsCreatingNew(false);
                 setNewProfileName('');
@@ -254,8 +275,7 @@ export const usePromptProfiles = (
     };
 
     const handleApplyToSession = () => {
-        const profile = profiles.find(p => p.name === selectedProfile);
-        const profileId = profile?.id || profile?.name;
+        const profileId = selectedProfileId;
         onSave({
             ...settings,
             correctionPrompt,
@@ -268,21 +288,28 @@ export const usePromptProfiles = (
         onClose();
     };
 
+    /**
+     * Nach dem Loeschen des gewaehlten Profils auf die Standard-Vorlage
+     * zurueckfallen. Zuvor stand hier zweimal ein Vergleich gegen den Namen
+     * 'Standard' — den kein Profil traegt (die Vorlage heisst „Allgemeine
+     * Korrektur"), der Rueckfall lief also ins Leere.
+     */
+    const faellZurueckAufStandard = () => {
+        const standard = profiles.find(p => p.id === DEFAULT_EXPERT_PROFILE_ID);
+        if (!standard) return;
+        setSelectedProfileId(standard.id);
+        setCorrectionPrompt(standard.correctionPrompt);
+        setLastSavedPrompt(standard.correctionPrompt);
+    };
+
     const handleDeleteProfile = async (id: string) => {
         if (!window.confirm("Dieses Profil wirklich dauerhaft löschen?")) return;
-        
+
         if (isDesktopTarget()) {
             const remaining = readLocalArrayForUpdate<LocalPromptProfile>(PROFILE_KEY).filter(p => p.id !== id);
             writeLocalArray(PROFILE_KEY, remaining);
             await fetchProfiles();
-            if (selectedProfileData?.id === id) {
-                setSelectedProfile('Standard');
-                const standard = profiles.find(p => p.name === 'Standard') || Object.values(EXPERT_REGISTRY)[0].promptSnippet;
-                if (standard) {
-                    setCorrectionPrompt(standard.correctionPrompt);
-                    setLastSavedPrompt(standard.correctionPrompt);
-                }
-            }
+            if (selectedProfileId === id) faellZurueckAufStandard();
             return;
         }
 
@@ -290,14 +317,7 @@ export const usePromptProfiles = (
             const res = await apiClient.fetch(`/api/user/prompt-profiles?id=${id}`, { method: 'DELETE' });
             if (res.ok) {
                 await fetchProfiles();
-                if (selectedProfileData?.id === id) {
-                    setSelectedProfile('Standard');
-                    const standard = profiles.find(p => p.name === 'Standard');
-                    if (standard) {
-                        setCorrectionPrompt(standard.correctionPrompt);
-                        setLastSavedPrompt(standard.correctionPrompt);
-                    }
-                }
+                if (selectedProfileId === id) faellZurueckAufStandard();
             }
         } catch (err) {
             alert("Löschen fehlgeschlagen.");
@@ -320,11 +340,8 @@ export const usePromptProfiles = (
                 p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
             );
             writeLocalArray(PROFILE_KEY, renamed);
-            const oldName = profiles.find(p => p.id === editingProfileId)?.name;
+            // Die Auswahl haengt an der Kennung — kein Nachziehen noetig.
             await fetchProfiles();
-            if (selectedProfile === oldName) {
-                setSelectedProfile(editingName.trim());
-            }
             setEditingProfileId(null);
             return;
         }
@@ -337,11 +354,7 @@ export const usePromptProfiles = (
             });
 
             if (res.ok) {
-                const oldName = profiles.find(p => p.id === editingProfileId)?.name;
                 await fetchProfiles();
-                if (selectedProfile === oldName) {
-                    setSelectedProfile(editingName.trim());
-                }
                 setEditingProfileId(null);
             } else {
                 const data = await res.json();
@@ -354,8 +367,10 @@ export const usePromptProfiles = (
 
     return {
         profiles,
+        /** Kennung des gewaehlten Profils — die Identitaet. */
+        selectedProfileId,
+        /** Name des gewaehlten Profils — reine Anzeige. */
         selectedProfile,
-        setSelectedProfile,
         isCreatingNew,
         setIsCreatingNew,
         newProfileName,

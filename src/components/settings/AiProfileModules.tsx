@@ -9,7 +9,8 @@ import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
 
 interface SidebarProps {
     profiles: any[];
-    selectedProfile: string;
+    /** Kennung des gewaehlten KI-Profils — die Markierung haengt daran, nicht am Namen. */
+    selectedProfileId: string;
     isCreatingNew: boolean;
     editingProfileId: string | null;
     editingName: string;
@@ -26,8 +27,8 @@ interface SidebarProps {
 
 export const AiProfileSidebar: React.FC<SidebarProps> = ({
     profiles, 
-    selectedProfile, 
-    isCreatingNew, 
+    selectedProfileId,
+    isCreatingNew,
     editingProfileId, 
     editingName,
     onStartNew, 
@@ -127,10 +128,10 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                             <div
                                 key={p.id}
                                 onClick={() => onSelectProfile(p)}
-                                className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${selectedProfile === p.name ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
+                                className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${selectedProfileId === p.id ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
                             >
                                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <SlidersHorizontal size={18} className={selectedProfile === p.name ? 'text-primary' : 'text-muted-foreground'} />
+                                    <SlidersHorizontal size={18} className={selectedProfileId === p.id ? 'text-primary' : 'text-muted-foreground'} />
                                     {editingProfileId === p.id ? (
                                         <Input 
                                             autoFocus value={editingName} onChange={(e) => setEditingName(e.target.value)}
@@ -138,7 +139,7 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                                             onBlur={onConfirmRename} onKeyDown={(e) => e.key === 'Enter' && onConfirmRename()}
                                         />
                                     ) : (
-                                        <span className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-primary' : 'text-foreground'} group-hover:pr-[80px]`}>{p.name}</span>
+                                        <span className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfileId === p.id ? 'text-primary' : 'text-foreground'} group-hover:pr-[80px]`}>{p.name}</span>
                                     )}
                                 </div>
                                 
@@ -190,11 +191,11 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                         <div
                             key={p.name}
                             onClick={() => onSelectProfile(p)}
-                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${selectedProfile === p.name ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
+                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${selectedProfileId === p.id ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
                         >
                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                                <SlidersHorizontal size={18} className={selectedProfile === p.name ? 'text-primary' : 'text-muted-foreground'} />
-                                <span className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfile === p.name ? 'text-primary' : 'text-foreground'} group-hover:pr-[40px]`}>{p.name}</span>
+                                <SlidersHorizontal size={18} className={selectedProfileId === p.id ? 'text-primary' : 'text-muted-foreground'} />
+                                <span className={`text-xs md:text-sm font-bold truncate transition-all duration-300 ${selectedProfileId === p.id ? 'text-primary' : 'text-foreground'} group-hover:pr-[40px]`}>{p.name}</span>
                             </div>
                             <FloatingActions className="-top-2 -right-2">
                                 <Button 

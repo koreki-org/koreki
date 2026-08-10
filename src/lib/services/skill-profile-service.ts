@@ -84,13 +84,34 @@ export const SkillProfileService = {
      * Upserts a personal or system skill profile.
      * Enforces permissions: only admins can edit system presets.
      */
-    async upsertProfile(userId: string, data: { name: string, activeSkillIds: string[], customSkills?: any }, userRole: string = 'USER') {
+    async upsertProfile(userId: string, data: { id?: string, name: string, activeSkillIds: string[], customSkills?: any }, userRole: string = 'USER') {
         const existingSystem = await prisma.skillProfile.findFirst({
             where: { name: data.name, isSystem: true }
         });
 
         if (existingSystem && userRole !== 'ADMIN') {
             throw new Error('System-Skill-Profile können nicht direkt geändert werden.');
+        }
+
+        // 🏮 Mit Kennung ist eindeutig, welcher Datensatz gemeint ist — der Name
+        // bleibt unangetastet (Umbenennen laeuft ueber PATCH). Ohne Kennung ist
+        // es ein Neuanlegen, und nur dann entscheidet weiterhin der Name.
+        if (data.id) {
+            const bestehend = await prisma.skillProfile.findUnique({ where: { id: data.id } });
+            if (!bestehend || (bestehend.userId !== userId && !bestehend.isSystem)) {
+                throw new Error('Skill-Profil nicht gefunden oder kein Zugriff');
+            }
+            if (bestehend.isSystem && userRole !== 'ADMIN') {
+                throw new Error('System-Skill-Profile können nicht direkt geändert werden.');
+            }
+
+            return prisma.skillProfile.update({
+                where: { id: data.id },
+                data: {
+                    activeSkillIds: data.activeSkillIds,
+                    customSkills: data.customSkills || {}
+                }
+            });
         }
 
         const activeSkillIdsJson = data.activeSkillIds;

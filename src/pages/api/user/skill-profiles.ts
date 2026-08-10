@@ -16,6 +16,12 @@ import { isLocalInstance } from '../../../lib/env-context';
  */
 
 const skillProfileSchema = z.object({
+    /**
+     * Kennung des zu aktualisierenden Sets. Fehlt sie, ist ein Neuanlegen
+     * gemeint — dann entscheidet der Name, ob ein bestehendes Set ueberschrieben
+     * wird (der Client fragt vorher).
+     */
+    id: z.string().optional(),
     name: z.string().min(1, 'Name ist erforderlich'),
     activeSkillIds: z.array(z.string()).default([]),
     customSkills: z.record(z.string(), z.any()).optional(),

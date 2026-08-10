@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { AppSettings } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
-import { STANDARD_SKILL_PROFILES } from '@/lib/ai/standard-skills-profiles';
+import { STANDARD_SKILL_PROFILES, DEFAULT_SKILL_PROFILE_ID } from '@/lib/ai/standard-skills-profiles';
 import { findNameCollision } from '@/lib/local-vault';
-import { isSameName, nameTakenMessage, overwriteQuestion } from '@/lib/services/profile-naming';
+import { isSameName, nameTakenMessage, overwriteQuestion, resolveProfileRef } from '@/lib/services/profile-naming';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 
 /**
@@ -60,13 +60,26 @@ export const deduplicateCustomSkills = (
  * Symmetrical to usePromptProfiles.ts. Handles database, local storage, and custom skills management.
  */
 export const useSkillProfiles = (
-    settings: AppSettings, 
+    settings: AppSettings,
     onSave: (newSettings: AppSettings, profileName?: string, profileId?: string) => void,
     onClose: () => void,
-    currentProfileName: string = 'MINT Standard (Allgemein)'
+    /**
+     * Verweis auf das beim Oeffnen aktive Set — Kennung ODER Name. Der Aufrufer
+     * reicht durch, was er hat; `resolveProfileRef` loest beides auf, solange
+     * Altbestand existiert.
+     */
+    currentProfileRef: string = DEFAULT_SKILL_PROFILE_ID
 ) => {
     const [profiles, setProfiles] = useState<any[]>([]);
-    const [selectedProfile, setSelectedProfile] = useState<string>(currentProfileName);
+    /**
+     * 🏮 Die Auswahl haengt an der KENNUNG, nicht mehr am Namen.
+     *
+     * Zuvor war der Name der Schluessel: Zwei gleichnamige Sets waren damit
+     * ununterscheidbar, ein Umbenennen musste den Auswahl-Zustand nachziehen
+     * (und tat es nur, wenn der alte Name exakt passte), und ein Speichern traf
+     * den ersten Namenstreffer statt das bearbeitete Set. Leer = Neuanlage.
+     */
+    const [selectedProfileId, setSelectedProfileId] = useState<string>('');
     const [isCreatingNew, setIsCreatingNew] = useState(false);
     const [newProfileName, setNewProfileName] = useState('');
     
@@ -83,7 +96,9 @@ export const useSkillProfiles = (
     const [editingProfileId, setEditingProfileId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState('');
 
-    const selectedProfileData = profiles.find(p => p.name === selectedProfile);
+    const selectedProfileData = profiles.find(p => p.id === selectedProfileId);
+    /** Reine Anzeige — die Oberflaeche beschriftet damit Kopfzeile und Kopien. */
+    const selectedProfile = selectedProfileData?.name || '';
 
     // Precise Custom Skills dirty checking (Stage 10 Parity with sorting protection)
     const currentProfileCustomSkills = Object.keys(customSkills)
@@ -99,7 +114,7 @@ export const useSkillProfiles = (
 
     const isCustomSkillsDirty = JSON.stringify(sortObjectKeys(currentProfileCustomSkills)) !== JSON.stringify(sortObjectKeys(savedProfileCustomSkills));
     const isDirty = JSON.stringify([...activeSkillIds].sort()) !== JSON.stringify([...lastSavedSkillIds].sort()) || isCustomSkillsDirty;
-    const isSystemSelected = selectedProfileData?.isSystem || !!profiles.find(p => p.name === selectedProfile && p.isSystem);
+    const isSystemSelected = !!selectedProfileData?.isSystem;
 
     // Load custom skills on mount with self-healing deduplication
     useEffect(() => {
@@ -125,7 +140,7 @@ export const useSkillProfiles = (
         });
 
         // 2. Direct Sync and Persistence: Auto-save immediately to active profile
-        const profile = profiles.find(p => p.name === selectedProfile);
+        const profile = selectedProfileData;
         if (profile && !profile.isSystem) {
             const updatedProfileCustomSkills = {
                 ...(profile.customSkills || {}),
@@ -146,6 +161,7 @@ export const useSkillProfiles = (
             } else {
                 try {
                     await apiClient.post('/api/user/skill-profiles', {
+                        id: profile.id,
                         name: profile.name,
                         activeSkillIds: profile.activeSkillIds,
                         customSkills: updatedProfileCustomSkills
@@ -277,106 +293,14 @@ export const useSkillProfiles = (
         setProfiles(updatedProfiles);
     };
 
-    const fetchProfiles = useCallback(async () => {
-        // Desktop App (Tauri) uses pure localStorage
-        if (isDesktopTarget()) {
-            const stored = localStorage.getItem('koreki_local_skill_profiles');
-            let customProfiles = [];
-            if (stored) {
-                try { customProfiles = JSON.parse(stored); } catch(e) {}
-            }
-            const allProfiles = [...STANDARD_SKILL_PROFILES, ...customProfiles];
-            setProfiles(allProfiles);
-            const current = allProfiles.find((p: any) => p.name === selectedProfile);
-            if (current) {
-                const skills = Array.isArray(current.activeSkillIds) ? current.activeSkillIds : [];
-                
-                // Hydrate custom skills from the loaded profile with self-healing deduplication
-                if (current.customSkills && typeof current.customSkills === 'object') {
-                    setCustomSkills(prev => {
-                        const merged = { ...prev, ...current.customSkills };
-                        const { cleaned, updatedActiveIds } = deduplicateCustomSkills(merged, skills);
-                        localStorage.setItem('koreki_custom_skills', JSON.stringify(cleaned));
-                        setActiveSkillIds(updatedActiveIds);
-                        setLastSavedSkillIds(updatedActiveIds);
-                        return cleaned;
-                    });
-                } else {
-                    setActiveSkillIds(skills);
-                    setLastSavedSkillIds(skills);
-                }
-            }
-            return;
-        }
+    /**
+     * Uebernimmt Skills und eigene Skills eines Profils in den Bearbeitungs-
+     * zustand. Stand zuvor dreimal wortgleich im Hook.
+     */
+    const hydrateFromProfile = useCallback((profile: any) => {
+        const skills = Array.isArray(profile?.activeSkillIds) ? profile.activeSkillIds : [];
 
-        // Community Server & SaaS use the API
-        try {
-            const res = await apiClient.get('/api/user/skill-profiles');
-            if (res.ok) {
-                const data = await res.json();
-                setProfiles(data);
-                const current = data.find((p: any) => p.name === selectedProfile);
-                if (current) {
-                    const skills = Array.isArray(current.activeSkillIds) ? current.activeSkillIds : [];
-                    
-                    // Hydrate custom skills from the loaded profile with self-healing deduplication
-                    if (current.customSkills && typeof current.customSkills === 'object') {
-                        setCustomSkills(prev => {
-                            const merged = { ...prev, ...current.customSkills };
-                            const { cleaned, updatedActiveIds } = deduplicateCustomSkills(merged, skills);
-                            localStorage.setItem('koreki_custom_skills', JSON.stringify(cleaned));
-                            setActiveSkillIds(updatedActiveIds);
-                            setLastSavedSkillIds(updatedActiveIds);
-                            return cleaned;
-                        });
-                    } else {
-                        setActiveSkillIds(skills);
-                        setLastSavedSkillIds(skills);
-                    }
-                }
-            }
-        } catch (err) {
-            console.error("Fehler beim Laden der Skill-Profile", err);
-        }
-    }, [selectedProfile]);
-
-    useEffect(() => {
-        fetchProfiles();
-    }, [fetchProfiles]);
-
-    useEffect(() => {
-        // If Standard is selected and we don't have active skills loaded yet, load them from presets
-        if (selectedProfile && activeSkillIds.length === 0) {
-            const current = profiles.find(p => p.name === selectedProfile);
-            if (current) {
-                const skills = Array.isArray(current.activeSkillIds) ? current.activeSkillIds : [];
-                
-                // Hydrate custom skills from the loaded profile with self-healing deduplication
-                if (current.customSkills && typeof current.customSkills === 'object') {
-                    setCustomSkills(prev => {
-                        const merged = { ...prev, ...current.customSkills };
-                        const { cleaned, updatedActiveIds } = deduplicateCustomSkills(merged, skills);
-                        localStorage.setItem('koreki_custom_skills', JSON.stringify(cleaned));
-                        setActiveSkillIds(updatedActiveIds);
-                        setLastSavedSkillIds(updatedActiveIds);
-                        return cleaned;
-                    });
-                } else {
-                    setActiveSkillIds(skills);
-                    setLastSavedSkillIds(skills);
-                }
-            }
-        }
-    }, [profiles, selectedProfile]);
-
-    const handleSelectProfile = (profile: any) => {
-        setIsCreatingNew(false);
-        setSelectedProfile(profile.name);
-        const skills = Array.isArray(profile.activeSkillIds) ? profile.activeSkillIds : [];
-        setShowEditorMobile(true);
-        
-        // Hydrate custom skills immediately on manual select with self-healing deduplication
-        if (profile.customSkills && typeof profile.customSkills === 'object') {
+        if (profile?.customSkills && typeof profile.customSkills === 'object') {
             setCustomSkills(prev => {
                 const merged = { ...prev, ...profile.customSkills };
                 const { cleaned, updatedActiveIds } = deduplicateCustomSkills(merged, skills);
@@ -389,11 +313,69 @@ export const useSkillProfiles = (
             setActiveSkillIds(skills);
             setLastSavedSkillIds(skills);
         }
+    }, []);
+
+    /**
+     * Setzt die geladene Liste und richtet die Auswahl darauf aus.
+     *
+     * Solange noch nichts gewaehlt ist, entscheidet der Verweis des Aufrufers —
+     * `resolveProfileRef` nimmt dafuer Kennung wie Name entgegen. Danach steht
+     * die Kennung fest und ueberlebt jedes Umbenennen.
+     */
+    const uebernehmeProfile = useCallback((alle: any[]) => {
+        setProfiles(alle);
+        const current = resolveProfileRef<any>(alle, selectedProfileId || currentProfileRef);
+        if (current) {
+            setSelectedProfileId(current.id);
+            hydrateFromProfile(current);
+        }
+    }, [selectedProfileId, currentProfileRef, hydrateFromProfile]);
+
+    const fetchProfiles = useCallback(async () => {
+        // Desktop App (Tauri) uses pure localStorage
+        if (isDesktopTarget()) {
+            const stored = localStorage.getItem('koreki_local_skill_profiles');
+            let customProfiles = [];
+            if (stored) {
+                try { customProfiles = JSON.parse(stored); } catch(e) {}
+            }
+            uebernehmeProfile([...STANDARD_SKILL_PROFILES, ...customProfiles]);
+            return;
+        }
+
+        // Community Server & SaaS use the API
+        try {
+            const res = await apiClient.get('/api/user/skill-profiles');
+            if (res.ok) {
+                uebernehmeProfile(await res.json());
+            }
+        } catch (err) {
+            console.error("Fehler beim Laden der Skill-Profile", err);
+        }
+    }, [uebernehmeProfile]);
+
+    useEffect(() => {
+        fetchProfiles();
+    }, [fetchProfiles]);
+
+    useEffect(() => {
+        // If a profile is selected and we don't have active skills loaded yet, load them from presets
+        if (selectedProfileId && activeSkillIds.length === 0) {
+            const current = profiles.find(p => p.id === selectedProfileId);
+            if (current) hydrateFromProfile(current);
+        }
+    }, [profiles, selectedProfileId, activeSkillIds.length, hydrateFromProfile]);
+
+    const handleSelectProfile = (profile: any) => {
+        setIsCreatingNew(false);
+        setSelectedProfileId(profile.id);
+        setShowEditorMobile(true);
+        hydrateFromProfile(profile);
     };
 
     const handleStartNew = (initialSkills?: string[], initialName?: string) => {
         setIsCreatingNew(true);
-        setSelectedProfile('');
+        setSelectedProfileId('');
         setActiveSkillIds(Array.isArray(initialSkills) ? initialSkills : []);
         setLastSavedSkillIds([]);
         setNewProfileName(initialName || "");
@@ -424,8 +406,8 @@ export const useSkillProfiles = (
 
         if (parsed.metadata?.skills) {
             setIsCreatingNew(true);
-            setSelectedProfile('');
-            
+            setSelectedProfileId('');
+
             const importedSkills = Array.isArray(parsed.metadata.skills) ? parsed.metadata.skills : [];
             setActiveSkillIds(importedSkills);
             setLastSavedSkillIds([]);
@@ -438,7 +420,11 @@ export const useSkillProfiles = (
     };
 
     const handleSaveToDB = async () => {
-        const nameToSave = isCreatingNew ? newProfileName.trim() : selectedProfile;
+        // 🏮 Beim Bearbeiten entscheidet die KENNUNG, welcher Datensatz getroffen
+        // wird — nicht der Name. Zuvor lief auch das Aktualisieren ueber einen
+        // Namensvergleich und landete beim ersten Treffer.
+        const zielId = isCreatingNew ? '' : selectedProfileId;
+        const nameToSave = isCreatingNew ? newProfileName.trim() : (selectedProfileData?.name || '');
         if (!nameToSave) {
             alert("Bitte gib einen Namen für das Skill-Profil ein.");
             return;
@@ -493,15 +479,21 @@ export const useSkillProfiles = (
             if (stored) {
                 try { customProfiles = JSON.parse(stored); } catch(e) {}
             }
-            // Dieselbe Namensgleichheit wie in der Rückfrage oben — sonst legte
-            // ein „Überschreiben" bei abweichender Schreibweise eine Dublette an.
-            const existingIdx = customProfiles.findIndex(p => isSameName(p.name, nameToSave));
+            // Bearbeiten trifft die Kennung; nur beim Neuanlegen entscheidet der
+            // Name, ob ueberschrieben wird — dem hat der Nutzer oben zugestimmt.
+            const existingIdx = zielId
+                ? customProfiles.findIndex(p => p.id === zielId)
+                : customProfiles.findIndex(p => isSameName(p.name, nameToSave));
+
+            let gespeicherteId = zielId;
             if (existingIdx >= 0) {
                 customProfiles[existingIdx].activeSkillIds = activeSkillIds;
                 customProfiles[existingIdx].customSkills = activeCustomSkills;
+                gespeicherteId = customProfiles[existingIdx].id;
             } else {
+                gespeicherteId = `local-skill-${Date.now()}`;
                 customProfiles.push({
-                    id: `local-skill-${Date.now()}`,
+                    id: gespeicherteId,
                     name: nameToSave,
                     activeSkillIds,
                     customSkills: activeCustomSkills,
@@ -509,9 +501,9 @@ export const useSkillProfiles = (
                 });
             }
             localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(customProfiles));
-            
+
+            setSelectedProfileId(gespeicherteId);
             await fetchProfiles();
-            setSelectedProfile(nameToSave);
             setLastSavedSkillIds(activeSkillIds);
             setIsCreatingNew(false);
             setNewProfileName('');
@@ -522,6 +514,7 @@ export const useSkillProfiles = (
 
         try {
             const res = await apiClient.post('/api/user/skill-profiles', {
+                id: zielId || undefined,
                 name: nameToSave,
                 activeSkillIds,
                 customSkills: activeCustomSkills
@@ -530,8 +523,8 @@ export const useSkillProfiles = (
             const data = await res.json();
 
             if (res.ok) {
+                setSelectedProfileId(data.id);
                 await fetchProfiles();
-                setSelectedProfile(data.name);
                 setLastSavedSkillIds(Array.isArray(data.activeSkillIds) ? data.activeSkillIds : []);
                 setIsCreatingNew(false);
                 setNewProfileName('');
@@ -548,11 +541,10 @@ export const useSkillProfiles = (
     };
 
     const handleApplyToSession = () => {
-        const profile = profiles.find(p => p.name === selectedProfile);
-        // Seit die System-Vorlagen Slugs tragen, liefert `id` in allen drei Modi
-        // eine stabile Kennung. Der Name bleibt nur als letzter Rueckfall stehen
-        // — er bricht, sobald jemand das Profil umbenennt.
-        const profileId = profile?.id || profile?.name;
+        // Seit die System-Vorlagen Slugs tragen, ist die Kennung in allen drei
+        // Modi vorhanden und stabil — der Name wird nur noch mitgegeben, damit
+        // die Kopfzeile ihn anzeigen kann.
+        const profileId = selectedProfileId;
 
         onSave({
             ...settings,
@@ -578,9 +570,9 @@ export const useSkillProfiles = (
                 customProfiles = customProfiles.filter((p: any) => p.id !== id);
                 localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(customProfiles));
                 await fetchProfiles();
-                if (selectedProfileData?.id === id) {
-                    setSelectedProfile(STANDARD_SKILL_PROFILES[0].name);
+                if (selectedProfileId === id) {
                     const standard = STANDARD_SKILL_PROFILES[0];
+                    setSelectedProfileId(standard.id);
                     setActiveSkillIds(standard.activeSkillIds);
                     setLastSavedSkillIds(standard.activeSkillIds);
                 }
@@ -592,9 +584,9 @@ export const useSkillProfiles = (
             const res = await apiClient.fetch(`/api/user/skill-profiles?id=${id}`, { method: 'DELETE' });
             if (res.ok) {
                 await fetchProfiles();
-                if (selectedProfileData?.id === id) {
-                    setSelectedProfile(STANDARD_SKILL_PROFILES[0].name);
+                if (selectedProfileId === id) {
                     const standard = STANDARD_SKILL_PROFILES[0];
+                    setSelectedProfileId(standard.id);
                     setActiveSkillIds(standard.activeSkillIds);
                     setLastSavedSkillIds(standard.activeSkillIds);
                 }
@@ -622,11 +614,10 @@ export const useSkillProfiles = (
                     p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
                 );
                 localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(customProfiles));
-                const oldName = profiles.find(p => p.id === editingProfileId)?.name;
+                // Die Auswahl haengt an der Kennung und bleibt unberuehrt — das
+                // Nachziehen des Namens (und sein Scheitern bei jeder
+                // Abweichung) entfaellt ersatzlos.
                 await fetchProfiles();
-                if (selectedProfile === oldName) {
-                    setSelectedProfile(editingName.trim());
-                }
                 setEditingProfileId(null);
             }
             return;
@@ -640,11 +631,7 @@ export const useSkillProfiles = (
             });
 
             if (res.ok) {
-                const oldName = profiles.find(p => p.id === editingProfileId)?.name;
                 await fetchProfiles();
-                if (selectedProfile === oldName) {
-                    setSelectedProfile(editingName.trim());
-                }
                 setEditingProfileId(null);
             } else {
                 const data = await res.json();
@@ -657,8 +644,10 @@ export const useSkillProfiles = (
 
     return {
         profiles,
+        /** Kennung des gewaehlten Sets — die Identitaet. */
+        selectedProfileId,
+        /** Name des gewaehlten Sets — reine Anzeige. */
         selectedProfile,
-        setSelectedProfile,
         isCreatingNew,
         setIsCreatingNew,
         newProfileName,

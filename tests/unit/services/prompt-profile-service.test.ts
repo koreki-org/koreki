@@ -13,6 +13,7 @@ jest.mock('../../../src/lib/prisma', () => ({
             update: jest.fn(),
             upsert: jest.fn(),
             delete: jest.fn(),
+            deleteMany: jest.fn(),
         }
     }
 }));
@@ -33,22 +34,40 @@ describe('PromptProfileService 🧪🏮🛡️', () => {
     });
 
     describe('syncSystemProfiles', () => {
-        it('should update existing system profiles', async () => {
-            (prisma.promptProfile.findFirst as jest.Mock).mockResolvedValue({ id: 'p1', name: 'Standard' });
-            (prisma.promptProfile.update as jest.Mock).mockResolvedValue({ id: 'p1', name: 'Standard' });
+        /**
+         * Die Zeile traegt die Kennung aus der Registry (`id-standard` & Co.) —
+         * nur so ist dieselbe Vorlage in SaaS, Community und Desktop identisch
+         * adressierbar. Zuvor vergab Prisma eine `cuid()`, in jeder Umgebung
+         * eine andere.
+         */
+        it('schreibt die Registry-Kennung als ID', async () => {
+            (prisma.promptProfile.findMany as jest.Mock).mockResolvedValue([]);
+            (prisma.promptProfile.upsert as jest.Mock).mockResolvedValue({ id: 'id-standard' });
 
             const results = await PromptProfileService.syncSystemProfiles();
-            expect(prisma.promptProfile.update).toHaveBeenCalled();
+
             expect(results.length).toBe(7);
+            expect(prisma.promptProfile.upsert).toHaveBeenCalledWith(expect.objectContaining({
+                where: { id: 'id-standard' },
+                create: expect.objectContaining({ id: 'id-standard', isSystem: true })
+            }));
         });
 
-        it('should create missing system profiles', async () => {
-            (prisma.promptProfile.findFirst as jest.Mock).mockResolvedValue(null);
-            (prisma.promptProfile.create as jest.Mock).mockResolvedValue({ id: 'new', name: 'Any' });
+        /**
+         * Altzeilen mit `cuid()` muessen weichen — sonst stuende jede Vorlage
+         * zweimal in der Liste, einmal unter der alten und einmal unter der
+         * neuen Kennung.
+         */
+        it('entfernt namensgleiche Altzeilen mit abweichender Kennung', async () => {
+            (prisma.promptProfile.findMany as jest.Mock).mockResolvedValue([{ id: 'ckalt123' }]);
+            (prisma.promptProfile.deleteMany as jest.Mock).mockResolvedValue({ count: 1 });
+            (prisma.promptProfile.upsert as jest.Mock).mockResolvedValue({ id: 'id-standard' });
 
-            const results = await PromptProfileService.syncSystemProfiles();
-            expect(prisma.promptProfile.create).toHaveBeenCalled();
-            expect(results.length).toBe(7);
+            await PromptProfileService.syncSystemProfiles();
+
+            expect(prisma.promptProfile.deleteMany).toHaveBeenCalledWith({
+                where: { id: { in: ['ckalt123'] } }
+            });
         });
     });
 

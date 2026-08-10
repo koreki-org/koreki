@@ -9,12 +9,14 @@ import { SkillsSidebar, SkillsEditor } from './settings/SkillsModules';
 
 // Hooks
 import { useSkillProfiles } from '../hooks/useSkillProfiles';
+import { DEFAULT_SKILL_PROFILE_ID } from '@/lib/ai/standard-skills-profiles';
 
 interface SkillsSettingsModalProps {
     settings: AppSettings;
     onSave: (newSettings: AppSettings, profileName?: string, profileId?: string) => void;
     onClose: () => void;
-    currentProfileName?: string;
+    /** Verweis auf das aktive Set beim Oeffnen — Kennung oder (Altbestand) Name. */
+    currentProfileRef?: string;
     onGenerateGraph?: (taskText: string, discipline?: string) => Promise<any | null>;
     onGenerateCalcTrace?: (taskText: string, userNotes?: string) => Promise<any | null>;
 }
@@ -23,13 +25,14 @@ const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
     settings,
     onSave,
     onClose,
-    currentProfileName = 'MINT Standard (Allgemein)',
+    currentProfileRef = DEFAULT_SKILL_PROFILE_ID,
     onGenerateGraph,
     onGenerateCalcTrace
 }) => {
     // --- STANDALONE FOURTH PILLAR SYMMETRICS ---
     const {
         profiles,
+        selectedProfileId,
         selectedProfile,
         isCreatingNew,
         newProfileName,
@@ -55,7 +58,7 @@ const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
         handleApplyToSession,
         handleDeleteProfile,
         handleConfirmRename
-    } = useSkillProfiles(settings, onSave, onClose, currentProfileName);
+    } = useSkillProfiles(settings, onSave, onClose, currentProfileRef);
 
   // Export a whole skill profile (including its active skill IDs) as a markdown file
   const handleExportProfile = async (profile: any) => {
@@ -104,9 +107,9 @@ const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
                 {/* Main Content: Two Columns */}
                 <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                     <div className={`${showEditorMobile ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-b md:border-b-0 md:border-r border-border bg-muted/50 flex-col overflow-hidden`}>
-                        <SkillsSidebar 
+                        <SkillsSidebar
                             profiles={profiles}
-                            selectedProfile={selectedProfile}
+                            selectedProfileId={selectedProfileId}
                             isCreatingNew={isCreatingNew}
                             editingProfileId={editingProfileId}
                             editingName={editingName}

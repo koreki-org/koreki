@@ -150,7 +150,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
             {showPromptSettings && (
                 <PromptSettingsModal
                     settings={settings}
-                    currentProfileName={sessionProfileName}
+                    currentProfileRef={settings.activePromptProfileId || sessionProfileName}
                     availableProfiles={profiles}
                     onSave={async (newSettings, profileName, profileId) => {
                         setSettings(newSettings);
@@ -193,7 +193,9 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
             {showSkillsSettings && (
                 <SkillsSettingsModal
                     settings={settings}
-                    currentProfileName={sessionSkillsProfileName}
+                    // Kennung bevorzugt; der Name greift nur, solange in den
+                    // Einstellungen noch eine Altreferenz steht.
+                    currentProfileRef={settings.activeSkillProfileId || sessionSkillsProfileName}
                     onGenerateGraph={onGenerateGraph}
                     onGenerateCalcTrace={onGenerateCalcTrace}
                     onSave={async (newSettings, profileName, profileId) => {

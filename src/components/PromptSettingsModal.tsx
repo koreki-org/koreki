@@ -13,7 +13,8 @@ interface PromptSettingsModalProps {
     settings: AppSettings;
     onSave: (newSettings: AppSettings, profileName?: string, profileId?: string) => void;
     onClose: () => void;
-    currentProfileName?: string;
+    /** Verweis auf das aktive Profil beim Oeffnen — Kennung oder (Altbestand) Name. */
+    currentProfileRef?: string;
     availableProfiles?: any[];
 }
 
@@ -21,11 +22,12 @@ const PromptSettingsModal: React.FC<PromptSettingsModalProps> = ({
     settings,
     onSave,
     onClose,
-    currentProfileName = 'Standard'
+    currentProfileRef = 'id-standard'
 }) => {
     // --- INDUSTRIAL MODULARIZATION (STAGE 5) ---
     const {
         profiles,
+        selectedProfileId,
         selectedProfile,
         isCreatingNew,
         newProfileName,
@@ -51,7 +53,7 @@ const PromptSettingsModal: React.FC<PromptSettingsModalProps> = ({
         handleApplyToSession,
         handleDeleteProfile,
         handleConfirmRename
-    } = usePromptProfiles(settings, onSave, onClose, currentProfileName);
+    } = usePromptProfiles(settings, onSave, onClose, currentProfileRef);
 
     return (
         <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-4 bg-foreground/60 backdrop-blur-md animate-fade-in">
@@ -86,9 +88,9 @@ const PromptSettingsModal: React.FC<PromptSettingsModalProps> = ({
                 {/* Main Content: Two Columns */}
                 <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                     <div className={`${showEditorMobile ? 'hidden md:flex' : 'flex'} w-full md:w-1/3 border-b md:border-b-0 md:border-r border-border bg-muted/50 flex-col overflow-hidden`}>
-                        <ProfileSidebar 
+                        <ProfileSidebar
                             profiles={profiles}
-                            selectedProfile={selectedProfile}
+                            selectedProfileId={selectedProfileId}
                             isCreatingNew={isCreatingNew}
                             editingProfileId={editingProfileId}
                             editingName={editingName}

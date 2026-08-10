@@ -1,4 +1,4 @@
-import { renderHook, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useAiProfiles, STANDARD_AI_PROFILE, MATH_AI_PROFILE } from '../../../src/hooks/useAiProfiles';
 import { AppSettings } from '../../../src/types';
 
@@ -46,25 +46,31 @@ describe('useAiProfiles - Industrial Hook Verification', () => {
     });
 
     describe('useAiProfiles Hook Behavior', () => {
-        it('should initialize with correct default state', () => {
+        it('should initialize with correct default state', async () => {
             const { result } = renderHook(() =>
                 useAiProfiles(defaultSettings, mockOnSave, mockOnClose)
             );
 
+            // Die Auswahl steht erst, wenn die Profile geladen sind — sie wird
+            // aus dem Verweis aufgeloest statt als Name vorbelegt.
+            await waitFor(() => expect(result.current.selectedProfileId).toBe('system-standard'));
             expect(result.current.selectedProfile).toBe('Standard');
             expect(result.current.isCreatingNew).toBe(false);
             expect(result.current.saving).toBe(false);
         });
 
-        it('should update selectedProfile and allow creation mode', () => {
+        it('should update selectedProfile and allow creation mode', async () => {
             const { result } = renderHook(() =>
                 useAiProfiles(defaultSettings, mockOnSave, mockOnClose)
             );
+            await waitFor(() => expect(result.current.profiles.length).toBeGreaterThan(1));
 
+            // Auswahl ueber die Kennung statt ueber den Namen.
             act(() => {
-                result.current.setSelectedProfile('Logik & Mathe');
+                result.current.handleSelectProfile(MATH_AI_PROFILE);
             });
 
+            expect(result.current.selectedProfileId).toBe('system-math');
             expect(result.current.selectedProfile).toBe('Logik & Mathe');
 
             act(() => {

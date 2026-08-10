@@ -17,6 +17,8 @@ import { isLocalInstance } from '../../../lib/env-context';
  */
 
 const profileSchema = z.object({
+    /** Kennung des zu aktualisierenden Profils; fehlt sie, ist ein Neuanlegen gemeint. */
+    id: z.string().optional(),
     name: z.string().min(1, 'Name ist erforderlich'),
     correctionPrompt: z.string().min(1, 'Prompt ist erforderlich'),
 });
