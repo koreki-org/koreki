@@ -82,4 +82,85 @@ describe('useAiProfiles - Industrial Hook Verification', () => {
             expect(result.current.newProfileName).toBe('Mein Spezial-KI-Profil');
         });
     });
+
+    /**
+     * REGRESSION: Die Namensregel galt bei Skill-Sets, Experten-Profilen und
+     * Erfahrungsschatz, fehlte aber ausgerechnet hier. Im Desktop-Modus
+     * entstand dadurch ungefragt ein zweites gleichnamiges KI-Profil.
+     */
+    describe('Anlegen unter vergebenem Namen (Desktop)', () => {
+        const { isDesktopTarget } = jest.requireMock('../../../src/lib/env-context');
+
+        const bestehendes = {
+            id: 'local-ai-1',
+            name: 'Mein Tuning',
+            temperature: 0.9,
+            topP: 0.9,
+            maxTokens: 1000,
+            presencePenalty: 0,
+            enableThinking: true,
+            visionTemperature: 0,
+            visionTopP: 0.8,
+            visionMaxTokens: 4000,
+            visionPresencePenalty: 0,
+            isSystem: false
+        };
+
+        beforeEach(() => {
+            (isDesktopTarget as jest.Mock).mockReturnValue(true);
+            localStorage.setItem('koreki_local_ai_profiles', JSON.stringify([bestehendes]));
+        });
+
+        afterEach(() => {
+            (isDesktopTarget as jest.Mock).mockReturnValue(false);
+            jest.restoreAllMocks();
+        });
+
+        const anlegenAls = async (name: string) => {
+            const { result } = renderHook(() =>
+                useAiProfiles(defaultSettings, mockOnSave, mockOnClose)
+            );
+            await waitFor(() => expect(result.current.profiles.length).toBe(3));
+
+            act(() => {
+                result.current.handleStartNew();
+                result.current.setNewProfileName(name);
+            });
+            await act(async () => {
+                await result.current.handleSaveProfile();
+            });
+
+            return JSON.parse(localStorage.getItem('koreki_local_ai_profiles') || '[]');
+        };
+
+        it('legt bei abgelehnter Rückfrage keine Dublette an', async () => {
+            jest.spyOn(window, 'confirm').mockReturnValue(false);
+
+            const gespeichert = await anlegenAls('Mein Tuning');
+
+            expect(gespeichert).toHaveLength(1);
+            expect(gespeichert[0].temperature).toBe(0.9);
+        });
+
+        it('überschreibt den bestehenden Eintrag statt ihn zu verdoppeln', async () => {
+            jest.spyOn(window, 'confirm').mockReturnValue(true);
+            jest.spyOn(window, 'alert').mockImplementation(() => {});
+
+            const gespeichert = await anlegenAls('  mein tuning ');
+
+            expect(gespeichert).toHaveLength(1);
+            expect(gespeichert[0].id).toBe('local-ai-1');
+            // Die Standardwerte des leeren Formulars haben die alten ersetzt.
+            expect(gespeichert[0].temperature).toBe(0.2);
+        });
+
+        it('weist den Namen einer System-Vorlage ab', async () => {
+            const alertSpy = jest.spyOn(window, 'alert').mockImplementation(() => {});
+
+            const gespeichert = await anlegenAls('Logik & Mathe');
+
+            expect(gespeichert).toHaveLength(1);
+            expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('System-Vorlage'));
+        });
+    });
 });

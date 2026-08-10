@@ -126,3 +126,4 @@ OLLAMA_MODEL="qwen3.6:35b"
 * **Verwandte Dokumente:** 
   * [Auth System](./auth-system.md)
   * [Desktop vs SaaS](./deployment-tiers-comparison.md)
+  * [Identität und Namensregeln der Profil-Familien](./profile-identity.md) — wie die hier abgelegten Profile adressiert werden

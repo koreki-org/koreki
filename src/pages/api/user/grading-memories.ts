@@ -125,10 +125,34 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 });
             }
             
-            // 🏮 Siehe SkillProfileService.upsertProfile: Die Sperre der Datenbank
-            // vergleicht exakt, die Rückfrage vor dem Überschreiben nach
-            // `isSameName`. Ohne diese Auflösung entstünde bei abweichender
-            // Schreibweise eine zweite Zeile.
+            // 🏮 Mit Kennung ist der Datensatz eindeutig — so trifft ein
+            // Speichern den bearbeiteten Erfahrungsschatz auch dann, wenn er
+            // inzwischen umbenannt wurde. Der Name bleibt unangetastet;
+            // Umbenennen laeuft ueber PATCH.
+            if (validation.data.id) {
+                const bestehend = await prisma.gradingMemory.findUnique({
+                    where: { id: validation.data.id }
+                });
+
+                if (bestehend) {
+                    if (bestehend.userId !== dbUserId) {
+                        return res.status(403).json({ message: 'Nicht autorisiert.' });
+                    }
+
+                    const aktualisiert = await prisma.gradingMemory.update({
+                        where: { id: validation.data.id },
+                        data: { cases: validation.data.cases as any }
+                    });
+                    return res.status(200).json(aktualisiert);
+                }
+                // Unbekannte Kennung: Der Client legt einen lokal erzeugten
+                // Erfahrungsschatz erstmals in der Datenbank ab — weiter unten
+                // als Neuanlage behandelt.
+            }
+
+            // Neuanlage: Die Sperre der Datenbank vergleicht exakt, die
+            // Rückfrage vor dem Überschreiben nach `isSameName`. Ohne diese
+            // Auflösung entstünde bei abweichender Schreibweise eine zweite Zeile.
             const eigene = await prisma.gradingMemory.findMany({
                 where: { userId: dbUserId },
                 select: { name: true }

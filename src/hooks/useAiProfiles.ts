@@ -3,7 +3,7 @@ import { AppSettings, AiProfile } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { findNameCollision } from '@/lib/local-vault';
-import { nameTakenMessage, resolveProfileRef } from '@/lib/services/profile-naming';
+import { isSameName, nameTakenMessage, overwriteQuestion, resolveProfileRef } from '@/lib/services/profile-naming';
 
 /**
  * Standard default AI model profile values.
@@ -236,11 +236,30 @@ export const useAiProfiles = (
 
     const handleSaveProfile = async () => {
         // Beim Bearbeiten entscheidet die Kennung, nicht der Name.
-        const zielId = isCreatingNew ? '' : selectedProfileId;
+        let zielId = isCreatingNew ? '' : selectedProfileId;
         const nameToSave = isCreatingNew ? newProfileName.trim() : (selectedProfileData?.name || '');
         if (!nameToSave) {
             alert("Bitte gib einen Namen für das KI-Profil ein.");
             return;
+        }
+
+        // Dieselbe Regel wie bei Skill-Sets und Experten-Profilen. Sie fehlte
+        // hier: In SaaS und Community endete das Anlegen unter vergebenem Namen
+        // in der Eindeutigkeits-Sperre der Datenbank, im Desktop-Modus entstand
+        // ungefragt eine namensgleiche Dublette.
+        if (isCreatingNew) {
+            if (profiles.some(p => p.isSystem && isSameName(p.name, nameToSave))) {
+                alert('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
+                return;
+            }
+
+            const belegt = profiles.find(p => !p.isSystem && isSameName(p.name, nameToSave));
+            if (belegt) {
+                if (!window.confirm(overwriteQuestion('KI-Profil', nameToSave))) return;
+                // Zugesagtes Überschreiben heisst: den bestehenden Datensatz
+                // treffen, nicht einen zweiten daneben legen.
+                zielId = belegt.id;
+            }
         }
 
         setSaving(true);
@@ -267,31 +286,34 @@ export const useAiProfiles = (
                 try { customProfiles = JSON.parse(stored); } catch(e) {}
             }
 
-            if (isCreatingNew) {
-                const newId = `local-ai-${Date.now()}`;
+            // Ueber die Kennung statt ueber den Namen — ein gleichnamiges Profil
+            // kann das bearbeitete nicht mehr verdraengen. `zielId` ist gesetzt,
+            // wenn ein bestehendes Profil bearbeitet ODER sein Ueberschreiben
+            // zugesagt wurde.
+            const existingIdx = zielId ? customProfiles.findIndex(p => p.id === zielId) : -1;
+
+            let gespeicherteId = zielId;
+            if (existingIdx >= 0) {
+                customProfiles[existingIdx] = {
+                    ...customProfiles[existingIdx],
+                    ...payload,
+                    name: nameToSave
+                };
+            } else {
+                gespeicherteId = `local-ai-${Date.now()}`;
                 customProfiles.push({
                     ...payload,
-                    id: newId,
+                    id: gespeicherteId,
+                    name: nameToSave,
                     isSystem: false
                 });
-                localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));
-                setIsCreatingNew(false);
-                setNewProfileName('');
-                setSelectedProfileId(newId);
-                await fetchProfiles();
-            } else {
-                // Ueber die Kennung statt ueber den Namen — ein gleichnamiges
-                // Profil kann das bearbeitete nicht mehr verdraengen.
-                const existingIdx = customProfiles.findIndex(p => p.id === zielId);
-                if (existingIdx >= 0) {
-                    customProfiles[existingIdx] = {
-                        ...customProfiles[existingIdx],
-                        ...payload
-                    };
-                    localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));
-                    await fetchProfiles();
-                }
             }
+
+            localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));
+            setIsCreatingNew(false);
+            setNewProfileName('');
+            setSelectedProfileId(gespeicherteId);
+            await fetchProfiles();
             alert("KI-Profil erfolgreich lokal gespeichert!");
             setSaving(false);
             return;
