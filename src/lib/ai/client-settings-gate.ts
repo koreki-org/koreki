@@ -1,4 +1,4 @@
-import { isLocalInstance } from '../env-context';
+import { isKeycloakAuth, isLocalInstance } from '../env-context';
 import { logger } from '../logger';
 
 /**
@@ -24,14 +24,32 @@ const LOCAL_ONLY_CONNECTION_FIELDS = [
 ] as const;
 
 /**
- * Entfernt client-gelieferte Anbieter-Verbindungsdaten, sofern die Instanz
- * nicht lokal ist. Muss in JEDER API-Route aufgerufen werden, die `settings`
- * aus dem Request an einen Provider weiterreicht — direkt nach der
- * Zod-Validierung, damit alle nachgelagerten Aufrufe die bereinigte Fassung
- * sehen. Der Audit-Test in tests/unit/security-audit.test.ts erzwingt das.
+ * Darf die Instanz ihre Anbieter-Adresse selbst bestimmen?
+ *
+ * Nur dort, wo Instanz und Nutzer dieselbe Partei sind — Desktop und Community
+ * Single-User. Wer dort einen fremden Endpunkt setzt, verfuegt ueber seinen
+ * eigenen Schluessel auf seiner eigenen Maschine.
+ *
+ * Community Multi-User (Keycloak) ist ausdruecklich NICHT eingeschlossen: dort
+ * teilen sich mehrere Lehrkraefte einen Server mit einem hinterlegten Schluessel
+ * der Schule. Ohne diese Trennung koennte jedes Kollegiumsmitglied den Schluessel
+ * der Schule an eine eigene Adresse ausleiten — derselbe Angriff wie im SaaS,
+ * nur mit kleinerem Radius.
+ */
+function instanceOwnsItsProviderEndpoint(): boolean {
+    return isLocalInstance() && !isKeycloakAuth();
+}
+
+/**
+ * Entfernt client-gelieferte Anbieter-Adressen ueberall dort, wo der Server
+ * einen fremden Schluessel schuetzen muss. Muss in JEDER API-Route aufgerufen
+ * werden, die `settings` aus dem Request an einen Provider weiterreicht —
+ * direkt nach der Zod-Validierung, damit alle nachgelagerten Aufrufe die
+ * bereinigte Fassung sehen. Der Audit-Test in
+ * tests/unit/security-audit.test.ts erzwingt das.
  */
 export function sanitizeClientAiSettings<T>(settings: T, endpoint?: string): T {
-    if (!settings || typeof settings !== 'object' || isLocalInstance()) return settings;
+    if (!settings || typeof settings !== 'object' || instanceOwnsItsProviderEndpoint()) return settings;
 
     const source = settings as Record<string, unknown>;
     const stripped = LOCAL_ONLY_CONNECTION_FIELDS.filter(field => source[field] !== undefined);

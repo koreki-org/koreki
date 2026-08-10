@@ -46,7 +46,10 @@ jest.mock('../../src/lib/ai/ollama-logic', () => ({
 }));
 
 jest.mock('../../src/lib/env-context', () => ({
-    isLocalInstance: jest.fn(() => false)
+    isLocalInstance: jest.fn(() => false),
+    // Community Multi-User: entscheidet mit, ob die Instanz ihre Anbieter-
+    // Adresse selbst bestimmen darf (siehe client-settings-gate).
+    isKeycloakAuth: jest.fn(() => false)
 }));
 
 jest.mock('../../src/lib/security', () => ({
