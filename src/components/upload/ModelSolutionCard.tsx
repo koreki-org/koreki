@@ -24,6 +24,7 @@ import { resolveProfileRef } from '@/lib/services/profile-naming';
 import { downloadFile } from '@/lib/file-utils';
 import { buildModelSolutionExportFilename, serializeModelSolutionExport } from '@/lib/model-solution-export';
 import { resolveCustomSkillId } from '@/lib/custom-skill-id';
+import { planSkillProfileSync } from '@/lib/skill-profile-sync';
 
 
 
@@ -219,39 +220,38 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
             }
 
             const activeLocalProfile = resolveProfileRef(localProfiles, activeProfileId);
-            if (activeLocalProfile && !activeLocalProfile.isSystem) {
-                const activeSkillIds = Array.isArray(activeLocalProfile.activeSkillIds) ? activeLocalProfile.activeSkillIds : [];
-                if (!activeSkillIds.includes(id)) {
-                    activeLocalProfile.activeSkillIds = [...activeSkillIds, id];
-                }
-                activeLocalProfile.customSkills = {
-                    ...(activeLocalProfile.customSkills || {}),
-                    [id]: newSkill
-                };
+            const ownLocalProfile = activeLocalProfile && !activeLocalProfile.isSystem ? activeLocalProfile : null;
+
+            // Zuvor `p.name === activeProfileId || p.isSystem`: da jede Vorlage
+            // `isSystem` traegt, gewann bei nicht passender Referenz IMMER der
+            // erste Registry-Eintrag — das neue Profil startete mit den Skills
+            // der Grundschul-Vorlage. Die Slugs loesen die Referenz sauber auf.
+            const matchingSystem = resolveProfileRef(STANDARD_SKILL_PROFILES, activeProfileId);
+            const plan = planSkillProfileSync({
+                activeProfile: ownLocalProfile,
+                skillId: id,
+                skill: newSkill,
+                fallbackSkillIds: matchingSystem ? [...matchingSystem.activeSkillIds] : getDefaultSkillIds()
+            });
+
+            if (plan.action === 'update' && ownLocalProfile) {
+                ownLocalProfile.activeSkillIds = plan.activeSkillIds;
+                ownLocalProfile.customSkills = plan.customSkills;
                 localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(localProfiles));
             } else {
-                // Zuvor `p.name === activeProfileId || p.isSystem`: Da jede Vorlage
-                // `isSystem` traegt, gewann bei einer nicht passenden Referenz
-                // IMMER der erste Registry-Eintrag — das neue Profil startete also
-                // mit den Skills der Grundschul-Vorlage statt mit denen der aktiven.
-                // Mit den Slugs laesst sich die Referenz jetzt sauber aufloesen.
-                const matchingSystem = resolveProfileRef(STANDARD_SKILL_PROFILES, activeProfileId);
-                const baseSkillIds = matchingSystem ? [...matchingSystem.activeSkillIds] : getDefaultSkillIds();
-                
                 const newProfileId = `local-skill-${Date.now()}`;
-                const newProfileName = `Mein Skill-Profil`;
-                
+
                 localProfiles.push({
                     id: newProfileId,
-                    name: newProfileName,
-                    activeSkillIds: [...baseSkillIds, id],
-                    customSkills: { [id]: newSkill },
+                    name: plan.name,
+                    activeSkillIds: plan.activeSkillIds,
+                    customSkills: plan.customSkills,
                     isSystem: false
                 });
 
                 localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(localProfiles));
                 localStorage.setItem('koreki_active_skill_profile_id', newProfileId);
-                
+
                 if (store.aiSettings) {
                     store.setAiSettings({
                         ...store.aiSettings,
@@ -270,28 +270,28 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                     // neue Skill in einem frisch angelegten „Mein Skill-Profil".
                     const activeProfile = resolveProfileRef<any>(profilesList, activeProfileId);
 
-                    if (activeProfile && !activeProfile.isSystem) {
-                        const activeSkillIds = Array.isArray(activeProfile.activeSkillIds) ? activeProfile.activeSkillIds : [];
-                        const updatedSkills = activeSkillIds.includes(id) ? activeSkillIds : [...activeSkillIds, id];
-                        
+                    // Dieselbe Entscheidung wie im Desktop-Zweig oben — nur das
+                    // Ziel unterscheidet sich (API statt localStorage).
+                    const plan = planSkillProfileSync({
+                        activeProfile,
+                        skillId: id,
+                        skill: newSkill,
+                        fallbackSkillIds: getDefaultSkillIds()
+                    });
+
+                    if (plan.action === 'update') {
                         await apiClient.post('/api/user/skill-profiles', {
-                            name: activeProfile.name,
-                            activeSkillIds: updatedSkills,
-                            customSkills: {
-                                ...(activeProfile.customSkills || {}),
-                                [id]: newSkill
-                            }
+                            name: plan.name,
+                            activeSkillIds: plan.activeSkillIds,
+                            customSkills: plan.customSkills
                         });
                     } else {
-                        const baseSkillIds = activeProfile ? [...activeProfile.activeSkillIds] : getDefaultSkillIds();
-                        const newProfileName = `Mein Skill-Profil`;
-                        
                         const createRes = await apiClient.post('/api/user/skill-profiles', {
-                            name: newProfileName,
-                            activeSkillIds: [...baseSkillIds, id],
-                            customSkills: { [id]: newSkill }
+                            name: plan.name,
+                            activeSkillIds: plan.activeSkillIds,
+                            customSkills: plan.customSkills
                         });
-                        
+
                         if (createRes.ok) {
                             const newProfile = await createRes.json();
                             await apiClient.post('/api/user/update-skill-profile', {
