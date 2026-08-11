@@ -29,14 +29,31 @@ describe('useRedactionEngine - Industrial Hook Verification', () => {
     describe('Ladevorgang überlebt die Komponente', () => {
         const OriginalImage = global.Image;
 
+        /**
+         * Zählt, wie oft der Ladefehler tatsächlich zugestellt wurde.
+         *
+         * Beide Tests hingen zuvor an einem festen 50-ms-Fenster. Das war aus zwei
+         * Gründen schlecht: unter Parallellast reichte es dem Positivtest nicht
+         * (die Suite wurde sporadisch rot), und dem Negativtest reichte ein zu
+         * kurzes Fenster, um FÄLSCHLICH zu bestehen — ohne den Fix hätte er dann
+         * ebenfalls grün gemeldet. Der Zähler macht den asynchronen Schritt
+         * beobachtbar, sodass beide Tests darauf warten können statt auf die Uhr.
+         */
+        let errorsDispatched = 0;
+
         beforeEach(() => {
+            errorsDispatched = 0;
+
             class FailingImage {
                 onload: (() => void) | null = null;
                 onerror: ((e: any) => void) | null = null;
                 private _src = '';
                 set src(value: string) {
                     this._src = value;
-                    setTimeout(() => this.onerror?.(new Event('error')), 0);
+                    setTimeout(() => {
+                        errorsDispatched++;
+                        this.onerror?.(new Event('error'));
+                    }, 0);
                 }
                 get src() { return this._src; }
             }
@@ -49,11 +66,8 @@ describe('useRedactionEngine - Industrial Hook Verification', () => {
 
         const pngFile = () => new File(['dummy content'], 'test.png', { type: 'image/png' });
 
-        const settle = async () => {
-            await act(async () => {
-                await new Promise(resolve => setTimeout(resolve, 50));
-            });
-        };
+        /** Wartet, bis der Ladefehler wirklich zugestellt wurde — nicht auf die Uhr. */
+        const waitForLoadFailure = () => waitFor(() => expect(errorsDispatched).toBeGreaterThan(0));
 
         it('protokolliert nichts mehr, nachdem die Komponente während des Ladens ausgehängt wurde', async () => {
             const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -61,7 +75,8 @@ describe('useRedactionEngine - Industrial Hook Verification', () => {
             const { unmount } = renderHook(() => useRedactionEngine(true, pngFile()));
             unmount();
 
-            await settle();
+            // Erst wenn der Fehler zugestellt IST, hat die Aussage Gewicht.
+            await waitForLoadFailure();
 
             expect(errorSpy).not.toHaveBeenCalled();
             errorSpy.mockRestore();
@@ -76,9 +91,8 @@ describe('useRedactionEngine - Industrial Hook Verification', () => {
 
             renderHook(() => useRedactionEngine(true, pngFile()));
 
-            await settle();
+            await waitFor(() => expect(errorSpy).toHaveBeenCalled());
 
-            expect(errorSpy).toHaveBeenCalled();
             errorSpy.mockRestore();
         });
     });
