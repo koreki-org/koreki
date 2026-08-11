@@ -47,14 +47,39 @@ export function slugifySkillName(name: string): string {
         .replace(/^-+|-+$/g, '');
 }
 
+/** Aufgabenname, auf ID-taugliche Zeichen reduziert. */
+function cleanTaskName(currentTask: Task | undefined, taskIdx: number): string {
+    return (currentTask?.name || `Aufgabe-${taskIdx + 1}`)
+        .replace(/[^a-zA-Z0-9_-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+}
+
 /** Namensstamm, unter dem automatisch erzeugte Skills einer Aufgabe liegen. */
 export function buildAutoSkillPrefix(currentTask: Task | undefined, taskIdx: number): string {
-    const cleanTaskName = (currentTask?.name || `Aufgabe-${taskIdx + 1}`)
-        .replace(/[^a-zA-Z0-9_-]+/g, '-')
-        .replace(/^-+|-+$/g, '')
-        .toLowerCase();
+    return `${AUTO_SKILL_PREFIX}${cleanTaskName(currentTask, taskIdx).toLowerCase()}`;
+}
 
-    return `${AUTO_SKILL_PREFIX}${cleanTaskName}`;
+/**
+ * Name eines automatisch erzeugten Skills.
+ *
+ * Steht bewusst neben `buildAutoSkillPrefix`: die beiden bilden einen Vertrag.
+ * Was hier als Name entsteht, muss `resolveCustomSkillId` spaeter als
+ * Auto-Skill derselben Aufgabe wiedererkennen — sonst legt der naechste Lauf
+ * eine zweite Karte fuer dieselbe Aufgabe an. Der Name wurde frueher im
+ * Batch-Lauf der ModelSolutionCard gebildet, weit weg vom Vergleich; dass beide
+ * Seiten kleinschreiben, war eher Zufall als Absicht.
+ */
+export function buildAutoSkillName(
+    currentTask: Task | undefined,
+    taskIdx: number,
+    now: Date = new Date()
+): string {
+    const pad = (value: number) => String(value).padStart(2, '0');
+
+    const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}` +
+        `_${pad(now.getHours())}${pad(now.getMinutes())}`;
+
+    return `Auto_${cleanTaskName(currentTask, taskIdx)}_${stamp}`;
 }
 
 /**

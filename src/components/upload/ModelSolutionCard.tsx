@@ -23,7 +23,7 @@ import { STANDARD_SKILL_PROFILES, getDefaultSkillIds, DEFAULT_SKILL_PROFILE_ID }
 import { resolveProfileRef } from '@/lib/services/profile-naming';
 import { downloadFile } from '@/lib/file-utils';
 import { buildModelSolutionExportFilename, serializeModelSolutionExport } from '@/lib/model-solution-export';
-import { resolveCustomSkillId } from '@/lib/custom-skill-id';
+import { buildAutoSkillName, resolveCustomSkillId } from '@/lib/custom-skill-id';
 import { planSkillProfileSync } from '@/lib/skill-profile-sync';
 
 
@@ -359,18 +359,9 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
 
                     const config = configs[idx] || { discipline: 'standard', disablePoints: true };
                     
-                    const now = new Date();
-                    const yyyy = now.getFullYear();
-                    const mm = String(now.getMonth() + 1).padStart(2, '0');
-                    const dd = String(now.getDate()).padStart(2, '0');
-                    const hh = String(now.getHours()).padStart(2, '0');
-                    const min = String(now.getMinutes()).padStart(2, '0');
-                    
-                    const cleanTaskName = (task.name || `Aufgabe-${idx + 1}`)
-                        .replace(/[^a-zA-Z0-9_-]+/g, '-')
-                        .replace(/^-+|-+$/g, '');
-                    
-                    const skillName = `Auto_${cleanTaskName}_${yyyy}-${mm}-${dd}_${hh}${min}`;
+                    // Der Name muss zum Praefix-Vergleich in resolveCustomSkillId
+                    // passen — beide liegen deshalb in lib/custom-skill-id.ts.
+                    const skillName = buildAutoSkillName(task, idx);
 
                     if (config.discipline === 'vlsm') {
                         if (onGenerateGraph) {

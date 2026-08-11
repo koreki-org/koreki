@@ -1,4 +1,5 @@
 import {
+    buildAutoSkillName,
     buildAutoSkillPrefix,
     resolveCustomSkillId,
     slugifySkillName,
@@ -132,5 +133,72 @@ describe('resolveCustomSkillId', () => {
 describe('slugifySkillName', () => {
     it('ersetzt Sonderzeichen und schneidet Randstriche ab', () => {
         expect(slugifySkillName('  Größen & Einheiten!  ')).toBe('gr-en-einheiten');
+    });
+});
+
+/**
+ * Der eigentliche Vertrag: was der Batch-Lauf als Namen vergibt, muss die
+ * Aufloesung spaeter als Auto-Skill DERSELBEN Aufgabe wiedererkennen. Sonst
+ * legt der naechste Durchgang eine zweite Karte fuer dieselbe Aufgabe an.
+ *
+ * Beide Seiten lagen frueher weit auseinander — der Name entstand in
+ * ModelSolutionCard, der Vergleich hier. Dass es funktionierte, hing daran,
+ * dass beide kleinschreiben.
+ */
+describe('buildAutoSkillName im Zusammenspiel mit resolveCustomSkillId', () => {
+    const now = new Date(2026, 7, 11, 9, 5);
+    const task = (over: Partial<Task> = {}): Task => ({ name: 'Aufgabe 1', ...over } as Task);
+
+    it('folgt dem Muster Auto_<Aufgabe>_<Datum>_<Zeit>', () => {
+        expect(buildAutoSkillName(task({ name: 'Aufgabe 1' }), 0, now))
+            .toBe('Auto_Aufgabe-1_2026-08-11_0905');
+    });
+
+    it('faellt ohne Aufgabennamen auf die Position zurueck', () => {
+        expect(buildAutoSkillName(undefined, 4, now)).toBe('Auto_Aufgabe-5_2026-08-11_0905');
+    });
+
+    it('wird von resolveCustomSkillId derselben Aufgabe wiedererkannt', () => {
+        const current = task({ name: 'Aufgabe 3' });
+        const generated = buildAutoSkillName(current, 2, now);
+
+        const id = resolveCustomSkillId({
+            name: 'Ein voellig anderer Name',
+            customSkills: { 'custom-skill-vorhanden-0001': { name: generated } },
+            currentTask: current,
+            taskIdx: 2
+        }, () => 'NEU');
+
+        // Wiederverwendung statt zweiter Karte.
+        expect(id).toBe('custom-skill-vorhanden-0001');
+    });
+
+    it('wird NICHT einer anderen Aufgabe zugeordnet', () => {
+        const generated = buildAutoSkillName(task({ name: 'Aufgabe 3' }), 2, now);
+
+        const id = resolveCustomSkillId({
+            name: 'Neuer Skill',
+            customSkills: { 'custom-skill-fremd-0001': { name: generated } },
+            currentTask: task({ name: 'Aufgabe 4' }),
+            taskIdx: 3
+        }, () => 'NEU');
+
+        expect(id).toBe('custom-skill-neuer-skill-NEU');
+    });
+
+    it('haelt den Vertrag auch bei Sonderzeichen im Aufgabennamen', () => {
+        const current = task({ name: 'Aufgabe 2b) Größen & Einheiten' });
+        const generated = buildAutoSkillName(current, 1, now);
+
+        expect(generated.toLowerCase()).toContain(buildAutoSkillPrefix(current, 1));
+
+        const id = resolveCustomSkillId({
+            name: 'Anderer Name',
+            customSkills: { 'custom-skill-sonder-0001': { name: generated } },
+            currentTask: current,
+            taskIdx: 1
+        }, () => 'NEU');
+
+        expect(id).toBe('custom-skill-sonder-0001');
     });
 });
