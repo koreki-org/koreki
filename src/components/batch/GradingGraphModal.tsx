@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { GradingGraph, VariableDefinition, VariableType, ValidationType } from '../../lib/grading/types';
 import { collectReferencedVariables, renameVariableReferences } from '../../lib/grading/variable-references';
-import { evaluateExpression } from '../../lib/grading/plugins';
+import { buildPerfectInputs, computeExpectedValues, parsePlaygroundInputs } from '../../lib/grading/graph-preview';
 import { GraphRunner } from '../../lib/grading/GraphRunner';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -173,26 +173,10 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     }, [hoveredVarId, selectedVarId, graph?.variables]);
 
     // Verify mathematical expressions and build evaluation context in real time
-    const evaluatedContext = useMemo(() => {
-        const context: Record<string, any> = {};
-        const errors: Record<string, string> = {};
-        const vars = graph?.variables || [];
-
-        vars.forEach(v => {
-            if (v.type === 'input') {
-                context[v.id] = v.defaultValue;
-            } else if (v.type === 'formula' && v.expression) {
-                try {
-                    context[v.id] = evaluateExpression(v.expression, context);
-                } catch (err: any) {
-                    context[v.id] = 'Error ⚠️';
-                    errors[v.id] = err.message || 'Evaluation error';
-                }
-            }
-        });
-
-        return { context, errors };
-    }, [graph?.variables]);
+    const evaluatedContext = useMemo(
+        () => computeExpectedValues(graph?.variables),
+        [graph?.variables]
+    );
 
     // Helper to extract which variables a formula depends on
     const getVariableDependencies = (variable: VariableDefinition) => {
@@ -310,20 +294,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
     // Launch mock grading computation
     const handleRunPlayground = () => {
-        // Collect actual mock student values
-        const studentValues: Record<string, any> = {};
-        const vars = graph?.variables || [];
-        vars.forEach(v => {
-            const inputVal = playgroundInputs[v.id];
-            if (inputVal !== undefined && inputVal.trim() !== '') {
-                // Heuristic parse numeric input
-                if (!isNaN(Number(inputVal))) {
-                    studentValues[v.id] = Number(inputVal);
-                } else {
-                    studentValues[v.id] = inputVal.trim();
-                }
-            }
-        });
+        const studentValues = parsePlaygroundInputs(graph?.variables, playgroundInputs);
 
         try {
             const res = GraphRunner.grade(graph, studentValues);
@@ -335,12 +306,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
     // Auto-fill perfect playground answers for quick testing
     const handleFillPerfectPlayground = () => {
-        const perfect: Record<string, string> = {};
-        const vars = graph?.variables || [];
-        vars.forEach(v => {
-            perfect[v.id] = String(evaluatedContext.context[v.id] ?? "");
-        });
-        setPlaygroundInputs(perfect);
+        setPlaygroundInputs(buildPerfectInputs(graph?.variables, evaluatedContext.context));
     };
 
     const handleRefineGraph = async () => {
