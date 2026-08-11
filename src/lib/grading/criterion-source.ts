@@ -22,6 +22,7 @@ import type {
   PerTargetResult,
   StudentASTStep,
 } from './calc-trace-types';
+import { variableReferencePattern } from './variable-references';
 
 const VALID_SOURCES: readonly CriterionSource[] = ['llm', 'proofA', 'proofB', 'proofValues'];
 
@@ -53,7 +54,9 @@ export type EngineEvidence = Pick<CalcTraceResult, 'ast' | 'sandboxErrors' | 'pe
  * Rechenfehler dem falschen Schritt zuschreiben.
  */
 export function stepHasSandboxError(stepId: string, sandboxErrors: string[]): boolean {
-  const muster = new RegExp(`\\b${stepId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+  // Maskierung ueber den gemeinsamen Helfer — hier stand sie als Einzige
+  // korrekt, an drei anderen Stellen fehlte sie.
+  const muster = variableReferencePattern(stepId);
   return sandboxErrors.some(err => muster.test(err));
 }
 

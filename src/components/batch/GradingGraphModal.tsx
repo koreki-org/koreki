@@ -6,6 +6,7 @@ import {
     Send, MessageSquare
 } from 'lucide-react';
 import { GradingGraph, VariableDefinition, VariableType, ValidationType } from '../../lib/grading/types';
+import { collectReferencedVariables, renameVariableReferences } from '../../lib/grading/variable-references';
 import { evaluateExpression } from '../../lib/grading/plugins';
 import { GraphRunner } from '../../lib/grading/GraphRunner';
 import { Button } from '../ui/Button';
@@ -167,15 +168,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
             return new Set<string>();
         }
 
-        const deps = new Set<string>();
-        vars.forEach(v => {
-            // If variable ID is mentioned in the formula expression (e.g. "subnetA_netId")
-            const wordRegex = new RegExp(`\\b${v.id}\\b`);
-            if (wordRegex.test(activeVar.expression || "")) {
-                deps.add(v.id);
-            }
-        });
-        return deps;
+        // If variable ID is mentioned in the formula expression (e.g. "subnetA_netId")
+        return new Set(collectReferencedVariables(activeVar.expression, vars.map(v => v.id)));
     }, [hoveredVarId, selectedVarId, graph?.variables]);
 
     // Verify mathematical expressions and build evaluation context in real time
@@ -203,9 +197,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     // Helper to extract which variables a formula depends on
     const getVariableDependencies = (variable: VariableDefinition) => {
         if (variable.type !== 'formula' || !variable.expression) return [];
-        return (graph?.variables || [])
-            .filter(other => other.id !== variable.id && new RegExp(`\\b${other.id}\\b`).test(variable.expression || ""))
-            .map(other => other.id);
+        const others = (graph?.variables || []).map(v => v.id).filter(id => id !== variable.id);
+        return collectReferencedVariables(variable.expression, others);
     };
 
     // AI wizard suggestion chips
@@ -260,8 +253,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                 }
                 // Downstream reference update
                 if (v.type === 'formula' && v.expression) {
-                    const regex = new RegExp(`\\b${oldId}\\b`, 'g');
-                    updatedVar.expression = v.expression.replace(regex, newId);
+                    updatedVar.expression = renameVariableReferences(v.expression, oldId, newId);
                 }
                 return updatedVar;
             });

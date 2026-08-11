@@ -7,6 +7,7 @@ import {
   EquivalenceGroup
 } from './types';
 import { evaluateExpression } from './plugins';
+import { collectReferencedVariables } from './variable-references';
 
 export class GraphRunner {
   /**
@@ -103,10 +104,10 @@ export class GraphRunner {
    * Helper to extract variable dependencies in an expression.
    */
   private static getReferencedVariables(expression: string, allVarIds: string[]): string[] {
-    return allVarIds.filter(id => {
-      const regex = new RegExp(`\\b${id}\\b`);
-      return regex.test(expression);
-    });
+    // Maskiert die ID, statt sie roh ins Muster zu setzen: Variablen-IDs sind
+    // frei eingebbar, und ein `(` darin hat die Engine sonst zum Absturz
+    // gebracht (siehe lib/grading/variable-references.ts).
+    return collectReferencedVariables(expression, allVarIds);
   }
 
   /**
