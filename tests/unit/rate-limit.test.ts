@@ -13,6 +13,23 @@ jest.mock('../../src/lib/logger', () => ({
  */
 describe('Security: Pillar 1 - Rate Limiting', () => {
 
+    /**
+     * Der Limiter legt intern pro gezaehlter Anfrage ein `setTimeout` ueber die
+     * volle Fensterdauer an (60 Sekunden) und ruft darauf kein `unref()`
+     * (rate-limiter-flexible, MemoryStorage). Diese Datei zaehlt in einem
+     * einzigen Fall 600 Anfragen — mit echten Timern hielten die den
+     * Jest-Worker bis zu einer Minute ueber das Testende hinaus am Leben.
+     * Jest meldete daraufhin sporadisch "A worker process has failed to exit
+     * gracefully", je nachdem ob der Worker seine restlichen Dateien vorher
+     * schaffte. Ein roter Lauf ohne Ursache.
+     *
+     * Kein Test hier prueft das Ablaufen eines Fensters, nur das Zaehlen
+     * innerhalb eines Fensters. Gefaelschte Timer aendern also nichts an der
+     * Aussage und beseitigen die Ursache, statt sie zu kaschieren.
+     */
+    beforeAll(() => { jest.useFakeTimers(); });
+    afterAll(() => { jest.useRealTimers(); });
+
     describe('Stufe 1: IP-Flutschutz', () => {
         it('laesst normalen Verkehr durch', async () => {
             for (let i = 0; i < 20; i++) {
