@@ -8,6 +8,7 @@ import {
 import { GradingGraph, VariableDefinition, VariableType, ValidationType } from '../../lib/grading/types';
 import { collectReferencedVariables, renameVariableReferences } from '../../lib/grading/variable-references';
 import { buildPerfectInputs, computeExpectedValues, parsePlaygroundInputs } from '../../lib/grading/graph-preview';
+import { extractRefinementResponse, isUsableGraph, mergeRefinedGraph, parseGraphJson } from '../../lib/grading/graph-intake';
 import { GraphRunner } from '../../lib/grading/GraphRunner';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -280,15 +281,13 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     // Parse raw JSON text editor input safely
     const handleJsonChange = (val: string) => {
         setJsonText(val);
-        try {
-            const parsed = JSON.parse(val);
-            if (!parsed.variables || !Array.isArray(parsed.variables)) {
-                throw new Error("Das JSON muss eine 'variables'-Liste enthalten.");
-            }
-            setGraph(parsed);
+
+        const result = parseGraphJson(val);
+        if (result.ok) {
+            setGraph(result.graph);
             setJsonError(null);
-        } catch (err: any) {
-            setJsonError(err.message || "Ungültiges JSON-Format");
+        } else {
+            setJsonError(result.error);
         }
     };
 
@@ -330,24 +329,12 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                 settings!
             );
 
-            let updatedGraph = responseData;
-            let explanation = '';
+            const { graph: updatedGraph, explanation } = extractRefinementResponse(responseData);
 
-            if (responseData && responseData.graph) {
-                updatedGraph = responseData.graph;
-                explanation = responseData.explanation || '';
-            }
-
-            if (updatedGraph && Array.isArray(updatedGraph.variables)) {
-                // Preserve critical meta-settings from the current graph
-                // so the LLM doesn't accidentally reset the points distribution mode or discipline
-                const mergedGraph = {
-                    ...updatedGraph,
-                    discipline: updatedGraph.discipline || graph.discipline,
-                    disablePoints: graph.disablePoints !== undefined ? graph.disablePoints : updatedGraph.disablePoints
-                };
-                
-                setGraph(mergedGraph);
+            if (isUsableGraph(updatedGraph)) {
+                // Schuetzt die Punktvergabe der Lehrkraft vor der Verfeinerung —
+                // Begruendung in lib/grading/graph-intake.ts.
+                setGraph(mergeRefinedGraph(graph, updatedGraph));
                 setChatHistory(prev => [...prev, { 
                     role: 'assistant', 
                     text: explanation || `Graph erfolgreich verfeinert!\nEs wurden ${updatedGraph.variables.length} Variablen deklariert.` 
