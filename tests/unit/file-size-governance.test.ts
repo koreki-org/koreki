@@ -63,7 +63,7 @@ const SIZE_BASELINE: Record<string, number> = {
     'components/upload/ModelSolutionCard.tsx': 1151,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
-    'components/settings/SkillsModules.tsx': 1033,
+    'components/settings/SkillsModules.tsx': 999,
     // Bewusst von 1003 angehoben: der strictNullChecks-Durchgang hat hier eine
     // echte Luecke geschlossen (Mistral-Rueckfall ohne Schluessel schickte
     // `Bearer undefined`). Der Waechter plus Begruendung kostet 7 Zeilen. Die

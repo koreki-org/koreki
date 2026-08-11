@@ -8,6 +8,7 @@ import { FloatingActions } from '@/components/ui/FloatingActions';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
 import { downloadFile } from '@/lib/file-utils';
 import type { CustomSkillDefinition } from '@/types';
+import { applySkillToggle } from '@/lib/skills/skill-selection';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { GradingGraphModal } from '../batch/GradingGraphModal';
 import { CalcTraceModal } from '../batch/CalcTraceModal';
@@ -425,49 +426,14 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     const handleToggleSkill = (skillId: string) => {
         if (isSystemSelected && !isCreatingNew) return; // Prevent direct system profile modifications
 
-        let nextIds = [...activeSkillIds];
-        const skillEntry = SKILL_REGISTRY[skillId];
-        const skill = skillEntry ? { ...skillEntry.metadata, promptSnippet: skillEntry.promptSnippet } : (customSkills || {})[skillId];
-        
-        if (!skill) return;
+        // Registry-Metadaten und eigene Skills bilden gemeinsam die Grundlage
+        // fuer Voraussetzungen und Konflikte.
+        const allSkills = [
+            ...Object.values(SKILL_REGISTRY).map(s => s.metadata),
+            ...Object.values(customSkills || {})
+        ];
 
-        if (activeSkillIds.includes(skillId)) {
-            // UNCHECK
-            nextIds = nextIds.filter(id => id !== skillId);
-            // Also uncheck any other skills that require this specific skill!
-            const allSkillsList = [
-                ...Object.values(SKILL_REGISTRY).map(s => s.metadata), 
-                ...Object.values(customSkills || {})
-            ];
-            allSkillsList.forEach(s => {
-                const requires = s.requires || [];
-                const reqArray = typeof requires === 'string' ? requires.split(',').map((r: string) => r.trim()) : requires;
-                if (reqArray.includes(skillId)) {
-                    nextIds = nextIds.filter(id => id !== s.id);
-                }
-            });
-        } else {
-            // CHECK
-            nextIds.push(skillId);
-            // Auto-check requirements
-            const requires = skill.requires || [];
-            const reqArray = typeof requires === 'string' ? requires.split(',').map((r: string) => r.trim()) : requires;
-            
-            reqArray.forEach((reqId: string) => {
-                if (!nextIds.includes(reqId)) {
-                    nextIds.push(reqId);
-                }
-            });
-            
-            // Auto-uncheck conflicting mutually-exclusive skills
-            const conflicts = skill.conflictsWith || [];
-            const conflictArray = typeof conflicts === 'string' ? conflicts.split(',').map((c: string) => c.trim()) : conflicts;
-            
-            conflictArray.forEach((conflictId: string) => {
-                nextIds = nextIds.filter(id => id !== conflictId);
-            });
-        }
-        setActiveSkillIds(nextIds);
+        setActiveSkillIds(applySkillToggle({ skillId, activeSkillIds, allSkills }));
     };
 
     const handleExport = async () => {
