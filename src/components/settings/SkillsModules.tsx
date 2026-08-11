@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { FloatingActions } from '@/components/ui/FloatingActions';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
 import { downloadFile } from '@/lib/file-utils';
+import type { CustomSkillDefinition } from '@/types';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { GradingGraphModal } from '../batch/GradingGraphModal';
 import { CalcTraceModal } from '../batch/CalcTraceModal';
@@ -304,7 +305,7 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     
     // Custom Skill Modal/Inline Editor State
     const [isEditingSkill, setIsEditingSkill] = React.useState(false);
-    const [editingSkillData, setEditingSkillData] = React.useState<any>(null);
+    const [editingSkillData, setEditingSkillData] = React.useState<CustomSkillDefinition | null>(null);
     const [isGraphModalOpen, setIsGraphModalOpen] = React.useState(false);
     const [isGeneratingGraph, setIsGeneratingGraph] = React.useState(false);
     const [isCalcTraceModalOpen, setIsCalcTraceModalOpen] = React.useState(false);
@@ -388,11 +389,11 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     };
 
     const handleSaveCustomSkillClick = () => {
-        if (!editingSkillData.name.trim()) {
+        if (!editingSkillData?.name?.trim()) { // `?.` verengt auch die Basis auf non-null
             alert("Bitte gib einen Namen für den Skill ein.");
             return;
         }
-        if (!editingSkillData.promptSnippet.trim()) {
+        if (!editingSkillData.promptSnippet?.trim()) {
             alert("Bitte gib die KI-Anweisung (Prompt Snippet) ein.");
             return;
         }

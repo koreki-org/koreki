@@ -3,7 +3,7 @@ import sgMail from '@sendgrid/mail';
 
 jest.mock('@/lib/logto', () => ({
     logtoClient: {
-        withLogtoApiRoute: jest.fn((handler) => async (req, res) => {
+        withLogtoApiRoute: jest.fn((handler: any) => async (req: any, res: any) => {
             // Industrial Mock: Inject empty user context for public routes
             req.user = req.user || { isAuthenticated: false };
             return handler(req, res);

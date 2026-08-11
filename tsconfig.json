@@ -10,6 +10,7 @@
     "skipLibCheck": true,
     "strict": false,
     "strictNullChecks": true,
+    "noImplicitAny": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "incremental": true,

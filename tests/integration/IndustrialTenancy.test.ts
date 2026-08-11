@@ -4,7 +4,9 @@ import prisma from '../../src/lib/prisma';
 
 // 1. Mock Prisma, Logto and LogtoMgmt
 jest.mock('../../src/lib/prisma', () => {
-    const mockPrisma = {
+    // Explizite Annotation noetig: `$transaction` referenziert mockPrisma in der
+    // eigenen Initialisierung, TypeScript kann den Typ daher nicht herleiten.
+    const mockPrisma: any = {
         user: {
             findUnique: jest.fn(),
             findMany: jest.fn().mockResolvedValue([]),
@@ -28,7 +30,7 @@ jest.mock('../../src/lib/prisma', () => {
         privacyLog: {
             deleteMany: jest.fn().mockResolvedValue({ count: 0 })
         },
-        $transaction: jest.fn((cb) => cb(mockPrisma))
+        $transaction: jest.fn((cb: any) => cb(mockPrisma))
     };
     return {
         __esModule: true,

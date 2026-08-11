@@ -267,7 +267,9 @@ describeFn('CalcTrace Determinism Tests (Layer 2)', () => {
 
       for (let i = 1; i <= ITERATIONS; i++) {
         // 1. Extract AST (LLM part) with retry for local Ollama crashes
-        let astResult;
+        // Startwert statt `undefined`: die eigentliche Zusicherung ist die
+        // Laengenpruefung unten, und `evaluateCalcTrace` erwartet ein Array.
+        let astResult: Awaited<ReturnType<typeof extractStudentAST>> = [];
         let attempts = 0;
         const maxAttempts = 3;
         while (attempts < maxAttempts) {
@@ -282,7 +284,7 @@ describeFn('CalcTrace Determinism Tests (Layer 2)', () => {
 
         // Strict Assertion: If the AST is completely empty after all retries, the LLM API call fatally failed!
         expect(astResult).toBeDefined();
-        expect(astResult?.length).toBeGreaterThan(0);
+        expect(astResult.length).toBeGreaterThan(0);
 
         // 2. Evaluate (Deterministic Sandbox part)
         const result = evaluateCalcTrace(astResult, testCase.target);
