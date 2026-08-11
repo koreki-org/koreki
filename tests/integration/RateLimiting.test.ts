@@ -34,12 +34,15 @@ describe('Rate Limit Integration (Layer 2 - Spam Protection)', () => {
             status: jest.fn().mockReturnThis(),
             json: jest.fn().mockReturnThis()
         };
-        // Use a unique IP for each test to avoid interference with other tests in parallel execution
+        // Die Limiter halten ihren Zaehlerstand im Speicher ueber Tests hinweg.
+        // Deshalb bekommt jeder Test eine eigene IP UND eine eigene Nutzer-ID —
+        // seit die zweite Stufe auf der Nutzer-ID zaehlt, reicht die IP nicht mehr.
         const uniqueIp = `192.168.1.${Math.floor(Math.random() * 254)}`;
+        const uniqueSub = `spammer-${Math.random().toString(36).slice(2)}`;
         req = {
             headers: { 'x-forwarded-for': uniqueIp },
             socket: {},
-            user: { isAuthenticated: true, claims: { sub: 'spammer-1' } },
+            user: { isAuthenticated: true, claims: { sub: uniqueSub } },
             body: {}
         };
 
@@ -50,40 +53,65 @@ describe('Rate Limit Integration (Layer 2 - Spam Protection)', () => {
         });
     });
 
-    it('should block an IP after 10 requests on an AI endpoint (Pillar 1)', async () => {
+    it('blockt eine angemeldete Lehrkraft erst nach 60 KI-Anfragen (Saeule 1, Stufe 2)', async () => {
         const handler = jest.fn(async (req, res) => {
             res.status(200).json({ success: true });
         });
 
         const protectedHandler = withSecurity(handler, { isAi: true });
 
-        // First 10 requests should pass
-        for (let i = 0; i < 10; i++) {
+        // 60 traegt eine Klassenkorrektur in einem Durchgang. Frueher war hier
+        // nach 10 Schluss, weil pro IP statt pro Nutzer gezaehlt wurde.
+        for (let i = 0; i < 60; i++) {
             await protectedHandler(req, res);
-            expect(res.status).not.toHaveBeenCalledWith(429);
         }
 
-        expect(handler).toHaveBeenCalledTimes(10);
+        expect(handler).toHaveBeenCalledTimes(60);
+        expect(res.status).not.toHaveBeenCalledWith(429);
 
-        // 11th request should be blocked
         await protectedHandler(req, res);
-        
+
         expect(res.status).toHaveBeenCalledWith(429);
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
             error: expect.stringContaining('Zu viele Anfragen')
         }));
-        
-        // Verifying that the security event was logged
+        expect(handler).toHaveBeenCalledTimes(60);
+
+        // Das protokollierte Subjekt ist jetzt die Nutzer-ID, nicht die IP.
         expect(logSecurityEvent).toHaveBeenCalledWith(
-            'anonymous', // Standard for rate limit triggers (before user resolution)
+            'anonymous',
             null,
             'RATE_LIMIT_EXCEEDED',
-            expect.stringContaining(req.headers['x-forwarded-for']),
+            expect.stringContaining(req.user.claims.sub),
             req.headers['x-forwarded-for']
         );
+    });
 
-        // Handler should still only have been called 10 times
-        expect(handler).toHaveBeenCalledTimes(10);
+    it('laesst Kolleginnen hinter derselben IP nicht fuereinander mitzahlen (NAT)', async () => {
+        const handler = jest.fn(async (req, res) => {
+            res.status(200).json({ success: true });
+        });
+
+        const protectedHandler = withSecurity(handler, { isAi: true });
+
+        // Erste Lehrkraft schoepft ihr Kontingent aus.
+        for (let i = 0; i < 61; i++) {
+            await protectedHandler(req, res);
+        }
+        expect(res.status).toHaveBeenCalledWith(429);
+
+        // Zweite Lehrkraft, gleiche Schul-IP, eigene Anmeldung.
+        const colleague = {
+            ...req,
+            user: { isAuthenticated: true, claims: { sub: `kollegin-${Math.random().toString(36).slice(2)}` } }
+        };
+        const freshRes = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
+
+        await protectedHandler(colleague, freshRes as any);
+
+        // Genau der Fall, an dem die alte IP-Zaehlung eine ganze Schule lahmlegte.
+        expect(freshRes.status).not.toHaveBeenCalledWith(429);
+        expect(freshRes.status).toHaveBeenCalledWith(200);
     });
 
     it('should allow more requests on a non-AI endpoint (Baseline)', async () => {

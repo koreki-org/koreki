@@ -60,7 +60,7 @@ const HOOK_LIMIT = 10;
  */
 const SIZE_BASELINE: Record<string, number> = {
     'components/batch/GradingGraphModal.tsx': 1459,
-    'components/upload/ModelSolutionCard.tsx': 1205,
+    'components/upload/ModelSolutionCard.tsx': 1160,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
     'components/settings/SkillsModules.tsx': 1033,

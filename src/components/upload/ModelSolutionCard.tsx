@@ -22,6 +22,8 @@ import { apiClient } from '@/lib/api-client';
 import { STANDARD_SKILL_PROFILES, getDefaultSkillIds, DEFAULT_SKILL_PROFILE_ID } from '@/lib/ai/standard-skills-profiles';
 import { resolveProfileRef } from '@/lib/services/profile-naming';
 import { downloadFile } from '@/lib/file-utils';
+import { buildModelSolutionExportFilename, serializeModelSolutionExport } from '@/lib/model-solution-export';
+import { resolveCustomSkillId } from '@/lib/custom-skill-id';
 
 
 
@@ -156,11 +158,6 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         taskIdx: number,
         updateTaskLayout: (task: Task) => Task
     ) => {
-        const cleanNameForId = name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '');
-
         // 1. Save to localStorage under 'koreki_custom_skills' (and check for existing)
         const stored = localStorage.getItem('koreki_custom_skills');
         let customSkills: Record<string, any> = {};
@@ -168,39 +165,13 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
             try { customSkills = JSON.parse(stored); } catch (e) {}
         }
 
-        // Check if a skill with this exact name already exists (case-insensitive & trimmed)
-        const cleanName = name.trim().toLowerCase();
-        const existingSkillId = Object.keys(customSkills).find(
-            key => customSkills[key] && customSkills[key].name && customSkills[key].name.trim().toLowerCase() === cleanName
-        );
-
-        // --- DUPLICATE PREVENTION: Reuse existing custom skill ID if this task already has one, 
-        // or if an auto-generated skill for this task name exists, preventing multiple skill cards for the same task.
-        const currentTask = tasksLayoutRef.current[taskIdx];
-        const hasExistingCustomSkill = currentTask?.taskType?.startsWith('custom-skill-');
-        
-        let resolvedId = hasExistingCustomSkill ? currentTask.taskType : existingSkillId;
-        
-        if (!resolvedId) {
-            const cleanTaskName = (currentTask?.name || `Aufgabe-${taskIdx + 1}`)
-                .replace(/[^a-zA-Z0-9_-]+/g, '-')
-                .replace(/^-+|-+$/g, '')
-                .toLowerCase();
-            const prefix = `auto_${cleanTaskName}`;
-            
-            const existingAutoSkillId = Object.keys(customSkills).find(key => {
-                const skill = customSkills[key];
-                if (!skill || !skill.name) return false;
-                const sName = skill.name.toLowerCase();
-                return sName === prefix || sName.startsWith(prefix + '_');
-            });
-            
-            if (existingAutoSkillId) {
-                resolvedId = existingAutoSkillId;
-            }
-        }
-
-        const id = resolvedId || `custom-skill-${cleanNameForId}-${Date.now().toString().slice(-4)}`;
+        // Duplikatvermeidung samt Regelwerk liegt in lib/custom-skill-id.ts.
+        const id = resolveCustomSkillId({
+            name,
+            customSkills,
+            currentTask: tasksLayoutRef.current[taskIdx],
+            taskIdx
+        });
         newSkill.id = id;
 
         customSkills[id] = newSkill;
@@ -510,30 +481,14 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
     }, [tasksLayout, onTasksChange, onModelSolutionChange, getDefaultGradingGraph]);
 
     const handleExportModelSolution = async () => {
-        const exportData = {
-            version: '2.0',
-            modelSolution,
-            modelSolutionContext,
-            tasksLayout,
-            timestamp: new Date().toISOString(),
-            metadata: {
-                activeProfileId: settings?.activePromptProfileId,
-                activeAiProfileId: settings?.activeAiProfileId
-            }
-        };
-        const data = JSON.stringify(exportData, null, 2);
-
         const now = new Date();
-        const yyyy = now.getFullYear();
-        const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const dd = String(now.getDate()).padStart(2, '0');
-        const hh = String(now.getHours()).padStart(2, '0');
-        const min = String(now.getMinutes()).padStart(2, '0');
-        
-        const filename = `koreki-ml-${yyyy}-${mm}-${dd}_${hh}${min}.koreki`;
-        
+        const data = serializeModelSolutionExport(
+            { modelSolution, modelSolutionContext, tasksLayout, settings },
+            now
+        );
+
         try {
-            await downloadFile(data, filename, 'application/json;charset=utf-8');
+            await downloadFile(data, buildModelSolutionExportFilename(now), 'application/json;charset=utf-8');
         } catch (error) {
             console.error('Fehler beim Exportieren der Musterlösung:', error);
             alert('Export der Musterlösung fehlgeschlagen.');

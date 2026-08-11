@@ -16,7 +16,10 @@ jest.mock('../../src/lib/ai/mistral-provider', () => ({
 }));
 
 jest.mock('../../src/lib/env-context', () => ({
-    isLocalInstance: jest.fn(() => true)
+    isLocalInstance: jest.fn(() => true),
+    // Der Anbieter-Gate fragt zusaetzlich, ob es sich um Community Multi-User
+    // handelt — ohne diesen Mock schlaegt der Aufruf mit 500 fehl.
+    isKeycloakAuth: jest.fn(() => false)
 }));
 
 const mockExecuteMistral = executeMistralRequest as jest.Mock;
