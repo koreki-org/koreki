@@ -5,7 +5,8 @@ import { Button } from './ui/Button';
 import { downloadFile } from '@/lib/file-utils';
 
 // Sub-Components
-import { AiProfileSidebar, AiProfileEditor } from './settings/AiProfileModules';
+import { AiProfileSidebar } from './settings/AiProfileSidebar';
+import { AiProfileEditor } from './settings/AiProfileModules';
 
 // Hooks
 import { useAiProfiles } from '../hooks/useAiProfiles';

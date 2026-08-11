@@ -5,7 +5,8 @@ import { downloadFile } from '@/lib/file-utils';
 import { Button } from './ui/Button';
 
 // Sub-Components
-import { SkillsSidebar, SkillsEditor } from './settings/SkillsModules';
+import { SkillsSidebar } from './settings/SkillsSidebar';
+import { SkillsEditor } from './settings/SkillsModules';
 
 // Hooks
 import { useSkillProfiles } from '../hooks/useSkillProfiles';

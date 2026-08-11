@@ -63,7 +63,7 @@ const SIZE_BASELINE: Record<string, number> = {
     'components/upload/ModelSolutionCard.tsx': 1151,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
-    'components/settings/SkillsModules.tsx': 999,
+    'components/settings/SkillsModules.tsx': 791,
     // Bewusst von 1003 angehoben: der strictNullChecks-Durchgang hat hier eine
     // echte Luecke geschlossen (Mistral-Rueckfall ohne Schluessel schickte
     // `Bearer undefined`). Der Waechter plus Begruendung kostet 7 Zeilen. Die
@@ -72,7 +72,7 @@ const SIZE_BASELINE: Record<string, number> = {
     'lib/ai/ai-orchestrator.ts': 1010,
     'lib/ai/ollama-logic.ts': 896,
     'hooks/useGradingMemoryModalState.ts': 757,
-    'components/settings/AiProfileModules.tsx': 710,
+    'components/settings/AiProfileModules.tsx': 499,
     'lib/grading/CalcTrace.ts': 696,
     'hooks/useSkillProfiles.ts': 680,
     'hooks/file-processor/useProcessingPipeline.ts': 659,
