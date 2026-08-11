@@ -74,7 +74,10 @@ const SIZE_BASELINE: Record<string, number> = {
     'hooks/useGradingMemoryModalState.ts': 757,
     'components/settings/AiProfileModules.tsx': 499,
     'lib/grading/CalcTrace.ts': 696,
-    'hooks/useSkillProfiles.ts': 680,
+    // +15 fuer den Wächter gegen den sich selbst ausloesenden Lade-Effekt.
+    // Der Kommentar dort beschreibt den Mechanismus — ohne ihn wird der
+    // Wächter beim naechsten Aufraeumen als ueberfluessig entfernt.
+    'hooks/useSkillProfiles.ts': 695,
     'hooks/file-processor/useProcessingPipeline.ts': 659,
     'pages/app.tsx': 597,
     'lib/ai/prompt-builder.ts': 593,
@@ -83,7 +86,7 @@ const SIZE_BASELINE: Record<string, number> = {
     'hooks/useAiProfiles.ts': 491,
     'components/batch/CalcTraceModal.tsx': 425,
     'components/dashboard/DashboardModals.tsx': 423,
-    'hooks/usePromptProfiles.ts': 403,
+    'hooks/usePromptProfiles.ts': 420, // s. useSkillProfiles — gleicher Wächter
     'components/batch/parts/SecondOpinionDrawer.tsx': 387,
     'components/settings/ProfileModules.tsx': 361,
     'pages/features.tsx': 347,

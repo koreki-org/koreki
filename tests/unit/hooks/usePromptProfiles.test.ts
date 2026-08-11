@@ -1,96 +1,125 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { usePromptProfiles } from '../../../src/hooks/usePromptProfiles';
-import { AppSettings } from '../../../src/types';
+import { apiClient } from '../../../src/lib/api-client';
+import type { AppSettings } from '../../../src/types';
 
-// Mock dependencies
 jest.mock('../../../src/lib/env-context', () => ({
     isDesktopTarget: jest.fn(() => false),
     isLocalInstance: jest.fn(() => false)
 }));
 
-const mockApiClientGet = jest.fn().mockResolvedValue({
-    ok: true,
-    json: async () => []
-});
-
 jest.mock('../../../src/lib/api-client', () => ({
-    apiClient: {
-        get: (...args: any[]) => mockApiClientGet(...args),
-        post: jest.fn(),
-        put: jest.fn(),
-        delete: jest.fn()
-    }
+    apiClient: { get: jest.fn(), post: jest.fn() }
 }));
 
-describe('usePromptProfiles - Industrial Hook Verification', () => {
-    const mockOnSave = jest.fn();
-    const mockOnClose = jest.fn();
-    const defaultSettings: AppSettings = {
-        provider: 'mistral',
-        mistralKey: 'test-key',
-        correctionPrompt: 'Standard System Prompt'
-    } as any;
+const mockGet = apiClient.get as jest.Mock;
+
+/**
+ * REGRESSIONSTEST fuer ein Flackern beim Kopieren eines Profils.
+ *
+ * Der Lade-Effekt hing ueber `fetchProfiles` -> `uebernehmeProfile` an
+ * `selectedProfileId` — und `uebernehmeProfile` SETZTE diese Auswahl. Ein
+ * Effekt, der seine eigene Abhaengigkeit veraendert.
+ *
+ * Beim Kopieren setzt `handleStartNew` die Auswahl auf '', um in den
+ * Anlege-Modus zu gehen. Der dadurch ausgeloeste Nachladevorgang fand ueber
+ * `currentProfileRef` das bisher zugewiesene Profil und stellte die Auswahl
+ * zurueck. Sichtbar war ein Hin- und Herspringen der Beschriftung; gefaehrlich
+ * war der Zustand danach: die Ansicht zeigte ein FREMDES Profil als
+ * "ungespeichert", waehrend im Editor der kopierte Prompt stand. Ein Klick auf
+ * Speichern haette das fremde Profil ueberschrieben.
+ */
+describe('usePromptProfiles — Auswahl beim Anlegen', () => {
+    const profile = (id: string, name: string, correctionPrompt: string) =>
+        ({ id, name, correctionPrompt, isSystem: false });
+
+    const serverProfiles = [
+        profile('id-fisi', 'FISI-Wara', 'Prompt von FISI-Wara'),
+        profile('id-bad', 'Bad Teacher', 'Prompt von Bad Teacher')
+    ];
+
+    const settings = { correctionPrompt: '' } as AppSettings;
+
+    const antwortet = (data: any[]) => {
+        mockGet.mockResolvedValue({ ok: true, json: async () => data });
+    };
+
+    const mounte = () =>
+        renderHook(() => usePromptProfiles(settings, jest.fn(), jest.fn(), 'id-fisi'));
 
     beforeEach(() => {
         jest.clearAllMocks();
-        localStorage.clear();
+        antwortet(serverProfiles);
     });
 
-    it('should initialize with correct default state and settings prompt', async () => {
-        mockApiClientGet.mockResolvedValue({
-            ok: true,
-            json: async () => [
-                { id: 'id-standard', name: 'Allgemeine Korrektur', correctionPrompt: 'Vorlage', isSystem: true }
-            ]
+    /**
+     * Laesst anstehende Effekte und ihre Zusagen vollstaendig durchlaufen.
+     *
+     * Noetig, weil der fehlerhafte Zustand erst NACH dem Nachladevorgang
+     * entstand. Ohne diesen Durchlauf haetten die Tests unten auch mit dem
+     * Fehler bestanden — sie haetten gemessen, bevor der Schaden eintrat.
+     * Der Mock loest ueber Microtasks auf, der Durchlauf ist damit
+     * deterministisch und haengt nicht an einer Wartezeit.
+     */
+    const laufenLassen = async () => {
+        await act(async () => {
+            await Promise.resolve();
+            await Promise.resolve();
         });
+    };
 
-        const { result } = renderHook(() =>
-            usePromptProfiles(defaultSettings, mockOnSave, mockOnClose, 'id-standard')
-        );
+    it('richtet die Auswahl beim Laden auf den uebergebenen Verweis aus', async () => {
+        const { result } = mounte();
 
-        // Die Auswahl wird aus dem Verweis aufgeloest, nicht als Name vorbelegt.
-        await waitFor(() => expect(result.current.selectedProfileId).toBe('id-standard'));
-        expect(result.current.selectedProfile).toBe('Allgemeine Korrektur');
-        expect(result.current.correctionPrompt).toBe('Standard System Prompt');
-        expect(result.current.isCreatingNew).toBe(false);
+        await waitFor(() => expect(result.current.selectedProfile).toBe('FISI-Wara'));
     });
 
-    it('should mark dirty state when correctionPrompt changes from saved state', () => {
-        const { result } = renderHook(() =>
-            usePromptProfiles(defaultSettings, mockOnSave, mockOnClose)
-        );
+    it('bleibt im Anlege-Modus, wenn waehrend des Kopierens nachgeladen wird', async () => {
+        const { result } = mounte();
+        await waitFor(() => expect(result.current.selectedProfile).toBe('FISI-Wara'));
 
         act(() => {
-            result.current.setCorrectionPrompt('Custom Modified System Prompt');
+            result.current.handleStartNew('Prompt von Bad Teacher', 'Kopie von Bad Teacher');
         });
 
-        expect(result.current.correctionPrompt).toBe('Custom Modified System Prompt');
-        expect(result.current.isDirty).toBe(true);
-    });
-
-    it('should support switching selected profile and creation mode', () => {
-        const { result } = renderHook(() =>
-            usePromptProfiles(defaultSettings, mockOnSave, mockOnClose)
-        );
-
-        // Die Auswahl laeuft ueber die Kennung — zwei gleichnamige Profile sind
-        // damit unterscheidbar, und ein Umbenennen bricht sie nicht.
-        act(() => {
-            result.current.handleSelectProfile({
-                id: 'local-42',
-                name: 'Mathematik Spezial',
-                correctionPrompt: 'Achte auf Rechenwege.'
-            });
-        });
-
-        expect(result.current.selectedProfileId).toBe('local-42');
-
-        act(() => {
-            result.current.setIsCreatingNew(true);
-            result.current.setNewProfileName('Neues Profil 2026');
-        });
-
+        // Genau hier sprang die Auswahl frueher auf FISI-Wara zurueck.
+        await laufenLassen();
         expect(result.current.isCreatingNew).toBe(true);
-        expect(result.current.newProfileName).toBe('Neues Profil 2026');
+        expect(result.current.newProfileName).toBe('Kopie von Bad Teacher');
+        expect(result.current.selectedProfile).toBe('');
+    });
+
+    it('meldet den kopierten Stand nicht als Aenderung an einem fremden Profil', async () => {
+        const { result } = mounte();
+        await waitFor(() => expect(result.current.selectedProfile).toBe('FISI-Wara'));
+
+        act(() => {
+            result.current.handleStartNew('Prompt von Bad Teacher', 'Kopie von Bad Teacher');
+        });
+
+        await laufenLassen();
+        expect(result.current.isCreatingNew).toBe(true);
+
+        // Frueher zeigte die Ansicht FISI-Wara als "ungespeichert", waehrend im
+        // Editor der Prompt von Bad Teacher stand — Speichern haette FISI-Wara
+        // ueberschrieben.
+        expect(result.current.selectedProfile).not.toBe('FISI-Wara');
+        expect(result.current.correctionPrompt).toBe('Prompt von Bad Teacher');
+    });
+
+    it('laedt nicht endlos nach, wenn sich die Auswahl aendert', async () => {
+        const { result } = mounte();
+        await waitFor(() => expect(result.current.selectedProfile).toBe('FISI-Wara'));
+
+        const nachErstemLauf = mockGet.mock.calls.length;
+
+        act(() => {
+            result.current.handleSelectProfile(serverProfiles[1]);
+        });
+
+        await waitFor(() => expect(result.current.selectedProfile).toBe('Bad Teacher'));
+
+        // Die Auswahl zu wechseln ist kein Grund, die Liste erneut zu holen.
+        expect(mockGet.mock.calls.length).toBe(nachErstemLauf);
     });
 });

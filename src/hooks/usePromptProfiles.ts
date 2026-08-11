@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppSettings } from '@/types';
 import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
@@ -58,15 +58,32 @@ export const usePromptProfiles = (
     const selectedProfile = selectedProfileData?.name || '';
     const isSystemSelected = !!selectedProfileData?.isSystem;
 
+    // Auswahl und Anlege-Modus werden ueber Referenzen gelesen, nicht ueber
+    // Abhaengigkeiten. Sonst entsteht ein Effekt, der seine eigene Abhaengigkeit
+    // veraendert: `uebernehmeProfile` haengt an `selectedProfileId`, also auch
+    // `fetchProfiles`, also feuert der Lade-Effekt erneut — und schreibt dabei
+    // genau diese Auswahl.
+    const auswahlRef = useRef(selectedProfileId);
+    const legtNeuAnRef = useRef(isCreatingNew);
+    useEffect(() => { auswahlRef.current = selectedProfileId; }, [selectedProfileId]);
+    useEffect(() => { legtNeuAnRef.current = isCreatingNew; }, [isCreatingNew]);
+
     /** Setzt die Liste und richtet die Auswahl auf den Verweis des Aufrufers aus. */
     const uebernehmeProfile = useCallback((alle: any[]) => {
         setProfiles(alle);
-        const current = resolveProfileRef<any>(alle, selectedProfileId || currentProfileRef);
+
+        // Waehrend ein neues Profil entsteht, darf ein Nachladen die Auswahl
+        // NICHT zurueckstellen. Sonst steht der kopierte Prompt neben dem
+        // `lastSavedPrompt` eines fremden Profils: die Ansicht zeigt das falsche
+        // Profil als "ungespeichert", und Speichern ueberschreibt es.
+        if (legtNeuAnRef.current) return;
+
+        const current = resolveProfileRef<any>(alle, auswahlRef.current || currentProfileRef);
         if (current) {
             setSelectedProfileId(current.id);
             setLastSavedPrompt(current.correctionPrompt);
         }
-    }, [selectedProfileId, currentProfileRef]);
+    }, [currentProfileRef]);
 
     const fetchProfiles = useCallback(async () => {
         // Desktop App (Tauri) uses pure localStorage

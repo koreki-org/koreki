@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppSettings } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
@@ -315,6 +315,15 @@ export const useSkillProfiles = (
         }
     }, []);
 
+    // Auswahl und Anlege-Modus ueber Referenzen statt ueber Abhaengigkeiten:
+    // sonst haengt `uebernehmeProfile` an `selectedProfileId`, damit auch
+    // `fetchProfiles`, damit feuert der Lade-Effekt erneut — und schreibt dabei
+    // genau die Auswahl, an der er haengt.
+    const auswahlRef = useRef(selectedProfileId);
+    const legtNeuAnRef = useRef(isCreatingNew);
+    useEffect(() => { auswahlRef.current = selectedProfileId; }, [selectedProfileId]);
+    useEffect(() => { legtNeuAnRef.current = isCreatingNew; }, [isCreatingNew]);
+
     /**
      * Setzt die geladene Liste und richtet die Auswahl darauf aus.
      *
@@ -324,12 +333,18 @@ export const useSkillProfiles = (
      */
     const uebernehmeProfile = useCallback((alle: any[]) => {
         setProfiles(alle);
-        const current = resolveProfileRef<any>(alle, selectedProfileId || currentProfileRef);
+
+        // Waehrend ein neues Set entsteht, darf ein Nachladen die Auswahl NICHT
+        // zurueckstellen — sonst stehen die kopierten Skills neben dem Zustand
+        // eines fremden Sets und Speichern trifft das falsche.
+        if (legtNeuAnRef.current) return;
+
+        const current = resolveProfileRef<any>(alle, auswahlRef.current || currentProfileRef);
         if (current) {
             setSelectedProfileId(current.id);
             hydrateFromProfile(current);
         }
-    }, [selectedProfileId, currentProfileRef, hydrateFromProfile]);
+    }, [currentProfileRef, hydrateFromProfile]);
 
     const fetchProfiles = useCallback(async () => {
         // Desktop App (Tauri) uses pure localStorage
