@@ -72,7 +72,7 @@ const SIZE_BASELINE: Record<string, number> = {
     'lib/ai/ai-orchestrator.ts': 1010,
     'lib/ai/ollama-logic.ts': 896,
     'hooks/useGradingMemoryModalState.ts': 757,
-    'components/settings/AiProfileModules.tsx': 723,
+    'components/settings/AiProfileModules.tsx': 710,
     'lib/grading/CalcTrace.ts': 696,
     'hooks/useSkillProfiles.ts': 680,
     'hooks/file-processor/useProcessingPipeline.ts': 659,

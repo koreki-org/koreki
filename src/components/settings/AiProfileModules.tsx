@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { FloatingActions } from '@/components/ui/FloatingActions';
 import { cn } from '@/lib/utils';
 import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
+import { describeTemperature } from '@/lib/ai/temperature-guidance';
 
 interface SidebarProps {
     profiles: any[];
@@ -276,21 +277,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
     ollamaNumCtx,
     setOllamaNumCtx
 }) => {
-    // Helper for temperature description
-    const getTempDescription = (val: number, tab: 'correction' | 'vision') => {
-        if (tab === 'vision') {
-            if (val === 0) return 'Präzises OCR (Empfohlen)';
-            if (val <= 0.3) return 'Sehr deterministisch';
-            if (val <= 0.7) return 'Standard Transkription';
-            return 'Kreative Texterkennung (Vorsicht!)';
-        } else {
-            if (val === 0) return 'Strikte Konsistenz (Deterministisch)';
-            if (val <= 0.6) return 'Empfohlen für Deep Reasoning (Präzise)';
-            if (val <= 0.8) return 'Ausgewogene Notengebung (Standard)';
-            if (val <= 1.2) return 'Abwechslungsreiches Feedback';
-            return 'Hochgradig kreativ (Nicht für Noten empfohlen)';
-        }
-    };
+    const getTempDescription = describeTemperature;
 
     return (
         <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 overflow-y-auto p-4 sm:p-8">
