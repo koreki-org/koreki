@@ -107,27 +107,27 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
     if (!isOpen || !mounted) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center p-0 sm:p-4 bg-foreground backdrop-blur-md animate-fade-in">
             <div 
                 className="relative w-full md:max-w-[1200px] h-full md:h-[88vh] bg-white border-none md:border md:border-white rounded-none md:rounded-hero shadow-2xl flex flex-col overflow-hidden animate-fade-in text-foreground text-left"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header Section */}
-                <div className="px-4 sm:px-8 py-4 sm:pt-8 sm:pb-4 flex justify-between items-center border-b border-slate-100 bg-white/50 backdrop-blur shrink-0">
+                <div className="px-4 sm:px-8 py-4 sm:pt-8 sm:pb-4 flex justify-between items-center border-b border-border bg-white/50 backdrop-blur shrink-0">
                     <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg border border-slate-100 overflow-hidden shrink-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg border border-border overflow-hidden shrink-0">
                             <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-lg sm:text-2xl font-black font-outfit text-slate-900 tracking-tight truncate">
+                            <h2 className="text-lg sm:text-2xl font-black font-outfit text-foreground tracking-tight truncate">
                                 GradingMemory Center
                             </h2>
-                            <p className="text-xxs sm:text-sm text-slate-500 font-medium italic truncate">
+                            <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">
                                 Kalibrierung von Few-Shot Beispielen
                             </p>
                         </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-slate-100 shrink-0" onClick={onClose}>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted shrink-0" onClick={onClose}>
                         <X size={24} />
                     </Button>
                 </div>
@@ -136,7 +136,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                 <div className="flex-1 flex flex-col min-h-0 overflow-hidden px-4 sm:px-8 py-4 sm:py-6">
                     
                     {error && (
-                        <div className="mb-4 p-3.5 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 text-xs md:text-sm flex items-center gap-2.5 shrink-0 animate-pulse">
+                        <div className="mb-4 p-3.5 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-xs md:text-sm flex items-center gap-2.5 shrink-0 animate-pulse">
                             <AlertCircle size={18} className="shrink-0" />
                             <span>{error}</span>
                         </div>
@@ -156,11 +156,11 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                     {step === 'generating' && (
                         <div className="flex-1 flex flex-col items-center justify-center py-12 text-center animate-pulse">
                             <div className="relative mb-6">
-                                <div className="w-16 h-16 rounded-full border-4 border-indigo-600/10 border-t-indigo-600 animate-spin" />
-                                <Bot size={28} className="absolute inset-0 m-auto text-indigo-600 animate-bounce" />
+                                <div className="w-16 h-16 rounded-full border-4 border-primary border-t-indigo-600 animate-spin" />
+                                <Bot size={28} className="absolute inset-0 m-auto text-primary animate-bounce" />
                             </div>
-                            <h3 className="text-lg font-bold text-slate-900 mb-2 font-outfit">Simuliere virtuelle Schülerabgaben...</h3>
-                            <p className="text-slate-500 text-xs md:text-sm max-w-[450px]">
+                            <h3 className="text-lg font-bold text-foreground mb-2 font-outfit">Simuliere virtuelle Schülerabgaben...</h3>
+                            <p className="text-muted-foreground text-xs md:text-sm max-w-[450px]">
                                 Die KI analysiert deine Musterlösung und schlüpft in die Rollen verschiedener Schüler-Avatare, um Tippfehler, lückenhafte Rechenwege und schwammige Sprache zu simulieren und zu bewerten.
                             </p>
                         </div>
@@ -177,16 +177,16 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                     {/* STEP 4: SUCCESS / SAVED */}
                     {step === 'saved' && (
                         <div className="flex-1 flex flex-col items-center justify-center py-10 text-center">
-                            <div className="w-14 h-14 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-full flex items-center justify-center mb-5 shadow-lg shadow-emerald-100 animate-bounce">
+                            <div className="w-14 h-14 bg-success/10 text-success border border-success/20 rounded-full flex items-center justify-center mb-5 shadow-lg shadow-success/20 animate-bounce">
                                 <ShieldCheck size={32} />
                             </div>
-                            <h3 className="text-lg md:text-xl font-bold text-slate-900 mb-2 font-outfit">Erfahrungsschatz erfolgreich kalibriert!</h3>
-                            <p className="text-slate-500 text-xs md:text-sm max-w-[500px] mb-6 font-medium">
+                            <h3 className="text-lg md:text-xl font-bold text-foreground mb-2 font-outfit">Erfahrungsschatz erfolgreich kalibriert!</h3>
+                            <p className="text-muted-foreground text-xs md:text-sm max-w-[500px] mb-6 font-medium">
                                 Der neue Erfahrungsschatz <strong>&quot;{profileName}&quot;</strong> wurde sicher gespeichert und ist ab sofort als aktives Few-Shot-Modul für deine Korrekturen vorausgewählt!
                             </p>
                             <Button 
                                 onClick={onClose}
-                                className="px-6 py-3 h-11 bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold rounded-xl border border-slate-200 text-xs md:text-sm shadow-sm"
+                                className="px-6 py-3 h-11 bg-muted hover:bg-muted text-foreground font-extrabold rounded-xl border border-border text-xs md:text-sm shadow-sm"
                             >
                                 Schließen & Zurück zur Korrektur
                             </Button>

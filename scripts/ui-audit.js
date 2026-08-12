@@ -109,11 +109,6 @@ for (const dir of targetDirs) {
             continue;
         }
 
-        // Skip LOC-limit modals entirely
-        if (relPath === 'src/components/batch/GradingGraphModal.tsx' || relPath === 'src/components/batch/GradingMemoryModal.tsx') {
-            continue;
-        }
-
         // Classification
         const isMarketingLayout = relPath.startsWith('src/components/marketing/');
 

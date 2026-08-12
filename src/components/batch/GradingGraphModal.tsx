@@ -363,65 +363,65 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     const selectedVar = (graph?.variables || []).find(v => v.id === selectedVarId);
 
     return createPortal(
-        <div className="fixed inset-0 z-[2300] flex items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-md animate-fade-in font-inter text-slate-700">
-            <div className="bg-white border border-slate-100 shadow-2xl rounded-none sm:rounded-[var(--radius)] w-full max-w-6xl h-[100dvh] sm:h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
+        <div className="fixed inset-0 z-[2300] flex items-center justify-center p-0 sm:p-4 bg-foreground backdrop-blur-md animate-fade-in font-inter text-foreground">
+            <div className="bg-white border border-border shadow-2xl rounded-none sm:rounded-[var(--radius)] w-full max-w-6xl h-[100dvh] sm:h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
                 
                 {/* Header */}
-                <div className="px-4 py-4 sm:px-8 sm:py-5 border-b border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row gap-4 lg:gap-3 justify-between items-start lg:items-center shrink-0">
+                <div className="px-4 py-4 sm:px-8 sm:py-5 border-b border-border bg-muted flex flex-col lg:flex-row gap-4 lg:gap-3 justify-between items-start lg:items-center shrink-0">
                     <div className="flex items-center justify-between w-full lg:w-auto gap-3">
                         <div className="flex items-center gap-3 min-w-0">
-                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md border border-slate-100 overflow-hidden shrink-0">
+                            <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-md border border-border overflow-hidden shrink-0">
                                 <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                             </div>
                             <div className="min-w-0">
-                                <h3 className="text-sm sm:text-lg font-black text-slate-900 font-outfit tracking-tight">
+                                <h3 className="text-sm sm:text-lg font-black text-foreground font-outfit tracking-tight">
                                     Grading Graph Designer
                                 </h3>
-                                <p className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">{taskName} (Variable Beziehungen, Toleranzen & Folgefehler-Pfade)</p>
+                                <p className="text-xxs sm:text-xs text-muted-foreground font-medium truncate">{taskName} (Variable Beziehungen, Toleranzen & Folgefehler-Pfade)</p>
                             </div>
                         </div>
                         <Button 
                             variant="ghost"
                             size="icon"
                             onClick={onClose}
-                            className="lg:hidden text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full shrink-0 h-8 w-8 flex items-center justify-center border-0 bg-transparent"
+                            className="lg:hidden text-muted-foreground hover:text-muted-foreground transition-colors p-1.5 hover:bg-muted rounded-full shrink-0 h-8 w-8 flex items-center justify-center border-0 bg-transparent"
                         >
                             <X size={20} />
                         </Button>
                     </div>
 
                     {/* Mode selector tab */}
-                    <div className="flex w-full lg:w-auto overflow-x-auto max-w-full min-w-0 no-scrollbar scrollbar-none bg-slate-200/50 p-1 rounded-xl gap-1 shrink-0 lg:ml-auto lg:mr-6">
+                    <div className="flex w-full lg:w-auto overflow-x-auto max-w-full min-w-0 no-scrollbar scrollbar-none bg-muted p-1 rounded-xl gap-1 shrink-0 lg:ml-auto lg:mr-6">
                         <button 
                             type="button"
                             onClick={() => setActiveTab('ai')}
-                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'ai' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'ai' ? "bg-white text-primary shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
                         >
-                            <Sparkles size={12} className={cn(activeTab === 'ai' && "text-indigo-600")} />
+                            <Sparkles size={12} className={cn(activeTab === 'ai' && "text-primary")} />
                             KI-Assistent 🪄
                         </button>
                         <button 
                             type="button"
                             onClick={() => { setActiveTab('testing'); handleRunPlayground(); }}
-                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'testing' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'testing' ? "bg-white text-primary shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
                         >
-                            <Eye size={12} className={cn(activeTab === 'testing' && "text-indigo-600")} />
+                            <Eye size={12} className={cn(activeTab === 'testing' && "text-primary")} />
                             Graph testen 🧪
                         </button>
                         <button 
                             type="button"
                             onClick={() => setActiveTab('editor')}
-                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'editor' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'editor' ? "bg-white text-primary shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
                         >
-                            <Layers size={12} className={cn(activeTab === 'editor' && "text-indigo-600")} />
+                            <Layers size={12} className={cn(activeTab === 'editor' && "text-primary")} />
                             Knoten-Editor 📊
                         </button>
                         <button 
                             type="button"
                             onClick={() => setActiveTab('json')}
-                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'json' ? "bg-white text-indigo-600 shadow-sm font-black" : "text-slate-500 hover:text-slate-800")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'json' ? "bg-white text-primary shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
                         >
-                            <Code size={12} className={cn(activeTab === 'json' && "text-indigo-600")} />
+                            <Code size={12} className={cn(activeTab === 'json' && "text-primary")} />
                             JSON-Editor 💻
                         </button>
                     </div>
@@ -430,30 +430,30 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={onClose}
-                        className="text-slate-400 hover:text-slate-600 transition-colors p-1.5 hover:bg-slate-100 rounded-full hidden lg:flex h-8 w-8 items-center justify-center border-0 bg-transparent"
+                        className="text-muted-foreground hover:text-muted-foreground transition-colors p-1.5 hover:bg-muted rounded-full hidden lg:flex h-8 w-8 items-center justify-center border-0 bg-transparent"
                     >
                         <X size={20} />
                     </Button>
                 </div>
 
                 {isLocked && (
-                    <div className="bg-amber-50 border-b border-amber-200 text-amber-800 px-4 sm:px-8 py-3 flex items-center gap-2 text-xs font-semibold shrink-0">
-                        <AlertCircle size={16} className="text-amber-600 shrink-0" />
+                    <div className="bg-warning/10 border-b border-warning/20 text-warning px-4 sm:px-8 py-3 flex items-center gap-2 text-xs font-semibold shrink-0">
+                        <AlertCircle size={16} className="text-warning shrink-0" />
                         <span>Der Graph befindet sich im schreibgeschützten Modus (Read-Only), da bereits korrigierte Schülerarbeiten vorliegen. Änderungen sind deaktiviert.</span>
                     </div>
                 )}
 
                 {/* Subheader/Actions Panel Toolbar */}
-                <div className="px-4 sm:px-8 py-3 bg-slate-50/20 border-b border-slate-100/50 flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+                <div className="px-4 sm:px-8 py-3 bg-muted border-b border-border flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                     <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
                         {/* 1. Assign Existing Graph Skill from Skill Center */}
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                            <span className="text-xs font-black uppercase text-slate-400 tracking-wider text-left block">Bestehender Skill:</span>
+                            <span className="text-xs font-black uppercase text-muted-foreground tracking-wider text-left block">Bestehender Skill:</span>
                             <select
                                 value={taskType || 'default'}
                                 disabled={isLocked}
                                 onChange={(e) => onEngineChange?.(e.target.value)}
-                                className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 hover:border-slate-300 text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed font-inter"
+                                className="w-full sm:w-auto h-8 px-2.5 rounded-xl border border-border bg-white text-foreground hover:border-border text-xs font-bold cursor-pointer focus:outline-none transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed font-inter"
                             >
                                 <option value="default">-- Kein Graph-Skill aktiv (Standard) --</option>
                                 {Object.entries(customSkills || {})
@@ -467,18 +467,18 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         </div>
 
                         {/* Divider line */}
-                        <div className="hidden md:block h-6 w-px bg-slate-200"></div>
+                        <div className="hidden md:block h-6 w-px bg-muted"></div>
 
                         {/* 3. Name & Save Custom Skill (Template) */}
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                            <span className="text-xs font-black uppercase text-slate-400 tracking-wider text-left block">Skill Name:</span>
+                            <span className="text-xs font-black uppercase text-muted-foreground tracking-wider text-left block">Skill Name:</span>
                             <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
                                 <Input 
                                     value={skillName}
                                     disabled={isLocked}
                                     onChange={(e) => setSkillName(e.target.value)}
                                     placeholder="z.B. Subnetz-Berechnung"
-                                    className="h-8 w-full sm:w-44 rounded-xl border border-slate-200 text-xs font-bold px-2.5 focus:border-indigo-500 bg-white disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="h-8 w-full sm:w-44 rounded-xl border border-border text-xs font-bold px-2.5 focus:border-primary bg-white disabled:opacity-60 disabled:cursor-not-allowed"
                                 />
                                 <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                                     {!isLocked && (
@@ -495,7 +495,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     alert(`Änderungen am Graphen wurden in den Skill "${skillName.trim()}" übernommen. Klicke gleich im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern!`);
                                                 }
                                             }}
-                                            className="flex-1 sm:flex-initial h-8 rounded-full text-xs font-black uppercase border border-indigo-200 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-100 gap-1.5 px-4 transition-all flex items-center justify-center shrink-0 shadow-xs duration-300 active:scale-95"
+                                            className="flex-1 sm:flex-initial h-8 rounded-full text-xs font-black uppercase border border-primary/20 text-primary bg-primary/5 hover:bg-primary/5 gap-1.5 px-4 transition-all flex items-center justify-center shrink-0 shadow-xs duration-300 active:scale-95"
                                             title="Als wiederverwendbaren Custom Skill im Skill Center speichern bzw. übernehmen"
                                         >
                                             <Check size={14} /> Speichern
@@ -509,7 +509,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     onDeleteGraph();
                                                 }
                                             }}
-                                            className="flex-1 sm:flex-initial h-8 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700 transition-all text-xs font-bold gap-1 px-3 flex items-center justify-center shrink-0"
+                                            className="flex-1 sm:flex-initial h-8 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive/10 hover:text-destructive transition-all text-xs font-bold gap-1 px-3 flex items-center justify-center shrink-0"
                                             title="Bewertungs-Graph löschen und Aufgabe zurücksetzen"
                                         >
                                             <Trash2 size={13} />
@@ -522,8 +522,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                     </div>
 
                     {/* Hint text / spacer */}
-                    <span className="text-xs text-slate-400 font-medium hidden xl:flex items-center gap-1.5 ml-auto">
-                        <Sparkles size={11} className="text-indigo-500" />
+                    <span className="text-xs text-muted-foreground font-medium hidden xl:flex items-center gap-1.5 ml-auto">
+                        <Sparkles size={11} className="text-primary" />
                         PANG Engine berechnet Folgefehler vollautomatisch
                     </span>
                 </div>
@@ -608,15 +608,15 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="px-4 sm:px-8 py-4 sm:py-5 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row gap-4 justify-between items-center shrink-0">
-                    <p className="text-xs text-slate-400 font-inter text-center sm:text-left leading-normal">
+                <div className="px-4 sm:px-8 py-4 sm:py-5 border-t border-border bg-muted flex flex-col sm:flex-row gap-4 justify-between items-center shrink-0">
+                    <p className="text-xs text-muted-foreground font-inter text-center sm:text-left leading-normal">
                         * Die Variablen ID wird beim Parsen von Schülerlösungen automatisch gematcht (z. B. &quot;subnetA_hosts&quot;).
                     </p>
                     <div className="flex gap-3 w-full sm:w-auto justify-stretch sm:justify-end">
                         <Button 
                             variant="ghost" 
                             onClick={onClose}
-                            className="h-10 flex-1 sm:flex-initial rounded-xl px-5 font-bold text-slate-500 hover:bg-slate-100"
+                            className="h-10 flex-1 sm:flex-initial rounded-xl px-5 font-bold text-muted-foreground hover:bg-muted"
                         >
                             {isLocked ? "Schließen" : "Abbrechen"}
                         </Button>
@@ -624,7 +624,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             <Button 
                                 onClick={() => { onSave(graph); onClose(); }}
                                 disabled={!!jsonError}
-                                className="h-10 flex-1 sm:flex-initial rounded-xl px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-lg shadow-indigo-100 transition-all"
+                                className="h-10 flex-1 sm:flex-initial rounded-xl px-6 bg-primary hover:bg-primary text-white font-black shadow-lg shadow-primary/10 transition-all"
                             >
                                 Zuweisen
                             </Button>
