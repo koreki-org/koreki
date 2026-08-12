@@ -66,7 +66,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // in vier benannte Reiter zu trennen ist der groessere Gewinn.
     'components/batch/parts/GraphEditorPanel.tsx': 456,
     'components/batch/parts/GraphAiPanel.tsx': 345,
-    'components/upload/ModelSolutionCard.tsx': 1151,
+    'components/upload/ModelSolutionCard.tsx': 985,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
     'components/settings/SkillsModules.tsx': 791,
