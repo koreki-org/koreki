@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FloatingActions } from '@/components/ui/FloatingActions';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
+import { useFileDropZone } from '@/hooks/useFileDropZone';
 
 /**
  * Seitenleiste der Skill-Profile — Auswahl, Umbenennen, Import, Export.
@@ -47,7 +48,6 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
     setEditingProfileId
 }) => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const [isDragging, setIsDragging] = React.useState(false);
 
     /**
      * Liest eine abgelegte Profildatei ein.
@@ -73,36 +73,12 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-    };
-
-    const handleDrop = async (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-
-        const file = e.dataTransfer.files?.[0];
-        if (!file) return;
-
-        await importProfileFile(file);
-    };
+    const { isDragging, dragProps } = useFileDropZone(importProfileFile);
 
     return (
         <div 
             className={`flex-1 flex flex-col overflow-hidden relative transition-all duration-200 h-full ${isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
+            {...dragProps}
         >
             {isDragging && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-primary/5 backdrop-blur-sm border-2 border-dashed border-primary rounded-2xl m-2 pointer-events-none">

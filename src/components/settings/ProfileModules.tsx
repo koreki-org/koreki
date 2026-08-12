@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { FloatingActions } from '@/components/ui/FloatingActions';
 import { cn } from '@/lib/utils';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
+import { useFileDropZone } from '@/hooks/useFileDropZone';
 import { downloadFile } from '@/lib/file-utils';
 
 
@@ -43,51 +44,37 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
     setEditingProfileId
 }) => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const [isDragging, setIsDragging] = React.useState(false);
+
+    /**
+     * Liest eine Profildatei ein.
+     *
+     * Der Fehlerfall war hier nicht abgefangen — dieselbe Luecke wie in der
+     * Skill-Seitenleiste: eine kaputte Datei brach den Vorgang still ab, und
+     * die Lehrkraft sah einfach nichts passieren.
+     */
+    const importProfileFile = async (file: File) => {
+        try {
+            onImportParsedProfile(parseMarkdownProfile(await file.text()));
+        } catch (err) {
+            alert('Ungültiges Experten-Profil-Format (Markdown erwartet).');
+        }
+    };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        const text = await file.text();
-        const parsed = parseMarkdownProfile(text);
-        onImportParsedProfile(parsed);
+        await importProfileFile(file);
         // Reset input so the same file can be uploaded again if needed
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-    };
-
-    const handleDrop = async (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-
-        const file = e.dataTransfer.files?.[0];
-        if (!file) return;
-
-        const text = await file.text();
-        const parsed = parseMarkdownProfile(text);
-        onImportParsedProfile(parsed);
-    };
+    const { isDragging, dragProps } = useFileDropZone(importProfileFile);
 
     return (
     <div 
         className={`flex-1 flex flex-col overflow-hidden relative transition-all duration-200 ${isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
-        onDragOver={handleDragOver}
-        onDragEnter={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        {...dragProps}
     >
         {isDragging && (
             <div className="absolute inset-0 z-50 flex items-center justify-center bg-primary/5 backdrop-blur-sm border-2 border-dashed border-primary rounded-2xl m-2 pointer-events-none">

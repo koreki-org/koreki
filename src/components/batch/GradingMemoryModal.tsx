@@ -87,6 +87,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
         hasChanges,
         handleImportClick,
         handleImportFile,
+        importMemoryFile,
         handleExportMemory,
         handleConfirmRename,
         handleUpdateCaseField,

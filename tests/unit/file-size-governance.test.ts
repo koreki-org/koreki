@@ -77,7 +77,8 @@ const SIZE_BASELINE: Record<string, number> = {
     // dieser Eintrag ohnehin weg.
     'lib/ai/ai-orchestrator.ts': 1010,
     'lib/ai/ollama-logic.ts': 896,
-    'hooks/useGradingMemoryModalState.ts': 757,
+    // +14 fuer die Trennung von Datei- und Ereignis-Weg beim Import.
+    'hooks/useGradingMemoryModalState.ts': 771,
     'components/settings/AiProfileModules.tsx': 499,
     'lib/grading/CalcTrace.ts': 696,
     // +15 fuer den Wächter gegen den sich selbst ausloesenden Lade-Effekt.
@@ -94,13 +95,14 @@ const SIZE_BASELINE: Record<string, number> = {
     'components/dashboard/DashboardModals.tsx': 423,
     'hooks/usePromptProfiles.ts': 420, // s. useSkillProfiles — gleicher Wächter
     'components/batch/parts/SecondOpinionDrawer.tsx': 387,
-    'components/settings/ProfileModules.tsx': 361,
+    'components/settings/ProfileModules.tsx': 348,
     'pages/features.tsx': 347,
     'components/RedactionModal.tsx': 342,
     'components/layout/AppHeader.tsx': 337,
-    // +8 fuer den Import-Knopf, der aus dem Inhaltsbereich in die Seitenleiste
-    // gezogen wurde — einheitlich mit den drei Profil-Modals.
-    'components/batch/GradingMemoryStartScreen.tsx': 314
+    // +24 gegenueber 306: Import-Knopf aus dem Inhaltsbereich in die
+    // Seitenleiste gezogen und Ablagezone ergaenzt — beides zur Angleichung an
+    // die drei Profil-Seitenleisten.
+    'components/batch/GradingMemoryStartScreen.tsx': 330
 };
 
 /**

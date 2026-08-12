@@ -3,6 +3,7 @@ import { SlidersHorizontal, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Downl
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FloatingActions } from '@/components/ui/FloatingActions';
+import { useFileDropZone } from '@/hooks/useFileDropZone';
 
 /**
  * Seitenleiste der KI-Profile — Auswahl, Umbenennen, Import, Export.
@@ -46,59 +47,30 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
     setEditingProfileId
 }) => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const [isDragging, setIsDragging] = React.useState(false);
+
+    /** Liest eine Profildatei ein — ein Weg fuer Dateiauswahl und Ablegen. */
+    const importProfileFile = async (file: File) => {
+        try {
+            onImportProfile(JSON.parse(await file.text()));
+        } catch (err) {
+            alert('Ungültiges KI-Profil-Format (JSON erwartet).');
+        }
+    };
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        try {
-            const text = await file.text();
-            const parsed = JSON.parse(text);
-            onImportProfile(parsed);
-        } catch (err) {
-            alert("Ungültiges KI-Profil-Format (JSON erwartet).");
-        }
-        
+        await importProfileFile(file);
         if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
-    const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-    };
-
-    const handleDrop = async (e: React.DragEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setIsDragging(false);
-
-        const file = e.dataTransfer.files?.[0];
-        if (!file) return;
-
-        try {
-            const text = await file.text();
-            const parsed = JSON.parse(text);
-            onImportProfile(parsed);
-        } catch (err) {
-            alert("Ungültiges KI-Profil-Format.");
-        }
-    };
+    const { isDragging, dragProps } = useFileDropZone(importProfileFile);
 
     return (
         <div 
             className={`flex-1 flex flex-col overflow-hidden relative transition-all duration-200 ${isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
+            {...dragProps}
         >
             {isDragging && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-primary/5 backdrop-blur-sm border-2 border-dashed border-primary rounded-2xl m-2 pointer-events-none">

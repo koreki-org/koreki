@@ -185,10 +185,14 @@ export function useGradingMemoryModalState({
         fileInputRef.current?.click();
     };
 
-    const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
+    /**
+     * Liest eine Erfahrungsschatz-Datei ein.
+     *
+     * Nimmt bewusst eine Datei statt eines Eingabe-Ereignisses, damit sowohl
+     * die Dateiauswahl als auch das Ablegen per Drag-and-Drop denselben Weg
+     * nehmen — wie in den drei Profil-Seitenleisten.
+     */
+    const importMemoryFile = async (file: File) => {
         try {
             const text = await file.text();
             const parsed = parseMarkdownGradingMemory(text);
@@ -223,6 +227,15 @@ export function useGradingMemoryModalState({
             }
         } catch (err: any) {
             alert("Import-Fehler: " + (err.message || String(err)));
+        }
+    };
+
+    const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            await importMemoryFile(file);
         } finally {
             if (fileInputRef.current) fileInputRef.current.value = '';
         }
@@ -738,6 +751,7 @@ const handleSaveActiveMemoryChanges = async () => {
         hasChanges,
         handleImportClick,
         handleImportFile,
+        importMemoryFile,
         handleExportMemory,
         handleConfirmRename,
         handleUpdateCaseField,

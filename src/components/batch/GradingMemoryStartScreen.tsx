@@ -1,6 +1,7 @@
 import React from 'react';
 import { Sliders, Check, Download, PlusCircle, Pencil, Trash2, Save, BookOpen, Sparkles, AlertCircle, Bot, ArrowRight, RefreshCcw } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { useFileDropZone } from '@/hooks/useFileDropZone';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { FloatingActions } from '../ui/FloatingActions';
@@ -25,16 +26,31 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
         memories, activeMemoryId, selectMemory, deleteMemory, addLocalMemory,
         editingActiveName, setEditingActiveName, editingMemoryId, setEditingMemoryId, editingName, setEditingName,
         fileInputRef, isSaving, isGenerating, error, activeMemory, isImportedAndUnsaved, hasChanges,
-        handleImportClick, handleImportFile, handleExportMemory, handleConfirmRename,
+        handleImportClick, handleImportFile, importMemoryFile, handleExportMemory, handleConfirmRename,
         handleUpdateCaseField, handleDeleteCase, handleSaveActiveMemoryChanges,
         handleSaveImportedMemory, handleGenerate, handleCreateEmptyMemory, handleAddCaseManually
     } = state;
+
+    // Einheitlich mit den drei Profil-Seitenleisten: Dateien lassen sich auch
+    // auf die Liste ablegen, nicht nur ueber den Knopf auswaehlen.
+    const { isDragging, dragProps } = useFileDropZone(importMemoryFile);
 
     return (
                         <div className="flex-1 flex flex-col md:flex-row gap-6 overflow-hidden">
                             
                             {/* Left Column: List of available memories */}
-                            <div className="w-full md:w-1/3 flex flex-col border-b md:border-b-0 md:border-r border-border pb-6 md:pb-0 md:pr-6 overflow-hidden">
+                            <div
+                                className={`w-full md:w-1/3 flex flex-col border-b md:border-b-0 md:border-r border-border pb-6 md:pb-0 md:pr-6 overflow-hidden relative transition-all duration-200 ${isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
+                                {...dragProps}
+                            >
+                                {isDragging && (
+                                    <div className="absolute inset-0 z-50 flex items-center justify-center bg-primary/5 backdrop-blur-sm border-2 border-dashed border-primary rounded-2xl m-2 pointer-events-none">
+                                        <div className="flex flex-col items-center text-primary font-bold gap-2">
+                                            <RefreshCcw size={32} className="animate-spin-slow" />
+                                            <p>Erfahrungsschatz hier loslassen!</p>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="p-4 border-b border-border space-y-2 relative z-10">
                                     <Button 
                                         onClick={() => selectMemory(null)} 
