@@ -26,6 +26,59 @@ const excludedPages = [
 // GradingGraphModal und sind inzwischen auf Design-Tokens umgestellt.
 const gracePeriodFiles = [];
 
+
+// --- Rohe Bedienelemente ---------------------------------------------------
+//
+// Der Style Guide verlangt: alle UI-Elemente stammen aus @/components/ui/,
+// rohe <button>/<input>/<select> sind ausserhalb davon untersagt. Die Regel
+// stand bisher nur im Dokument — 76 Faelle in 31 Dateien sind so entstanden,
+// ohne dass es jemandem auffiel. Dasselbe Muster wie bei den Dateigroessen und
+// beim Backend-Logging: eine Regel ohne Waechter driftet.
+//
+// src/components/ui/ ist ausgenommen — dort WRAPPT das Kit die rohen Elemente,
+// das ist ihr Zweck.
+//
+// RATSCHE: der Ist-Stand ist eingefroren. Neue Dateien muessen sauber sein,
+// Bestandsdateien duerfen nicht wachsen, und wer eine verbessert, zieht ihren
+// Wert mit runter. Faellt eine auf null, muss sie aus der Liste verschwinden.
+const RAW_CONTROL_BASELINE = {
+    'src/components/batch/ExportToolbar.tsx': 7,
+    'src/components/batch/parts/GraphEditorPanel.tsx': 7,
+    'src/components/batch/GradingGraphModal.tsx': 5,
+    'src/components/batch/GradingMemoryStartScreen.tsx': 5,
+    'src/components/settings/AiProfileModules.tsx': 5,
+    'src/components/settings/SkillsModules.tsx': 5,
+    'src/components/upload/ModelSolutionCard.tsx': 5,
+    'src/components/upload/ModelSolutionTaskCard.tsx': 4,
+    'src/components/batch/parts/GraphAiPanel.tsx': 3,
+    'src/pages/desktop-setup.tsx': 3,
+    'src/components/batch/CalcTraceModal.tsx': 2,
+    'src/components/batch/GradingMemoryCalibrateScreen.tsx': 2,
+    'src/components/batch/parts/BatchTaskAnalysisCard.tsx': 2,
+    'src/components/settings/ProfileModules.tsx': 2,
+    'src/components/settings/UnifiedAiConfig.tsx': 2,
+    'src/components/upload/StudentWorkCard.tsx': 2,
+    'src/components/avv-upload/StepUpload.tsx': 1,
+    'src/components/batch/BatchHeader.tsx': 1,
+    'src/components/batch/DigitalSlipsModal.tsx': 1,
+    'src/components/batch/GradingMemoryEditorView.tsx': 1,
+    'src/components/batch/parts/BatchSolutionPanel.tsx': 1,
+    'src/components/layout/AppHeader.tsx': 1,
+    'src/components/marketing/ImageLightbox.tsx': 1,
+    'src/components/PDFSplitModal.tsx': 1,
+    'src/components/settings/AiProfileSidebar.tsx': 1,
+    'src/components/settings/OpenAICompatibleConfig.tsx': 1,
+    // Ein <input type="range">. Im Kit gibt es keine Slider-Komponente — die
+    // Regel ist fuer Regler derzeit nicht erfuellbar.
+    'src/components/settings/ParameterSlider.tsx': 1,
+    'src/components/settings/PrivacySection.tsx': 1,
+    'src/components/settings/SkillsSidebar.tsx': 1,
+    'src/pages/features.tsx': 1,
+    'src/pages/view.tsx': 1
+};
+
+const RAW_CONTROL_PATTERN = /<(?:input|button|select)\b/g;
+
 // 21 Tailwind Color Families
 const colorFamilies = 'slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose';
 
@@ -95,6 +148,7 @@ console.log('Ã°Å¸â€Â Starte Koreki UI- & Farb-Audit...');
 let totalViolations = 0;
 let totalWarnings = 0;
 const processedFiles = new Set();
+const rawControlCounts = {};
 
 for (const dir of targetDirs) {
     const files = getFiles(dir);
@@ -126,6 +180,26 @@ for (const dir of targetDirs) {
 
         const content = fs.readFileSync(file, 'utf-8');
         const lines = content.split('\n');
+
+        // Rohe Bedienelemente: pro DATEI gezaehlt, nicht pro Zeile.
+        if (!relPath.startsWith('src/components/ui/')) {
+            RAW_CONTROL_PATTERN.lastIndex = 0;
+            const rohe = (content.match(RAW_CONTROL_PATTERN) || []).length;
+            const erlaubt = RAW_CONTROL_BASELINE[relPath];
+            rawControlCounts[relPath] = rohe;
+
+            if (erlaubt === undefined && rohe > 0) {
+                console.error(`[31m🚨 Rohe Bedienelemente (${rohe}) in einer bisher sauberen Datei. Der Style Guide verlangt Button/Input/Dropdown aus @/components/ui/.[0m
+   Datei: ${relPath}
+`);
+                totalViolations++;
+            } else if (erlaubt !== undefined && rohe > erlaubt) {
+                console.error(`[31m🚨 Rohe Bedienelemente gewachsen: ${rohe} statt ${erlaubt}. Altlasten duerfen nicht zunehmen.[0m
+   Datei: ${relPath}
+`);
+                totalViolations++;
+            }
+        }
         
         lines.forEach((line, index) => {
             // Ignore comment lines to prevent false positives in developer annotations
@@ -176,6 +250,20 @@ for (const dir of targetDirs) {
         });
     }
 }
+
+Object.entries(RAW_CONTROL_BASELINE).forEach(([relPath, erlaubt]) => {
+    const ist = rawControlCounts[relPath];
+    if (ist === undefined) {
+        console.error(`[31m📉 ${relPath} existiert nicht mehr — aus RAW_CONTROL_BASELINE entfernen.[0m`);
+        totalViolations++;
+    } else if (ist === 0) {
+        console.error(`[31m📉 ${relPath} hat keine rohen Bedienelemente mehr — aus RAW_CONTROL_BASELINE entfernen. 🎉[0m`);
+        totalViolations++;
+    } else if (ist < erlaubt) {
+        console.error(`[31m📉 ${relPath}: nur noch ${ist} statt ${erlaubt} — Baseline nachziehen, damit die Ratsche greift.[0m`);
+        totalViolations++;
+    }
+});
 
 if (totalWarnings > 0) {
     console.warn(`\x1b[33mÃ¢Å¡Â Ã¯Â¸Â  UI-Audit: ${totalWarnings} Grace-Period-Warnungen gefunden (nicht-blockierend).\x1b[0m`);
