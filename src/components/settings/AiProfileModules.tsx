@@ -7,6 +7,7 @@ import { FloatingActions } from '@/components/ui/FloatingActions';
 import { cn } from '@/lib/utils';
 import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
 import { describeTemperature } from '@/lib/ai/temperature-guidance';
+import { ParameterSlider } from './ParameterSlider';
 
 
 interface EditorProps {
@@ -192,215 +193,117 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                 </div>
                             </div>
 
-                            {/* Slider: Temperature */}
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Temperatur (Kreativität)</label>
-                                        <KorekiTooltip 
-                                            title="Temperatur" 
-                                            content="Steuert die Kreativität des Modells. 0.0 ist maximal deterministisch (präzise). Höhere Werte erlauben kreativeres und abwechslungsreicheres Feedback."
-                                            buttonClassName="h-6 w-6"
-                                            iconSize={14}
-                                            align="left"
-                                        />
-                                    </div>
-                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{temperature.toFixed(1)}</span>
-                                </div>
-                                <input
-                                    type="range" min={(provider === 'ollama' || provider === 'openai-compatible') ? "0.2" : "0.0"} max="2.0" step="0.1" value={temperature}
-                                    onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
-                                />
-                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold leading-relaxed">
-                                    <span>{getTempDescription(temperature, 'correction')}</span>
-                                    <span className="text-xxs text-muted-foreground font-medium">Standard: {enableThinking ? "0.6" : "0.7"}</span>
-                                </div>
-                            </div>
+                            <ParameterSlider
+                                label="Temperatur (Kreativität)"
+                                tooltipTitle="Temperatur"
+                                tooltipContent="Steuert die Kreativität des Modells. 0.0 ist maximal deterministisch (präzise). Höhere Werte erlauben kreativeres und abwechslungsreicheres Feedback."
+                                value={temperature}
+                                onChange={setTemperature}
+                                min={(provider === 'ollama' || provider === 'openai-compatible') ? "0.2" : "0.0"}
+                                max="2.0"
+                                step="0.1"
+                                decimals={1}
+                                description={getTempDescription(temperature, 'correction')}
+                                defaultHint={enableThinking ? "0.6" : "0.7"}
+                            />
 
-                            {/* Slider: Top P */}
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Top P (Nucleus Sampling)</label>
-                                        <KorekiTooltip 
-                                            title="Top P" 
-                                            content="Eingrenzung des Wortschatzes. 0.95 bedeutet, dass nur die obersten 95% der wahrscheinlichsten Wörter berücksichtigt werden, um Ausreißer zu vermeiden."
-                                            buttonClassName="h-6 w-6"
-                                            iconSize={14}
-                                            align="left"
-                                        />
-                                    </div>
-                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{topP.toFixed(2)}</span>
-                                </div>
-                                <input
-                                    type="range" min="0.0" max="1.0" step="0.05" value={topP}
-                                    onChange={(e) => setTopP(parseFloat(e.target.value))}
-                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
-                                />
-                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold">
-                                    <span>Beschränkt den Token-Auswahlpool</span>
-                                    <span className="text-xxs text-muted-foreground font-medium">Standard: {enableThinking ? "0.95" : "0.80"}</span>
-                                </div>
-                            </div>
+                            <ParameterSlider
+                                label="Top P (Nucleus Sampling)"
+                                tooltipTitle="Top P"
+                                tooltipContent="Eingrenzung des Wortschatzes. 0.95 bedeutet, dass nur die obersten 95% der wahrscheinlichsten Wörter berücksichtigt werden, um Ausreißer zu vermeiden."
+                                value={topP}
+                                onChange={setTopP}
+                                min="0.0"
+                                max="1.0"
+                                step="0.05"
+                                decimals={2}
+                                description="Beschränkt den Token-Auswahlpool"
+                                defaultHint={enableThinking ? "0.95" : "0.80"}
+                            />
 
-                            {/* Slider: Max Tokens */}
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Max Tokens (num_predict)</label>
-                                        <KorekiTooltip 
-                                            title="Max Tokens" 
-                                            content="Die absolute Obergrenze für die Länge der KI-Generierung. Verhindert unendliche Textschleifen. System-Aktionen (z. B. Mapping) werden im Backend automatisch auf 8.192 gedeckelt, um Kontextüberläufe zu verhindern."
-                                            buttonClassName="h-6 w-6"
-                                            iconSize={14}
-                                            align="left"
-                                        />
-                                    </div>
-                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{maxTokens.toLocaleString()}</span>
-                                </div>
-                                <input
-                                    type="range" min="2048" max="32768" step="1024" value={maxTokens}
-                                    onChange={(e) => setMaxTokens(parseInt(e.target.value))}
-                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
-                                />
-                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold">
-                                    <span>Maximale Länge des KI-Antworttexts</span>
-                                    <span className="text-xxs text-muted-foreground font-medium">Standard: 32.768</span>
-                                </div>
-                            </div>
+                            <ParameterSlider
+                                label="Max Tokens (num_predict)"
+                                tooltipTitle="Max Tokens"
+                                tooltipContent="Die absolute Obergrenze für die Länge der KI-Generierung. Verhindert unendliche Textschleifen. System-Aktionen (z. B. Mapping) werden im Backend automatisch auf 8.192 gedeckelt, um Kontextüberläufe zu verhindern."
+                                value={maxTokens}
+                                onChange={setMaxTokens}
+                                min="2048"
+                                max="32768"
+                                step="1024"
+                                description="Maximale Länge des KI-Antworttexts"
+                                defaultHint="32.768"
+                            />
 
-                            {/* Slider: Presence Penalty */}
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Presence Penalty</label>
-                                        <KorekiTooltip 
-                                            title="Presence Penalty" 
-                                            content="Bestraft die wiederholte Verwendung gleicher Wörter. Ein Wert von 0.0 ist empfohlen für mathematische Aufgaben und präzise Tabellen-Mappings, um Auslassungen von Aufgabenbezeichnern zu vermeiden."
-                                            buttonClassName="h-6 w-6"
-                                            iconSize={14}
-                                            align="left"
-                                        />
-                                    </div>
-                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{presencePenalty.toFixed(1)}</span>
-                                </div>
-                                <input
-                                    type="range" min="-2.0" max="2.0" step="0.1" value={presencePenalty}
-                                    onChange={(e) => setPresencePenalty(parseFloat(e.target.value))}
-                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
-                                />
-                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold">
-                                    <span>Bestraft Wortwiederholungen im Fließtext</span>
-                                    <span className="text-xxs text-muted-foreground font-medium">Standard: 0.0</span>
-                                </div>
-                            </div>
+                            <ParameterSlider
+                                label="Presence Penalty"
+                                tooltipTitle="Presence Penalty"
+                                tooltipContent="Bestraft die wiederholte Verwendung gleicher Wörter. Ein Wert von 0.0 ist empfohlen für mathematische Aufgaben und präzise Tabellen-Mappings, um Auslassungen von Aufgabenbezeichnern zu vermeiden."
+                                value={presencePenalty}
+                                onChange={setPresencePenalty}
+                                min="-2.0"
+                                max="2.0"
+                                step="0.1"
+                                decimals={1}
+                                description="Bestraft Wortwiederholungen im Fließtext"
+                                defaultHint="0.0"
+                            />
                         </>
                     ) : (
                         <>
-                            {/* Slider: Vision Temperature */}
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Vision Temperatur</label>
-                                        <KorekiTooltip 
-                                            title="Vision Temperatur" 
-                                            content="Steuert die Temperatur speziell für die Handschriften-Erkennung (OCR). Werte nahe 0.4 werden erzwungen, um lokale Schleifen bei unklaren Schriftzeichen zu verhindern."
-                                            buttonClassName="h-6 w-6"
-                                            iconSize={14}
-                                            align="left"
-                                        />
-                                    </div>
-                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{visionTemperature.toFixed(1)}</span>
-                                </div>
-                                <input
-                                    type="range" min={(provider === 'ollama' || provider === 'openai-compatible') ? "0.2" : "0.0"} max="2.0" step="0.1" value={visionTemperature}
-                                    onChange={(e) => setVisionTemperature(parseFloat(e.target.value))}
-                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
-                                />
-                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold leading-relaxed">
-                                    <span>{getTempDescription(visionTemperature, 'vision')}</span>
-                                    <span className="text-xxs text-muted-foreground font-medium">Standard: 0.2</span>
-                                </div>
-                            </div>
+                            <ParameterSlider
+                                label="Vision Temperatur"
+                                tooltipTitle="Vision Temperatur"
+                                tooltipContent="Steuert die Temperatur speziell für die Handschriften-Erkennung (OCR). Werte nahe 0.4 werden erzwungen, um lokale Schleifen bei unklaren Schriftzeichen zu verhindern."
+                                value={visionTemperature}
+                                onChange={setVisionTemperature}
+                                min={(provider === 'ollama' || provider === 'openai-compatible') ? "0.2" : "0.0"}
+                                max="2.0"
+                                step="0.1"
+                                decimals={1}
+                                description={getTempDescription(visionTemperature, 'vision')}
+                                defaultHint="0.2"
+                            />
 
-                            {/* Slider: Vision Top P */}
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Vision Top P</label>
-                                        <KorekiTooltip 
-                                            title="Vision Top P" 
-                                            content="Begrenzung des Wortschatzes bei der OCR. Hilft dem Vision-Modell, sich auf wahrscheinliche Zeichenkombinationen zu fokussieren."
-                                            buttonClassName="h-6 w-6"
-                                            iconSize={14}
-                                            align="left"
-                                        />
-                                    </div>
-                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{visionTopP.toFixed(2)}</span>
-                                </div>
-                                <input
-                                    type="range" min="0.0" max="1.0" step="0.05" value={visionTopP}
-                                    onChange={(e) => setVisionTopP(parseFloat(e.target.value))}
-                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
-                                />
-                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold">
-                                    <span>Vokabularbegrenzung bei der Texterkennung</span>
-                                    <span className="text-xxs text-muted-foreground font-medium">Standard: 0.80</span>
-                                </div>
-                            </div>
+                            <ParameterSlider
+                                label="Vision Top P"
+                                tooltipTitle="Vision Top P"
+                                tooltipContent="Begrenzung des Wortschatzes bei der OCR. Hilft dem Vision-Modell, sich auf wahrscheinliche Zeichenkombinationen zu fokussieren."
+                                value={visionTopP}
+                                onChange={setVisionTopP}
+                                min="0.0"
+                                max="1.0"
+                                step="0.05"
+                                decimals={2}
+                                description="Vokabularbegrenzung bei der Texterkennung"
+                                defaultHint="0.80"
+                            />
 
-                            {/* Slider: Vision Max Tokens */}
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Vision Max Tokens (num_predict)</label>
-                                        <KorekiTooltip 
-                                            title="Vision Max Tokens" 
-                                            content="Die maximale Token-Länge für die OCR-Erkennung pro Seite. Standardmäßig auf 16.000 begrenzt."
-                                            buttonClassName="h-6 w-6"
-                                            iconSize={14}
-                                            align="left"
-                                        />
-                                    </div>
-                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{visionMaxTokens.toLocaleString()}</span>
-                                </div>
-                                <input
-                                    type="range" min="1024" max="32768" step="1024" value={visionMaxTokens}
-                                    onChange={(e) => setVisionMaxTokens(parseInt(e.target.value))}
-                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
-                                />
-                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold">
-                                    <span>Maximale Länge des extrahierten Texts</span>
-                                    <span className="text-xxs text-muted-foreground font-medium">Standard: 16.000</span>
-                                </div>
-                            </div>
+                            <ParameterSlider
+                                label="Vision Max Tokens (num_predict)"
+                                tooltipTitle="Vision Max Tokens"
+                                tooltipContent="Die maximale Token-Länge für die OCR-Erkennung pro Seite. Standardmäßig auf 16.000 begrenzt."
+                                value={visionMaxTokens}
+                                onChange={setVisionMaxTokens}
+                                min="1024"
+                                max="32768"
+                                step="1024"
+                                description="Maximale Länge des extrahierten Texts"
+                                defaultHint="16.000"
+                            />
 
-                            {/* Slider: Vision Presence Penalty */}
-                            <div className="space-y-1.5">
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-1">
-                                        <label className="text-xs font-bold text-foreground uppercase tracking-wider">Vision Presence Penalty</label>
-                                        <KorekiTooltip 
-                                            title="Vision Presence Penalty" 
-                                            content="Bestrafung wiederholter Wörter beim OCR-Durchlauf. Empfohlener Standard ist 0.0."
-                                            buttonClassName="h-6 w-6"
-                                            iconSize={14}
-                                            align="left"
-                                        />
-                                    </div>
-                                    <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{visionPresencePenalty.toFixed(1)}</span>
-                                </div>
-                                <input
-                                    type="range" min="-2.0" max="2.0" step="0.1" value={visionPresencePenalty}
-                                    onChange={(e) => setVisionPresencePenalty(parseFloat(e.target.value))}
-                                    className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
-                                />
-                                <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold">
-                                    <span>Steuert Wortwiederholungs-Bestrafung bei OCR</span>
-                                    <span className="text-xxs text-muted-foreground font-medium">Standard: 0.0</span>
-                                </div>
-                            </div>
+                            <ParameterSlider
+                                label="Vision Presence Penalty"
+                                tooltipTitle="Vision Presence Penalty"
+                                tooltipContent="Bestrafung wiederholter Wörter beim OCR-Durchlauf. Empfohlener Standard ist 0.0."
+                                value={visionPresencePenalty}
+                                onChange={setVisionPresencePenalty}
+                                min="-2.0"
+                                max="2.0"
+                                step="0.1"
+                                decimals={1}
+                                description="Steuert Wortwiederholungs-Bestrafung bei OCR"
+                                defaultHint="0.0"
+                            />
                         </>
                     )}
 

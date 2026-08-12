@@ -79,7 +79,7 @@ const SIZE_BASELINE: Record<string, number> = {
     'lib/ai/ollama-logic.ts': 896,
     // +14 fuer die Trennung von Datei- und Ereignis-Weg beim Import.
     'hooks/useGradingMemoryModalState.ts': 771,
-    'components/settings/AiProfileModules.tsx': 499,
+    'components/settings/AiProfileModules.tsx': 402,
     'lib/grading/CalcTrace.ts': 696,
     // +15 fuer den Wächter gegen den sich selbst ausloesenden Lade-Effekt.
     // Der Kommentar dort beschreibt den Mechanismus — ohne ihn wird der
