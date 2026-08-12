@@ -22,21 +22,9 @@ const excludedPages = [
 // List of app files in the grace period (not yet migrated to design tokens, warnings only)
 // Dateien, deren Verstoesse als Warnung statt als Fehler gemeldet werden.
 //
-// Die beiden Reiter stammen unveraendert aus GradingGraphModal.tsx — und die
-// Datei steht weiter unten auf einer PAUSCHALEN Ausnahme, die ihre Verstoesse
-// bisher vollstaendig verdeckt hat. Durch das Herausloesen sind 34 davon in den
-// geprueften Bereich gewandert.
-//
-// Sie hier zu warnen statt zu verschweigen ist der ehrlichere Zwischenschritt:
-// der Code ist unveraendert (reiner Umzug), die Schuld bleibt aber sichtbar.
-// Die Farben auf Design-Tokens umzustellen ist eine sichtbare Aenderung und
-// gehoert in einen eigenen Schritt mit Sichtpruefung.
-const gracePeriodFiles = [
-    'src/components/batch/parts/GraphTestingPanel.tsx',
-    'src/components/batch/parts/GraphJsonPanel.tsx',
-    'src/components/batch/parts/GraphAiPanel.tsx',
-    'src/components/batch/parts/GraphEditorPanel.tsx'
-];
+// Aktuell leer: die vier Graph-Reiter standen hier waehrend ihres Umzugs aus
+// GradingGraphModal und sind inzwischen auf Design-Tokens umgestellt.
+const gracePeriodFiles = [];
 
 // 21 Tailwind Color Families
 const colorFamilies = 'slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose';

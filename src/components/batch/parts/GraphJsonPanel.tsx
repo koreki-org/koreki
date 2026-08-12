@@ -24,15 +24,15 @@ export const GraphJsonPanel: React.FC<GraphJsonPanelProps> = ({
     isLocked,
     onJsonChange
 }) => (
-    <div className="flex-grow flex flex-col overflow-hidden bg-slate-900 border-l border-slate-100 animate-in slide-in-from-left-4 duration-300">
-        <div className="px-6 py-2 border-b border-slate-800 bg-slate-950 flex justify-between items-center shrink-0">
-            <span className="text-xs font-black uppercase tracking-wider text-slate-400 font-mono">raw_graph_config.json</span>
+    <div className="flex-grow flex flex-col overflow-hidden bg-foreground border-l border-border animate-in slide-in-from-left-4 duration-300">
+        <div className="px-6 py-2 border-b border-background/10 bg-foreground flex justify-between items-center shrink-0">
+            <span className="text-xs font-black uppercase tracking-wider text-background/60 font-mono">raw_graph_config.json</span>
             {jsonError ? (
-                <span className="text-xs font-bold text-red-400 flex items-center gap-1">
+                <span className="text-xs font-bold text-destructive flex items-center gap-1">
                     <AlertCircle size={10} /> Syntax-Fehler!
                 </span>
             ) : (
-                <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                <span className="text-xs font-bold text-success flex items-center gap-1">
                     <Check size={10} /> Validiert
                 </span>
             )}
@@ -41,10 +41,10 @@ export const GraphJsonPanel: React.FC<GraphJsonPanelProps> = ({
             value={jsonText}
             readOnly={isLocked}
             onChange={(e) => onJsonChange(e.target.value)}
-            className="flex-grow p-6 bg-slate-950 text-slate-300 font-mono text-xs outline-hidden border-none resize-none overflow-y-auto leading-relaxed"
+            className="flex-grow p-6 bg-foreground text-background/80 font-mono text-xs outline-hidden border-none resize-none overflow-y-auto leading-relaxed"
         />
         {jsonError && (
-            <div className="p-3 bg-red-950/40 border-t border-red-900/40 text-xs font-bold text-red-300 leading-relaxed font-mono">
+            <div className="p-3 bg-destructive/15 border-t border-destructive/30 text-xs font-bold text-destructive leading-relaxed font-mono">
                 {jsonError}
             </div>
         )}

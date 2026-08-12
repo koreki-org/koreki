@@ -59,14 +59,14 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
     onUpdateVariable,
     onRenameVariableId
 }) => (
-                        <div className="flex-grow flex flex-col lg:flex-row overflow-hidden min-h-0 bg-slate-50/30 relative">
+                        <div className="flex-grow flex flex-col lg:flex-row overflow-hidden min-h-0 bg-muted relative">
                             {/* Left part: Variables visual list */}
                             <div className="flex-1 overflow-y-auto p-4 sm:p-8 min-h-0">
                                 <div className="space-y-8 pb-12">
-                                    <div className="bg-indigo-50/40 border border-indigo-100/60 rounded-3xl p-5 flex gap-4 text-xs text-indigo-950/80 items-start shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="bg-primary/5 border border-primary/20 rounded-3xl p-5 flex gap-4 text-xs text-primary items-start shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
                                         <span className="text-xl">💡</span>
                                         <div className="space-y-1">
-                                            <p className="font-extrabold text-indigo-900 leading-none">Manuelle Knotengestaltung</p>
+                                            <p className="font-extrabold text-primary leading-none">Manuelle Knotengestaltung</p>
                                             <p className="leading-relaxed">
                                                 Fügen Sie manuelle Variablen hinzu oder passen Sie Formeln und Punkte an. Wählen Sie einen Knoten aus, um ihn rechts im Detail-Inspektor einfach anzupassen.
                                             </p>
@@ -77,15 +77,15 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                         <div className={cn(
                                             "rounded-3xl p-5 text-xs leading-normal flex items-start gap-3 border shadow-xs animate-in fade-in slide-in-from-top-2 duration-300 mt-4",
                                             (graph as any).validation.isValid
-                                                ? "bg-emerald-50/50 border-emerald-100/50 text-emerald-950/80"
-                                                : "bg-rose-50/50 border-rose-100/50 text-rose-950/80"
+                                                ? "bg-success/10 border-success/20 text-success"
+                                                : "bg-destructive/10 border-destructive/20 text-destructive"
                                         )}>
                                             <span className="text-xl shrink-0 mt-0.5">{(graph as any).validation.isValid ? "🛡️" : "⚠️"}</span>
                                             <div className="space-y-1">
-                                                <p className={cn("font-extrabold leading-none", (graph as any).validation.isValid ? "text-emerald-900" : "text-rose-950")}>
+                                                <p className={cn("font-extrabold leading-none", (graph as any).validation.isValid ? "text-success" : "text-destructive")}>
                                                     {(graph as any).validation.isValid ? "Automatische Validierung: Bestanden" : "Automatische Validierung: Fehler"}
                                                 </p>
-                                                <p className="leading-relaxed font-medium text-slate-500 mt-1">
+                                                <p className="leading-relaxed font-medium text-muted-foreground mt-1">
                                                     {(graph as any).validation.isValid 
                                                         ? `Dieser Graph hat alle Dry-Run-Tests im Backend erfolgreich bestanden. Er ist absolut deterministisch auswertbar. ${(graph as any).validation.retriesUsed ? `(Selbst-Korrektur benötigt: ${(graph as any).validation.retriesUsed} Versuche)` : ""}`
                                                         : `Warnung: ${(graph as any).validation.error || "Es wurde ein mathematischer Berechnungsfehler oder Zirkelbezug im Graphen festgestellt."}`}
@@ -95,13 +95,13 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                     )}
 
                                     {Object.keys(groupedVariables).length === 0 ? (
-                                        <div className="bg-white border-2 border-dashed border-slate-200 rounded-hero p-12 text-center max-w-xl mx-auto flex flex-col items-center justify-center gap-4 shadow-lg shadow-slate-100/50 mt-8 animate-in fade-in zoom-in-95 duration-500">
-                                            <div className="w-12 h-12 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center text-slate-400">
-                                                <Sparkles size={24} className="text-indigo-600 animate-pulse" />
+                                        <div className="bg-white border-2 border-dashed border-border rounded-hero p-12 text-center max-w-xl mx-auto flex flex-col items-center justify-center gap-4 shadow-lg shadow-glass/50 mt-8 animate-in fade-in zoom-in-95 duration-500">
+                                            <div className="w-12 h-12 bg-muted border border-border rounded-2xl flex items-center justify-center text-muted-foreground">
+                                                <Sparkles size={24} className="text-primary animate-pulse" />
                                             </div>
                                             <div>
-                                                <h4 className="font-extrabold text-slate-800 text-sm">Noch kein Bewertungs-Graph vorhanden</h4>
-                                                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed font-medium">
+                                                <h4 className="font-extrabold text-foreground text-sm">Noch kein Bewertungs-Graph vorhanden</h4>
+                                                <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed font-medium">
                                                     Dieser Task hat noch keine mathematische Struktur hinterlegt. Du kannst oben im KI-Assistenten 🪄 einen Graphen generieren lassen oder hier direkt eine manuelle Variable hinzufügen.
                                                 </p>
                                             </div>
@@ -111,7 +111,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                         variant="outline"
                                                         size="sm"
                                                         onClick={() => onAddVariable()}
-                                                        className="h-8 text-xs font-bold rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 transition-all"
+                                                        className="h-8 text-xs font-bold rounded-xl border-border text-muted-foreground hover:bg-muted transition-all"
                                                     >
                                                         + Erste Variable hinzufügen
                                                     </Button>
@@ -122,14 +122,14 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                         Object.entries(groupedVariables).map(([groupName, vars]) => (
                                             <div key={groupName} className="space-y-3">
                                                 <div className="flex justify-between items-center px-1">
-                                                    <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider font-outfit flex items-center gap-2">
-                                                        <Layers size={13} className="text-indigo-400" />
+                                                    <h4 className="text-xs font-black uppercase text-muted-foreground tracking-wider font-outfit flex items-center gap-2">
+                                                        <Layers size={13} className="text-primary" />
                                                         {groupName}
                                                     </h4>
                                                     {!isLocked && (
                                                         <button
                                                             onClick={() => onAddVariable(groupName)}
-                                                            className="text-xs font-bold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-indigo-50 rounded-md"
+                                                            className="text-xs font-bold text-primary hover:text-primary transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-primary/5 rounded-md"
                                                         >
                                                             <Plus size={11} /> Variable hinzufügen
                                                         </button>
@@ -152,54 +152,54 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                                 onMouseLeave={() => setHoveredVarId(null)}
                                                                 className={cn(
                                                                     "p-4 rounded-2xl border-2 transition-all flex flex-col gap-3 select-none relative group cursor-pointer text-left",
-                                                                    hasError ? "bg-rose-50/20 border-rose-300 hover:border-rose-400 shadow-rose-50/20 shadow-sm" :
-                                                                    isSelected ? "bg-white border-indigo-500 shadow-md shadow-indigo-100 ring-1 ring-indigo-500/10" :
-                                                                    isDependency ? "bg-indigo-50/40 border-indigo-200 shadow-sm" :
-                                                                    isHovered ? "bg-white border-slate-300/80 shadow-sm" :
-                                                                    "bg-white border-slate-100 hover:border-slate-200"
+                                                                    hasError ? "bg-destructive/10 border-destructive/20 hover:border-destructive/20 shadow-destructive/10 shadow-sm" :
+                                                                    isSelected ? "bg-white border-primary shadow-md shadow-primary/10 ring-1 ring-primary" :
+                                                                    isDependency ? "bg-primary/5 border-primary/20 shadow-sm" :
+                                                                    isHovered ? "bg-white border-border shadow-sm" :
+                                                                    "bg-white border-border hover:border-border"
                                                                 )}
                                                             >
                                                                 {/* Variable ID Title and Badges */}
                                                                 <div className="flex justify-between items-start gap-3">
                                                                     <div className="space-y-0.5 min-w-0">
-                                                                        <h5 className={cn("text-xs font-black font-mono truncate leading-none pt-0.5", isSelected || isDependency ? "text-indigo-950" : "text-slate-800")}>
+                                                                        <h5 className={cn("text-xs font-black font-mono truncate leading-none pt-0.5", isSelected || isDependency ? "text-primary" : "text-foreground")}>
                                                                             {v.id}
                                                                         </h5>
-                                                                        <p className="text-xs text-slate-400 font-medium mt-0.5">
+                                                                        <p className="text-xs text-muted-foreground font-medium mt-0.5">
                                                                             {v.type === 'input' ? 'Statische Eingabe' : 'Formel-Kalkulation'}
                                                                         </p>
                                                                     </div>
                                                                     <div className="flex gap-1.5 shrink-0 items-center">
                                                                         {hasError && (
-                                                                            <Badge className="bg-rose-600 text-white text-[8px] py-0 px-1.5 rounded font-black uppercase flex items-center gap-0.5">
+                                                                            <Badge className="bg-destructive text-destructive-foreground text-xxs py-0 px-1.5 rounded font-black uppercase flex items-center gap-0.5">
                                                                                 <AlertCircle size={8} /> FEHLER
                                                                             </Badge>
                                                                         )}
                                                                         {v.type === 'input' ? (
-                                                                            <Badge className="bg-slate-100 border-slate-200 text-slate-600 text-[8px] py-0 px-1.5 rounded font-black uppercase">INPUT</Badge>
+                                                                            <Badge className="bg-muted border-border text-muted-foreground text-xxs py-0 px-1.5 rounded font-black uppercase">INPUT</Badge>
                                                                         ) : (
-                                                                            <Badge className="bg-indigo-50 border-indigo-100 text-indigo-700 text-[8px] py-0 px-1.5 rounded font-black uppercase">FORMULA</Badge>
+                                                                            <Badge className="bg-primary/5 border-primary/20 text-primary text-xxs py-0 px-1.5 rounded font-black uppercase">FORMULA</Badge>
                                                                         )}
                                                                     </div>
                                                                 </div>
 
                                                                 {/* Expected Output / Master value */}
-                                                                <div className={cn("rounded-xl p-2.5 flex justify-between items-center text-xs border", hasError ? "bg-rose-50/50 border-rose-100/50" : "bg-slate-50 border-slate-100/50")}>
-                                                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-tight">Erwarteter Wert:</span>
-                                                                    <span className={cn("font-mono font-bold text-slate-800", hasError ? "text-rose-600" : "text-slate-800")}>
+                                                                <div className={cn("rounded-xl p-2.5 flex justify-between items-center text-xs border", hasError ? "bg-destructive/10 border-destructive/20" : "bg-muted border-border")}>
+                                                                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Erwarteter Wert:</span>
+                                                                    <span className={cn("font-mono font-bold text-foreground", hasError ? "text-destructive" : "text-foreground")}>
                                                                         {String(evalVal)}
                                                                     </span>
                                                                 </div>
 
                                                                 {hasError && (
-                                                                    <div className="bg-rose-50 border border-rose-100/50 text-rose-700 rounded-xl p-2.5 text-[10px] leading-normal font-mono flex items-start gap-1.5">
-                                                                        <AlertCircle size={12} className="shrink-0 mt-0.5 text-rose-600" />
+                                                                    <div className="bg-destructive/10 border border-destructive/20 text-destructive rounded-xl p-2.5 text-xxs leading-normal font-mono flex items-start gap-1.5">
+                                                                        <AlertCircle size={12} className="shrink-0 mt-0.5 text-destructive" />
                                                                         <span className="break-all">{hasError}</span>
                                                                     </div>
                                                                 )}
 
                                                                 {/* Small display of expression / default value */}
-                                                                <div className="text-xs leading-tight font-medium text-slate-500 truncate font-mono">
+                                                                <div className="text-xs leading-tight font-medium text-muted-foreground truncate font-mono">
                                                                     {v.type === 'input' ? (
                                                                         `Standardwert: ${v.defaultValue}`
                                                                     ) : (
@@ -214,9 +214,9 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                                         if (deps.length === 0) return null;
                                                                         return (
                                                                             <div className="flex flex-wrap gap-1 mt-1 items-center">
-                                                                                <span className="text-[8px] text-slate-400 font-black uppercase tracking-wider mr-1 shrink-0">🔗 Berechnet aus:</span>
+                                                                                <span className="text-xxs text-muted-foreground font-black uppercase tracking-wider mr-1 shrink-0">🔗 Berechnet aus:</span>
                                                                                 {deps.map(d => (
-                                                                                    <Badge key={d} className="bg-indigo-50/50 border border-indigo-100/30 text-indigo-600 text-[8px] py-0 px-1 font-mono rounded-sm select-none font-bold">
+                                                                                    <Badge key={d} className="bg-primary/5 border border-primary/20 text-primary text-xxs py-0 px-1 font-mono rounded-sm select-none font-bold">
                                                                                         {d}
                                                                                     </Badge>
                                                                                 ))}
@@ -229,7 +229,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                                 {!isLocked && (
                                                                     <button
                                                                         onClick={(e) => { e.stopPropagation(); onDeleteVariable(v.id); }}
-                                                                        className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white border border-slate-100 shadow-md hover:bg-red-50 hover:text-red-500 hover:border-red-100 p-1.5 rounded-lg text-slate-400"
+                                                                        className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white border border-border shadow-md hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 p-1.5 rounded-lg text-muted-foreground"
                                                                         title="Variable löschen"
                                                                     >
                                                                         <Trash2 size={12} />
@@ -247,21 +247,21 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
 
                             {/* Right part: Simplified Node Inspector */}
                             <div className={cn(
-                                "absolute inset-0 lg:relative bg-white flex flex-col overflow-hidden shrink-0 transition-all duration-300 min-h-0 lg:w-80 lg:border-l lg:border-t-0 border-t border-slate-100",
+                                "absolute inset-0 lg:relative bg-white flex flex-col overflow-hidden shrink-0 transition-all duration-300 min-h-0 lg:w-80 lg:border-l lg:border-t-0 border-t border-border",
                                 selectedVar ? "flex h-full z-40" : "h-0 lg:h-full lg:flex hidden"
                             )}>
                                 {selectedVar ? (
                                     <div className="flex flex-col h-full overflow-y-auto p-4 sm:p-6 space-y-6">
-                                        <div className="flex justify-between items-center pb-2 border-b border-slate-100 shrink-0">
-                                            <h4 className="text-xs font-black uppercase text-slate-800 font-outfit tracking-tight flex items-center gap-1.5">
-                                                <Layers size={12} className="text-indigo-600" />
+                                        <div className="flex justify-between items-center pb-2 border-b border-border shrink-0">
+                                            <h4 className="text-xs font-black uppercase text-foreground font-outfit tracking-tight flex items-center gap-1.5">
+                                                <Layers size={12} className="text-primary" />
                                                 <span>Knoten-Inspektor</span>
                                             </h4>
                                             <div className="flex items-center gap-2">
                                                 {!isLocked && (
                                                     <button 
                                                         onClick={() => onDeleteVariable(selectedVar.id)}
-                                                        className="text-xs font-bold text-red-500 hover:text-red-700 transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-red-50 rounded-md cursor-pointer"
+                                                        className="text-xs font-bold text-destructive hover:text-destructive transition-colors flex items-center gap-1 py-0.5 px-2 hover:bg-destructive/10 rounded-md cursor-pointer"
                                                     >
                                                         <Trash2 size={11} />
                                                         <span className="hidden sm:inline">Löschen</span>
@@ -269,7 +269,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                 )}
                                                 <button 
                                                     onClick={() => setSelectedVarId(null)}
-                                                    className="lg:hidden text-slate-400 hover:text-slate-600 transition-colors p-1 hover:bg-slate-100 rounded-full"
+                                                    className="lg:hidden text-muted-foreground hover:text-muted-foreground transition-colors p-1 hover:bg-muted rounded-full"
                                                     title="Inspektor schließen"
                                                 >
                                                     <X size={16} />
@@ -279,31 +279,31 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
 
                                         {/* Edit ID Field */}
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Variablen-ID</label>
+                                            <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Variablen-ID</label>
                                             <Input
                                                 value={selectedVar.id}
                                                 disabled={isLocked}
                                                 onChange={(e) => onRenameVariableId(selectedVar.id, e.target.value.trim())}
                                                 className="h-9 font-mono text-xs font-bold disabled:opacity-60"
                                             />
-                                            <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
-                                                Eindeutiger Name der Variable in Schülerlösungen (z.B. <code className="font-mono bg-slate-50 px-1 py-0.5 rounded text-slate-600">subnetA_hosts</code>).
+                                            <p className="text-xs text-muted-foreground font-medium leading-normal mt-0.5">
+                                                Eindeutiger Name der Variable in Schülerlösungen (z.B. <code className="font-mono bg-muted px-1 py-0.5 rounded text-muted-foreground">subnetA_hosts</code>).
                                             </p>
                                         </div>
 
                                         {/* Type Selector (Input vs Formula) */}
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Knotentyp</label>
+                                            <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Knotentyp</label>
                                             <select
                                                 value={selectedVar.type}
                                                 disabled={isLocked}
                                                 onChange={(e) => onUpdateVariable(selectedVar.id, { type: e.target.value as VariableType })}
-                                                className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                                className="w-full h-9 px-3 rounded-xl border border-border text-xs font-bold text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-white cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                             >
                                                 <option value="input">📥 Statische Eingabe (Input)</option>
                                                 <option value="formula">⚙️ Berechnete Formel (Formula)</option>
                                             </select>
-                                            <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
+                                            <p className="text-xs text-muted-foreground font-medium leading-normal mt-0.5">
                                                 {selectedVar.type === 'input' 
                                                     ? 'Fester Vorgabewert aus der Musterlösung (z.B. Hostanzahl).' 
                                                     : 'Wert wird dynamisch berechnet, um Folgefehler von vorherigen Schritten zu kompensieren.'}
@@ -313,7 +313,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                         {/* Default Value / Expression fields */}
                                         {selectedVar.type === 'input' ? (
                                             <div className="space-y-1">
-                                                <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Musterlösung (Wert)</label>
+                                                <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Musterlösung (Wert)</label>
                                                 <Input
                                                     value={selectedVar.defaultValue !== undefined ? String(selectedVar.defaultValue) : ''}
                                                     disabled={isLocked}
@@ -324,16 +324,16 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                     }}
                                                     className="h-9 text-xs font-semibold disabled:opacity-60"
                                                 />
-                                                <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
+                                                <p className="text-xs text-muted-foreground font-medium leading-normal mt-0.5">
                                                     Der didaktisch korrekte Wert aus der Musterlösung.
                                                 </p>
                                             </div>
                                         ) : (
                                             <div className="space-y-1">
                                                 <div className="flex justify-between items-center">
-                                                    <label className="text-xs font-black uppercase text-slate-500 tracking-wider">Berechnungs-Formel</label>
+                                                    <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Berechnungs-Formel</label>
                                                     {evaluatedContext.errors[selectedVar.id] && (
-                                                        <Badge className="bg-red-50 text-red-600 text-[8px] py-0 px-1 border-red-100 rounded">Error ⚠️</Badge>
+                                                        <Badge className="bg-destructive/10 text-destructive text-xxs py-0 px-1 border-destructive/20 rounded">Error ⚠️</Badge>
                                                     )}
                                                 </div>
                                                 <Textarea
@@ -342,13 +342,13 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                     onChange={(e) => onUpdateVariable(selectedVar.id, { expression: e.target.value })}
                                                     rows={3}
                                                     placeholder="z.B. network.calculateMask(subnetA_hosts)"
-                                                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-mono text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white leading-relaxed resize-none shadow-3xs disabled:opacity-60"
+                                                    className="w-full p-2.5 rounded-xl border border-border text-xs font-mono text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-white leading-relaxed resize-none shadow-3xs disabled:opacity-60"
                                                 />
-                                                <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
-                                                    Berechnungsvorschrift. Verwende Variablen-IDs (z.B. <code className="font-mono bg-slate-50 px-1 py-0.5 rounded text-slate-600">subnetA_hosts</code>).
+                                                <p className="text-xs text-muted-foreground font-medium leading-normal mt-0.5">
+                                                    Berechnungsvorschrift. Verwende Variablen-IDs (z.B. <code className="font-mono bg-muted px-1 py-0.5 rounded text-muted-foreground">subnetA_hosts</code>).
                                                 </p>
                                                 {evaluatedContext.errors[selectedVar.id] && (
-                                                    <p className="text-xs text-red-500 font-semibold font-mono leading-tight pt-1">
+                                                    <p className="text-xs text-destructive font-semibold font-mono leading-tight pt-1">
                                                         {evaluatedContext.errors[selectedVar.id]}
                                                     </p>
                                                 )}
@@ -357,7 +357,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
 
                                         {/* Points allocation */}
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black uppercase text-slate-500 tracking-wider text-left block">Punkte für diesen Schritt</label>
+                                            <label className="text-xs font-black uppercase text-muted-foreground tracking-wider text-left block">Punkte für diesen Schritt</label>
                                             <Input
                                                 type="number"
                                                 value={selectedVar.maxPoints !== undefined ? selectedVar.maxPoints : 1}
@@ -365,11 +365,11 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                 onChange={(e) => onUpdateVariable(selectedVar.id, { maxPoints: Number(e.target.value) })}
                                                 className="h-9 text-xs font-semibold disabled:opacity-60"
                                             />
-                                            <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5 text-left">
+                                            <p className="text-xs text-muted-foreground font-medium leading-normal mt-0.5 text-left">
                                                 Wie viele Punkte der Schüler für diesen korrektten Wert erhält.
                                             </p>
                                             {isPointsDisabled && (
-                                                <p className="text-xs text-amber-700 font-semibold leading-relaxed mt-1.5 bg-amber-50 border border-amber-100 rounded-lg p-2 flex items-start gap-1 text-left">
+                                                <p className="text-xs text-warning font-semibold leading-relaxed mt-1.5 bg-warning/10 border border-warning/20 rounded-lg p-2 flex items-start gap-1 text-left">
                                                     <span>⚠️</span>
                                                     <span>Hybrid-Grading aktiv: Diese Punkte dienen als relative Gewichtung und mathematische Empfehlung. Die finale Vergabe erfolgt didaktisch flexibel durch das LLM.</span>
                                                 </p>
@@ -377,11 +377,11 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                         </div>
 
                                         {/* Collapsible Advanced Settings for Laypeople ease */}
-                                        <div className="border-t border-slate-100 pt-4">
+                                        <div className="border-t border-border pt-4">
                                             <button
                                                 type="button"
                                                 onClick={() => setShowAdvancedInspector(!showAdvancedInspector)}
-                                                className="w-full text-left text-xs font-black uppercase text-slate-500 hover:text-slate-700 transition-colors flex items-center justify-between py-1 cursor-pointer"
+                                                className="w-full text-left text-xs font-black uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center justify-between py-1 cursor-pointer"
                                             >
                                                 <span>⚙️ Erweiterte Einstellungen (Toleranzen)</span>
                                                 <span className="font-bold text-xs">{showAdvancedInspector ? "−" : "+"}</span>
@@ -391,18 +391,18 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                 <div className="space-y-4 pt-3 animate-in fade-in slide-in-from-top-1 duration-200">
                                                     {/* Validation Type */}
                                                     <div className="space-y-1">
-                                                        <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Validierungsart</label>
+                                                        <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Validierungsart</label>
                                                         <select
                                                             value={selectedVar.validationType}
                                                             disabled={isLocked}
                                                             onChange={(e) => onUpdateVariable(selectedVar.id, { validationType: e.target.value as ValidationType })}
-                                                            className="w-full h-9 px-3 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                                            className="w-full h-9 px-3 rounded-xl border border-border text-xs font-bold text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-white cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                                         >
                                                             <option value="exact">Exakte Übereinstimmung</option>
                                                             <option value="tolerance">Abweichung (Toleranz)</option>
                                                             <option value="contains">Enthält Substring</option>
                                                         </select>
-                                                        <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
+                                                        <p className="text-xs text-muted-foreground font-medium leading-normal mt-0.5">
                                                             {selectedVar.validationType === 'exact' && 'Der Schüler-Wert muss mathematisch exakt übereinstimmen.'}
                                                             {selectedVar.validationType === 'tolerance' && 'Erlaubt kleine Abweichungen (z.B. Rundungsfehler).'}
                                                             {selectedVar.validationType === 'contains' && 'Prüft, ob der Schüler-Wert einen bestimmten Text enthält.'}
@@ -412,7 +412,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                     {/* Tolerance offset field */}
                                                     {selectedVar.validationType === 'tolerance' && (
                                                         <div className="space-y-1">
-                                                            <label className="text-xs font-black uppercase text-slate-400 tracking-wider">Zulässige Toleranz (+/-)</label>
+                                                            <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Zulässige Toleranz (+/-)</label>
                                                             <Input
                                                                 type="number"
                                                                 value={selectedVar.tolerance !== undefined ? selectedVar.tolerance : 0}
@@ -420,8 +420,8 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                                 onChange={(e) => onUpdateVariable(selectedVar.id, { tolerance: Number(e.target.value) })}
                                                                 className="h-9 text-xs font-semibold disabled:opacity-60"
                                                             />
-                                                            <p className="text-xs text-slate-400 font-medium leading-normal mt-0.5">
-                                                                Zulässige Rundungs-Abweichung (z.B. <code className="font-mono bg-slate-50 px-1 py-0.5 rounded text-slate-600">0.1</code>).
+                                                            <p className="text-xs text-muted-foreground font-medium leading-normal mt-0.5">
+                                                                Zulässige Rundungs-Abweichung (z.B. <code className="font-mono bg-muted px-1 py-0.5 rounded text-muted-foreground">0.1</code>).
                                                             </p>
                                                         </div>
                                                     )}
@@ -430,12 +430,12 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                         </div>
 
                                         {/* Evaluated Value Preview block */}
-                                        <div className="pt-4 border-t border-slate-100 flex flex-col gap-2 shrink-0">
-                                            <span className="text-xs font-black uppercase text-slate-500 tracking-wider">Echtzeit-Berechnung (Musterlösung)</span>
-                                            <div className="bg-indigo-50/30 rounded-xl p-3 border border-indigo-100/20 flex flex-col gap-1 text-xs">
+                                        <div className="pt-4 border-t border-border flex flex-col gap-2 shrink-0">
+                                            <span className="text-xs font-black uppercase text-muted-foreground tracking-wider">Echtzeit-Berechnung (Musterlösung)</span>
+                                            <div className="bg-primary/5 rounded-xl p-3 border border-primary/20 flex flex-col gap-1 text-xs">
                                                 <div className="flex justify-between items-center">
-                                                    <span className="font-bold text-slate-500">Erwarteter Wert:</span>
-                                                    <span className="font-mono font-bold text-indigo-900 truncate pl-4">
+                                                    <span className="font-bold text-muted-foreground">Erwarteter Wert:</span>
+                                                    <span className="font-mono font-bold text-primary truncate pl-4">
                                                         {String(evaluatedContext.context[selectedVar.id])}
                                                     </span>
                                                 </div>
@@ -443,7 +443,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-slate-400 gap-2 select-none">
+                                    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-muted-foreground gap-2 select-none">
                                         <HelpCircle size={32} className="stroke-1 opacity-70" />
                                         <p className="text-xs font-semibold leading-relaxed">
                                             Wähle links einen Knoten aus, um seine Werte manuell anzupassen.
