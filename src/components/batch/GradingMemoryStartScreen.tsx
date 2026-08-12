@@ -42,6 +42,14 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                     >
                                         <PlusCircle size={18} /> Neuer Erfahrungsschatz
                                     </Button>
+                                    {/* Einheitlich mit den drei Profil-Modals: Import unter "Neu". */}
+                                    <Button
+                                        onClick={handleImportClick}
+                                        variant="outline"
+                                        className="w-full h-10 border-dashed border-primary/20 text-primary font-bold rounded-xl hover:bg-primary/5 gap-2"
+                                    >
+                                        <RefreshCcw size={16} /> .md Erfahrungsschatz Importieren
+                                    </Button>
                                     <input 
                                         type="file" 
                                         ref={fileInputRef} 
@@ -61,7 +69,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                     {/* Default None Option */}
                                     <div 
                                         onClick={() => selectMemory(null)}
-                                        className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center cursor-pointer ${!activeMemoryId ? 'bg-primary/10/40 border-primary/20 text-foreground shadow-sm' : 'bg-muted/40 border-transparent hover:bg-secondary/60 text-muted-foreground'}`}
+                                        className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center cursor-pointer ${!activeMemoryId ? 'bg-primary/10 border-primary/20 text-foreground shadow-sm' : 'bg-muted/40 border-transparent hover:bg-secondary/60 text-muted-foreground'}`}
                                     >
                                         <div className="flex flex-col">
                                             <span className="text-xs font-extrabold">Kein Erfahrungsschatz (Standard-Korrektur)</span>
@@ -74,7 +82,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                     {isImportedAndUnsaved && activeMemory && (
                                         <div 
                                             onClick={() => selectMemory(activeMemory.id || null)}
-                                            className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center group cursor-pointer relative bg-primary/10/20 border-primary/30 shadow-sm`}
+                                            className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center group cursor-pointer relative bg-primary/10 border-primary/30 shadow-sm`}
                                         >
                                             <div className="flex flex-col min-w-0 flex-1">
                                                 <span className="text-xs font-extrabold text-foreground flex items-center gap-1.5">
@@ -290,7 +298,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                                      </Button>
                                                  </div>
                                              ) : (
-                                                 <div className="p-4 bg-warning/10/50 border border-warning/20/50 rounded-xl text-center text-warning text-xs font-semibold leading-relaxed flex items-center gap-2 justify-center">
+                                                 <div className="p-4 bg-warning/10 border border-warning/20 rounded-xl text-center text-warning text-xs font-semibold leading-relaxed flex items-center gap-2 justify-center">
                                                      <AlertCircle size={16} className="text-warning shrink-0" />
                                                      Keine Musterlösung geladen. Simulation nicht verfügbar.
                                                  </div>

@@ -40,6 +40,16 @@ const sharedChecks = [
         message: 'Ã°Å¸Å¡Â¨ Feindliche Ecken-Rundung gefunden (rounded-[...]). Bitte nutze standardmÃƒÂ¤ÃƒÅ¸ige Tailwind-Klassen oder rounded-hero.'
     },
     {
+        // Doppelte Deckkraft wie `bg-primary/10/40`. Tailwind erzeugt dafuer
+        // KEINE Regel — das Element bekommt dann gar keinen Hintergrund, und
+        // zwar lautlos. Entstanden ist das Muster bei Token-Umstellungen, wenn
+        // `bg-indigo-50` in einem String ersetzt wurde, der schon ein `/40`
+        // trug. Sieben solcher Klassen lagen unbemerkt im Bestand, darunter der
+        // Markierungszustand im Erfahrungsschatz-Modal.
+        regex: /\b(?:bg|text|border|ring|from|to|via|shadow|divide)-[a-z-]+\/\d{1,3}\/\d{1,3}/g,
+        message: '[31m🚨 Ungültige doppelte Deckkraft gefunden (z. B. bg-primary/10/40). Tailwind erzeugt dafür keine Regel — das Element bleibt ohne Hintergrund. Bitte nur EINEN Deckkraft-Suffix verwenden.[0m'
+    },
+    {
         regex: /text-\[[^\]]*px\]/g,
         message: 'Ã°Å¸Å¡Â¨ WillkÃƒÂ¼rliche Pixel-TextgrÃƒÂ¶ÃƒÅ¸e gefunden (text-[...px]). Bitte nutze standardmÃƒÂ¤ÃƒÅ¸ige Tailwind-Typografie-Klassen wie text-xs, text-sm etc.'
     },

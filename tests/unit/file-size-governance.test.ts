@@ -98,7 +98,9 @@ const SIZE_BASELINE: Record<string, number> = {
     'pages/features.tsx': 347,
     'components/RedactionModal.tsx': 342,
     'components/layout/AppHeader.tsx': 337,
-    'components/batch/GradingMemoryStartScreen.tsx': 306
+    // +8 fuer den Import-Knopf, der aus dem Inhaltsbereich in die Seitenleiste
+    // gezogen wurde — einheitlich mit den drei Profil-Modals.
+    'components/batch/GradingMemoryStartScreen.tsx': 314
 };
 
 /**

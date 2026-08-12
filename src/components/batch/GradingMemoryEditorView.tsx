@@ -34,12 +34,6 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                              </div>
                                              <div className="flex items-center gap-2">
                                                 <Button 
-                                                     onClick={handleImportClick}
-                                                     className="h-8 sm:h-9 rounded-full text-xs font-black uppercase border border-primary/20 text-primary bg-primary/10/50 hover:bg-primary/20 gap-1.5 px-3 sm:px-4 transition-all"
-                                                 >
-                                                     <RefreshCcw size={14} /> Import
-                                                 </Button>
-                                                <Button 
                                                      onClick={isImportedAndUnsaved ? () => handleSaveImportedMemory(activeMemory!) : handleSaveActiveMemoryChanges}
                                                      disabled={!hasChanges || isSaving}
                                                      className={cn(

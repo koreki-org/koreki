@@ -96,7 +96,7 @@ export default function DesktopSetup() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-10">
                     {/* Ollama Card */}
-                    <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-all duration-500 group animate-fade-up bg-primary/10/20 rounded-2xl overflow-hidden">
+                    <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-all duration-500 group animate-fade-up bg-primary/10 rounded-2xl overflow-hidden">
                         <CardHeader className="p-6 pb-2">
                             <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary mb-4 flex items-center justify-center group-hover:scale-110 transition-transform border border-primary/20">
                                 <Cpu size={24} />

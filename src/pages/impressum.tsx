@@ -94,7 +94,7 @@ export default function Impressum() {
 
                     <div className="flex flex-col gap-8">
                         {/* Private & Test Warning */}
-                        <section id="usage" className="bg-warning/10/50 border border-warning rounded-2xl p-8 shadow-sm scroll-mt-24">
+                        <section id="usage" className="bg-warning/10 border border-warning rounded-2xl p-8 shadow-sm scroll-mt-24">
                             <h2 className="text-warning font-bold flex items-center gap-2 mb-4">
                                 <Shield className="w-5 h-5 text-warning" /> Wichtiger Nutzungshinweis (Demo-Instanz)
                             </h2>
