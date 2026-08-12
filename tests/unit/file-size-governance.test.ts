@@ -59,7 +59,13 @@ const HOOK_LIMIT = 10;
  * wurden vorher entfernt, es war nichts mehr zu kuerzen.
  */
 const SIZE_BASELINE: Record<string, number> = {
-    'components/batch/GradingGraphModal.tsx': 1262,
+    'components/batch/GradingGraphModal.tsx': 640,
+    // Die beiden groessten Reiter aus dem Modal, bewusst aufgenommen: sie sind
+    // unveraendert umgezogen (reine Darstellung, kein Zustand untereinander).
+    // Ein Zerlegen waere ein zweiter, eigener Schritt — den 1404-Zeiler zuerst
+    // in vier benannte Reiter zu trennen ist der groessere Gewinn.
+    'components/batch/parts/GraphEditorPanel.tsx': 456,
+    'components/batch/parts/GraphAiPanel.tsx': 345,
     'components/upload/ModelSolutionCard.tsx': 1151,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.

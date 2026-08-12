@@ -33,7 +33,9 @@ const excludedPages = [
 // gehoert in einen eigenen Schritt mit Sichtpruefung.
 const gracePeriodFiles = [
     'src/components/batch/parts/GraphTestingPanel.tsx',
-    'src/components/batch/parts/GraphJsonPanel.tsx'
+    'src/components/batch/parts/GraphJsonPanel.tsx',
+    'src/components/batch/parts/GraphAiPanel.tsx',
+    'src/components/batch/parts/GraphEditorPanel.tsx'
 ];
 
 // 21 Tailwind Color Families
