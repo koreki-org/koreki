@@ -32,9 +32,15 @@ const SRC_DIR = join(process.cwd(), 'src');
  * Grenzen nach Bereich.
  *
  * `lib/` liegt hoeher, weil ein kohaerentes Domaenenmodul legitim laenger sein
- * darf — CalcTrace.ts kuenstlich in zwei Haelften zu saegen macht es schlechter,
- * nicht besser. Bei Komponenten und Hooks geht es dagegen um den Zustandsfluss:
- * darueber ist er nicht mehr ueberblickbar.
+ * darf. Ein Auswerter, der kuenstlich in zwei Haelften gesaegt wird, ist danach
+ * schlechter, nicht besser. Bei Komponenten und Hooks geht es dagegen um den
+ * Zustandsfluss: darueber ist er nicht mehr ueberblickbar.
+ *
+ * Was den Unterschied macht, zeigt CalcTrace.ts: die Datei ist nicht halbiert
+ * worden, sondern hat zwei geschlossene TEILGEBIETE abgegeben, die sie nur
+ * benutzt hat (`grading/units`, `grading/numeric-tolerance`). Der Auswerter
+ * selbst steht weiter am Stueck. Wer hier kuerzt, sucht solche Naehte — nicht
+ * eine Stelle, an der die Zeilenzahl passt.
  */
 const LIMITS: Record<string, number> = {
     lib: 500,
@@ -101,7 +107,6 @@ const SIZE_BASELINE: Record<string, number> = {
     // der letzte traegt eine ARCH-Begruendung.
     'lib/ai/ollama-logic.ts': 679,
     'components/settings/AiProfileModules.tsx': 402,
-    'lib/grading/CalcTrace.ts': 697,
     // 704 -> 411: die reinen Helfer nach lib/skills/skill-dedup, die
     // Skill-Verwaltung nach hooks/skills/useCustomSkillCrud, und die sechs
     // Desktop/SaaS-Verzweigungen nach lib/skills/skill-profile-store.
