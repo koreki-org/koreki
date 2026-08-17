@@ -9,7 +9,6 @@ import { checkAiBudget, checkCreditsAvailable, performBillingAction, resolveActi
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { logger } from '@/lib/logger';
 import { promisePool } from '../../lib/ai/promise-pool';
-import { isLocalInstance } from '@/lib/env-context';
 
 export const config = {
     api: {
