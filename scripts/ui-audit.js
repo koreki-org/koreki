@@ -27,54 +27,155 @@ const excludedPages = [
 const gracePeriodFiles = [];
 
 
-// --- Rohe Bedienelemente ---------------------------------------------------
+// --- Ratschen je Datei ------------------------------------------------------
 //
-// Der Style Guide verlangt: alle UI-Elemente stammen aus @/components/ui/,
-// rohe <button>/<input>/<select> sind ausserhalb davon untersagt. Die Regel
-// stand bisher nur im Dokument — 76 Faelle in 31 Dateien sind so entstanden,
-// ohne dass es jemandem auffiel. Dasselbe Muster wie bei den Dateigroessen und
-// beim Backend-Logging: eine Regel ohne Waechter driftet.
+// Zwei Regeln des Style Guides, die sich nicht zeilenweise pruefen lassen,
+// sondern nur als Menge je Datei. Beide standen im Dokument und wurden von
+// nichts geprueft — mit dem entsprechenden Ergebnis im Bestand.
 //
-// src/components/ui/ ist ausgenommen — dort WRAPPT das Kit die rohen Elemente,
-// das ist ihr Zweck.
-//
-// RATSCHE: der Ist-Stand ist eingefroren. Neue Dateien muessen sauber sein,
+// Das RATSCHEN-PRINZIP ist fuer beide gleich, deshalb steht es hier einmal:
+// der Ist-Stand ist eingefroren. Neue Dateien muessen sauber sein,
 // Bestandsdateien duerfen nicht wachsen, und wer eine verbessert, zieht ihren
-// Wert mit runter. Faellt eine auf null, muss sie aus der Liste verschwinden.
-const RAW_CONTROL_BASELINE = {
-    'src/components/batch/ExportToolbar.tsx': 7,
-    'src/components/batch/parts/GraphEditorPanel.tsx': 5,
-    'src/components/batch/GradingGraphModal.tsx': 5,
-    'src/components/batch/GradingMemoryStartScreen.tsx': 5,
-    'src/components/settings/AiProfileModules.tsx': 5,
-    'src/components/settings/SkillsModules.tsx': 5,
-    'src/components/upload/ModelSolutionCard.tsx': 5,
-    'src/components/upload/ModelSolutionTaskCard.tsx': 4,
-    'src/components/batch/parts/GraphAiPanel.tsx': 3,
-    'src/pages/desktop-setup.tsx': 3,
-    'src/components/batch/CalcTraceModal.tsx': 2,
-    'src/components/batch/GradingMemoryCalibrateScreen.tsx': 2,
-    'src/components/batch/parts/BatchTaskAnalysisCard.tsx': 2,
-    'src/components/settings/ProfileModules.tsx': 2,
-    'src/components/settings/UnifiedAiConfig.tsx': 2,
-    'src/components/upload/StudentWorkCard.tsx': 2,
-    'src/components/avv-upload/StepUpload.tsx': 1,
-    'src/components/batch/BatchHeader.tsx': 1,
-    'src/components/batch/DigitalSlipsModal.tsx': 1,
-    'src/components/batch/GradingMemoryEditorView.tsx': 1,
-    'src/components/batch/parts/BatchSolutionPanel.tsx': 1,
-    'src/components/layout/AppHeader.tsx': 1,
-    'src/components/marketing/ImageLightbox.tsx': 1,
-    'src/components/PDFSplitModal.tsx': 1,
-    'src/components/settings/AiProfileSidebar.tsx': 1,
-    'src/components/settings/OpenAICompatibleConfig.tsx': 1,
-    'src/components/settings/PrivacySection.tsx': 1,
-    'src/components/settings/SkillsSidebar.tsx': 1,
-    'src/pages/features.tsx': 1,
-    'src/pages/view.tsx': 1
-};
-
-const RAW_CONTROL_PATTERN = /<(?:input|button|select)\b/g;
+// Wert mit runter. Faellt eine auf null, verlangt der Waechter das Austragen —
+// die Listen koennen damit nur schrumpfen.
+const perFileRatchets = [
+    {
+        name: 'Rohe Bedienelemente',
+        // Der Style Guide verlangt Button/Input/Dropdown aus @/components/ui/.
+        // src/components/ui/ ist ausgenommen: dort WRAPPT das Kit die rohen
+        // Elemente, das ist ihr Zweck.
+        pattern: /<(?:input|button|select)\b/g,
+        skip: relPath => relPath.startsWith('src/components/ui/'),
+        hinweis: 'Der Style Guide verlangt Button/Input/Dropdown aus @/components/ui/.',
+        baseline: {
+        'src/components/batch/ExportToolbar.tsx': 7,
+        'src/components/batch/parts/GraphEditorPanel.tsx': 5,
+        'src/components/batch/GradingGraphModal.tsx': 5,
+        'src/components/batch/GradingMemoryStartScreen.tsx': 5,
+        'src/components/settings/AiProfileModules.tsx': 5,
+        'src/components/settings/SkillsModules.tsx': 5,
+        'src/components/upload/ModelSolutionCard.tsx': 5,
+        'src/components/upload/ModelSolutionTaskCard.tsx': 4,
+        'src/components/batch/parts/GraphAiPanel.tsx': 3,
+        'src/pages/desktop-setup.tsx': 3,
+        'src/components/batch/CalcTraceModal.tsx': 2,
+        'src/components/batch/GradingMemoryCalibrateScreen.tsx': 2,
+        'src/components/batch/parts/BatchTaskAnalysisCard.tsx': 2,
+        'src/components/settings/ProfileModules.tsx': 2,
+        'src/components/settings/UnifiedAiConfig.tsx': 2,
+        'src/components/upload/StudentWorkCard.tsx': 2,
+        'src/components/avv-upload/StepUpload.tsx': 1,
+        'src/components/batch/BatchHeader.tsx': 1,
+        'src/components/batch/DigitalSlipsModal.tsx': 1,
+        'src/components/batch/GradingMemoryEditorView.tsx': 1,
+        'src/components/batch/parts/BatchSolutionPanel.tsx': 1,
+        'src/components/layout/AppHeader.tsx': 1,
+        'src/components/marketing/ImageLightbox.tsx': 1,
+        'src/components/PDFSplitModal.tsx': 1,
+        'src/components/settings/AiProfileSidebar.tsx': 1,
+        'src/components/settings/OpenAICompatibleConfig.tsx': 1,
+        'src/components/settings/PrivacySection.tsx': 1,
+        'src/components/settings/SkillsSidebar.tsx': 1,
+        'src/pages/features.tsx': 1,
+        'src/pages/view.tsx': 1
+        }
+    },
+    {
+        name: 'Hartcodiertes Weiss/Schwarz',
+        // Die Farbregel unten kennt nur die Tailwind-FARBFAMILIEN (slate,
+        // indigo, ...). `white` und `black` stehen in keiner davon und sind ihr
+        // deshalb vollstaendig entgangen — 298 Faelle in 80 Dateien.
+        //
+        // ACHTUNG beim Abtragen: `bg-white/NN` mit Deckkraft ist in Modals und
+        // Overlays die vorgesehene Glassmorphism-Optik und NICHT pauschal
+        // falsch. Ohne Deckkraft gehoert dagegen `bg-background` hin, und
+        // `text-white` auf farbigem Grund ist `text-primary-foreground`.
+        pattern: /\b(?:bg|text|border|ring|shadow|from|to|via|divide|placeholder|hover:bg|hover:text|hover:border|hover:ring|focus:bg|focus:text|focus:border|focus:ring)-(?:white|black)(?:\/[0-9]{1,3})?\b/g,
+        skip: () => false,
+        hinweis: 'Bitte Design-Tokens nutzen (bg-background, text-primary-foreground). Ausnahme: bg-white/NN als Glassmorphism in Overlays.',
+        baseline: {
+        'src/components/batch/parts/GraphAiPanel.tsx': 15,
+        'src/components/batch/GradingGraphModal.tsx': 9,
+        'src/components/OnboardingModal.tsx': 9,
+        'src/pages/agb.tsx': 9,
+        'src/pages/desktop.tsx': 9,
+        'src/components/batch/CorrectionAnalytics.tsx': 8,
+        'src/components/marketing/WorkflowVisual.tsx': 8,
+        'src/pages/desktop-setup.tsx': 8,
+        'src/components/AiParamsModal.tsx': 7,
+        'src/components/batch/BatchHeader.tsx': 7,
+        'src/components/batch/parts/GraphEditorPanel.tsx': 7,
+        'src/components/PromptSettingsModal.tsx': 7,
+        'src/components/RedactionModal.tsx': 7,
+        'src/components/SkillsSettingsModal.tsx': 7,
+        'src/pages/privacy.tsx': 7,
+        'src/pages/features.tsx': 6,
+        'src/pages/index.tsx': 6,
+        'src/components/batch/BatchFileListItem.tsx': 5,
+        'src/components/batch/GradingMemoryEditorView.tsx': 5,
+        'src/components/layout/HeaderBadges.tsx': 5,
+        'src/components/marketing/ShowroomCard.tsx': 5,
+        'src/pages/view.tsx': 5,
+        'src/components/AVVUploadModal.tsx': 4,
+        'src/components/batch/GradingMemoryModal.tsx': 4,
+        'src/components/batch/parts/GraphTestingPanel.tsx': 4,
+        'src/components/marketing/ModelProfiles.tsx': 4,
+        'src/components/PDFTypeModal.tsx': 4,
+        'src/components/ui/Badge.tsx': 4,
+        'src/pages/features/expertise.tsx': 4,
+        'src/pages/features/intelligence.tsx': 4,
+        'src/pages/features/memory.tsx': 4,
+        'src/pages/features/skills.tsx': 4,
+        'src/pages/features/workflow.tsx': 4,
+        'src/pages/security.tsx': 4,
+        'src/components/avv-upload/StepUpload.tsx': 3,
+        'src/components/batch/GradingMemoryCalibrateScreen.tsx': 3,
+        'src/components/batch/GradingMemoryStartScreen.tsx': 3,
+        'src/components/BatchProcessor.tsx': 3,
+        'src/components/CreditsModal.tsx': 3,
+        'src/components/marketing/BentoGrid.tsx': 3,
+        'src/components/marketing/FeatureSpotlight.tsx': 3,
+        'src/components/marketing/FeatureSubNav.tsx': 3,
+        'src/components/marketing/ImageLightbox.tsx': 3,
+        'src/components/ModelTypeModal.tsx': 3,
+        'src/components/ui/Dropdown.tsx': 3,
+        'src/pages/app/compliance/agb.tsx': 3,
+        'src/pages/app/compliance/avv.tsx': 3,
+        'src/pages/app/compliance/manual.tsx': 3,
+        'src/pages/app/compliance/tom.tsx': 3,
+        'src/pages/login.tsx': 3,
+        'src/pages/self-hosting.tsx': 3,
+        'src/components/admin/WorkspaceManager.tsx': 2,
+        'src/components/batch/AnalyticsModal.tsx': 2,
+        'src/components/batch/DigitalSlipsModal.tsx': 2,
+        'src/components/marketing/FeatureIconGrid.tsx': 2,
+        'src/components/marketing/PerformanceSection.tsx': 2,
+        'src/components/QuickStartModal.tsx': 2,
+        'src/components/SettingsModal.tsx': 2,
+        'src/components/ui/Card.tsx': 2,
+        'src/pages/register.tsx': 2,
+        'src/components/admin/UserTable.tsx': 1,
+        'src/components/avv-upload/StepDownload.tsx': 1,
+        'src/components/batch/BatchItemPendingView.tsx': 1,
+        'src/components/ConfirmationModal.tsx': 1,
+        'src/components/layout/AppHeader.tsx': 1,
+        'src/components/marketing/FeatureHero.tsx': 1,
+        'src/components/marketing/FeaturePillar.tsx': 1,
+        'src/components/marketing/MarketingModules.tsx': 1,
+        'src/components/PDFSplitModal.tsx': 1,
+        'src/components/PureKeyModal.tsx': 1,
+        'src/components/settings/AiProfileModules.tsx': 1,
+        'src/components/settings/OllamaConfig.tsx': 1,
+        'src/components/settings/OpenAICompatibleConfig.tsx': 1,
+        'src/components/ui/Button.tsx': 1,
+        'src/components/ui/KorekiTooltip.tsx': 1,
+        'src/components/ui/PopoverMenu.tsx': 1,
+        'src/components/upload/ModelSolutionAutopilotBar.tsx': 1,
+        'src/pages/contact.tsx': 1,
+        'src/pages/org-admin.tsx': 1
+        }
+    }
+];
 
 // 21 Tailwind Color Families
 const colorFamilies = 'slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose';
@@ -145,7 +246,6 @@ console.log('Ã°Å¸â€Â Starte Koreki UI- & Farb-Audit...');
 let totalViolations = 0;
 let totalWarnings = 0;
 const processedFiles = new Set();
-const rawControlCounts = {};
 
 for (const dir of targetDirs) {
     const files = getFiles(dir);
@@ -178,22 +278,20 @@ for (const dir of targetDirs) {
         const content = fs.readFileSync(file, 'utf-8');
         const lines = content.split('\n');
 
-        // Rohe Bedienelemente: pro DATEI gezaehlt, nicht pro Zeile.
-        if (!relPath.startsWith('src/components/ui/')) {
-            RAW_CONTROL_PATTERN.lastIndex = 0;
-            const rohe = (content.match(RAW_CONTROL_PATTERN) || []).length;
-            const erlaubt = RAW_CONTROL_BASELINE[relPath];
-            rawControlCounts[relPath] = rohe;
+        // Ratschen je Datei — Mengen, keine Zeilenfunde.
+        for (const ratsche of perFileRatchets) {
+            if (ratsche.skip(relPath)) continue;
 
-            if (erlaubt === undefined && rohe > 0) {
-                console.error(`[31m🚨 Rohe Bedienelemente (${rohe}) in einer bisher sauberen Datei. Der Style Guide verlangt Button/Input/Dropdown aus @/components/ui/.[0m
-   Datei: ${relPath}
-`);
+            ratsche.pattern.lastIndex = 0;
+            const ist = (content.match(ratsche.pattern) || []).length;
+            const erlaubt = ratsche.baseline[relPath];
+            (ratsche.counts || (ratsche.counts = {}))[relPath] = ist;
+
+            if (erlaubt === undefined && ist > 0) {
+                console.error(`\x1b[31m🚨 ${ratsche.name} (${ist}) in einer bisher sauberen Datei. ${ratsche.hinweis}\x1b[0m\n   Datei: ${relPath}\n`);
                 totalViolations++;
-            } else if (erlaubt !== undefined && rohe > erlaubt) {
-                console.error(`[31m🚨 Rohe Bedienelemente gewachsen: ${rohe} statt ${erlaubt}. Altlasten duerfen nicht zunehmen.[0m
-   Datei: ${relPath}
-`);
+            } else if (erlaubt !== undefined && ist > erlaubt) {
+                console.error(`\x1b[31m🚨 ${ratsche.name} gewachsen: ${ist} statt ${erlaubt}. Altlasten duerfen nicht zunehmen.\x1b[0m\n   Datei: ${relPath}\n`);
                 totalViolations++;
             }
         }
@@ -248,18 +346,20 @@ for (const dir of targetDirs) {
     }
 }
 
-Object.entries(RAW_CONTROL_BASELINE).forEach(([relPath, erlaubt]) => {
-    const ist = rawControlCounts[relPath];
-    if (ist === undefined) {
-        console.error(`[31m📉 ${relPath} existiert nicht mehr — aus RAW_CONTROL_BASELINE entfernen.[0m`);
-        totalViolations++;
-    } else if (ist === 0) {
-        console.error(`[31m📉 ${relPath} hat keine rohen Bedienelemente mehr — aus RAW_CONTROL_BASELINE entfernen. 🎉[0m`);
-        totalViolations++;
-    } else if (ist < erlaubt) {
-        console.error(`[31m📉 ${relPath}: nur noch ${ist} statt ${erlaubt} — Baseline nachziehen, damit die Ratsche greift.[0m`);
-        totalViolations++;
-    }
+perFileRatchets.forEach(ratsche => {
+    Object.entries(ratsche.baseline).forEach(([relPath, erlaubt]) => {
+        const ist = (ratsche.counts || {})[relPath];
+        if (ist === undefined) {
+            console.error(`\x1b[31m📉 ${relPath} existiert nicht mehr — aus der Baseline "${ratsche.name}" entfernen.\x1b[0m`);
+            totalViolations++;
+        } else if (ist === 0) {
+            console.error(`\x1b[31m📉 ${relPath}: keine Treffer mehr für "${ratsche.name}" — aus der Baseline entfernen. 🎉\x1b[0m`);
+            totalViolations++;
+        } else if (ist < erlaubt) {
+            console.error(`\x1b[31m📉 ${relPath}: nur noch ${ist} statt ${erlaubt} für "${ratsche.name}" — Baseline nachziehen.\x1b[0m`);
+            totalViolations++;
+        }
+    });
 });
 
 if (totalWarnings > 0) {
