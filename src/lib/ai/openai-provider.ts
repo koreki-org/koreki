@@ -19,6 +19,7 @@ import { isDesktopTarget } from '@/lib/env-context';
 import { AIProviderError } from './provider-error';
 import { buildPromptForAction } from './prompt-dispatch';
 import { pruefeWerkzeugAufruf } from './tool-validation';
+import { ueberDesktopProxy } from './desktop-proxy';
 import type { GradingMemoryCase, CustomSkillDefinition } from '@/types';
 import type { PromptLibraryEntry } from './prompt-library';
 
@@ -195,39 +196,7 @@ export async function executeOpenAIRequest(
         let currentData: any;
 
         if (isDesktopTarget()) {
-            try {
-                const { invoke } = await import('@tauri-apps/api/core');
-                const invokePromise = invoke<string>('execute_ai_proxy_command', {
-                    url,
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify(body)
-                });
-                
-                let res: string;
-                if (options.signal) {
-                    if (options.signal.aborted) {
-                        throw new DOMException('The user aborted a request.', 'AbortError');
-                    }
-                    res = await Promise.race([
-                        invokePromise,
-                        new Promise<string>((_, reject) => {
-                            options.signal!.addEventListener('abort', () => {
-                                reject(new DOMException('The user aborted a request.', 'AbortError'));
-                            });
-                        })
-                    ]);
-                } else {
-                    res = await invokePromise;
-                }
-                
-                currentData = JSON.parse(res);
-            } catch (e) {
-                throw new Error(`Desktop Proxy Fehler: ${e}`);
-            }
+            currentData = await ueberDesktopProxy({ url, apiKey, body, signal: options.signal, kontext: 'Desktop Proxy Fehler' });
         } else {
             const response = await fetchWithRetry(url, {
                 method: 'POST',

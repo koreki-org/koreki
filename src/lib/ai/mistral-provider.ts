@@ -25,6 +25,7 @@ import { logger } from '@/lib/logger';
 import { AIProviderError } from './provider-error';
 import { buildPromptForAction } from './prompt-dispatch';
 import { pruefeWerkzeugAufruf } from './tool-validation';
+import { ueberDesktopProxy } from './desktop-proxy';
 
 /**
  * Liest den Fehlertext einer abgelehnten Antwort für den Server-Log aus.
@@ -205,38 +206,7 @@ export async function executeMistralRequest(
         let responseData: any;
 
         if (isDesktopTarget()) {
-            try {
-                const { invoke } = await import('@tauri-apps/api/core');
-                const invokePromise = invoke<string>('execute_ai_proxy_command', {
-                    url,
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${apiKey}`
-                    },
-                    body: JSON.stringify(body)
-                });
-                
-                let res: string;
-                if (options.signal) {
-                    if (options.signal.aborted) {
-                        throw new DOMException('The user aborted a request.', 'AbortError');
-                    }
-                    res = await Promise.race([
-                        invokePromise,
-                        new Promise<string>((_, reject) => {
-                            options.signal!.addEventListener('abort', () => {
-                                reject(new DOMException('The user aborted a request.', 'AbortError'));
-                            });
-                        })
-                    ]);
-                } else {
-                    res = await invokePromise;
-                }
-                responseData = JSON.parse(res);
-            } catch (e) {
-                throw new Error(`Desktop Proxy Fehler: ${e}`);
-            }
+            responseData = await ueberDesktopProxy({ url, apiKey, body, signal: options.signal, kontext: 'Desktop Proxy Fehler' });
         } else {
             const response = await fetchWithRetry(url, {
                 method: 'POST',
@@ -345,38 +315,7 @@ async function handleOCRRequest(payload: any, apiKey: string, isScan: boolean = 
     let responseData: any;
 
     if (isDesktopTarget()) {
-        try {
-            const { invoke } = await import('@tauri-apps/api/core');
-            const invokePromise = invoke<string>('execute_ai_proxy_command', {
-                url,
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify(body)
-            });
-            
-            let res: string;
-            if (signal) {
-                if (signal.aborted) {
-                    throw new DOMException('The user aborted a request.', 'AbortError');
-                }
-                res = await Promise.race([
-                    invokePromise,
-                    new Promise<string>((_, reject) => {
-                        signal.addEventListener('abort', () => {
-                            reject(new DOMException('The user aborted a request.', 'AbortError'));
-                        });
-                    })
-                ]);
-            } else {
-                res = await invokePromise;
-            }
-            responseData = JSON.parse(res);
-        } catch (e) {
-            throw new Error(`Desktop OCR Proxy Fehler: ${e}`);
-        }
+        responseData = await ueberDesktopProxy({ url, apiKey, body, signal, kontext: 'Desktop OCR Proxy Fehler' });
     } else {
         const response = await fetchWithRetry(url, {
             method: 'POST',
