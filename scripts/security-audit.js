@@ -14,7 +14,31 @@ try {
         const allowedPackages = [
             'expr-eval',        // Mitigated via regex guard in plugins.ts
             'brace-expansion',  // Dev tooling only (ESLint/TS parser, no runtime impact)
-            'js-yaml'           // Dev tooling only (ESLint config parser, no runtime impact)
+            'js-yaml',          // Dev tooling only (ESLint config parser, no runtime impact)
+
+            // --- Prisma-Kette, eingetragen am 17.08.2026 ---------------------
+            // Ursache ist EINE Meldung: deepmerge-ts <8 kann bei rekursiven
+            // Objektgraphen den Stack erschoepfen (GHSA-ggr8-5vv4-36mx). Die
+            // beiden anderen Eintraege sind nur der Abhaengigkeitspfad dorthin:
+            // prisma -> @prisma/config -> deepmerge-ts.
+            //
+            // Warum vertretbar: Der Fehler sitzt in Prismas KONFIGURATIONS-Lader,
+            // nicht auf einem Anfragepfad. Ein rekursiver Objektgraph muesste aus
+            // der Prisma-Konfigurationsdatei kommen — die schreiben wir selbst,
+            // kein Nutzer kann sie beeinflussen. Schuelerdaten beruehrt der
+            // Lader nie.
+            //
+            // Warum kein Fix moeglich: @prisma/config pinnt deepmerge-ts EXAKT
+            // auf 7.1.5. Ein npm-override auf 8.x zwaenge Prisma einen
+            // ungetesteten Major auf; der von npm vorgeschlagene "Fix" waere ein
+            // Downgrade auf Prisma 6 und damit das Verwerfen der 7er-Migration.
+            //
+            // ABBAUBEDINGUNG: Sobald Prisma > 7.9.1 erscheint, pruefen mit
+            //   npm view @prisma/config@<version> dependencies.deepmerge-ts
+            // Steht dort 8.x, aktualisieren und DIESE DREI ZEILEN ENTFERNEN.
+            'deepmerge-ts',
+            '@prisma/config',
+            'prisma'
         ];
 
         let hasBlocker = false;
