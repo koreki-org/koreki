@@ -101,11 +101,12 @@ describe('AI Orchestrator (Layer 1 Unit)', () => {
                     taskType: 'vlsm',
                     pointsObtained: 13,
                     gradingResult: {
+                        taskId: 'vlsm-1',
                         totalPoints: 13,
                         maxPoints: 15,
                         stepResults: [
-                            { variableId: 'subnetA_hosts', status: 'correct', points: 1, expectedValue: '500', studentValue: '500', note: 'Korrekt' },
-                            { variableId: 'subnetA_mask', status: 'consecutive_correct', points: 1, expectedValue: '/23', studentValue: '/23', note: 'Folgefehler' }
+                            { variableId: 'subnetA_hosts', status: 'correct', points: 1, maxPoints: 1, expectedValue: '500', studentValue: '500', computedValueBasedOnErrors: '500', note: 'Korrekt' },
+                            { variableId: 'subnetA_mask', status: 'consecutive_correct', points: 1, maxPoints: 1, expectedValue: '/23', studentValue: '/23', computedValueBasedOnErrors: '/23', note: 'Folgefehler' }
                         ]
                     }
                 }

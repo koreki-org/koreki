@@ -1,6 +1,7 @@
 import { logger } from '@/lib/logger';
 import { Task, AppSettings, CustomSkillDefinition } from '../../types';
 import { GraphRunner } from '../grading/GraphRunner';
+import type { GradingGraph } from '../grading/types';
 import { TargetGoal } from '../grading/calc-trace-types';
 import { evaluateCalcTrace } from '../grading/CalcTrace';
 import { extractStudentAST } from '../grading/calc-trace-extraction';
@@ -69,16 +70,13 @@ const textFuerAufgabe = (rawSplit: string[], index: number, gesamttext: string):
     return teil.trim().length > 0 ? teil : gesamttext;
 };
 
-/**
- * Ist die Aufgabe ueber einen Bewertungsgraphen zu rechnen?
- *
- * Ausschliesslich am tatsaechlich angehaengten Graphen. Beide Kopien haben
- * daneben ein `isGraphSkill` berechnet (taskType 'vlsm', `skill-calc-*`,
- * `isGraphBased`) — und es dann in keiner der beiden Bedingungen verwendet.
- * Toter Code, hier bewusst NICHT wiederbelebt: ohne angehaengten Graphen
- * bekaeme `GraphRunner.grade` nichts zu rechnen.
+/*
+ * Der Graph-Zweig haengt ausschliesslich am tatsaechlich angehaengten Graphen.
+ * Beide frueheren Kopien haben daneben ein `isGraphSkill` berechnet (taskType
+ * 'vlsm', `skill-calc-*`, `isGraphBased`) und es in keiner der beiden
+ * Bedingungen verwendet. Toter Code, bewusst NICHT wiederbelebt: ohne
+ * angehaengten Graphen bekaeme `GraphRunner.grade` nichts zu rechnen.
  */
-const istGraphAufgabe = (task: Task): boolean => !!task.gradingGraph;
 
 /** Ist die Aufgabe ueber eine Rechenkette zu pruefen? */
 const istRechenkettenAufgabe = (task: Task, customSkills: Record<string, CustomSkillDefinition>): boolean =>
@@ -87,12 +85,12 @@ const istRechenkettenAufgabe = (task: Task, customSkills: Record<string, CustomS
     || task.taskType === 'calc-trace'
     || (!!task.taskType && !!customSkills[task.taskType]?.isCalcTrace);
 
-async function bewerteMitGraph(task: Task, aufgabenText: string, p: LocalGradingPassParams): Promise<void> {
+async function bewerteMitGraph(task: Task, graph: GradingGraph, aufgabenText: string, p: LocalGradingPassParams): Promise<void> {
     const studentValues = await extractStudentAnswersWithLLM(
-        aufgabenText, task.gradingGraph, p.appMode, p.settings, task.taskType, task.name
+        aufgabenText, graph, p.appMode, p.settings, task.taskType, task.name
     );
 
-    const gradingResult = GraphRunner.grade(task.gradingGraph, studentValues);
+    const gradingResult = GraphRunner.grade(graph, studentValues);
     task.gradingResult = gradingResult;
 
     if (!shouldDisablePoints(task.taskType, task.gradingGraph)) {
@@ -178,9 +176,9 @@ export async function runLocalGradingEngines(p: LocalGradingPassParams): Promise
         const task = tasksLayout[i];
         const aufgabenText = textFuerAufgabe(rawSplit, i, studentText);
 
-        if (istGraphAufgabe(task)) {
+        if (task.gradingGraph) {
             try {
-                await bewerteMitGraph(task, aufgabenText, p);
+                await bewerteMitGraph(task, task.gradingGraph, aufgabenText, p);
             } catch (err) {
                 logger.error(`[${p.herkunft}] Error in GraphRunner execution`, {
                     taskName: task.name, error: toErrorMessage(err)

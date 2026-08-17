@@ -1,10 +1,11 @@
-import { diffWords } from 'diff';
-import type { TargetGoal, CalcTraceResult } from './grading/calc-trace-types';
+import { diffWords, type Change } from 'diff';
+import type { TargetGoal, CalcTraceResult, CalcTraceTemplate } from './grading/calc-trace-types';
+import type { GradingGraph, GradingResult } from './grading/types';
 
 /**
  * Compares two strings and returns an array of diff objects.
  */
-export function compareTexts(modelSolution: string, studentText: string): any[] {
+export function compareTexts(modelSolution: string, studentText: string): Change[] {
     if (!modelSolution || !studentText) return [];
 
     const cleanModel = modelSolution.trim();
@@ -34,11 +35,12 @@ export interface Task {
     content?: string;
     confidence?: number; // 0-1 or 0-100
     taskType?: string;
-    gradingGraph?: any;
-    gradingResult?: any;
+    gradingGraph?: GradingGraph;
+    gradingResult?: GradingResult;
     targetGoal?: TargetGoal;
     calcTraceResult?: CalcTraceResult;
-    calcTrace?: any;
+    /** Musterrechnung — Vorlage aus dem Skill-Editor oder ein TargetGoal. */
+    calcTrace?: CalcTraceTemplate | TargetGoal;
     suggestGraph?: boolean;
     predictedPluginDomain?: string | null;
     sandboxBypassed?: boolean;
@@ -58,7 +60,7 @@ export function calculatePercentageFromTasks(tasks: Task[]): number {
 /**
  * Simple heuristic to estimate match percentage from diff.
  */
-export function getMatchPercentage(diffParts: any[]): number {
+export function getMatchPercentage(diffParts: Change[]): number {
     let matched = 0;
     let total = 0;
 
@@ -76,8 +78,13 @@ export function getMatchPercentage(diffParts: any[]): number {
 
 /**
  * Re-indexes a list of batch files to maintain "Schüler #N" naming convention.
+ *
+ * Bewusst generisch: die Funktion braucht nur `name` und gibt denselben Typ
+ * zurueck, den sie bekommen hat. Ein fester `BatchFile[]` waere hier ein
+ * Ringschluss — `BatchFile` liegt in types/index.ts, das seinerseits `Task`
+ * aus dieser Datei bezieht.
  */
-export function reindexBatchFiles(files: any[]): any[] {
+export function reindexBatchFiles<T extends { name?: string }>(files: T[]): T[] {
     if (!files || !Array.isArray(files)) return [];
     return files.map((file, idx) => ({
         ...file,
@@ -88,11 +95,12 @@ export function reindexBatchFiles(files: any[]): any[] {
 /**
  * Generates new batch items from a split operation.
  */
-export function generateSplitBatchItems(
-    originalFile: any,
+export function generateSplitBatchItems<T extends { name?: string; originalName?: string }>(
+    /** Darf null sein — der Rumpf faengt das ab und liefert eine leere Liste. */
+    originalFile: T | null,
     splits: { firstName?: string, lastName?: string, name?: string, pageCount: number }[],
     baseIdx: number
-): any[] {
+) {
     if (!originalFile || !splits) return [];
     
     let currentStartPage = 1;

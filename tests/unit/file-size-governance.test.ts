@@ -74,7 +74,9 @@ const SIZE_BASELINE: Record<string, number> = {
     // in vier benannte Reiter zu trennen ist der groessere Gewinn.
     'components/batch/parts/GraphEditorPanel.tsx': 456,
     'components/batch/parts/GraphAiPanel.tsx': 345,
-    'components/upload/ModelSolutionCard.tsx': 896,
+    // +1 fuer den Typ-Import: getDefaultGradingGraph liefert jetzt GradingGraph
+    // statt eines untypisierten Literals.
+    'components/upload/ModelSolutionCard.tsx': 897,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
     // +42 gegenueber 793: der Ansichtstyp SkillListenEintrag und die

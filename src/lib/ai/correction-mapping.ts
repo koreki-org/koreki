@@ -1,5 +1,5 @@
 import { Task, AITask } from '../../types';
-import { StepResult, VariableDefinition } from '../grading/types';
+import { StepResult } from '../grading/types';
 import { TargetGoal, GradingCriterion } from '../grading/calc-trace-types';
 import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source';
 import { formatPluginFeedback } from '../grading/feedback-formatter';
@@ -245,12 +245,12 @@ export function mapGraphTask(layoutTask: Task, aiTask: AITask | undefined): Task
         shownStepsCount = gradingResult.stepResults.length;
     } else {
         gradingResult.stepResults.forEach((step: StepResult) => {
-            const originalVar = layoutTask.gradingGraph?.variables?.find((v: VariableDefinition) => v.id === step.variableId);
-
-            // Only skip explicit setup variables to keep the UI clean, but ALWAYS show inputs and formulas
-            // even if they yield 0 points, so the user can verify the extraction process.
-            if (originalVar && originalVar.type === 'setup') return;
-
+            // Frueher stand hier ein Filter auf `type === 'setup'`, um
+            // "Setup-Variablen" auszublenden. `VariableType` kennt nur 'input'
+            // und 'formula' — die Bedingung konnte nie zutreffen und hat nie
+            // etwas ausgeblendet. Entfernt, statt sie weiter mitzuschleppen:
+            // Eingaben und Formeln sollen ohnehin ALLE sichtbar sein, auch mit
+            // null Punkten, damit die Extraktion nachvollziehbar bleibt.
             shownStepsCount++;
 
             const statusStr = step.status === 'correct' ? 'KORREKT' :

@@ -1,4 +1,5 @@
 import prisma from './prisma';
+import { Prisma, type Workspace } from '@prisma/client';
 import { isLocalInstance } from './env-context';
 
 export type BillingModule = 'ocr' | 'correction';
@@ -8,15 +9,24 @@ export type BillingModule = 'ocr' | 'correction';
  * 1. Priority: If the user belongs to an ORGANIZATION, that's their billing workspace.
  * 2. Fallback: Use the PERSONAL workspace.
  */
-export async function resolveActiveWorkspace(logtoId: string) {
+export async function resolveActiveWorkspace(logtoId: string): Promise<Workspace | null> {
     if (isLocalInstance()) {
+        // Lokale Instanzen haben keine Mandanten und keine Abrechnung. Der
+        // Platzhalter erfuellt trotzdem den vollen Datensatz, statt ihn per
+        // `as any` zu behaupten — sonst faellt erst zur Laufzeit auf, wenn ein
+        // Aufrufer ein Feld liest, das hier fehlt.
+        const jetzt = new Date();
         return {
             id: 'local-workspace-id',
             name: 'Local Workspace',
             type: 'PERSONAL',
             credits: 999999,
-            avvAccepted: true
-        } as any;
+            createdAt: jetzt,
+            updatedAt: jetzt,
+            avvAccepted: true,
+            avvFileUrl: null,
+            inviteCode: null
+        };
     }
 
     const user = await prisma.user.findUnique({
@@ -26,7 +36,7 @@ export async function resolveActiveWorkspace(logtoId: string) {
     
     if (!user) return null;
 
-    const activeWsId = (user as any).activeWorkspaceId;
+    const activeWsId = user.activeWorkspaceId;
     const personalMembership = user.memberships.find(m => m.workspace.type === 'PERSONAL');
     const targetWsId = activeWsId || personalMembership?.workspaceId;
     
@@ -128,12 +138,17 @@ export async function performBillingAction(params: {
         const user = (await tx.user.findUnique({
             where: { logtoId },
             include: { memberships: { include: { workspace: true } } }
-        })) as any;
+        }));
 
-        const activeWsId = (user as any).activeWorkspaceId;
-        const personalWsId = user.memberships?.find((m: any) => m.workspace?.type === 'PERSONAL')?.workspaceId;
+        // Steht seit jeher ungeprueft da: der Zugriff darunter lief bei einem
+        // fehlenden Nutzer in einen TypeError statt in eine verstaendliche
+        // Meldung. Verdeckt hat es ein `as any` auf dem Ergebnis.
+        if (!user) throw new Error('Nutzer für die Abrechnung nicht gefunden.');
+
+        const activeWsId = user.activeWorkspaceId;
+        const personalWsId = user.memberships?.find(m => m.workspace?.type === 'PERSONAL')?.workspaceId;
         let targetWsId = activeWsId || personalWsId;
-        const activeMembership = user.memberships.find((m: any) => m.workspaceId === targetWsId);
+        const activeMembership = user.memberships.find(m => m.workspaceId === targetWsId);
 
         if (!activeMembership) throw new Error('Kein gültiger Workspace gefunden.');
 
@@ -160,9 +175,9 @@ export async function performBillingAction(params: {
         }
 
         // 3. Prepare Updates
-        const userUpdateData: any = {};
-        const workspaceUpdateData: any = {};
-        const systemUpdateData: any = {};
+        const userUpdateData: Prisma.UserUpdateInput = {};
+        const workspaceUpdateData: Prisma.WorkspaceUpdateInput = {};
+        const systemUpdateData: Prisma.SystemSettingsUpdateInput = {};
 
         if (module === 'ocr') {
             userUpdateData.ocrInputTokens = { increment: Math.floor(inputTokens) };

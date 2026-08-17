@@ -10,8 +10,10 @@ describe('parseCorrectionResult Isomorphic Contract Test', () => {
             maxPoints: 10,
             content: 'Schüler-Lösung für Aufgabe 1',
             taskType: 'calc-trace',
+            // Inhalt egal — entscheidend ist NUR, dass eine Rechenkette anhaengt.
             calcTrace: {
-                statements: ['x + 2 = 5', 'x = 3']
+                taskId: 'a1',
+                steps: [{ id: 'x', label: 'x', type: 'calc' as const, value: 3, formula: '5 - 2' }]
             },
             targetGoal: {
                 targetValue: 3,
@@ -104,7 +106,7 @@ describe('parseCorrectionResult Isomorphic Contract Test', () => {
                 maxPoints: 5,
                 content: 'Test text',
                 taskType: 'calc-trace',
-                calcTrace: { statements: [] }
+                calcTrace: { taskId: 'a1', steps: [] }
                 // calcTraceResult is missing and feedback was NOT pre-formatted by server
             }
         ];

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import type { GradingGraph } from '../../lib/grading/types';
 import { FileText, FileUp, RefreshCw, Sparkles, Loader2, Layers, Trash2, Link2Off, HelpCircle, AlertCircle, ShieldCheck, ShieldAlert, Clock, ToggleLeft, ToggleRight, Download, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { Task, AppSettings } from '@/types';
@@ -96,7 +97,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         return 'default';
     }, [settings?.customSkills]);
 
-    const getDefaultGradingGraph = useCallback((skillId: string, originalIdx: number, taskContent?: string) => {
+    const getDefaultGradingGraph = useCallback((skillId: string, originalIdx: number, taskContent?: string): GradingGraph | undefined => {
         const timestamp = Date.now();
         if (skillId && skillId.startsWith('custom-skill-')) {
             return settings?.customSkills?.[skillId]?.gradingGraph;
@@ -106,9 +107,9 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 taskId: `vlsm-task-${originalIdx}-${timestamp}`,
                 discipline: 'computer-science-networking',
                 variables: [
-                    { id: 'subnetA_hosts', type: 'input', defaultValue: 50, validationType: 'exact', maxPoints: 0 },
-                    { id: 'subnetA_netId', type: 'input', defaultValue: '192.168.1.0', validationType: 'exact', maxPoints: 0 },
-                    { id: 'subnetA_mask', type: 'formula', expression: 'network.calculateMask(subnetA_hosts)', validationType: 'exact', maxPoints: 1 }
+                    { id: 'subnetA_hosts', type: 'input' as const, defaultValue: 50, validationType: 'exact' as const, maxPoints: 0 },
+                    { id: 'subnetA_netId', type: 'input' as const, defaultValue: '192.168.1.0', validationType: 'exact' as const, maxPoints: 0 },
+                    { id: 'subnetA_mask', type: 'formula' as const, expression: 'network.calculateMask(subnetA_hosts)', validationType: 'exact' as const, maxPoints: 1 }
                 ]
             };
         }
