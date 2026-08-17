@@ -53,7 +53,14 @@ const perFileRatchets = [
         'src/components/batch/GradingGraphModal.tsx': 5,
         'src/components/batch/GradingMemoryStartScreen.tsx': 5,
         'src/components/settings/AiProfileModules.tsx': 5,
-        'src/components/settings/SkillsModules.tsx': 5,
+        // 5 -> 2 + 1 + 2: dieselben Elemente, nur auf drei Dateien verteilt. Der
+        // Editor und sein Motor-Abschnitt sind aus SkillsModules herausgezogen;
+        // die Elemente sind UNVERAENDERT umgezogen. Der Austausch gegen die
+        // Kit-Komponenten aendert Abstaende und Radien und gehoert deshalb in
+        // einen eigenen Schritt MIT Sichtpruefung.
+        'src/components/settings/SkillsModules.tsx': 2,
+        'src/components/settings/SkillEditorPanel.tsx': 1,
+        'src/components/settings/SkillEngineSection.tsx': 2,
         'src/components/upload/ModelSolutionCard.tsx': 5,
         'src/components/upload/ModelSolutionTaskCard.tsx': 4,
         'src/components/batch/parts/GraphAiPanel.tsx': 3,

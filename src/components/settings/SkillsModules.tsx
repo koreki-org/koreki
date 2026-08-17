@@ -13,7 +13,8 @@ import { downloadFile } from '@/lib/file-utils';
 import type { CustomSkillDefinition } from '@/types';
 import { applySkillToggle } from '@/lib/skills/skill-selection';
 import { SKILL_REGISTRY } from '@/prompts/skills';
-import { GradingGraphModal } from '../batch/GradingGraphModal';
+import { SkillEditorPanel } from './SkillEditorPanel';
+import { useSkillGeneration } from '@/hooks/useSkillGeneration';
 import { CalcTraceModal } from '../batch/CalcTraceModal';
 import { isLocalInstance } from '@/lib/env-context';
 import { useAuth } from '@/hooks/useAuth';
@@ -134,10 +135,12 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     const [isEditingSkill, setIsEditingSkill] = React.useState(false);
     const [editingSkillData, setEditingSkillData] = React.useState<CustomSkillDefinition | null>(null);
     const [isGraphModalOpen, setIsGraphModalOpen] = React.useState(false);
-    const [isGeneratingGraph, setIsGeneratingGraph] = React.useState(false);
     const [isCalcTraceModalOpen, setIsCalcTraceModalOpen] = React.useState(false);
-    const [isGeneratingTrace, setIsGeneratingTrace] = React.useState(false);
-    const [graphGenTaskText, setGraphGenTaskText] = React.useState('');
+
+    const {
+        isGeneratingGraph, isGeneratingTrace, setGraphGenTaskText,
+        handleAIGraphGenerate, handleAICalcTraceGenerate
+    } = useSkillGeneration({ editingSkillData, setEditingSkillData, onGenerateGraph, onGenerateCalcTrace });
 
     const handleCreateSkillClick = () => {
         setEditingSkillData({
@@ -173,46 +176,6 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
         });
         setGraphGenTaskText(skill.taskText || '');
         setIsEditingSkill(true);
-    };
-
-    const handleAIGraphGenerate = async () => {
-        const textToGen = editingSkillData?.taskText || graphGenTaskText;
-        if (!onGenerateGraph || !textToGen.trim()) return;
-        setIsGeneratingGraph(true);
-        try {
-            const result = await onGenerateGraph(textToGen, editingSkillData?.category);
-            if (result) {
-                setEditingSkillData(prev => ({
-                    ...prev,
-                    gradingGraph: result,
-                    taskText: textToGen
-                }));
-            }
-        } catch (err) {
-            console.error('Graph generation failed:', err);
-        } finally {
-            setIsGeneratingGraph(false);
-        }
-    };
-
-    const handleAICalcTraceGenerate = async () => {
-        const textToGen = editingSkillData?.taskText || graphGenTaskText;
-        if (!onGenerateCalcTrace || !textToGen.trim()) return;
-        setIsGeneratingTrace(true);
-        try {
-            const result = await onGenerateCalcTrace(textToGen);
-            if (result) {
-                setEditingSkillData(prev => ({
-                    ...prev,
-                    calcTrace: result,
-                    taskText: textToGen
-                }));
-            }
-        } catch (err) {
-            console.error('CalcTrace generation failed:', err);
-        } finally {
-            setIsGeneratingTrace(false);
-        }
     };
 
     const handleSaveCustomSkillClick = () => {
@@ -536,297 +499,24 @@ ${skill.prompt || ''}`;
 
             {/* Inline Dialog Overlay for Creating/Editing Custom Skill */}
             {isEditingSkill && editingSkillData && (
-                <div className="fixed inset-0 z-[2200] flex items-center justify-center bg-foreground/40 backdrop-blur-md p-4">
-                    <div className="bg-background w-full max-w-xl rounded-hero shadow-2xl border border-border p-6 sm:p-8 space-y-6 flex flex-col max-h-[90vh] overflow-hidden animate-fade-in text-foreground">
-                        <div className="flex justify-between items-center pb-2 border-b border-border">
-                            <h3 className="text-lg sm:text-xl font-black text-foreground flex items-center gap-2">
-                                <Sparkles className="text-primary animate-pulse" size={20} />
-                                {editingSkillData.id ? 'Eigenen Skill bearbeiten' : 'Eigenen Skill erstellen'}
-                            </h3>
-                        </div>
-                        
-                        <div className="space-y-4 flex-1 overflow-y-auto pr-1 pb-4">
-                            <div className="space-y-1.5">
-                                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">Name des Skills</label>
-                                <Input 
-                                    value={editingSkillData.name}
-                                    onChange={e => setEditingSkillData({ ...editingSkillData, name: e.target.value })}
-                                    placeholder="z.B. Folgefehler-Kompensation Physik"
-                                    className="h-11 rounded-xl border-border focus:ring-primary focus:border-primary"
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">Kategorie</label>
-                                <select
-                                    value={editingSkillData.category}
-                                    onChange={e => setEditingSkillData({ ...editingSkillData, category: e.target.value })}
-                                    className="w-full h-11 px-3 rounded-xl border border-border text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-background cursor-pointer"
-                                >
-                                    <option value="math-science">MINT-Fächer</option>
-                                    <option value="graph-skills">Graph-basierte Skills (PANG)</option>
-                                    <option value="calc-skills">Rechenketten-Skills (CalcTrace)</option>
-                                    <option value="languages">Sprachen & Textästhetik</option>
-                                    <option value="standards">Korrekturzeichen & Bundesländer</option>
-                                    <option value="feedback">Pädagogisches Feedback</option>
-                                </select>
-                            </div>
-
-                            <div className="flex items-center gap-2.5 pt-1 pb-1">
-                                <input
-                                    type="checkbox"
-                                    id="is-graph-based"
-                                    checked={!!editingSkillData.isGraphBased}
-                                    onChange={e => {
-                                        const isChecked = e.target.checked;
-                                        setEditingSkillData({
-                                            ...editingSkillData,
-                                            isGraphBased: isChecked,
-                                            isCalcTrace: false,
-                                            calcTrace: undefined,
-                                            category: isChecked ? 'graph-skills' : (editingSkillData.category === 'graph-skills' ? 'math-science' : editingSkillData.category),
-                                            gradingGraph: isChecked ? (editingSkillData.gradingGraph || {
-                                                taskId: `skill-graph-${Date.now()}`,
-                                                discipline: 'computer-science-networking',
-                                                variables: [
-                                                    { id: 'subnetA_hosts', type: 'input', defaultValue: 50, validationType: 'exact', maxPoints: 1 },
-                                                    { id: 'subnetA_netId', type: 'input', defaultValue: '192.168.1.0', validationType: 'exact', maxPoints: 1 },
-                                                    { id: 'subnetA_mask', type: 'formula', expression: 'network.calculateMask(subnetA_hosts)', validationType: 'exact', maxPoints: 1 }
-                                                ]
-                                            }) : undefined
-                                        });
-                                    }}
-                                    className="w-4 h-4 text-primary rounded border-border focus:ring-primary cursor-pointer"
-                                />
-                                <label htmlFor="is-graph-based" className="text-xs font-bold text-foreground cursor-pointer">
-                                    Graph-basierter Skill (PANG Engine)
-                                </label>
-                            </div>
-
-                            <div className="flex items-center gap-2.5 pt-1 pb-1">
-                                <input
-                                    type="checkbox"
-                                    id="is-calc-trace"
-                                    checked={!!editingSkillData.isCalcTrace}
-                                    onChange={e => {
-                                        const isChecked = e.target.checked;
-                                        setEditingSkillData({
-                                            ...editingSkillData,
-                                            isCalcTrace: isChecked,
-                                            isGraphBased: false,
-                                            gradingGraph: undefined,
-                                            category: isChecked ? 'calc-skills' : (editingSkillData.category === 'calc-skills' ? 'math-science' : editingSkillData.category),
-                                            calcTrace: isChecked ? (editingSkillData.calcTrace || {
-                                                taskId: `skill-trace-${Date.now()}`,
-                                                steps: [
-                                                    { id: 'P', label: 'Leistung P', type: 'given', value: 2300, unit: 'W' },
-                                                    { id: 't', label: 'Zeit t', type: 'given', value: 0.0833, unit: 'h' },
-                                                    { id: 'W', label: 'Energie W', type: 'calc', value: 0.1916, formula: 'P * t', unit: 'kWh', points: 1 }
-                                                ]
-                                            }) : undefined
-                                        });
-                                    }}
-                                    className="w-4 h-4 text-primary rounded border-border focus:ring-primary cursor-pointer"
-                                />
-                                <label htmlFor="is-calc-trace" className="text-xs font-bold text-foreground cursor-pointer">
-                                    MINT Rechenkette (CalcTrace Engine)
-                                </label>
-                            </div>
-
-                            {editingSkillData.isGraphBased && (
-                                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 flex flex-col gap-3">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-xs font-black text-primary uppercase tracking-widest">Grading Graph</span>
-                                        <div className="flex gap-2">
-                                            {onGenerateGraph && (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    disabled={isGeneratingGraph || !editingSkillData.taskText?.trim()}
-                                                    onClick={handleAIGraphGenerate}
-                                                    className="h-8 text-xs font-bold border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 rounded-lg px-3 gap-1.5 transition-all duration-300"
-                                                >
-                                                    {isGeneratingGraph ? (
-                                                        <Loader2 size={13} className="animate-spin" />
-                                                    ) : (
-                                                        <Sparkles size={13} />
-                                                    )}
-                                                    {isGeneratingGraph ? 'Generiere...' : `KI-Graph generieren${showsCreditCost ? ' (1 C)' : ''}`}
-                                                </Button>
-                                            )}
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setIsGraphModalOpen(true)}
-                                                className="h-8 text-xs font-bold border-primary/20 text-primary bg-background hover:bg-primary/5 rounded-lg px-3 transition-all duration-300"
-                                            >
-                                                Graph bearbeiten ⚙️
-                                            </Button>
-                                        </div>
-                                    </div>
-
-                                    {/* Permanently visible task text input for graph skills */}
-                                    <div className="space-y-1.5">
-                                        <label className="text-xxs font-bold text-primary uppercase tracking-widest">Aufgabentext für KI-Analyse & PANG-Kompensation</label>
-                                        <Textarea
-                                            value={editingSkillData.taskText || ''}
-                                            onChange={e => {
-                                                const val = e.target.value;
-                                                setEditingSkillData({ ...editingSkillData, taskText: val });
-                                                setGraphGenTaskText(val);
-                                            }}
-                                            placeholder="Füge hier den Aufgabentext ein, aus dem die KI Variablen und Formeln extrahieren soll..."
-                                            rows={4}
-                                            className="w-full p-3 rounded-xl border border-primary/10 text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-background"
-                                        />
-                                    </div>
-
-                                    <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                                        Definieren Sie Variablen, Abhängigkeiten und mathematische Ausdrücke für automatisierte Berechnungen und präzise Folgefehlererkennung.
-                                    </p>
-                                    {editingSkillData.gradingGraph?.variables && (
-                                        <div className="flex flex-wrap gap-1.5 pt-1">
-                                            {editingSkillData.gradingGraph.variables.map(v => (
-                                                <Badge key={v.id} variant="outline" className="text-xs font-mono px-2 py-0.5 bg-background border-border text-muted-foreground rounded-md">
-                                                    {v.id}
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {editingSkillData.isCalcTrace && (
-                                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/20 flex flex-col gap-3">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-xs font-black text-primary uppercase tracking-widest">MINT Rechenkette (CalcTrace)</span>
-                                        <div className="flex gap-2">
-                                            {onGenerateCalcTrace && (
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    disabled={isGeneratingTrace || !editingSkillData.taskText?.trim()}
-                                                    onClick={handleAICalcTraceGenerate}
-                                                    className="h-8 text-xs font-bold border-border text-primary bg-primary/5 hover:bg-primary/10 rounded-lg px-3 gap-1.5 transition-all duration-300"
-                                                >
-                                                    {isGeneratingTrace ? (
-                                                        <Loader2 size={13} className="animate-spin" />
-                                                    ) : (
-                                                        <Sparkles size={13} />
-                                                    )}
-                                                    {isGeneratingTrace ? 'Generiere...' : `KI-Kette generieren${showsCreditCost ? ' (1 C)' : ''}`}
-                                                </Button>
-                                            )}
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => setIsCalcTraceModalOpen(true)}
-                                                className="h-8 text-xs font-bold border-border text-primary bg-background hover:bg-primary/5 rounded-lg px-3 transition-all duration-300"
-                                            >
-                                                Kette bearbeiten 📐
-                                            </Button>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <label className="text-xxs font-bold text-primary uppercase tracking-widest">Aufgabentext für KI-Analyse & CalcTrace-Kompensation</label>
-                                        <Textarea
-                                            value={editingSkillData.taskText || ''}
-                                            onChange={e => {
-                                                const val = e.target.value;
-                                                setEditingSkillData({ ...editingSkillData, taskText: val });
-                                                setGraphGenTaskText(val);
-                                            }}
-                                            placeholder="Füge hier den Aufgabentext ein, aus dem die KI Rechenschritte extrahieren soll..."
-                                            rows={4}
-                                            className="w-full p-3 rounded-xl border border-border text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-background resize-none"
-                                        />
-                                    </div>
-
-                                    <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                                        Definieren Sie Rechenschritte, Formeln, Einheiten und Toleranzen für eine flache Rechenkette mit automatischer Folgefehlererkennung.
-                                    </p>
-                                    {editingSkillData.calcTrace && 'steps' in editingSkillData.calcTrace && (
-                                        <div className="flex flex-wrap gap-1.5 pt-1">
-                                            {editingSkillData.calcTrace.steps.map(s => (
-                                                <Badge key={s.id} variant="outline" className="text-xs font-mono px-2 py-0.5 bg-background border-border text-muted-foreground rounded-md">
-                                                    {s.id}: {s.label} ({s.type === 'given' ? 'gegeben' : s.formula})
-                                                </Badge>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            <div className="space-y-1.5">
-                                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">Kurzbeschreibung</label>
-                                <Textarea 
-                                    value={editingSkillData.description}
-                                    onChange={e => setEditingSkillData({ ...editingSkillData, description: e.target.value })}
-                                    placeholder="Beschreibe kurz, worauf die KI achten soll und in welchem Fach."
-                                    rows={2}
-                                    className="w-full p-3 rounded-xl border border-border text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
-                                />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">KI-Anweisung (Prompt Snippet)</label>
-                                <Textarea 
-                                    value={editingSkillData.promptSnippet}
-                                    onChange={e => setEditingSkillData({ ...editingSkillData, promptSnippet: e.target.value })}
-                                    placeholder="Gib hier die genaue systemische Korrektur-Anweisung für das LLM an. Beispiel:&#10;FOLGEFEHLER BEI BERECHNUNGEN:&#10;- Wenn der Schüler ein falsches Zwischenergebnis verwendet, aber die darauffolgenden Rechenschritte mathematisch korrekt ausführt, ziehe nur einmalig für den ersten Fehler Punkte ab."
-                                    rows={6}
-                                    className="w-full p-3 rounded-xl border border-border text-xs font-mono text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-muted/30"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-3 pt-4 border-t border-border shrink-0">
-                            <Button 
-                                variant="ghost" 
-                                onClick={() => { setIsEditingSkill(false); setEditingSkillData(null); }}
-                                className="h-10 rounded-xl px-4 font-bold text-muted-foreground hover:bg-muted"
-                            >
-                                Abbrechen
-                            </Button>
-                            <Button 
-                                onClick={handleSaveCustomSkillClick}
-                                className="h-10 rounded-xl px-6 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md transition-all"
-                            >
-                                Speichern
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {isGraphModalOpen && (
-                <GradingGraphModal
-                    isOpen={isGraphModalOpen}
-                    onClose={() => setIsGraphModalOpen(false)}
-                    initialGraph={editingSkillData?.gradingGraph}
-                    taskName={editingSkillData?.name || "Benutzerdefinierter Skill"}
-                    taskContent={editingSkillData?.taskText || editingSkillData?.description || editingSkillData?.name || ""}
+                <SkillEditorPanel
+                    editingSkillData={editingSkillData}
+                    setEditingSkillData={setEditingSkillData}
+                    onSave={handleSaveCustomSkillClick}
+                    onClose={() => setIsEditingSkill(false)}
+                    isGeneratingGraph={isGeneratingGraph}
+                    isGeneratingTrace={isGeneratingTrace}
+                    setGraphGenTaskText={setGraphGenTaskText}
+                    handleAIGraphGenerate={handleAIGraphGenerate}
+                    handleAICalcTraceGenerate={handleAICalcTraceGenerate}
+                    onGenerateGraph={onGenerateGraph}
+                    onGenerateCalcTrace={onGenerateCalcTrace}
+                    showsCreditCost={showsCreditCost}
                     appMode={userData?.appMode === 'UNSET' ? undefined : userData?.appMode}
-                    onSave={(updatedGraph) => {
-                        setEditingSkillData({
-                            ...editingSkillData,
-                            gradingGraph: updatedGraph
-                        });
-                    }}
-                />
-            )}
-            {isCalcTraceModalOpen && (
-                <CalcTraceModal
-                    isOpen={isCalcTraceModalOpen}
-                    onClose={() => setIsCalcTraceModalOpen(false)}
-                    initialTrace={editingSkillData?.calcTrace}
-                    taskName={editingSkillData?.name || "Benutzerdefinierter Skill"}
-                    onSave={(updatedTrace) => {
-                        setEditingSkillData({
-                            ...editingSkillData,
-                            calcTrace: updatedTrace
-                        });
-                    }}
+                    isGraphModalOpen={isGraphModalOpen}
+                    setIsGraphModalOpen={setIsGraphModalOpen}
+                    isCalcTraceModalOpen={isCalcTraceModalOpen}
+                    setIsCalcTraceModalOpen={setIsCalcTraceModalOpen}
                 />
             )}
         </div>
