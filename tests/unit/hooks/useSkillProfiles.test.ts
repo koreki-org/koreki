@@ -1,5 +1,6 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useSkillProfiles, sortObjectKeys, deduplicateCustomSkills } from '../../../src/hooks/useSkillProfiles';
+import { useSkillProfiles } from '../../../src/hooks/useSkillProfiles';
+import { sortObjectKeys, deduplicateCustomSkills } from '../../../src/lib/skills/skill-dedup';
 import { AppSettings } from '../../../src/types';
 
 // Mock dependencies

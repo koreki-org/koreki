@@ -102,10 +102,12 @@ const SIZE_BASELINE: Record<string, number> = {
     'lib/ai/ollama-logic.ts': 679,
     'components/settings/AiProfileModules.tsx': 402,
     'lib/grading/CalcTrace.ts': 697,
-    // +15 fuer den Wächter gegen den sich selbst ausloesenden Lade-Effekt.
-    // Der Kommentar dort beschreibt den Mechanismus — ohne ihn wird der
-    // Wächter beim naechsten Aufraeumen als ueberfluessig entfernt.
-    'hooks/useSkillProfiles.ts': 704,
+    // 704 -> 411: die reinen Helfer nach lib/skills/skill-dedup, die
+    // Skill-Verwaltung nach hooks/skills/useCustomSkillCrud, und die sechs
+    // Desktop/SaaS-Verzweigungen nach lib/skills/skill-profile-store.
+    // Weiterhin ueber der Grenze — der naechste Schnitt trennt Profil-Auswahl
+    // von Editor-Zustand.
+    'hooks/useSkillProfiles.ts': 411,
     // +25 gegenueber 660: der Zustands-Ausschnitt ProcessingPipelineState und
     // `alsAnfrageModus`. Beide haben ALLE 11 `any` dieser Datei abgeloest —
     // darunter ein `appMode: 'UNSET'`, das an eine Funktion ging, die diesen
