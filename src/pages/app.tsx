@@ -31,6 +31,7 @@ import { AlertTriangle } from 'lucide-react';
 import { isDesktopTarget } from '@/lib/env-context';
 import AuthGuard from '@/components/guards/AuthGuard';
 import { toErrorMessage } from '@/lib/error-message';
+import { useTaskEngineGeneration } from '@/hooks/useTaskEngineGeneration';
 
 export default function Home() {
     // Core Auth & Logic Hooks
@@ -68,122 +69,18 @@ export default function Home() {
 
     const { saveSettings, handleModeSelect, handleUnlockExpert } = useDashboardActions(userData, setUserData, aiSettings, setAiSettings, fetchAiStatus);
 
-    const handleGenerateGraphForTask = async (taskIndex: number, taskText: string, userNotes?: string, disciplineOverride?: string) => {
-        try {
-            const discipline = disciplineOverride || data.tasksLayout[taskIndex]?.taskType;
-            const response = await performAIRequest(
-                'generate-graph',
-                { taskText, discipline, userNotes },
-                userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
-                aiSettings
-            );
-            if (response) {
-                data.setTasksLayout(prevTasks => {
-                    const updatedTasks = [...prevTasks];
-                    if (updatedTasks[taskIndex]) {
-                        let determinedType = updatedTasks[taskIndex].taskType || 'default';
-                        
-                        if (response.discipline === 'computer-science-storage') {
-                            determinedType = 'default';
-                        } else if (response.discipline === 'computer-science-networking') {
-                            determinedType = 'skill-calc-vlsm';
-                        }
+    const {
+        handleGenerateGraphForTask,
+        handleGenerateCalcTraceForTask,
+        handleGenerateGraphFromText,
+        handleGenerateCalcTraceFromText
+    } = useTaskEngineGeneration({
+        tasksLayout: data.tasksLayout,
+        setTasksLayout: data.setTasksLayout,
+        userData,
+        aiSettings
+    });
 
-                        updatedTasks[taskIndex] = {
-                            ...updatedTasks[taskIndex],
-                            taskType: determinedType,
-                            gradingGraph: response
-                        };
-                    }
-                    return updatedTasks;
-                });
-                return response;
-            }
-            return null;
-        } catch (error) {
-            console.error('Error generating graph:', error);
-            const msg = toErrorMessage(error, '');
-            const msgLower = String(msg).toLowerCase();
-            if (msgLower.includes('422') || msgLower.includes('validation') || msgLower.includes('keinen') || msgLower.includes('bewertungs') || msgLower.includes('gültig')) {
-                alert(`Fehler bei der Graph-Generierung:\n\nDie KI konnte keinen Bewertungs-Graphen erstellen.\n\nHinweis: Das PANG-System ist für strukturierte, netzwerkartige Aufgaben (z. B. Subnetting) optimiert. Für rein textuelle/konzeptionelle Fragen (wie z. B. Freitext-Erklärungen) ist kein Rechengraph erforderlich – nutze hierfür einfach die Standard-Korrektur ohne Graph.`);
-            } else {
-                alert(`Fehler bei der Graph-Generierung: ${msg}`);
-            }
-            throw error;
-        }
-    };
-
-    const handleGenerateCalcTraceForTask = async (taskIndex: number, taskText: string, userNotes?: string) => {
-        try {
-            // Die Punktzahl der Aufgabe ist hier bekannt. Ohne sie muesste die KI sie aus dem
-            // Aufgabentext raten — und eine falsch geratene Summe verbiegt alle Einzelpunkte.
-            const taskMaxPoints = Number(data.tasksLayout[taskIndex]?.maxPoints ?? 0);
-
-            const response = await performAIRequest(
-                'generate-calc-trace',
-                { taskText, userNotes, maxPoints: taskMaxPoints > 0 ? taskMaxPoints : undefined },
-                userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
-                aiSettings
-            );
-            if (response) {
-                data.setTasksLayout(prevTasks => {
-                    const updatedTasks = [...prevTasks];
-                    if (updatedTasks[taskIndex]) {
-                        updatedTasks[taskIndex] = {
-                            ...updatedTasks[taskIndex],
-                            taskType: 'calc-trace',
-                            targetGoal: response
-                        };
-                    }
-                    return updatedTasks;
-                });
-                return response;
-            }
-            return null;
-        } catch (error) {
-            console.error('Error generating calc trace:', error);
-            alert(`Fehler bei der Rechenketten-Generierung: ${toErrorMessage(error)}`);
-            throw error;
-        }
-    };
-
-    const handleGenerateGraphFromText = async (taskText: string, discipline?: string, userNotes?: string) => {
-        try {
-            const response = await performAIRequest(
-                'generate-graph',
-                { taskText, discipline, userNotes },
-                userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
-                aiSettings
-            );
-            return response;
-        } catch (error) {
-            console.error('Error generating custom graph:', error);
-            const msg = toErrorMessage(error, '');
-            const msgLower = String(msg).toLowerCase();
-            if (msgLower.includes('422') || msgLower.includes('validation') || msgLower.includes('keinen') || msgLower.includes('bewertungs') || msgLower.includes('gültig')) {
-                alert(`Fehler bei der Graph-Generierung:\n\nDie KI konnte keinen Bewertungs-Graphen erstellen.\n\nHinweis: Das PANG-System ist für strukturierte, netzwerkartige Aufgaben (z. B. Subnetting) optimiert. Für rein textuelle/konzeptionelle Fragen (wie z. B. Freitext-Erklärungen) ist kein Rechengraph erforderlich – nutze hierfür einfach die Standard-Korrektur ohne Graph.`);
-            } else {
-                alert(`Fehler bei der Graph-Generierung: ${msg}`);
-            }
-            return null;
-        }
-    };
-
-    const handleGenerateCalcTraceFromText = async (taskText: string, userNotes?: string) => {
-        try {
-            const response = await performAIRequest(
-                'generate-calc-trace',
-                { taskText, userNotes },
-                userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
-                aiSettings
-            );
-            return response;
-        } catch (error) {
-            console.error('Error generating custom calc trace:', error);
-            alert(`Fehler bei der Rechenketten-Generierung: ${toErrorMessage(error)}`);
-            return null;
-        }
-    };
 
     // Initial State Effects
     useEffect(() => {

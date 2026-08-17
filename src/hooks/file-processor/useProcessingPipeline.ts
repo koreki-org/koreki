@@ -8,6 +8,7 @@ import { promisePool } from '../../lib/ai/promise-pool';
 import { runExtractionStrategy } from '../../lib/ai/extraction-logic';
 import { extractTextFromFile, renderDocumentPages } from '../../lib/file-utils';
 import { logger } from '../../lib/logger';
+import { alsAnfrageModus } from '../../lib/ai/app-mode';
 import { useBatchStore } from '../store/useBatchStore';
 import { isDesktopTarget } from '../../lib/env-context';
 import { apiClient } from '../../lib/api-client';
@@ -70,16 +71,6 @@ async function ensureActiveGradingMemorySynced() {
  * kennen. Vorher stand hier `state: any` — damit war jeder Tippfehler in einem
  * dieser Namen erst zur Laufzeit sichtbar.
  */
-/**
- * `UNSET` heisst: der Lehrer hat den Modus noch nicht gewaehlt.
- *
- * Fuer die KI-Anfrage ist das dasselbe wie "nicht angegeben" — sie laeuft dann
- * ueber den Server-Weg. Vorher ging die Zeichenkette `UNSET` einfach durch,
- * weil der Parameter `any` war; `performAIRequest` kennt sie gar nicht.
- */
-const alsAnfrageModus = (modus?: User['appMode']): 'PURE' | 'STANDARD' | 'TRIAL' | undefined =>
-    modus === 'UNSET' ? undefined : modus;
-
 interface ProcessingPipelineState {
     setBatchFiles: React.Dispatch<React.SetStateAction<BatchFile[]>>;
     setCurrentProcessingIndex: React.Dispatch<React.SetStateAction<number>>;

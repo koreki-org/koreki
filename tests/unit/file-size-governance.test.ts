@@ -112,8 +112,22 @@ const SIZE_BASELINE: Record<string, number> = {
     // `alsAnfrageModus`. Beide haben ALLE 11 `any` dieser Datei abgeloest —
     // darunter ein `appMode: 'UNSET'`, das an eine Funktion ging, die diesen
     // Wert gar nicht kennt.
-    'hooks/file-processor/useProcessingPipeline.ts': 685,
-    'pages/app.tsx': 598,
+    'hooks/file-processor/useProcessingPipeline.ts': 676,
+    // 598 -> 495: die vier Generierungs-Handler liegen als
+    // useTaskEngineGeneration daneben.
+    //
+    // HIER BEWUSST STEHENGEBLIEBEN. Der Rest ist fast ausschliesslich
+    // JSX-Verdrahtung: allein `UploadGrid` bekommt 45 Requisiten, `Header` 73
+    // Zeilen. Diesen Block in eine weitere Datei zu schieben verlagert die
+    // Verdrahtung nur und legt eine Durchreich-Ebene darueber, in der jede
+    // Requisite ein zweites Mal deklariert werden muesste — das macht es
+    // schlechter, nicht besser.
+    //
+    // Der echte Schnitt liegt bei den KINDERN: `UploadGrid` sollte die
+    // Orchestrator-Objekte entgegennehmen statt 45 Einzelwerte. Das ist eine
+    // Schnittstellen-Aenderung an einer grossen Komponente und gehoert in einen
+    // eigenen Schritt.
+    'pages/app.tsx': 495,
     'lib/ai/prompt-builder.ts': 593,
     'lib/services/local-profile-service.ts': 591,
     'components/batch/parts/BatchTaskAnalysisCard.tsx': 577,
