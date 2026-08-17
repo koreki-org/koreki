@@ -87,8 +87,15 @@ export interface PromptPayload {
     systemPrompt?: string;
     correctionInstruction?: string;
 
+    // Bilderkennung
+    /** Base64 des Seitenbildes. */
+    buffer?: string;
+    mimeType?: string;
+
     /** Nur bei Ollama: der Erfahrungsschatz kommt dort ueber den Payload. */
     gradingMemory?: GradingMemoryCase[] | null;
+    /** Nur bei Ollama: erlaubt dem Rust-Proxy, laufende Anfragen zuzuordnen. */
+    requestId?: string;
 
     [key: string]: unknown;
 }

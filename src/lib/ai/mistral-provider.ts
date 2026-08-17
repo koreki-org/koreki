@@ -23,7 +23,9 @@ import type { GradingMemoryCase, CustomSkillDefinition } from '@/types';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
 import { logger } from '@/lib/logger';
 import { AIProviderError } from './provider-error';
-import { buildPromptForAction } from './prompt-dispatch';
+import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
+import { alsText } from './chat-types';
+import type { ChatNachricht, ChatAnfrage, ChatAntwort, AntwortFormat, TokenVerbrauch, OcrAntwort } from './chat-types';
 import { pruefeWerkzeugAufruf } from './tool-validation';
 import { ueberDesktopProxy } from './desktop-proxy';
 
@@ -75,9 +77,12 @@ export interface AIRequestOptions {
  */
 export async function executeMistralRequest(
     action: AIAction,
-    payload: any,
+    payload: PromptPayload,
     apiKey: string,
     options: AIRequestOptions = {}
+// ARCH: any required because die Rueckgabe je Aktion verschieden ist
+// (GradingGraph, TargetGoal, geparstes JSON oder { text }). Ein Union
+// zwaenge jeden Aufrufer in eine Fallunterscheidung, die er nicht braucht.
 ): Promise<any> {
     // 1. Model Mapping (Industrial Consensus)
     let model = options.model || MISTRAL_CORE_MODEL; // Respect model override
@@ -100,8 +105,8 @@ export async function executeMistralRequest(
     }
 
     // 2. Prompt Building & Parameter Extraction
-    let messages: any[] = [];
-    let responseFormat: any = undefined; // Default to raw text for vision/ocr
+    let messages: ChatNachricht[] = [];
+    let responseFormat: AntwortFormat | undefined = undefined; // Default to raw text for vision/ocr
     let promptObj: StructuredPrompt;
 
     if (action === 'ocr') {
@@ -166,7 +171,7 @@ export async function executeMistralRequest(
         : (options.topP ?? promptObj.options?.topP ?? 1.0);
 
     const url = 'https://api.mistral.ai/v1/chat/completions';
-    const body: any = {
+    const body: ChatAnfrage = {
         model,
         messages,
         response_format: responseFormat,
@@ -198,12 +203,12 @@ export async function executeMistralRequest(
     }
 
     let responseContent: string | null = null;
-    let responseUsage: any = undefined;
+    let responseUsage: TokenVerbrauch | undefined = undefined;
     let toolRetryCount = 0;
     const maxToolRetries = 3;
 
     while (toolRetryCount <= maxToolRetries) {
-        let responseData: any;
+        let responseData: ChatAntwort;
 
         if (isDesktopTarget()) {
             responseData = await ueberDesktopProxy({ url, apiKey, body, signal: options.signal, kontext: 'Desktop Proxy Fehler' });
@@ -224,18 +229,18 @@ export async function executeMistralRequest(
             responseData = await response.json();
         }
         const data = responseData;
-        if (!data.choices) {
+        const message = data.choices?.[0]?.message;
+        if (!message) {
+            // Stand frueher nur als Logmeldung da — und die naechste Zeile griff
+            // trotzdem auf choices[0] zu. Ohne Antwortauswahl ist hier nichts zu
+            // holen; ein benannter Fehler ist besser als ein TypeError.
             logger.error('Mistral response missing choices field', { hasData: !!data });
+            throw new Error('Mistral hat eine Antwort ohne Auswahl geliefert.');
         }
-        const message = data.choices[0].message;
         responseUsage = data.usage;
-        
-        // Handle structured content block arrays returned by Mistral's reasoning models
-        let content = message.content;
-        if (Array.isArray(content)) {
-            const textBlock = content.find((block: any) => block.type === 'text');
-            content = textBlock ? textBlock.text : '';
-        }
+
+        // Denkmodelle antworten in Bausteinen statt mit einer Zeichenkette.
+        const content = alsText(message.content);
 
         if (message?.tool_calls && message.tool_calls.length > 0) {
             const toolCall = message.tool_calls[0];
@@ -302,7 +307,7 @@ export async function executeMistralRequest(
 /**
  * Specialized handler for Mistral OCR Endpoint
  */
-async function handleOCRRequest(payload: any, apiKey: string, isScan: boolean = false, signal?: AbortSignal): Promise<any> {
+async function handleOCRRequest(payload: PromptPayload, apiKey: string, isScan: boolean = false, signal?: AbortSignal): Promise<{ text: string; usage?: TokenVerbrauch }> {
     const url = 'https://api.mistral.ai/v1/ocr';
     const body = {
         model: MISTRAL_OCR_MODEL,
@@ -312,7 +317,7 @@ async function handleOCRRequest(payload: any, apiKey: string, isScan: boolean = 
         }
     };
 
-    let responseData: any;
+    let responseData: OcrAntwort;
 
     if (isDesktopTarget()) {
         responseData = await ueberDesktopProxy({ url, apiKey, body, signal, kontext: 'Desktop OCR Proxy Fehler' });
@@ -335,7 +340,7 @@ async function handleOCRRequest(payload: any, apiKey: string, isScan: boolean = 
 
     const data = responseData;
     return {
-        text: (data.pages || []).map((p: any) => p.markdown).join('\n\n'),
+        text: (data.pages || []).map(p => p.markdown ?? '').join('\n\n'),
         usage: data.usage
     };
 }

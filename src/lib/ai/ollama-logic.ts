@@ -15,13 +15,44 @@ import {
 import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
 import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
 import { AppSettings } from '../../types';
-import { isDesktopTarget } from '@/lib/env-context';
+import { isDesktopTarget, hasTauriRuntime } from '@/lib/env-context';
 import { AIProviderError } from './provider-error';
 import { parseLlmJson, LlmJsonParseError } from './llm-json';
-import { buildPromptForAction } from './prompt-dispatch';
+import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
 
 import type { AIAction } from './prompt-dispatch';
 export type { AIAction };
+
+/**
+ * Eine Nachricht im Ollama-Chatformat.
+ *
+ * `tool` erscheint nur im Nachbesserungs-Umlauf beim Erzeugen eines Graphen:
+ * dort geht das Pruefergebnis als eigene Nachricht zurueck ans Modell.
+ */
+interface OllamaNachricht {
+    role: 'system' | 'user' | 'assistant' | 'tool';
+    content: string;
+    /** Base64-Seitenbilder, nur bei der Bilderkennung. */
+    images?: string[];
+    /** Entwuerfe, die das Modell zur Pruefung vorgelegt hat. */
+    tool_calls?: OllamaWerkzeugAufruf[];
+    /** Name des Werkzeugs, auf das sich eine `tool`-Nachricht bezieht. */
+    name?: string;
+}
+
+/** Werkzeugdefinition, wie Ollama sie im Feld `tools` erwartet. */
+interface OllamaWerkzeug {
+    type: 'function';
+    function: { name: string; description?: string; parameters?: unknown };
+}
+
+/** Der Lesezugriff eines Web-Streams — im Node-Zweig gibt es ihn nicht. */
+type WebStreamKoerper = { getReader: () => ReadableStreamDefaultReader<Uint8Array> };
+
+/** Werkzeugaufruf, wie das Modell ihn zurueckliefert. */
+interface OllamaWerkzeugAufruf {
+    function: { name: string; arguments?: unknown };
+}
 
 /**
  * Helper to normalize Ollama URLs ensuring they have a protocol prefix.
@@ -41,10 +72,14 @@ export function normalizeOllamaUrl(url: string): string {
  */
 export async function executeOllamaRequest(
     action: AIAction,
-    payload: any,
+    payload: PromptPayload,
     settings: AppSettings,
     signal?: AbortSignal,
-    options?: { responseSchema?: any }
+    options?: { responseSchema?: Record<string, unknown> }
+// ARCH: any required because die Rueckgabe je Aktion verschieden ist
+// (GradingGraph, TargetGoal, geparstes JSON oder { text }). Ein Union
+// zwaenge jeden Aufrufer in eine Fallunterscheidung, die er nicht braucht —
+// er weiss, welche Aktion er geschickt hat.
 ): Promise<any> {
     if (!settings || !settings.ollamaUrl) {
         throw new Error('Ollama-Verbindung fehlgeschlagen: Keine Ollama-URL in den Einstellungen konfiguriert.');
@@ -76,7 +111,7 @@ export async function executeOllamaRequest(
 
     if (action === 'vision') {
         promptObj = buildVisionPrompt();
-        images = [payload.buffer]; // Base64 buffer
+        images = payload.buffer ? [payload.buffer] : undefined; // Base64 buffer
     } else {
         // Ollama holt customPrompt und Skills aus den Einstellungen, den
         // Erfahrungsschatz dagegen aus dem Payload — anders als Mistral und
@@ -255,7 +290,7 @@ export async function executeOllamaRequest(
             throw new Error(`Ollama Verbindung fehlgeschlagen: ${error}`);
         }
     }    // --- Native Ollama API Fetch ---
-    const messages: any[] = [];
+    const messages: OllamaNachricht[] = [];
     if (promptObj.system) {
         messages.push({ role: 'system', content: promptObj.system });
     }
@@ -263,7 +298,7 @@ export async function executeOllamaRequest(
         messages.push({
             role: 'user',
             content: promptObj.user,
-            images: [payload.buffer]
+            images: payload.buffer ? [payload.buffer] : undefined
         });
     } else {
         messages.push({
@@ -273,7 +308,7 @@ export async function executeOllamaRequest(
     }
 
     const isGraphAction = action === 'generate-graph' || action === 'refine-graph';
-    let tools: any[] | undefined = undefined;
+    let tools: OllamaWerkzeug[] | undefined = undefined;
     if (isGraphAction) {
         tools = [
             {
@@ -328,12 +363,16 @@ export async function executeOllamaRequest(
         }
 
         fullContent = '';
-        let toolCalls: any[] = [];
+        let toolCalls: OllamaWerkzeugAufruf[] = [];
 
         if (isStreaming) {
             if (response.body) {
-                if (typeof (response.body as any).getReader === 'function') {
-                    const reader = (response.body as any).getReader();
+                // Web-Stream (Browser, Edge) und Node-Stream sehen hier
+                // unterschiedlich aus. Unterschieden wird an `getReader`, weil
+                // nur der Web-Stream ihn hat.
+                const koerper: unknown = response.body;
+                if (typeof (koerper as { getReader?: unknown }).getReader === 'function') {
+                    const reader = (koerper as WebStreamKoerper).getReader();
                     const decoder = new TextDecoder();
                     let buffer = '';
                     while (true) {
@@ -364,7 +403,7 @@ export async function executeOllamaRequest(
                         } catch (e) {}
                     }
                 } else {
-                    for await (const chunk of response.body as any) {
+                    for await (const chunk of koerper as AsyncIterable<{ toString(): string }>) {
                         const chunkStr = chunk.toString();
                         const lines = chunkStr.split('\n');
                         for (const line of lines) {
@@ -463,21 +502,33 @@ export async function executeOllamaRequest(
 
 }
 
-function validateOllamaResponse(parsed: any, action: AIAction): any {
-    if ((action === 'clean-and-analyze' || action === 'clean-and-map') && parsed) {
-        if (!parsed.tasks || !Array.isArray(parsed.tasks)) {
-            throw new Error(`Ungültige KI-Struktur: Das "tasks"-Array fehlt oder ist unvollständig.`);
-        }
-        for (let i = 0; i < parsed.tasks.length; i++) {
-            const task = parsed.tasks[i];
-            if (!task || typeof task !== 'object') {
-                throw new Error(`Ungültige KI-Struktur: Aufgabe an Index ${i} ist kein gültiges Objekt.`);
-            }
-            if (!task.name || String(task.name).trim() === '') {
-                throw new Error(`Ungültige KI-Struktur: Aufgabe an Index ${i} besitzt keinen gültigen Namen (Punkte: ${task.maxPoints ?? 'unbekannt'}).`);
-            }
-        }
+/**
+ * Prueft die Struktur, auf die sich der weitere Ablauf verlaesst.
+ *
+ * Nur fuer die beiden Aufbereitungs-Aktionen: dort erzeugt das Modell die
+ * Aufgabenliste, und ein fehlender Name macht die spaetere Zuordnung
+ * unmoeglich. Die Meldungen nennen den Index, damit im Log erkennbar ist,
+ * welche Aufgabe gemeint ist.
+ */
+function validateOllamaResponse(parsed: unknown, action: AIAction): unknown {
+    if (action !== 'clean-and-analyze' && action !== 'clean-and-map') return parsed;
+    if (!parsed) return parsed;
+
+    const tasks = (parsed as { tasks?: unknown }).tasks;
+    if (!tasks || !Array.isArray(tasks)) {
+        throw new Error(`Ungültige KI-Struktur: Das "tasks"-Array fehlt oder ist unvollständig.`);
     }
+
+    tasks.forEach((task: unknown, i: number) => {
+        if (!task || typeof task !== 'object') {
+            throw new Error(`Ungültige KI-Struktur: Aufgabe an Index ${i} ist kein gültiges Objekt.`);
+        }
+        const { name, maxPoints } = task as { name?: unknown; maxPoints?: unknown };
+        if (!name || String(name).trim() === '') {
+            throw new Error(`Ungültige KI-Struktur: Aufgabe an Index ${i} besitzt keinen gültigen Namen (Punkte: ${maxPoints ?? 'unbekannt'}).`);
+        }
+    });
+
     return parsed;
 }
 
@@ -512,7 +563,7 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
  */
 export async function pingOllama(baseUrl: string): Promise<{ success: boolean; isSelfSigned: boolean; version: string }> {
     const url = normalizeOllamaUrl(baseUrl);
-    if (typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__) {
+    if (hasTauriRuntime()) {
         try {
             const { invoke } = await import('@tauri-apps/api/core');
             const res = await invoke<{ success: boolean; is_self_signed: boolean; version: string }>('ping_ollama_command', { url });
@@ -522,7 +573,7 @@ export async function pingOllama(baseUrl: string): Promise<{ success: boolean; i
         }
     }
 
-    let timeoutId: any;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
         const controller = new AbortController();
         timeoutId = setTimeout(() => {
@@ -549,7 +600,7 @@ export async function pingOllama(baseUrl: string): Promise<{ success: boolean; i
  */
 export async function fetchOllamaModels(baseUrl: string): Promise<{ models: string[]; isSelfSigned: boolean; version: string }> {
     const url = normalizeOllamaUrl(baseUrl);
-    if (typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__) {
+    if (hasTauriRuntime()) {
         try {
             const { invoke } = await import('@tauri-apps/api/core');
             const res = await invoke<{ models: string[]; is_self_signed: boolean; version: string }>('get_ollama_models_command', { url });
@@ -560,7 +611,7 @@ export async function fetchOllamaModels(baseUrl: string): Promise<{ models: stri
         }
     }
 
-    let timeoutId: any;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
     try {
         const controller = new AbortController();
         timeoutId = setTimeout(() => {
@@ -573,7 +624,9 @@ export async function fetchOllamaModels(baseUrl: string): Promise<{ models: stri
         const res = await fetch(`${url}/api/tags`, { signal: controller.signal });
         if (!res.ok) return { models: [], isSelfSigned: false, version: '' };
         const data = await res.json();
-        const models = Array.isArray(data?.models) ? data.models.map((m: any) => m.name) : [];
+        const models = Array.isArray(data?.models)
+            ? (data.models as { name?: string }[]).map(m => m.name).filter((n): n is string => !!n)
+            : [];
         return { models, isSelfSigned: false, version: '' };
     } catch (e) {
         logger.error("Community Model Fetch Error:", e);

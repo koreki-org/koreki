@@ -17,7 +17,9 @@ import { logger } from '@/lib/logger';
 import { parseLlmJson } from './llm-json';
 import { isDesktopTarget } from '@/lib/env-context';
 import { AIProviderError } from './provider-error';
-import { buildPromptForAction } from './prompt-dispatch';
+import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
+import { alsText } from './chat-types';
+import type { ChatNachricht, ChatAnfrage, ChatAntwort, TokenVerbrauch } from './chat-types';
 import { pruefeWerkzeugAufruf } from './tool-validation';
 import { ueberDesktopProxy } from './desktop-proxy';
 import type { GradingMemoryCase, CustomSkillDefinition } from '@/types';
@@ -50,16 +52,19 @@ export interface OpenAIRequestOptions {
  */
 export async function executeOpenAIRequest(
     action: AIAction,
-    payload: any,
+    payload: PromptPayload,
     baseUrl: string,
     apiKey: string,
     options: OpenAIRequestOptions = {}
+// ARCH: any required because die Rueckgabe je Aktion verschieden ist
+// (GradingGraph, TargetGoal, geparstes JSON oder { text }). Ein Union
+// zwaenge jeden Aufrufer in eine Fallunterscheidung, die er nicht braucht.
 ): Promise<any> {
     const targetModel = options.model || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
     
     // 1. Prompt Building
     let promptObj: StructuredPrompt;
-    let messages: any[] = [];
+    let messages: ChatNachricht[] = [];
 
     if (action === 'vision') {
         promptObj = buildVisionPrompt();
@@ -146,7 +151,7 @@ export async function executeOpenAIRequest(
         ? Math.max(requestedMaxTokens || 0, 16384) 
         : (requestedMaxTokens || defaultLimit);
 
-    const body: any = {
+    const body: ChatAnfrage = {
         model: targetModel,
         messages,
         temperature: targetTemp,
@@ -188,12 +193,12 @@ export async function executeOpenAIRequest(
     }
 
     let responseContent: string | null = null;
-    let responseUsage: any = undefined;
+    let responseUsage: TokenVerbrauch | undefined = undefined;
     let toolRetryCount = 0;
     const maxToolRetries = 3;
 
     while (toolRetryCount <= maxToolRetries) {
-        let currentData: any;
+        let currentData: ChatAntwort;
 
         if (isDesktopTarget()) {
             currentData = await ueberDesktopProxy({ url, apiKey, body, signal: options.signal, kontext: 'Desktop Proxy Fehler' });
@@ -248,7 +253,7 @@ export async function executeOpenAIRequest(
         }
 
         // No tool calls or unknown tool, we have our final content
-        responseContent = message?.content;
+        responseContent = alsText(message?.content ?? null);
         break;
     }
 

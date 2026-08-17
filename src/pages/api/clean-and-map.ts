@@ -7,6 +7,7 @@ import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
 import { checkAiBudget, checkCreditsAvailable, performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
 import { logger } from '@/lib/logger';
+import type { Task } from '@/types';
 import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
 
 import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
@@ -52,7 +53,12 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         return res.status(400).json({ error: validation.error.issues[0].message });
     }
 
-    const { text, settings: clientSettings, isInclusive, tasksLayout, pageCount, isScan } = validation.data;
+    const { text, settings: clientSettings, isInclusive, tasksLayout: rohesLayout, pageCount, isScan } = validation.data;
+
+    // Das Schema oben laesst `tasksLayout` ungeprueft durch (z.unknown()), die
+    // Feldstruktur ist also nicht zugesichert. Die Array-Form wird hier
+    // geprueft, weil der gesamte weitere Code sie voraussetzt.
+    const tasksLayout = Array.isArray(rohesLayout) ? (rohesLayout as Task[]) : undefined;
 
     // Im SaaS stammen Anbieter-Endpunkt und -Schluessel ausschliesslich aus der
     // Server-Env; lokale Instanzen behalten ihre eigene Konfiguration.

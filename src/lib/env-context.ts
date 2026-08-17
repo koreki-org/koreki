@@ -95,3 +95,21 @@ export function isPaidModesEnabled(): boolean {
     if (isLocalInstance()) return true;
     return process.env.NEXT_PUBLIC_ENABLE_PAID_MODES === 'true';
 }
+
+/**
+ * Läuft der Code gerade tatsächlich in einer Tauri-Umgebung?
+ *
+ * Unterschied zu `isDesktopTarget()`: Das dort gelesene `NEXT_PUBLIC_KOREKI_MODE`
+ * steht zur BAUZEIT fest. Diese Prüfung fragt die LAUFZEIT — nur wenn Tauri
+ * seine Brücke ins Fenster gelegt hat, ist `invoke` überhaupt aufrufbar.
+ *
+ * Beide Wege stimmen im Normalbetrieb überein. Wo es um die Frage geht "kann
+ * ich jetzt einen Rust-Befehl aufrufen?", ist diese hier die ehrliche.
+ *
+ * Ersetzt `(window as any).__TAURI_INTERNALS__`.
+ */
+export function hasTauriRuntime(): boolean {
+    return typeof window !== 'undefined'
+        && '__TAURI_INTERNALS__' in window
+        && !!(window as { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__;
+}

@@ -78,7 +78,10 @@ const SIZE_BASELINE: Record<string, number> = {
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
     'components/settings/SkillsModules.tsx': 791,
-    'lib/ai/ollama-logic.ts': 626,
+    // +53 gegenueber 626: ausgeschriebene Typen fuer Nachrichten, Werkzeuge und
+    // den Stream-Koerper. Sie haben 15 der 16 `any` in dieser Datei abgeloest —
+    // der letzte traegt eine ARCH-Begruendung.
+    'lib/ai/ollama-logic.ts': 679,
     // +14 fuer die Trennung von Datei- und Ereignis-Weg beim Import, +6 fuer
     // die Ueberladungen von handleUpdateCaseField — sie verhindern, dass eine
     // Zahl in ein Textfeld des Fallbeispiels geschrieben wird.
