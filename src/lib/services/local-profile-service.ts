@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import { buildStoragePath, createProfileMutations } from './local-profile-store';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -63,44 +64,8 @@ const assertNameIsFree = (
     }
 };
 
-const getStoragePath = (userId?: string) => {
-    let baseDir: string;
-    
-    // 1. Node-Server unter Windows (lokale Entwicklung, `tauri dev`).
-    //    ACHTUNG: Die ausgelieferte Desktop-App erreicht diesen Service NIE —
-    //    sie wird als statischer Export gebaut (next.config.js: output 'export'),
-    //    hat also keine API-Routen und persistiert im localStorage der Webview
-    //    (siehe src/lib/local-vault.ts).
-    if (process.env.APPDATA) {
-        baseDir = path.join(process.env.APPDATA, 'koreki');
-    } else {
-        // 2. Community Mode (Docker/Linux) — der produktive Pfad dieses Services.
-        baseDir = path.join(process.cwd(), 'data', 'prompts');
-    }
-
-    try {
-        if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
-    } catch (e) {
-        logger.error('[LocalProfileService] Critical: Could not create directory:', e);
-    }
-
-    // Industrial Hashing: Completely decouple input from filesystem path
-    const filename = userId 
-        ? `profiles_${crypto.createHash('sha256').update(userId).digest('hex')}.json` 
-        : 'profiles.json';
-        
-    const targetPath = path.join(baseDir, filename);
-
-    // Defense in Depth: Verify that the resolved path still resides in the base directory
-    const resolvedBase = path.resolve(baseDir);
-    const resolvedTarget = path.resolve(targetPath);
-
-    if (!resolvedTarget.startsWith(resolvedBase)) {
-        throw new Error('SECURITY ALERT: Path Traversal attempt detected and blocked.');
-    }
-
-    return targetPath;
-};
+const getStoragePath = (userId?: string) =>
+    buildStoragePath('profiles', 'LocalProfileService', userId);
 
 export const LocalProfileService = {
     async getAvailableProfiles(userId?: string) {
@@ -158,72 +123,18 @@ export const LocalProfileService = {
         return gespeichert;
     },
 
-    async deleteProfile(id: string, userId?: string) {
-        const storagePath = getStoragePath(userId);
-        if (!fs.existsSync(storagePath)) return;
-
-        try {
-            let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            customProfiles = customProfiles.filter((p: any) => p.id !== id);
-            writeJsonAtomic(storagePath, customProfiles);
-        } catch (err) {
-            logger.error('[LocalProfileService] Error deleting profile:', err);
-        }
-    },
-
-    async renameProfile(id: string, newName: string, userId?: string) {
-        const storagePath = getStoragePath(userId);
-        if (!fs.existsSync(storagePath)) throw new Error('Profil nicht gefunden');
-
-        const customProfiles = readJsonArrayForUpdate<StoredExpertProfile>(storagePath);
-        const ziel = customProfiles.find(p => p.id === id);
-        if (!ziel) throw new Error('Profil nicht gefunden');
-
-        assertNameIsFree(customProfiles, id, newName, 'Profil');
-
-        ziel.name = newName.trim();
-        writeJsonAtomic(storagePath, customProfiles);
-    }
+    ...createProfileMutations<StoredExpertProfile>({
+        getPath: getStoragePath,
+        dienstName: 'LocalProfileService',
+        bezeichnung: 'Profil',
+        readForUpdate: readJsonArrayForUpdate,
+        write: writeJsonAtomic,
+        assertNameIsFree
+    })
 };
 
-const getAiStoragePath = (userId?: string) => {
-    let baseDir: string;
-    
-    // 1. Node-Server unter Windows (lokale Entwicklung, `tauri dev`).
-    //    ACHTUNG: Die ausgelieferte Desktop-App erreicht diesen Service NIE —
-    //    sie wird als statischer Export gebaut (next.config.js: output 'export'),
-    //    hat also keine API-Routen und persistiert im localStorage der Webview
-    //    (siehe src/lib/local-vault.ts).
-    if (process.env.APPDATA) {
-        baseDir = path.join(process.env.APPDATA, 'koreki');
-    } else {
-        // 2. Community Mode (Docker/Linux) — der produktive Pfad dieses Services.
-        baseDir = path.join(process.cwd(), 'data', 'prompts');
-    }
-
-    try {
-        if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
-    } catch (e) {
-        logger.error('[LocalProfileService] Critical: Could not create directory:', e);
-    }
-
-    // Industrial Hashing: Completely decouple input from filesystem path
-    const filename = userId 
-        ? `ai_profiles_${crypto.createHash('sha256').update(userId).digest('hex')}.json` 
-        : 'ai_profiles.json';
-        
-    const targetPath = path.join(baseDir, filename);
-
-    // Defense in Depth: Verify that the resolved path still resides in the base directory
-    const resolvedBase = path.resolve(baseDir);
-    const resolvedTarget = path.resolve(targetPath);
-
-    if (!resolvedTarget.startsWith(resolvedBase)) {
-        throw new Error('SECURITY ALERT: Path Traversal attempt detected and blocked.');
-    }
-
-    return targetPath;
-};
+const getAiStoragePath = (userId?: string) =>
+    buildStoragePath('ai_profiles', 'LocalAiProfileService', userId);
 
 export const LocalAiProfileService = {
     async getAvailableProfiles(userId?: string) {
@@ -269,72 +180,18 @@ export const LocalAiProfileService = {
         return profileData;
     },
 
-    async deleteProfile(id: string, userId?: string) {
-        const storagePath = getAiStoragePath(userId);
-        if (!fs.existsSync(storagePath)) return;
-
-        try {
-            let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            customProfiles = customProfiles.filter((p: any) => p.id !== id);
-            writeJsonAtomic(storagePath, customProfiles);
-        } catch (err) {
-            logger.error('[LocalAiProfileService] Error deleting profile:', err);
-        }
-    },
-
-    async renameProfile(id: string, newName: string, userId?: string) {
-        const storagePath = getAiStoragePath(userId);
-        if (!fs.existsSync(storagePath)) throw new Error('KI-Profil nicht gefunden');
-
-        const customProfiles = readJsonArrayForUpdate<StoredAiProfile>(storagePath);
-        const ziel = customProfiles.find(p => p.id === id);
-        if (!ziel) throw new Error('KI-Profil nicht gefunden');
-
-        assertNameIsFree(customProfiles, id, newName, 'KI-Profil');
-
-        ziel.name = newName.trim();
-        writeJsonAtomic(storagePath, customProfiles);
-    }
+    ...createProfileMutations<StoredAiProfile>({
+        getPath: getAiStoragePath,
+        dienstName: 'LocalAiProfileService',
+        bezeichnung: 'KI-Profil',
+        readForUpdate: readJsonArrayForUpdate,
+        write: writeJsonAtomic,
+        assertNameIsFree
+    })
 };
 
-const getGradingMemoryStoragePath = (userId?: string) => {
-    let baseDir: string;
-    
-    // 1. Node-Server unter Windows (lokale Entwicklung, `tauri dev`).
-    //    ACHTUNG: Die ausgelieferte Desktop-App erreicht diesen Service NIE —
-    //    sie wird als statischer Export gebaut (next.config.js: output 'export'),
-    //    hat also keine API-Routen und persistiert im localStorage der Webview
-    //    (siehe src/lib/local-vault.ts).
-    if (process.env.APPDATA) {
-        baseDir = path.join(process.env.APPDATA, 'koreki');
-    } else {
-        // 2. Community Mode (Docker/Linux) — der produktive Pfad dieses Services.
-        baseDir = path.join(process.cwd(), 'data', 'prompts');
-    }
-
-    try {
-        if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
-    } catch (e) {
-        logger.error('[LocalGradingMemoryService] Critical: Could not create directory:', e);
-    }
-
-    // Industrial Hashing: Completely decouple input from filesystem path
-    const filename = userId 
-        ? `grading_memories_${crypto.createHash('sha256').update(userId).digest('hex')}.json` 
-        : 'grading_memories.json';
-        
-    const targetPath = path.join(baseDir, filename);
-
-    // Defense in Depth: Verify that the resolved path still resides in the base directory
-    const resolvedBase = path.resolve(baseDir);
-    const resolvedTarget = path.resolve(targetPath);
-
-    if (!resolvedTarget.startsWith(resolvedBase)) {
-        throw new Error('SECURITY ALERT: Path Traversal attempt detected and blocked.');
-    }
-
-    return targetPath;
-};
+const getGradingMemoryStoragePath = (userId?: string) =>
+    buildStoragePath('grading_memories', 'LocalGradingMemoryService', userId);
 
 export const LocalGradingMemoryService = {
     async getAvailableProfiles(userId?: string): Promise<GradingMemory[]> {
@@ -373,72 +230,18 @@ export const LocalGradingMemoryService = {
         return profileData;
     },
 
-    async deleteProfile(id: string, userId?: string): Promise<void> {
-        const storagePath = getGradingMemoryStoragePath(userId);
-        if (!fs.existsSync(storagePath)) return;
-
-        try {
-            let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            customProfiles = customProfiles.filter((p: any) => p.id !== id);
-            writeJsonAtomic(storagePath, customProfiles);
-        } catch (err) {
-            logger.error('[LocalGradingMemoryService] Error deleting profile:', err);
-        }
-    },
-
-    async renameProfile(id: string, newName: string, userId?: string): Promise<void> {
-        const storagePath = getGradingMemoryStoragePath(userId);
-        if (!fs.existsSync(storagePath)) throw new Error('Erfahrungsschatz nicht gefunden');
-
-        const customProfiles = readJsonArrayForUpdate<GradingMemory>(storagePath);
-        const ziel = customProfiles.find(p => p.id === id);
-        if (!ziel) throw new Error('Erfahrungsschatz nicht gefunden');
-
-        assertNameIsFree(customProfiles, id, newName, 'Erfahrungsschatz');
-
-        ziel.name = newName.trim();
-        writeJsonAtomic(storagePath, customProfiles);
-    }
+    ...createProfileMutations<GradingMemory>({
+        getPath: getGradingMemoryStoragePath,
+        dienstName: 'LocalGradingMemoryService',
+        bezeichnung: 'Erfahrungsschatz',
+        readForUpdate: readJsonArrayForUpdate,
+        write: writeJsonAtomic,
+        assertNameIsFree
+    })
 };
 
-const getSkillStoragePath = (userId?: string) => {
-    let baseDir: string;
-    
-    // 1. Node-Server unter Windows (lokale Entwicklung, `tauri dev`).
-    //    ACHTUNG: Die ausgelieferte Desktop-App erreicht diesen Service NIE —
-    //    sie wird als statischer Export gebaut (next.config.js: output 'export'),
-    //    hat also keine API-Routen und persistiert im localStorage der Webview
-    //    (siehe src/lib/local-vault.ts).
-    if (process.env.APPDATA) {
-        baseDir = path.join(process.env.APPDATA, 'koreki');
-    } else {
-        // 2. Community Mode (Docker/Linux) — der produktive Pfad dieses Services.
-        baseDir = path.join(process.cwd(), 'data', 'prompts');
-    }
-
-    try {
-        if (!fs.existsSync(baseDir)) fs.mkdirSync(baseDir, { recursive: true });
-    } catch (e) {
-        logger.error('[LocalSkillProfileService] Critical: Could not create directory:', e);
-    }
-
-    // Industrial Hashing
-    const filename = userId 
-        ? `skill_profiles_${crypto.createHash('sha256').update(userId).digest('hex')}.json` 
-        : 'skill_profiles.json';
-        
-    const targetPath = path.join(baseDir, filename);
-
-    // Defense in Depth
-    const resolvedBase = path.resolve(baseDir);
-    const resolvedTarget = path.resolve(targetPath);
-
-    if (!resolvedTarget.startsWith(resolvedBase)) {
-        throw new Error('SECURITY ALERT: Path Traversal attempt detected and blocked.');
-    }
-
-    return targetPath;
-};
+const getSkillStoragePath = (userId?: string) =>
+    buildStoragePath('skill_profiles', 'LocalSkillProfileService', userId);
 
 export const LocalSkillProfileService = {
     async getAvailableProfiles(userId?: string) {
@@ -489,32 +292,14 @@ export const LocalSkillProfileService = {
         return gespeichert;
     },
 
-    async deleteProfile(id: string, userId?: string) {
-        const storagePath = getSkillStoragePath(userId);
-        if (!fs.existsSync(storagePath)) return;
-
-        try {
-            let customProfiles = JSON.parse(fs.readFileSync(storagePath, 'utf-8'));
-            customProfiles = customProfiles.filter((p: any) => p.id !== id);
-            writeJsonAtomic(storagePath, customProfiles);
-        } catch (err) {
-            logger.error('[LocalSkillProfileService] Error deleting profile:', err);
-        }
-    },
-
-    async renameProfile(id: string, newName: string, userId?: string) {
-        const storagePath = getSkillStoragePath(userId);
-        if (!fs.existsSync(storagePath)) throw new Error('Skill-Profil nicht gefunden');
-
-        const customProfiles = readJsonArrayForUpdate<StoredSkillProfile>(storagePath);
-        const ziel = customProfiles.find(p => p.id === id);
-        if (!ziel) throw new Error('Skill-Profil nicht gefunden');
-
-        assertNameIsFree(customProfiles, id, newName, 'Skill-Profil');
-
-        ziel.name = newName.trim();
-        writeJsonAtomic(storagePath, customProfiles);
-    }
+    ...createProfileMutations<StoredSkillProfile>({
+        getPath: getSkillStoragePath,
+        dienstName: 'LocalSkillProfileService',
+        bezeichnung: 'Skill-Profil',
+        readForUpdate: readJsonArrayForUpdate,
+        write: writeJsonAtomic,
+        assertNameIsFree
+    })
 };
 
 const getActiveSelectionPath = (userId?: string) => {

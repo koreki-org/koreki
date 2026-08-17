@@ -123,7 +123,6 @@ const SIZE_BASELINE: Record<string, number> = {
     // Schnittstellen-Aenderung an einer grossen Komponente und gehoert in einen
     // eigenen Schritt.
     'pages/app.tsx': 495,
-    'lib/services/local-profile-service.ts': 591,
     'components/batch/parts/BatchTaskAnalysisCard.tsx': 577,
     // +7: der Kommentar, warum beim Aktualisieren die bestehende Kennung
     // gewinnt. Ohne ihn wird die Zeile beim naechsten Aufraeumen entfernt.

@@ -44,7 +44,7 @@ const ANY_BASELINE: Record<string, number> = {
     'lib/ai/openai-provider.ts': 1,
     'lib/grading/calc-trace-generator.ts': 6,
     'lib/grading/graph-preview.ts': 5,
-    'lib/services/local-profile-service.ts': 6,
+    'lib/services/local-profile-service.ts': 2,
     'pages/api/user.ts': 6,
     'pages/api/user/grading-memories.ts': 4,
     'components/batch/GradingGraphModal.tsx': 2,
