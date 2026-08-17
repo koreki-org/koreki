@@ -3,7 +3,7 @@ import { groupCasesByTask } from '../grading-memory-utils';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
 import { getAvailablePluginManifest } from '../grading/graph-generator';
-import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source';
+import { buildGraphEngineReport, buildCalcTraceEngineReport } from './engine-report';
 import type { GradingCriterion } from '../grading/calc-trace-types';
 import { logger } from '../logger';
 
@@ -128,142 +128,8 @@ export function buildCorrectionPrompt(
         const layoutText = tasksLayout.map(t => `- ${t.name} (Max: ${t.maxPoints} P)`).join('\n');
         system += `\n\nACHTUNG: Du MUSST dich strikt an diese Aufgabenliste halten.\n\nStruktur:\n${layoutText}`;
         // Dynamic Injection of mathematical-deterministic Graph Runner Vorevaluierung (PANG Architecture)
-        let vorevaluierungBlock = '';
-        tasksLayout.forEach(t => {
-            if (t.gradingResult) {
-                const disablePointsActive = shouldDisablePoints(t.taskType, t.gradingGraph);
-
-                vorevaluierungBlock += `\n\n### MATHEMATISCH-DETERMINISTISCHE VOREVALUIERUNG FÜR "${t.name}":\n`;
-                vorevaluierungBlock += (disablePointsActive ? mathHybridHeader : mathAutoHeader) + `\n\n`;
-                vorevaluierungBlock += mathFallbackInstruction + `\n\n`;
-                
-                if (disablePointsActive) {
-                    vorevaluierungBlock += `- STATUS DER ENGINE: Der Graph wurde erfolgreich ausgewertet. Nutze ausschließlich die folgenden Detail-Ergebnisse (Korrekt/Falsch/Folgefehler) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.\n`;
-                } else {
-                    vorevaluierungBlock += `- ZU VERGEBENDE PUNKTE: ${t.gradingResult.totalPoints} von max ${t.gradingResult.maxPoints} Punkten.\n`;
-                }
-
-                vorevaluierungBlock += `- DETAIL-ERGEBNISSE DER EINZELNEN SCHRITTE:\n`;
-                t.gradingResult.stepResults.forEach((step: any) => {
-                    const statusStr = step.status === 'correct' ? 'Korrekt' : 
-                                    step.status === 'consecutive_correct' ? 'Folgefehler-Kompensiert (Korrekt gewertet)' : 
-                                    'Fehlerhaft';
-                    vorevaluierungBlock += `  * Schritt/Variable "${step.variableId}": Schülerwert: "${step.studentValue !== undefined && step.studentValue !== null ? step.studentValue : 'nicht angegeben'}", Erwartet: "${step.expectedValue}", Status: ${statusStr}. ${step.note}\n`;
-                });
-
-                if (disablePointsActive) {
-                    vorevaluierungBlock += `\n` + mathHybridInstruction;
-                } else {
-                    vorevaluierungBlock += `\n` + mathAutoInstruction.replace('{{POINTS}}', String(t.gradingResult.totalPoints));
-                }
-            }
-        });
-        if (vorevaluierungBlock) {
-            system += vorevaluierungBlock;
-        }
-            // Dynamic Injection of mathematical-deterministic CalcTrace Vorevaluierung
-        let calcTraceVorevaluierungBlock = '';
-        tasksLayout.forEach(t => {
-            if (t.calcTraceResult) {
-                const calcTraceResult = t.calcTraceResult; // const: Verengung gilt sonst nicht im Callback
-                const targetGoal: any = t.targetGoal || {};
-                const criteria = targetGoal.criteria;
-
-                if (criteria && Array.isArray(criteria) && criteria.length > 0) {
-                    // Structured criteria path
-                    let criteriaBlock = `\n### STRUKTURIERTE BEWERTUNGSKRITERIEN FÜR "${t.name}":\n`;
-                    criteriaBlock += `Du MUSST die Punkte anhand der folgenden Liste vergeben. Bereits vorab durch die Sandbox aufgelöste Kriterien sind bindend und dürfen nicht verändert werden. Addiere die Punktwerte aller Kriterien exakt wie angegeben. WICHTIG - Zielgrößen-Isolation: Bewerte jedes Kriterium AUSSCHLIESSLICH anhand der ihm zugeordneten Zielgröße. Ein Rechen-, Werte- oder Ergebnisfehler bei EINER Zielgröße darf die Bewertung der Kriterien ANDERER Zielgrößen derselben Aufgabe unter keinen Umständen beeinflussen:\n\n`;
-                    
-                    // Nur Kriterien, die tatsaechlich das Modell entscheidet. Alles andere ist
-                    // bereits entschieden und wird nur noch mitgeteilt — es waere sinnlos, dafuer
-                    // eine Punktzahl anzufordern, die anschliessend verworfen wird.
-                    const zuBeurteilendeIds: string[] = [];
-
-                    criteria.forEach((crit: GradingCriterion) => {
-                        const idx = (crit.targetIndex !== undefined && crit.targetIndex !== null) ? crit.targetIndex : 0;
-                        const pt = calcTraceResult.perTargetResult?.find((r: any) => r.targetIndex === idx);
-                        let statusText = '';
-
-                        if (isEngineOwned(crit.source)) {
-                            const verdict = resolveEngineVerdict(crit.source, idx, calcTraceResult);
-                            statusText = verdict.erfuellt
-                                ? `✓ ERFÜLLT — ${crit.punktwert} Punkte, bereits von der Sandbox entschieden (${verdict.begruendung})`
-                                : `✗ NICHT ERFÜLLT — 0 Punkte, bereits von der Sandbox entschieden (${verdict.begruendung})`;
-                        } else {
-                            zuBeurteilendeIds.push(crit.id);
-
-                            if (!pt || pt.associatedStepIds.length === 0) {
-                                statusText = `[von dir zu beurteilen — Achtung: Für diesen Zielwert wurden keine Schritte im Schülertext gefunden]`;
-                            } else {
-                                const stepsStr = ` anhand der Schritte: ${pt.associatedStepIds.join(', ')}`;
-                                // Formulierungshilfe, keine Zustaendigkeitsregel: Das Modell entscheidet
-                                // hier so oder so, es bekommt nur den fachlichen Massstab dazu.
-                                const istFormelKriterium = crit.id === 'formel' || crit.id.endsWith('_formel');
-                                const pointsLabel = `${crit.punktwert} Punkt${crit.punktwert === 1 ? '' : 'e'}`;
-                                const hint = istFormelKriterium
-                                    ? ` - HINWEIS: Formeln sind als ERFÜLLT (${pointsLabel}) zu werten, wenn die mathematische Struktur stimmt, auch bei Auslassung der linken Seite (z. B. nur U/R) oder bei Nutzung von Basis-Variablen wie R statt Rges!`
-                                    : '';
-                                statusText = `[von dir zu beurteilen${stepsStr}${hint}]`;
-                            }
-                        }
-
-                        criteriaBlock += `- Kriterium "${crit.id}" (${crit.label} - ${crit.punktwert} Punkte max): ${statusText}\n`;
-                    });
-
-                    if (zuBeurteilendeIds.length > 0) {
-                        criteriaBlock += `\nGib im Feld "criteriaScores" ausschliesslich Eintraege fuer die von DIR zu beurteilenden Kriterien zurueck: ${zuBeurteilendeIds.map(id => `"${id}"`).join(', ')}. Die uebrigen Kriterien sind bereits entschieden — bewerte sie nicht erneut. "pointsObtained" ist die Summe aller Kriterien (die bereits entschiedenen plus die von dir bewerteten).\n`;
-                    } else {
-                        criteriaBlock += `\nAlle Kriterien dieser Aufgabe sind bereits von der Sandbox entschieden. Gib keine "criteriaScores" zurueck. "pointsObtained" ist die Summe der oben ausgewiesenen Punkte.\n`;
-                    }
-
-                    // Kriterien mit "von dir zu beurteilen" ueberlassen dem Modell die Entscheidung.
-                    // Ohne die Engine-Anweisung fehlt ihm dabei jede Definition — etwa, dass eine
-                    // nachvollziehbare Rechenkette einen "Rechenweg" erfuellt. Sie gehoert deshalb
-                    // in beide Pfade, nicht nur in den Legacy-Zweig.
-                    criteriaBlock += `\n` + mathHybridInstruction;
-
-                    calcTraceVorevaluierungBlock += `\n` + criteriaBlock;
-                } else {
-                    // Legacy path fallback
-                    const disablePointsActive = shouldDisablePoints(t.taskType, t.targetGoal);
-
-                    let templateStr = calcTraceTemplate;
-                    templateStr = templateStr.replace('{{TASK_NAME}}', t.name ?? '');
-                    templateStr = templateStr.replace('{{MATH_FALLBACK_INSTRUCTION}}', disablePointsActive ? mathHybridHeader : `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!\n\n${mathFallbackInstruction}`);
-
-                    if (disablePointsActive) {
-                        templateStr = templateStr.replace('{{ENGINE_STATUS_TEXT}}', `Die Rechenkette wurde ausgewertet. Nutze diese Information (ob Ziel erreicht oder nicht) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.`);
-                    } else {
-                        templateStr = templateStr.replace('{{ENGINE_STATUS_TEXT}}', `Endziel erreicht: ${t.calcTraceResult.isGoalReached ? 'JA' : 'NEIN'}.`);
-                    }
-
-                    templateStr = templateStr.replace('{{POINTS_TEXT}}', `[Muss durch LLM auf Basis der Sandbox-Ergebnisse ermittelt werden (max ${t.calcTraceResult.maxPoints} P)]`);
-                    
-                    let detailsStr = '';
-                    if (t.calcTraceResult.reachedTargets && t.calcTraceResult.reachedTargets.length > 0) {
-                        if (t.calcTraceResult.sandboxErrors && t.calcTraceResult.sandboxErrors.length > 0) {
-                            detailsStr += `  * NOTIERTE ZAHLENWERTE (ACHTUNG: FIKTIV DURCH RECHENFEHLER, KEINE PUNKTE GEBEN!): ${t.calcTraceResult.reachedTargets.join(', ')}\n`;
-                        } else {
-                            detailsStr += `  * ERREICHTE MEILENSTEINE: ${t.calcTraceResult.reachedTargets.join(', ')}\n`;
-                        }
-                    }
-                    if (t.calcTraceResult.missedTargets && t.calcTraceResult.missedTargets.length > 0) {
-                        detailsStr += `  * VERFEHLTE ODER ÜBERSPRUNGENE MEILENSTEINE: ${t.calcTraceResult.missedTargets.join(', ')}\n`;
-                    }
-                    if (t.calcTraceResult.sandboxErrors && t.calcTraceResult.sandboxErrors.length > 0) {
-                        detailsStr += `  * Sandbox Fehler: ${t.calcTraceResult.sandboxErrors.join(', ')}\n`;
-                    }
-                    templateStr = templateStr.replace('</engine_status>', `${detailsStr}</engine_status>`);
-
-                    templateStr = templateStr.replace('{{HYBRID_INSTRUCTION_BLOCK}}', mathHybridInstruction);
-                    
-                    calcTraceVorevaluierungBlock += `\n` + templateStr;
-                }
-            }
-        });
-        if (calcTraceVorevaluierungBlock) {
-            system += calcTraceVorevaluierungBlock;
-        }
+        system += buildGraphEngineReport(tasksLayout);
+        system += buildCalcTraceEngineReport(tasksLayout);
     }
 
     user = user.replace('{{modelSolution}}', modelSolution);

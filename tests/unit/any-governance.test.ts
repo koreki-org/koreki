@@ -51,7 +51,7 @@ const ANY_BASELINE: Record<string, number> = {
     'components/settings/ProfileModules.tsx': 4,
     'components/settings/SkillsSidebar.tsx': 5,
     'hooks/useFileProcessor.ts': 4,
-    'lib/ai/prompt-builder.ts': 5,
+    'lib/ai/prompt-builder.ts': 2,
     'lib/grading/graph-intake.ts': 4,
     'pages/api/generate-calc-trace.ts': 3,
     'hooks/useAiGovernance.ts': 4,
