@@ -111,7 +111,9 @@ const SIZE_BASELINE: Record<string, number> = {
     'lib/ai/prompt-builder.ts': 593,
     'lib/services/local-profile-service.ts': 591,
     'components/batch/parts/BatchTaskAnalysisCard.tsx': 577,
-    'hooks/useAiProfiles.ts': 491,
+    // +7: der Kommentar, warum beim Aktualisieren die bestehende Kennung
+    // gewinnt. Ohne ihn wird die Zeile beim naechsten Aufraeumen entfernt.
+    'hooks/useAiProfiles.ts': 498,
     // +5: initialTrace nimmt ausdruecklich beide Rechenketten-Formen entgegen —
     // der Rumpf unterschied sie schon, der Typ verschwieg es.
     'components/batch/CalcTraceModal.tsx': 430,

@@ -8,6 +8,28 @@ import { toSafeString } from './validation';
 import { cleanDidacticalMarks, formatMarkdownTableForPDF, stripPangBlock } from './pdf-utils';
 
 /**
+ * Was `jspdf-autotable` und jsPDF zur Laufzeit anhaengen, aber nicht deklarieren.
+ *
+ * `lastAutoTable` entsteht erst NACH dem ersten `autoTable`-Aufruf — daran
+ * haengt die Y-Position der naechsten Ueberschrift. `internal` ist als intern
+ * markiert, `getNumberOfPages` daraus aber der uebliche Weg zur Seitenzahl.
+ *
+ * Stand vorher siebenmal als `(doc as any)` in dieser Datei. Einmal
+ * hingeschrieben ist es nachpruefbar: faellt `lastAutoTable` in einer neuen
+ * Version weg, meldet es der Compiler statt der leeren Seite.
+ */
+interface PdfMitAutoTable extends jsPDF {
+    lastAutoTable?: { finalY: number };
+    internal: jsPDF['internal'] & { getNumberOfPages: () => number };
+}
+
+/** Y-Position unterhalb der zuletzt gezeichneten Tabelle. */
+const nachLetzterTabelle = (doc: jsPDF, abstand: number): number =>
+    ((doc as PdfMitAutoTable).lastAutoTable?.finalY ?? 0) + abstand;
+
+const seitenzahl = (doc: jsPDF): number => (doc as PdfMitAutoTable).internal.getNumberOfPages();
+
+/**
  * Helper to generate a PDF blob for a single student.
  */
 const generateStudentPDF = (r: StudentResult, pointsMode: 'none' | 'total' | 'detailed' = 'detailed'): Blob => {
@@ -46,7 +68,7 @@ const generateStudentPDF = (r: StudentResult, pointsMode: 'none' | 'total' | 'de
     const startYForTable = 58 + (splitFeedback.length * 5) + 10;
 
     // --- Detail Table ---
-    const tableData: any[][] = [];
+    const tableData: (string | number)[][] = [];
     if (analysis.tasks && analysis.tasks.length > 0) {
         const getParentName = (taskName: string) => taskName.match(/^(.*?\d+)/)?.[0]?.trim() || taskName;
 
@@ -133,7 +155,7 @@ const generateStudentPDF = (r: StudentResult, pointsMode: 'none' | 'total' | 'de
     }
 
     // --- Footer (Page Number) ---
-    const pageCount = (doc as any).internal.getNumberOfPages();
+    const pageCount = seitenzahl(doc);
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);
@@ -234,14 +256,14 @@ export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<v
 
     // --- Distribution Table ---
     doc.setFontSize(14);
-    doc.text('Noten-/Einschätzungsverteilung', 14, (doc as any).lastAutoTable.finalY + 15);
+    doc.text('Noten-/Einschätzungsverteilung', 14, nachLetzterTabelle(doc, 15));
 
     const distData = Object.entries(stats.distribution)
         .sort()
         .map(([label, count]) => [`Einschätzung ${label}`, `${count} Schüler`]);
 
     autoTable(doc, {
-        startY: (doc as any).lastAutoTable.finalY + 20,
+        startY: nachLetzterTabelle(doc, 20),
         head: [['Note / Einschätzung', 'Anzahl']],
         body: distData,
         theme: 'striped',
@@ -251,7 +273,7 @@ export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<v
     // --- Critical Tasks ---
     if (stats.criticalTasks.length > 0) {
         doc.setFontSize(14);
-        doc.text('Kritische Aufgabengebiete', 14, (doc as any).lastAutoTable.finalY + 15);
+        doc.text('Kritische Aufgabengebiete', 14, nachLetzterTabelle(doc, 15));
 
         const criticalData = stats.criticalTasks.map((t, idx) => [
             idx + 1,
@@ -261,7 +283,7 @@ export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<v
         ]);
 
         autoTable(doc, {
-            startY: (doc as any).lastAutoTable.finalY + 20,
+            startY: nachLetzterTabelle(doc, 20),
             head: [['#', 'Aufgabe', 'Erfolg', 'Status']],
             body: criticalData,
             theme: 'grid',
@@ -291,7 +313,7 @@ export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<v
     });
 
     // --- Footer ---
-    const pageCount = (doc as any).internal.getNumberOfPages();
+    const pageCount = seitenzahl(doc);
     for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
         doc.setFontSize(8);

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import type { User, PromptProfile } from '@/types';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
@@ -17,14 +18,14 @@ import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
  * - Community: API-fetched profiles + localStorage fallback for active selection
  */
 export const usePromptGovernance = (
-    userData: any,
+    userData: User | null,
     authLoading: boolean,
     settings: AppSettings,
     setSettings: React.Dispatch<React.SetStateAction<AppSettings>>
 ) => {
     const { isHydrated } = useDashboardStore();
     const [sessionProfileName, setSessionProfileName] = useState<string>('Standard');
-    const [profiles, setProfiles] = useState<any[]>([]);
+    const [profiles, setProfiles] = useState<PromptProfile[]>([]);
 
     useEffect(() => {
         if (authLoading || !isHydrated || !userData?.id) return;
@@ -34,7 +35,7 @@ export const usePromptGovernance = (
             // Profiles live exclusively in localStorage (§2 File-Sync/Hybrid).
             if (isDesktopTarget()) {
                 const stored = localStorage.getItem('koreki_local_profiles');
-                let customProfiles: any[] = [];
+                let customProfiles: PromptProfile[] = [];
                 if (stored) {
                     try { customProfiles = JSON.parse(stored); } catch (e) { /* noop */ }
                 }
@@ -50,7 +51,7 @@ export const usePromptGovernance = (
                 const activePromptId = localStorage.getItem('koreki_active_prompt_profile_id');
                 if (activePromptId) {
                     const profile = allProfiles.find(
-                        (p: any) => p.id === activePromptId || p.name === activePromptId
+                        (p: PromptProfile) => p.id === activePromptId || p.name === activePromptId
                     );
                     if (profile) {
                         setSessionProfileName(profile.name);
@@ -67,7 +68,7 @@ export const usePromptGovernance = (
                 }
 
                 // Fallback: Standard profile
-                const standard = allProfiles.find((p: any) => p.name === 'Standard');
+                const standard = allProfiles.find((p: PromptProfile) => p.name === 'Standard');
                 if (standard) {
                     setSessionProfileName('Standard');
                     setSettings(prev => {
@@ -97,7 +98,7 @@ export const usePromptGovernance = (
                 }));
 
                 const standardProfile = systemExperts.find(
-                    (p: any) => p.id === activePromptId || p.name === activePromptId
+                    (p: PromptProfile) => p.id === activePromptId || p.name === activePromptId
                 );
                 if (standardProfile) {
                     setSessionProfileName(standardProfile.name);
@@ -129,7 +130,7 @@ export const usePromptGovernance = (
 
                     if (currentActiveId) {
                         const profile = data.find(
-                            (p: any) => p.id === currentActiveId || p.name === currentActiveId
+                            (p: PromptProfile) => p.id === currentActiveId || p.name === currentActiveId
                         );
                         if (profile) {
                             setSessionProfileName(profile.name);

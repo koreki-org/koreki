@@ -51,7 +51,7 @@ export const useAiProfiles = (
     onClose: () => void,
     currentProfileId: string = 'system-standard'
 ) => {
-    const [profiles, setProfiles] = useState<any[]>([]);
+    const [profiles, setProfiles] = useState<AiProfile[]>([]);
     /** 🏮 Identitaet ueber die Kennung — Begruendung siehe useSkillProfiles. */
     const [selectedProfileId, setSelectedProfileId] = useState<string>('');
     const [isCreatingNew, setIsCreatingNew] = useState(false);
@@ -163,7 +163,7 @@ export const useAiProfiles = (
     // Initial Hydration matching settings.activeAiProfileId
     useEffect(() => {
         if (profiles.length > 0 && !hasHydratedRef.current) {
-            const found = resolveProfileRef<any>(profiles, settings.activeAiProfileId || currentProfileId);
+            const found = resolveProfileRef<AiProfile>(profiles, settings.activeAiProfileId || currentProfileId);
             if (found) {
                 setSelectedProfileId(found.id);
                 setTemperature(found.temperature);
@@ -181,7 +181,7 @@ export const useAiProfiles = (
         }
     }, [profiles, settings.activeAiProfileId, currentProfileId]);
 
-    const handleSelectProfile = (profile: any) => {
+    const handleSelectProfile = (profile: AiProfile) => {
         setIsCreatingNew(false);
         setSelectedProfileId(profile.id);
 
@@ -199,7 +199,7 @@ export const useAiProfiles = (
         setShowEditorMobile(true);
     };
 
-    const handleStartNew = (template?: any) => {
+    const handleStartNew = (template?: Partial<AiProfile>) => {
         setIsCreatingNew(true);
         setSelectedProfileId('');
 
@@ -281,7 +281,7 @@ export const useAiProfiles = (
 
         if (isLocal) {
             const stored = localStorage.getItem('koreki_local_ai_profiles');
-            let customProfiles: any[] = [];
+            let customProfiles: AiProfile[] = [];
             if (stored) {
                 try { customProfiles = JSON.parse(stored); } catch(e) {}
             }
@@ -297,6 +297,13 @@ export const useAiProfiles = (
                 customProfiles[existingIdx] = {
                     ...customProfiles[existingIdx],
                     ...payload,
+                    // Die Kennung des bestehenden Eintrags gewinnt. `payload.id`
+                    // ist `zielId || undefined` — ein `undefined` im Spread
+                    // wuerde sie ueberschreiben und das Profil unauffindbar
+                    // machen. Heute kann das nicht passieren (dieser Zweig wird
+                    // nur mit gesetztem `zielId` erreicht), aber die Sicherheit
+                    // haengt dann an zwei Zeilen Abstand statt an einer Zusage.
+                    id: customProfiles[existingIdx].id,
                     name: nameToSave
                 };
             } else {
@@ -350,7 +357,7 @@ export const useAiProfiles = (
             const stored = localStorage.getItem('koreki_local_ai_profiles');
             if (stored) {
                 let customProfiles = JSON.parse(stored);
-                customProfiles = customProfiles.filter((p: any) => p.id !== id);
+                customProfiles = customProfiles.filter((p: AiProfile) => p.id !== id);
                 localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));
                 await fetchProfiles();
                 if (selectedProfileData?.id === id) {
@@ -387,7 +394,7 @@ export const useAiProfiles = (
                     alert(nameTakenMessage('KI-Profil'));
                     return;
                 }
-                customProfiles = customProfiles.map((p: any) =>
+                customProfiles = customProfiles.map((p: AiProfile) =>
                     p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
                 );
                 localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));

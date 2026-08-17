@@ -18,7 +18,12 @@ const PII_PATTERNS = [
 function sanitize(text: string): string {
     let masked = text;
     PII_PATTERNS.forEach(({ pattern, mask }) => {
-        masked = masked.replace(pattern, mask as any);
+        // Die Fallunterscheidung loest die Ueberladung von `replace` auf: mit
+        // dem gemeinsamen Typ passt weder die Zeichenketten- noch die
+        // Funktions-Variante, und genau dafuer stand hier ein `as any`.
+        masked = typeof mask === 'string'
+            ? masked.replace(pattern, mask)
+            : masked.replace(pattern, mask);
     });
     return masked;
 }
@@ -56,21 +61,21 @@ function sanitizeArg(value: unknown, depth = 0): unknown {
 const sanitizeArgs = (args: unknown[]) => args.map(arg => sanitizeArg(arg));
 
 export const logger = {
-    info: (msg: string, ...args: any[]) => {
+    info: (msg: string, ...args: unknown[]) => {
         console.info(`[INFO] ${sanitize(msg)}`, ...sanitizeArgs(args));
     },
-    warn: (msg: string, ...args: any[]) => {
+    warn: (msg: string, ...args: unknown[]) => {
         console.warn(`[WARN] ${sanitize(msg)}`, ...sanitizeArgs(args));
     },
-    error: (msg: string, ...args: any[]) => {
+    error: (msg: string, ...args: unknown[]) => {
         console.error(`[ERROR] ${sanitize(msg)}`, ...sanitizeArgs(args));
     },
-    debug: (msg: string, ...args: any[]) => {
+    debug: (msg: string, ...args: unknown[]) => {
         if (process.env.NODE_ENV === 'development') {
             console.debug(`[DEBUG] ${sanitize(msg)}`, ...sanitizeArgs(args));
         }
     },
-    security: (msg: string, ...args: any[]) => {
+    security: (msg: string, ...args: unknown[]) => {
         console.warn(`[SECURITY] 🛡️ ${sanitize(msg)}`, ...sanitizeArgs(args));
     }
 };

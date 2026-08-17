@@ -229,6 +229,13 @@ export interface PromptProfile {
 export interface AiProfile {
     id: string;
     name: string;
+    /**
+     * Vorlage, die nicht veraendert wird. KEINE Datenbankspalte — anders als
+     * bei [PromptProfile] und [SkillProfile] steht das Feld nur in den lokal
+     * gespeicherten Profilen (Desktop). Der Code liest und schreibt es seit
+     * jeher, nur der Typ kannte es nicht.
+     */
+    isSystem?: boolean;
     temperature: number;
     topP: number;
     maxTokens: number;
