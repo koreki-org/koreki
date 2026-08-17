@@ -4,7 +4,10 @@ import {
   StepResult, 
   StepResultStatus, 
   VariableDefinition,
-  EquivalenceGroup
+  EquivalenceGroup,
+  GradingContext,
+  GradingScalar,
+  GradingValue
 } from './types';
 import { evaluateExpression } from './plugins';
 import { collectReferencedVariables } from './variable-references';
@@ -57,8 +60,8 @@ export class GraphRunner {
   /**
    * Maps student result keys to graph expected keys.
    */
-  private static mapStudentResultsToGraph(studentResults: Record<string, any>, mapping: Record<string, string>): Record<string, any> {
-    const mapped: Record<string, any> = {};
+  private static mapStudentResultsToGraph(studentResults: GradingContext, mapping: Record<string, string>): GradingContext {
+    const mapped: GradingContext = {};
     for (const [studentId, val] of Object.entries(studentResults)) {
       let graphId = studentId;
       for (const [graphPrefixRaw, studentPrefixRaw] of Object.entries(mapping)) {
@@ -101,6 +104,22 @@ export class GraphRunner {
   }
 
   /**
+   * Reduziert Alternativen auf den ersten Wert.
+   *
+   * Ein Erwartungswert darf eine Liste gleichwertiger Alternativen sein. Als
+   * Belegung fuer nachfolgende Formeln taugt aber nur ein Einzelwert — sonst
+   * rechnet die Folgeformel mit einem Array.
+   *
+   * Der Erwartungs-Kontext hat das immer getan, der Schueler-Kontext NICHT:
+   * dort konnte eine unbeantwortete Variable mit Alternativen die ganze Liste
+   * einsetzen. Damit rechneten alle nachgelagerten Schritte falsch, und die
+   * Folgefehler-Kulanz vergab Punkte auf einer unsinnigen Grundlage.
+   */
+  private static alsSkalar(value: GradingValue): GradingScalar {
+    return Array.isArray(value) ? (value[0] ?? null) : value;
+  }
+
+  /**
    * Helper to extract variable dependencies in an expression.
    */
   private static getReferencedVariables(expression: string, allVarIds: string[]): string[] {
@@ -114,7 +133,7 @@ export class GraphRunner {
    * Validates a student's answer against both the expected values (master key)
    * and computed values (accounting for previous errors / consecutive compensation).
    */
-  public static grade(graph: GradingGraph, studentResults: Record<string, any>): GradingResult {
+  public static grade(graph: GradingGraph, studentResults: GradingContext): GradingResult {
     const equivalenceGroups = graph.equivalenceGroups;
     if (!equivalenceGroups || equivalenceGroups.length === 0) {
       return this.executeGrading(graph, studentResults, studentResults);
@@ -142,26 +161,26 @@ export class GraphRunner {
    */
   private static executeGrading(
     graph: GradingGraph, 
-    studentResults: Record<string, any>, 
-    originalStudentResults?: Record<string, any>
+    studentResults: GradingContext,
+    originalStudentResults?: GradingContext
   ): GradingResult {
     const stepResults: StepResult[] = [];
     let totalPoints = 0;
     let maxPoints = 0;
 
     // Context for computing absolute mathematical truth
-    const expectedContext: Record<string, any> = {};
+    const expectedContext: GradingContext = {};
     
     // Context for computing follow-through values based on student's actual inputs
-    const computedContext: Record<string, any> = {};
+    const computedContext: GradingContext = {};
 
     for (const variable of graph.variables) {
       const { id, type, defaultValue, expression, validationType, tolerance } = variable;
       const stepMaxPoints = variable.maxPoints ?? 1;
       maxPoints += stepMaxPoints;
 
-      let expectedValue: any;
-      let computedValueBasedOnErrors: any;
+      let expectedValue: GradingValue = null;
+      let computedValueBasedOnErrors: GradingValue = null;
 
       // 1. Calculate the values
       if (type === 'input') {
@@ -172,20 +191,20 @@ export class GraphRunner {
         try {
           // Expected value based on absolute truth context
           expectedValue = evaluateExpression(expression, expectedContext);
-        } catch (err: any) {
+        } catch {
           expectedValue = null;
         }
 
         try {
           // Computed value based on the student's actual (potentially erroneous) inputs
           computedValueBasedOnErrors = evaluateExpression(expression, computedContext);
-        } catch (err: any) {
+        } catch {
           computedValueBasedOnErrors = null;
         }
       }
 
       // Populate expected context for subsequent nodes (defaulting to the first alternative if array)
-      expectedContext[id] = Array.isArray(expectedValue) ? expectedValue[0] : expectedValue;
+      expectedContext[id] = this.alsSkalar(expectedValue);
 
       // Get student input
       let studentValue = studentResults[id];
@@ -266,9 +285,11 @@ export class GraphRunner {
       // This propagates their error downstream so we can check consecutive errors!
       computedContext[id] = studentValue !== undefined
         ? studentValue
-        : (computedValueBasedOnErrors !== null && computedValueBasedOnErrors !== undefined
-           ? computedValueBasedOnErrors
-           : expectedValue);
+        : this.alsSkalar(
+            computedValueBasedOnErrors !== null && computedValueBasedOnErrors !== undefined
+              ? computedValueBasedOnErrors
+              : expectedValue
+          );
 
       stepResults.push({
         variableId: id,
@@ -293,7 +314,7 @@ export class GraphRunner {
   /**
    * Helper to compare values based on validation types
    */
-  private static checkMatch(studentVal: any, expectedVal: any, type: string, tolerance?: number): boolean {
+  private static checkMatch(studentVal: GradingScalar, expectedVal: GradingValue, type: string, tolerance?: number): boolean {
     if (Array.isArray(expectedVal)) {
       return expectedVal.some(val => this.checkMatch(studentVal, val, type, tolerance));
     }
