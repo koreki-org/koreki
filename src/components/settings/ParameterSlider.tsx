@@ -1,5 +1,6 @@
 import React from 'react';
 import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
+import { Slider } from '@/components/ui/Slider';
 
 /**
  * Ein Regler fuer einen KI-Parameter.
@@ -61,10 +62,11 @@ export const ParameterSlider: React.FC<ParameterSliderProps> = ({
                 </div>
                 <span className="text-xs font-mono font-bold bg-muted px-2 py-0.5 rounded-md text-foreground">{anzeige}</span>
             </div>
-            <input
-                type="range" min={min} max={max} step={step} value={value}
-                onChange={(e) => onChange(istGanzzahlig ? parseInt(e.target.value) : parseFloat(e.target.value))}
-                className="w-full accent-primary bg-muted h-1.5 rounded-lg cursor-pointer"
+            <Slider
+                min={min} max={max} step={step}
+                value={value}
+                integer={istGanzzahlig}
+                onValueChange={onChange}
             />
             <div className="flex justify-between items-center text-xxs text-muted-foreground font-semibold leading-relaxed">
                 <span>{description}</span>

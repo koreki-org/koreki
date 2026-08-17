@@ -68,9 +68,6 @@ const RAW_CONTROL_BASELINE = {
     'src/components/PDFSplitModal.tsx': 1,
     'src/components/settings/AiProfileSidebar.tsx': 1,
     'src/components/settings/OpenAICompatibleConfig.tsx': 1,
-    // Ein <input type="range">. Im Kit gibt es keine Slider-Komponente — die
-    // Regel ist fuer Regler derzeit nicht erfuellbar.
-    'src/components/settings/ParameterSlider.tsx': 1,
     'src/components/settings/PrivacySection.tsx': 1,
     'src/components/settings/SkillsSidebar.tsx': 1,
     'src/pages/features.tsx': 1,
