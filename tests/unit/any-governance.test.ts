@@ -28,7 +28,7 @@ const SRC_DIR = join(process.cwd(), 'src');
 
 /** Altlasten, eingefroren am 12.08.2026. NUR SENKEN, NIE ANHEBEN. */
 const ANY_BASELINE: Record<string, number> = {
-    'hooks/useSkillProfiles.ts': 23,
+    'hooks/useSkillProfiles.ts': 9,
     'hooks/useGradingMemoryModalState.ts': 18,
     'hooks/file-processor/useProcessingPipeline.ts': 16,
     'lib/ai/ai-orchestrator.ts': 16,

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { AppSettings } from '@/types';
+import { AppSettings, CustomSkillDefinition, SkillProfile } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { STANDARD_SKILL_PROFILES, DEFAULT_SKILL_PROFILE_ID } from '@/lib/ai/standard-skills-profiles';
@@ -70,7 +70,7 @@ export const useSkillProfiles = (
      */
     currentProfileRef: string = DEFAULT_SKILL_PROFILE_ID
 ) => {
-    const [profiles, setProfiles] = useState<any[]>([]);
+    const [profiles, setProfiles] = useState<SkillProfile[]>([]);
     /**
      * 🏮 Die Auswahl haengt an der KENNUNG, nicht mehr am Namen.
      *
@@ -89,7 +89,7 @@ export const useSkillProfiles = (
     const [lastSavedSkillIds, setLastSavedSkillIds] = useState<string[]>([]);
     
     // Custom individual teacher skills list
-    const [customSkills, setCustomSkills] = useState<Record<string, any>>({});
+    const [customSkills, setCustomSkills] = useState<Record<string, CustomSkillDefinition>>({});
 
     const [saving, setSaving] = useState(false);
     const [showEditorMobile, setShowEditorMobile] = useState(false);
@@ -131,7 +131,7 @@ export const useSkillProfiles = (
         }
     }, []);
 
-    const handleSaveCustomSkill = async (skill: any) => {
+    const handleSaveCustomSkill = async (skill: CustomSkillDefinition & { id: string }) => {
         // 1. Update global customSkills state & localStorage
         setCustomSkills(prev => {
             const updated = { ...prev, [skill.id]: skill };
@@ -149,7 +149,7 @@ export const useSkillProfiles = (
 
             if (isDesktopTarget()) {
                 const stored = localStorage.getItem('koreki_local_skill_profiles');
-                let customProfiles: any[] = [];
+                let customProfiles: SkillProfile[] = [];
                 if (stored) {
                     try { customProfiles = JSON.parse(stored); } catch (e) {}
                 }
@@ -222,7 +222,7 @@ export const useSkillProfiles = (
             
             let pActiveSkillIds = Array.isArray(p.activeSkillIds) ? [...p.activeSkillIds] : [];
             if (pActiveSkillIds.includes(id)) {
-                pActiveSkillIds = pActiveSkillIds.filter((sid: any) => sid !== id);
+                pActiveSkillIds = pActiveSkillIds.filter((sid: string) => sid !== id);
                 isChanged = true;
             }
             
@@ -241,8 +241,8 @@ export const useSkillProfiles = (
             const stored = localStorage.getItem('koreki_local_skill_profiles');
             if (stored) {
                 try {
-                    let customProfiles = JSON.parse(stored);
-                    const updatedCustomProfiles = customProfiles.map((p: any) => {
+                    let customProfiles: SkillProfile[] = JSON.parse(stored);
+                    const updatedCustomProfiles = customProfiles.map(p => {
                         const profileCustomSkills = p.customSkills ? { ...p.customSkills } : {};
                         let isChanged = false;
                         if (profileCustomSkills[id]) {
@@ -251,7 +251,7 @@ export const useSkillProfiles = (
                         }
                         let pActiveSkillIds = Array.isArray(p.activeSkillIds) ? [...p.activeSkillIds] : [];
                         if (pActiveSkillIds.includes(id)) {
-                            pActiveSkillIds = pActiveSkillIds.filter((sid: any) => sid !== id);
+                            pActiveSkillIds = pActiveSkillIds.filter((sid: string) => sid !== id);
                             isChanged = true;
                         }
                         if (isChanged) {
@@ -297,7 +297,7 @@ export const useSkillProfiles = (
      * Uebernimmt Skills und eigene Skills eines Profils in den Bearbeitungs-
      * zustand. Stand zuvor dreimal wortgleich im Hook.
      */
-    const hydrateFromProfile = useCallback((profile: any) => {
+    const hydrateFromProfile = useCallback((profile: SkillProfile) => {
         const skills = Array.isArray(profile?.activeSkillIds) ? profile.activeSkillIds : [];
 
         if (profile?.customSkills && typeof profile.customSkills === 'object') {
@@ -331,7 +331,7 @@ export const useSkillProfiles = (
      * `resolveProfileRef` nimmt dafuer Kennung wie Name entgegen. Danach steht
      * die Kennung fest und ueberlebt jedes Umbenennen.
      */
-    const uebernehmeProfile = useCallback((alle: any[]) => {
+    const uebernehmeProfile = useCallback((alle: SkillProfile[]) => {
         setProfiles(alle);
 
         // Waehrend ein neues Set entsteht, darf ein Nachladen die Auswahl NICHT
@@ -339,7 +339,7 @@ export const useSkillProfiles = (
         // eines fremden Sets und Speichern trifft das falsche.
         if (legtNeuAnRef.current) return;
 
-        const current = resolveProfileRef<any>(alle, auswahlRef.current || currentProfileRef);
+        const current = resolveProfileRef<SkillProfile>(alle, auswahlRef.current || currentProfileRef);
         if (current) {
             setSelectedProfileId(current.id);
             hydrateFromProfile(current);
@@ -381,7 +381,7 @@ export const useSkillProfiles = (
         }
     }, [profiles, selectedProfileId, activeSkillIds.length, hydrateFromProfile]);
 
-    const handleSelectProfile = (profile: any) => {
+    const handleSelectProfile = (profile: SkillProfile) => {
         setIsCreatingNew(false);
         setSelectedProfileId(profile.id);
         setShowEditorMobile(true);
@@ -490,7 +490,7 @@ export const useSkillProfiles = (
 
         if (isDesktopTarget()) {
             const stored = localStorage.getItem('koreki_local_skill_profiles');
-            let customProfiles: any[] = [];
+            let customProfiles: SkillProfile[] = [];
             if (stored) {
                 try { customProfiles = JSON.parse(stored); } catch(e) {}
             }
@@ -581,8 +581,8 @@ export const useSkillProfiles = (
         if (isDesktopTarget()) {
             const stored = localStorage.getItem('koreki_local_skill_profiles');
             if (stored) {
-                let customProfiles = JSON.parse(stored);
-                customProfiles = customProfiles.filter((p: any) => p.id !== id);
+                let customProfiles: SkillProfile[] = JSON.parse(stored);
+                customProfiles = customProfiles.filter(p => p.id !== id);
                 localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(customProfiles));
                 await fetchProfiles();
                 if (selectedProfileId === id) {
@@ -620,12 +620,12 @@ export const useSkillProfiles = (
         if (isDesktopTarget()) {
             const stored = localStorage.getItem('koreki_local_skill_profiles');
             if (stored) {
-                let customProfiles = JSON.parse(stored);
+                let customProfiles: SkillProfile[] = JSON.parse(stored);
                 if (findNameCollision(customProfiles, editingProfileId, editingName)) {
                     alert(nameTakenMessage('Skill-Profil'));
                     return;
                 }
-                customProfiles = customProfiles.map((p: any) =>
+                customProfiles = customProfiles.map(p =>
                     p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
                 );
                 localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(customProfiles));

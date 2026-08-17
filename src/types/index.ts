@@ -173,6 +173,24 @@ export interface KorekiExport {
 
 export type { Task, Analysis };
 
+/**
+ * Ein Skill-Set — die Auswahl aktiver Bewertungs-Skills samt eigener Skills.
+ *
+ * Stand bisher nur als `any` in den Hooks und als nicht exportierte
+ * `StoredSkillProfile` im local-profile-service. Die Gegenstuecke `AiProfile`
+ * und `GradingMemory` sind hier schon lange ausgeschrieben.
+ */
+export interface SkillProfile {
+    id: string;
+    name: string;
+    activeSkillIds: string[];
+    customSkills?: Record<string, CustomSkillDefinition>;
+    /** Vorlage aus der Registry. Wird nie veraendert, sondern kopiert. */
+    isSystem?: boolean;
+    userId?: string | null;
+    createdAt?: string;
+}
+
 export interface AiProfile {
     id: string;
     name: string;
