@@ -80,9 +80,11 @@ const SIZE_BASELINE: Record<string, number> = {
     // in vier benannte Reiter zu trennen ist der groessere Gewinn.
     'components/batch/parts/GraphEditorPanel.tsx': 456,
     'components/batch/parts/GraphAiPanel.tsx': 345,
-    // +1 fuer den Typ-Import: getDefaultGradingGraph liefert jetzt GradingGraph
-    // statt eines untypisierten Literals.
-    'components/upload/ModelSolutionCard.tsx': 897,
+    // 1205 -> 561: Skill-Persistenz nach lib/skills/skill-persistence.ts,
+    // Autopilot nach hooks/useModelSolutionAutopilot.ts, Ableitungen nach
+    // hooks/useModelSolutionDerivations.ts. Hook-Aufrufe 16 -> 10, damit aus
+    // HOOK_BASELINE verschwunden.
+    'components/upload/ModelSolutionCard.tsx': 561,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
     // +42 gegenueber 793: der Ansichtstyp SkillListenEintrag und die
@@ -137,8 +139,9 @@ const SIZE_BASELINE: Record<string, number> = {
  * NUR SENKEN, NIE ANHEBEN.
  */
 const HOOK_BASELINE: Record<string, number> = {
-    'components/batch/GradingGraphModal.tsx': 16,
-    'components/upload/ModelSolutionCard.tsx': 16
+    'components/batch/GradingGraphModal.tsx': 25,
+    'components/batch/parts/BatchTaskAnalysisCard.tsx': 13,
+    'components/settings/OllamaConfig.tsx': 11
 };
 
 const getFilesRecursively = (dir: string): string[] => {
@@ -156,7 +159,19 @@ const toRelative = (filePath: string) => relative(SRC_DIR, filePath).split(sep).
 const limitFor = (relativePath: string) => LIMITS[relativePath.split('/')[0]] ?? DEFAULT_LIMIT;
 const countLines = (content: string) => content.split(/\r?\n/).length;
 /** Zaehlt Hook-Aufrufe: `useState(`, `useBatchStatus(`, ... — eigene Hooks eingeschlossen. */
-const countHooks = (content: string) => (content.match(/\buse[A-Z]\w*\s*\(/g) || []).length;
+/**
+ * Der optionale Typparameter ist entscheidend. Bis 17.08.2026 stand hier nur
+ * `use[A-Z]\\w*\\s*\\(` - damit war `useState<Foo>(` UNSICHTBAR, also die
+ * Mehrzahl aller Aufrufe in TypeScript. 28 Komponenten wurden unterzaehlt,
+ * GradingGraphModal mit 16 statt 25. Die Regel "hoechstens zehn Hooks" war
+ * damit nie durchgesetzt; dass die HOOK_BASELINE danach WAECHST, ist kein
+ * Rueckschritt, sondern der erste ehrliche Stand.
+ *
+ * Die innere Alternative erlaubt eine Ebene Verschachtelung, damit auch
+ * `useState<Record<number, string>>(` erfasst wird.
+ */
+const countHooks = (content: string) =>
+    (content.match(/\buse[A-Z]\w*\s*(?:<[^<>]*(?:<[^<>]*>[^<>]*)*>)?\s*\(/g) || []).length;
 
 describe('File Size Governance', () => {
     const sourceFiles = getFilesRecursively(SRC_DIR)

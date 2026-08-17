@@ -36,7 +36,7 @@ const ANY_BASELINE: Record<string, number> = {
     'components/batch/parts/GraphAiPanel.tsx': 1,
     'lib/services/user-service.ts': 7,
     'components/batch/parts/BatchTaskAnalysisCard.tsx': 7,
-    'components/upload/ModelSolutionCard.tsx': 8,
+    'components/upload/ModelSolutionCard.tsx': 3,
     'hooks/usePromptProfiles.ts': 8,
     'pages/app.tsx': 4,
     'components/settings/AiProfileSidebar.tsx': 6,

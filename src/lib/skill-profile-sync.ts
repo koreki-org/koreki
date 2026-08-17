@@ -1,3 +1,4 @@
+import type { CustomSkillDefinition } from '@/types';
 /**
  * Einordnung eines neuen Skills in das aktive Skill-Profil.
  * 🧩🔄
@@ -23,14 +24,14 @@ export interface SkillProfileLike {
     name?: string;
     isSystem?: boolean;
     activeSkillIds?: string[];
-    customSkills?: Record<string, unknown>;
+    customSkills?: Record<string, CustomSkillDefinition>;
 }
 
 export interface PlanSkillProfileSyncInput {
     /** Das aufgelöste aktive Profil — kann fehlen oder eine Vorlage sein. */
     activeProfile?: SkillProfileLike | null;
     skillId: string;
-    skill: unknown;
+    skill: CustomSkillDefinition;
     /**
      * Skills, auf denen eine neue Kopie aufsetzt. Kommt vom Aufrufer, weil
      * Desktop und SaaS die Vorlage unterschiedlich auflösen.
@@ -43,7 +44,7 @@ export interface SkillProfileSyncPlan {
     action: 'update' | 'create';
     name: string;
     activeSkillIds: string[];
-    customSkills: Record<string, unknown>;
+    customSkills: Record<string, CustomSkillDefinition>;
 }
 
 /**
