@@ -25,7 +25,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     // 2. Data Retrieval (GET)
     if (req.method === 'GET') {
         try {
-            const users = await (prisma as any).user.findMany({
+            const users = await prisma.user.findMany({
                 include: { memberships: { include: { workspace: true } } },
                 orderBy: { createdAt: 'desc' }
             });

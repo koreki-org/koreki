@@ -40,7 +40,7 @@ export const AdminService = {
 
         // Verify/Repair orphaned workspace link
         if (targetWsId) {
-            const wsExists = await (prisma as any).workspace.findUnique({ where: { id: targetWsId } });
+            const wsExists = await prisma.workspace.findUnique({ where: { id: targetWsId } });
             if (!wsExists) {
                 logger.info(`[Admin-Service] Repairing orphaned Workspace for User ${user.username}`);
                 await prisma.user.update({
@@ -54,7 +54,7 @@ export const AdminService = {
         // Adaptive Provisioning: Create Personal Workspace if missing
         if (!targetWsId) {
             logger.info(`[Admin-Service] Provisioning new Workspace for User ${user.username}`);
-            const newPersonalWs = await (prisma as any).workspace.create({
+            const newPersonalWs = await prisma.workspace.create({
                 data: {
                     name: `Privater Workspace (${user.username || 'Nutzer'})`,
                     type: 'PERSONAL',
@@ -73,7 +73,7 @@ export const AdminService = {
         }
 
         // Atomic Credit increment
-        return (prisma as any).workspace.update({
+        return prisma.workspace.update({
             where: { id: targetWsId },
             data: { credits: { increment: amount } }
         });
@@ -85,8 +85,7 @@ export const AdminService = {
      */
     async assignWorkspace(userId: string, workspaceId: string) {
         return prisma.$transaction(async (tx) => {
-            const txAny = tx as any;
-            const targetWs = await txAny.workspace.findUnique({ where: { id: workspaceId } });
+            const targetWs = await tx.workspace.findUnique({ where: { id: workspaceId } });
             if (!targetWs) throw new Error('Workspace nicht gefunden');
 
             const userToAssign = await tx.user.findUnique({ where: { id: userId } });
@@ -96,18 +95,18 @@ export const AdminService = {
 
             if (targetWs.type === 'PERSONAL') {
                 // Return to Private: Clear all Organization memberships
-                const membershipsToDelete = await txAny.membership.findMany({
+                const membershipsToDelete = await tx.membership.findMany({
                     where: { userId, workspace: { type: 'ORGANIZATION' } },
                     select: { id: true }
                 });
                 if (membershipsToDelete.length > 0) {
-                    await txAny.membership.deleteMany({
+                    await tx.membership.deleteMany({
                         where: { id: { in: membershipsToDelete.map((m: any) => m.id) } }
                     });
                 }
             } else if (targetWs.type === 'ORGANIZATION') {
                 // Into Organization: Clear OTHER Organization memberships
-                const otherOrgMemberships = await txAny.membership.findMany({
+                const otherOrgMemberships = await tx.membership.findMany({
                     where: { 
                         userId,
                         workspace: { type: 'ORGANIZATION' },
@@ -116,15 +115,15 @@ export const AdminService = {
                     select: { id: true }
                 });
                 if (otherOrgMemberships.length > 0) {
-                    await txAny.membership.deleteMany({
+                    await tx.membership.deleteMany({
                         where: { id: { in: otherOrgMemberships.map((m: any) => m.id) } }
                     });
                 }
 
                 // Ensure targeted membership exists
-                const existing = await txAny.membership.findFirst({ where: { userId, workspaceId } });
+                const existing = await tx.membership.findFirst({ where: { userId, workspaceId } });
                 if (!existing) {
-                    await txAny.membership.create({ data: { userId, workspaceId, role: 'MEMBER' } });
+                    await tx.membership.create({ data: { userId, workspaceId, role: 'MEMBER' } });
                 }
             }
 
@@ -140,12 +139,12 @@ export const AdminService = {
      * Updates membership role within a specific workspace.
      */
     async setMembershipRole(userId: string, workspaceId: string, role: string) {
-        const membership = await (prisma as any).membership.findFirst({
+        const membership = await prisma.membership.findFirst({
             where: { userId, workspaceId }
         });
         if (!membership) throw new Error('Mitgliedschaft nicht gefunden');
 
-        return (prisma as any).membership.update({
+        return prisma.membership.update({
             where: { id: membership.id },
             data: { role }
         });
@@ -160,7 +159,7 @@ export const AdminService = {
 
         if (user.logtoId) await deleteLogtoUser(user.logtoId);
         
-        await (prisma as any).membership.deleteMany({ where: { userId } });
+        await prisma.membership.deleteMany({ where: { userId } });
         await prisma.privacyLog.deleteMany({ where: { userId } });
         return prisma.user.delete({ where: { id: userId } });
     },

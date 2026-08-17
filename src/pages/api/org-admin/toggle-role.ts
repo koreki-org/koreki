@@ -25,7 +25,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const { membershipId, targetRole, workspaceId } = validation.data;
 
         // 1. Fetch target membership to verify context
-        const targetMembership = await (prisma as any).membership.findUnique({
+        const targetMembership = await prisma.membership.findUnique({
             where: { id: membershipId }
         });
 
@@ -43,7 +43,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         }
 
         // 2. Perform the Role Toggle
-        await (prisma as any).membership.update({
+        await prisma.membership.update({
             where: { id: membershipId },
             data: { role: targetRole }
         });

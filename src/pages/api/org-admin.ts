@@ -37,7 +37,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         // 3. Fetch Workspace details (Strictly ORGANIZATION only)
         // Note: Industrial Prisma usage - findUnique only on @unique fields (id)
-        const workspace = await (prisma as any).workspace.findUnique({
+        const workspace = await prisma.workspace.findUnique({
             where: { id: workspaceId },
             include: {
                 memberships: {

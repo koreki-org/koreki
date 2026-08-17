@@ -25,7 +25,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const { inviteCode } = validation.data;
 
         try {
-            const workspace = await (prisma as any).workspace.findUnique({
+            const workspace = await prisma.workspace.findUnique({
                 where: { inviteCode }
             });
 
@@ -33,17 +33,16 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             if (workspace.type !== 'ORGANIZATION') return res.status(400).json({ message: 'Privaten Workspaces kann man nicht per Code beitreten' });
 
             // Idempotency: Is user already in this workspace?
-            const alreadyMember = await (prisma as any).membership.findUnique({
+            const alreadyMember = await prisma.membership.findUnique({
                 where: { userId_workspaceId: { userId: user.id, workspaceId: workspace.id } }
             });
 
             if (alreadyMember) return res.status(200).json({ success: true, workspaceName: workspace.name, alreadyIn: true });
 
             await prisma.$transaction(async (tx) => {
-                const txAny = tx as any;
 
                 // EXCLUSIVE TENANCY: JOINING ORG -> DELETE OTHER ORG MEMBERSHIPS
-                await txAny.membership.deleteMany({
+                await tx.membership.deleteMany({
                     where: { 
                         userId: user.id, 
                         workspace: { type: 'ORGANIZATION' } 
@@ -51,7 +50,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 });
 
                 // Create new membership
-                await txAny.membership.create({
+                await tx.membership.create({
                     data: {
                         userId: user.id,
                         workspaceId: workspace.id,
@@ -60,7 +59,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 });
 
                 // Set Active Context and elevate to STANDARD mode
-                await (tx as any).user.update({
+                await tx.user.update({
                     where: { id: user.id },
                     data: { 
                         activeWorkspaceId: workspace.id,

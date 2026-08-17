@@ -27,7 +27,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // the requester has ADMIN/OWNER rights for the workspaceId provided.
 
         // 2. Update the invitation code
-        await (prisma as any).workspace.update({
+        await prisma.workspace.update({
             where: { id: workspaceId },
             data: { inviteCode: inviteCode.trim() }
         });

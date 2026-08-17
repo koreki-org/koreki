@@ -27,7 +27,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // folgende Bindung koennte jeder Nutzer seinen eigenen persoenlichen
         // Workspace mitschicken — dort ist er per JIT-Provisioning OWNER — und
         // damit Mitglieder fremder Organisationen entfernen.
-        const targetMembership = await (prisma as any).membership.findUnique({
+        const targetMembership = await prisma.membership.findUnique({
             where: { id: membershipId }
         });
 
@@ -45,10 +45,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         // 2. Perform the Removal & Downgrade in a Transaction
         await prisma.$transaction(async (tx) => {
-            const txAny = tx as any;
 
             // A. Delete the Membership
-            await txAny.membership.delete({
+            await tx.membership.delete({
                 where: { id: membershipId }
             });
 
@@ -63,7 +62,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             });
 
             // C. Reset the user's Personal Workspace credits to 0
-            const personalMemberships = await txAny.membership.findMany({
+            const personalMemberships = await tx.membership.findMany({
                 where: {
                     userId: effectiveTargetUserId,
                     workspace: { type: 'PERSONAL' },
@@ -72,7 +71,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             });
 
             for (const pm of personalMemberships) {
-                await txAny.workspace.update({
+                await tx.workspace.update({
                     where: { id: pm.workspaceId },
                     data: { credits: 0 }
                 });

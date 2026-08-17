@@ -48,7 +48,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         
         if (!targetWorkspaceId) {
             // Find Personal Workspace if no ID provided
-            const personalWS = await (prisma as any).membership.findFirst({
+            const personalWS = await prisma.membership.findFirst({
                 where: { userId: user.id, workspace: { type: 'PERSONAL' } }
             });
             targetWorkspaceId = personalWS?.workspaceId;

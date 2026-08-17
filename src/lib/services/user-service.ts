@@ -110,7 +110,7 @@ export class UserService {
                     }
                 });
 
-                const personalWorkspace = await (tx as any).workspace.create({
+                const personalWorkspace = await tx.workspace.create({
                     data: {
                         name: `Privat (${username})`,
                         type: 'PERSONAL',
@@ -118,7 +118,7 @@ export class UserService {
                     }
                 });
 
-                await (tx as any).membership.create({
+                await tx.membership.create({
                     data: {
                         userId: newUser.id,
                         workspaceId: personalWorkspace.id,

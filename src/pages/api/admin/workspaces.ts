@@ -86,12 +86,12 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             if (!inviteCode) return res.status(400).json({ message: 'Ladercode fehlt' });
             try {
                 // Ensure unique
-                const existing = await (prisma as any).workspace.findFirst({
+                const existing = await prisma.workspace.findFirst({
                     where: { inviteCode }
                 });
                 if (existing) return res.status(400).json({ message: 'Dieser Code ist bereits vergeben' });
 
-                await (prisma as any).workspace.update({
+                await prisma.workspace.update({
                     where: { id: workspaceId },
                     data: { inviteCode }
                 });
@@ -114,11 +114,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 const sharePerMember = members.length > 0 ? Math.floor(creditsToDistribute / members.length) : 0;
 
                 await prisma.$transaction(async (tx) => {
-                    const txAny = tx as any;
 
                     for (const membership of members) {
                         const user = membership.user;
-                        const personalMembership = await txAny.membership.findFirst({
+                        const personalMembership = await tx.membership.findFirst({
                             where: { userId: user.id, workspace: { type: 'PERSONAL' } },
                             include: { workspace: true }
                         });
@@ -135,14 +134,14 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         });
 
                         if (sharePerMember > 0 && personalWsId) {
-                            await txAny.workspace.update({
+                            await tx.workspace.update({
                                 where: { id: personalWsId },
                                 data: { credits: { increment: sharePerMember } }
                             });
                         }
                     }
 
-                    await txAny.membership.deleteMany({ where: { workspaceId } });
+                    await tx.membership.deleteMany({ where: { workspaceId } });
                     await tx.workspace.delete({ where: { id: workspaceId } });
                 });
 

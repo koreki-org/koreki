@@ -186,7 +186,7 @@ export async function performBillingAction(params: {
 
         // 4. Execute Transaction Operations
         await tx.user.update({ where: { logtoId }, data: userUpdateData });
-        const updatedWorkspace = await (tx as any).workspace.update({ where: { id: workspace.id }, data: workspaceUpdateData });
+        const updatedWorkspace = await tx.workspace.update({ where: { id: workspace.id }, data: workspaceUpdateData });
         
         await tx.systemSettings.upsert({
             where: { id: 'singleton' },
