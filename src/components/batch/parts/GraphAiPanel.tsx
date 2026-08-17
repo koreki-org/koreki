@@ -284,22 +284,22 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                                 <Badge className="bg-muted text-muted-foreground border border-border py-0.5 px-2 rounded-full font-bold text-xs uppercase">{graph.variables.length} Variablen</Badge>
                                             </div>
 
-                                            {(graph as any).validation?.dryRunChecked && (
+                                            {graph.validation?.dryRunChecked && (
                                                 <div className={cn(
                                                     "rounded-2xl p-4 text-xs leading-normal flex items-start gap-3 border shadow-xs animate-in fade-in slide-in-from-top-2 duration-300",
-                                                    (graph as any).validation.isValid
+                                                    graph.validation.isValid
                                                         ? "bg-success/10 border-success/20 text-success"
                                                         : "bg-destructive/10 border-destructive/20 text-destructive"
                                                 )}>
-                                                    <span className="text-xl shrink-0 mt-0.5">{(graph as any).validation.isValid ? "🛡️" : "⚠️"}</span>
+                                                    <span className="text-xl shrink-0 mt-0.5">{graph.validation.isValid ? "🛡️" : "⚠️"}</span>
                                                     <div className="space-y-1">
-                                                        <p className={cn("font-extrabold leading-none", (graph as any).validation.isValid ? "text-success" : "text-destructive")}>
-                                                            {(graph as any).validation.isValid ? "Plausibilität verifiziert!" : "Simulationsfehler erkannt"}
+                                                        <p className={cn("font-extrabold leading-none", graph.validation.isValid ? "text-success" : "text-destructive")}>
+                                                            {graph.validation.isValid ? "Plausibilität verifiziert!" : "Simulationsfehler erkannt"}
                                                         </p>
                                                         <p className="leading-relaxed font-medium text-muted-foreground mt-1">
-                                                            {(graph as any).validation.isValid 
-                                                                ? `Dieser Graph wurde mathematisch fehlerfrei simuliert. Alle Formeln werten korrekt aus. ${(graph as any).validation.retriesUsed ? `(Selbst-Korrektur aktiv: ${(graph as any).validation.retriesUsed}x)` : ""}`
-                                                                : `Fehler: ${(graph as any).validation.error || "Unbekannter Fehler während der Berechnung."}`}
+                                                            {graph.validation.isValid 
+                                                                ? `Dieser Graph wurde mathematisch fehlerfrei simuliert. Alle Formeln werten korrekt aus. ${graph.validation.retriesUsed ? `(Selbst-Korrektur aktiv: ${graph.validation.retriesUsed}x)` : ""}`
+                                                                : `Fehler: ${graph.validation.error || "Unbekannter Fehler während der Berechnung."}`}
                                                         </p>
                                                     </div>
                                                 </div>

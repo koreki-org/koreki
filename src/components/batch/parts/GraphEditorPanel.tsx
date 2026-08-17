@@ -73,22 +73,22 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                         </div>
                                     </div>
 
-                                    {(graph as any).validation?.dryRunChecked && (
+                                    {graph.validation?.dryRunChecked && (
                                         <div className={cn(
                                             "rounded-3xl p-5 text-xs leading-normal flex items-start gap-3 border shadow-xs animate-in fade-in slide-in-from-top-2 duration-300 mt-4",
-                                            (graph as any).validation.isValid
+                                            graph.validation.isValid
                                                 ? "bg-success/10 border-success/20 text-success"
                                                 : "bg-destructive/10 border-destructive/20 text-destructive"
                                         )}>
-                                            <span className="text-xl shrink-0 mt-0.5">{(graph as any).validation.isValid ? "🛡️" : "⚠️"}</span>
+                                            <span className="text-xl shrink-0 mt-0.5">{graph.validation.isValid ? "🛡️" : "⚠️"}</span>
                                             <div className="space-y-1">
-                                                <p className={cn("font-extrabold leading-none", (graph as any).validation.isValid ? "text-success" : "text-destructive")}>
-                                                    {(graph as any).validation.isValid ? "Automatische Validierung: Bestanden" : "Automatische Validierung: Fehler"}
+                                                <p className={cn("font-extrabold leading-none", graph.validation.isValid ? "text-success" : "text-destructive")}>
+                                                    {graph.validation.isValid ? "Automatische Validierung: Bestanden" : "Automatische Validierung: Fehler"}
                                                 </p>
                                                 <p className="leading-relaxed font-medium text-muted-foreground mt-1">
-                                                    {(graph as any).validation.isValid 
-                                                        ? `Dieser Graph hat alle Dry-Run-Tests im Backend erfolgreich bestanden. Er ist absolut deterministisch auswertbar. ${(graph as any).validation.retriesUsed ? `(Selbst-Korrektur benötigt: ${(graph as any).validation.retriesUsed} Versuche)` : ""}`
-                                                        : `Warnung: ${(graph as any).validation.error || "Es wurde ein mathematischer Berechnungsfehler oder Zirkelbezug im Graphen festgestellt."}`}
+                                                    {graph.validation.isValid 
+                                                        ? `Dieser Graph hat alle Dry-Run-Tests im Backend erfolgreich bestanden. Er ist absolut deterministisch auswertbar. ${graph.validation.retriesUsed ? `(Selbst-Korrektur benötigt: ${graph.validation.retriesUsed} Versuche)` : ""}`
+                                                        : `Warnung: ${graph.validation.error || "Es wurde ein mathematischer Berechnungsfehler oder Zirkelbezug im Graphen festgestellt."}`}
                                                 </p>
                                             </div>
                                         </div>

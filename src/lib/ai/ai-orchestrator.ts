@@ -9,7 +9,7 @@ import { isLocalInstance, isDesktopTarget } from '@/lib/env-context';
 import { GraphRunner } from '../grading/GraphRunner';
 import { parseGeneratedGraph, validateGraphDeterminism, GRADING_GRAPH_SCHEMA } from '../grading/graph-generator';
 import { formatPluginFeedback } from '../grading/feedback-formatter';
-import { GradingGraph, StepResult, VariableDefinition } from '../grading/types';
+import { GradingGraph, StepResult, VariableDefinition, GradingScalar } from '../grading/types';
 import { TargetGoal, GradingCriterion } from '../grading/calc-trace-types';
 import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source';
 import { SKILL_REGISTRY } from '@/prompts/skills';
@@ -19,348 +19,39 @@ import { evaluateCalcTrace, formatCalcTraceForPrompt } from '../grading/CalcTrac
 import { extractStudentAST } from '../grading/calc-trace-extraction';
 import { shouldDisablePoints } from './prompt-builder';
 import { requireOpenAiConnection } from './provider-connection';
+import { mapLayoutTask } from './correction-mapping';
 
 export { shouldDisablePoints };
 
 /**
- * Maps the AI raw JSON results back to the Koreki Task structure and calculates totals.
+ * Bildet die KI-Antwort auf die Aufgabenstruktur der Musterloesung ab.
+ *
+ * Die Musterloesung gibt vor, welche Aufgaben es gibt — nicht die KI. Fuer jede
+ * Aufgabe entscheidet `mapLayoutTask`, wer die Punkte vergibt (Sandbox, Graph
+ * oder Modell); die vier Faelle stehen in `correction-mapping.ts`.
  */
-function parseCriteriaScoresFromNotes(notes: string): Record<string, number> {
-    const scores: Record<string, number> = {};
-    if (!notes) return scores;
-    
-    // Match patterns like:
-    // - rges_formel: 1/1
-    // - rges_formel: 1 / 1
-    // - [rges_formel]: 1/1
-    const regex = /(?:^|\n)\s*[-*]?\s*\[?([a-zA-Z0-9_-]+)\]?\s*:\s*([0-9.]+)\s*\/\s*([0-9.]+)/g;
-    let match;
-    while ((match = regex.exec(notes)) !== null) {
-        const id = match[1].trim();
-        const points = parseFloat(match[2]);
-        scores[id] = points;
-    }
-    return scores;
-}
-
-export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: Task[] | null, studentText?: string): AIAnalysisResult {
+export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: Task[] | null): AIAnalysisResult {
     const parsed = AIAnalysisResultSchema.safeParse(analysis);
     if (parsed.success) {
         analysis = parsed.data as AIAnalysisResult;
     }
 
     if (tasksLayout && Array.isArray(tasksLayout) && tasksLayout.length > 0) {
-        let totalObtained = 0;
-        let totalMax = 0;
+        const aiTasks = analysis.tasks || [];
+        const ergebnisse = tasksLayout.map((layoutTask: Task) => mapLayoutTask(layoutTask, aiTasks));
+        const mappedTasks = ergebnisse.map(e => e.task);
 
-        tasksLayout.forEach((lt: Task) => totalMax += Number(lt.maxPoints || 0));
+        const totalMax = tasksLayout.reduce((summe, lt) => summe + Number(lt.maxPoints || 0), 0);
+        const totalObtained = mappedTasks.reduce((summe, t) => summe + Number(t.pointsObtained || 0), 0);
 
-        let hasMappingError = false;
-        let hasMarkerIssue = false;
-
-        const mappedTasks = tasksLayout.map((layoutTask: Task) => {
-            // Find the AI task if it exists for extra pedagogical feedback
-            const aiTask = (analysis.tasks || []).find((t: AITask) => t.name === layoutTask.name);
-
-            // --- DETECT DETERMINISTIC CALCTRACE-BASED TASKS & EVALUATE LOCALLY ---
-            if (layoutTask.calcTraceResult) {
-                let enginePoints: number;
-
-                const targetGoal: Partial<TargetGoal> = layoutTask.targetGoal || {};
-                const criteria = targetGoal.criteria;
-
-                if (aiTask && criteria && Array.isArray(criteria) && criteria.length > 0) {
-                    // Primaerquelle ist das strukturierte Feld. Die correctionNotes bleiben nur
-                    // Rueckfallebene: Sie sind Freitext, und aktive Skills schreiben ihnen ein
-                    // eigenes Format vor — als Datenkanal sind sie unzuverlaessig.
-                    const structuredScores: Record<string, number> = {};
-                    (aiTask.criteriaScores || []).forEach(entry => {
-                        if (entry && typeof entry.id === 'string') {
-                            structuredScores[entry.id.trim()] = Number(entry.points);
-                        }
-                    });
-
-                    const notes = aiTask.correctionNotes || '';
-                    const parsedScores = { ...parseCriteriaScoresFromNotes(notes), ...structuredScores };
-
-                    let computedSum = 0;
-                    const finalCriteriaNotes: string[] = [];
-                    // Sandbox-belegte Kriterien sind bindend und bilden die Untergrenze.
-                    let sandboxFloor = 0;
-                    // Kriterien, deren Punktzahl sich nicht aus den Notizen lesen liess.
-                    let unreadableCriteria = 0;
-
-                    criteria.forEach((crit: GradingCriterion) => {
-                        const idx = (crit.targetIndex !== undefined && crit.targetIndex !== null) ? crit.targetIndex : 0;
-                        const pt = layoutTask.calcTraceResult!.perTargetResult?.find((r) => r.targetIndex === idx);
-                        
-                        let pts = 0;
-                        let justification = '';
-
-                        if (isEngineOwned(crit.source)) {
-                            // Exakt dasselbe Urteil, das der Prompt als bereits entschieden
-                            // angekuendigt hat — beide Seiten lesen dieselbe Funktion.
-                            const verdict = resolveEngineVerdict(crit.source, idx, layoutTask.calcTraceResult!);
-                            pts = verdict.erfuellt ? crit.punktwert : 0;
-                            justification = verdict.begruendung;
-                            sandboxFloor += pts;
-                        } else {
-                            // Ermessensfrage: Hier zaehlt die Punktzahl des Modells.
-                            const parsed = parsedScores[crit.id];
-                            if (parsed === undefined) {
-                                // Notizen nicht im erwarteten Format (z. B. weil aktive Skills eine
-                                // andere Schreibweise verlangen). Frueher hiess das stillschweigend
-                                // 0 Punkte — die Einschaetzung des Modells ging dabei verloren.
-                                unreadableCriteria++;
-                                pts = 0;
-                                justification = 'KI-Einschätzung nicht auswertbar';
-                            } else {
-                                pts = Math.min(crit.punktwert, Math.max(0, parsed));
-                                justification = 'KI-Einschätzung';
-                            }
-                        }
-
-                        computedSum += pts;
-                        finalCriteriaNotes.push(`- ${crit.id}: ${pts} / ${crit.punktwert} (${justification})`);
-                    });
-
-                    enginePoints = computedSum;
-
-                    // Rueckfall, wenn mindestens ein LLM-Kriterium unlesbar war: die Gesamtpunktzahl
-                    // des Modells heranziehen, statt dessen Urteil auf 0 zu setzen. Sandbox-belegte
-                    // Kriterien bleiben dabei Untergrenze, das Aufgabenmaximum Obergrenze.
-                    if (unreadableCriteria > 0 && typeof aiTask.pointsObtained === 'number') {
-                        const maxPoints = Number(layoutTask.maxPoints ?? 0);
-                        const modelTotal = Math.min(maxPoints, Math.max(0, Number(aiTask.pointsObtained)));
-                        enginePoints = Math.max(computedSum, Math.max(sandboxFloor, modelTotal));
-
-                        if (enginePoints !== computedSum) {
-                            finalCriteriaNotes.push(`- Hinweis: ${unreadableCriteria} Kriterium/Kriterien ohne lesbare Einzelwertung — Gesamtpunktzahl der KI (${modelTotal}) herangezogen.`);
-                        }
-                    }
-                    
-                    // Re-write correctionNotes cleanly to prevent rounding errors or incorrect sums
-                    const cleanNotes = `[Kriterien-Bewertung]\n${finalCriteriaNotes.join('\n')}\n\nGesamtsumme: ${enginePoints} Punkte`;
-                    aiTask.correctionNotes = cleanNotes;
-                } else {
-                    enginePoints = aiTask && aiTask.pointsObtained !== undefined && aiTask.pointsObtained !== null
-                        ? Number(aiTask.pointsObtained)
-                        : 0;
-                }
-
-                totalObtained += enginePoints;
-
-                const isAlreadyFormatted = aiTask && aiTask.feedback && (
-                    aiTask.feedback.includes('[📐 CalcTrace Engine - Mathematischer Abgleich]') ||
-                    aiTask.feedback.includes('DETERMINISTISCHER BEWEIS (SANDBOX)')
-                );
-
-                if (isAlreadyFormatted) {
-                    return {
-                        name: layoutTask.name,
-                        maxPoints: layoutTask.maxPoints,
-                        pointsObtained: enginePoints,
-                        feedback: aiTask.feedback,
-                        confidence: 95,
-                        content: aiTask.content || ''
-                    };
-                }
-
-                const stepFeedback = formatCalcTraceForPrompt(layoutTask.calcTraceResult, (layoutTask.targetGoal || {}) as TargetGoal);
-                const aiFeedbackText = aiTask ? (aiTask.feedback || aiTask.content || '') : '';
-                
-                let finalFeedback = `[📐 CalcTrace Engine - Mathematischer Abgleich]\n${stepFeedback}\n\n---\n\n`;
-                finalFeedback += `[KI-Pädagogische Einschätzung]\n${aiFeedbackText || 'Die mathematische Prüfung wurde vollautomatisch durch die CalcTrace-Engine validiert.'}`;
-
-                return {
-                    name: layoutTask.name,
-                    maxPoints: layoutTask.maxPoints,
-                    pointsObtained: enginePoints,
-                    feedback: finalFeedback,
-                    correctionNotes: aiTask ? (aiTask.correctionNotes || '') : '',
-                    confidence: 95,
-                    content: aiTask ? (aiTask.content || '') : ''
-                };
-            }
-
-            // --- DETECT DETERMINISTIC GRAPH-BASED TASKS & EVALUATE LOCALLY (PANG Architecture) ---
-            if (layoutTask.gradingResult) {
-                const disablePointsActive = shouldDisablePoints(layoutTask.taskType, layoutTask.gradingGraph);
-
-                const isServerResponse = aiTask && (
-                    aiTask.feedback?.includes('[⚙️ PANG Engine - Mathematischer Graph-Abgleich]') || 
-                    aiTask.feedback?.includes('[⚙️ AGS Engine - Mathematischer VLSM Abgleich]')
-                );
-
-                let enginePoints: number;
-                if (disablePointsActive) {
-                    // LLM decides (Hybrid): Prefer LLM points if available, fallback to PANG.
-                    enginePoints = aiTask && typeof aiTask.pointsObtained === 'number'
-                        ? Number(aiTask.pointsObtained)
-                        : Number(layoutTask.gradingResult.totalPoints ?? 0);
-                } else {
-                    // Rigid grading: PANG points are absolute.
-                    enginePoints = isServerResponse 
-                        ? Number(aiTask.pointsObtained ?? layoutTask.gradingResult.totalPoints ?? 0)
-                        : Number(layoutTask.gradingResult.totalPoints ?? layoutTask.pointsObtained ?? 0);
-                }
-
-                totalObtained += enginePoints;
-
-                // Format a beautiful step-by-step breakdown as feedback
-                let stepFeedback = "";
-                let shownStepsCount = 0;
-
-                const pluginFeedback = formatPluginFeedback(layoutTask.taskType || "", layoutTask.gradingResult, layoutTask.gradingGraph);
-                if (pluginFeedback) {
-                    stepFeedback = pluginFeedback;
-                    shownStepsCount = layoutTask.gradingResult.stepResults.length;
-                } else {
-                    const totalMaxPoints = layoutTask.gradingResult.stepResults.reduce((sum: number, s: StepResult) => sum + (s.maxPoints || 0), 0);
-
-                    layoutTask.gradingResult.stepResults.forEach((step: StepResult, idx: number) => {
-                        const originalVar = layoutTask.gradingGraph?.variables?.find((v: VariableDefinition) => v.id === step.variableId);
-                        
-                        // Only skip explicit setup variables to keep the UI clean, but ALWAYS show inputs and formulas
-                        // even if they yield 0 points, so the user can verify the extraction process.
-                        if (originalVar && originalVar.type === 'setup') return;
-                        
-                        shownStepsCount++;
-
-                        const statusStr = step.status === 'correct' ? 'KORREKT' : 
-                                        step.status === 'consecutive_correct' ? 'FOLGEFEHLER OK (Kulanz-Punkte erhalten)' : 
-                                        'FEHLERHAFT (Primärfehler)';
-                        
-                        if (shownStepsCount === 1) {
-                            stepFeedback += `[⚙️ PANG Engine - Mathematischer Graph-Abgleich]\n`;
-                        }
-                        
-                        stepFeedback += `• ${step.variableId}: Schülerwert: "${step.studentValue !== undefined && step.studentValue !== null ? step.studentValue : 'nicht angegeben'}" (Erwartet: "${step.expectedValue}") ➔ ${statusStr}\n`;
-                        if (step.note) {
-                            stepFeedback += `  Info: ${step.note}\n`;
-                        }
-                    });
-                }
-                
-                // Idempotency check: If the feedback has already been formatted (e.g. on the server), return it as-is
-                const isAlreadyFormatted = aiTask && aiTask.feedback && (
-                    aiTask.feedback.includes('[⚙️ PANG Engine - Mathematischer Graph-Abgleich]') || 
-                    aiTask.feedback.includes('[⚙️ AGS Engine - Mathematischer VLSM Abgleich]')
-                );
-                
-                if (isAlreadyFormatted) {
-                    return {
-                        name: layoutTask.name,
-                        maxPoints: layoutTask.maxPoints,
-                        pointsObtained: enginePoints,
-                        feedback: aiTask.feedback,
-                        confidence: 95,
-                        content: aiTask.content || ''
-                    };
-                }
-
-                const aiFeedbackText = aiTask ? (aiTask.feedback || aiTask.content || '') : '';
-                
-                let finalFeedback = "";
-                if (shownStepsCount > 0) {
-                    finalFeedback += `${stepFeedback}\n---\n\n`;
-                }
-                finalFeedback += `[KI-Pädagogische Einschätzung]\n${aiFeedbackText || 'Die mathematische Prüfung wurde vollautomatisch durch die AGS-Graph-Engine fehlerfrei validiert.'}`;
-
-                return {
-                    name: layoutTask.name,
-                    maxPoints: layoutTask.maxPoints,
-                    pointsObtained: enginePoints,
-                    feedback: finalFeedback,
-                    confidence: 95,
-                    content: aiTask ? (aiTask.content || '') : ''
-                };
-            }
-
-            const hasAttachedCalcTrace = !!layoutTask.calcTrace;
-            const hasTargetGoal = !!layoutTask.targetGoal;
-            const isCalcTraceTask = hasAttachedCalcTrace || hasTargetGoal || layoutTask.taskType === 'calc-trace';
-            // Idempotency guard: if the server already ran CalcTrace and the feedback contains its
-            // deterministic proof markers, the sandbox was NOT bypassed — even if calcTraceResult
-            // is absent on the client-side tasksLayout (it's a server-only intermediate state).
-            const calcTraceAlreadyFormatted = !!(aiTask?.feedback?.includes('[📐 CalcTrace Engine') ||
-                aiTask?.feedback?.includes('DETERMINISTISCHER BEWEIS (SANDBOX)'));
-            // Zusaetzliche Pruefungen auf `calcTraceResult` standen hier frueher,
-            // waren aber toter Code: der Zweig `if (layoutTask.calcTraceResult)`
-            // oben kehrt auf jedem Pfad zurueck, der Wert ist hier beweisbar
-            // undefined (von strictNullChecks als `never` aufgedeckt).
-            const isSandboxBypassed = isCalcTraceTask && !calcTraceAlreadyFormatted;
-
-            if (aiTask) {
-                const obtained = Number(aiTask.pointsObtained || 0);
-                totalObtained += obtained;
-
-                
-                let confidence = Number(aiTask.confidence || 0);
-                
-                // --- MARKER PENALTY ---
-                // If the cleaned text contains (?) markers, confidence MUST be < 90
-                if (aiTask.content?.includes('(?)')) {
-                    hasMarkerIssue = true;
-                    if (confidence >= 90) confidence = 89;
-                }
-
-                let feedback = aiTask.feedback || '';
-                if (isSandboxBypassed) {
-                    feedback = `⚠️ HINWEIS: Diese Bewertung erfolgte ohne mathematische Sandbox-Prüfung — bitte manuell gegenprüfen!\n\n${feedback}`;
-                }
-
-                return {
-                    name: layoutTask.name,
-                    maxPoints: layoutTask.maxPoints,
-                    pointsObtained: obtained,
-                    feedback: feedback,
-                    confidence: confidence,
-                    content: aiTask.content || '',
-                    sandboxBypassed: isSandboxBypassed ? true : undefined
-                };
-            } else {
-                const layoutName = (layoutTask.name ?? '').toLowerCase().trim();
-                const nearMiss = layoutName ? (analysis.tasks || []).find((t: AITask) => t.name?.toLowerCase().trim() === layoutName) : undefined;
-
-                if (nearMiss) {
-                    // SOFT ERROR: Case mismatch or whitespace issues -> Keep Confidence, but show warning
-                    const obtained = Number(nearMiss.pointsObtained || 0);
-                    totalObtained += obtained;
-
-                    return {
-                        name: layoutTask.name,
-                        maxPoints: layoutTask.maxPoints,
-                        pointsObtained: obtained,
-                        feedback: `[KI-FEHLER?] Name nicht exakt ("${nearMiss.name}" statt "${layoutTask.name}")\n\n${nearMiss.feedback || ''}`,
-                        confidence: Number(nearMiss.confidence || 0),
-                        content: nearMiss.content || ''
-                    };
-                } else {
-                    // HARD ERROR: Task completely missing in AI response
-                    hasMappingError = true;
-                    return {
-                        name: layoutTask.name,
-                        maxPoints: layoutTask.maxPoints,
-                        pointsObtained: 0,
-                        feedback: 'Vom System nicht erkannt oder von der KI übersprungen.',
-                        confidence: 0,
-                        content: ''
-                    };
-                }
-            }
-        });
-
-        analysis.tasks = mappedTasks as AITask[];
+        analysis.tasks = mappedTasks;
         analysis.overallMatchPercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
-        
+
         // --- INDUSTRIAL CONFIDENCE BRAKE ---
         // If the structure is broken (naming mismatch) or too many OCR problems, the entire document requires review.
-        if (hasMappingError || hasMarkerIssue) {
-            analysis.confidence = 0;
-        } else {
-            analysis.confidence = Number(analysis.confidence || 0);
-        }
+        const hasMappingError = ergebnisse.some(e => e.mappingError);
+        const hasMarkerIssue = ergebnisse.some(e => e.markerIssue);
+        analysis.confidence = (hasMappingError || hasMarkerIssue) ? 0 : Number(analysis.confidence || 0);
     } else if (analysis.tasks && Array.isArray(analysis.tasks)) {
         let totalObtained = 0;
         let totalMax = 0;
@@ -375,29 +66,46 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
 }
 
 /**
- * Parses mapping results (Clean & Map phase) to surface early mapping errors.
+ * Eine Aufgabe in der Zuordnungs-Phase (Clean & Map): nur Text, noch keine
+ * Bewertung. Die entsteht erst in der Korrektur-Phase, deshalb nicht `AITask`.
  */
-export function parseMappingResult(result: any, tasksLayout?: Task[] | null): any {
+export interface MappedTask {
+    name?: string;
+    content?: string;
+}
+
+export interface MappingResult {
+    tasks?: MappedTask[];
+    [key: string]: unknown;
+}
+
+/**
+ * Ordnet die Zuordnungs-Antwort der Aufgabenstruktur zu. Die Musterloesung gibt
+ * die Aufgaben vor; was die KI unter einem anderen Namen geliefert hat, taucht
+ * als Hinweis auf, statt still zu verschwinden.
+ */
+export function parseMappingResult<T extends MappingResult>(result: T, tasksLayout?: Task[] | null): T {
     if (!tasksLayout || !Array.isArray(tasksLayout)) return result;
 
-    const mappedTasks = tasksLayout.map((layoutTask: Task) => {
-        const aiTask = (result.tasks || []).find((t: any) => t.name === layoutTask.name);
-        if (aiTask) {
-            return aiTask;
-        } else {
-            const layoutName = (layoutTask.name ?? '').toLowerCase().trim();
-            const nearMiss = layoutName ? (result.tasks || []).find((t: any) => t.name?.toLowerCase().trim() === layoutName) : undefined;
+    const aiTasks = result.tasks || [];
 
-            return {
-                name: layoutTask.name,
-                content: nearMiss 
-                    ? `[KI-FEHLER?] Name nicht exakt ("${nearMiss.name}" statt "${layoutTask.name}")]\n\n${nearMiss.content}`
-                    : '[unbeantwortet]'
-            };
-        }
+    result.tasks = tasksLayout.map((layoutTask: Task) => {
+        const aiTask = aiTasks.find(t => t.name === layoutTask.name);
+        if (aiTask) return aiTask;
+
+        const layoutName = (layoutTask.name ?? '').toLowerCase().trim();
+        const nearMiss = layoutName
+            ? aiTasks.find(t => t.name?.toLowerCase().trim() === layoutName)
+            : undefined;
+
+        return {
+            name: layoutTask.name,
+            content: nearMiss
+                ? `[KI-FEHLER?] Name nicht exakt ("${nearMiss.name}" statt "${layoutTask.name}")]\n\n${nearMiss.content}`
+                : '[unbeantwortet]'
+        };
     });
 
-    result.tasks = mappedTasks;
     return result;
 }
 
@@ -412,7 +120,7 @@ export async function extractStudentAnswersWithLLM(
     settings: AppSettings,
     taskType?: string,
     taskName?: string
-): Promise<Record<string, any>> {
+): Promise<Record<string, GradingScalar>> {
     // 1. Establish baseline (Deactivated legacy "Schicht A" regex-based heuristics per user & architectural requirement)
     if (!settings) {
         return {};
@@ -455,7 +163,7 @@ export async function extractStudentAnswersWithLLM(
     }
 
     try {
-        let extracted: Record<string, any> = {};
+        let extracted: Record<string, unknown> = {};
         // Strip defaultValues to eliminate any force-fitting bias towards the expected master key
         const strippedVariables = graph.variables.map(v => {
             const copy = { ...v };
@@ -537,23 +245,28 @@ export async function extractStudentAnswersWithLLM(
 
 
         // 3. Robust Filtering & Type-safe Normalization
-        const merged: Record<string, any> = {};
+        const merged: Record<string, GradingScalar> = {};
 
         if (extracted && typeof extracted === 'object') {
             for (const variable of graph.variables) {
                 const rawVal = extracted[variable.id];
-                if (rawVal !== undefined && rawVal !== null) {
-                    let cleanedVal = rawVal;
-                    if (typeof rawVal === 'string') {
-                        const trimmed = rawVal.trim();
-                        const isNumber = /^-?\d+(\.\d+)?$/.test(trimmed);
-                        if (isNumber) {
-                            cleanedVal = parseFloat(trimmed);
-                        } else {
-                            cleanedVal = trimmed;
-                        }
-                    }
-                    merged[variable.id] = cleanedVal;
+                if (rawVal === undefined || rawVal === null) continue;
+
+                if (typeof rawVal === 'string') {
+                    const trimmed = rawVal.trim();
+                    const isNumber = /^-?\d+(\.\d+)?$/.test(trimmed);
+                    merged[variable.id] = isNumber ? parseFloat(trimmed) : trimmed;
+                } else if (typeof rawVal === 'number' || typeof rawVal === 'boolean') {
+                    merged[variable.id] = rawVal;
+                } else {
+                    // Objekt oder Liste. Die Engine vergleicht Skalare — ein Objekt
+                    // haette dort still jeden Vergleich verloren und die Aufgabe als
+                    // falsch bewertet. Vorher landete es trotzdem in der Auswertung,
+                    // weil der Typ `any` war und niemand hinsah.
+                    logger.warn('Variablen-Extraktion: unerwarteter Werttyp verworfen', {
+                        variableId: variable.id,
+                        typ: Array.isArray(rawVal) ? 'array' : typeof rawVal
+                    });
                 }
             }
         }
@@ -835,7 +548,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                     retryCount++;
                 }
 
-                (graph as any).validation = {
+                graph.validation = {
                     isValid: graphValidation.isValid,
                     error: graphValidation.error,
                     retriesUsed: retryCount,
@@ -875,7 +588,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                 }
 
                 const graphValidation = validateGraphDeterminism(graph);
-                (graph as any).validation = {
+                graph.validation = {
                     isValid: graphValidation.isValid,
                     error: graphValidation.error,
                     dryRunChecked: true

@@ -78,12 +78,13 @@ const SIZE_BASELINE: Record<string, number> = {
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
     'components/settings/SkillsModules.tsx': 791,
-    // Bewusst von 1003 angehoben: der strictNullChecks-Durchgang hat hier eine
-    // echte Luecke geschlossen (Mistral-Rueckfall ohne Schluessel schickte
-    // `Bearer undefined`). Der Waechter plus Begruendung kostet 7 Zeilen. Die
-    // Datei bleibt der groesste Brocken im Repo und gehoert zerlegt — dann faellt
-    // dieser Eintrag ohnehin weg.
-    'lib/ai/ai-orchestrator.ts': 1010,
+    // Von 1010 auf 723: parseCorrectionResult war eine 330-Zeilen-Closure mit
+    // vier Zweigen; sie liegt jetzt als vier benannte Funktionen in
+    // correction-mapping.ts. Enthalten sind zwei Zugaben, die Zeilen kosten und
+    // sie wert sind: ein Zweig, der einen unerwarteten Werttyp aus der
+    // Variablen-Extraktion meldet statt ihn still in die Bewertung zu lassen,
+    // und die Typen MappedTask/MappingResult (16 `any` -> 7).
+    'lib/ai/ai-orchestrator.ts': 723,
     'lib/ai/ollama-logic.ts': 657,
     // +14 fuer die Trennung von Datei- und Ereignis-Weg beim Import, +6 fuer
     // die Ueberladungen von handleUpdateCaseField — sie verhindern, dass eine

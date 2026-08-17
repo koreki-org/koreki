@@ -1,0 +1,399 @@
+import { Task, AITask } from '../../types';
+import { StepResult, VariableDefinition } from '../grading/types';
+import { TargetGoal, GradingCriterion } from '../grading/calc-trace-types';
+import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source';
+import { formatPluginFeedback } from '../grading/feedback-formatter';
+import { formatCalcTraceForPrompt } from '../grading/CalcTrace';
+import { shouldDisablePoints } from './prompt-builder';
+
+/**
+ * Eine Aufgabe der Musterloesung auf das KI-Ergebnis abbilden.
+ * 🎯
+ *
+ * Vier Faelle, die sich gegenseitig ausschliessen — und die sich darin
+ * unterscheiden, WER die Punkte vergibt:
+ *
+ * 1. `mapCalcTraceTask`  — die Sandbox hat gerechnet, das Modell begruendet.
+ * 2. `mapGraphTask`      — die PANG-Engine hat gerechnet, das Modell begruendet.
+ * 3. `mapModelTask`      — nur das Modell hat bewertet.
+ * 4. `mapMissingTask`    — das Modell hat die Aufgabe gar nicht geliefert.
+ *
+ * Sie standen als eine 330-Zeilen-Closure in `parseCorrectionResult`, mit drei
+ * ueber alle Zweige hinweg beschriebenen Zaehlern. Wer dort etwas aendern
+ * wollte, musste zuerst herausfinden, in welchem der vier Faelle er sich
+ * befindet. Jetzt steht das im Funktionsnamen.
+ */
+
+/**
+ * Was ein Zweig zurueckmeldet.
+ *
+ * Die beiden Flaggen ersetzen die frueheren Closure-Variablen. Sie werden
+ * bewusst hier gemeldet statt beim Aufrufer aus dem Ergebnis abgeleitet: die
+ * Marker-Pruefung gilt nur fuer den reinen Modell-Zweig, und aus der fertigen
+ * Aufgabe waere nicht mehr erkennbar, aus welchem Zweig sie stammt.
+ */
+export interface TaskMappingResult {
+    task: AITask;
+    /** Text enthaelt (?)-Marker aus der Texterkennung — Confidence muss unter 90 bleiben. */
+    markerIssue?: boolean;
+    /** Aufgabe fehlte in der KI-Antwort vollstaendig. */
+    mappingError?: boolean;
+}
+
+/**
+ * Liest Kriterien-Punkte aus dem Freitext der Korrekturnotizen.
+ *
+ * Rueckfallebene: Der strukturierte Kanal `criteriaScores` hat Vorrang, weil
+ * aktive Skills den Notizen ein eigenes Format vorschreiben duerfen.
+ */
+export function parseCriteriaScoresFromNotes(notes: string): Record<string, number> {
+    const scores: Record<string, number> = {};
+    if (!notes) return scores;
+
+    // Erkennt: "- rges_formel: 1/1", "rges_formel: 1 / 1", "[rges_formel]: 1/1"
+    const regex = /(?:^|\n)\s*[-*]?\s*\[?([a-zA-Z0-9_-]+)\]?\s*:\s*([0-9.]+)\s*\/\s*([0-9.]+)/g;
+    let match;
+    while ((match = regex.exec(notes)) !== null) {
+        const id = match[1].trim();
+        scores[id] = parseFloat(match[2]);
+    }
+    return scores;
+}
+
+/**
+ * Name und Punktzahl der Musterloesung in die Form bringen, die `AITask` zusichert.
+ *
+ * `Task` kommt aus der Eingabemaske: `maxPoints` ist dort `number | string`,
+ * weil der Lehrer sie tippt, und `name` ist optional. `AITask` sagt beides
+ * verbindlich zu. Bisher stand am Ende der Abbildung ein `as AITask[]` — die
+ * Zusicherung war damit nur behauptet, nicht hergestellt: eine getippte "10"
+ * blieb als Zeichenkette in einem Feld, das eine Zahl verspricht.
+ *
+ * `undefined` bleibt `undefined`, weil `AITask.maxPoints` optional ist — daraus
+ * eine 0 zu machen hiesse, eine nicht vergebene Punktzahl als "null Punkte"
+ * darzustellen.
+ */
+function kopfAusLayout(layoutTask: Task): Pick<AITask, 'name' | 'maxPoints'> {
+    const max = layoutTask.maxPoints;
+    return {
+        name: layoutTask.name ?? '',
+        maxPoints: max === undefined || max === null ? undefined : Number(max)
+    };
+}
+
+const CALC_TRACE_MARKER = '[📐 CalcTrace Engine - Mathematischer Abgleich]';
+const SANDBOX_PROOF_MARKER = 'DETERMINISTISCHER BEWEIS (SANDBOX)';
+const PANG_MARKER = '[⚙️ PANG Engine - Mathematischer Graph-Abgleich]';
+const AGS_MARKER = '[⚙️ AGS Engine - Mathematischer VLSM Abgleich]';
+
+/** Hat der Server das Feedback bereits formatiert? Dann bleibt es, wie es ist. */
+const istBereitsFormatiert = (aiTask: AITask | undefined, marker: string[]): boolean =>
+    !!aiTask?.feedback && marker.some(m => aiTask.feedback!.includes(m));
+
+/**
+ * Aufgabe mit deterministischer Rechenkette (CalcTrace).
+ *
+ * Die Sandbox liefert die Punkte fuer alles Rechnerische; das Modell steuert
+ * nur dort etwas bei, wo Ermessen gefragt ist. Sandbox-belegte Kriterien sind
+ * bindend und bilden die Untergrenze.
+ */
+export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): TaskMappingResult {
+    const calcTraceResult = layoutTask.calcTraceResult!;
+    let enginePoints: number;
+
+    const targetGoal: Partial<TargetGoal> = layoutTask.targetGoal || {};
+    const criteria = targetGoal.criteria;
+
+    if (aiTask && criteria && Array.isArray(criteria) && criteria.length > 0) {
+        // Primaerquelle ist das strukturierte Feld. Die correctionNotes bleiben nur
+        // Rueckfallebene: Sie sind Freitext, und aktive Skills schreiben ihnen ein
+        // eigenes Format vor — als Datenkanal sind sie unzuverlaessig.
+        const structuredScores: Record<string, number> = {};
+        (aiTask.criteriaScores || []).forEach(entry => {
+            if (entry && typeof entry.id === 'string') {
+                structuredScores[entry.id.trim()] = Number(entry.points);
+            }
+        });
+
+        const notes = aiTask.correctionNotes || '';
+        const parsedScores = { ...parseCriteriaScoresFromNotes(notes), ...structuredScores };
+
+        let computedSum = 0;
+        const finalCriteriaNotes: string[] = [];
+        // Sandbox-belegte Kriterien sind bindend und bilden die Untergrenze.
+        let sandboxFloor = 0;
+        // Kriterien, deren Punktzahl sich nicht aus den Notizen lesen liess.
+        let unreadableCriteria = 0;
+
+        criteria.forEach((crit: GradingCriterion) => {
+            const idx = (crit.targetIndex !== undefined && crit.targetIndex !== null) ? crit.targetIndex : 0;
+
+            let pts = 0;
+            let justification = '';
+
+            if (isEngineOwned(crit.source)) {
+                // Exakt dasselbe Urteil, das der Prompt als bereits entschieden
+                // angekuendigt hat — beide Seiten lesen dieselbe Funktion.
+                const verdict = resolveEngineVerdict(crit.source, idx, calcTraceResult);
+                pts = verdict.erfuellt ? crit.punktwert : 0;
+                justification = verdict.begruendung;
+                sandboxFloor += pts;
+            } else {
+                // Ermessensfrage: Hier zaehlt die Punktzahl des Modells.
+                const parsed = parsedScores[crit.id];
+                if (parsed === undefined) {
+                    // Notizen nicht im erwarteten Format (z. B. weil aktive Skills eine
+                    // andere Schreibweise verlangen). Frueher hiess das stillschweigend
+                    // 0 Punkte — die Einschaetzung des Modells ging dabei verloren.
+                    unreadableCriteria++;
+                    pts = 0;
+                    justification = 'KI-Einschätzung nicht auswertbar';
+                } else {
+                    pts = Math.min(crit.punktwert, Math.max(0, parsed));
+                    justification = 'KI-Einschätzung';
+                }
+            }
+
+            computedSum += pts;
+            finalCriteriaNotes.push(`- ${crit.id}: ${pts} / ${crit.punktwert} (${justification})`);
+        });
+
+        enginePoints = computedSum;
+
+        // Rueckfall, wenn mindestens ein LLM-Kriterium unlesbar war: die Gesamtpunktzahl
+        // des Modells heranziehen, statt dessen Urteil auf 0 zu setzen. Sandbox-belegte
+        // Kriterien bleiben dabei Untergrenze, das Aufgabenmaximum Obergrenze.
+        if (unreadableCriteria > 0 && typeof aiTask.pointsObtained === 'number') {
+            const maxPoints = Number(layoutTask.maxPoints ?? 0);
+            const modelTotal = Math.min(maxPoints, Math.max(0, Number(aiTask.pointsObtained)));
+            enginePoints = Math.max(computedSum, Math.max(sandboxFloor, modelTotal));
+
+            if (enginePoints !== computedSum) {
+                finalCriteriaNotes.push(`- Hinweis: ${unreadableCriteria} Kriterium/Kriterien ohne lesbare Einzelwertung — Gesamtpunktzahl der KI (${modelTotal}) herangezogen.`);
+            }
+        }
+
+        // Re-write correctionNotes cleanly to prevent rounding errors or incorrect sums
+        aiTask.correctionNotes = `[Kriterien-Bewertung]\n${finalCriteriaNotes.join('\n')}\n\nGesamtsumme: ${enginePoints} Punkte`;
+    } else {
+        enginePoints = aiTask && aiTask.pointsObtained !== undefined && aiTask.pointsObtained !== null
+            ? Number(aiTask.pointsObtained)
+            : 0;
+    }
+
+    if (istBereitsFormatiert(aiTask, [CALC_TRACE_MARKER, SANDBOX_PROOF_MARKER])) {
+        return {
+            task: {
+                ...kopfAusLayout(layoutTask),
+                pointsObtained: enginePoints,
+                feedback: aiTask!.feedback,
+                confidence: 95,
+                content: aiTask!.content || ''
+            }
+        };
+    }
+
+    const stepFeedback = formatCalcTraceForPrompt(calcTraceResult, (layoutTask.targetGoal || {}) as TargetGoal);
+    const aiFeedbackText = aiTask ? (aiTask.feedback || aiTask.content || '') : '';
+
+    let finalFeedback = `${CALC_TRACE_MARKER}\n${stepFeedback}\n\n---\n\n`;
+    finalFeedback += `[KI-Pädagogische Einschätzung]\n${aiFeedbackText || 'Die mathematische Prüfung wurde vollautomatisch durch die CalcTrace-Engine validiert.'}`;
+
+    return {
+        task: {
+            ...kopfAusLayout(layoutTask),
+            pointsObtained: enginePoints,
+            feedback: finalFeedback,
+            correctionNotes: aiTask ? (aiTask.correctionNotes || '') : '',
+            confidence: 95,
+            content: aiTask ? (aiTask.content || '') : ''
+        }
+    };
+}
+
+/**
+ * Aufgabe mit deterministischem Bewertungsgraphen (PANG).
+ *
+ * Ist die Punktvergabe im Graphen abgeschaltet, entscheidet das Modell und der
+ * Graph dient nur als Rueckfall — sonst sind die Graph-Punkte absolut.
+ */
+export function mapGraphTask(layoutTask: Task, aiTask: AITask | undefined): TaskMappingResult {
+    const gradingResult = layoutTask.gradingResult!;
+    const disablePointsActive = shouldDisablePoints(layoutTask.taskType, layoutTask.gradingGraph);
+    const isServerResponse = istBereitsFormatiert(aiTask, [PANG_MARKER, AGS_MARKER]);
+
+    let enginePoints: number;
+    if (disablePointsActive) {
+        // LLM decides (Hybrid): Prefer LLM points if available, fallback to PANG.
+        enginePoints = aiTask && typeof aiTask.pointsObtained === 'number'
+            ? Number(aiTask.pointsObtained)
+            : Number(gradingResult.totalPoints ?? 0);
+    } else {
+        // Rigid grading: PANG points are absolute.
+        enginePoints = isServerResponse
+            ? Number(aiTask!.pointsObtained ?? gradingResult.totalPoints ?? 0)
+            : Number(gradingResult.totalPoints ?? layoutTask.pointsObtained ?? 0);
+    }
+
+    // Format a beautiful step-by-step breakdown as feedback
+    let stepFeedback = '';
+    let shownStepsCount = 0;
+
+    const pluginFeedback = formatPluginFeedback(layoutTask.taskType || '', gradingResult, layoutTask.gradingGraph);
+    if (pluginFeedback) {
+        stepFeedback = pluginFeedback;
+        shownStepsCount = gradingResult.stepResults.length;
+    } else {
+        gradingResult.stepResults.forEach((step: StepResult) => {
+            const originalVar = layoutTask.gradingGraph?.variables?.find((v: VariableDefinition) => v.id === step.variableId);
+
+            // Only skip explicit setup variables to keep the UI clean, but ALWAYS show inputs and formulas
+            // even if they yield 0 points, so the user can verify the extraction process.
+            if (originalVar && originalVar.type === 'setup') return;
+
+            shownStepsCount++;
+
+            const statusStr = step.status === 'correct' ? 'KORREKT' :
+                step.status === 'consecutive_correct' ? 'FOLGEFEHLER OK (Kulanz-Punkte erhalten)' :
+                    'FEHLERHAFT (Primärfehler)';
+
+            if (shownStepsCount === 1) {
+                stepFeedback += `${PANG_MARKER}\n`;
+            }
+
+            stepFeedback += `• ${step.variableId}: Schülerwert: "${step.studentValue !== undefined && step.studentValue !== null ? step.studentValue : 'nicht angegeben'}" (Erwartet: "${step.expectedValue}") ➔ ${statusStr}\n`;
+            if (step.note) {
+                stepFeedback += `  Info: ${step.note}\n`;
+            }
+        });
+    }
+
+    // Idempotency check: If the feedback has already been formatted (e.g. on the server), return it as-is
+    if (isServerResponse) {
+        return {
+            task: {
+                ...kopfAusLayout(layoutTask),
+                pointsObtained: enginePoints,
+                feedback: aiTask!.feedback,
+                confidence: 95,
+                content: aiTask!.content || ''
+            }
+        };
+    }
+
+    const aiFeedbackText = aiTask ? (aiTask.feedback || aiTask.content || '') : '';
+
+    let finalFeedback = '';
+    if (shownStepsCount > 0) {
+        finalFeedback += `${stepFeedback}\n---\n\n`;
+    }
+    finalFeedback += `[KI-Pädagogische Einschätzung]\n${aiFeedbackText || 'Die mathematische Prüfung wurde vollautomatisch durch die AGS-Graph-Engine fehlerfrei validiert.'}`;
+
+    return {
+        task: {
+            ...kopfAusLayout(layoutTask),
+            pointsObtained: enginePoints,
+            feedback: finalFeedback,
+            confidence: 95,
+            content: aiTask ? (aiTask.content || '') : ''
+        }
+    };
+}
+
+/**
+ * Aufgabe, die allein das Modell bewertet hat.
+ *
+ * Hier haengt der Warnhinweis dran, wenn eine Rechenaufgabe ohne die
+ * mathematische Sandbox durchgelaufen ist — der Lehrer muss wissen, dass diese
+ * Punkte ungeprueft sind.
+ */
+export function mapModelTask(layoutTask: Task, aiTask: AITask): TaskMappingResult {
+    const hasAttachedCalcTrace = !!layoutTask.calcTrace;
+    const hasTargetGoal = !!layoutTask.targetGoal;
+    const isCalcTraceTask = hasAttachedCalcTrace || hasTargetGoal || layoutTask.taskType === 'calc-trace';
+    // Idempotency guard: if the server already ran CalcTrace and the feedback contains its
+    // deterministic proof markers, the sandbox was NOT bypassed — even if calcTraceResult
+    // is absent on the client-side tasksLayout (it's a server-only intermediate state).
+    const calcTraceAlreadyFormatted = !!(aiTask.feedback?.includes('[📐 CalcTrace Engine') ||
+        aiTask.feedback?.includes(SANDBOX_PROOF_MARKER));
+    const isSandboxBypassed = isCalcTraceTask && !calcTraceAlreadyFormatted;
+
+    let confidence = Number(aiTask.confidence || 0);
+
+    // --- MARKER PENALTY ---
+    // If the cleaned text contains (?) markers, confidence MUST be < 90
+    const markerIssue = !!aiTask.content?.includes('(?)');
+    if (markerIssue && confidence >= 90) confidence = 89;
+
+    let feedback = aiTask.feedback || '';
+    if (isSandboxBypassed) {
+        feedback = `⚠️ HINWEIS: Diese Bewertung erfolgte ohne mathematische Sandbox-Prüfung — bitte manuell gegenprüfen!\n\n${feedback}`;
+    }
+
+    return {
+        task: {
+            ...kopfAusLayout(layoutTask),
+            pointsObtained: Number(aiTask.pointsObtained || 0),
+            feedback,
+            confidence,
+            content: aiTask.content || '',
+            sandboxBypassed: isSandboxBypassed ? true : undefined
+        },
+        markerIssue
+    };
+}
+
+/**
+ * Aufgabe, die das Modell nicht unter diesem Namen geliefert hat.
+ *
+ * Unterschieden wird bewusst zwischen einem blossen Schreibfehler im Namen
+ * (Gross-/Kleinschreibung, Leerzeichen) und einer wirklich fehlenden Aufgabe:
+ * im ersten Fall ist die Bewertung brauchbar und nur der Name schief, im
+ * zweiten fehlt sie ganz und das ganze Dokument braucht einen Blick.
+ */
+export function mapMissingTask(layoutTask: Task, aiTasks: AITask[]): TaskMappingResult {
+    const layoutName = (layoutTask.name ?? '').toLowerCase().trim();
+    const nearMiss = layoutName
+        ? aiTasks.find((t: AITask) => t.name?.toLowerCase().trim() === layoutName)
+        : undefined;
+
+    if (nearMiss) {
+        // SOFT ERROR: Case mismatch or whitespace issues -> Keep Confidence, but show warning
+        return {
+            task: {
+                ...kopfAusLayout(layoutTask),
+                pointsObtained: Number(nearMiss.pointsObtained || 0),
+                feedback: `[KI-FEHLER?] Name nicht exakt ("${nearMiss.name}" statt "${layoutTask.name}")\n\n${nearMiss.feedback || ''}`,
+                confidence: Number(nearMiss.confidence || 0),
+                content: nearMiss.content || ''
+            }
+        };
+    }
+
+    // HARD ERROR: Task completely missing in AI response
+    return {
+        task: {
+            ...kopfAusLayout(layoutTask),
+            pointsObtained: 0,
+            feedback: 'Vom System nicht erkannt oder von der KI übersprungen.',
+            confidence: 0,
+            content: ''
+        },
+        mappingError: true
+    };
+}
+
+/**
+ * Waehlt den zustaendigen Zweig.
+ *
+ * Die Reihenfolge ist bedeutsam: Wo eine Engine gerechnet hat, gilt deren
+ * Ergebnis — das Modell darf es nicht ueberschreiben.
+ */
+export function mapLayoutTask(layoutTask: Task, aiTasks: AITask[]): TaskMappingResult {
+    const aiTask = aiTasks.find((t: AITask) => t.name === layoutTask.name);
+
+    if (layoutTask.calcTraceResult) return mapCalcTraceTask(layoutTask, aiTask);
+    if (layoutTask.gradingResult) return mapGraphTask(layoutTask, aiTask);
+    if (aiTask) return mapModelTask(layoutTask, aiTask);
+    return mapMissingTask(layoutTask, aiTasks);
+}

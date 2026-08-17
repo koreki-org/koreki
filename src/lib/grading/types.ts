@@ -16,12 +16,29 @@ export interface EquivalenceGroup {
   prefixes: string[];
 }
 
+/**
+ * Ergebnis des Trockenlaufs nach dem Erzeugen eines Graphen.
+ *
+ * Die Oberflaeche zeigt daraus das Plausibilitaets-Siegel. Stand bisher nur als
+ * `(graph as any).validation` an zehn Stellen in drei Dateien — das Feld gab es
+ * also laengst, nur wusste der Compiler nichts davon.
+ */
+export interface GraphValidation {
+  isValid: boolean;
+  error?: string;
+  /** Wie oft die Selbst-Korrektur nachbessern musste. */
+  retriesUsed?: number;
+  dryRunChecked?: boolean;
+}
+
 export interface GradingGraph {
   taskId: string;
   discipline: string;
   variables: VariableDefinition[];
   equivalenceGroups?: EquivalenceGroup[];
   disablePoints?: boolean;
+  /** Optional: ein von Hand gebauter Graph hat keinen Trockenlauf hinter sich. */
+  validation?: GraphValidation;
 }
 
 export type StepResultStatus = 'correct' | 'primary_error' | 'consecutive_correct';
