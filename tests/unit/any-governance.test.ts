@@ -47,7 +47,7 @@ const ANY_BASELINE: Record<string, number> = {
     'lib/services/local-profile-service.ts': 6,
     'pages/api/user.ts': 6,
     'pages/api/user/grading-memories.ts': 4,
-    'components/batch/GradingGraphModal.tsx': 3,
+    'components/batch/GradingGraphModal.tsx': 2,
     'components/settings/ProfileModules.tsx': 4,
     'components/settings/SkillsSidebar.tsx': 5,
     'hooks/useFileProcessor.ts': 4,

@@ -73,7 +73,10 @@ const HOOK_LIMIT = 10;
  * geprueft als vorher.
  */
 const SIZE_BASELINE: Record<string, number> = {
-    'components/batch/GradingGraphModal.tsx': 641,
+    // 1459 -> 507: erst vier Reiter als eigene Panels, jetzt der Zustand in
+    // vier Hooks unter hooks/grading-graph/. Hook-Aufrufe 25 -> 10, damit aus
+    // HOOK_BASELINE verschwunden.
+    'components/batch/GradingGraphModal.tsx': 507,
     // Die beiden groessten Reiter aus dem Modal, bewusst aufgenommen: sie sind
     // unveraendert umgezogen (reine Darstellung, kein Zustand untereinander).
     // Ein Zerlegen waere ein zweiter, eigener Schritt — den 1404-Zeiler zuerst
@@ -139,7 +142,6 @@ const SIZE_BASELINE: Record<string, number> = {
  * NUR SENKEN, NIE ANHEBEN.
  */
 const HOOK_BASELINE: Record<string, number> = {
-    'components/batch/GradingGraphModal.tsx': 25,
     'components/batch/parts/BatchTaskAnalysisCard.tsx': 13,
     'components/settings/OllamaConfig.tsx': 11
 };

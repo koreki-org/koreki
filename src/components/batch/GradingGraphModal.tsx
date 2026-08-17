@@ -6,14 +6,17 @@ import {
     Send, MessageSquare
 } from 'lucide-react';
 import { GradingGraph, VariableDefinition, VariableType, ValidationType } from '../../lib/grading/types';
-import { collectReferencedVariables, renameVariableReferences } from '../../lib/grading/variable-references';
+import { renameVariableReferences } from '../../lib/grading/variable-references';
 import { buildPerfectInputs, computeExpectedValues, parsePlaygroundInputs } from '../../lib/grading/graph-preview';
 import { GraphJsonPanel } from './parts/GraphJsonPanel';
 import { GraphTestingPanel } from './parts/GraphTestingPanel';
 import { GraphAiPanel } from './parts/GraphAiPanel';
 import { GraphEditorPanel } from './parts/GraphEditorPanel';
 import { extractRefinementResponse, isUsableGraph, mergeRefinedGraph, parseGraphJson } from '../../lib/grading/graph-intake';
-import { GraphRunner } from '../../lib/grading/GraphRunner';
+import { useGraphDocument } from '@/hooks/grading-graph/useGraphDocument';
+import { useGraphEditorSelection } from '@/hooks/grading-graph/useGraphEditorSelection';
+import { useGraphPlayground } from '@/hooks/grading-graph/useGraphPlayground';
+import { useGraphAiRefinement } from '@/hooks/grading-graph/useGraphAiRefinement';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
@@ -62,50 +65,51 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     onSave,
     isLocked = false
 }) => {
-    // Standard template if none provided (clean blank canvas)
-    const defaultGraph: GradingGraph = {
-        taskId: `task-${Date.now()}`,
-        discipline: 'general',
-        variables: []
-    };
+    const hasTemplates = useMemo(
+        () => Object.values(customSkills || {}).some(sk => sk && sk.gradingGraph),
+        [customSkills]
+    );
 
-    const hasTemplates = useMemo(() => {
-        return Object.values(customSkills || {}).some(s => s && s.gradingGraph);
-    }, [customSkills]);
+    const { graph, setGraph, jsonText, jsonError, handleJsonChange } =
+        useGraphDocument({ initialGraph });
 
-    const [graph, setGraph] = useState<GradingGraph>(() => {
-        if (initialGraph && Array.isArray(initialGraph.variables)) {
-            return initialGraph;
-        }
-        return defaultGraph;
+    const {
+        selectedVarId, setSelectedVarId,
+        hoveredVarId, setHoveredVarId,
+        selectedPlugin, setSelectedPlugin,
+        groupedVariables, isPointsDisabled, dependenciesOfHovered,
+        getVariableDependencies
+    } = useGraphEditorSelection({ graph, taskType });
+
+    const {
+        playgroundInputs, setPlaygroundInputs, playgroundResult,
+        evaluatedContext,
+        handleFillPerfect: handleFillPerfectPlayground,
+        handleRun: handleRunPlayground
+    } = useGraphPlayground({ graph });
+
+    const {
+        chatInput, setChatInput,
+        chatHistory, setChatHistory,
+        isRefining,
+        initialUserNotes, setInitialUserNotes,
+        showAdvancedInspector, setShowAdvancedInspector,
+        handleRefineGraph
+    } = useGraphAiRefinement({
+        graph, setGraph, taskContent, discipline: selectedPlugin, appMode, settings
     });
-    const [selectedVarId, setSelectedVarId] = useState<string | null>(null);
-    const [hoveredVarId, setHoveredVarId] = useState<string | null>(null);
-    const [selectedPlugin, setSelectedPlugin] = useState<string>('math');
-    
+
     // Mount state for SSR safe Portal mounting
     const [mounted, setMounted] = useState(false);
     useEffect(() => {
         setMounted(true);
         return () => setMounted(false);
     }, []);
-    
-    // Collapsible states
-    const [jsonText, setJsonText] = useState("");
-    const [jsonError, setJsonError] = useState<string | null>(null);
 
-    // Mock student answer playground values
-    const [playgroundInputs, setPlaygroundInputs] = useState<Record<string, string>>({});
-    const [playgroundResult, setPlaygroundResult] = useState<any>(null);
     const [activeTab, setActiveTab] = useState<'ai' | 'editor' | 'testing' | 'json'>(() => {
         const hasGraph = initialGraph && Array.isArray(initialGraph.variables) && initialGraph.variables.length > 0;
         return hasGraph ? 'testing' : 'ai';
     });
-    const [chatInput, setChatInput] = useState('');
-    const [chatHistory, setChatHistory] = useState<{ role: 'user' | 'assistant'; text: string; hasError?: boolean }[]>([]);
-    const [isRefining, setIsRefining] = useState(false);
-    const [initialUserNotes, setInitialUserNotes] = useState("");
-    const [showAdvancedInspector, setShowAdvancedInspector] = useState(false);
 
     // Nur im SaaS-Betrieb kosten KI-Aktionen Credits. PURE (eigener Key), Community und
     // Desktop rechnen nicht ab — dort waere ein Preis-Hinweis schlicht falsch.
@@ -127,69 +131,6 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
             setSkillName(taskName || "");
         }
     }, [taskName, taskType]); // Removed customSkills from dependency array to prevent typing interruption
-
-    // Sync JSON text when graph changes
-    useEffect(() => {
-        setJsonText(JSON.stringify(graph, null, 2));
-    }, [graph]);
-
-    // Handle initialGraph change
-    useEffect(() => {
-        if (initialGraph && Array.isArray(initialGraph.variables)) {
-            setGraph(initialGraph);
-        }
-    }, [initialGraph]);
-
-    // Group variables by Subnet Name (e.g., subnetA, subnetB, generic)
-    const groupedVariables = useMemo(() => {
-        const groups: Record<string, VariableDefinition[]> = {};
-        const vars = graph?.variables || [];
-        vars.forEach(v => {
-            const m = v.id.match(/^(?:subnet_?)?([A-Za-z0-9_]+)_/i);
-            const groupName = m ? `Subnetz ${m[1].toUpperCase()}` : 'Allgemeine Variablen';
-            if (!groups[groupName]) groups[groupName] = [];
-            groups[groupName].push(v);
-        });
-        return groups;
-    }, [graph?.variables]);
-
-    const isPointsDisabled = useMemo(() => {
-        if (graph && typeof graph.disablePoints === 'boolean') {
-            return graph.disablePoints;
-        }
-        const discipline = graph?.discipline;
-        const isRigid = discipline === 'vlsm' || discipline === 'skill-calc-vlsm' ||
-                        taskType === 'vlsm' || taskType === 'skill-calc-vlsm';
-        return !isRigid;
-    }, [graph?.disablePoints, graph?.discipline, taskType]);
-
-    // Check which variables are dependencies of the hovered/selected variable
-    const dependenciesOfHovered = useMemo(() => {
-        const activeId = hoveredVarId || selectedVarId;
-        if (!activeId) return new Set<string>();
-        
-        const vars = graph?.variables || [];
-        const activeVar = vars.find(v => v.id === activeId);
-        if (!activeVar || activeVar.type !== 'formula' || !activeVar.expression) {
-            return new Set<string>();
-        }
-
-        // If variable ID is mentioned in the formula expression (e.g. "subnetA_netId")
-        return new Set(collectReferencedVariables(activeVar.expression, vars.map(v => v.id)));
-    }, [hoveredVarId, selectedVarId, graph?.variables]);
-
-    // Verify mathematical expressions and build evaluation context in real time
-    const evaluatedContext = useMemo(
-        () => computeExpectedValues(graph?.variables),
-        [graph?.variables]
-    );
-
-    // Helper to extract which variables a formula depends on
-    const getVariableDependencies = (variable: VariableDefinition) => {
-        if (variable.type !== 'formula' || !variable.expression) return [];
-        const others = (graph?.variables || []).map(v => v.id).filter(id => id !== variable.id);
-        return collectReferencedVariables(variable.expression, others);
-    };
 
     // AI wizard suggestion chips
     const noteSuggestions = [
@@ -283,81 +224,6 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
         if (selectedVarId === id) setSelectedVarId(null);
     };
 
-    // Parse raw JSON text editor input safely
-    const handleJsonChange = (val: string) => {
-        setJsonText(val);
-
-        const result = parseGraphJson(val);
-        if (result.ok) {
-            setGraph(result.graph);
-            setJsonError(null);
-        } else {
-            setJsonError(result.error);
-        }
-    };
-
-    // Launch mock grading computation
-    const handleRunPlayground = () => {
-        const studentValues = parsePlaygroundInputs(graph?.variables, playgroundInputs);
-
-        try {
-            const res = GraphRunner.grade(graph, studentValues);
-            setPlaygroundResult(res);
-        } catch (e) {
-            alert(`Fehler beim Berechnen der Bewertung: ${toErrorMessage(e)}`);
-        }
-    };
-
-    // Auto-fill perfect playground answers for quick testing
-    const handleFillPerfectPlayground = () => {
-        setPlaygroundInputs(buildPerfectInputs(graph?.variables, evaluatedContext.context));
-    };
-
-    const handleRefineGraph = async () => {
-        if (!chatInput.trim() || isRefining) return;
-
-        const instruction = chatInput.trim();
-        setChatInput('');
-        setIsRefining(true);
-        setChatHistory(prev => [...prev, { role: 'user', text: instruction }]);
-
-        try {
-            const responseData = await performAIRequest(
-                'refine-graph',
-                {
-                    taskText: taskContent || '',
-                    currentGraph: graph,
-                    userInstruction: instruction,
-                    discipline: selectedPlugin
-                },
-                appMode,
-                settings!
-            );
-
-            const { graph: updatedGraph, explanation } = extractRefinementResponse(responseData);
-
-            if (isUsableGraph(updatedGraph)) {
-                // Schuetzt die Punktvergabe der Lehrkraft vor der Verfeinerung —
-                // Begruendung in lib/grading/graph-intake.ts.
-                setGraph(mergeRefinedGraph(graph, updatedGraph));
-                setChatHistory(prev => [...prev, { 
-                    role: 'assistant', 
-                    text: explanation || `Graph erfolgreich verfeinert!\nEs wurden ${updatedGraph.variables.length} Variablen deklariert.` 
-                }]);
-            } else {
-                throw new Error("Ungültiges Graphen-Format von KI zurückgegeben.");
-            }
-        } catch (err) {
-            const errMsg = err instanceof Error ? err.message : 'Verbindungsfehler';
-            setChatHistory(prev => [...prev, { 
-                role: 'assistant', 
-                text: `Fehler: ${errMsg}`, 
-                hasError: true 
-            }]);
-        } finally {
-            setIsRefining(false);
-        }
-    };
 
     if (!isOpen || !mounted) return null;
 
