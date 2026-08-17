@@ -18,8 +18,10 @@ import { AppSettings } from '../../types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { AIProviderError } from './provider-error';
 import { parseLlmJson, LlmJsonParseError } from './llm-json';
+import { buildPromptForAction } from './prompt-dispatch';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
+import type { AIAction } from './prompt-dispatch';
+export type { AIAction };
 
 /**
  * Helper to normalize Ollama URLs ensuring they have a protocol prefix.
@@ -73,53 +75,20 @@ export async function executeOllamaRequest(
     let images: string[] | undefined = undefined;
 
     if (action === 'vision') {
-        promptObj = buildVisionPrompt(model);
+        promptObj = buildVisionPrompt();
         images = [payload.buffer]; // Base64 buffer
-    } else if (action === 'correction') {
-        promptObj = buildCorrectionPrompt(
-            payload.modelSolution, 
-            payload.studentText, 
-            payload.tasksLayout, 
-            settings.correctionPrompt, 
-            model,
-            payload.gradingMemory,
-            settings.activeSkillIds,
-            settings.customSkills
-        );
-    } else if (action === 'clean-and-analyze') {
-        promptObj = buildCleanAndAnalyzePrompt(payload.modelSolution, model);
-    } else if (action === 'clean-and-map') {
-        promptObj = buildCleanAndMapPrompt(payload.text || payload.studentText, payload.tasksLayout, model);
-    } else if (action === 'student-simulator') {
-        promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout, payload.selectedTasks);
-    } else if (action === 'anonymize') {
-        promptObj = buildAnonymizePrompt(payload.studentText);
-    } else if (action === 'second-opinion') {
-        promptObj = buildSecondOpinionPrompt(
-            payload.taskName,
-            payload.taskInstructions,
-            payload.sampleSolution,
-            payload.maxPoints,
-            payload.studentText,
-            payload.currentPoints,
-            payload.currentFeedback,
-            payload.teacherDoubt,
-            payload.chatHistory
-        );
-    } else if (action === 'generate-graph') {
-        promptObj = buildGraphGenerationPrompt(payload.taskText, payload.discipline, payload.userNotes);
-    } else if (action === 'refine-graph') {
-        promptObj = buildGraphRefinementPrompt(payload.taskText, payload.currentGraph, payload.userInstruction, payload.discipline);
-    } else if (action === 'variable-extraction') {
-        promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions, payload.taskName);
-    } else if (action === 'generate-calc-trace') {
-        promptObj = buildCalcTraceGenerationPrompt(payload.taskText, payload.discipline, payload.userNotes, payload.maxPoints);
-    } else if (action === 'refine-calc-trace') {
-        promptObj = buildCalcTraceRefinementPrompt(payload.taskText, payload.currentTrace, payload.userInstruction, payload.discipline);
-    } else if (action === 'calc-trace-extraction') {
-        promptObj = buildCalcTraceExtractionPrompt(payload.studentText, payload.expectedValues, payload.taskName, payload.systemPrompt, payload.correctionInstruction);
     } else {
-        throw new Error(`Unsupported action: ${action}`);
+        // Ollama holt customPrompt und Skills aus den Einstellungen, den
+        // Erfahrungsschatz dagegen aus dem Payload — anders als Mistral und
+        // OpenAI, die beides in `options` bekommen. Die Zuordnung Aktion ->
+        // Instruktion ist danach fuer alle drei dieselbe.
+        promptObj = buildPromptForAction(action, payload, {
+            model,
+            customPrompt: settings.correctionPrompt,
+            gradingMemory: payload.gradingMemory,
+            activeSkillIds: settings.activeSkillIds,
+            customSkills: settings.customSkills
+        });
     }
 
     // 1.5. Dynamic Parameter & Context size Estimation (Industrial Standard)

@@ -30,7 +30,7 @@ describe('Prompt Builder Specialized Routing', () => {
         });
 
         it('should correctly build vision prompt for Qwen using specialized guard modifications', () => {
-            const prompt = buildVisionPrompt(qwenModel);
+            const prompt = buildVisionPrompt();
             expect(prompt.system).toContain('Du bist ein optischer Sensor');
             expect(prompt.options?.temperature).toBe(0);
         });

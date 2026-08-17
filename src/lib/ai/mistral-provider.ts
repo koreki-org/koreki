@@ -24,6 +24,7 @@ import type { GradingMemoryCase, CustomSkillDefinition } from '@/types';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
 import { logger } from '@/lib/logger';
 import { AIProviderError } from './provider-error';
+import { buildPromptForAction } from './prompt-dispatch';
 
 /**
  * Liest den Fehlertext einer abgelehnten Antwort für den Server-Log aus.
@@ -45,7 +46,10 @@ async function readErrorDetail(response: Response): Promise<string> {
     }
 }
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'ocr' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
+import type { AIAction as GemeinsameAIAction } from './prompt-dispatch';
+
+/** Mistral kann zusaetzlich den dedizierten OCR-Endpunkt (/v1/ocr) ansprechen. */
+export type AIAction = GemeinsameAIAction | 'ocr';
 
 export interface AIRequestOptions {
     temperature?: number;
@@ -121,44 +125,14 @@ export async function executeMistralRequest(
             }
         ];
     } else {
-        if (action === 'correction') {
-            promptObj = buildCorrectionPrompt(payload.modelSolution, payload.studentText, payload.tasksLayout, options.customPrompt, model, options.gradingMemory, options.activeSkillIds, options.customSkills);
-        } else if (action === 'clean-and-analyze') {
-            promptObj = buildCleanAndAnalyzePrompt(payload.modelSolution, model);
-        } else if (action === 'clean-and-map') {
-            promptObj = buildCleanAndMapPrompt(payload.text || payload.studentText, payload.tasksLayout, model);
-        } else if (action === 'student-simulator') {
-            promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout, payload.selectedTasks);
-        } else if (action === 'anonymize') {
-            promptObj = buildAnonymizePrompt(payload.studentText);
-        } else if (action === 'second-opinion') {
-            promptObj = buildSecondOpinionPrompt(
-                payload.taskName,
-                payload.taskInstructions,
-                payload.sampleSolution,
-                payload.maxPoints,
-                payload.studentText,
-                payload.currentPoints,
-                payload.currentFeedback,
-                payload.teacherDoubt,
-                payload.chatHistory
-            );
-        } else if (action === 'generate-graph') {
-            promptObj = buildGraphGenerationPrompt(payload.taskText, payload.discipline, payload.userNotes);
-        } else if (action === 'refine-graph') {
-            promptObj = buildGraphRefinementPrompt(payload.taskText, payload.currentGraph, payload.userInstruction, payload.discipline);
-        } else if (action === 'variable-extraction') {
-            promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions, payload.taskName);
-        } else if (action === 'generate-calc-trace') {
-            promptObj = buildCalcTraceGenerationPrompt(payload.taskText, payload.discipline, payload.userNotes, payload.maxPoints);
-        } else if (action === 'refine-calc-trace') {
-            promptObj = buildCalcTraceRefinementPrompt(payload.taskText, payload.currentTrace, payload.userInstruction, payload.discipline);
-        } else if (action === 'calc-trace-extraction') {
-            promptObj = buildCalcTraceExtractionPrompt(payload.studentText, payload.expectedValues, payload.taskName, payload.systemPrompt, payload.correctionInstruction);
-        } else {
-            throw new Error(`Unsupported text action: ${action}`);
-        }
-        
+        promptObj = buildPromptForAction(action, payload, {
+            model,
+            customPrompt: options.customPrompt,
+            gradingMemory: options.gradingMemory,
+            activeSkillIds: options.activeSkillIds,
+            customSkills: options.customSkills
+        });
+
         messages = [
             { role: 'system', content: promptObj.system },
             { role: 'user', content: promptObj.user }

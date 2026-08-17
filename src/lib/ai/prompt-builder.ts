@@ -405,7 +405,7 @@ export function buildCleanAndMapPrompt(studentText: string, tasksLayout?: Task[]
 /**
  * Builds the generic or specialized vision prompt.
  */
-export function buildVisionPrompt(model?: string): StructuredPrompt {
+export function buildVisionPrompt(): StructuredPrompt {
     return {
         system: visionSystemDefault,
         user: visionUserDefault,

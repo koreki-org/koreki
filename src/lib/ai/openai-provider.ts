@@ -18,10 +18,12 @@ import { parseLlmJson } from './llm-json';
 import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
 import { isDesktopTarget } from '@/lib/env-context';
 import { AIProviderError } from './provider-error';
+import { buildPromptForAction } from './prompt-dispatch';
 import type { GradingMemoryCase, CustomSkillDefinition } from '@/types';
 import type { PromptLibraryEntry } from './prompt-library';
 
-export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
+import type { AIAction } from './prompt-dispatch';
+export type { AIAction };
 
 export interface OpenAIRequestOptions {
     temperature?: number;
@@ -59,7 +61,7 @@ export async function executeOpenAIRequest(
     let messages: any[] = [];
 
     if (action === 'vision') {
-        promptObj = buildVisionPrompt(targetModel);
+        promptObj = buildVisionPrompt();
         messages = [
             { role: 'system', content: promptObj.system },
             {
@@ -74,44 +76,14 @@ export async function executeOpenAIRequest(
             }
         ];
     } else {
-        if (action === 'correction') {
-            promptObj = buildCorrectionPrompt(payload.modelSolution, payload.studentText, payload.tasksLayout, options.customPrompt, targetModel, options.gradingMemory, options.activeSkillIds, options.customSkills);
-        } else if (action === 'clean-and-analyze') {
-            promptObj = buildCleanAndAnalyzePrompt(payload.modelSolution, targetModel);
-        } else if (action === 'clean-and-map') {
-            promptObj = buildCleanAndMapPrompt(payload.text || payload.studentText, payload.tasksLayout, targetModel);
-        } else if (action === 'student-simulator') {
-            promptObj = buildStudentSimulatorPrompt(payload.modelSolution, payload.tasksLayout, payload.selectedTasks);
-        } else if (action === 'anonymize') {
-            promptObj = buildAnonymizePrompt(payload.studentText);
-        } else if (action === 'second-opinion') {
-            promptObj = buildSecondOpinionPrompt(
-                payload.taskName,
-                payload.taskInstructions,
-                payload.sampleSolution,
-                payload.maxPoints,
-                payload.studentText,
-                payload.currentPoints,
-                payload.currentFeedback,
-                payload.teacherDoubt,
-                payload.chatHistory
-            );
-        } else if (action === 'generate-graph') {
-            promptObj = buildGraphGenerationPrompt(payload.taskText, payload.discipline, payload.userNotes);
-        } else if (action === 'refine-graph') {
-            promptObj = buildGraphRefinementPrompt(payload.taskText, payload.currentGraph, payload.userInstruction, payload.discipline);
-        } else if (action === 'variable-extraction') {
-            promptObj = buildVariableExtractionPrompt(payload.studentText, payload.variables, payload.extractionInstructions, payload.taskName);
-        } else if (action === 'generate-calc-trace') {
-            promptObj = buildCalcTraceGenerationPrompt(payload.taskText, payload.discipline, payload.userNotes, payload.maxPoints);
-        } else if (action === 'refine-calc-trace') {
-            promptObj = buildCalcTraceRefinementPrompt(payload.taskText, payload.currentTrace, payload.userInstruction, payload.discipline);
-        } else if (action === 'calc-trace-extraction') {
-            promptObj = buildCalcTraceExtractionPrompt(payload.studentText, payload.expectedValues, payload.taskName, payload.systemPrompt, payload.correctionInstruction);
-        } else {
-            throw new Error(`Unsupported action: ${action}`);
-        }
-        
+        promptObj = buildPromptForAction(action, payload, {
+            model: targetModel,
+            customPrompt: options.customPrompt,
+            gradingMemory: options.gradingMemory,
+            activeSkillIds: options.activeSkillIds,
+            customSkills: options.customSkills
+        });
+
         messages = [
             { role: 'system', content: promptObj.system },
             { role: 'user', content: promptObj.user }
@@ -189,7 +161,7 @@ export async function executeOpenAIRequest(
     const extractionActions: AIAction[] = ['calc-trace-extraction', 'variable-extraction', 'clean-and-map', 'clean-and-analyze'];
     const useJsonSchema = options.responseSchema && !extractionActions.includes(action);
     if (useJsonSchema) {
-        const schemaName = action === 'generate-calc-trace' || action === 'refine-calc-trace' ? 'CalcTrace' : 'GradingGraph';
+        const schemaName = action === 'generate-calc-trace' ? 'CalcTrace' : 'GradingGraph';
         body.response_format = {
             type: "json_schema",
             json_schema: {
