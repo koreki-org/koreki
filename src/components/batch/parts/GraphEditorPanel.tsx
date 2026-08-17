@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, Trash2, Layers, Sparkles, AlertCircle, X, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Input, Select } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
@@ -294,15 +294,15 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                         {/* Type Selector (Input vs Formula) */}
                                         <div className="space-y-1">
                                             <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Knotentyp</label>
-                                            <select
+                                            <Select
                                                 value={selectedVar.type}
                                                 disabled={isLocked}
                                                 onChange={(e) => onUpdateVariable(selectedVar.id, { type: e.target.value as VariableType })}
-                                                className="w-full h-9 px-3 rounded-xl border border-border text-xs font-bold text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-white cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                                className="h-9 rounded-xl text-xs font-bold bg-background cursor-pointer disabled:opacity-60"
                                             >
                                                 <option value="input">📥 Statische Eingabe (Input)</option>
                                                 <option value="formula">⚙️ Berechnete Formel (Formula)</option>
-                                            </select>
+                                            </Select>
                                             <p className="text-xs text-muted-foreground font-medium leading-normal mt-0.5">
                                                 {selectedVar.type === 'input' 
                                                     ? 'Fester Vorgabewert aus der Musterlösung (z.B. Hostanzahl).' 
@@ -392,16 +392,16 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                     {/* Validation Type */}
                                                     <div className="space-y-1">
                                                         <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Validierungsart</label>
-                                                        <select
+                                                        <Select
                                                             value={selectedVar.validationType}
                                                             disabled={isLocked}
                                                             onChange={(e) => onUpdateVariable(selectedVar.id, { validationType: e.target.value as ValidationType })}
-                                                            className="w-full h-9 px-3 rounded-xl border border-border text-xs font-bold text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-white cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                                            className="h-9 rounded-xl text-xs font-bold bg-background cursor-pointer disabled:opacity-60"
                                                         >
                                                             <option value="exact">Exakte Übereinstimmung</option>
                                                             <option value="tolerance">Abweichung (Toleranz)</option>
                                                             <option value="contains">Enthält Substring</option>
-                                                        </select>
+                                                        </Select>
                                                         <p className="text-xs text-muted-foreground font-medium leading-normal mt-0.5">
                                                             {selectedVar.validationType === 'exact' && 'Der Schüler-Wert muss mathematisch exakt übereinstimmen.'}
                                                             {selectedVar.validationType === 'tolerance' && 'Erlaubt kleine Abweichungen (z.B. Rundungsfehler).'}

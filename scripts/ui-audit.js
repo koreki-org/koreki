@@ -43,7 +43,7 @@ const gracePeriodFiles = [];
 // Wert mit runter. Faellt eine auf null, muss sie aus der Liste verschwinden.
 const RAW_CONTROL_BASELINE = {
     'src/components/batch/ExportToolbar.tsx': 7,
-    'src/components/batch/parts/GraphEditorPanel.tsx': 7,
+    'src/components/batch/parts/GraphEditorPanel.tsx': 5,
     'src/components/batch/GradingGraphModal.tsx': 5,
     'src/components/batch/GradingMemoryStartScreen.tsx': 5,
     'src/components/settings/AiProfileModules.tsx': 5,
