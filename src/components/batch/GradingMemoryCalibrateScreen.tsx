@@ -249,7 +249,7 @@ export const GradingMemoryCalibrateScreen: React.FC<GradingMemoryCalibrateScreen
                                             </Button>
                                         ) : (
                                             <Button 
-                                                onClick={handleSave}
+                                                onClick={() => handleSave()}
                                                 disabled={isSaving}
                                                 className="px-6 py-3 h-11 bg-primary hover:opacity-90 text-white font-extrabold rounded-xl flex items-center gap-2 shadow-lg shadow-md/50 text-xs md:text-sm border-0 transition-all"
                                             >
