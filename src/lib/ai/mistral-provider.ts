@@ -17,14 +17,14 @@ import {
     buildCalcTraceExtractionPrompt,
     StructuredPrompt 
 } from './prompt-builder';
-import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
-import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
+import { VALIDATE_GRAPH_TOOL } from '../grading/graph-generator';
 import { isDesktopTarget } from '@/lib/env-context';
 import type { GradingMemoryCase, CustomSkillDefinition } from '@/types';
 import { PromptLibraryEntry, splitSkillSnippet } from './prompt-library';
 import { logger } from '@/lib/logger';
 import { AIProviderError } from './provider-error';
 import { buildPromptForAction } from './prompt-dispatch';
+import { pruefeWerkzeugAufruf } from './tool-validation';
 
 /**
  * Liest den Fehlertext einer abgelehnten Antwort für den Server-Log aus.
@@ -269,59 +269,22 @@ export async function executeMistralRequest(
 
         if (message?.tool_calls && message.tool_calls.length > 0) {
             const toolCall = message.tool_calls[0];
-            if (toolCall.function.name === 'validate_graph') {
-                const draftGraphJson = toolCall.function.arguments;
-                const draftGraph = parseGeneratedGraph(draftGraphJson, { skipSanitization: true });
-                let toolResultString = "";
-                
-                if (!draftGraph) {
-                    toolResultString = "Invalid JSON structure or missing variables. Ensure you match the GRADING_GRAPH_SCHEMA exactly.";
-                } else {
-                    const validation = validateGraphDeterminism(draftGraph);
-                    if (validation.isValid) {
-                        // [Short-Circuit Optimization]
-                        return draftGraph;
-                    } else {
-                        toolResultString = `Mathematical validation failed: ${validation.error}. Please fix this and try again or return the corrected graph.`;
-                    }
-                }
-                
+            const urteil = pruefeWerkzeugAufruf(toolCall.function.name, toolCall.function.arguments);
+
+            if (urteil.status === 'akzeptiert') {
+                return urteil.artefakt;
+            }
+
+            if (urteil.status === 'nachbessern') {
                 messages.push(message);
                 messages.push({
                     role: "tool",
                     tool_call_id: toolCall.id,
                     name: toolCall.function.name,
-                    content: toolResultString
+                    content: urteil.rueckmeldung
                 });
 
-                body.messages = messages;
-                toolRetryCount++;
-                continue;
-            } else if (toolCall.function.name === 'validate_calc_trace') {
-                const draftTraceJson = toolCall.function.arguments;
-                const draftTrace = parseGeneratedCalcTrace(draftTraceJson);
-                let toolResultString = "";
-
-                if (!draftTrace) {
-                    toolResultString = "Invalid JSON structure or missing fields. Ensure you match the CALC_TRACE_SCHEMA exactly.";
-                } else {
-                    const validation = validateCalcTraceDeterminism(draftTrace);
-                    if (validation.isValid) {
-                        return draftTrace;
-                    } else {
-                        toolResultString = `Mathematical validation failed: ${validation.error}. Please fix this and try again.`;
-                    }
-                }
-
-                messages.push(message);
-                messages.push({
-                    role: "tool",
-                    tool_call_id: toolCall.id,
-                    name: toolCall.function.name,
-                    content: toolResultString
-                });
-
-                body.messages = messages;
+                body.messages = messages; // Update the payload for the next request
                 toolRetryCount++;
                 continue;
             }
