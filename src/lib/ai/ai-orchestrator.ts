@@ -20,6 +20,7 @@ import { extractStudentAST } from '../grading/calc-trace-extraction';
 import { shouldDisablePoints } from './prompt-builder';
 import { requireOpenAiConnection } from './provider-connection';
 import { mapLayoutTask } from './correction-mapping';
+import { runLocalGradingEngines } from './local-grading-pass';
 
 export { shouldDisablePoints };
 
@@ -110,178 +111,6 @@ export function parseMappingResult<T extends MappingResult>(result: T, tasksLayo
 }
 
 /**
- * Robustly extracts student answers from free-text using a dedicated, fast LLM call (variable-extraction).
- * If the LLM extraction fails or returns incomplete values, it seamlessly merges/falls back to the legacy heuristics.
- */
-export async function extractStudentAnswersWithLLM(
-    studentText: string,
-    graph: GradingGraph,
-    appMode: 'PURE' | 'STANDARD' | 'TRIAL' | undefined,
-    settings: AppSettings,
-    taskType?: string,
-    taskName?: string
-): Promise<Record<string, GradingScalar>> {
-    // 1. Establish baseline (Deactivated legacy "Schicht A" regex-based heuristics per user & architectural requirement)
-    if (!settings) {
-        return {};
-    }
-
-    // Look up extraction instructions from the modular skill if taskType is specified
-    let extractionInstructions: string | undefined;
-    if (taskType) {
-        let skillKey = taskType;
-        if (skillKey === 'vlsm') {
-            skillKey = 'skill-calc-vlsm';
-        }
-        
-        const skillEntry = SKILL_REGISTRY[skillKey];
-        if (skillEntry) {
-            const { extractionSnippet } = splitSkillSnippet(skillEntry.promptSnippet);
-            if (extractionSnippet) {
-                extractionInstructions = extractionSnippet;
-            }
-        }
-    }
-
-    // [INDUSTRIAL DETERMINISTIC FALLBACK]
-    // If taskType was missing, rely on the explicitly defined discipline in the GradingGraph.
-    // This is mathematically safer than guessing by variable names (SOLID).
-    if (!extractionInstructions && graph.discipline) {
-        let skillKey = '';
-        if (graph.discipline === 'networking') skillKey = 'skill-calc-vlsm';
-        // Add more disciplines here as the system grows
-        
-        if (skillKey) {
-            const skillEntry = SKILL_REGISTRY[skillKey];
-            if (skillEntry) {
-                const { extractionSnippet } = splitSkillSnippet(skillEntry.promptSnippet);
-                if (extractionSnippet) {
-                    extractionInstructions = extractionSnippet;
-                }
-            }
-        }
-    }
-
-    try {
-        let extracted: Record<string, unknown> = {};
-        // Strip defaultValues to eliminate any force-fitting bias towards the expected master key
-        const strippedVariables = graph.variables.map(v => {
-            const copy = { ...v };
-            delete copy.defaultValue;
-            return copy;
-        });
-
-        const payload = {
-            studentText,
-            variables: strippedVariables,
-            extractionInstructions,
-            taskName
-        };
-
-        // 2. Perform Isomorphic Provider Call
-        if (appMode === 'PURE' || isDesktopTarget()) {
-            // Client-Side (PURE or local Ollama)
-            if (settings?.provider === 'ollama') {
-                extracted = await executeOllamaRequest('variable-extraction', payload, settings);
-            } else if (settings?.provider === 'openai-compatible') {
-                const baseUrl = settings.openaiUrl || '';
-                const apiKey = settings.openaiKey || '';
-                extracted = await executeOpenAIRequest('variable-extraction', payload, baseUrl, apiKey, {
-                    model: settings.openaiModel,
-                    temperature: 0.0,
-                    topP: 0.1,
-                    maxTokens: 4000
-                });
-            } else {
-                const mistralKey = settings?.mistralKey;
-                if (!mistralKey) throw new Error("PURE_KEY_MISSING");
-                extracted = await executeMistralRequest('variable-extraction', payload, mistralKey, {
-                    model: settings?.model,
-                    temperature: 0.0,
-                    topP: 0.1,
-                    maxTokens: 1000
-                });
-            }
-        } else {
-            // Server-Side (STANDARD mode execution) - directly invoke provider (isomorphic optimization)
-            if (typeof window === 'undefined') {
-                if (settings.provider === 'ollama') {
-                    extracted = await executeOllamaRequest('variable-extraction', payload, settings);
-                } else if (settings.provider === 'mistral') {
-                    const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
-                    if (!apiKey) throw new Error('Mistral API-Key fehlt.');
-                    extracted = await executeMistralRequest(
-                        'variable-extraction',
-                        payload,
-                        apiKey,
-                        {
-                            model: settings.model,
-                            temperature: 0.0,
-                            topP: 0.1,
-                            maxTokens: 1000
-                        }
-                    );
-                } else {
-                    const { baseUrl, apiKey, model } = requireOpenAiConnection(settings);
-
-                    extracted = await executeOpenAIRequest(
-                        'variable-extraction',
-                        payload,
-                        baseUrl,
-                        apiKey,
-                        {
-                            model,
-                            temperature: 0.0,
-                            topP: 0.1,
-                            maxTokens: 4000
-                        }
-                    );
-                }
-            } else {
-                return {};
-            }
-        }
-
-
-
-        // 3. Robust Filtering & Type-safe Normalization
-        const merged: Record<string, GradingScalar> = {};
-
-        if (extracted && typeof extracted === 'object') {
-            for (const variable of graph.variables) {
-                const rawVal = extracted[variable.id];
-                if (rawVal === undefined || rawVal === null) continue;
-
-                if (typeof rawVal === 'string') {
-                    const trimmed = rawVal.trim();
-                    const isNumber = /^-?\d+(\.\d+)?$/.test(trimmed);
-                    merged[variable.id] = isNumber ? parseFloat(trimmed) : trimmed;
-                } else if (typeof rawVal === 'number' || typeof rawVal === 'boolean') {
-                    merged[variable.id] = rawVal;
-                } else {
-                    // Objekt oder Liste. Die Engine vergleicht Skalare — ein Objekt
-                    // haette dort still jeden Vergleich verloren und die Aufgabe als
-                    // falsch bewertet. Vorher landete es trotzdem in der Auswertung,
-                    // weil der Typ `any` war und niemand hinsah.
-                    logger.warn('Variablen-Extraktion: unerwarteter Werttyp verworfen', {
-                        variableId: variable.id,
-                        typ: Array.isArray(rawVal) ? 'array' : typeof rawVal
-                    });
-                }
-            }
-        }
-
-
-
-        return merged;
-    } catch (err) {
-        logger.error('LLM Variable Extraction failed:', err);
-
-        return {};
-    }
-}
-
-/**
  * Orchestrates AI requests (Correction, Layout, Vision), choosing between direct Mistral API (PURE) or Koreki Backend (STANDARD).
  */
 export async function performAIRequest(
@@ -291,113 +120,17 @@ export async function performAIRequest(
     settings: AppSettings,
     signal?: AbortSignal
 ): Promise<any> {
-    // Client-side deterministic graph evaluation for PURE mode or local Ollama execution
+    // Wo Graph oder Rechenkette hinterlegt sind, rechnet Koreki selbst — vor dem
+    // KI-Aufruf. Denselben Lauf macht der Server-Weg in pages/api/ai-correct.
     const isClientSideExecution = appMode === 'PURE' || isDesktopTarget();
     if (isClientSideExecution && action === 'correction' && payload.tasksLayout && Array.isArray(payload.tasksLayout)) {
-        const activeSkillIds = settings?.activeSkillIds || [];
-        const customSkills = settings?.customSkills || {};
-        
-        const studentText = payload.studentText || payload.text || "";
-        const rawSplit = splitTextByTasks(studentText, payload.tasksLayout);
-
-        for (let i = 0; i < payload.tasksLayout.length; i++) {
-            const task = payload.tasksLayout[i];
-            // A task is graph-based if it has a GradingGraph attached (the teacher explicitly generated one)
-            // OR if its taskType matches a known graph-based skill pattern.
-            const hasAttachedGraph = !!task.gradingGraph;
-            const isGraphSkill = task.taskType && (
-                task.taskType === 'vlsm' || 
-                (activeSkillIds.includes(task.taskType) && (
-                    task.taskType.startsWith('skill-calc-') || 
-                    customSkills[task.taskType]?.isGraphBased
-                ))
-            );
-
-            const hasAttachedCalcTrace = !!task.calcTrace; // Fallback
-            const hasTargetGoal = !!task.targetGoal;
-            const isCalcTraceSkill = task.taskType === 'calc-trace' || (task.taskType && (
-                customSkills[task.taskType]?.isCalcTrace
-            ));
-
-            if (hasAttachedGraph) {
-                try {
-                    const studentTaskText = rawSplit[i] || "";
-                    const taskSpecificText = (studentTaskText && studentTaskText.trim().length > 0) ? studentTaskText : studentText;
-                    
-                    
-                    const studentValues = await extractStudentAnswersWithLLM(taskSpecificText, task.gradingGraph, appMode, settings, task.taskType, task.name);
-                    
-                    
-                    const gradingResult = GraphRunner.grade(task.gradingGraph, studentValues);
-                    task.gradingResult = gradingResult;
-
-                    const disablePointsActive = shouldDisablePoints(task.taskType, task.gradingGraph);
-                    if (!disablePointsActive) {
-                        task.pointsObtained = gradingResult.totalPoints;
-                        task.maxPoints = gradingResult.maxPoints;
-                    }
-                } catch (err: unknown) {
-                    logger.error('Error in client-side GraphRunner execution', err);
-                }
-            } else if (hasTargetGoal || hasAttachedCalcTrace || isCalcTraceSkill) {
-                try {
-                    const studentTaskText = rawSplit[i] || "";
-                    const taskSpecificText = (studentTaskText && studentTaskText.trim().length > 0) ? studentTaskText : studentText;
-                    
-                    const targetGoal = task.targetGoal || customSkills[task.taskType]?.targetGoal || { targetValue: 0, maxPoints: task.maxPoints || 0 };
-
-                    // Vor der Extraktion setzen: Scheitert sie, muss die Aufgabe trotzdem als
-                    // CalcTrace-Aufgabe erkennbar bleiben, sonst greift der Warnhinweis nicht
-                    // (betrifft Ziele, die aus einem eigenen Skill statt von der Aufgabe kommen).
-                    task.targetGoal = targetGoal;
-
-                    // Die in der Oberflaeche gesetzte Punktzahl der Aufgabe hat Vorrang. Sie stammt
-                    // von der Lehrkraft; die des TargetGoals ist bestenfalls daraus abgeleitet.
-                    const eigenePunkte = Number(task.maxPoints ?? 0);
-                    if (eigenePunkte > 0) {
-                        if (targetGoal.maxPoints && targetGoal.maxPoints !== eigenePunkte) {
-                            logger.warn(`[Client] TargetGoal für "${task.name}" nennt ${targetGoal.maxPoints} Punkte, die Aufgabe ${eigenePunkte}. Es gilt die Aufgabe.`);
-                        }
-                    } else {
-                        task.maxPoints = targetGoal.maxPoints || task.maxPoints;
-                    }
-
-                    let astResult = await extractStudentAST(taskSpecificText, appMode, settings, task.name);
-                    let calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
-                    
-                    let retryCount = 0;
-                    const maxRetries = 2;
-                    const shouldRetryCalcTrace = () => 
-                        !calcTraceResult?.isGoalReached && 
-                        calcTraceResult?.ast && calcTraceResult.ast.length > 0 && 
-                        calcTraceResult?.sandboxErrors && calcTraceResult.sandboxErrors.some(err => !err.startsWith('Rechenfehler'));
-
-                    while (shouldRetryCalcTrace() && retryCount < maxRetries) {
-                        const extractionErrors = calcTraceResult.sandboxErrors.filter(err => !err.startsWith('Rechenfehler'));
-                        logger.warn(`[Client] CalcTrace Sandbox validation failed (extraction errors). Retrying self-correction (${retryCount + 1}/${maxRetries}):`, extractionErrors);
-                        
-                        const correctionInstruction = `Die mathematische Sandbox hat Fehler in deinem extrahierten AST gefunden:\n${extractionErrors.join('\n')}\nBitte extrahiere den AST neu, beachte die Syntax für mathjs, und erfinde keine Rechenschritte, die der Schüler nicht gemacht hat.`;
-                        try {
-                            astResult = await extractStudentAST(taskSpecificText, appMode, settings, task.name, astResult, correctionInstruction);
-                        } catch (retryErr: unknown) {
-                            // Der erste Durchlauf hat ein verwertbares Ergebnis geliefert. Ein
-                            // gescheiterter Nachbesserungsversuch darf es nicht verwerfen.
-                            logger.warn('[Client] CalcTrace self-correction retry failed, keeping previous result.', retryErr);
-                            break;
-                        }
-                        calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
-                        retryCount++;
-                    }
-
-                    // Die Engine vergibt keine Punkte mehr, das macht das LLM.
-                    task.calcTraceResult = calcTraceResult;
-                } catch (err: unknown) {
-                    // Kein calcTraceResult -> die Aufgabe laeuft in den Warnhinweis "ohne
-                    // Sandbox-Pruefung, bitte manuell gegenpruefen" statt in 0 Punkte.
-                    logger.error('[Client] CalcTrace execution failed — task falls back to manual review.', err);
-                }
-            }
-        }
+        await runLocalGradingEngines({
+            tasksLayout: payload.tasksLayout,
+            studentText: payload.studentText || payload.text || '',
+            appMode,
+            settings,
+            herkunft: 'Client'
+        });
     }
 
     // --- HYBRID ORCHESTRATION ---
