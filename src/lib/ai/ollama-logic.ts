@@ -1,24 +1,16 @@
 import { logger } from '@/lib/logger';
-import { 
-    buildCorrectionPrompt, 
-    buildCleanAndAnalyzePrompt, 
-    buildCleanAndMapPrompt, 
-    buildVisionPrompt,
-    buildStudentSimulatorPrompt,
-    buildAnonymizePrompt,
-    buildSecondOpinionPrompt,
-    buildVariableExtractionPrompt,
-    buildCalcTraceExtractionPrompt,
-    StructuredPrompt
-
-} from './prompt-builder';
-import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
-import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
+// Die einzelnen Prompt-Bauer stehen hier nicht mehr: die Zuordnung Aktion ->
+// Instruktion macht `buildPromptForAction` fuer alle drei Anbieter gemeinsam.
+import { buildVisionPrompt, StructuredPrompt } from './prompt-builder';
+import { VALIDATE_GRAPH_TOOL } from '../grading/graph-generator';
 import { AppSettings } from '../../types';
 import { isDesktopTarget, hasTauriRuntime } from '@/lib/env-context';
 import { AIProviderError } from './provider-error';
 import { parseLlmJson, LlmJsonParseError } from './llm-json';
 import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
+import { berechneSamplingParameter } from './ollama-sampling';
+import { leseOllamaStream } from './ollama-stream';
+import { pruefeWerkzeugAufruf, MAX_TOOL_RETRIES } from './tool-validation';
 
 import type { AIAction } from './prompt-dispatch';
 export type { AIAction };
@@ -45,9 +37,6 @@ interface OllamaWerkzeug {
     type: 'function';
     function: { name: string; description?: string; parameters?: unknown };
 }
-
-/** Der Lesezugriff eines Web-Streams — im Node-Zweig gibt es ihn nicht. */
-type WebStreamKoerper = { getReader: () => ReadableStreamDefaultReader<Uint8Array> };
 
 /** Werkzeugaufruf, wie das Modell ihn zurueckliefert. */
 interface OllamaWerkzeugAufruf {
@@ -101,9 +90,6 @@ export async function executeOllamaRequest(
     }
 
     const isVision = action === 'vision';
-    let targetMaxTokens = isVision
-        ? (settings.visionMaxTokens ?? 16000)
-        : (settings.maxTokens ?? 32768);
 
     // 1. Prompt Building
     let promptObj: StructuredPrompt;
@@ -126,118 +112,18 @@ export async function executeOllamaRequest(
         });
     }
 
-    // 1.5. Dynamic Parameter & Context size Estimation (Industrial Standard)
-    const modelLower = model.toLowerCase();
-    const isSystemAction = ['clean-and-analyze', 'clean-and-map', 'variable-extraction', 'generate-graph', 'refine-graph', 'generate-calc-trace', 'calc-trace-extraction'].includes(action);
-
-    const isReasoningModel = modelLower.includes('r1') || 
-                              modelLower.includes('qwq') || 
-                              modelLower.includes('reasoning');
-    const shouldIncludeThink = settings.enableThinking === true || isReasoningModel;
-    const thinkValue = (action === 'vision' || isSystemAction) ? false : (settings.enableThinking ?? false);
-
-    if (isSystemAction) {
-        targetMaxTokens = Math.min(targetMaxTokens, 8192);
-    }
-
-    const isGemmaOrMoE = (modelLower.includes('gemma') || modelLower.includes('26b') || modelLower.includes('a4b') || modelLower.includes('moe'))
-        && !modelLower.includes('31b')
-        && !modelLower.includes('32b')
-        && !modelLower.includes('dense');
-    const isQwen = modelLower.includes('qwen');
-
-    let targetTemp: number;
-    let targetTopP: number;
-
-    if (isVision) {
-        targetTemp = settings.visionTemperature ?? promptObj.options?.temperature ?? 0.0;
-        targetTopP = settings.visionTopP ?? promptObj.options?.topP ?? 1.0;
-    } else if (isSystemAction) {
-        // Respect user temperature if configured, otherwise apply model-specific defaults:
-        // gemma/moe -> 0.5, qwen -> 0.3, others -> 0.2
-        const defaultTemp = isGemmaOrMoE ? 0.5 : (isQwen ? 0.3 : 0.2);
-        const defaultTopP = 0.9;
-
-        if (action === 'clean-and-map' || action === 'clean-and-analyze') {
-            // clean-and-map and clean-and-analyze must use fixed default values and ignore profile settings completely
-            targetTemp = defaultTemp;
-            targetTopP = defaultTopP;
-        } else {
-            // For highly structured mathematical extraction and generation tasks, we force 0.0 temperature
-            // for absolute determinism, unless user manually configured a specific temperature.
-            const deterministicActions = ['calc-trace-extraction', 'generate-calc-trace', 'variable-extraction'];
-            const isDeterministicAction = deterministicActions.includes(action);
-            targetTemp = settings.temperature ?? (isDeterministicAction ? 0.0 : defaultTemp);
-            targetTopP = settings.topP ?? defaultTopP;
-        }
-    } else {
-        // Respect user intelligence settings for correction and second-opinion
-        const defaultTemp = isGemmaOrMoE ? 0.5 : (isQwen ? 0.3 : 0.1);
-        targetTemp = settings.temperature ?? promptObj.options?.temperature ?? defaultTemp;
-        targetTopP = settings.topP ?? promptObj.options?.topP ?? 1.0;
-    }
-
-    // Enforce minimum temperature to prevent local GPU loops
-    if (isVision) {
-        if (targetTemp < 0.4) {
-            targetTemp = 0.4;
-        }
-    } else {
-        if (isQwen) {
-            // Qwen models are extremely prone to infinite repetition loops in Ollama at very low temperatures (<= 0.1) in free-text mode.
-            // For system actions or structured JSON mode, we allow temperature to go down to 0.0 for maximum determinism.
-            const hasStructuredFormat = !!(options?.responseSchema) || isSystemAction || action !== 'second-opinion';
-            if (!hasStructuredFormat && targetTemp < 0.2) {
-                targetTemp = 0.2;
-            }
-        } else if (targetTemp === 0) {
-            targetTemp = 0.1;
-        }
-
-        // Clamp minimum temperature specifically for Gemma / MoE models to prevent loops in JSON mode
-        if (isGemmaOrMoE && targetTemp < 0.5) {
-            targetTemp = 0.5;
-        }
-    }
-
-    // Dynamic Context size Estimation
-    const promptCharCount = promptObj.user.length + (promptObj.system?.length || 0);
-    // Lower divisor to 2.8 to prevent underestimating tokens (especially for German text / formulas)
-    const estimatedTextTokens = Math.ceil(promptCharCount / 2.8);
-    const imageCount = images?.length || 0;
-    const imageTokens = imageCount * 8000; // Vision Hardening: 8000 tokens per image
-
-    let numCtx: number | undefined = settings.ollamaNumCtx;
-    if (!numCtx || numCtx === 0) {
-        const customLimit = isVision ? (settings.visionMaxTokens ?? 0) : (settings.maxTokens ?? 0);
-        // If the model is a reasoning model (or thinking is enabled), allocate a large 12k buffer
-        // to prevent context overflows during long internal thinking generations.
-        const needsMoreBuffer = shouldIncludeThink || isReasoningModel;
-        const responseBuffer = Math.max(needsMoreBuffer ? 12000 : 4000, customLimit);
-        let totalEstimated = estimatedTextTokens + imageTokens + responseBuffer;
-
-        // Force a minimum context of 16k for complex mathematical extraction actions
-        if (action === 'calc-trace-extraction' || action === 'generate-calc-trace') {
-            totalEstimated = Math.max(totalEstimated, 16384);
-        }
-
-        if (totalEstimated <= 8192) {
-            numCtx = 8192;
-        } else if (totalEstimated <= 16384) {
-            numCtx = 16384;
-        } else {
-            numCtx = 32768;
-        }
-    }
-
-    // Cloud-variants often don't support num_ctx or crash on value mismatch
-    if (modelLower.includes('-cloud')) {
-        numCtx = undefined;
-    }
-
-    const finalMaxTokens = numCtx 
-        ? Math.min(targetMaxTokens, Math.max(1000, numCtx - estimatedTextTokens - imageTokens)) 
-        : targetMaxTokens;
+    // 1.5. Sampling-Parameter — die Rechnung dahinter steht in ./ollama-sampling
+    const { temperature: targetTemp, topP: targetTopP, numCtx, maxTokens: finalMaxTokens, think: thinkValue, art } =
+        berechneSamplingParameter({
+            action,
+            model,
+            settings,
+            promptOptions: promptObj.options,
+            promptCharCount: promptObj.user.length + (promptObj.system?.length || 0),
+            imageCount: images?.length || 0,
+            hasResponseSchema: !!options?.responseSchema
+        });
+    const isSystemAction = art.isSystemAction;
 
     // 2. Execution Path Separation
     if (isDesktopTarget()) {
@@ -320,9 +206,8 @@ export async function executeOllamaRequest(
     
     let fullContent = '';
     let toolRetryCount = 0;
-    const maxToolRetries = 3;
 
-    while (toolRetryCount <= maxToolRetries) {
+    while (toolRetryCount <= MAX_TOOL_RETRIES) {
         // We disable streaming if we are using tools to safely capture the full tool_calls object.
         const isStreaming = !isGraphAction;
 
@@ -366,133 +251,36 @@ export async function executeOllamaRequest(
         let toolCalls: OllamaWerkzeugAufruf[] = [];
 
         if (isStreaming) {
-            if (response.body) {
-                // Web-Stream (Browser, Edge) und Node-Stream sehen hier
-                // unterschiedlich aus. Unterschieden wird an `getReader`, weil
-                // nur der Web-Stream ihn hat.
-                const koerper: unknown = response.body;
-                if (typeof (koerper as { getReader?: unknown }).getReader === 'function') {
-                    const reader = (koerper as WebStreamKoerper).getReader();
-                    const decoder = new TextDecoder();
-                    let buffer = '';
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        buffer += decoder.decode(value, { stream: true });
-                        const lines = buffer.split('\n');
-                        buffer = lines.pop() || '';
-                        for (const line of lines) {
-                            const cleanLine = line.trim();
-                            if (!cleanLine) continue;
-                            try {
-                                const parsed = JSON.parse(cleanLine);
-                                if (parsed.message?.content) {
-                                    fullContent += parsed.message.content;
-                                }
-                            } catch (e) {
-                                // ignore
-                            }
-                        }
-                    }
-                    if (buffer.trim()) {
-                        try {
-                            const parsed = JSON.parse(buffer.trim());
-                            if (parsed.message?.content) {
-                                fullContent += parsed.message.content;
-                            }
-                        } catch (e) {}
-                    }
-                } else {
-                    for await (const chunk of koerper as AsyncIterable<{ toString(): string }>) {
-                        const chunkStr = chunk.toString();
-                        const lines = chunkStr.split('\n');
-                        for (const line of lines) {
-                            const cleanLine = line.trim();
-                            if (!cleanLine) continue;
-                            try {
-                                const parsed = JSON.parse(cleanLine);
-                                if (parsed.message?.content) {
-                                    fullContent += parsed.message.content;
-                                }
-                            } catch (e) {}
-                        }
-                    }
-                }
-            }
+            fullContent = await leseOllamaStream(response.body);
         } else {
             const data = await response.json();
             fullContent = data.message?.content || '';
             toolCalls = data.message?.tool_calls || [];
         }
 
-        // Handle tool calls
+        // Werkzeug-Umlauf. Die Pruefung selbst steht in ./tool-validation und
+        // ist fuer alle drei Anbieter dieselbe — Ollama hatte sie bis
+        // 17.08.2026 als dritte eigene Fassung ausgeschrieben.
         if (toolCalls.length > 0) {
             const toolCall = toolCalls[0];
-            if (toolCall.function.name === 'validate_graph') {
-                const args = toolCall.function.arguments;
-                const draftGraphJson = typeof args === 'string' ? args : JSON.stringify(args);
-                const draftGraph = parseGeneratedGraph(draftGraphJson, { skipSanitization: true });
-                let toolResultString = "";
-                
-                if (!draftGraph) {
-                    toolResultString = "Invalid JSON structure or missing variables. Ensure you match the GRADING_GRAPH_SCHEMA exactly.";
-                } else {
-                    const validation = validateGraphDeterminism(draftGraph);
-                    if (validation.isValid) {
-                        // [Short-Circuit Optimization]
-                        // Qwen/Mistral often return empty strings after a successful tool call instead of repeating the JSON.
-                        // We intercept the valid draftGraph here and return it immediately.
-                        return draftGraph;
-                    } else {
-                        toolResultString = `Mathematical validation failed: ${validation.error}. Please fix this and try again or return the corrected graph.`;
-                    }
-                }
-                
-                messages.push({
-                    role: "assistant",
-                    content: fullContent,
-                    tool_calls: toolCalls
-                });
-                messages.push({
-                    role: "tool",
-                    name: toolCall.function.name,
-                    content: toolResultString
-                });
+            const args = toolCall.function.arguments;
+            const urteil = pruefeWerkzeugAufruf(
+                toolCall.function.name,
+                typeof args === 'string' ? args : JSON.stringify(args)
+            );
 
-                toolRetryCount++;
-                continue;
-            } else if (toolCall.function.name === 'validate_calc_trace') {
-                const args = toolCall.function.arguments;
-                const draftTraceJson = typeof args === 'string' ? args : JSON.stringify(args);
-                const draftTrace = parseGeneratedCalcTrace(draftTraceJson);
-                let toolResultString = "";
+            if (urteil.status === 'akzeptiert') {
+                return urteil.artefakt;
+            }
 
-                if (!draftTrace) {
-                    toolResultString = "Invalid JSON structure or missing fields. Ensure you match the CALC_TRACE_SCHEMA exactly.";
-                } else {
-                    const validation = validateCalcTraceDeterminism(draftTrace);
-                    if (validation.isValid) {
-                        return draftTrace;
-                    } else {
-                        toolResultString = `Mathematical validation failed: ${validation.error}. Please fix this and try again.`;
-                    }
-                }
-
-                messages.push({
-                    role: "assistant",
-                    content: fullContent,
-                    tool_calls: toolCalls
-                });
-                messages.push({
-                    role: "tool",
-                    name: toolCall.function.name,
-                    content: toolResultString
-                });
-
+            if (urteil.status === 'nachbessern') {
+                messages.push({ role: 'assistant', content: fullContent, tool_calls: toolCalls });
+                messages.push({ role: 'tool', name: toolCall.function.name, content: urteil.rueckmeldung });
                 toolRetryCount++;
                 continue;
             }
         }
+
 
         // If no tool calls, exit loop
         break;

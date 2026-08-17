@@ -102,10 +102,6 @@ const SIZE_BASELINE: Record<string, number> = {
     // sein Motor-Abschnitt als SkillEngineSection. Beide neuen Dateien halten
     // die 300er-Grenze ein — deshalb stehen sie nicht hier.
     'components/settings/SkillsModules.tsx': 525,
-    // +53 gegenueber 626: ausgeschriebene Typen fuer Nachrichten, Werkzeuge und
-    // den Stream-Koerper. Sie haben 15 der 16 `any` in dieser Datei abgeloest —
-    // der letzte traegt eine ARCH-Begruendung.
-    'lib/ai/ollama-logic.ts': 679,
     'components/settings/AiProfileModules.tsx': 402,
     // 704 -> 411: die reinen Helfer nach lib/skills/skill-dedup, die
     // Skill-Verwaltung nach hooks/skills/useCustomSkillCrud, und die sechs
