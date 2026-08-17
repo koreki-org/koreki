@@ -77,8 +77,10 @@ const SIZE_BASELINE: Record<string, number> = {
     // dieser Eintrag ohnehin weg.
     'lib/ai/ai-orchestrator.ts': 1010,
     'lib/ai/ollama-logic.ts': 896,
-    // +14 fuer die Trennung von Datei- und Ereignis-Weg beim Import.
-    'hooks/useGradingMemoryModalState.ts': 771,
+    // +14 fuer die Trennung von Datei- und Ereignis-Weg beim Import, +6 fuer
+    // die Ueberladungen von handleUpdateCaseField — sie verhindern, dass eine
+    // Zahl in ein Textfeld des Fallbeispiels geschrieben wird.
+    'hooks/useGradingMemoryModalState.ts': 777,
     'components/settings/AiProfileModules.tsx': 402,
     'lib/grading/CalcTrace.ts': 696,
     // +15 fuer den Wächter gegen den sich selbst ausloesenden Lade-Effekt.

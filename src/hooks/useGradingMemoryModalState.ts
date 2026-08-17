@@ -7,6 +7,7 @@ import { downloadFile } from '../lib/file-utils';
 import { exportGradingMemoryToMarkdown, parseMarkdownGradingMemory } from '../lib/parsers/markdown-grading-memory-parser';
 import { resolveTaskName, resolveMaxPoints } from '../lib/grading-memory-utils';
 import { findNameCollision } from '../lib/local-vault';
+import { toErrorMessage } from '../lib/error-message';
 import { nameTakenMessage, overwriteQuestion } from '../lib/services/profile-naming';
 
 export interface UseGradingMemoryModalStateProps {
@@ -225,8 +226,8 @@ export function useGradingMemoryModalState({
                     throw new Error("Fehler beim Speichern des importierten Erfahrungsschatzes im Backend.");
                 }
             }
-        } catch (err: any) {
-            alert("Import-Fehler: " + (err.message || String(err)));
+        } catch (err) {
+            alert("Import-Fehler: " + toErrorMessage(err));
         }
     };
 
@@ -259,12 +260,12 @@ export function useGradingMemoryModalState({
             if (isDesktopTarget()) {
                 const stored = localStorage.getItem('koreki_local_grading_memories');
                 if (stored) {
-                    let list = JSON.parse(stored);
+                    let list: GradingMemory[] = JSON.parse(stored);
                     if (findNameCollision(list, editingMemoryId, editingName)) {
                         alert(nameTakenMessage('Erfahrungsschatz'));
                         return;
                     }
-                    list = list.map((m: any) =>
+                    list = list.map(m =>
                         m.id === editingMemoryId ? { ...m, name: editingName.trim() } : m
                     );
                     localStorage.setItem('koreki_local_grading_memories', JSON.stringify(list));
@@ -290,12 +291,17 @@ export function useGradingMemoryModalState({
                     throw new Error(data.message || 'Fehler beim Umbenennen im Backend.');
                 }
             }
-        } catch (e: any) {
-            alert("Fehler beim Umbenennen: " + (e.message || String(e)));
+        } catch (e) {
+            alert("Fehler beim Umbenennen: " + toErrorMessage(e));
         }
     };
 
-    const handleUpdateCaseField = (caseId: string, field: 'pointsObtained' | 'correctionNotes' | 'feedback' | 'studentText', value: any) => {
+    // Ueberladungen halten fest, was der Rumpf voraussetzt: `pointsObtained` ist
+    // eine Zahl, alle uebrigen Felder sind Text. Mit einem gemeinsamen
+    // `string | number` liesse sich eine Zahl in `studentText` schreiben.
+    function handleUpdateCaseField(caseId: string, field: 'pointsObtained', value: number): void;
+    function handleUpdateCaseField(caseId: string, field: 'correctionNotes' | 'feedback' | 'studentText', value: string): void;
+    function handleUpdateCaseField(caseId: string, field: 'pointsObtained' | 'correctionNotes' | 'feedback' | 'studentText', value: string | number) {
         if (!activeMemoryId) return;
 
         setMemories(prev => prev.map(m => {
@@ -305,7 +311,7 @@ export function useGradingMemoryModalState({
                 cases: m.cases.map(c => {
                     if (c.id !== caseId) return c;
                     if (field === 'studentText') {
-                        return { ...c, studentText: value };
+                        return { ...c, studentText: String(value) };
                     }
                     return {
                         ...c,
@@ -341,8 +347,8 @@ const handleSaveActiveMemoryChanges = async () => {
             if (isDesktopTarget()) {
                 const stored = localStorage.getItem('koreki_local_grading_memories');
                 if (stored) {
-                    let list = JSON.parse(stored);
-                    const idx = list.findIndex((m: any) => m.id === activeMemoryId);
+                    let list: GradingMemory[] = JSON.parse(stored);
+                    const idx = list.findIndex(m => m.id === activeMemoryId);
                     if (idx >= 0) {
                         list[idx] = activeMem;
                     }
@@ -363,8 +369,8 @@ const handleSaveActiveMemoryChanges = async () => {
                     throw new Error("Fehler beim Speichern im Backend.");
                 }
             }
-        } catch (e: any) {
-            alert("Fehler beim Speichern: " + (e.message || String(e)));
+        } catch (e) {
+            alert("Fehler beim Speichern: " + toErrorMessage(e));
         } finally {
             setIsSaving(false);
         }
@@ -397,8 +403,8 @@ const handleSaveActiveMemoryChanges = async () => {
                     throw new Error(errData.message || "Fehler beim Speichern des importierten Erfahrungsschatzes im Backend.");
                 }
             }
-        } catch (e: any) {
-            alert("Fehler beim Speichern: " + (e.message || String(e)));
+        } catch (e) {
+            alert("Fehler beim Speichern: " + toErrorMessage(e));
         } finally {
             setIsSaving(false);
         }
@@ -488,8 +494,8 @@ const handleSaveActiveMemoryChanges = async () => {
             } else {
                 throw new Error('Ungültiges Antwortformat der KI erhalten.');
             }
-        } catch (err: any) {
-            setError(err.message || 'Verbindungsfehler beim Aufruf der Simulator-Schnittstelle.');
+        } catch (err) {
+            setError(toErrorMessage(err, 'Verbindungsfehler beim Aufruf der Simulator-Schnittstelle.'));
             setStep('start');
         } finally {
             setIsGenerating(false);
@@ -544,8 +550,8 @@ const handleSaveActiveMemoryChanges = async () => {
             const savedMemory = await response.json();
             addLocalMemory(savedMemory);
             setStep('start');
-        } catch (err: any) {
-            setError(err.message || 'Fehler beim Sichern des leeren Profils.');
+        } catch (err) {
+            setError(toErrorMessage(err, 'Fehler beim Sichern des leeren Profils.'));
         } finally {
             setIsSaving(false);
         }
@@ -664,8 +670,8 @@ const handleSaveActiveMemoryChanges = async () => {
             const savedMemory = await response.json();
             addLocalMemory(savedMemory);
             setStep('saved');
-        } catch (err: any) {
-            setError(err.message || 'Fehler beim Sichern des Profils im lokalen Speicher.');
+        } catch (err) {
+            setError(toErrorMessage(err, 'Fehler beim Sichern des Profils im lokalen Speicher.'));
         } finally {
             setIsSaving(false);
         }
