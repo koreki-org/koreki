@@ -5,6 +5,7 @@ import { checkAndDeductCredits } from '@/lib/billing';
 
 import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { logger } from '@/lib/logger';
+import { toErrorMessage } from '@/lib/error-message';
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -29,8 +30,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         logger.info(`[Pure Billing] Deducted ${creditsToDeduct} credits from active workspace of user ${logtoId} for ${action}`);
 
         return res.status(200).json({ success: true });
-    } catch (error: any) {
-        logger.error('Pure billing error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
-        return res.status(error.message?.includes('Credits') ? 402 : 500).json({ error: error.message });
+    } catch (error) {
+        logger.error('Pure billing error', { endpoint: req.url, message: toErrorMessage(error) });
+        const message = toErrorMessage(error);
+        return res.status(message.includes('Credits') ? 402 : 500).json({ error: message });
     }
 });

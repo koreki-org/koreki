@@ -8,6 +8,7 @@ import prisma from './prisma';
 import { UserService } from './services/user-service';
 import { isLocalInstance, isKeycloakAuth } from './env-context';
 import { extractBearerToken, verifyKeycloakToken, type VerifiedKeycloakIdentity } from './auth-keycloak-server';
+import { toErrorMessage } from './error-message';
 
 export type SecurityOptions = {
     /**
@@ -121,7 +122,7 @@ export function withSecurity(
                     // Details bleiben serverseitig (Säule 4), Client bekommt eine generische Meldung.
                     logger.security('Keycloak-Token abgelehnt', {
                         url: req.url,
-                        reason: error instanceof Error ? error.message : String(error)
+                        reason: toErrorMessage(error)
                     });
                     await logSecurityEvent('anonymous', null, 'AUTH_FAILURE', `Invalid Keycloak token for ${req.url}`, ip);
                     return res.status(401).json({ error: 'Nicht angemeldet.' });
@@ -242,8 +243,8 @@ export function withSecurity(
                     try {
                         dbUser = await UserService.ensureUserExists(userId!, claims);
                         logger.info('SECURITY_SYNC: JIT Provisioned user on-the-fly', { logtoId: userId });
-                    } catch (provisionError: any) {
-                        logger.error(`JIT Provisioning Failed: ${provisionError.message}`, { userId });
+                    } catch (provisionError) {
+                        logger.error(`JIT Provisioning Failed: ${toErrorMessage(provisionError)}`, { userId });
                         return res.status(403).json({ error: 'Nutzerprofil-Erstellung fehlgeschlagen.' });
                     }
                 }
@@ -294,8 +295,8 @@ export function withSecurity(
                 // 5. EXECUTE HANDLER
                 return await handler(req, res);
 
-            } catch (error: any) {
-                logger.error(`Security Wrapper Exception: ${error.message}`, { url: req.url, ip });
+            } catch (error) {
+                logger.error(`Security Wrapper Exception: ${toErrorMessage(error)}`, { url: req.url, ip });
                 return res.status(500).json({ error: 'Interner Sicherheitsfehler.' });
             }
         });

@@ -11,6 +11,7 @@
     "strict": false,
     "strictNullChecks": true,
     "noImplicitAny": true,
+    "useUnknownInCatchVariables": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "incremental": true,

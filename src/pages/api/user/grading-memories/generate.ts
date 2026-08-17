@@ -10,6 +10,7 @@ import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { checkAiBudget, checkAndDeductCredits } from '../../../../lib/billing';
 import { isLocalInstance } from '../../../../lib/env-context';
 import { requireOpenAiConnection } from '../../../../lib/ai/provider-connection';
+import { toErrorMessage } from '../../../../lib/error-message';
 
 /**
  * Synthetic Student Generator API
@@ -99,8 +100,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // Return the parsed synthetic answers array to the frontend
         return res.status(200).json(result);
 
-    } catch (error: any) {
-        logger.error('[API:GradingMemories:Generate] Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+    } catch (error) {
+        logger.error('[API:GradingMemories:Generate] Error', { endpoint: req.url, message: toErrorMessage(error) });
         const { status, message } = resolveAiHttpError(error, 'Fehler beim Generieren der fiktiven Schülerabgaben.');
         return res.status(status).json({ error: message });
     }

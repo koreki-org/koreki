@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { logger } from '@/lib/logger';
+import { toErrorMessage } from '../error-message';
 
 /**
  * JSON Vault Utilities (Community & Desktop Persistence)
@@ -29,7 +30,7 @@ function quarantineCorruptFile(storagePath: string, reason: string): boolean {
         logger.security('[JsonVault] Beschädigte Datei in Quarantäne verschoben', { quarantinePath, reason });
         return true;
     } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = toErrorMessage(err);
         logger.error('[JsonVault] Quarantäne fehlgeschlagen', { storagePath, message });
         return false;
     }
@@ -57,7 +58,7 @@ function readJson<T>(storagePath: string, fallback: T, mode: ReadMode): T {
     try {
         raw = fs.readFileSync(storagePath, 'utf-8');
     } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = toErrorMessage(err);
         logger.error('[JsonVault] Datei konnte nicht gelesen werden', { storagePath, message });
         if (mode === 'update') {
             throw new Error('Die gespeicherten Daten konnten nicht gelesen werden. Der Schreibvorgang wurde zum Schutz vor Datenverlust abgebrochen.');
@@ -71,7 +72,7 @@ function readJson<T>(storagePath: string, fallback: T, mode: ReadMode): T {
     try {
         return JSON.parse(raw) as T;
     } catch (err) {
-        const quarantined = quarantineCorruptFile(storagePath, err instanceof Error ? err.message : String(err));
+        const quarantined = quarantineCorruptFile(storagePath, toErrorMessage(err));
 
         if (!quarantined && mode === 'update') {
             throw new Error(
@@ -144,7 +145,7 @@ export function writeJsonAtomic(storagePath: string, data: unknown): void {
             return;
         } catch (err) {
             if (attempt === RENAME_ATTEMPTS) {
-                const message = err instanceof Error ? err.message : String(err);
+                const message = toErrorMessage(err);
                 logger.warn('[JsonVault] Atomares Umbenennen fehlgeschlagen, schreibe direkt', { storagePath, message });
 
                 try {

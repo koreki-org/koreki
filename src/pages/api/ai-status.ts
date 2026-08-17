@@ -4,6 +4,7 @@ import { getSystemAiStatus } from '../../lib/billing';
 import { logger } from '../../lib/logger';
 
 import { withSecurity, AuthenticatedRequest } from '../../lib/security';
+import { toErrorMessage } from '../../lib/error-message';
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     if (req.method !== 'GET') return res.status(405).send('Method Not Allowed');
@@ -16,7 +17,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         
         return res.status(200).json(status);
     } catch (error) {
-        logger.error('AI Status Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+        logger.error('AI Status Error', { endpoint: req.url, message: toErrorMessage(error) });
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 }, { allowAnonymous: true });

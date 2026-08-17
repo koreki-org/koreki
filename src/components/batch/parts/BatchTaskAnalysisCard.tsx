@@ -13,6 +13,7 @@ import { performAIRequest } from '@/lib/ai/ai-orchestrator';
 import { SecondOpinionDrawer } from './SecondOpinionDrawer';
 import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
 import { AnonymizeModal } from './AnonymizeModal';
+import { toErrorMessage } from '../../../lib/error-message';
 
 interface BatchTaskAnalysisCardProps {
     item: BatchFile;
@@ -168,12 +169,12 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
             } else {
                 throw new Error('Ungültige Antwort von der Anonymisierungs-API.');
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error('[Anonymize] Error during stylistic anonymization:', err);
             // On error: show the dialog with error state so user can retry or save original
             setAnonymizePayload({ taskName, originalText, points, notes, maxPoints });
             setAnonymizedText(originalText);
-            setAnonymizeError(err.message || 'Fehler bei der stilistischen Anonymisierung. Bitte versuche es erneut.');
+            setAnonymizeError(toErrorMessage(err, 'Fehler bei der stilistischen Anonymisierung. Bitte versuche es erneut.'));
             setAnonymizing(false);
             setShowAnonymizeDialog(true);
         } finally {
@@ -199,9 +200,9 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
             } else {
                 throw new Error('Ungültige Antwort von der Anonymisierungs-API.');
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error('[Anonymize] Error during stylistic anonymization retry:', err);
-            setAnonymizeError(err.message || 'Fehler bei der stilistischen Anonymisierung. Bitte versuche es erneut.');
+            setAnonymizeError(toErrorMessage(err, 'Fehler bei der stilistischen Anonymisierung. Bitte versuche es erneut.'));
         } finally {
             setAnonymizing(false);
         }

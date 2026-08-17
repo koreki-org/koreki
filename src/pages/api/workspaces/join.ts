@@ -3,6 +3,7 @@ import prisma from '../../../lib/prisma';
 import { z } from 'zod';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
+import { toErrorMessage } from '../../../lib/error-message';
 
 const joinSchema = z.object({
     inviteCode: z.string().min(1, 'Code erforderlich')
@@ -71,7 +72,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
             return res.status(200).json({ success: true, workspaceName: workspace.name });
         } catch (err) {
-            logger.error('Join Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
+            logger.error('Join Error', { endpoint: req.url, message: toErrorMessage(err) });
             return res.status(500).json({ message: 'Fehler beim Beitreten' });
         }
     }

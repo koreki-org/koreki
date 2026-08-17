@@ -9,6 +9,7 @@ import { useDashboardStore } from './store/useDashboardStore';
 import { useBatchState } from './file-processor/useBatchState';
 import { useBatchActions } from './file-processor/useBatchActions';
 import { useProcessingPipeline } from './file-processor/useProcessingPipeline';
+import { toErrorMessage, isRateLimitError } from '../lib/error-message';
 
 export const useFileProcessor = (
     userData: any,
@@ -143,11 +144,11 @@ export const useFileProcessor = (
             } else {
                 throw new Error("Koreki konnte keine Aufgabenstruktur in diesem Dokument erkennen. Bitte prüfe die PDF-Qualität.");
             }
-        } catch (err: any) {
-            const isRateLimit = err.message?.includes('429') || err.message?.toLowerCase().includes('rate limit') || err.message?.includes('überlastet');
+        } catch (err) {
+            const isRateLimit = isRateLimitError(err);
             alert(isRateLimit 
                 ? "Der KI-Server ist gerade ausgelastet. Bitte warten Sie ca. 30 Sekunden und versuchen es erneut."
-                : "Fehler bei Musterlösung: " + err.message
+                : "Fehler bei Musterlösung: " + toErrorMessage(err)
             );
         } finally {
             setIsLoadingModel(false);

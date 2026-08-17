@@ -12,6 +12,7 @@ import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { z } from 'zod';
 import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
 import { checkAiBudget, checkCreditsAvailable, performBillingAction } from '@/lib/billing';
+import { toErrorMessage } from '@/lib/error-message';
 
 /** Kosten eines Calc-Trace-Laufs. Vorpruefung und Abrechnung nutzen denselben Wert. */
 const CREDIT_COST = 1;
@@ -132,9 +133,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 if (rawResult) {
                     trace = parseGeneratedCalcTrace(JSON.stringify(rawResult), maxPoints);
                 }
-            } catch (err: any) {
+            } catch (err) {
                 lastError = err;
-                logger.warn(`[Server] TargetGoal generation attempt ${attempts} failed:`, err.message || err);
+                logger.warn(`[Server] TargetGoal generation attempt ${attempts} failed:`, toErrorMessage(err));
             }
         }
 
@@ -170,7 +171,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         }
 
         return res.status(200).json(trace);
-    } catch (error: any) {
+    } catch (error) {
         logger.error('API Generate CalcTrace Fatal Error:', error);
         const { status, message } = resolveAiHttpError(error, 'Fehler beim Generieren des Rechenwegs.');
         return res.status(status).json({ error: message });

@@ -1,6 +1,7 @@
 import { isLocalInstance, isKeycloakAuth } from './env-context';
 import { getOidcUser } from './auth-keycloak';
 import { logger } from './logger';
+import { toErrorMessage } from './error-message';
 
 /**
  * Industrial Network Guard (Layer 1)
@@ -39,8 +40,8 @@ export function validateNetworkTarget(url: string) {
         // 3. BLOCK EVERYTHING ELSE (especially *.koreki.org)
         logger.security(`NETWORK ISOLATION BREACH: Blocked call to ${hostname} in Desktop Mode.`);
         throw new Error(`Koreki Security: Netzwerkzugriff auf ${hostname} im lokalen Modus blockiert.`);
-    } catch (e: any) {
-        if (e.message?.includes('Koreki Security')) throw e;
+    } catch (e) {
+        if (toErrorMessage(e).includes('Koreki Security')) throw e;
         // Ignore invalid URLs here, let the underlying fetch handle them
     }
 }

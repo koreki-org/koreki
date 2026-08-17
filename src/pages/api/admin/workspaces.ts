@@ -3,6 +3,7 @@ import prisma from '../../../lib/prisma';
 import { z } from 'zod';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
+import { toErrorMessage } from '../../../lib/error-message';
 
 const workspaceSchema = z.object({
     name: z.string().min(1),
@@ -147,7 +148,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
                 return res.status(200).json({ success: true, distributed: sharePerMember > 0 });
             } catch (err) {
-                logger.error('Delete Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
+                logger.error('Delete Error', { endpoint: req.url, message: toErrorMessage(err) });
                 return res.status(500).json({ message: 'Fehler beim Löschen' });
             }
         }

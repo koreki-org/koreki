@@ -10,6 +10,7 @@ import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { checkAiBudget, checkAndDeductCredits } from '../../lib/billing';
 import { isLocalInstance } from '../../lib/env-context';
 import { requireOpenAiConnection } from '../../lib/ai/provider-connection';
+import { toErrorMessage } from '../../lib/error-message';
 
 /**
  * Pedagogical Double-Check API (Zweitblick)
@@ -142,8 +143,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const rawResponse = result.response || result.text || (typeof result === 'string' ? result : JSON.stringify(result));
         return res.status(200).json({ response: rawResponse });
 
-    } catch (error: any) {
-        logger.error('[API:SecondOpinion] Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+    } catch (error) {
+        logger.error('[API:SecondOpinion] Error', { endpoint: req.url, message: toErrorMessage(error) });
         const { status, message } = resolveAiHttpError(error, 'Fehler beim Einholen der Zweitmeinung.');
         return res.status(status).json({ error: message });
     }

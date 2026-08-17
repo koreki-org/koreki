@@ -6,6 +6,7 @@ import { logger } from '../../../lib/logger';
 import { z } from 'zod';
 
 import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/security';
+import { toErrorMessage } from '../../../lib/error-message';
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     if (req.method !== 'POST') {
@@ -44,7 +45,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         return res.status(200).json({ success: true, message: 'Konto und Identität erfolgreich gelöscht.' });
     } catch (error) {
-        logger.error('Account Deletion Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+        logger.error('Account Deletion Error', { endpoint: req.url, message: toErrorMessage(error) });
         return res.status(500).json({ message: 'Interner Serverfehler beim Löschen des Kontos.' });
     }
 });

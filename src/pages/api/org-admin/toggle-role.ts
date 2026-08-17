@@ -3,6 +3,7 @@ import prisma from '../../../lib/prisma';
 import { z } from 'zod';
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
+import { toErrorMessage } from '../../../lib/error-message';
 
 const toggleSchema = z.object({
     membershipId: z.string().min(1, 'Mitgliedschafts-ID erforderlich'),
@@ -54,7 +55,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         });
 
     } catch (error) {
-        logger.error('ERROR in /api/org-admin/toggle-role', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+        logger.error('ERROR in /api/org-admin/toggle-role', { endpoint: req.url, message: toErrorMessage(error) });
         return res.status(500).json({ message: 'Interner Server-Fehler' });
     }
 }, { requireAdmin: 'ORG' });

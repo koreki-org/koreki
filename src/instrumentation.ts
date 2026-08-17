@@ -1,3 +1,4 @@
+import { toErrorMessage } from './lib/error-message';
 /**
  * Next.js Instrumentation Hook
  * Used for server-side maintenance tasks and observability.
@@ -15,8 +16,8 @@ export async function register() {
                     connectTimeout: 60000   // 1 minute
                 }));
                 console.log('[INSTRUMENTATION] Undici global dispatcher configured with 5-minute timeouts.');
-            } catch (err: any) {
-                console.warn('[INSTRUMENTATION WARNING] Failed to set global undici dispatcher:', err.message);
+            } catch (err) {
+                console.warn('[INSTRUMENTATION WARNING] Failed to set global undici dispatcher:', toErrorMessage(err));
             }
 
             // --- TIER-GUARD ---
@@ -45,8 +46,8 @@ export async function register() {
                     cron.schedule('0 3 * * *', async () => {
                         try {
                             await cleanupLogs(prisma);
-                        } catch (err: any) {
-                            console.error('[CRON FATAL] Pillar 6 Cleanup failed:', err.message);
+                        } catch (err) {
+                            console.error('[CRON FATAL] Pillar 6 Cleanup failed:', toErrorMessage(err));
                         }
                     });
                     console.log('[INSTRUMENTATION] Security Guard Active: Pillar 6 (Retention) scheduled daily at 03:00.');
@@ -54,8 +55,8 @@ export async function register() {
                 .catch(() => {
                     console.log('[INSTRUMENTATION] Database not available (offline/desktop mode). Skipping automated data retention.');
                 });
-        } catch (error: any) {
-            console.error('[INSTRUMENTATION ERROR] Failed to initialize security cron:', error.message);
+        } catch (error) {
+            console.error('[INSTRUMENTATION ERROR] Failed to initialize security cron:', toErrorMessage(error));
         }
     }
 }

@@ -11,6 +11,7 @@ import { logger } from '../../lib/logger';
 import { useBatchStore } from '../store/useBatchStore';
 import { isDesktopTarget } from '../../lib/env-context';
 import { apiClient } from '../../lib/api-client';
+import { toErrorMessage, isAbortError, isRateLimitError } from '../../lib/error-message';
 
 async function ensureActiveGradingMemorySynced() {
     try {
@@ -268,8 +269,8 @@ export const useProcessingPipeline = (
                             });
                         }
                     }
-                } catch (err: any) {
-                    if (err.name === 'AbortError' || signal.aborted) {
+                } catch (err) {
+                    if (isAbortError(err) || signal.aborted) {
                         console.log("Extraction aborted by user");
                         break;
                     }
@@ -280,7 +281,7 @@ export const useProcessingPipeline = (
                         next[i] = {
                             ...next[i],
                             status: 'error',
-                            error: err.message || "Fehler bei der Verarbeitung. Bitte erneut versuchen."
+                            error: toErrorMessage(err, "Fehler bei der Verarbeitung. Bitte erneut versuchen.")
                         };
                         return next;
                     });
@@ -332,12 +333,12 @@ export const useProcessingPipeline = (
                             { previewDataUrls: ocrRes.previewDataUrls || currentBatch[i].previewDataUrls },
                             signal
                         );
-                    } catch (err: any) {
-                        if (err.name === 'AbortError' || signal.aborted) {
+                    } catch (err) {
+                        if (isAbortError(err) || signal.aborted) {
                             console.log("OCR aborted by user");
                             break;
                         }
-                        const isRateLimit = err.message?.includes('429') || err.message?.toLowerCase().includes('rate limit') || err.message?.includes('überlastet');
+                        const isRateLimit = isRateLimitError(err);
                         setBatchFiles((prev: BatchFile[]) => {
                             const next = [...prev];
                             next[i] = { 
@@ -345,7 +346,7 @@ export const useProcessingPipeline = (
                                 status: 'error', 
                                 error: isRateLimit 
                                     ? 'KI-Server ausgelastet — bitte ca. 30s warten und erneut starten.' 
-                                    : err.message 
+                                    : toErrorMessage(err) 
                             };
                             return next;
                         });
@@ -467,8 +468,8 @@ export const useProcessingPipeline = (
             if (userData?.appMode !== 'PURE') {
                 setUserData((u: any) => u ? { ...u, credits: Math.max(0, u.credits - (currentFile.pageCount || 1)) } : null);
             }
-        } catch (err: any) {
-            if (err.name === 'AbortError' || signal?.aborted) {
+        } catch (err) {
+            if (isAbortError(err) || signal?.aborted) {
                 console.log(`Correction of file ${i} aborted by user`);
                 setBatchFiles((prev: BatchFile[]) => {
                     const next = [...prev];
@@ -479,7 +480,7 @@ export const useProcessingPipeline = (
             }
             setBatchFiles((prev: BatchFile[]) => {
                 const next = [...prev];
-                next[i] = { ...next[i], status: 'error', error: err.message };
+                next[i] = { ...next[i], status: 'error', error: toErrorMessage(err) };
                 return next;
             });
         }
@@ -587,8 +588,8 @@ export const useProcessingPipeline = (
                 { previewDataUrls: ocrRes.previewDataUrls || currentFile.previewDataUrls },
                 signal
             );
-        } catch (err: any) {
-            if (err.name === 'AbortError' || signal.aborted) {
+        } catch (err) {
+            if (isAbortError(err) || signal.aborted) {
                 console.log(`OCR of file ${i} aborted by user`);
                 setBatchFiles((prev: BatchFile[]) => {
                     const next = [...prev];
@@ -597,7 +598,7 @@ export const useProcessingPipeline = (
                 });
                 return;
             }
-            const isRateLimit = err.message?.includes('429') || err.message?.toLowerCase().includes('rate limit') || err.message?.includes('überlastet');
+            const isRateLimit = isRateLimitError(err);
             setBatchFiles((prev: BatchFile[]) => {
                 const next = [...prev];
                 next[i] = { 
@@ -605,7 +606,7 @@ export const useProcessingPipeline = (
                     status: 'error', 
                     error: isRateLimit 
                         ? 'KI-Server ausgelastet — bitte ca. 30s warten und erneut starten.' 
-                        : err.message 
+                        : toErrorMessage(err) 
                 };
                 return next;
             });
@@ -641,8 +642,8 @@ export const useProcessingPipeline = (
             }
 
             return data;
-        } catch (err: any) {
-            if (err.name === 'AbortError' || signal.aborted) {
+        } catch (err) {
+            if (isAbortError(err) || signal.aborted) {
                 console.log("Layout extraction aborted by user");
                 return null;
             }

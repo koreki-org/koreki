@@ -12,6 +12,7 @@ import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { z } from 'zod';
 import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
 import { checkAiBudget, checkCreditsAvailable, performBillingAction } from '@/lib/billing';
+import { toErrorMessage } from '@/lib/error-message';
 
 /** Kosten eines Verfeinerungs-Laufs. Vorpruefung und Abrechnung nutzen denselben Wert. */
 const CREDIT_COST = 1;
@@ -171,7 +172,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         });
 
     } catch (err: unknown) {
-        logger.error('Graph refinement failed', { error: err instanceof Error ? err.message : String(err) });
+        logger.error('Graph refinement failed', { error: toErrorMessage(err) });
         const { status, message } = resolveAiHttpError(err, 'Graph-Verfeinerung fehlgeschlagen.');
         return res.status(status).json({ error: message });
     }

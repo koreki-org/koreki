@@ -9,6 +9,7 @@
  * - Management API:  ${LOGTO_BASE}/api/users/...
  */
 import { logger } from './logger';
+import { toErrorMessage } from './error-message';
 
 /** Normalized Logto base URL – NEVER includes /oidc suffix (DRY: single source of truth) */
 const LOGTO_BASE = (process.env.LOGTO_ENDPOINT || 'https://auth.koreki.org')
@@ -104,9 +105,9 @@ export async function deleteLogtoUser(logtoUserId: string): Promise<{ success: b
         }
 
         return { success: true };
-    } catch (err: any) {
-        logger.error('Error in deleteLogtoUser', { message: err instanceof Error ? err.message : String(err) });
-        return { success: false, error: err.message || 'M2M Configuration missing or invalid' };
+    } catch (err) {
+        logger.error('Error in deleteLogtoUser', { message: toErrorMessage(err) });
+        return { success: false, error: toErrorMessage(err, 'M2M Configuration missing or invalid') };
     }
 }
 
@@ -131,7 +132,7 @@ export async function checkLogtoUserExists(logtoUserId: string): Promise<boolean
 
         return res.status === 200;
     } catch (err) {
-        logger.error('Error in checkLogtoUserExists', { message: err instanceof Error ? err.message : String(err) });
+        logger.error('Error in checkLogtoUserExists', { message: toErrorMessage(err) });
         return true; 
     }
 }
@@ -174,7 +175,7 @@ export async function getLogtoUserRoles(logtoUserId: string): Promise<string[]> 
         logger.info('[Logto Mgmt] Roles resolved', { logtoUserId, roles: roleNames });
         return roleNames;
     } catch (err) {
-        logger.error('Error in getLogtoUserRoles', { message: err instanceof Error ? err.message : String(err) });
+        logger.error('Error in getLogtoUserRoles', { message: toErrorMessage(err) });
         return [];
     }
 }
@@ -210,7 +211,7 @@ export async function getLogtoUserProfile(logtoUserId: string): Promise<any | nu
 
         return await res.json();
     } catch (err) {
-        logger.error('Error in getLogtoUserProfile', { message: err instanceof Error ? err.message : String(err) });
+        logger.error('Error in getLogtoUserProfile', { message: toErrorMessage(err) });
         return null;
     }
 }

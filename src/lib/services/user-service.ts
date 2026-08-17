@@ -1,6 +1,7 @@
 import prisma from '../prisma';
 import { getLogtoUserRoles, checkLogtoUserExists, getLogtoUserProfile } from '../logto-mgmt';
 import { logger } from '../logger';
+import { toErrorCode } from '../error-message';
 
 /**
  * User Service (Industrial Identity Layer)
@@ -131,9 +132,9 @@ export class UserService {
                     include: { memberships: { include: { workspace: true } } }
                 });
             });
-        } catch (error: any) {
+        } catch (error) {
             // Handle Race Condition (P2002: Unique constraint failed on logtoId)
-            if (error.code === 'P2002') {
+            if (toErrorCode(error) === 'P2002') {
                 return await prisma.user.findUnique({
                     where: { logtoId },
                     include: { memberships: { include: { workspace: true } } }

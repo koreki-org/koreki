@@ -18,6 +18,7 @@ import { extractStudentAST } from '@/lib/grading/calc-trace-extraction';
 
 import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
+import { toErrorMessage } from '@/lib/error-message';
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     try {
@@ -97,8 +98,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                             task.pointsObtained = gradingResult.totalPoints;
                             task.maxPoints = gradingResult.maxPoints;
                         }
-                    } catch (err: any) {
-                        logger.error('Error in local GraphRunner execution', { taskName: task.name, error: err.message });
+                    } catch (err) {
+                        logger.error('Error in local GraphRunner execution', { taskName: task.name, error: toErrorMessage(err) });
                     }
                 } else if (hasTargetGoal || hasAttachedCalcTrace || isCalcTraceSkill) {
                     try {
@@ -128,7 +129,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                             } catch (retryErr: unknown) {
                                 // Der erste Durchlauf hat ein verwertbares Ergebnis geliefert. Ein
                                 // gescheiterter Nachbesserungsversuch darf es nicht verwerfen.
-                                const retryMessage = retryErr instanceof Error ? retryErr.message : String(retryErr);
+                                const retryMessage = toErrorMessage(retryErr);
                                 logger.warn('[Server] CalcTrace self-correction retry failed, keeping previous result.', { taskName: task.name, error: retryMessage });
                                 break;
                             }
@@ -147,10 +148,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         } else {
                             task.maxPoints = targetGoal.maxPoints || task.maxPoints;
                         }
-                    } catch (err: any) {
+                    } catch (err) {
                         // Kein calcTraceResult -> die Aufgabe laeuft in den Warnhinweis "ohne
                         // Sandbox-Pruefung, bitte manuell gegenpruefen" statt in 0 Punkte.
-                        logger.error('[Server] CalcTrace execution failed — task falls back to manual review.', { taskName: task.name, error: err.message });
+                        logger.error('[Server] CalcTrace execution failed — task falls back to manual review.', { taskName: task.name, error: toErrorMessage(err) });
                     }
                 }
             }
@@ -254,8 +255,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         }
         res.status(200).json(analysis);
 
-    } catch (error: any) {
-        logger.error('AI Correct Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+    } catch (error) {
+        logger.error('AI Correct Error', { endpoint: req.url, message: toErrorMessage(error) });
         const { status, message } = resolveAiHttpError(error, 'Fehler bei der KI-Analyse.');
         res.status(status).json({ error: message });
     }

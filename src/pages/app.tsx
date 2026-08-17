@@ -30,6 +30,7 @@ import { exportSessionToJson } from '@/lib/utils';
 import { AlertTriangle } from 'lucide-react';
 import { isDesktopTarget } from '@/lib/env-context';
 import AuthGuard from '@/components/guards/AuthGuard';
+import { toErrorMessage } from '@/lib/error-message';
 
 export default function Home() {
     // Core Auth & Logic Hooks
@@ -99,9 +100,9 @@ export default function Home() {
                 return response;
             }
             return null;
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error generating graph:', error);
-            const msg = error.message || error || '';
+            const msg = toErrorMessage(error, '');
             const msgLower = String(msg).toLowerCase();
             if (msgLower.includes('422') || msgLower.includes('validation') || msgLower.includes('keinen') || msgLower.includes('bewertungs') || msgLower.includes('gültig')) {
                 alert(`Fehler bei der Graph-Generierung:\n\nDie KI konnte keinen Bewertungs-Graphen erstellen.\n\nHinweis: Das PANG-System ist für strukturierte, netzwerkartige Aufgaben (z. B. Subnetting) optimiert. Für rein textuelle/konzeptionelle Fragen (wie z. B. Freitext-Erklärungen) ist kein Rechengraph erforderlich – nutze hierfür einfach die Standard-Korrektur ohne Graph.`);
@@ -139,9 +140,9 @@ export default function Home() {
                 return response;
             }
             return null;
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error generating calc trace:', error);
-            alert(`Fehler bei der Rechenketten-Generierung: ${error.message || error}`);
+            alert(`Fehler bei der Rechenketten-Generierung: ${toErrorMessage(error)}`);
             throw error;
         }
     };
@@ -155,9 +156,9 @@ export default function Home() {
                 aiSettings
             );
             return response;
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error generating custom graph:', error);
-            const msg = error.message || error || '';
+            const msg = toErrorMessage(error, '');
             const msgLower = String(msg).toLowerCase();
             if (msgLower.includes('422') || msgLower.includes('validation') || msgLower.includes('keinen') || msgLower.includes('bewertungs') || msgLower.includes('gültig')) {
                 alert(`Fehler bei der Graph-Generierung:\n\nDie KI konnte keinen Bewertungs-Graphen erstellen.\n\nHinweis: Das PANG-System ist für strukturierte, netzwerkartige Aufgaben (z. B. Subnetting) optimiert. Für rein textuelle/konzeptionelle Fragen (wie z. B. Freitext-Erklärungen) ist kein Rechengraph erforderlich – nutze hierfür einfach die Standard-Korrektur ohne Graph.`);
@@ -177,9 +178,9 @@ export default function Home() {
                 aiSettings
             );
             return response;
-        } catch (error: any) {
+        } catch (error) {
             console.error('Error generating custom calc trace:', error);
-            alert(`Fehler bei der Rechenketten-Generierung: ${error.message || error}`);
+            alert(`Fehler bei der Rechenketten-Generierung: ${toErrorMessage(error)}`);
             return null;
         }
     };

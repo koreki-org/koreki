@@ -1,5 +1,6 @@
 import { logger } from './logger';
 import { isSameName } from './services/profile-naming';
+import { toErrorMessage } from './error-message';
 
 /**
  * Local Vault Utilities (Desktop Persistence)
@@ -29,7 +30,7 @@ function quarantineCorruptEntry(key: string, raw: string, reason: string): boole
         logger.security('[LocalVault] Beschädigter Eintrag in Quarantäne verschoben', { quarantineKey, reason });
         return true;
     } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
+        const message = toErrorMessage(err);
         logger.error('[LocalVault] Quarantäne fehlgeschlagen', { key, message });
         return false;
     }
@@ -46,7 +47,7 @@ function readParsed<T>(key: string, mode: ReadMode): T | null {
     try {
         return JSON.parse(raw) as T;
     } catch (err) {
-        const reason = err instanceof Error ? err.message : String(err);
+        const reason = toErrorMessage(err);
         const quarantined = quarantineCorruptEntry(key, raw, reason);
 
         if (!quarantined && mode === 'update') {

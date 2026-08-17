@@ -3,6 +3,7 @@ import { buffer } from 'micro';
 import stripe from '../../../lib/stripe';
 import prisma from '../../../lib/prisma';
 import { logger } from '../../../lib/logger';
+import { toErrorMessage } from '../../../lib/error-message';
 
 export const config = {
     api: {
@@ -28,9 +29,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
         const rawBody = await buffer(req);
         event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
-    } catch (err: any) {
-        logger.error(`Webhook Error`, { endpoint: req.url, message: err.message });
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+    } catch (err) {
+        logger.error(`Webhook Error`, { endpoint: req.url, message: toErrorMessage(err) });
+        return res.status(400).send(`Webhook Error: ${toErrorMessage(err)}`);
     }
 
     // Handle the event
@@ -94,7 +95,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     logger.info(`[Webhook Success] Added ${creditAmount} credits to workspace: ${targetWorkspaceId} (User: ${username})`);
                 });
             } catch (txError) {
-                logger.error(`Webhook Transaction Error for session ${sessionId}`, { endpoint: req.url, message: txError instanceof Error ? txError.message : String(txError) });
+                logger.error(`Webhook Transaction Error for session ${sessionId}`, { endpoint: req.url, message: toErrorMessage(txError) });
                 return res.status(500).send('Internal transaction failure');
             }
         }

@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { checkAndDeductCredits } from '@/lib/billing';
 import { logger } from '@/lib/logger';
+import { toErrorMessage } from '@/lib/error-message';
 
 /**
  * Unlock Expert Mode API
@@ -29,8 +30,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // --- NEW CENTRALIZED BILLING ---
         try {
             await checkAndDeductCredits(logtoId, 25);
-        } catch (billingError: any) {
-            return res.status(402).json({ error: billingError.message });
+        } catch (billingError) {
+            return res.status(402).json({ error: toErrorMessage(billingError) });
         }
 
         // Upgrade Role
@@ -47,7 +48,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             newRole: 'EXPERTE'
         });
     } catch (error) {
-        logger.error('Unlock Expert error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+        logger.error('Unlock Expert error', { endpoint: req.url, message: toErrorMessage(error) });
         return res.status(500).json({ error: 'Interner Serverfehler beim Freischalten.' });
     }
 });

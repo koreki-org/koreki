@@ -20,6 +20,7 @@ export const config = {
 
 import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
+import { toErrorMessage } from '@/lib/error-message';
 
 const extractImageSchema = z.object({
     buffer: z.string().optional(),
@@ -240,8 +241,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         });
 
         return res.status(200).json({ text: resultData.text });
-    } catch (error: any) {
-        logger.error('[API/extract-image] OCR Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+    } catch (error) {
+        logger.error('[API/extract-image] OCR Error', { endpoint: req.url, message: toErrorMessage(error) });
         const { status, message } = resolveAiHttpError(error, 'Fehler bei der Bilderkennung (OCR).');
         res.status(status).json({ error: message });
     }

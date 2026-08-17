@@ -9,6 +9,7 @@ import { LEGAL_CONFIG } from '@/config/legal-contact';
 import { getKorekiMode } from '@/lib/env-context';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { toErrorMessage } from '@/lib/error-message';
 
 export default function Contact() {
     const [formData, setFormData] = useState({
@@ -50,9 +51,9 @@ export default function Contact() {
 
             setStatus('success');
             setFormData({ name: '', email: '', subject: '', message: '' });
-        } catch (err: any) {
+        } catch (err) {
             setStatus('error');
-            setErrorMessage(err.message);
+            setErrorMessage(toErrorMessage(err));
         }
     };
 

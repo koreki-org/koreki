@@ -6,6 +6,7 @@ import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
 import { LocalAiProfileService } from '../../../lib/services/local-profile-service';
 import { isSameName, nameTakenMessage, toProfileHttpError } from '../../../lib/services/profile-naming';
+import { toErrorMessage } from '../../../lib/error-message';
 
 /**
  * AI Profiles API Controller (Stage 18)
@@ -68,7 +69,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             if (status === 500) {
                 logger.error('[API:AiProfiles] Local error', {
                     endpoint: req.url,
-                    message: err instanceof Error ? err.message : String(err)
+                    message: toErrorMessage(err)
                 });
             }
             return res.status(status).json({ message });
@@ -168,10 +169,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         }
 
         return res.status(405).json({ message: 'Method not allowed' });
-    } catch (err: any) {
+    } catch (err) {
         const { status, message } = toProfileHttpError(err, 'Interner Serverfehler', 'KI-Profil');
         if (status === 500) {
-            logger.error('[API:AiProfiles] Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
+            logger.error('[API:AiProfiles] Error', { endpoint: req.url, message: toErrorMessage(err) });
         }
         return res.status(status).json({ message });
     }

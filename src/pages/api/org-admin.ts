@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import prisma from '../../lib/prisma';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '../../lib/security';
 import { logger } from '../../lib/logger';
+import { toErrorMessage } from '../../lib/error-message';
 
 /**
  * Industrial Organization Admin API (Dashboard)
@@ -94,7 +95,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         });
 
     } catch (error) {
-        logger.error('ERROR in /api/org-admin', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+        logger.error('ERROR in /api/org-admin', { endpoint: req.url, message: toErrorMessage(error) });
         return res.status(500).json({ message: 'Interner Server-Fehler' });
     }
 }, { requireAdmin: 'ORG' });

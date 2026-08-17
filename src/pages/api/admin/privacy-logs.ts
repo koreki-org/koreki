@@ -2,6 +2,7 @@ import type { NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { logger } from '@/lib/logger';
+import { toErrorMessage } from '@/lib/error-message';
 
 /**
  * Privacy Logs API (Admin View)
@@ -33,8 +34,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         });
 
         return res.status(200).json(logs);
-    } catch (error: any) {
-        logger.error('Admin Privacy Logs Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+    } catch (error) {
+        logger.error('Admin Privacy Logs Error', { endpoint: req.url, message: toErrorMessage(error) });
         return res.status(500).json({ error: 'Fehler beim Laden der Logs.' });
     }
 }, { requireAdmin: 'SYS' });

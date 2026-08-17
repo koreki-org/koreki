@@ -3,6 +3,7 @@ import { withSecurity, AuthenticatedRequest } from '@/lib/security';
 import { logger } from '@/lib/logger';
 import { GlobalSettingsService } from '@/lib/services/global-settings-service';
 import { isLocalInstance } from '@/lib/env-context';
+import { toErrorMessage } from '@/lib/error-message';
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     // Only accessible in local instance modes (Community/Desktop)
@@ -73,7 +74,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const updated = await GlobalSettingsService.updateSettings(safeSettings);
             return res.status(200).json({ success: true, settings: updated });
         } catch (error) {
-            logger.error('Admin Global AI Settings Save Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+            logger.error('Admin Global AI Settings Save Error', { endpoint: req.url, message: toErrorMessage(error) });
             return res.status(500).json({ error: 'Internal Server Error' });
         }
     }

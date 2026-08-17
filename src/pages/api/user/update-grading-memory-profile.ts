@@ -4,6 +4,7 @@ import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/
 import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
 import { LocalActiveSelectionService } from '../../../lib/services/local-profile-service';
+import { toErrorMessage } from '../../../lib/error-message';
 
 /**
  * Update User Active GradingMemory Profile API
@@ -31,7 +32,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         });
         return res.status(200).json({ success: true });
     } catch (err) {
-        logger.error('Update grading memory profile error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
+        logger.error('Update grading memory profile error', { endpoint: req.url, message: toErrorMessage(err) });
         return res.status(500).json({ message: 'Fehler beim Speichern der Erfahrungsschatz-Einstellung' });
     }
 });

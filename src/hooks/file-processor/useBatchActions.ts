@@ -4,6 +4,7 @@ import { reindexBatchFiles, calculatePercentageFromTasks, calculateGrade } from 
 import { performAIRequest, performOCRRequest } from '../../lib/ai-logic';
 import { extractTextFromFile, convertPdfToImage } from '../../lib/file-utils';
 import { parseMoodleExcel } from '../../lib/excel';
+import { toErrorMessage } from '../../lib/error-message';
 
 export const useBatchActions = (
     state: any,
@@ -49,8 +50,8 @@ export const useBatchActions = (
             setBatchFiles(importedFiles);
             setIsImportedSession(true);
             return data;
-        } catch (err: any) {
-            alert("Import fehlgeschlagen: " + err.message);
+        } catch (err) {
+            alert("Import fehlgeschlagen: " + toErrorMessage(err));
             return null;
         }
     }, [setBatchFiles, setIsImportedSession, setModelSolution, setTasksLayout, setModelSolutionContext]);

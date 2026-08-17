@@ -2,6 +2,7 @@ import type { NextApiResponse } from 'next';
 import prisma from '../../../lib/prisma';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
+import { toErrorMessage } from '../../../lib/error-message';
 
 /**
  * Update User Mode API
@@ -40,7 +41,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         return res.status(200).json({ success: true, mode: user.appMode, user });
     } catch (error) {
-        logger.error('Update mode error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+        logger.error('Update mode error', { endpoint: req.url, message: toErrorMessage(error) });
         return res.status(500).json({ error: 'Internal server error' });
     }
 });

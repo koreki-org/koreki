@@ -15,6 +15,7 @@ import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/securit
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { z } from 'zod';
 import { requireOpenAiConnection, resolveOpenAiConnection } from '@/lib/ai/provider-connection';
+import { toErrorMessage } from '@/lib/error-message';
 
 const GenerateGraphSchema = z.object({
     taskText: z.string().min(1, 'Aufgabentext darf nicht leer sein.'),
@@ -206,8 +207,8 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                 } else {
                     break;
                 }
-            } catch (err: any) {
-                logger.error('Auto-correction request failed in loop', { error: err.message });
+            } catch (err) {
+                logger.error('Auto-correction request failed in loop', { error: toErrorMessage(err) });
                 break;
             }
 
@@ -238,7 +239,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
         return res.status(200).json(graph);
 
     } catch (err: unknown) {
-        logger.error('Graph generation failed', { error: err instanceof Error ? err.message : String(err) });
+        logger.error('Graph generation failed', { error: toErrorMessage(err) });
         const { status, message } = resolveAiHttpError(err, 'Graph-Generierung fehlgeschlagen.');
         return res.status(status).json({ error: message });
     }

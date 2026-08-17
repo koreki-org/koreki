@@ -1,4 +1,5 @@
 import { logger } from './logger';
+import { toErrorMessage } from './error-message';
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
 export async function fetchWithRetry(
@@ -24,10 +25,10 @@ export async function fetchWithRetry(
         }
 
         return response;
-    } catch (error: any) {
+    } catch (error) {
         // Retry logic for network errors (e.g., connection reset/overflow)
         if (retries > 0) {
-            logger.warn(`Network error`, { message: `${error.message}. Retrying in ${delay}ms... (${retries} retries left)` });
+            logger.warn(`Network error`, { message: `${toErrorMessage(error)}. Retrying in ${delay}ms... (${retries} retries left)` });
             await sleep(delay);
             return fetchWithRetry(url, options, retries - 1, delay * 2);
         }

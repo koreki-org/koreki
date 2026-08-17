@@ -5,6 +5,7 @@ import { LocalGradingMemoryService } from '../../../../lib/services/local-profil
 import { withSecurity, AuthenticatedRequest } from '../../../../lib/security';
 import { logger } from '../../../../lib/logger';
 import { isLocalInstance } from '../../../../lib/env-context';
+import { toErrorMessage } from '../../../../lib/error-message';
 
 /**
  * On-the-Fly Grading Memory Appender
@@ -65,8 +66,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             }, userId);
 
             return res.status(200).json({ success: true, memory: updatedMemory });
-        } catch (err: any) {
-            logger.error('[API:GradingMemories:Append:Local] Error', { message: err instanceof Error ? err.message : String(err) });
+        } catch (err) {
+            logger.error('[API:GradingMemories:Append:Local] Error', { message: toErrorMessage(err) });
             return res.status(500).json({ message: 'Lokaler Fehler beim Anhängen des Falls.' });
         }
     }
@@ -102,8 +103,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         });
 
         return res.status(200).json({ success: true, memory: updatedMemory });
-    } catch (err: any) {
-        logger.error('[API:GradingMemories:Append:SaaS] Error', { message: err instanceof Error ? err.message : String(err) });
+    } catch (err) {
+        logger.error('[API:GradingMemories:Append:SaaS] Error', { message: toErrorMessage(err) });
         return res.status(500).json({ message: 'SaaS-Fehler beim Anhängen des Falls.' });
     }
 });

@@ -23,6 +23,7 @@ import { AppSettings } from '../../types';
 import { apiClient } from '@/lib/api-client';
 import { performAIRequest } from '@/lib/ai/ai-orchestrator';
 import { isLocalInstance } from '@/lib/env-context';
+import { toErrorMessage } from '../../lib/error-message';
 
 interface GradingGraphModalProps {
     isOpen: boolean;
@@ -302,8 +303,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
         try {
             const res = GraphRunner.grade(graph, studentValues);
             setPlaygroundResult(res);
-        } catch (e: any) {
-            alert(`Fehler beim Berechnen der Bewertung: ${e.message}`);
+        } catch (e) {
+            alert(`Fehler beim Berechnen der Bewertung: ${toErrorMessage(e)}`);
         }
     };
 
@@ -346,7 +347,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
             } else {
                 throw new Error("Ungültiges Graphen-Format von KI zurückgegeben.");
             }
-        } catch (err: any) {
+        } catch (err) {
             const errMsg = err instanceof Error ? err.message : 'Verbindungsfehler';
             setChatHistory(prev => [...prev, { 
                 role: 'assistant', 

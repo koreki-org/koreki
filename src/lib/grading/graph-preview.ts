@@ -1,5 +1,6 @@
 import type { VariableDefinition } from './types';
 import { evaluateExpression } from './plugins';
+import { toErrorMessage } from '../error-message';
 
 /**
  * Vorschau und Probelauf im Graph-Editor.
@@ -53,9 +54,9 @@ export function computeExpectedValues(variables: VariableDefinition[] = []): Exp
         if (variable.type === 'formula' && variable.expression) {
             try {
                 context[variable.id] = evaluateExpression(variable.expression, context);
-            } catch (err: any) {
+            } catch (err) {
                 context[variable.id] = EVALUATION_ERROR_VALUE;
-                errors[variable.id] = err?.message || 'Evaluation error';
+                errors[variable.id] = toErrorMessage(err, 'Evaluation error');
             }
         }
     });

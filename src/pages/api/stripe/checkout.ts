@@ -4,6 +4,7 @@ import { logger } from '../../../lib/logger';
 import { z } from 'zod';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/security';
 import type { NextApiResponse } from 'next';
+import { toErrorMessage } from '../../../lib/error-message';
 
 const checkoutSchema = z.object({
     bundleType: z.enum(['small', 'medium', 'large']).optional().default('small'),
@@ -117,8 +118,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         });
 
         return res.status(200).json({ sessionId: session.id, url: session.url });
-    } catch (error: any) {
-        logger.error('Stripe session error', { endpoint: req.url, message: error.message || String(error) });
-        return res.status(500).json({ message: 'Checkout-Fehler', details: error.message });
+    } catch (error) {
+        logger.error('Stripe session error', { endpoint: req.url, message: toErrorMessage(error) });
+        return res.status(500).json({ message: 'Checkout-Fehler', details: toErrorMessage(error) });
     }
 });

@@ -7,6 +7,7 @@ import { logger } from '../../lib/logger';
 import { isLocalInstance, getKorekiMode } from '../../lib/env-context';
 import { GlobalSettingsService } from '../../lib/services/global-settings-service';
 import { LocalActiveSelectionService } from '../../lib/services/local-profile-service';
+import { toErrorMessage } from '../../lib/error-message';
 
 /**
  * User Status & Sync API
@@ -136,7 +137,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         return res.status(200).json({ loggedIn: false });
     } catch (error) {
-        logger.error('CRITICAL ERROR in /api/user', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+        logger.error('CRITICAL ERROR in /api/user', { endpoint: req.url, message: toErrorMessage(error) });
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 }, { allowAnonymous: true });

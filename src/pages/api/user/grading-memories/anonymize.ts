@@ -10,6 +10,7 @@ import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { checkAiBudget, checkAndDeductCredits } from '../../../../lib/billing';
 import { isLocalInstance } from '../../../../lib/env-context';
 import { requireOpenAiConnection } from '../../../../lib/ai/provider-connection';
+import { toErrorMessage } from '../../../../lib/error-message';
 
 /**
  * Stylistic Student Answer Anonymizer API
@@ -97,8 +98,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // Return the parsed anonymized response containing "anonymizedText"
         return res.status(200).json(result);
 
-    } catch (error: any) {
-        logger.error('[API:GradingMemories:Anonymize] Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+    } catch (error) {
+        logger.error('[API:GradingMemories:Anonymize] Error', { endpoint: req.url, message: toErrorMessage(error) });
         const { status, message } = resolveAiHttpError(error, 'Fehler beim Anonymisieren der Schülerabgabe.');
         return res.status(status).json({ error: message });
     }

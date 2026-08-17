@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { logger } from '@/lib/logger';
+import { toErrorMessage } from '@/lib/error-message';
 
 /**
  * Privacy Log API
@@ -48,8 +49,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         });
 
         return res.status(200).json({ success: true });
-    } catch (error: any) {
-        logger.error('Privacy Log Error', { endpoint: req.url, message: error.message || String(error) });
+    } catch (error) {
+        logger.error('Privacy Log Error', { endpoint: req.url, message: toErrorMessage(error) });
         return res.status(500).json({ error: 'Interner Serverfehler beim Loggen der Einwilligung.' });
     }
 });

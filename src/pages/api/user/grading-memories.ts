@@ -6,6 +6,7 @@ import { isSameName, nameTakenMessage, toProfileHttpError } from '../../../lib/s
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
+import { toErrorMessage } from '../../../lib/error-message';
 
 /**
  * Grading Memories API Controller
@@ -82,14 +83,14 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             }
 
             return res.status(405).json({ message: 'Method not allowed' });
-        } catch (err: any) {
+        } catch (err) {
             const { status, message } = toProfileHttpError(
                 err,
                 'Interner lokaler Fehler beim Verarbeiten des Erfahrungsschatzes',
                 'Erfahrungsschatz'
             );
             if (status === 500) {
-                logger.error('[API:GradingMemories:Local] Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
+                logger.error('[API:GradingMemories:Local] Error', { endpoint: req.url, message: toErrorMessage(err) });
             }
             return res.status(status).json({ message });
         }
@@ -229,14 +230,14 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         }
 
         return res.status(405).json({ message: 'Method not allowed' });
-    } catch (err: any) {
+    } catch (err) {
         const { status, message } = toProfileHttpError(
             err,
             'Interner SaaS-Fehler beim Verarbeiten des Erfahrungsschatzes',
             'Erfahrungsschatz'
         );
         if (status === 500) {
-            logger.error('[API:GradingMemories:SaaS] Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
+            logger.error('[API:GradingMemories:SaaS] Error', { endpoint: req.url, message: toErrorMessage(err) });
         }
         return res.status(status).json({ message });
     }

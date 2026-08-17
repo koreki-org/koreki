@@ -4,6 +4,7 @@ import prisma from '../../../lib/prisma';
 import { AdminService } from '../../../lib/services/admin-service';
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
+import { toErrorMessage } from '../../../lib/error-message';
 
 /**
  * Industrial Admin Users API (Stage 13)
@@ -80,10 +81,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             }
 
             return res.status(200).json({ success: true, message: 'Aktion erfolgreich ausgeführt' });
-        } catch (err: any) {
-            logger.error(`[Admin-API] Error during action ${action}`, { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
+        } catch (err) {
+            logger.error(`[Admin-API] Error during action ${action}`, { endpoint: req.url, message: toErrorMessage(err) });
             return res.status(500).json({ 
-                message: err.message || 'Ein interner Fehler ist aufgetreten',
+                message: toErrorMessage(err, 'Ein interner Fehler ist aufgetreten'),
                 success: false 
             });
         }

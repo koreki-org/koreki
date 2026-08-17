@@ -19,6 +19,7 @@ import graphGenUserDefault from '../../prompts/graph-generation/user.md';
 import graphGenRefineSystemDefault from '../../prompts/graph-generation/refine-system.md';
 import graphGenRefineUserDefault from '../../prompts/graph-generation/refine-user.md';
 import { logger } from '../logger';
+import { toErrorMessage } from '../error-message';
 
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -421,10 +422,10 @@ export function validateGraphDeterminism(graph: GradingGraph): { isValid: boolea
     }
 
     return { isValid: true };
-  } catch (err: any) {
+  } catch (err) {
     return {
       isValid: false,
-      error: `Unerwarteter Absturz während der Graphen-Simulation: ${err.message || err}`
+      error: `Unerwarteter Absturz während der Graphen-Simulation: ${toErrorMessage(err)}`
     };
   }
 }

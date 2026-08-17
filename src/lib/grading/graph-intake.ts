@@ -1,4 +1,5 @@
 import type { GradingGraph } from './types';
+import { toErrorMessage } from '../error-message';
 
 /**
  * Aufnahme eines Graphen aus einer fremden Quelle.
@@ -40,8 +41,8 @@ export function parseGraphJson(text: string): GraphJsonParseResult {
         }
 
         return { ok: true, graph: parsed as GradingGraph };
-    } catch (err: any) {
-        return { ok: false, error: err?.message || 'Ungültiges JSON-Format' };
+    } catch (err) {
+        return { ok: false, error: toErrorMessage(err, 'Ungültiges JSON-Format') };
     }
 }
 

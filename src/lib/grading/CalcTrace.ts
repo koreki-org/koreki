@@ -19,6 +19,7 @@ import type {
   CalcTraceResult,
   UnitComparisonDetail
 } from './calc-trace-types';
+import { toErrorMessage } from '../error-message';
 
 // ─── Sandboxed mathjs Instance ───────────────────────────────────────────────
 const math: MathJsInstance = create(all);
@@ -380,8 +381,8 @@ export function evaluateCalcTrace(
         // Save the explicitly stated student result in context, so subsequent formulas use the scaled value
         context[step.id] = step.result;
       }
-    } catch (e: any) {
-      sandboxErrors.push(`Syntax-Fehler in ${step.id} (${step.formula}): ${e.message}`);
+    } catch (e) {
+      sandboxErrors.push(`Syntax-Fehler in ${step.id} (${step.formula}): ${toErrorMessage(e)}`);
       context[step.id] = step.result;
     }
   }

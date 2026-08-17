@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
+import { toErrorMessage } from '@/lib/error-message';
 
 /**
  * User Context API
@@ -63,7 +64,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             activeWorkspace
         });
     } catch (error) {
-        logger.error('User Context Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+        logger.error('User Context Error', { endpoint: req.url, message: toErrorMessage(error) });
         res.status(500).json({ error: 'Fehler beim Laden des Profils.' });
     }
 });

@@ -1,5 +1,6 @@
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
 import { logger } from './logger';
+import { toErrorMessage } from './error-message';
 
 /**
  * Industrial OIDC Verifier (Keycloak Strategy — Server Side)
@@ -199,7 +200,7 @@ export async function verifyKeycloakToken(token: string): Promise<VerifiedKeyclo
         });
         payload = result.payload;
     } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
+        const message = toErrorMessage(error);
         throw new KeycloakVerificationError(`Token-Verifikation fehlgeschlagen: ${message}`);
     }
 

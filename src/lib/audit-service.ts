@@ -1,5 +1,6 @@
 import prisma from './prisma';
 import { logger } from './logger';
+import { toErrorMessage } from './error-message';
 
 export type SecurityEvent = 
     | 'AUTH_FAILURE' 
@@ -39,7 +40,7 @@ export async function logSecurityEvent(
         logger.error('[AUDIT FATAL] Failed to log security event', { 
             event, 
             userId, 
-            message: error instanceof Error ? error.message : String(error) 
+            message: toErrorMessage(error) 
         });
     }
 }

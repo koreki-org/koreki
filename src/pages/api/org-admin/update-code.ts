@@ -3,6 +3,7 @@ import prisma from '../../../lib/prisma';
 import { z } from 'zod';
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
+import { toErrorMessage, toErrorCode } from '../../../lib/error-message';
 
 const updateCodeSchema = z.object({
     workspaceId: z.string().min(1, 'Workspace-ID erforderlich'),
@@ -34,9 +35,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         return res.status(200).json({ success: true, message: 'Einladungs-Code erfolgreich aktualisiert' });
 
-    } catch (error: any) {
-        logger.error('ERROR in /api/org-admin/update-code', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
-        if (error.code === 'P2002') {
+    } catch (error) {
+        logger.error('ERROR in /api/org-admin/update-code', { endpoint: req.url, message: toErrorMessage(error) });
+        if (toErrorCode(error) === 'P2002') {
             return res.status(400).json({ message: 'Dieser Code ist bereits vergeben. Bitte versuche einen anderen.' });
         }
         return res.status(500).json({ message: 'Interner Server-Fehler' });

@@ -7,6 +7,7 @@ import { toProfileHttpError } from '../../../lib/services/profile-naming';
 import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
+import { toErrorMessage } from '../../../lib/error-message';
 
 /**
  * Prompt Profiles API Controller (Stage 17)
@@ -68,7 +69,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             if (status === 500) {
                 logger.error('[API:PromptProfiles] Local error', {
                     endpoint: req.url,
-                    message: err instanceof Error ? err.message : String(err)
+                    message: toErrorMessage(err)
                 });
             }
             return res.status(status).json({ message });
@@ -134,9 +135,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         return res.status(405).json({ message: 'Method not allowed' });
         
-    } catch (err: any) {
-        logger.error('[API:PromptProfiles] Error', { endpoint: req.url, message: err instanceof Error ? err.message : String(err) });
-        const status = err.message.includes('autorisiert') || err.message.includes('System-Profile') ? 403 : 500;
-        return res.status(status).json({ message: err.message || 'Interner Serverfehler' });
+    } catch (err) {
+        logger.error('[API:PromptProfiles] Error', { endpoint: req.url, message: toErrorMessage(err) });
+        const message = toErrorMessage(err, 'Interner Serverfehler');
+        const status = message.includes('autorisiert') || message.includes('System-Profile') ? 403 : 500;
+        return res.status(status).json({ message });
     }
 });

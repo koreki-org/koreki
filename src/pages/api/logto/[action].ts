@@ -2,6 +2,7 @@ import { logtoClient } from '@/lib/logto';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { logger } from '@/lib/logger';
+import { toErrorMessage, toErrorCode } from '@/lib/error-message';
 
 // @security-audit-exclude
 // Diese Route IST der Anmeldevorgang und kann den withSecurity-Wrapper nicht
@@ -55,11 +56,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.status(404).json({ message: 'Unknown action' });
 
-  } catch (error: any) {
-    if (error.code === 'sign_in_session.not_found') {
+  } catch (error) {
+    if (toErrorCode(error) === 'sign_in_session.not_found') {
       return res.redirect('/login?error=session_lost');
     }
-    logger.error('[Logto] Auth Error', { message: error.message || error });
+    logger.error('[Logto] Auth Error', { message: toErrorMessage(error) });
     res.status(500).json({ message: 'Internal Server Error' });
   }
 }

@@ -4,6 +4,7 @@ import { logger } from '../../../lib/logger';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '../../../lib/security';
 import { getCurrentAVV } from '../../../config/legal';
 import { getLatestLegalDocument } from '../../../lib/legal';
+import { toErrorMessage } from '../../../lib/error-message';
 
 /**
  * Industrial AVV Consent API ⚖️
@@ -66,7 +67,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     } catch (error) {
         logger.error('Consent AVV error', { 
             logtoId, 
-            message: error instanceof Error ? error.message : String(error) 
+            message: toErrorMessage(error) 
         });
         return res.status(500).json({ error: 'Interner Serverfehler beim Speichern der Zustimmung.' });
     }

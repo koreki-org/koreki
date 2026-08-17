@@ -2,6 +2,7 @@ import { withSecurity, AuthenticatedRequest } from '../../../lib/security';
 import { logger } from '../../../lib/logger';
 import type { NextApiResponse } from 'next';
 import { z } from 'zod';
+import { toErrorMessage } from '../../../lib/error-message';
 
 /**
  * Pure Proxy API (Client-Side Key Mode)
@@ -92,8 +93,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         }
 
         return res.status(400).json({ error: 'Invalid request type' });
-    } catch (error: any) {
-        logger.error('Pure Proxy Error', { endpoint: req.url, message: error.message || String(error) });
-        return res.status(500).json({ error: error.message || 'Mistral API Fehler' });
+    } catch (error) {
+        logger.error('Pure Proxy Error', { endpoint: req.url, message: toErrorMessage(error) });
+        return res.status(500).json({ error: toErrorMessage(error, 'Mistral API Fehler') });
     }
 }, { isAi: true });

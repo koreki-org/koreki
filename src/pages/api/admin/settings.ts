@@ -3,6 +3,7 @@ import prisma from '@/lib/prisma';
 import { z } from 'zod';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { logger } from '@/lib/logger';
+import { toErrorMessage } from '@/lib/error-message';
 
 const settingsSchema = z.object({
     ocrCostPerMillion: z.union([z.number(), z.string()]).transform(v => typeof v === 'string' ? parseFloat(v) : v).optional(),
@@ -109,7 +110,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         return res.status(200).json({ success: true });
     } catch (error) {
 
-        logger.error('Admin Settings Save Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+        logger.error('Admin Settings Save Error', { endpoint: req.url, message: toErrorMessage(error) });
         return res.status(500).json({ error: 'Internal Server Error' });
     }
 });

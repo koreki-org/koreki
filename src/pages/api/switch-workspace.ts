@@ -2,6 +2,7 @@ import type { NextApiResponse } from 'next';
 import prisma from '@/lib/prisma';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { logger } from '@/lib/logger';
+import { toErrorMessage } from '@/lib/error-message';
 
 /**
  * Switch Workspace API
@@ -40,7 +41,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         res.status(200).json({ success: true });
     } catch (error) {
-        logger.error('Switch Workspace Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+        logger.error('Switch Workspace Error', { endpoint: req.url, message: toErrorMessage(error) });
         res.status(500).json({ error: 'Fehler beim Workspace-Wechsel.' });
     }
 });

@@ -37,7 +37,7 @@ export async function fetchWithRetry(url: string, options: any, retries = 5, del
   let response;
   try {
     response = await apiClient.fetch(url, fetchOptions);
-  } catch (err: any) {
+  } catch (err) {
     clearTimeout(timeoutId);
     if (retries > 0) {
       const nextDelay = withJitter(delay * 2);

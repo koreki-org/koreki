@@ -11,6 +11,7 @@ import { requireOpenAiConnection } from '@/lib/ai/provider-connection';
 
 import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
+import { toErrorMessage } from '@/lib/error-message';
 
 const cleanAndMapSchema = z.object({
     text: z.string().min(1, 'Text fehlt.'),
@@ -41,8 +42,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     // --- COMPLIANCE EARLY GATEKEEPER ---
     try {
         await resolveActiveWorkspace(logtoId);
-    } catch (error: any) {
-        return res.status(error.message?.includes('Compliance') || error.message?.includes('AVV') ? 403 : 500).json({ error: error.message });
+    } catch (error) {
+        const message = toErrorMessage(error);
+        return res.status(message.includes('Compliance') || message.includes('AVV') ? 403 : 500).json({ error: message });
     }
 
     const validation = cleanAndMapSchema.safeParse(req.body);
@@ -128,8 +130,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         delete result.usage;
 
         res.status(200).json(result);
-    } catch (error: any) {
-        logger.error('Clean Text Error', { endpoint: req.url, message: error instanceof Error ? error.message : String(error) });
+    } catch (error) {
+        logger.error('Clean Text Error', { endpoint: req.url, message: toErrorMessage(error) });
         const { status, message } = resolveAiHttpError(error, 'Fehler beim Aufbereiten des Textes.');
         res.status(status).json({ error: message });
     }

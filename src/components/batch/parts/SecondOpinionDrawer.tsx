@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { ChatMessage } from '@/types';
 import { cn } from '@/lib/utils';
 import { MathMarkdown } from '@/components/ui/MathMarkdown';
+import { toErrorMessage } from '../../../lib/error-message';
 
 interface SecondOpinionDrawerProps {
     isOpen: boolean;
@@ -146,9 +147,9 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
             } else {
                 throw new Error('Ungültiges Antwortformat vom KI-Service.');
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error('[SecondOpinionDrawer] Chat error:', err);
-            setError(err.message || 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.');
+            setError(toErrorMessage(err, 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.'));
             // Entferne die letzte Benutzernachricht bei Fehler, damit der Verlauf sauber bleibt
             setMessages(prev => prev.slice(0, -1));
             setInput(cleanInput); // Gib dem Nutzer seinen Text zurück

@@ -57,9 +57,17 @@ const HOOK_LIMIT = 10;
  * vier Faellen NOTWENDIGER Code — eine const-Bindung, damit eine Typverengung
  * im Callback erhalten bleibt, bzw. eine Typangabe gegen `never`. Kommentare
  * wurden vorher entfernt, es war nichts mehr zu kuerzen.
+ *
+ * Zweite Ausnahme, 17.08.2026: sieben Eintraege um je EINE Zeile angehoben
+ * (GradingGraphModal, BatchTaskAnalysisCard, SecondOpinionDrawer,
+ * useProcessingPipeline, CalcTrace, app.tsx, ollama-logic). Es ist in allen sieben Faellen
+ * dieselbe Zeile — der Import aus `lib/error-message`, der 62 `catch (x: any)`
+ * abgeloest hat. Eine Import-Zeile gegen ein abgeschaltetes `any` pro Block ist
+ * ein guter Tausch; die betroffenen Dateien sind dadurch netto STRENGER
+ * geprueft als vorher.
  */
 const SIZE_BASELINE: Record<string, number> = {
-    'components/batch/GradingGraphModal.tsx': 640,
+    'components/batch/GradingGraphModal.tsx': 641,
     // Die beiden groessten Reiter aus dem Modal, bewusst aufgenommen: sie sind
     // unveraendert umgezogen (reine Darstellung, kein Zustand untereinander).
     // Ein Zerlegen waere ein zweiter, eigener Schritt — den 1404-Zeiler zuerst
@@ -76,27 +84,27 @@ const SIZE_BASELINE: Record<string, number> = {
     // Datei bleibt der groesste Brocken im Repo und gehoert zerlegt — dann faellt
     // dieser Eintrag ohnehin weg.
     'lib/ai/ai-orchestrator.ts': 1010,
-    'lib/ai/ollama-logic.ts': 896,
+    'lib/ai/ollama-logic.ts': 897,
     // +14 fuer die Trennung von Datei- und Ereignis-Weg beim Import, +6 fuer
     // die Ueberladungen von handleUpdateCaseField — sie verhindern, dass eine
     // Zahl in ein Textfeld des Fallbeispiels geschrieben wird.
     'hooks/useGradingMemoryModalState.ts': 777,
     'components/settings/AiProfileModules.tsx': 402,
-    'lib/grading/CalcTrace.ts': 696,
+    'lib/grading/CalcTrace.ts': 697,
     // +15 fuer den Wächter gegen den sich selbst ausloesenden Lade-Effekt.
     // Der Kommentar dort beschreibt den Mechanismus — ohne ihn wird der
     // Wächter beim naechsten Aufraeumen als ueberfluessig entfernt.
     'hooks/useSkillProfiles.ts': 695,
-    'hooks/file-processor/useProcessingPipeline.ts': 659,
-    'pages/app.tsx': 597,
+    'hooks/file-processor/useProcessingPipeline.ts': 660,
+    'pages/app.tsx': 598,
     'lib/ai/prompt-builder.ts': 593,
     'lib/services/local-profile-service.ts': 591,
-    'components/batch/parts/BatchTaskAnalysisCard.tsx': 576,
+    'components/batch/parts/BatchTaskAnalysisCard.tsx': 577,
     'hooks/useAiProfiles.ts': 491,
     'components/batch/CalcTraceModal.tsx': 425,
     'components/dashboard/DashboardModals.tsx': 423,
     'hooks/usePromptProfiles.ts': 420, // s. useSkillProfiles — gleicher Wächter
-    'components/batch/parts/SecondOpinionDrawer.tsx': 387,
+    'components/batch/parts/SecondOpinionDrawer.tsx': 388,
     'components/settings/ProfileModules.tsx': 348,
     'pages/features.tsx': 347,
     'components/RedactionModal.tsx': 342,

@@ -17,6 +17,7 @@ import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGe
 import { AppSettings } from '../../types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { AIProviderError } from './provider-error';
+import { toErrorMessage } from '../error-message';
 
 export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
 
@@ -757,7 +758,7 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
             // Fatal Error Diagnostics
             const start = cleaned.slice(0, 100); // Increased visibility
             const end = cleaned.slice(-100);
-            const errorMsg = e2 instanceof Error ? e2.message : String(e2);
+            const errorMsg = toErrorMessage(e2);
             
             if (typeof window === 'undefined') {
                 try {
