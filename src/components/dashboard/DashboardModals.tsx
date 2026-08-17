@@ -18,12 +18,23 @@ import PureKeyModal from '../PureKeyModal';
 import ModelTypeModal from '../ModelTypeModal';
 import AiSetupModal from '../AiSetupModal';
 import { AiParamsModal } from '../AiParamsModal';
-import { AppSettings, Task, BatchFile } from '../../types';
+import { AppSettings, Task, BatchFile, User, PromptProfile } from '../../types';
 import { isLocalInstance } from '../../lib/env-context';
 import { useRedactionBroadcast, isBroadcastTarget } from '../../hooks/useRedactionBroadcast';
 
+/**
+ * Der Nutzer, wie ihn der Abfrage-Zwischenspeicher haelt.
+ *
+ * Die Antwort von /api/user umschliesst den Datensatz — die optimistischen
+ * Aktualisierungen unten muessen diese Huelle mitschreiben, nicht ersetzen.
+ */
+interface NutzerCache {
+    user?: User;
+    [key: string]: unknown;
+}
+
 interface DashboardModalsProps {
-    userData: any;
+    userData: User | null;
     settings: AppSettings;
     setSettings: React.Dispatch<React.SetStateAction<AppSettings>>;
     
@@ -55,14 +66,14 @@ interface DashboardModalsProps {
     
     // Action Handlers
     saveSettings: (s: AppSettings) => void;
-    handleModeSelect: (m: any) => void;
+    handleModeSelect: (m: 'STANDARD' | 'PURE' | 'TRIAL') => void;
     sessionProfileName: string;
     setSessionProfileName: (n: string) => void;
     sessionSkillsProfileName: string;
     setSessionSkillsProfileName: (n: string) => void;
     sessionAiProfileName: string;
     setSessionAiProfileName: (n: string) => void;
-    profiles: any[];
+    profiles: PromptProfile[];
     
     // File/Task State
     pureApiKey: string | null;
@@ -74,7 +85,7 @@ interface DashboardModalsProps {
     // Split/Redact
     splitIdx: number | null;
     setSplitIdx: (i: number | null) => void;
-    executeSplit: (students: any[]) => void;
+    executeSplit: (students: { firstName?: string; lastName?: string; name?: string; pageCount: number }[]) => void;
     redactIdx: number | null;
     setRedactIdx: (i: number | null) => void;
     batchFiles: BatchFile[];
@@ -168,7 +179,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         }
                         
                         // Optimistically update query data cache
-                        queryClient.setQueryData(['user'], (prev: any) => {
+                        queryClient.setQueryData(['user'], (prev: NutzerCache | undefined) => {
                             if (!prev || !prev.user) return prev;
                             return {
                                 ...prev,
@@ -231,7 +242,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         }
                         
                         // Optimistically update query data cache
-                        queryClient.setQueryData(['user'], (prev: any) => {
+                        queryClient.setQueryData(['user'], (prev: NutzerCache | undefined) => {
                             if (!prev || !prev.user) return prev;
                             return {
                                 ...prev,
@@ -371,8 +382,8 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                     }}
                     onCancel={() => setShowAVVUpload(false)}
                     isOrganization={userData?.activeWorkspaceType === 'ORGANIZATION'}
-                    workspaceId={userData.activeWorkspaceId}
-                    organizationName={userData.activeWorkspaceName}
+                    workspaceId={userData?.activeWorkspaceId}
+                    organizationName={userData?.activeWorkspaceName}
                 />
             )}
 
@@ -397,7 +408,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         }
 
                         // Optimistically update query data cache
-                        queryClient.setQueryData(['user'], (prev: any) => {
+                        queryClient.setQueryData(['user'], (prev: NutzerCache | undefined) => {
                             if (!prev || !prev.user) return prev;
                             return {
                                 ...prev,

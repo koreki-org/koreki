@@ -28,7 +28,6 @@ const SRC_DIR = join(process.cwd(), 'src');
 
 /** Altlasten, eingefroren am 12.08.2026. NUR SENKEN, NIE ANHEBEN. */
 const ANY_BASELINE: Record<string, number> = {
-    'hooks/useSkillProfiles.ts': 9,
     'hooks/useGradingMemoryModalState.ts': 8,
     'lib/ai/ai-orchestrator.ts': 7,
     'lib/ai/ollama-logic.ts': 1,
@@ -37,7 +36,6 @@ const ANY_BASELINE: Record<string, number> = {
     'components/batch/parts/GraphAiPanel.tsx': 1,
     'lib/services/user-service.ts': 7,
     'components/batch/parts/BatchTaskAnalysisCard.tsx': 7,
-    'components/dashboard/DashboardModals.tsx': 7,
     'components/upload/ModelSolutionCard.tsx': 8,
     'hooks/usePromptProfiles.ts': 8,
     'pages/app.tsx': 4,
@@ -102,7 +100,7 @@ const ANY_BASELINE: Record<string, number> = {
     'lib/ai/constants.ts': 1,
     'lib/ai/extraction-logic.ts': 2,
     'lib/api-client.ts': 1,
-    'lib/parsers/markdown-profile-parser.ts': 2,
+    'lib/parsers/markdown-profile-parser.ts': 1,
     'lib/validation.ts': 2,
     'pages/api/generate-graph.ts': 1,
     'pages/api/org-admin.ts': 1,

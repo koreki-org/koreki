@@ -37,7 +37,9 @@ describe('useSkillProfiles - Industrial Hook Verification', () => {
     describe('Helper Functions (Pure Logic)', () => {
         it('should sort object keys deterministically', () => {
             const unordered = { z: 1, a: 2, m: { y: 10, b: 20 } };
-            const sorted = sortObjectKeys(unordered);
+            // `unknown` als Rueckgabe ist Absicht: die Funktion sortiert
+            // beliebige Strukturen und kann ueber deren Form nichts zusichern.
+            const sorted = sortObjectKeys(unordered) as { m: Record<string, unknown> };
 
             expect(Object.keys(sorted)).toEqual(['a', 'm', 'z']);
             expect(Object.keys(sorted.m)).toEqual(['b', 'y']);

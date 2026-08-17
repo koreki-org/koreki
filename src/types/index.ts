@@ -211,6 +211,21 @@ export interface SkillProfile {
     createdAt?: string;
 }
 
+/**
+ * Ein Prompt-Profil (Expertise). Das fehlende Geschwister zu [AiProfile],
+ * [SkillProfile] und [GradingMemory] — die drei standen hier laengst
+ * ausgeschrieben, dieses lief ueberall als `any[]` mit.
+ */
+export interface PromptProfile {
+    id: string;
+    name: string;
+    correctionPrompt: string;
+    /** Vorlage aus der Registry. Wird nie veraendert, sondern kopiert. */
+    isSystem?: boolean;
+    userId?: string | null;
+    createdAt?: string;
+}
+
 export interface AiProfile {
     id: string;
     name: string;

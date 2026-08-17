@@ -38,6 +38,12 @@ const SRC_DIR = join(process.cwd(), 'src');
  */
 const LIMITS: Record<string, number> = {
     lib: 500,
+    // Wie `lib/`, und aus einem staerkeren Grund: eine Typ-Sammlung hat GAR
+    // KEINEN Kontrollfluss. Die 300 gelten fuer Komponenten und Hooks, weil
+    // darueber der Zustandsfluss unlesbar wird — bei Interfaces gibt es
+    // nichts, dem man folgen muesste. Sie stand hier nur, weil `types/`
+    // urspruenglich nicht bedacht war und in den Standardwert fiel.
+    types: 500,
     components: 300,
     hooks: 300,
     pages: 300
@@ -95,7 +101,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // +15 fuer den Wächter gegen den sich selbst ausloesenden Lade-Effekt.
     // Der Kommentar dort beschreibt den Mechanismus — ohne ihn wird der
     // Wächter beim naechsten Aufraeumen als ueberfluessig entfernt.
-    'hooks/useSkillProfiles.ts': 695,
+    'hooks/useSkillProfiles.ts': 704,
     // +25 gegenueber 660: der Zustands-Ausschnitt ProcessingPipelineState und
     // `alsAnfrageModus`. Beide haben ALLE 11 `any` dieser Datei abgeloest —
     // darunter ein `appMode: 'UNSET'`, das an eine Funktion ging, die diesen
@@ -106,11 +112,12 @@ const SIZE_BASELINE: Record<string, number> = {
     'lib/services/local-profile-service.ts': 591,
     'components/batch/parts/BatchTaskAnalysisCard.tsx': 577,
     'hooks/useAiProfiles.ts': 491,
-        // +5: initialTrace nimmt ausdruecklich beide Rechenketten-Formen entgegen —
+    // +5: initialTrace nimmt ausdruecklich beide Rechenketten-Formen entgegen —
     // der Rumpf unterschied sie schon, der Typ verschwieg es.
-'components/batch/CalcTraceModal.tsx': 430,
-        // +2 fuer die Typ-Importe der durchgezogenen Generator-Signaturen.
-'components/dashboard/DashboardModals.tsx': 425,
+    'components/batch/CalcTraceModal.tsx': 430,
+    // +13: der NutzerCache-Typ und die durchgezogenen Signaturen haben ALLE
+    // 7 `any` dieser Datei abgeloest.
+    'components/dashboard/DashboardModals.tsx': 436,
     'hooks/usePromptProfiles.ts': 420, // s. useSkillProfiles — gleicher Wächter
     'components/batch/parts/SecondOpinionDrawer.tsx': 388,
     'components/settings/ProfileModules.tsx': 349,

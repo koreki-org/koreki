@@ -6,17 +6,20 @@ import { STANDARD_SKILL_PROFILES, DEFAULT_SKILL_PROFILE_ID } from '@/lib/ai/stan
 import { findNameCollision } from '@/lib/local-vault';
 import { isSameName, nameTakenMessage, overwriteQuestion, resolveProfileRef } from '@/lib/services/profile-naming';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
+import type { ParsedProfile } from '@/lib/parsers/markdown-profile-parser';
 
 /**
  * Deterministischer, Key-sortierter Objekt-Stringifier für robustes Dirty-Checking.
  */
-export const sortObjectKeys = (obj: any): any => {
+export const sortObjectKeys = (obj: unknown): unknown => {
     if (obj === null || typeof obj !== 'object') return obj;
     if (Array.isArray(obj)) return obj.map(sortObjectKeys);
-    return Object.keys(obj)
+
+    const quelle = obj as Record<string, unknown>;
+    return Object.keys(quelle)
         .sort()
-        .reduce((sorted: any, key) => {
-            sorted[key] = sortObjectKeys(obj[key]);
+        .reduce<Record<string, unknown>>((sorted, key) => {
+            sorted[key] = sortObjectKeys(quelle[key]);
             return sorted;
         }, {});
 };
@@ -25,11 +28,11 @@ export const sortObjectKeys = (obj: any): any => {
  * Konsolidiert namensgleiche Skills (case-insensitiv & getrimmt) und leitet Duplikat-IDs um.
  */
 export const deduplicateCustomSkills = (
-    skills: Record<string, any>,
+    skills: Record<string, CustomSkillDefinition>,
     activeIds?: string[]
-): { cleaned: Record<string, any>; updatedActiveIds: string[] } => {
+): { cleaned: Record<string, CustomSkillDefinition>; updatedActiveIds: string[] } => {
     const seenNames = new Map<string, string>(); // lowerName -> keptId
-    const cleaned: Record<string, any> = {};
+    const cleaned: Record<string, CustomSkillDefinition> = {};
     const redirections = new Map<string, string>(); // duplicateId -> keptId
 
     Object.keys(skills).forEach(id => {
@@ -106,7 +109,7 @@ export const useSkillProfiles = (
         .reduce((obj, key) => {
             obj[key] = customSkills[key];
             return obj;
-        }, {} as Record<string, any>);
+        }, {} as Record<string, CustomSkillDefinition>);
 
     const savedProfileCustomSkills = selectedProfileData?.customSkills && typeof selectedProfileData.customSkills === 'object'
         ? selectedProfileData.customSkills
@@ -397,10 +400,16 @@ export const useSkillProfiles = (
         setShowEditorMobile(true);
     };
 
-    const handleImportParsedProfile = (parsed: { metadata: any; content?: string; correctionPrompt?: string }, isSingleSkill?: boolean) => {
+    const handleImportParsedProfile = (parsed: ParsedProfile, isSingleSkill?: boolean) => {
         // Check if this is an individual skill import rather than a profile layout
         if (isSingleSkill || parsed.metadata?.type === 'skill' || parsed.metadata?.id?.startsWith('skill-') || parsed.metadata?.promptSnippet) {
-            const promptText = parsed.metadata?.promptSnippet || parsed.metadata?.prompt || (typeof parsed.content === 'string' ? parsed.content : "");
+            // Der Rumpf der Markdown-Datei liegt im `correctionPrompt` — so gibt
+            // ihn `parseMarkdownProfile` zurueck. Vorher stand hier
+            // `parsed.content`, ein Feld, das der Parser NIE liefert: ein Skill,
+            // dessen Anweisung im Rumpf steht (der Normalfall), wurde still mit
+            // leerem Prompt importiert. `usePromptProfiles` liest seit jeher das
+            // richtige Feld — die beiden Import-Wege waren auseinandergelaufen.
+            const promptText = parsed.metadata?.promptSnippet || parsed.metadata?.prompt || parsed.correctionPrompt || "";
             const newSkill = {
                 id: parsed.metadata?.id || `custom-skill-${Date.now()}`,
                 name: parsed.metadata?.name || "Importierter Skill",
@@ -486,7 +495,7 @@ export const useSkillProfiles = (
             .reduce((obj, key) => {
                 obj[key] = freshCustomSkills[key];
                 return obj;
-            }, {} as Record<string, any>);
+            }, {} as Record<string, CustomSkillDefinition>);
 
         if (isDesktopTarget()) {
             const stored = localStorage.getItem('koreki_local_skill_profiles');

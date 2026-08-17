@@ -5,8 +5,42 @@
  * No external dependencies, strictly resilient.
  */
 
+/**
+ * Die Kopfdaten einer importierten Profil- oder Skill-Datei.
+ *
+ * Alles optional: Die Datei stammt vom Nutzer, jedes Feld kann fehlen. Die
+ * Index-Signatur laesst unbekannte Schluessel durch, ohne dass ein Zugriff
+ * darauf still `any` wird — vorher stand hier `Record<string, any>` und damit
+ * war JEDER Zugriff ungeprueft.
+ */
+export interface ProfileMetadata {
+    id?: string;
+    name?: string;
+    description?: string;
+    /** 'skill' unterscheidet einen einzelnen Skill vom ganzen Profil. */
+    type?: string;
+    category?: string;
+    promptSnippet?: string;
+    prompt?: string;
+    isGraphBased?: boolean;
+    isCalcTrace?: boolean;
+    /** Nur bei Skill-Profilen: die enthaltenen Skill-IDs. */
+    skills?: string[] | string;
+
+    // KI-Profile
+    provider?: string;
+    mode?: string;
+    temperature?: number;
+    topP?: number;
+    maxTokens?: number;
+    presencePenalty?: number;
+    enableThinking?: boolean;
+
+    [key: string]: unknown;
+}
+
 export interface ParsedProfile {
-    metadata: Record<string, any>;
+    metadata: ProfileMetadata;
     correctionPrompt: string;
 }
 
