@@ -40,7 +40,7 @@ Die Personas oben sind als Claude-Code-Subagenten unter [.claude/agents/](.claud
    - [x] Wurden `console.log` im Backend durch den `logger` ersetzt? — *erzwungen durch ESLint (`no-console: error` für `pages/api` und `lib`)*
    - [x] Sind Null-Faelle geprüft? — *erzwungen durch den Compiler: `strictNullChecks: true` steht in der [tsconfig.json](tsconfig.json). Die Übergangs-Ratsche ist entfallen, nachdem alle 104 Altfälle behoben waren.*
    - [x] Entstehen keine **impliziten** `any`? — *erzwungen durch den Compiler: `noImplicitAny: true` steht in der [tsconfig.json](tsconfig.json). Keine Ratsche nötig, es gab nur 9 Altfälle.*
-   - [ ] Sind alle Typen strikt (**explizite** `: any` durch Interfaces ersetzt)? — *noch NICHT erzwungen: 433 `any` im Bestand. Nächster Schritt wäre eine ESLint-Ratsche auf `@typescript-eslint/no-explicit-any`.*
+   - [x] Sind alle Typen strikt (**explizite** `: any` durch Interfaces ersetzt)? — *erzwungen durch [tests/unit/any-governance.test.ts](tests/unit/any-governance.test.ts): neue Dateien müssen frei von `any` sein, die 530 Altfälle in 128 Dateien sind per Ratsche eingefroren und dürfen nur schrumpfen. Kommentare werden vor dem Zählen entfernt.*
    - [x] Bleiben neue Dateien unter der Größengrenze? — *erzwungen durch [tests/unit/file-size-governance.test.ts](tests/unit/file-size-governance.test.ts): 300 Zeilen für `components/`, `hooks/`, `pages/`, 500 für `lib/`, max. 10 Hook-Aufrufe pro Komponente. Altlasten sind per Ratsche eingefroren und dürfen nur schrumpfen.*
    - [ ] Werden Secrets / URLs aus `.env` statt Hardcoding geladen?
 
