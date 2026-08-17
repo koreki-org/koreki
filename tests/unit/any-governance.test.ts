@@ -71,7 +71,10 @@ const ANY_BASELINE: Record<string, number> = {
     'hooks/useDashboardOrchestrator.ts': 3,
     'hooks/useRedactionEngine.ts': 3,
     'lib/ai/prompt-library.ts': 3,
-    'lib/excel/export-content.ts': 3,
+    // 3 -> 1: die Feedback-Zeilen haben jetzt einen ausgeschriebenen Typ.
+    // Der verbliebene `any` traegt die dynamischen Aufgaben-Spalten der
+    // Lehrer-Liste, deren Namen erst zur Laufzeit feststehen.
+    'lib/excel/export-content.ts': 1,
     'lib/grading/CalcTrace.ts': 2,
     'lib/grading/graph-generator.ts': 2,
     'lib/grading/plugins.ts': 3,

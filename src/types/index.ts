@@ -64,7 +64,25 @@ export interface Workspace {
     inviteCode?: string;
 }
 
-export interface DbUser {
+/**
+ * Was eine Lehrkraft gerade ausgewaehlt hat.
+ *
+ * Steht einmal hier, weil `DbUser` (Sicht der Datenbank) und `User` (Sicht der
+ * Anwendung) dieselbe Auswahl tragen. Kommt eine achte Profilart dazu, muss sie
+ * in BEIDEN Typen ankommen — ausgeschrieben landete sie erfahrungsgemaess nur
+ * in einem, und die Auswahl waere auf einem der beiden Wege nicht sichtbar.
+ */
+export interface AktiveAuswahl {
+    activeWorkspaceId?: string;
+    activePromptProfileId?: string;
+    activeAiProfileId?: string;
+    activeGradingMemoryId?: string;
+    activeSkillProfileId?: string;
+    activeSkillIds?: string[];
+    customSkills?: Record<string, CustomSkillDefinition>;
+}
+
+export interface DbUser extends AktiveAuswahl {
     id: string;
     username: string;
     email?: string;
@@ -80,16 +98,9 @@ export interface DbUser {
     avvAccepted: boolean;
     createdAt: string;
     memberships: { workspace: Workspace, role: string }[];
-    activeWorkspaceId?: string;
-    activePromptProfileId?: string;
-    activeAiProfileId?: string;
-    activeGradingMemoryId?: string;
-    activeSkillProfileId?: string;
-    activeSkillIds?: string[];
-    customSkills?: Record<string, CustomSkillDefinition>;
 }
 
-export interface User {
+export interface User extends AktiveAuswahl {
     id: string;
     logtoId: string;
     username: string;
@@ -98,13 +109,6 @@ export interface User {
     avvAccepted: boolean;
     role?: 'ADMIN' | 'USER' | 'EXPERTE';
     hasProAccess?: boolean;
-    activeWorkspaceId?: string;
-    activePromptProfileId?: string;
-    activeAiProfileId?: string;
-    activeGradingMemoryId?: string;
-    activeSkillProfileId?: string;
-    activeSkillIds?: string[];
-    customSkills?: Record<string, CustomSkillDefinition>;
     activeWorkspaceName?: string;
     activeWorkspaceType?: 'PERSONAL' | 'ORGANIZATION';
     activeMembershipRole?: 'OWNER' | 'ADMIN' | 'MEMBER';

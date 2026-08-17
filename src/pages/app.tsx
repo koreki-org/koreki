@@ -406,6 +406,40 @@ export default function Home() {
                                 grade: f.grade
                             };
                         };
+                        /**
+                         * Die Sitzung als .koreki-Datei ausgeben.
+                         *
+                         * `alsSchuelerloesung` unterscheidet die beiden
+                         * Schaltflaechen — sonst sind sie identisch. Sie standen
+                         * bis 18.08.2026 zweimal ausgeschrieben da, 20 Zeilen
+                         * wortgleich: wer eine der uebergebenen Einstellungen
+                         * ergaenzt haette, haette sie in genau einem der beiden
+                         * Exporte ergaenzt, ohne dass etwas aufgefallen waere.
+                         */
+                        const exportiereSitzung = (alsSchuelerloesung: boolean) => {
+                            let cases = undefined;
+                            try {
+                                const stored = localStorage.getItem('koreki_active_grading_memory_cases');
+                                if (stored) cases = JSON.parse(stored);
+                            } catch {
+                                // Kein lesbarer Erfahrungsschatz — der Export laeuft ohne.
+                            }
+                            exportSessionToJson(
+                                fileProcessor.batchFiles,
+                                data.modelSolution,
+                                data.tasksLayout,
+                                {
+                                    activeProfileId: aiSettings.activePromptProfileId,
+                                    activeProfileName: sessionProfileName,
+                                    activeAiProfileId: aiSettings.activeAiProfileId,
+                                    activeAiProfileName: sessionAiProfileName,
+                                    activeGradingMemoryId: localStorage.getItem('koreki_active_grading_memory_id') || undefined,
+                                    activeGradingMemoryName: activeGradingMemoryName,
+                                    activeGradingMemoryCases: cases
+                                },
+                                alsSchuelerloesung
+                            );
+                        };
                         return (
                             <BatchProcessor
                                 batchFiles={fileProcessor.batchFiles}
@@ -425,49 +459,8 @@ export default function Home() {
                                 onExportStudents={() => exportStudentSummaries(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult))}
                                 onExportIndividual={() => exportIndividualFeedbacks(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult))}
                                 onExportPDFs={(mode) => void exportIndividualPDFs(fileProcessor.batchFiles.filter(f => f.status === 'done' && f.result).map(mapToStudentResult), mode)}
-                                onExportKoreki={() => {
-                                    let cases = undefined;
-                                    try {
-                                        const stored = localStorage.getItem('koreki_active_grading_memory_cases');
-                                        if (stored) cases = JSON.parse(stored);
-                                    } catch (e) {}
-                                    exportSessionToJson(
-                                        fileProcessor.batchFiles, 
-                                        data.modelSolution, 
-                                        data.tasksLayout,
-                                        {
-                                            activeProfileId: aiSettings.activePromptProfileId,
-                                            activeProfileName: sessionProfileName,
-                                            activeAiProfileId: aiSettings.activeAiProfileId,
-                                            activeAiProfileName: sessionAiProfileName,
-                                            activeGradingMemoryId: localStorage.getItem('koreki_active_grading_memory_id') || undefined,
-                                            activeGradingMemoryName: activeGradingMemoryName,
-                                            activeGradingMemoryCases: cases
-                                        }
-                                    );
-                                }}
-                                onExportSL={() => {
-                                    let cases = undefined;
-                                    try {
-                                        const stored = localStorage.getItem('koreki_active_grading_memory_cases');
-                                        if (stored) cases = JSON.parse(stored);
-                                    } catch (e) {}
-                                    exportSessionToJson(
-                                        fileProcessor.batchFiles, 
-                                        data.modelSolution, 
-                                        data.tasksLayout,
-                                        {
-                                            activeProfileId: aiSettings.activePromptProfileId,
-                                            activeProfileName: sessionProfileName,
-                                            activeAiProfileId: aiSettings.activeAiProfileId,
-                                            activeAiProfileName: sessionAiProfileName,
-                                            activeGradingMemoryId: localStorage.getItem('koreki_active_grading_memory_id') || undefined,
-                                            activeGradingMemoryName: activeGradingMemoryName,
-                                            activeGradingMemoryCases: cases
-                                        },
-                                        true
-                                    );
-                                }}
+                                onExportKoreki={() => exportiereSitzung(false)}
+                                onExportSL={() => exportiereSitzung(true)}
                                 onToggleSelect={fileProcessor.onToggleSelect}
                                 onToggleType={fileProcessor.onToggleType}
                                 onUpdateText={fileProcessor.onUpdateText}

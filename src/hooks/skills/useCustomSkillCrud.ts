@@ -2,7 +2,7 @@ import type { CustomSkillDefinition, SkillProfile } from '@/types';
 import { apiClient } from '@/lib/api-client';
 import { isDesktopTarget } from '@/lib/env-context';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
-import { deduplicateCustomSkills } from '@/lib/skills/skill-dedup';
+import { deduplicateCustomSkills, entferneSkillAusProfil } from '@/lib/skills/skill-dedup';
 
 /**
  * Eigene Skills anlegen und loeschen.
@@ -117,61 +117,20 @@ export function useCustomSkillCrud({
         setActiveSkillIds(updatedActiveSkillIds);
 
         // 3. Globales Löschen aus allen benutzerdefinierten Profilen im State & Persistierung
-        const updatedProfiles = profiles.map(p => {
-            if (p.isSystem) return p;
-            
-            const profileCustomSkills = p.customSkills ? { ...p.customSkills } : {};
-            let isChanged = false;
-            if (profileCustomSkills[id]) {
-                delete profileCustomSkills[id];
-                isChanged = true;
-            }
-            
-            let pActiveSkillIds = Array.isArray(p.activeSkillIds) ? [...p.activeSkillIds] : [];
-            if (pActiveSkillIds.includes(id)) {
-                pActiveSkillIds = pActiveSkillIds.filter((sid: string) => sid !== id);
-                isChanged = true;
-            }
-            
-            if (isChanged) {
-                return {
-                    ...p,
-                    customSkills: profileCustomSkills,
-                    activeSkillIds: pActiveSkillIds
-                };
-            }
-            return p;
-        });
+        // Vorlagen aus der Registry werden nie veraendert, sondern kopiert.
+        const updatedProfiles = profiles.map(p => p.isSystem ? p : entferneSkillAusProfil(p, id));
 
         // 4. Speicher-Persistierung aller geänderten benutzerdefinierten Profile
         if (isDesktopTarget()) {
             const stored = localStorage.getItem('koreki_local_skill_profiles');
             if (stored) {
                 try {
-                    let customProfiles: SkillProfile[] = JSON.parse(stored);
-                    const updatedCustomProfiles = customProfiles.map(p => {
-                        const profileCustomSkills = p.customSkills ? { ...p.customSkills } : {};
-                        let isChanged = false;
-                        if (profileCustomSkills[id]) {
-                            delete profileCustomSkills[id];
-                            isChanged = true;
-                        }
-                        let pActiveSkillIds = Array.isArray(p.activeSkillIds) ? [...p.activeSkillIds] : [];
-                        if (pActiveSkillIds.includes(id)) {
-                            pActiveSkillIds = pActiveSkillIds.filter((sid: string) => sid !== id);
-                            isChanged = true;
-                        }
-                        if (isChanged) {
-                            return {
-                                ...p,
-                                customSkills: profileCustomSkills,
-                                activeSkillIds: pActiveSkillIds
-                            };
-                        }
-                        return p;
-                    });
+                    const customProfiles: SkillProfile[] = JSON.parse(stored);
+                    const updatedCustomProfiles = customProfiles.map(p => entferneSkillAusProfil(p, id));
                     localStorage.setItem('koreki_local_skill_profiles', JSON.stringify(updatedCustomProfiles));
-                } catch (e) {}
+                } catch {
+                    // Unlesbare Ablage — die Profile im Zustand sind bereits bereinigt.
+                }
             }
         } else {
             // SaaS/Community: Für jedes geänderte benutzerdefinierte Profil ein API-POST absetzen

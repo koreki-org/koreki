@@ -4,37 +4,69 @@ import { downloadFile } from '../file-utils';
 import { StudentResult } from './types';
 import { downloadWorkbook } from './utils';
 
+/** Eine Zeile des Feedback-Blatts. */
+export interface FeedbackZeile {
+    'Nachname': string;
+    'Vorname': string;
+    'KI-Expertise': string;
+    'Gesamtfeedback': string;
+    'Aufgabe': string;
+    'Feedback zur Aufgabe': string;
+}
+
+/**
+ * Die Feedback-Zeilen einer Schuelerarbeit.
+ * 📄
+ *
+ * Eine Zeile je Aufgabe; die Angaben zur Person stehen nur in der ERSTEN, damit
+ * das Blatt lesbar bleibt und nicht bei jeder Aufgabe denselben Namen zeigt.
+ * Ohne Aufgaben bleibt eine Zeile mit Strichen — sonst faellt die Arbeit im
+ * Export ganz weg, und die Lehrkraft merkt nicht, dass sie fehlt.
+ *
+ * WARUM DAS EINE FUNKTION IST
+ * ---------------------------
+ * Dieser Aufbau stand zweimal da: einmal fuer den Einzelexport, einmal fuer die
+ * Sammelmappe — 14 Zeilen zeichengleich. Wer eine Spalte ergaenzt haette, haette
+ * sie in genau einem der beiden Exporte ergaenzt, und niemand haette es gemerkt,
+ * weil beide fuer sich weiter funktionieren.
+ */
+export const baueFeedbackZeilen = (r: StudentResult): FeedbackZeile[] => {
+    const analysis = r.analysis || {};
+    const nachname = r.studentLastName || 'Unbekannt';
+    const vorname = r.studentFirstName || '';
+    const expertise = analysis.expertProfile || 'Standard';
+    const gesamt = analysis.overallFeedback || '';
+
+    if (!analysis.tasks || analysis.tasks.length === 0) {
+        return [{
+            'Nachname': nachname,
+            'Vorname': vorname,
+            'KI-Expertise': expertise,
+            'Gesamtfeedback': gesamt,
+            'Aufgabe': '-',
+            'Feedback zur Aufgabe': '-'
+        }];
+    }
+
+    return analysis.tasks.map((task, index) => ({
+        'Nachname': index === 0 ? nachname : '',
+        'Vorname': index === 0 ? vorname : '',
+        'KI-Expertise': index === 0 ? expertise : '',
+        'Gesamtfeedback': index === 0 ? gesamt : '',
+        'Aufgabe': task.name || `Aufgabe ${index + 1}`,
+        'Feedback zur Aufgabe': task.feedback || ''
+    }));
+};
+
+/** Spaltenbreiten des Feedback-Blatts — fuer beide Exporte dieselben. */
+const FEEDBACK_SPALTEN = [{ wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 50 }, { wch: 20 }, { wch: 60 }];
+
 /**
  * Generates an Excel workbook for a single student.
  */
 export const generateStudentWorkbook = (r: StudentResult): XLSX.WorkBook => {
-    const analysis = r.analysis || {};
-    const data: any[] = [];
-
-    if (!analysis.tasks || analysis.tasks.length === 0) {
-        data.push({
-            'Nachname': r.studentLastName || 'Unbekannt',
-            'Vorname': r.studentFirstName || '',
-            'KI-Expertise': analysis.expertProfile || 'Standard',
-            'Gesamtfeedback': analysis.overallFeedback || '',
-            'Aufgabe': '-',
-            'Feedback zur Aufgabe': '-'
-        });
-    } else {
-        analysis.tasks.forEach((task, index) => {
-            data.push({
-                'Nachname': index === 0 ? (r.studentLastName || 'Unbekannt') : '',
-                'Vorname': index === 0 ? (r.studentFirstName || '') : '',
-                'KI-Expertise': index === 0 ? (analysis.expertProfile || 'Standard') : '',
-                'Gesamtfeedback': index === 0 ? (analysis.overallFeedback || '') : '',
-                'Aufgabe': task.name || `Aufgabe ${index + 1}`,
-                'Feedback zur Aufgabe': task.feedback || ''
-            });
-        });
-    }
-
-    const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 50 }, { wch: 20 }, { wch: 60 }];
+    const ws = XLSX.utils.json_to_sheet(baueFeedbackZeilen(r));
+    ws['!cols'] = FEEDBACK_SPALTEN;
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Feedback");
@@ -140,35 +172,16 @@ export const exportTeacherList = (
 export const exportStudentSummaries = (results: StudentResult[]): void => {
     if (!results || results.length === 0) return;
 
-    const data: any[] = [];
+    // Zwischen zwei Arbeiten bleibt eine Leerzeile stehen, damit im Sammelblatt
+    // erkennbar ist, wo eine Arbeit endet und die naechste beginnt.
+    const data: Partial<FeedbackZeile>[] = [];
     results.forEach((r, rIdx) => {
-        const analysis = r.analysis || {};
-        if (!analysis.tasks || analysis.tasks.length === 0) {
-            data.push({
-                'Nachname': r.studentLastName || 'Unbekannt',
-                'Vorname': r.studentFirstName || '',
-                'KI-Expertise': analysis.expertProfile || 'Standard',
-                'Gesamtfeedback': analysis.overallFeedback || '',
-                'Aufgabe': '-',
-                'Feedback zur Aufgabe': '-'
-            });
-        } else {
-            analysis.tasks.forEach((task, index) => {
-                data.push({
-                    'Nachname': index === 0 ? (r.studentLastName || 'Unbekannt') : '',
-                    'Vorname': index === 0 ? (r.studentFirstName || '') : '',
-                    'KI-Expertise': index === 0 ? (analysis.expertProfile || 'Standard') : '',
-                    'Gesamtfeedback': index === 0 ? (analysis.overallFeedback || '') : '',
-                    'Aufgabe': task.name || `Aufgabe ${index + 1}`,
-                    'Feedback zur Aufgabe': task.feedback || ''
-                });
-            });
-        }
+        data.push(...baueFeedbackZeilen(r));
         if (rIdx < results.length - 1) data.push({});
     });
 
     const ws = XLSX.utils.json_to_sheet(data);
-    ws['!cols'] = [{ wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 50 }, { wch: 20 }, { wch: 60 }];
+    ws['!cols'] = FEEDBACK_SPALTEN;
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Schüler Feedback");

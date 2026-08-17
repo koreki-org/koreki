@@ -55,7 +55,39 @@ export const deduplicateCustomSkills = (
 };
 
 /**
- * Industrial Skill Profile Hook
- * 🏮🛡️🏛️
- * Symmetrical to usePromptProfiles.ts. Handles database, local storage, and custom skills management.
+ * Nimmt einen geloeschten Skill aus einem Profil heraus.
+ * 🧹
+ *
+ * Beides muss geschehen: die Definition aus `customSkills` UND die Kennung aus
+ * `activeSkillIds`. Bleibt die Kennung stehen, verweist das Profil auf einen
+ * Skill, den es nicht mehr gibt — die Instruktion faellt beim naechsten
+ * Korrekturlauf stillschweigend weg, ohne dass irgendwo etwas fehlschlaegt.
+ *
+ * Gibt das Profil UNVERAENDERT zurueck, wenn es den Skill gar nicht kannte.
+ * Aufrufer erkennen daran (per Identitaetsvergleich), ob sie speichern muessen.
+ *
+ * WARUM DAS EINE FUNKTION IST
+ * ---------------------------
+ * Dieser Ablauf stand zweimal in `useCustomSkillCrud` — einmal fuer die
+ * Profile im Zustand, einmal fuer die lokal abgelegten der Desktop-Fassung.
+ * Beide Male dieselben acht Zeilen. Der Duplikat-Waechter sah das bis zum
+ * 18.08.2026 nicht: er verglich nur ueber Dateigrenzen hinweg.
  */
+export const entferneSkillAusProfil = <T extends {
+    customSkills?: Record<string, CustomSkillDefinition>;
+    activeSkillIds?: string[];
+}>(profil: T, skillId: string): T => {
+    const customSkills = profil.customSkills ? { ...profil.customSkills } : {};
+    const vorhandeneIds = Array.isArray(profil.activeSkillIds) ? profil.activeSkillIds : [];
+
+    const hatDefinition = !!customSkills[skillId];
+    const istAktiv = vorhandeneIds.includes(skillId);
+    if (!hatDefinition && !istAktiv) return profil;
+
+    delete customSkills[skillId];
+    return {
+        ...profil,
+        customSkills,
+        activeSkillIds: vorhandeneIds.filter(id => id !== skillId)
+    };
+};

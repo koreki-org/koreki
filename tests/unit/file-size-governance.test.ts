@@ -123,7 +123,9 @@ const SIZE_BASELINE: Record<string, number> = {
     // Orchestrator-Objekte entgegennehmen statt 45 Einzelwerte. Das ist eine
     // Schnittstellen-Aenderung an einer grossen Komponente und gehoert in einen
     // eigenen Schritt.
-    'pages/app.tsx': 495,
+    // 495 -> 488: die beiden .koreki-Exporte standen zweimal ausgeschrieben da,
+    // unterschieden durch ein einziges `true`.
+    'pages/app.tsx': 488,
     'components/batch/parts/BatchTaskAnalysisCard.tsx': 577,
     // +7: der Kommentar, warum beim Aktualisieren die bestehende Kennung
     // gewinnt. Ohne ihn wird die Zeile beim naechsten Aufraeumen entfernt.

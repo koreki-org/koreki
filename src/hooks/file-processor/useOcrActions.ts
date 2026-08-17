@@ -23,6 +23,22 @@ import { useBatchStore } from '@/hooks/store/useBatchStore';
  * Lehrkraft ausloest.
  */
 
+/**
+ * Was die Lehrkraft am fehlgeschlagenen Blatt liest.
+ *
+ * Eine Auslastung des KI-Servers ist kein Fehler der Arbeit — sie geht nach
+ * einer Wartezeit von allein weg. Deshalb sagt die Meldung, was zu tun ist,
+ * statt die technische Ursache zu nennen.
+ *
+ * Steht einmal hier, weil beide Einstiege (Stapel und Einzeldatei) sie
+ * brauchen. Ausgeschrieben stand sie zweimal da — wer den Wortlaut oder die
+ * Wartezeit angepasst haette, haette genau einen der beiden Wege erwischt.
+ */
+const alsBlattFehler = (err: unknown): string =>
+    isRateLimitError(err)
+        ? 'KI-Server ausgelastet — bitte ca. 30s warten und erneut starten.'
+        : toErrorMessage(err);
+
 export interface UseOcrActionsParams {
     setBatchFiles: React.Dispatch<React.SetStateAction<BatchFile[]>>;
     setCurrentProcessingIndex: React.Dispatch<React.SetStateAction<number>>;
@@ -98,16 +114,9 @@ export function useOcrActions({
                             console.log("OCR aborted by user");
                             break;
                         }
-                        const isRateLimit = isRateLimitError(err);
                         setBatchFiles((prev: BatchFile[]) => {
                             const next = [...prev];
-                            next[i] = { 
-                                ...next[i], 
-                                status: 'error', 
-                                error: isRateLimit 
-                                    ? 'KI-Server ausgelastet — bitte ca. 30s warten und erneut starten.' 
-                                    : toErrorMessage(err) 
-                            };
+                            next[i] = { ...next[i], status: 'error', error: alsBlattFehler(err) };
                             return next;
                         });
                     }
@@ -189,16 +198,9 @@ export function useOcrActions({
                 });
                 return;
             }
-            const isRateLimit = isRateLimitError(err);
             setBatchFiles((prev: BatchFile[]) => {
                 const next = [...prev];
-                next[i] = { 
-                    ...next[i], 
-                    status: 'error', 
-                    error: isRateLimit 
-                        ? 'KI-Server ausgelastet — bitte ca. 30s warten und erneut starten.' 
-                        : toErrorMessage(err) 
-                };
+                next[i] = { ...next[i], status: 'error', error: alsBlattFehler(err) };
                 return next;
             });
         } finally {
