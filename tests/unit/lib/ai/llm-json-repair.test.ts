@@ -1,4 +1,4 @@
-import { escapeInnerQuotes, repairJsonString } from '../../../../src/lib/ai/ollama-logic';
+import { escapeInnerQuotes, repairJsonString } from '../../../../src/lib/ai/llm-json';
 
 /** Repariert und parst — so wird die Kette benutzt. */
 const parseRepaired = (raw: string) => JSON.parse(repairJsonString(raw));

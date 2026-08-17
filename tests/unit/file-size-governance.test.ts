@@ -58,9 +58,9 @@ const HOOK_LIMIT = 10;
  * im Callback erhalten bleibt, bzw. eine Typangabe gegen `never`. Kommentare
  * wurden vorher entfernt, es war nichts mehr zu kuerzen.
  *
- * Zweite Ausnahme, 17.08.2026: sieben Eintraege um je EINE Zeile angehoben
+ * Zweite Ausnahme, 17.08.2026: sechs Eintraege um je EINE Zeile angehoben
  * (GradingGraphModal, BatchTaskAnalysisCard, SecondOpinionDrawer,
- * useProcessingPipeline, CalcTrace, app.tsx, ollama-logic). Es ist in allen sieben Faellen
+ * useProcessingPipeline, CalcTrace, app.tsx). Es ist in allen sechs Faellen
  * dieselbe Zeile — der Import aus `lib/error-message`, der 62 `catch (x: any)`
  * abgeloest hat. Eine Import-Zeile gegen ein abgeschaltetes `any` pro Block ist
  * ein guter Tausch; die betroffenen Dateien sind dadurch netto STRENGER
@@ -84,7 +84,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // Datei bleibt der groesste Brocken im Repo und gehoert zerlegt — dann faellt
     // dieser Eintrag ohnehin weg.
     'lib/ai/ai-orchestrator.ts': 1010,
-    'lib/ai/ollama-logic.ts': 897,
+    'lib/ai/ollama-logic.ts': 657,
     // +14 fuer die Trennung von Datei- und Ereignis-Weg beim Import, +6 fuer
     // die Ueberladungen von handleUpdateCaseField — sie verhindern, dass eine
     // Zahl in ein Textfeld des Fallbeispiels geschrieben wird.

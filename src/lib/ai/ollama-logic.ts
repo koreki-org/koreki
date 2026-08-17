@@ -17,7 +17,7 @@ import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGe
 import { AppSettings } from '../../types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { AIProviderError } from './provider-error';
-import { toErrorMessage } from '../error-message';
+import { parseLlmJson, LlmJsonParseError } from './llm-json';
 
 export type AIAction = 'correction' | 'clean-and-analyze' | 'clean-and-map' | 'vision' | 'student-simulator' | 'anonymize' | 'second-opinion' | 'generate-graph' | 'refine-graph' | 'variable-extraction' | 'generate-calc-trace' | 'refine-calc-trace' | 'calc-trace-extraction';
 
@@ -512,269 +512,29 @@ function validateOllamaResponse(parsed: any, action: AIAction): any {
     return parsed;
 }
 
-/**
- * Maskiert Anführungszeichen, die ein lokales Modell innerhalb eines JSON-Strings
- * unmaskiert gelassen hat.
- *
- * Der Scanner unterscheidet dafür zwischen Schlüssel- und Wert-Strings, weil nur so
- * eindeutig ist, welches Anführungszeichen einen String wirklich beendet:
- * - in einem Schlüssel beendet ausschließlich ein folgendes ":" den String
- * - in einem Wert beenden ausschließlich ",", "}" oder "]" den String
- *
- * Ohne diese Unterscheidung wird ein Zitat im Fließtext wie `die klassische "Falle":`
- * als Schlüsselende gelesen — der String bricht dort ab und der Rest wird zu Syntaxmüll.
- *
- * Bewusste Grenze: Ein Anführungszeichen, dem im Fließtext ein Komma folgt
- * (`er sagte "hallo", dann ging er`), bleibt mit lokalem Lookahead unentscheidbar
- * und wird weiterhin als Stringende gewertet.
- */
-export function escapeInnerQuotes(jsonStr: string): string {
-    let result = '';
-    let inString = false;
-    let stringIsKey = false;
-    const containers: string[] = [];
-    let lastMeaningful = '';
-
-    const nextNonWhitespaceFrom = (from: number): { char: string; index: number } => {
-        let k = from;
-        while (k < jsonStr.length) {
-            const c = jsonStr[k];
-            if (c !== ' ' && c !== '\t' && c !== '\n' && c !== '\r') {
-                return { char: c, index: k };
-            }
-            k++;
-        }
-        return { char: '', index: -1 };
-    };
-
-    let i = 0;
-    while (i < jsonStr.length) {
-        const char = jsonStr[i];
-
-        if (char !== '"') {
-            result += char;
-            if (!inString) {
-                if (char === '{' || char === '[') {
-                    containers.push(char);
-                } else if (char === '}' || char === ']') {
-                    containers.pop();
-                }
-                if (char !== ' ' && char !== '\t' && char !== '\n' && char !== '\r') {
-                    lastMeaningful = char;
-                }
-            }
-            i++;
-            continue;
-        }
-
-        let backslashes = 0;
-        let j = i - 1;
-        while (j >= 0 && jsonStr[j] === '\\') {
-            backslashes++;
-            j--;
-        }
-        const isEscaped = backslashes % 2 === 1;
-
-        if (!inString) {
-            // Ein Schlüssel steht nur direkt hinter "{" oder "," innerhalb eines Objekts.
-            inString = true;
-            stringIsKey = containers[containers.length - 1] === '{'
-                && (lastMeaningful === '{' || lastMeaningful === ',');
-            result += char;
-            lastMeaningful = char;
-            i++;
-            continue;
-        }
-
-        const { char: nextNonWhitespace, index: nextIdx } = nextNonWhitespaceFrom(i + 1);
-
-        let isStructural = stringIsKey
-            ? nextNonWhitespace === ':'
-            : nextNonWhitespace === ',' || nextNonWhitespace === '}' || nextNonWhitespace === ']';
-
-        // Fehlendes Komma zwischen Wert und folgendem Schlüssel: "...wert" "key": ...
-        let nextKeyMatched = false;
-        if (!isStructural && !stringIsKey && nextNonWhitespace === '"') {
-            let nextQuoteIdx = -1;
-            let m = nextIdx + 1;
-            while (m < jsonStr.length) {
-                if (jsonStr[m] === '"' && jsonStr[m - 1] !== '\\') {
-                    nextQuoteIdx = m;
-                    break;
-                }
-                m++;
-            }
-            if (nextQuoteIdx !== -1 && nextNonWhitespaceFrom(nextQuoteIdx + 1).char === ':') {
-                isStructural = true;
-                nextKeyMatched = true;
-            }
-        }
-
-        if (isStructural) {
-            if (isEscaped && result.endsWith('\\')) {
-                result = result.slice(0, -1);
-            }
-            inString = false;
-            result += char;
-            lastMeaningful = char;
-            if (nextKeyMatched) {
-                result += ',';
-                lastMeaningful = ',';
-            }
-        } else if (isEscaped) {
-            result += char;
-        } else {
-            result += '\\"';
-        }
-        i++;
-    }
-    return result;
-}
-
-/**
- * LaTeX-Befehle, deren erster Buchstabe zugleich eine gültige JSON-Escape-Sequenz bildet.
- *
- * `\text` ist aus Sicht von JSON.parse ein Tabulator gefolgt von "ext", `\frac` ein
- * Seitenvorschub gefolgt von "rac". Schreibt ein Modell LaTeX nur einfach maskiert,
- * wird der Befehl beim Parsen still zerstört — die Rechnung in der Musterlösung ist
- * danach unlesbar. Nur Befehle nach \b \f \n \r \t sind betroffen; alle anderen
- * (z. B. `\alpha`) deckt die allgemeine Backslash-Reparatur darunter bereits ab.
- */
-const LATEX_COMMANDS_COLLIDING_WITH_JSON_ESCAPES = [
-    // \t
-    'text', 'textbf', 'textit', 'times', 'theta', 'tau', 'tan', 'tfrac', 'to', 'top', 'triangle',
-    // \f
-    'frac', 'forall', 'flat', 'frown',
-    // \b
-    'beta', 'bar', 'binom', 'bmod', 'boxed', 'bullet', 'big', 'bigg',
-    // \n
-    'nabla', 'neq', 'not', 'nu', 'nrightarrow',
-    // \r
-    'rightarrow', 'right', 'rho', 'rangle', 'rfloor', 'rceil'
-];
-
-const LATEX_ESCAPE_COLLISION_PATTERN = new RegExp(
-    `(?<!\\\\)\\\\(?=(?:${LATEX_COMMANDS_COLLIDING_WITH_JSON_ESCAPES.join('|')})(?![a-zA-Z]))`,
-    'g'
-);
-
-/**
- * Repariert die typischen JSON-Verstöße lokaler Modelle, bevor JSON.parse greift.
- */
-export function repairJsonString(jsonStr: string): string {
-    // 1. Unmaskierte Anführungszeichen innerhalb von Strings maskieren
-    let repaired = escapeInnerQuotes(jsonStr);
-    // 2. Einfach maskierte LaTeX-Befehle retten, bevor JSON sie als Steuerzeichen liest
-    repaired = repaired.replace(LATEX_ESCAPE_COLLISION_PATTERN, '\\\\');
-    // 3. Unmaskierte Backslashes reparieren (LaTeX, Pfade)
-    repaired = repaired.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
-    // 4. Echte Zeilenumbrüche innerhalb von Strings maskieren
-    repaired = repaired.replace(/"((?:[^"\\]|\\[\s\S])*)"/g, (match, p1) => {
-        return '"' + p1.replace(/\n/g, '\\n').replace(/\r/g, '\\r') + '"';
-    });
-    return repaired;
-}
-
 function processOllamaResponse(content: string | null | undefined, action: AIAction, modelName: string) {
     if (content === null || content === undefined) {
         throw new Error(`Ollama hat eine leere Antwort geliefert. \nGrund: Der Backend-Proxy hat keine Daten vom Modell empfangen.`);
     }
     if (action === 'vision' || action === 'second-opinion') return { text: content };
-    let cleaned = content.trim();
-    
+
+    const cleaned = content.trim();
+
     // Industrial Diagnostics: Handle empty responses caused by silent backend failures
     if (!cleaned) {
         throw new Error(`Ollama hat eine leere Antwort geliefert. \nGrund: Der Backend-Proxy hat keine Daten vom Modell empfangen. \n\nCheckliste:\n1. Ist das Modell "${modelName}" auf dem Server geladen?\n2. Ist der Server ausgebremst (GPU-VRAM voll)?\n3. Ist die Musterlösung evtl. zu groß für das Kontextfenster?`);
     }
 
-    // [Industrial Hardening] 🛡️
-    // 1. Remove Markdown markers if model wrapped JSON in code blocks (common in non-forced modes)
-    let rawJson = cleaned;
-    if (rawJson.includes('```json')) {
-        const parts = rawJson.split('```json');
-        if (parts.length > 1) rawJson = parts[1].split('```')[0].trim();
-    } else if (rawJson.includes('```')) {
-        const parts = rawJson.split('```');
-        if (parts.length > 1) rawJson = parts[1].split('```')[0].trim();
-    }
-
-    // 2. Greedy Extraction (First { or [ to Last } or ])
-    const standardJson = (() => {
-        const firstCurly = rawJson.indexOf('{');
-        const firstSquare = rawJson.indexOf('[');
-        const isArray = (firstSquare !== -1 && (firstCurly === -1 || firstSquare < firstCurly));
-        
-        if (isArray) {
-            const match = rawJson.match(/\[[\s\S]*\]/);
-            return match ? match[0] : rawJson;
-        } else {
-            const match = rawJson.match(/\{[\s\S]*\}/);
-            return match ? match[0] : rawJson;
-        }
-    })();
-
     try {
-        return validateOllamaResponse(JSON.parse(repairJsonString(standardJson)), action);
+        return validateOllamaResponse(parseLlmJson(cleaned), action);
     } catch (e) {
-        if (e instanceof Error && e.message.startsWith('Ungültige KI-Struktur')) {
-            throw e;
+        // Nur den Parse-Fehler mit dem Anbieternamen versehen. Die
+        // Struktur-Pruefung darunter wirft eigene, praezisere Meldungen —
+        // die duerfen nicht ueberschrieben werden.
+        if (e instanceof LlmJsonParseError) {
+            throw new Error(`Ollama ${e.message}`);
         }
-        // Fallback for Thinking/Reasoning blocks or corrupted prefixes
-        try {
-            const cleanContent = rawJson
-                .replace(/<thought>[\s\S]*?(<\/thought>|$)/gi, '') 
-                .replace(/<thought>[\s\S]*/gi, '')
-                .replace(/<\/thought>[\s\S]*/gi, '')
-                .replace(/<reasoning>[\s\S]*?(<\/reasoning>|$)/gi, '')
-                .replace(/<reasoning>[\s\S]*/gi, '')
-                .replace(/<\/reasoning>[\s\S]*/gi, '')
-                .replace(/^[\s\S]*?(?=\{|\[)/, '') 
-                .replace(/(?<=\}|\])[^\]\}]*$/, '') 
-                .trim();
-
-            const firstCurly = cleanContent.indexOf('{');
-            const firstSquare = cleanContent.indexOf('[');
-            const isArray = (firstSquare !== -1 && (firstCurly === -1 || firstSquare < firstCurly));
-
-            const hardenedMatch = (() => {
-                if (isArray) {
-                    return cleanContent.match(/\[[\s\S]*\]/);
-                } else {
-                    return cleanContent.match(/\{[\s\S]*\}/);
-                }
-            })();
-            const hardenedJson = hardenedMatch ? hardenedMatch[0] : cleanContent;
-            
-            // Industrial Recovery: Check for trailing commas in arrays/objects (common LLM failure)
-            const partiallyRepaired = hardenedJson
-                .replace(/,\s*([\]\}])/g, '$1') // Removes trailing commas before ] or }
-                .trim();
-
-            return validateOllamaResponse(JSON.parse(repairJsonString(partiallyRepaired)), action);
-        } catch (e2) {
-            if (e2 instanceof Error && e2.message.startsWith('Ungültige KI-Struktur')) {
-                throw e2;
-            }
-            // Fatal Error Diagnostics
-            const start = cleaned.slice(0, 100); // Increased visibility
-            const end = cleaned.slice(-100);
-            const errorMsg = toErrorMessage(e2);
-            
-            if (typeof window === 'undefined') {
-                try {
-                    const fs = eval("require")('fs');
-                    const path = eval("require")('path');
-                    const scratchDir = path.join(process.cwd(), 'scratch');
-                    if (!fs.existsSync(scratchDir)) {
-                        fs.mkdirSync(scratchDir, { recursive: true });
-                    }
-                    fs.writeFileSync(path.join(scratchDir, 'raw_ollama_error.json'), cleaned, 'utf-8');
-                } catch (err) {}
-            }
-
-
-            throw new Error(`Ollama JSON-Parse fehlgeschlagen (${errorMsg}). \n\nAnfang: [${start}]\n\nEnde: [${end}]\n\nLänge: ${cleaned.length}`);
-        }
+        throw e;
     }
 }
 

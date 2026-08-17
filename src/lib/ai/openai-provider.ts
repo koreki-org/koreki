@@ -14,6 +14,7 @@ import {
 } from './prompt-builder';
 import { buildGraphGenerationPrompt, buildGraphRefinementPrompt, VALIDATE_GRAPH_TOOL, parseGeneratedGraph, validateGraphDeterminism } from '../grading/graph-generator';
 import { logger } from '@/lib/logger';
+import { parseLlmJson } from './llm-json';
 import { buildCalcTraceGenerationPrompt, buildCalcTraceRefinementPrompt, parseGeneratedCalcTrace, validateCalcTraceDeterminism } from '../grading/calc-trace-generator';
 import { isDesktopTarget } from '@/lib/env-context';
 import { AIProviderError } from './provider-error';
@@ -359,110 +360,16 @@ export async function executeOpenAIRequest(
 
     // 4. Robust JSON Parsing
     if (action !== 'vision' && action !== 'second-opinion') {
-        const repairUnescapedBackslashes = (jsonStr: string): string => {
-            return jsonStr.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
-        };
-
-        // Helper function to strip thinking/reasoning blocks first
-        const stripThinkingBlocks = (rawStr: string): string => {
-            return rawStr
-                .replace(/<think>[\s\S]*?(<\/think>|$)/gi, '')
-                .replace(/<thought>[\s\S]*?(<\/thought>|$)/gi, '')
-                .replace(/<reasoning>[\s\S]*?(<\/reasoning>|$)/gi, '')
-                .replace(/\[thought\][\s\S]*?(\[\/thought\]|$)/gi, '')
-                .replace(/\[think\][\s\S]*?(\[\/think\]|$)/gi, '')
-                .replace(/<channel>[\s\S]*?(<\/channel>|$)/gi, '')
-                .replace(/<annotation>[\s\S]*?(<\/annotation>|$)/gi, '')
-                .replace(/<chain_of_thought>[\s\S]*?(<\/chain_of_thought>|$)/gi, '')
-                .trim();
-        };
-
-        const cleanContent = stripThinkingBlocks(content);
-
-        // Try extracting JSON from markdown block ```json ... ``` first if present
-        const extractJsonCandidate = (text: string): string => {
-            const markdownMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-            if (markdownMatch && markdownMatch[1]) {
-                return markdownMatch[1].trim();
-            }
-            const objectMatch = text.match(/\{[\s\S]*\}/);
-            if (objectMatch) {
-                return objectMatch[0].trim();
-            }
-            const arrayMatch = text.match(/\[[\s\S]*\]/);
-            if (arrayMatch) {
-                return arrayMatch[0].trim();
-            }
-            return text.trim();
-        };
-
-        const jsonCandidate = extractJsonCandidate(cleanContent);
-
         try {
             return {
-                ...JSON.parse(repairUnescapedBackslashes(jsonCandidate)),
+                ...parseLlmJson<Record<string, unknown>>(content),
                 usage: responseUsage
             };
         } catch (e) {
-            // Secondary fallback: Try trailing comma cleanup and truncated JSON recovery
-            try {
-                const partiallyRepaired = jsonCandidate
-                    .replace(/,\s*([\]\}])/g, '$1') // Removes trailing commas before ] or }
-                    .trim();
-
-                return {
-                    ...JSON.parse(repairUnescapedBackslashes(partiallyRepaired)),
-                    usage: responseUsage
-                };
-            } catch (e2) {
-                try {
-                    // Tertiary fallback: Repair unclosed string quotes, braces, and brackets for truncated LLM responses
-                    const repairTruncatedJson = (str: string): string => {
-                        let s = str.trim();
-                        s = s.replace(/,\s*"[^"]*"?\s*:\s*"?[^"]*$/g, '');
-                        s = s.replace(/,\s*$/g, '');
-                        const quoteCount = (s.match(/"/g) || []).length;
-                        if (quoteCount % 2 !== 0) s += '"';
-                        
-                        const stack: string[] = [];
-                        let inString = false;
-                        let isEscaped = false;
-
-                        for (let i = 0; i < s.length; i++) {
-                            const char = s[i];
-                            if (char === '"' && !isEscaped) {
-                                inString = !inString;
-                            } else if (!inString) {
-                                if (char === '{') stack.push('}');
-                                else if (char === '[') stack.push(']');
-                                else if (char === '}' || char === ']') {
-                                    if (stack.length > 0 && stack[stack.length - 1] === char) {
-                                        stack.pop();
-                                    }
-                                }
-                            }
-                            isEscaped = (char === '\\' && !isEscaped);
-                        }
-
-                        while (stack.length > 0) {
-                            s += stack.pop();
-                        }
-                        return s;
-                    };
-
-                    const autoRepaired = repairTruncatedJson(jsonCandidate);
-                    return {
-                        ...JSON.parse(repairUnescapedBackslashes(autoRepaired)),
-                        usage: responseUsage
-                    };
-                } catch (e3) {
-                    logger.error("JSON Parse Fatal Error: AI response could not be parsed as JSON", {
-                        contentLength: content?.length || 0,
-                        candidateLength: jsonCandidate?.length || 0
-                    });
-                    throw new Error("KI-Antwort konnte nicht als JSON verarbeitet werden. (Möglicherweise unvollständige Antwort oder Formatierungsfehler im Thinking-Block)");
-                }
-            }
+            logger.error("JSON Parse Fatal Error: AI response could not be parsed as JSON", {
+                contentLength: content?.length || 0
+            });
+            throw new Error("KI-Antwort konnte nicht als JSON verarbeitet werden. (Möglicherweise unvollständige Antwort oder Formatierungsfehler im Thinking-Block)");
         }
     }
 
