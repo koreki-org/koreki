@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { BatchFile, Task, AppSettings, GradingMemoryCase } from '../../types';
+import { BatchFile, Task, AppSettings, GradingMemoryCase, GradingMemory, User, AITask, AiStatus } from '../../types';
 import { performAIRequest } from '../../lib/ai-logic';
 import { resolveOCRSource, applyRedactionsToPreviews } from '../../lib/privacy-utils';
 import { calculateGrade } from '../../lib/logic';
@@ -26,8 +26,8 @@ async function ensureActiveGradingMemorySynced() {
         if (isDesktopTarget()) {
             const stored = localStorage.getItem('koreki_local_grading_memories');
             if (stored) {
-                const list = JSON.parse(stored);
-                const activeMem = list.find((m: any) => m.id === activeId);
+                const list: GradingMemory[] = JSON.parse(stored);
+                const activeMem = list.find(m => m.id === activeId);
                 if (activeMem) {
                     localStorage.setItem('koreki_active_grading_memory_name', activeMem.name);
                     if (activeMem.cases) {
@@ -46,7 +46,7 @@ async function ensureActiveGradingMemorySynced() {
         if (res.ok) {
             const data = await res.json();
             if (Array.isArray(data)) {
-                const activeMem = data.find((m: any) => m.id === activeId);
+                const activeMem = (data as GradingMemory[]).find(m => m.id === activeId);
                 if (activeMem) {
                     localStorage.setItem('koreki_active_grading_memory_name', activeMem.name);
                     if (activeMem.cases) {
@@ -63,13 +63,38 @@ async function ensureActiveGradingMemorySynced() {
     }
 }
 
+/**
+ * Der Ausschnitt des Batch-Zustands, den die Verarbeitung braucht.
+ *
+ * Bewusst nur diese vier: der Hook soll den Zustand fortschreiben, nicht ihn
+ * kennen. Vorher stand hier `state: any` — damit war jeder Tippfehler in einem
+ * dieser Namen erst zur Laufzeit sichtbar.
+ */
+/**
+ * `UNSET` heisst: der Lehrer hat den Modus noch nicht gewaehlt.
+ *
+ * Fuer die KI-Anfrage ist das dasselbe wie "nicht angegeben" — sie laeuft dann
+ * ueber den Server-Weg. Vorher ging die Zeichenkette `UNSET` einfach durch,
+ * weil der Parameter `any` war; `performAIRequest` kennt sie gar nicht.
+ */
+const alsAnfrageModus = (modus?: User['appMode']): 'PURE' | 'STANDARD' | 'TRIAL' | undefined =>
+    modus === 'UNSET' ? undefined : modus;
+
+interface ProcessingPipelineState {
+    setBatchFiles: React.Dispatch<React.SetStateAction<BatchFile[]>>;
+    setCurrentProcessingIndex: React.Dispatch<React.SetStateAction<number>>;
+    setIsLoadingBatch: React.Dispatch<React.SetStateAction<boolean>>;
+    setIsLoadingModel: React.Dispatch<React.SetStateAction<boolean>>;
+    ocrStrategy?: string;
+}
+
 export const useProcessingPipeline = (
-    state: any,
-    userData: any,
+    state: ProcessingPipelineState,
+    userData: User | null,
     settings: AppSettings,
     modelSolution: string,
     tasksLayout: Task[],
-    setUserData: React.Dispatch<React.SetStateAction<any>>,
+    setUserData: React.Dispatch<React.SetStateAction<User | null>>,
     expertProfileName?: string
 ) => {
     const { setBatchFiles, setCurrentProcessingIndex, setIsLoadingBatch, ocrStrategy } = state;
@@ -94,7 +119,7 @@ export const useProcessingPipeline = (
             tasksLayout, 
             pageCount,
             requestId: index // Scoped streaming
-        }, userData?.appMode, settings, signal);
+        }, alsAnfrageModus(userData?.appMode), settings, signal);
 
         if (cleanData?.tasks && cleanData.tasks.length > 0) {
             const structuredTasks = cleanData.tasks;
@@ -156,7 +181,7 @@ export const useProcessingPipeline = (
                         const res = await runExtractionStrategy(mainFile, {
                             isScan: false,
                             needsPreview: true,
-                            appMode: userData?.appMode,
+                            appMode: alsAnfrageModus(userData?.appMode),
                             settings,
                             pageRange: items[i].pageRange,
                             isComplex: ocrStrategy === 'handwriting',
@@ -314,7 +339,7 @@ export const useProcessingPipeline = (
                         const ocrRes = await runExtractionStrategy(mainFile, {
                             isScan: currentBatch[i].documentType === 'scanned',
                             needsPreview: true, // For splitting & UI
-                            appMode: userData?.appMode,
+                            appMode: alsAnfrageModus(userData?.appMode),
                             settings,
                             pageRange: currentBatch[i].pageRange,
                             sourceOverride: ocrSource || undefined,
@@ -384,7 +409,7 @@ export const useProcessingPipeline = (
                 : currentFile.tasks;
 
             const sectionText = activeTasks && activeTasks.length > 0
-                ? activeTasks.map((t: any) => `### ${t.name} ###\n${t.content || ''}`).join('\n\n') 
+                ? activeTasks.map((t: Task) => `### ${t.name} ###\n${t.content || ''}`).join('\n\n') 
                 : '';
             
             const finalStudentText = sectionText.trim().length > 0 
@@ -422,7 +447,7 @@ export const useProcessingPipeline = (
                 expertProfileName,
                 isComplex: ocrStrategy === 'handwriting',
                 gradingMemory: gradingMemoryCases
-            }, userData?.appMode, settings, signal);
+            }, alsAnfrageModus(userData?.appMode), settings, signal);
 
             if (signal?.aborted) return;
             const duration = performance.now() - startTime;
@@ -432,7 +457,7 @@ export const useProcessingPipeline = (
                 const cleanLayout = tasksLayout.map(t => ({ ...t, content: undefined }));
                 const rawSplit = splitTextByTasks(currentFile.fileText || "", cleanLayout);
 
-                data.tasks = data.tasks.map((task: any) => {
+                data.tasks = data.tasks.map((task: AITask) => {
                     const preTask = currentFile.tasks?.find(t => t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
                     let fallbackContent = '';
                     if (preTask && preTask.content) {
@@ -466,7 +491,7 @@ export const useProcessingPipeline = (
             });
 
             if (userData?.appMode !== 'PURE') {
-                setUserData((u: any) => u ? { ...u, credits: Math.max(0, u.credits - (currentFile.pageCount || 1)) } : null);
+                setUserData(u => u ? { ...u, credits: Math.max(0, u.credits - (currentFile.pageCount || 1)) } : null);
             }
         } catch (err) {
             if (isAbortError(err) || signal?.aborted) {
@@ -486,7 +511,7 @@ export const useProcessingPipeline = (
         }
     }, [modelSolution, tasksLayout, userData, settings, setUserData, setBatchFiles, setCurrentProcessingIndex, ocrStrategy, expertProfileName]);
 
-    const processBatch = useCallback(async (aiStatus: any) => {
+    const processBatch = useCallback(async (aiStatus: AiStatus | null) => {
         // INDUSTRIAL FIX: Get FRESH state to prevent closure staleness on auto-start
         const freshFiles = useBatchStore.getState().batchFiles;
         
@@ -511,7 +536,7 @@ export const useProcessingPipeline = (
         }
     }, [internalCorrectionPipeline, setIsLoadingBatch, setCurrentProcessingIndex, modelSolution]);
 
-    const processSingleFile = useCallback(async (i: number, aiStatus?: any) => {
+    const processSingleFile = useCallback(async (i: number, aiStatus?: AiStatus | null) => {
         if (aiStatus?.correctionBrakeActive) return alert(aiStatus.message);
         if (!modelSolution) return alert("Bitte zuerst Musterlösung hochladen.");
         
@@ -569,7 +594,7 @@ export const useProcessingPipeline = (
             const ocrRes = await runExtractionStrategy(mainFile, {
                 isScan: currentFile.documentType === 'scanned',
                 needsPreview: true,
-                appMode: userData?.appMode,
+                appMode: alsAnfrageModus(userData?.appMode),
                 settings,
                 pageRange: currentFile.pageRange,
                 sourceOverride: ocrSource || undefined,
@@ -631,10 +656,10 @@ export const useProcessingPipeline = (
                 pageCount,
                 isScan,
                 requestId: 'model-solution' // Unique scope for model solution
-            }, userData?.appMode, currentSettings, signal);
+            }, alsAnfrageModus(userData?.appMode), currentSettings, signal);
 
             if (data && Array.isArray(data.tasks)) {
-                data.tasks = data.tasks.map((task: any) => ({
+                data.tasks = data.tasks.map((task: Task) => ({
                     ...task,
                     taskType: task.predictedPluginDomain === 'math' ? 'calc-trace' : 'default',
                     gradingGraph: undefined
@@ -653,7 +678,7 @@ export const useProcessingPipeline = (
             state.setIsLoadingModel(false);
             useBatchStore.getState().clearBatchController();
         }
-    }, [userData?.appMode, state]);
+    }, [alsAnfrageModus(userData?.appMode), state]);
 
     return { startExtraction, handleExtractOCR, processBatch, processSingleFile, processSingleOCR, cleanAndExtractLayout };
 };

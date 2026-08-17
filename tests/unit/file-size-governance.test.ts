@@ -77,7 +77,9 @@ const SIZE_BASELINE: Record<string, number> = {
     'components/upload/ModelSolutionCard.tsx': 896,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
-    'components/settings/SkillsModules.tsx': 791,
+    // +42 gegenueber 793: der Ansichtstyp SkillListenEintrag und die
+    // ausgeschriebenen Signaturen haben ALLE 12 `any` dieser Datei abgeloest.
+    'components/settings/SkillsModules.tsx': 835,
     // +53 gegenueber 626: ausgeschriebene Typen fuer Nachrichten, Werkzeuge und
     // den Stream-Koerper. Sie haben 15 der 16 `any` in dieser Datei abgeloest —
     // der letzte traegt eine ARCH-Begruendung.
@@ -92,17 +94,24 @@ const SIZE_BASELINE: Record<string, number> = {
     // Der Kommentar dort beschreibt den Mechanismus — ohne ihn wird der
     // Wächter beim naechsten Aufraeumen als ueberfluessig entfernt.
     'hooks/useSkillProfiles.ts': 695,
-    'hooks/file-processor/useProcessingPipeline.ts': 660,
+    // +25 gegenueber 660: der Zustands-Ausschnitt ProcessingPipelineState und
+    // `alsAnfrageModus`. Beide haben ALLE 11 `any` dieser Datei abgeloest —
+    // darunter ein `appMode: 'UNSET'`, das an eine Funktion ging, die diesen
+    // Wert gar nicht kennt.
+    'hooks/file-processor/useProcessingPipeline.ts': 685,
     'pages/app.tsx': 598,
     'lib/ai/prompt-builder.ts': 593,
     'lib/services/local-profile-service.ts': 591,
     'components/batch/parts/BatchTaskAnalysisCard.tsx': 577,
     'hooks/useAiProfiles.ts': 491,
-    'components/batch/CalcTraceModal.tsx': 425,
-    'components/dashboard/DashboardModals.tsx': 423,
+        // +5: initialTrace nimmt ausdruecklich beide Rechenketten-Formen entgegen —
+    // der Rumpf unterschied sie schon, der Typ verschwieg es.
+'components/batch/CalcTraceModal.tsx': 430,
+        // +2 fuer die Typ-Importe der durchgezogenen Generator-Signaturen.
+'components/dashboard/DashboardModals.tsx': 425,
     'hooks/usePromptProfiles.ts': 420, // s. useSkillProfiles — gleicher Wächter
     'components/batch/parts/SecondOpinionDrawer.tsx': 388,
-    'components/settings/ProfileModules.tsx': 348,
+    'components/settings/ProfileModules.tsx': 349,
     'pages/features.tsx': 347,
     'components/RedactionModal.tsx': 342,
     'components/layout/AppHeader.tsx': 337,

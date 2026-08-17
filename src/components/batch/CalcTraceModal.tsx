@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Check, Target, Info, Sparkles, Plus, Trash2 } from 'lucide-react';
-import { TargetGoal } from '../../lib/grading/calc-trace-types';
+import { CalcTraceTemplate, TargetGoal } from '../../lib/grading/calc-trace-types';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
@@ -14,7 +14,12 @@ interface RowData {
 interface CalcTraceModalProps {
     isOpen: boolean;
     onClose: () => void;
-    initialTrace?: TargetGoal;
+    /**
+     * Kann auch eine alte Rechenketten-Vorlage sein. Der Rumpf prueft das an
+     * `'targetValue' in ...` und faengt dann leer an — deshalb steht die
+     * zweite Form hier ausdruecklich, statt sie zu verschweigen.
+     */
+    initialTrace?: TargetGoal | CalcTraceTemplate;
     taskName?: string;
     onSave: (goal: TargetGoal) => void;
     isLocked?: boolean;

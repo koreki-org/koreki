@@ -1,4 +1,7 @@
 import React from 'react';
+import type { GradingGraph } from '../../lib/grading/types';
+import type { ParsedProfile } from '../../lib/parsers/markdown-profile-parser';
+import type { TargetGoal, CalcTraceTemplate } from '../../lib/grading/calc-trace-types';
 import { PlusCircle, Pencil, Trash2, RefreshCcw, Download, Sparkles, BookOpen, Calculator, Settings, GraduationCap, Loader2, Layers, ChevronDown, Save } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -37,14 +40,44 @@ interface SkillsEditorProps {
     setActiveSkillIds: (ids: string[]) => void;
     onSaveToDB: () => void;
     setNewProfileName: (v: string) => void;
-        customSkills: Record<string, any>;
-    onSaveCustomSkill: (skill: any) => void;
+        customSkills: Record<string, CustomSkillDefinition>;
+    onSaveCustomSkill: (skill: CustomSkillDefinition) => void;
     onDeleteCustomSkill: (id: string) => void;
     onStartNew: (initialSkills?: string[]) => void;
-    onImportParsedProfile: (parsed: any, isSingleSkill?: boolean) => void;
-    onGenerateGraph?: (taskText: string, discipline?: string) => Promise<Record<string, unknown> | null>;
-    onGenerateCalcTrace?: (taskText: string, userNotes?: string) => Promise<any | null>;
+    onImportParsedProfile: (parsed: ParsedProfile, isSingleSkill?: boolean) => void;
+    onGenerateGraph?: (taskText: string, discipline?: string) => Promise<GradingGraph | null>;
+    onGenerateCalcTrace?: (taskText: string, userNotes?: string) => Promise<TargetGoal | null>;
 }
+/**
+ * Ein Skill, wie ihn die Auswahlliste braucht.
+ *
+ * Die Liste mischt zwei Herkuenfte: Skills aus der Registry (dort sind `id`
+ * und `name` zugesichert) und selbst angelegte (dort optional, weil sie beim
+ * Anlegen erst entstehen). Diese Sicht macht beide Felder verbindlich, sonst
+ * muesste jeder Feldzugriff in der Darstellung einzeln geprueft werden.
+ *
+ * Bewusst ausgeschrieben statt `Omit<CustomSkillDefinition, ...>`: `Omit` auf
+ * einem Typ mit Index-Signatur laesst nur die Signatur uebrig und verwirft die
+ * benannten Felder — jeder Zugriff waere danach `unknown`.
+ */
+interface SkillListenEintrag {
+    id: string;
+    name: string;
+    description?: string;
+    category?: string;
+    prompt?: string;
+    promptSnippet?: string;
+    isCustom?: boolean;
+    isCalcTrace?: boolean;
+    isGraphBased?: boolean;
+    requires?: string | string[];
+    conflictsWith?: string | string[];
+    taskText?: string;
+    calcTrace?: CalcTraceTemplate | TargetGoal;
+    gradingGraph?: GradingGraph;
+    targetGoal?: TargetGoal;
+}
+
 export const SkillsEditor: React.FC<SkillsEditorProps> = ({
     isCreatingNew, selectedProfile, isSystemSelected, isDirty, saving, 
     newProfileName, activeSkillIds, setActiveSkillIds,
@@ -86,8 +119,9 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
                 })
                 .map(s => s.metadata.id);
             const customCategorySkills = Object.values(customSkills || {})
-                .filter((s: any) => s.category === category.id)
-                .map((s: any) => s.id);
+                .filter(s => s.category === category.id)
+                .map(s => s.id)
+                .filter((id): id is string => !!id);
             const categorySkillIds = [...standardCategorySkills, ...customCategorySkills];
             
             const hasActiveSkill = categorySkillIds.some(id => activeSkillIds.includes(id));
@@ -118,13 +152,13 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
         setIsEditingSkill(true);
     };
 
-    const handleEditSkillClick = (skill: any) => {
+    const handleEditSkillClick = (skill: SkillListenEintrag) => {
         setEditingSkillData({ ...skill });
         setGraphGenTaskText(skill.taskText || '');
         setIsEditingSkill(true);
     };
 
-    const handleCopySkillClick = (skill: any) => {
+    const handleCopySkillClick = (skill: SkillListenEintrag) => {
         setEditingSkillData({
             name: `Kopie von ${skill.name}`,
             category: skill.category || 'math-science',
@@ -296,8 +330,8 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                             const input = document.createElement('input');
                             input.type = 'file';
                             input.accept = '.md';
-                            input.onchange = async (e: any) => {
-                                const file = e.target.files?.[0];
+                            input.onchange = async (e: Event) => {
+                                const file = (e.target as HTMLInputElement).files?.[0];
                                 if (!file) return;
                                 const text = await file.text();
                                 const parsed = parseMarkdownProfile(text);
@@ -350,9 +384,19 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                             }
                             return s.metadata.category === category.id;
                         })
-                        .map(s => ({ ...s.metadata, prompt: s.promptSnippet, promptSnippet: s.promptSnippet }));
-                    const customCategorySkills = Object.values(customSkills || {}).filter(s => s.category === category.id);
-                    const categorySkills = [...standardCategorySkills, ...customCategorySkills];
+                        .map((s): SkillListenEintrag => ({
+                            ...s.metadata,
+                            prompt: s.promptSnippet,
+                            promptSnippet: s.promptSnippet
+                        }));
+
+                    // Ein eigener Skill ohne id oder name ist ein halb angelegter
+                    // Entwurf — er gehoert nicht in die Auswahlliste.
+                    const customCategorySkills: SkillListenEintrag[] = Object.values(customSkills || {})
+                        .filter(s => s.category === category.id && !!s.id && !!s.name)
+                        .map(s => ({ ...s, id: s.id!, name: s.name! }));
+
+                    const categorySkills: SkillListenEintrag[] = [...standardCategorySkills, ...customCategorySkills];
                     
                     if (categorySkills.length === 0) return null;
 
@@ -516,7 +560,7 @@ ${skill.prompt || ''}`;
                                 <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">Kategorie</label>
                                 <select
                                     value={editingSkillData.category}
-                                    onChange={e => setEditingSkillData({ ...editingSkillData, category: e.target.value as any })}
+                                    onChange={e => setEditingSkillData({ ...editingSkillData, category: e.target.value })}
                                     className="w-full h-11 px-3 rounded-xl border border-border text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-background cursor-pointer"
                                 >
                                     <option value="math-science">MINT-Fächer</option>
@@ -642,7 +686,7 @@ ${skill.prompt || ''}`;
                                     </p>
                                     {editingSkillData.gradingGraph?.variables && (
                                         <div className="flex flex-wrap gap-1.5 pt-1">
-                                            {editingSkillData.gradingGraph.variables.map((v: any) => (
+                                            {editingSkillData.gradingGraph.variables.map(v => (
                                                 <Badge key={v.id} variant="outline" className="text-xs font-mono px-2 py-0.5 bg-background border-border text-muted-foreground rounded-md">
                                                     {v.id}
                                                 </Badge>
@@ -702,9 +746,9 @@ ${skill.prompt || ''}`;
                                     <p className="text-xs text-muted-foreground font-medium leading-relaxed">
                                         Definieren Sie Rechenschritte, Formeln, Einheiten und Toleranzen für eine flache Rechenkette mit automatischer Folgefehlererkennung.
                                     </p>
-                                    {editingSkillData.calcTrace?.steps && (
+                                    {editingSkillData.calcTrace && 'steps' in editingSkillData.calcTrace && (
                                         <div className="flex flex-wrap gap-1.5 pt-1">
-                                            {editingSkillData.calcTrace.steps.map((s: any) => (
+                                            {editingSkillData.calcTrace.steps.map(s => (
                                                 <Badge key={s.id} variant="outline" className="text-xs font-mono px-2 py-0.5 bg-background border-border text-muted-foreground rounded-md">
                                                     {s.id}: {s.label} ({s.type === 'given' ? 'gegeben' : s.formula})
                                                 </Badge>

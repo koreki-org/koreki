@@ -127,3 +127,29 @@ export interface CalcTraceResult {
   /** Auswertungsergebnisse pro Ziel-Index */
   perTargetResult?: PerTargetResult[];
 }
+
+/**
+ * Ein Schritt einer Rechenketten-VORLAGE, wie sie im Skill-Editor entsteht.
+ *
+ * Nicht zu verwechseln mit `StudentASTStep` (was der Schüler gerechnet hat)
+ * oder `TargetGoal` (das Bewertungsziel). Die Vorlage beschreibt die
+ * Musterrechnung: welche Größen gegeben sind, welche berechnet werden und
+ * wie viele Punkte auf welchem Schritt liegen.
+ */
+export interface CalcTraceTemplateStep {
+    id: string;
+    label: string;
+    /** `given` = vorgegebene Größe, `calc` = aus `formula` berechnet. */
+    type: 'given' | 'calc';
+    value: number;
+    unit?: string;
+    /** Nur bei `calc`: der Rechenausdruck über die IDs früherer Schritte. */
+    formula?: string;
+    points?: number;
+}
+
+/** Die Rechenketten-Vorlage eines eigenen Skills. */
+export interface CalcTraceTemplate {
+    taskId: string;
+    steps: CalcTraceTemplateStep[];
+}

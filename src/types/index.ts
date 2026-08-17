@@ -1,6 +1,8 @@
 import { Task } from '../lib/logic';
 import { Analysis } from '../lib/excel';
 import type { PromptLibraryEntry, PromptMetadata } from '../lib/ai/prompt-library';
+import type { GradingGraph } from '../lib/grading/types';
+import type { TargetGoal, CalcTraceTemplate } from '../lib/grading/calc-trace-types';
 
 export interface AiStatus {
     ocrCost: number;
@@ -12,19 +14,37 @@ export interface AiStatus {
     message: string | null;
 }
 
+/**
+ * Ein selbst angelegter Bewertungs-Skill. Die Felder standen vorher nur in der
+ * Index-Signatur — `skill.category` war `any`, obwohl sechsmal gelesen. Die
+ * Signatur bleibt fuer Felder aus importierten Dateien.
+ */
 export interface CustomSkillDefinition {
     metadata?: PromptMetadata;
     promptSnippet?: string;
+    prompt?: string; // aeltere Schreibweise aus importierten Dateien
     id?: string;
     name?: string;
     description?: string;
+    category?: string;
     discipline?: string;
+    taskText?: string; // Aufgabentext, aus dem Graph/Rechenkette erzeugt wurden
+    isCustom?: boolean;
+    /** Zusammen noetig bzw. sich ausschliessend. Kommagetrennt, wenn aus
+     *  einem importierten Markdown-Profil. */
+    requires?: string | string[];
+    conflictsWith?: string | string[];
     isCalcTrace?: boolean;
-    calcTrace?: any;
-    gradingGraph?: any;
+    /**
+     * Musterrechnung. Zwei Formen, historisch gewachsen: die Vorlage aus dem
+     * Skill-Editor oder ein `TargetGoal`, das CalcTraceModal zurueckschreibt.
+     * Das Modal unterscheidet an `'targetValue' in ...`.
+     */
+    calcTrace?: CalcTraceTemplate | TargetGoal;
+    gradingGraph?: GradingGraph;
     isGraphBased?: boolean;
-    targetGoal?: any;
-    [key: string]: any;
+    targetGoal?: TargetGoal;
+    [key: string]: unknown;
 }
 
 export interface WorkspaceMembership {
@@ -270,7 +290,6 @@ export interface AITask {
     sandboxBypassed?: boolean;
 }
 
-
 export interface AIAnalysisResult {
     tasks: AITask[];
     overallMatchPercentage?: number;
@@ -278,6 +297,3 @@ export interface AIAnalysisResult {
     expertProfile?: string;
     overallFeedback?: string;
 }
-
-
-

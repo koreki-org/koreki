@@ -88,7 +88,7 @@ const DUPLICATION_BASELINE: Record<string, number> = {
     'components/AiParamsModal.tsx <-> hooks/useAiProfiles.ts': 8,
     'pages/api/user/ai-profiles.ts <-> pages/api/user/prompt-profiles.ts': 8,
     'pages/api/user/ai-profiles.ts <-> pages/api/user/skill-profiles.ts': 8,
-    'components/settings/ProfileModules.tsx <-> components/settings/SkillsSidebar.tsx': 7,
+    'components/settings/ProfileModules.tsx <-> components/settings/SkillsSidebar.tsx': 6,
     'hooks/usePromptProfiles.ts <-> hooks/useSkillProfiles.ts': 7,
     'pages/agb.tsx <-> pages/privacy.tsx': 7,
     'pages/api/clean-and-analyze.ts <-> pages/api/extract-image.ts': 7,

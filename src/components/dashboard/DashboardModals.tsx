@@ -1,4 +1,6 @@
 import React from 'react';
+import type { GradingGraph } from '../../lib/grading/types';
+import type { TargetGoal } from '../../lib/grading/calc-trace-types';
 import { useQueryClient } from '@tanstack/react-query';
 import SettingsModal from '../SettingsModal';
 import PromptSettingsModal from '../PromptSettingsModal';
@@ -84,8 +86,8 @@ interface DashboardModalsProps {
     handleAiOllamaSave: (url: string, model: string) => void;
     handleAiMistralSave: (key: string) => void;
     handleAiCustomSave: (url: string, key: string, model: string, thinking: boolean) => void;
-    onGenerateGraph?: (taskText: string, discipline?: string) => Promise<any | null>;
-    onGenerateCalcTrace?: (taskText: string, userNotes?: string) => Promise<any | null>;
+    onGenerateGraph?: (taskText: string, discipline?: string) => Promise<GradingGraph | null>;
+    onGenerateCalcTrace?: (taskText: string, userNotes?: string) => Promise<TargetGoal | null>;
 }
 
 export const DashboardModals: React.FC<DashboardModalsProps> = ({

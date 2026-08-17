@@ -1,4 +1,5 @@
 import type { Task, GradingMemoryCase, CustomSkillDefinition, ChatMessage } from '../../types';
+import type { PromptLibraryEntry } from './prompt-library';
 import type { GradingGraph } from '../grading/types';
 import {
     buildCorrectionPrompt,
@@ -112,7 +113,7 @@ export interface PromptDispatchOptions {
     customPrompt?: string;
     gradingMemory?: GradingMemoryCase[] | null;
     activeSkillIds?: string[];
-    customSkills?: Record<string, CustomSkillDefinition>;
+    customSkills?: Record<string, CustomSkillDefinition | PromptLibraryEntry>;
 }
 
 /**

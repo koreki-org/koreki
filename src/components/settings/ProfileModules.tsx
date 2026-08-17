@@ -1,4 +1,5 @@
 import React from 'react';
+import type { ParsedProfile } from '../../lib/parsers/markdown-profile-parser';
 import { FileText, PlusCircle, Pencil, Trash2, Check, RefreshCcw, Save, MessageSquare, Download } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -19,7 +20,7 @@ interface SidebarProps {
     editingProfileId: string | null;
     editingName: string;
     onStartNew: (initialPrompt?: string, initialName?: string) => void;
-    onImportParsedProfile: (parsed: any) => void;
+    onImportParsedProfile: (parsed: ParsedProfile) => void;
     onSelectProfile: (p: any) => void;
     onStartRename: (e: React.MouseEvent, p: any) => void;
     onDeleteProfile: (id: string, e: React.MouseEvent) => void;

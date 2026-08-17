@@ -1,4 +1,6 @@
 import React from 'react';
+import type { GradingGraph } from '../lib/grading/types';
+import type { TargetGoal } from '../lib/grading/calc-trace-types';
 import { X, RefreshCcw } from 'lucide-react';
 import { AppSettings } from '../types';
 import { downloadFile } from '@/lib/file-utils';
@@ -18,8 +20,8 @@ interface SkillsSettingsModalProps {
     onClose: () => void;
     /** Verweis auf das aktive Set beim Oeffnen — Kennung oder (Altbestand) Name. */
     currentProfileRef?: string;
-    onGenerateGraph?: (taskText: string, discipline?: string) => Promise<any | null>;
-    onGenerateCalcTrace?: (taskText: string, userNotes?: string) => Promise<any | null>;
+    onGenerateGraph?: (taskText: string, discipline?: string) => Promise<GradingGraph | null>;
+    onGenerateCalcTrace?: (taskText: string, userNotes?: string) => Promise<TargetGoal | null>;
 }
 
 const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
