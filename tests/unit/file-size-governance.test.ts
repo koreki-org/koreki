@@ -108,11 +108,6 @@ const SIZE_BASELINE: Record<string, number> = {
     // Weiterhin ueber der Grenze — der naechste Schnitt trennt Profil-Auswahl
     // von Editor-Zustand.
     'hooks/useSkillProfiles.ts': 411,
-    // +25 gegenueber 660: der Zustands-Ausschnitt ProcessingPipelineState und
-    // `alsAnfrageModus`. Beide haben ALLE 11 `any` dieser Datei abgeloest —
-    // darunter ein `appMode: 'UNSET'`, das an eine Funktion ging, die diesen
-    // Wert gar nicht kennt.
-    'hooks/file-processor/useProcessingPipeline.ts': 676,
     // 598 -> 495: die vier Generierungs-Handler liegen als
     // useTaskEngineGeneration daneben.
     //
