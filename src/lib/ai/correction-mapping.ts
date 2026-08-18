@@ -77,8 +77,37 @@ function kopfAusLayout(layoutTask: Task): Pick<AITask, 'name' | 'maxPoints'> {
     const max = layoutTask.maxPoints;
     return {
         name: layoutTask.name ?? '',
-        maxPoints: max === undefined || max === null ? undefined : Number(max)
+        // `alsModellzahl` mit `NaN` als Rueckfall, damit eine untippbare Eingabe
+        // ("zehn") zu `undefined` wird statt zu `NaN`: `AITask.maxPoints` ist
+        // optional, ein NaN dagegen wandert in die Gesamtpunktzahl der Arbeit.
+        maxPoints: Number.isFinite(alsModellzahl(max, NaN)) ? alsModellzahl(max, NaN) : undefined
     };
+}
+
+/**
+ * Eine Zahl aus einer Modell-Antwort — oder der Rueckfall.
+ *
+ * GEFUNDEN BEIM LESEN, 18.08.2026: Alle vier Abbildungs-Zweige rechneten die
+ * Punktzahl des Modells mit `Number(...)` um, und keiner pruefte das Ergebnis.
+ * `Number("drei")` und `Number(undefined)` ergeben beide NaN — und NaN ist
+ * ansteckend: es wandert durch jede Summe, faerbt die Aufgabe, die Gesamtnote
+ * und den Export ein. Nachgestellt: ein einziges Kriterium mit
+ * `points: "drei"` liess eine vollstaendig richtig geloeste Aufgabe mit `NaN`
+ * Punkten enden.
+ *
+ * Die beiden bisherigen Waechter davor griffen NICHT:
+ * - `typeof x === 'number'` ist fuer NaN wahr,
+ * - `x ?? y` und `x || 0` fangen nur null/undefined/leer.
+ *
+ * Reihenfolge der Pruefungen absichtlich so: leere Werte zuerst, damit
+ * `alsModellzahl(null, rueckfall)` den Rueckfall liefert und nicht die 0, die
+ * `Number(null)` ergaebe — sonst haette diese Absicherung stillschweigend die
+ * Punktvergabe geaendert, statt nur das NaN zu verhindern.
+ */
+export function alsModellzahl(wert: unknown, rueckfall: number): number {
+    if (wert === null || wert === undefined || wert === '') return rueckfall;
+    const zahl = Number(wert);
+    return Number.isFinite(zahl) ? zahl : rueckfall;
 }
 
 const CALC_TRACE_MARKER = '[📐 CalcTrace Engine - Mathematischer Abgleich]';
@@ -109,9 +138,15 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
         // Rueckfallebene: Sie sind Freitext, und aktive Skills schreiben ihnen ein
         // eigenes Format vor — als Datenkanal sind sie unzuverlaessig.
         const structuredScores: Record<string, number> = {};
+        // Nur BRAUCHBARE Werte uebernehmen. Sonst ueberschreibt ein Unsinn aus dem
+        // strukturierten Kanal die Punktzahl, die aus den Notizen bereits sauber
+        // gelesen wurde (die Zusammenfuehrung unten laesst `structuredScores`
+        // gewinnen) — die Rueckfallebene waere damit ausgerechnet dann zerstoert,
+        // wenn sie gebraucht wird.
         (aiTask.criteriaScores || []).forEach(entry => {
             if (entry && typeof entry.id === 'string') {
-                structuredScores[entry.id.trim()] = Number(entry.points);
+                const punkte = alsModellzahl(entry.points, NaN);
+                if (Number.isFinite(punkte)) structuredScores[entry.id.trim()] = punkte;
             }
         });
 
@@ -141,7 +176,14 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
             } else {
                 // Ermessensfrage: Hier zaehlt die Punktzahl des Modells.
                 const parsed = parsedScores[crit.id];
-                if (parsed === undefined) {
+                // `Number.isFinite` statt `!== undefined`: Schickt das Modell
+                // etwas Nicht-Numerisches ("drei", ein leeres Feld), ergab
+                // `Number(...)` ein NaN — und NaN ist nicht `undefined`. Der
+                // Rueckfall unten griff deshalb NICHT, das NaN wanderte durch
+                // die Summe, und die ganze Aufgabe endete mit `NaN` Punkten
+                // (18.08.2026 nachgestellt). Ein unlesbarer Wert ist dasselbe
+                // wie ein fehlender.
+                if (!Number.isFinite(parsed)) {
                     // Notizen nicht im erwarteten Format (z. B. weil aktive Skills eine
                     // andere Schreibweise verlangen). Frueher hiess das stillschweigend
                     // 0 Punkte — die Einschaetzung des Modells ging dabei verloren.
@@ -163,9 +205,14 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
         // Rueckfall, wenn mindestens ein LLM-Kriterium unlesbar war: die Gesamtpunktzahl
         // des Modells heranziehen, statt dessen Urteil auf 0 zu setzen. Sandbox-belegte
         // Kriterien bleiben dabei Untergrenze, das Aufgabenmaximum Obergrenze.
-        if (unreadableCriteria > 0 && typeof aiTask.pointsObtained === 'number') {
-            const maxPoints = Number(layoutTask.maxPoints ?? 0);
-            const modelTotal = Math.min(maxPoints, Math.max(0, Number(aiTask.pointsObtained)));
+        // `Number.isFinite` statt `typeof === 'number'`: auch ein NaN ist vom Typ
+        // `number`. Ohne die schaerfere Pruefung erzeugte ausgerechnet der
+        // Rueckfall wieder das NaN, das er verhindern soll.
+        if (unreadableCriteria > 0 && Number.isFinite(aiTask.pointsObtained)) {
+            // Kein Deckel, wenn die getippte Maximalpunktzahl keine Zahl ist —
+            // eine unlesbare Lehrer-Eingabe darf die Punkte nicht auf 0 kappen.
+            const maxPoints = alsModellzahl(layoutTask.maxPoints, Infinity);
+            const modelTotal = Math.min(maxPoints, Math.max(0, alsModellzahl(aiTask.pointsObtained, 0)));
             enginePoints = Math.max(computedSum, Math.max(sandboxFloor, modelTotal));
 
             if (enginePoints !== computedSum) {
@@ -176,9 +223,10 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
         // Re-write correctionNotes cleanly to prevent rounding errors or incorrect sums
         aiTask.correctionNotes = `[Kriterien-Bewertung]\n${finalCriteriaNotes.join('\n')}\n\nGesamtsumme: ${enginePoints} Punkte`;
     } else {
-        enginePoints = aiTask && aiTask.pointsObtained !== undefined && aiTask.pointsObtained !== null
-            ? Number(aiTask.pointsObtained)
-            : 0;
+        // Ohne Kriterien zaehlt die Gesamtpunktzahl des Modells — sofern sie eine
+        // Zahl ist. Ein NaN hier faerbte die gesamte Arbeit ein: die Note
+        // rechnet sich aus der Summe aller Aufgaben.
+        enginePoints = alsModellzahl(aiTask?.pointsObtained, 0);
     }
 
     if (istBereitsFormatiert(aiTask, [CALC_TRACE_MARKER, SANDBOX_PROOF_MARKER])) {
@@ -222,17 +270,24 @@ export function mapGraphTask(layoutTask: Task, aiTask: AITask | undefined): Task
     const disablePointsActive = shouldDisablePoints(layoutTask.taskType, layoutTask.gradingGraph);
     const isServerResponse = istBereitsFormatiert(aiTask, [PANG_MARKER, AGS_MARKER]);
 
+    // Der Graph ist die Untergrenze jedes Rueckfalls: Was die Engine gerechnet
+    // hat, steht fest — nur eine BRAUCHBARE Zahl des Modells darf sie ersetzen.
+    const graphPunkte = alsModellzahl(gradingResult.totalPoints, 0);
+
     let enginePoints: number;
     if (disablePointsActive) {
         // LLM decides (Hybrid): Prefer LLM points if available, fallback to PANG.
-        enginePoints = aiTask && typeof aiTask.pointsObtained === 'number'
-            ? Number(aiTask.pointsObtained)
-            : Number(gradingResult.totalPoints ?? 0);
+        // Die `typeof`-Pruefung bleibt bewusst erhalten — eine Zeichenkette soll
+        // wie bisher auf den Graphen zurueckfallen. Neu ist nur, dass ein NaN
+        // dasselbe tut, statt als gueltige Punktzahl durchzugehen.
+        enginePoints = typeof aiTask?.pointsObtained === 'number' && Number.isFinite(aiTask.pointsObtained)
+            ? aiTask.pointsObtained
+            : graphPunkte;
     } else {
         // Rigid grading: PANG points are absolute.
         enginePoints = isServerResponse
-            ? Number(aiTask!.pointsObtained ?? gradingResult.totalPoints ?? 0)
-            : Number(gradingResult.totalPoints ?? layoutTask.pointsObtained ?? 0);
+            ? alsModellzahl(aiTask!.pointsObtained, graphPunkte)
+            : alsModellzahl(gradingResult.totalPoints, alsModellzahl(layoutTask.pointsObtained, 0));
     }
 
     // Format a beautiful step-by-step breakdown as feedback
@@ -318,7 +373,7 @@ export function mapModelTask(layoutTask: Task, aiTask: AITask): TaskMappingResul
         aiTask.feedback?.includes(SANDBOX_PROOF_MARKER));
     const isSandboxBypassed = isCalcTraceTask && !calcTraceAlreadyFormatted;
 
-    let confidence = Number(aiTask.confidence || 0);
+    let confidence = alsModellzahl(aiTask.confidence, 0);
 
     // --- MARKER PENALTY ---
     // If the cleaned text contains (?) markers, confidence MUST be < 90
@@ -333,7 +388,7 @@ export function mapModelTask(layoutTask: Task, aiTask: AITask): TaskMappingResul
     return {
         task: {
             ...kopfAusLayout(layoutTask),
-            pointsObtained: Number(aiTask.pointsObtained || 0),
+            pointsObtained: alsModellzahl(aiTask.pointsObtained, 0),
             feedback,
             confidence,
             content: aiTask.content || '',
@@ -362,9 +417,9 @@ export function mapMissingTask(layoutTask: Task, aiTasks: AITask[]): TaskMapping
         return {
             task: {
                 ...kopfAusLayout(layoutTask),
-                pointsObtained: Number(nearMiss.pointsObtained || 0),
+                pointsObtained: alsModellzahl(nearMiss.pointsObtained, 0),
                 feedback: `[KI-FEHLER?] Name nicht exakt ("${nearMiss.name}" statt "${layoutTask.name}")\n\n${nearMiss.feedback || ''}`,
-                confidence: Number(nearMiss.confidence || 0),
+                confidence: alsModellzahl(nearMiss.confidence, 0),
                 content: nearMiss.content || ''
             }
         };
