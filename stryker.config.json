@@ -1,0 +1,51 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "_comment": [
+    "MUTATIONSTESTS — sie prüfen die TESTS, nicht den Code.",
+    "",
+    "Stryker setzt kleine Fehler in den Quelltext ('Mutanten') und fährt die",
+    "Tests. Bleibt ein Mutant am Leben, hat kein Test ihn bemerkt: die",
+    "Abdeckung sagt dann 'geprüft', obwohl nichts geprüft wird.",
+    "",
+    "ANLASS: Diese Proben liefen bisher VON HAND. Sie haben mehrfach echte",
+    "Lücken gefunden — zuletzt am 18.08.2026 die ungeprüfte Schwärzung im",
+    "Stapel-Weg der Texterkennung, wo der Einzel-Weg grün war. Aber die",
+    "Disziplin lebte nur in Commit-Nachrichten. Regeln brauchen Wächter, auch",
+    "die über das Testen selbst.",
+    "",
+    "UMFANG: nur src/lib/. Dort liegt die Entscheidungslogik. Hooks und",
+    "Komponenten sind überwiegend Zustandsverdrahtung; ein Mutant dort ist oft",
+    "weder sinnvoll tötbar noch aussagekräftig, und die Laufzeit vervielfachte",
+    "sich.",
+    "",
+    "LAUFZEIT: rund 1,5 Minuten je Datei. Das gehört NICHT in den Pre-Push-Hook,",
+    "sondern in einen eigenen Lauf (npm run test:mutation)."
+  ],
+  "packageManager": "npm",
+  "testRunner": "jest",
+  "jest": {
+    "projectType": "custom",
+    "configFile": "jest.stryker.config.js",
+    "enableFindRelatedTests": true
+  },
+  "reporters": ["html", "clear-text", "progress"],
+  "htmlReporter": {
+    "fileName": "tests/reports/mutation/index.html"
+  },
+  "coverageAnalysis": "all",
+  "timeoutMS": 60000,
+  "concurrency": 4,
+  "mutate": [
+    "src/lib/**/*.ts",
+    "!src/lib/**/*.d.ts",
+    "!src/lib/prisma.ts",
+    "!src/lib/logto.ts",
+    "!src/lib/logto-mgmt.ts",
+    "!src/lib/stripe.ts"
+  ],
+  "thresholds": {
+    "high": 80,
+    "low": 60,
+    "break": null
+  }
+}

@@ -30,7 +30,8 @@
     "test:integration": "cross-env KOREKI_REAL_FETCH=true jest --testPathPattern=tests/integration --testTimeout=1200000",
     "test:determinism:qwen": "cross-env KOREKI_TEST_PROVIDER=qwen KOREKI_REAL_FETCH=true jest tests/integration/CalcDeterminism.test.ts",
     "test:determinism:ollama": "cross-env KOREKI_TEST_PROVIDER=ollama KOREKI_REAL_FETCH=true jest tests/integration/CalcDeterminism.test.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test:mutation": "stryker run"
   },
   "dependencies": {
     "@logto/next": "^4.2.9",

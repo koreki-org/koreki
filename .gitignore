@@ -58,3 +58,10 @@ determinism-report-latest.md
 
 # Claude Code local settings (per-developer, not shared)
 .claude/settings.local.json
+
+# Mutationstests (Sandkaesten und Berichte)
+.stryker-tmp/
+tests/reports/mutation/
+
+# Rest eines frueheren git filter-branch (nicht in dieser Sitzung entstanden)
+.git-rewrite/
