@@ -61,6 +61,24 @@ export function stepHasSandboxError(stepId: string, sandboxErrors: string[]): bo
 }
 
 /**
+ * Nur echte Rechenfehler belasten den Schueler.
+ *
+ * Ein Schritt, den die Sandbox nicht PARSEN konnte, sagt nichts ueber seine
+ * Richtigkeit aus — ihn als Fehler zu werten hiesse, dem Schueler eine Grenze
+ * unserer Auswertung anzulasten.
+ *
+ * Diese Regel stand als Kommentar ueber genau EINER von zwei Stellen. Die
+ * andere (`resolveEngineVerdict`, Ergebnis-Kriterium) nahm alle Sandbox-Fehler
+ * — und nannte der Schuelerin damit Schritte, an denen sie richtig gerechnet
+ * hatte, unsere Auswertung sie aber nicht lesen konnte (18.08.2026
+ * nachgestellt). Jetzt steht die Regel einmal hier, und beide holen sie sich
+ * von derselben Stelle.
+ */
+function nurEchteRechenfehler(sandboxErrors: string[]): string[] {
+  return sandboxErrors.filter(err => err.startsWith('Rechenfehler'));
+}
+
+/**
  * Enthaelt die Formel eine echte Rechnung — oder nur eine abgeschriebene Zahl?
  * Ein nacktes Ergebnis ("2.5 GHz") ist kein Rechenweg und kann keinen Rechenweg-Punkt tragen.
  */
@@ -104,11 +122,7 @@ function bewerteRechenweg(targetIndex: number, evidence: EngineEvidence): Engine
     return { erfuellt: false, begruendung: 'Kein nachvollziehbarer Rechenweg notiert', stepIds: [] };
   }
 
-  // Nur echte Rechenfehler belasten den Schueler. Ein Schritt, den die Sandbox nicht parsen
-  // konnte, sagt nichts ueber seine Richtigkeit aus — ihn als Fehler zu werten hiesse, dem
-  // Schueler eine Grenze unserer Auswertung anzulasten.
-  const echteRechenfehler = sandboxErrors.filter(err => err.startsWith('Rechenfehler'));
-  const fehlerhaft = gerechnet.filter(id => stepHasSandboxError(id, echteRechenfehler));
+  const fehlerhaft = gerechnet.filter(id => stepHasSandboxError(id, nurEchteRechenfehler(sandboxErrors)));
   if (fehlerhaft.length > 0) {
     return {
       erfuellt: false,
@@ -159,7 +173,7 @@ export function resolveEngineVerdict(
   }
 
   if (pt?.reached && pt.hasCalculationError) {
-    const fehlerhaft = associated.filter(id => stepHasSandboxError(id, sandboxErrors));
+    const fehlerhaft = associated.filter(id => stepHasSandboxError(id, nurEchteRechenfehler(sandboxErrors)));
     const schritte = fehlerhaft.length > 0 ? fehlerhaft : associated;
     return {
       erfuellt: false,
@@ -195,7 +209,14 @@ function siehtNachEinsetzungAus(crit: Pick<GradingCriterion, 'id' | 'label'>): b
  * Wird einmalig beim Einlesen der Musterloesung angewendet und ins Feld `source` geschrieben —
  * danach lesen alle Verbraucher nur noch dieses Feld.
  */
-export function normalizeCriterionSource(crit: Pick<GradingCriterion, 'id' | 'label' | 'source'>): CriterionSource {
+// Das `source` ist hier ABSICHTLICH unbekannt: die Funktion existiert genau
+// dafuer, Kriterien ohne gueltige Zustaendigkeit zu reparieren. Ein Parameter
+// vom Typ `CriterionSource` behauptete, der Reparaturfall koenne nicht
+// eintreten — und zwaenge jeden Aufrufer zu einer Behauptung, die er nicht
+// belegen kann.
+export function normalizeCriterionSource(
+  crit: Pick<GradingCriterion, 'id' | 'label'> & { source?: unknown }
+): CriterionSource {
   if (isValidCriterionSource(crit.source)) return crit.source;
   return siehtNachEinsetzungAus(crit) ? 'proofValues' : 'llm';
 }

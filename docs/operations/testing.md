@@ -149,6 +149,42 @@ Der sinnvolle Einsatz ist punktuell: **vor einem Umbau die betroffene Datei mess
 
 ---
 
+## 5b. Zwei Fehlerklassen, die hier wiederkehren 🔁
+
+Beim Durchlesen des Bewertungskerns am 18.08.2026 kamen zehn echte Fehler zusammen — sechs davon gehen auf **zwei** Ursachen zurück. Beide sind mit einem Test schwer zu fangen und mit Aufmerksamkeit leicht.
+
+### A. Modell-Ausgaben werden als Zusicherung behandelt
+
+Was ein Sprachmodell liefert, ist **Eingabe**, keine Zusage. Das Prompt-Schema beschreibt, was wir uns *wünschen* — nicht, was ankommt.
+
+| Fall | Was passierte |
+|:---|:---|
+| `tolerance: null` bei `validationType: 'tolerance'` | Schritt wurde EXAKT bewertet; gerundete Antworten bekamen null Punkte |
+| Äquivalenzgruppe ohne `prefixes` | Absturz mitten in der Bewertung; die Aufgabe verlor still ihre Graph-Bewertung |
+| Doppelte Variablen-Kennung | Eine richtige Antwort bekam 1 von 2 Punkten — oder zählte doppelt |
+| `defaultValue: "50"` statt `50` | `"50" + 2` ergab `"502"` → Maske `/23` statt `/26`, achtfach zu großes Netz |
+| `result: "2,300"` | Als **Rechenfehler der Schülerin** gemeldet, obwohl sie richtig gerechnet hatte |
+
+> [!IMPORTANT]
+> **Kein Wächter dafür.** Der Fehler ist kein strukturelles Versäumnis („jemand hat den Validierer nicht aufgerufen"), sondern ein gedankliches („niemand hat überlegt, was das Modell schicken könnte"). Ein Wächter müsste auf Marker prüfen — und eine solche Fassung wurde am selben Tag von einem **toten Import** zufriedengestellt. Ein schwacher Wächter ist schlechter als keiner: er erzeugt das Gefühl von Absicherung, wo keine ist.
+>
+> Was hilft: beim Lesen einer Stelle, die eine Modell-Antwort verarbeitet, die Frage stellen — *was, wenn hier Text statt Zahl steht? Wenn das Feld fehlt? Wenn es zweimal vorkommt?*
+
+### B. Eine Regel gilt an einer Stelle und an der Schwesterstelle nicht
+
+Die häufigste Fehlerklasse dieses Projekts überhaupt.
+
+| Fall | Wo die Regel galt | Wo sie fehlte |
+|:---|:---|:---|
+| Rückfrage vor dem Überschreiben | drei Profil-Familien | Erfahrungsschatz-Import |
+| „Nur echte Rechenfehler belasten den Schüler" | Rechenweg-Kriterium | Ergebnis-Kriterium |
+| Halbe Zeile über Paketgrenzen aufheben | Web-Stream | Node-Stream |
+| Text zu Zahl wandeln | `mathPlugin` | `networkPlugin` |
+
+Dagegen hilft ein Wächter sehr wohl, wenn die Geschwister **benennbar** sind — siehe `profile-family-symmetry` in Layer 0. Wo sie es nicht sind, hilft nur: beim Beheben prüfen, ob dieselbe Regel woanders auch gelten müsste.
+
+---
+
 ## 6. Wie man beiträgt
 1. **Neue Logik?** Erstelle eine `.test.ts` unter `tests/unit/` und halte das Coverage-Gate ein.
 2. **Neues Feature?** Prüfe, ob es ein neuer „Stahldraht" ist. Wenn ja, füge einen Integrationstest hinzu.
