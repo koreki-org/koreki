@@ -19,7 +19,7 @@ import { evaluateCalcTrace, formatCalcTraceForPrompt } from '../grading/CalcTrac
 import { extractStudentAST } from '../grading/calc-trace-extraction';
 import { shouldDisablePoints } from './prompt-builder';
 import { requireOpenAiConnection } from './provider-connection';
-import { mapLayoutTask } from './correction-mapping';
+import { mapLayoutTask, alsModellzahl } from './correction-mapping';
 import { runLocalGradingEngines } from './local-grading-pass';
 
 export { shouldDisablePoints };
@@ -42,8 +42,31 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
         const ergebnisse = tasksLayout.map((layoutTask: Task) => mapLayoutTask(layoutTask, aiTasks));
         const mappedTasks = ergebnisse.map(e => e.task);
 
-        const totalMax = tasksLayout.reduce((summe, lt) => summe + Number(lt.maxPoints || 0), 0);
-        const totalObtained = mappedTasks.reduce((summe, t) => summe + Number(t.pointsObtained || 0), 0);
+        // Zaehler und Nenner muessen DIESELBEN Aufgaben umfassen.
+        //
+        // GEFUNDEN BEIM LESEN, 18.08.2026: Hier stand zweimal `Number(...)`.
+        // `tasksLayout` ist in `validation.ts` als `z.any()` deklariert und
+        // damit ungeprueft — es kommt aus dem Anfrage-Rumpf. Stand dort eine
+        // Maximalpunktzahl, die sich nicht deuten laesst ("10 Punkte"), ergab
+        // der Nenner NaN, die Bedingung `totalMax > 0` wurde falsch, und die
+        // ganze Arbeit bekam 0 % — woraus `calculateGrade` die NOTE bildet.
+        //
+        // Die naheliegende Reparatur (unbrauchbar = 0) macht es SCHLIMMER: Die
+        // Punkte der Aufgabe zaehlten dann weiter, ihr Maximum nicht. Bei drei
+        // Aufgaben ergab das 180 % — nachgestellt, bevor diese Fassung stand.
+        //
+        // Deshalb paarweise: Eine Aufgabe ohne deutbares Maximum laesst sich
+        // nicht anteilig verrechnen und bleibt aus BEIDEN Summen heraus. Der
+        // Prozentsatz gilt dann fuer die uebrigen Aufgaben — eine ehrliche
+        // Teilaussage statt einer falschen Gesamtaussage.
+        let totalMax = 0;
+        let totalObtained = 0;
+        tasksLayout.forEach((lt, i) => {
+            const max = alsModellzahl(lt.maxPoints, NaN);
+            if (!Number.isFinite(max)) return;
+            totalMax += max;
+            totalObtained += alsModellzahl(mappedTasks[i]?.pointsObtained, 0);
+        });
 
         analysis.tasks = mappedTasks;
         analysis.overallMatchPercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
@@ -52,13 +75,15 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
         // If the structure is broken (naming mismatch) or too many OCR problems, the entire document requires review.
         const hasMappingError = ergebnisse.some(e => e.mappingError);
         const hasMarkerIssue = ergebnisse.some(e => e.markerIssue);
-        analysis.confidence = (hasMappingError || hasMarkerIssue) ? 0 : Number(analysis.confidence || 0);
+        analysis.confidence = (hasMappingError || hasMarkerIssue) ? 0 : alsModellzahl(analysis.confidence, 0);
     } else if (analysis.tasks && Array.isArray(analysis.tasks)) {
         let totalObtained = 0;
         let totalMax = 0;
+        // Derselbe Schutz wie oben. Dieser Zweig liest die Antwort des Modells
+        // ohne Musterloesung — dort ist ausser dem Zod-Gate nichts dazwischen.
         analysis.tasks.forEach((task: AITask) => {
-            totalObtained += Number(task.pointsObtained || 0);
-            totalMax += Number(task.maxPoints || 0);
+            totalObtained += alsModellzahl(task.pointsObtained, 0);
+            totalMax += alsModellzahl(task.maxPoints, 0);
         });
         analysis.overallMatchPercentage = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0;
     }

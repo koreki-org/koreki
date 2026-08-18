@@ -104,15 +104,33 @@ export const AIAnalysisResultSchema = z.object({
             }, z.number().optional()),
             content: z.preprocess(toSafeString, z.string()).optional(),
             // Punktzahl je Bewertungskriterium — strukturiert statt aus den correctionNotes geparst.
+            // Unlesbare Einzelwertungen werden VERWORFEN, nicht auf 0 abgebildet.
+            //
+            // GEFUNDEN BEIM LESEN, 18.08.2026: Hier stand `isNaN(num) ? 0 : num`.
+            // Damit wurde aus "das Modell hat etwas Unlesbares geschickt" ein
+            // "das Modell vergibt 0 Punkte" — ununterscheidbar. Die
+            // Rueckfallebene in `correction-mapping.ts`, die genau dafuer gebaut
+            // ist (Gesamtpunktzahl des Modells heranziehen, statt sein Urteil zu
+            // verwerfen), konnte deshalb fuer den strukturierten Kanal NIE
+            // greifen: Sie erkennt Unlesbares daran, dass kein Wert vorliegt.
+            // Nachgestellt: eine Aufgabe mit einem Kriterium ueber 3 Punkte
+            // endete bei `points: "drei"` mit 0 von 3 Punkten.
+            //
+            // Ein verworfener Eintrag ist dasselbe wie ein nicht gelieferter —
+            // und genau das ist die Wahrheit ueber ihn.
             criteriaScores: z.preprocess(
-                (val) => (Array.isArray(val) ? val : undefined),
+                (val) => {
+                    if (!Array.isArray(val)) return undefined;
+                    return val.filter(e => {
+                        if (!e || typeof e !== 'object') return false;
+                        const num = Number((e as { points?: unknown }).points);
+                        return Number.isFinite(num);
+                    });
+                },
                 z.array(
                     z.object({
                         id: z.preprocess(toSafeString, z.string()),
-                        points: z.preprocess((val) => {
-                            const num = Number(val);
-                            return isNaN(num) ? 0 : num;
-                        }, z.number())
+                        points: z.preprocess((val) => Number(val), z.number())
                     }).passthrough()
                 ).optional()
             ),
