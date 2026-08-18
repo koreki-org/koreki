@@ -7,7 +7,6 @@ import { useGradingMemories } from './useGradingMemories';
 import { isDesktopTarget } from '../lib/env-context';
 import { apiClient } from '../lib/api-client';
 import { downloadFile } from '../lib/file-utils';
-import { exportGradingMemoryToMarkdown, parseMarkdownGradingMemory } from '../lib/parsers/markdown-grading-memory-parser';
 import { resolveTaskName, resolveMaxPoints } from '../lib/grading-memory-utils';
 import { findNameCollision } from '../lib/local-vault';
 import { toErrorMessage } from '../lib/error-message';

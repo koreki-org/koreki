@@ -45,7 +45,19 @@ export function useGradingMemoryLibrary({ addLocalMemory, refreshMemories }: Use
             const parsed = parseMarkdownGradingMemory(text);
 
             if (parsed.cases.length === 0) {
-                alert('Fehler: Keine gültigen Fallbeispiele im KEP-MD-2 Format gefunden.');
+                // Die Meldung nennt, WAS vorgefunden wurde. Ein blosses „nichts
+                // gefunden" liess offen, ob die Datei leer war, das falsche
+                // Format hatte oder an einer Stelle abbrach — und war damit
+                // ohne die Datei selbst nicht nachvollziehbar.
+                const marken = (text.match(/\[CASE_START\]/g) || []).length;
+                alert(
+                    'Fehler: Keine gültigen Fallbeispiele im KEP-MD-2 Format gefunden.\n\n'
+                    + `Datei: ${file.name} (${text.length} Zeichen)\n`
+                    + `Gefundene Fallbeispiel-Marken: ${marken}\n\n`
+                    + (marken === 0
+                        ? 'Die Datei enthält keinen einzigen Fallbeispiel-Block. Stammt sie aus dem Erfahrungsschatz-Export?'
+                        : 'Die Blöcke sind vorhanden, aber unvollständig — es fehlt „### Schülerantwort:" oder „### Erwartete Korrektur:".')
+                );
                 return;
             }
 

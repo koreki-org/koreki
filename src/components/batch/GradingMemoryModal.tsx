@@ -17,7 +17,6 @@ import { resolveTaskName, resolveMaxPoints } from '../../lib/grading-memory-util
 import { isDesktopTarget } from '../../lib/env-context';
 import { apiClient } from '../../lib/api-client';
 import { downloadFile } from '../../lib/file-utils';
-import { exportGradingMemoryToMarkdown, parseMarkdownGradingMemory } from '../../lib/parsers/markdown-grading-memory-parser';
 import { cn } from '../../lib/utils';
 
 interface GradingMemoryModalProps {
