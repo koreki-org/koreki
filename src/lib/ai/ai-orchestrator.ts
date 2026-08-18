@@ -20,6 +20,7 @@ import { extractStudentAST } from '../grading/calc-trace-extraction';
 import { shouldDisablePoints } from './prompt-builder';
 import { requireOpenAiConnection } from './provider-connection';
 import { mapLayoutTask, alsModellzahl } from './correction-mapping';
+import { istAbrechenbar } from './billing-gate';
 import { runLocalGradingEngines } from './local-grading-pass';
 
 export { shouldDisablePoints };
@@ -414,7 +415,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
 
         // Billing for PURE mode (Ping only, no data)
         // SKIPPED IN BYPASS MODE (Desktop/Community) or OLLAMA MODE
-        if (!isLocalInstance() && settings?.provider !== 'ollama') {
+        if (istAbrechenbar(settings)) {
             await apiClient.post('/api/billing/pure-deduct', {
                 pageCount: payload.pageCount || (payload.buffers?.length) || 1,
                 action: action

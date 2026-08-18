@@ -3,7 +3,7 @@ import { executeOllamaRequest } from './ollama-logic';
 import { executeOpenAIRequest } from './openai-provider';
 import { promisePool } from './promise-pool';
 import { AppSettings } from '../../types';
-import { isLocalInstance } from '../env-context';
+import { istAbrechenbar } from './billing-gate';
 import { logger } from '../logger';
 
 /**
@@ -90,7 +90,11 @@ export async function performOCRRequest(
         const fullText = pageResults.join('\n\n');
 
         // Billing for PURE mode (Ping only, no data) - Skipped on Local/Desktop to prevent Network/CSP errors
-        if (!isLocalInstance()) {
+        // und bei lokalem Ollama: dieselbe Bedingung wie im ai-orchestrator.
+        // Sie stand hier frueher ohne den Ollama-Teil — wer im PURE-Modus ein
+        // lokales Modell betrieb, zahlte fuer OCR-Seiten, aber nicht fuer
+        // Korrekturen (18.08.2026).
+        if (istAbrechenbar(settings)) {
             await fetch('/api/billing/pure-deduct', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
