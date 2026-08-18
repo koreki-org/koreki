@@ -137,7 +137,10 @@ const SIZE_BASELINE: Record<string, number> = {
     'components/batch/CalcTraceModal.tsx': 430,
     // +13: der NutzerCache-Typ und die durchgezogenen Signaturen haben ALLE
     // 7 `any` dieser Datei abgeloest.
-    'components/dashboard/DashboardModals.tsx': 436,
+    // 436 -> 431: der optimistische Cache-Block stand dreimal wortgleich
+    // darin (Expertise, Skill-Set, KI-Profil), knapp unter der
+    // Nachweisgrenze des Duplikat-Waechters.
+    'components/dashboard/DashboardModals.tsx': 432,
     // 420 -> 400: dieselbe Umstellung wie bei useAiProfiles.
     'hooks/usePromptProfiles.ts': 400, // s. useSkillProfiles — gleicher Wächter
     'components/batch/parts/SecondOpinionDrawer.tsx': 388,

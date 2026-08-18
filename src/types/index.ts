@@ -65,6 +65,36 @@ export interface Workspace {
 }
 
 /**
+ * Setzt die Aufgabenliste — direkt oder abgeleitet aus dem vorigen Stand.
+ *
+ * Die abgeleitete Form ist nicht optional: der Autopilot und zwei Stellen in
+ * der Musterloesungs-Ansicht aendern EINE Aufgabe und muessen dafuer den
+ * aktuellen Stand kennen. Wer diesen Typ auf `Task[]` verengt, macht aus einer
+ * dieser Funktionen still die neue Aufgabenliste.
+ */
+/**
+ * Die drei Modi, die eine Lehrkraft WAEHLEN kann.
+ *
+ * `UNSET` gehoert bewusst nicht dazu: das ist der Zustand vor der ersten Wahl,
+ * keine Option. Die Oberflaeche bietet ihn nicht an, und
+ * `/api/user/update-mode` weist ihn ab. Ihn in den Rueckruf-Typ zu schreiben
+ * versprach einen Fall, den niemand bedienen kann.
+ */
+/**
+ * Ein Skill, der bereits eine Kennung traegt.
+ *
+ * Voraussetzung fuers Ablegen: die Kennung ist der SCHLUESSEL, unter dem der
+ * Skill gespeichert wird. Fehlte sie, entstuende ein Eintrag namens
+ * `"undefined"` — und der naechste Skill ohne Kennung ueberschriebe ihn.
+ * Der Editor vergibt sie deshalb spaetestens beim Speichern.
+ */
+export type GespeicherterSkill = CustomSkillDefinition & { id: string };
+
+export type WaehlbarerAppModus = 'STANDARD' | 'PURE' | 'TRIAL';
+
+export type TasksLayoutSetter = (newTasks: Task[] | ((prevTasks: Task[]) => Task[])) => void;
+
+/**
  * Was eine Lehrkraft gerade ausgewaehlt hat.
  *
  * Steht einmal hier, weil `DbUser` (Sicht der Datenbank) und `User` (Sicht der
@@ -73,11 +103,11 @@ export interface Workspace {
  * in einem, und die Auswahl waere auf einem der beiden Wege nicht sichtbar.
  */
 export interface AktiveAuswahl {
-    activeWorkspaceId?: string;
-    activePromptProfileId?: string;
-    activeAiProfileId?: string;
-    activeGradingMemoryId?: string;
-    activeSkillProfileId?: string;
+    activeWorkspaceId?: string | null;
+    activePromptProfileId?: string | null;
+    activeAiProfileId?: string | null;
+    activeGradingMemoryId?: string | null;
+    activeSkillProfileId?: string | null;
     activeSkillIds?: string[];
     customSkills?: Record<string, CustomSkillDefinition>;
 }

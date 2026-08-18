@@ -1,6 +1,6 @@
 import React from 'react';
 import { Shield, FileText, ExternalLink } from 'lucide-react';
-import { AppSettings } from '@/types';
+import { AppSettings, WaehlbarerAppModus } from '@/types';
 import { isLocalInstance, isPaidModesEnabled } from '@/lib/env-context';
 // No AIConfigurationContent needed for local
 
@@ -9,7 +9,7 @@ interface PrivacySectionProps {
     onSave: (updates: Partial<AppSettings>) => void;
     appMode: string;
     avvAccepted: boolean;
-    onModeChange: (mode: any) => void;
+    onModeChange: (mode: WaehlbarerAppModus) => void;
 }
 
 export const PrivacySection: React.FC<PrivacySectionProps> = ({ 
@@ -24,7 +24,7 @@ export const PrivacySection: React.FC<PrivacySectionProps> = ({
             <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">Modus & Datenschutz</h3>
             {!isLocalInstance() && (
                 <div className="grid grid-cols-3 gap-3 mb-6">
-                    {['STANDARD', 'PURE', 'TRIAL'].map((mode) => {
+                    {(['STANDARD', 'PURE', 'TRIAL'] as const).map((mode) => {
                         const isDisabled = (mode === 'STANDARD' || mode === 'PURE') && !isPaidModesEnabled();
                         return (
                             <div

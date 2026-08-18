@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { Task, AppSettings } from '../types';
+import { Task, AppSettings, TasksLayoutSetter } from '../types';
 
 // Sub-Components
 import { ModelSolutionCard } from './upload/ModelSolutionCard';
@@ -16,7 +16,7 @@ interface UploadGridProps {
     onReExtractLayout: () => void;
     onModelSolutionChange?: (newVal: string) => void;
     onModelSolutionContextChange?: (newVal: string) => void;
-    onTasksChange?: (newTasks: Task[]) => void;
+    onTasksChange?: TasksLayoutSetter;
     isPureMode?: boolean;
     isLocked?: boolean;
     settings?: AppSettings;

@@ -177,7 +177,19 @@ export function withSecurity(
             return await handler(req, res);
         }
 
-        const logtoHandler = logtoClient.withLogtoApiRoute(async (req: AuthenticatedRequest, res: NextApiResponse) => {
+        const logtoHandler = logtoClient.withLogtoApiRoute(async (rohReq: NextApiRequest, res: NextApiResponse) => {
+            // ARCH: Zusicherung noetig, weil `NextApiHandler` die Anreicherung
+            // nicht ausdruecken kann. Logto reicht einen gewoehnlichen
+            // NextApiRequest herein und haengt `user` waehrend seiner eigenen
+            // Verarbeitung daran; `ip` setzen wir in der naechsten Zeile selbst.
+            // Ab hier traegt die Anfrage beides.
+            //
+            // Die Zusicherung steht bewusst an dieser EINEN Stelle statt in der
+            // Signatur: dort behauptete sie, Logto liefere bereits eine
+            // angereicherte Anfrage — und wer die Reihenfolge spaeter aendert,
+            // saehe keinen Fehler.
+            const req = rohReq as AuthenticatedRequest;
+
             // Centralized Industrial IP Detection 🛡️
             const ip = getClientIp(req);
             req.ip = ip;

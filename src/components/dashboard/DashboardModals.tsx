@@ -1,7 +1,7 @@
 import React from 'react';
 import type { GradingGraph } from '../../lib/grading/types';
 import type { TargetGoal } from '../../lib/grading/calc-trace-types';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, type QueryClient } from '@tanstack/react-query';
 import SettingsModal from '../SettingsModal';
 import PromptSettingsModal from '../PromptSettingsModal';
 import SkillsSettingsModal from '../SkillsSettingsModal';
@@ -18,7 +18,7 @@ import PureKeyModal from '../PureKeyModal';
 import ModelTypeModal from '../ModelTypeModal';
 import AiSetupModal from '../AiSetupModal';
 import { AiParamsModal } from '../AiParamsModal';
-import { AppSettings, Task, BatchFile, User, PromptProfile } from '../../types';
+import { AppSettings, Task, BatchFile, User, PromptProfile, AktiveAuswahl } from '../../types';
 import { isLocalInstance } from '../../lib/env-context';
 import { useRedactionBroadcast, isBroadcastTarget } from '../../hooks/useRedactionBroadcast';
 
@@ -32,6 +32,27 @@ interface NutzerCache {
     user?: User;
     [key: string]: unknown;
 }
+
+/**
+ * Setzt EIN Auswahlfeld im zwischengespeicherten Nutzer.
+ * ⚡
+ *
+ * Die Oberflaeche zeigt die neue Auswahl sofort, ohne auf den Server zu warten.
+ * Bleibt der Cache stehen, springt die Anzeige beim naechsten Nachladen zurueck
+ * und die Lehrkraft glaubt, ihre Wahl sei verloren gegangen.
+ *
+ * Stand dreimal wortgleich in dieser Datei — je einmal fuer Expertise,
+ * Skill-Set und KI-Profil. Der Duplikat-Waechter sah es nicht: die Bloecke
+ * liegen knapp unter seiner Nachweisgrenze.
+ */
+const merkeAuswahl = (
+    queryClient: QueryClient,
+    feld: keyof AktiveAuswahl,
+    wert: string | null
+) => queryClient.setQueryData(['user'], (prev: NutzerCache | undefined) => {
+    if (!prev || !prev.user) return prev;
+    return { ...prev, user: { ...prev.user, [feld]: wert } };
+});
 
 interface DashboardModalsProps {
     userData: User | null;
@@ -179,16 +200,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         }
                         
                         // Optimistically update query data cache
-                        queryClient.setQueryData(['user'], (prev: NutzerCache | undefined) => {
-                            if (!prev || !prev.user) return prev;
-                            return {
-                                ...prev,
-                                user: {
-                                    ...prev.user,
-                                    activePromptProfileId: targetProfileId
-                                }
-                            };
-                        });
+                        merkeAuswahl(queryClient, 'activePromptProfileId', targetProfileId);
  
                         // Hybrid Sync (Arch §2): SaaS → DB
                         if (!isLocalInstance()) {
@@ -242,16 +254,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         }
                         
                         // Optimistically update query data cache
-                        queryClient.setQueryData(['user'], (prev: NutzerCache | undefined) => {
-                            if (!prev || !prev.user) return prev;
-                            return {
-                                ...prev,
-                                user: {
-                                    ...prev.user,
-                                    activeSkillProfileId: targetProfileId
-                                }
-                            };
-                        });
+                        merkeAuswahl(queryClient, 'activeSkillProfileId', targetProfileId);
 
                         // Hybrid Sync (Arch §2): SaaS → DB
                         if (!isLocalInstance()) {
@@ -382,7 +385,9 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                     }}
                     onCancel={() => setShowAVVUpload(false)}
                     isOrganization={userData?.activeWorkspaceType === 'ORGANIZATION'}
-                    workspaceId={userData?.activeWorkspaceId}
+                    // Die Datenbank kennt "keine Auswahl" als `null`, die Oberflaeche
+                    // als `undefined`. Hier treffen sich beide Schreibweisen.
+                    workspaceId={userData?.activeWorkspaceId ?? undefined}
                     organizationName={userData?.activeWorkspaceName}
                 />
             )}
@@ -408,16 +413,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
                         }
 
                         // Optimistically update query data cache
-                        queryClient.setQueryData(['user'], (prev: NutzerCache | undefined) => {
-                            if (!prev || !prev.user) return prev;
-                            return {
-                                ...prev,
-                                user: {
-                                    ...prev.user,
-                                    activeAiProfileId: targetAiProfileId
-                                }
-                            };
-                        });
+                        merkeAuswahl(queryClient, 'activeAiProfileId', targetAiProfileId);
 
                         // Hybrid Sync (Arch §2): SaaS → DB persist for AI profile selection
                         if (!isLocalInstance()) {

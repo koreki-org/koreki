@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import type { GradingGraph } from '../../lib/grading/types';
 import { FileText, FileUp, RefreshCw, Sparkles, Loader2, Layers, Trash2, Link2Off, HelpCircle, AlertCircle, ShieldCheck, ShieldAlert, Clock, ToggleLeft, ToggleRight, Download, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import { Task, AppSettings, CustomSkillDefinition } from '@/types';
+import { Task, AppSettings, CustomSkillDefinition, TasksLayoutSetter } from '@/types';
 import { promisePool } from '../../lib/ai/promise-pool';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { CollapsibleCardContent, CollapseToggleButton } from '@/components/ui/CollapsibleCardContent';
@@ -42,7 +42,7 @@ interface ModelSolutionCardProps {
     onModelUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onModelSolutionChange?: (newVal: string) => void;
     onModelSolutionContextChange?: (newVal: string) => void;
-    onTasksChange?: (newTasks: Task[] | ((prevTasks: Task[]) => Task[])) => void;
+    onTasksChange?: TasksLayoutSetter;
     isLocked?: boolean;
     settings?: AppSettings;
     appMode?: 'PURE' | 'STANDARD' | 'TRIAL';

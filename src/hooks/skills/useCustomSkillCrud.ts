@@ -1,4 +1,4 @@
-import type { CustomSkillDefinition, SkillProfile } from '@/types';
+import type { CustomSkillDefinition, SkillProfile, GespeicherterSkill } from '@/types';
 import { apiClient } from '@/lib/api-client';
 import { isDesktopTarget } from '@/lib/env-context';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
@@ -38,7 +38,7 @@ export function useCustomSkillCrud({
     setProfiles,
     selectedProfileData
 }: UseCustomSkillCrudParams) {
-    const handleSaveCustomSkill = async (skill: CustomSkillDefinition & { id: string }) => {
+    const handleSaveCustomSkill = async (skill: GespeicherterSkill) => {
         // 1. Update global customSkills state & localStorage
         setCustomSkills(prev => {
             const updated = { ...prev, [skill.id]: skill };

@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { AppSettings } from '../types';
+import { AppSettings, WaehlbarerAppModus } from '../types';
 import { Button } from './ui/Button';
 import { isLocalInstance, isKeycloakAuth } from '@/lib/env-context';
 import packageJson from '../../package.json';
@@ -19,7 +19,7 @@ interface SettingsModalProps {
     isAdminView?: boolean;
     appMode?: 'STANDARD' | 'PURE' | 'TRIAL' | 'UNSET';
     avvAccepted?: boolean;
-    onModeChange?: (mode: 'STANDARD' | 'PURE' | 'TRIAL' | 'UNSET') => void;
+    onModeChange?: (mode: WaehlbarerAppModus) => void;
     username?: string;
 }
 

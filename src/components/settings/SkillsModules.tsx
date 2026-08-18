@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/Badge';
 import { FloatingActions } from '@/components/ui/FloatingActions';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
 import { downloadFile } from '@/lib/file-utils';
-import type { CustomSkillDefinition } from '@/types';
+import type { CustomSkillDefinition, GespeicherterSkill } from '@/types';
 import { applySkillToggle } from '@/lib/skills/skill-selection';
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { SkillEditorPanel } from './SkillEditorPanel';
@@ -42,7 +42,7 @@ interface SkillsEditorProps {
     onSaveToDB: () => void;
     setNewProfileName: (v: string) => void;
         customSkills: Record<string, CustomSkillDefinition>;
-    onSaveCustomSkill: (skill: CustomSkillDefinition) => void;
+    onSaveCustomSkill: (skill: GespeicherterSkill) => void;
     onDeleteCustomSkill: (id: string) => void;
     onStartNew: (initialSkills?: string[]) => void;
     onImportParsedProfile: (parsed: ParsedProfile, isSingleSkill?: boolean) => void;

@@ -114,7 +114,6 @@ const ANY_BASELINE: Record<string, number> = {
     'components/layout/HeaderBadges.tsx': 1,
     'components/PromptSettingsModal.tsx': 1,
     'components/settings/AiProfileModules.tsx': 1,
-    'components/settings/PrivacySection.tsx': 1,
     'components/settings/UnifiedAiConfig.tsx': 1,
     'components/upload/ModelSolutionTaskCard.tsx': 1,
     'hooks/useBatchItemDerivations.ts': 1,
