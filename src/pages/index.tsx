@@ -49,11 +49,11 @@ export default function LandingPage() {
 
                     <div className="mb-6">
                         {mode === 'community' ? (
-                            <Link href={(!authLoading && userData) ? "/app" : "/login"} className={cn(buttonVariants({ variant: 'default', shape: 'pill' }), "px-10 py-5 h-auto text-sm gap-3 font-black shadow-[0_10px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:shadow-[0_20px_40px_-5px_rgba(var(--primary-rgb),0.5)]")}>
+                            <Link href={(!authLoading && userData) ? "/app" : "/login"} className={cn(buttonVariants({ variant: 'default', shape: 'pill' }), "px-10 py-5 h-auto text-sm gap-3 font-black shadow-xl shadow-primary/40 hover:shadow-2xl hover:shadow-primary/50")}>
                                 Korrektur starten <ArrowRight size={18} />
                             </Link>
                         ) : (
-                            <Link href={(!authLoading && userData) ? "/app" : "/register"} className={cn(buttonVariants({ variant: 'default', shape: 'pill' }), "px-9 py-4 h-auto text-sm gap-3 font-black shadow-[0_10px_30px_-5px_rgba(var(--primary-rgb),0.4)] hover:shadow-[0_20px_40px_-5px_rgba(var(--primary-rgb),0.5)]")}>
+                            <Link href={(!authLoading && userData) ? "/app" : "/register"} className={cn(buttonVariants({ variant: 'default', shape: 'pill' }), "px-9 py-4 h-auto text-sm gap-3 font-black shadow-xl shadow-primary/40 hover:shadow-2xl hover:shadow-primary/50")}>
                                     {(!authLoading && userData) ? "Zum Dashboard" : "Jetzt testen"} <ArrowRight size={18} />
                             </Link>
                         )}
