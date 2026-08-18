@@ -23,28 +23,67 @@ export const longToIp = (long: number): string => {
   ].join('.');
 };
 
+/**
+ * Macht aus dem, was ankommt, eine Zahl — oder bricht ab.
+ *
+ * Das Prompt-Schema erlaubt dem Modell ausdrücklich, einen `defaultValue` als
+ * TEXT zu liefern, und `parseGeneratedGraph` reicht ihn unverändert weiter.
+ * `mathPlugin` hat das immer berücksichtigt, `networkPlugin` nicht — mit
+ * stillen Folgen (18.08.2026):
+ *
+ *   calculateMask(50)    -> "/26"   richtig
+ *   calculateMask("50")  -> "/23"   falsch, weil "50" + 2 die Zeichenkette
+ *                                   "502" ergibt
+ *
+ * Die erwartete Maske war damit falsch, und jede Schülerin, die richtig
+ * gerechnet hatte, galt als falsch. Die gesamte Zeile danach — Netz-ID,
+ * Broadcast, erster und letzter Host — baut auf dieser Maske auf.
+ *
+ * Ein Abbruch ist hier das richtige Verhalten: er landet als
+ * „Mathematischer Auswertungsfehler" im Trockenlauf, und der Graph wird neu
+ * erzeugt, statt falsch zu bewerten.
+ */
+const alsZahl = (wert: unknown, was: string): number => {
+  const zahl = typeof wert === 'number' ? wert : parseFloat(String(wert));
+  if (!Number.isFinite(zahl)) {
+    throw new Error(`${was} ist keine Zahl: ${JSON.stringify(wert)}`);
+  }
+  return zahl;
+};
+
 // Subnetting Domain Engine
 export const networkPlugin = {
   /**
    * Calculates the CIDR notation mask required for a given number of hosts
    * (including 2 reserved addresses for Net ID and Broadcast)
    */
-  calculateMask(hosts: number): string {
-    const requiredSize = hosts + 2;
+  calculateMask(hosts: number | string): string {
+    const anzahl = alsZahl(hosts, 'Host-Anzahl');
+    if (anzahl < 0) {
+      throw new Error(`Host-Anzahl ist negativ: ${anzahl}`);
+    }
+
+    const requiredSize = anzahl + 2;
     let power = 0;
     while (Math.pow(2, power) < requiredSize) {
       power++;
     }
+
     const mask = 32 - power;
+    if (mask < 0) {
+      throw new Error(`Host-Anzahl passt in kein IPv4-Netz: ${anzahl}`);
+    }
     return `/${mask}`;
   },
 
   /**
    * Returns the size (total IP addresses) of a subnet mask
    */
-  calculateSize(mask: string): number {
-    const cleanMask = parseInt(mask.replace('/', ''), 10);
-    if (isNaN(cleanMask) || cleanMask < 0 || cleanMask > 32) {
+  calculateSize(mask: string | number): number {
+    // Auch eine blanke Zahl (24 statt "/24") kommt vor — vorher stürzte das mit
+    // "mask.replace is not a function" ab.
+    const cleanMask = alsZahl(String(mask).replace('/', ''), 'Maske');
+    if (!Number.isInteger(cleanMask) || cleanMask < 0 || cleanMask > 32) {
       throw new Error(`Invalid mask: ${mask}`);
     }
     return Math.pow(2, 32 - cleanMask);
