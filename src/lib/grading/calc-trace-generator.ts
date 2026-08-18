@@ -30,7 +30,6 @@ export const TARGET_GOAL_SCHEMA = {
 };
 
 // Legacy Export for existing AI provider imports (we don't use tool calling anymore)
-export const VALIDATE_CALC_TRACE_TOOL = {};
 
 export function buildCalcTraceGenerationPrompt(taskText: string, discipline: string, userNotes?: string, maxPoints?: number) {
     let system = calcTraceGenSystemDefault;
@@ -229,6 +228,29 @@ export function parseGeneratedCalcTrace(rawOutput: any, expectedMaxPoints?: numb
     return target;
 }
 
-export function validateCalcTraceDeterminism(trace: any) {
+/**
+ * PLATZHALTER — prueft nichts.
+ * 🚧
+ *
+ * Das Gegenstueck fuer Graphen (`validateGraphDeterminism`) rechnet den
+ * Entwurf probeweise durch. Fuer Rechenketten gibt es das nicht: diese
+ * Funktion gab schon immer bedingungslos `isValid: true` zurueck.
+ *
+ * Das war bis zum 18.08.2026 nicht erkennbar — im Gegenteil, der Kopf von
+ * `tool-validation.ts` versprach ausdruecklich, auch Rechenketten wuerden
+ * "probeweise durchgerechnet". Der Aufrufer dort ist zudem UNERREICHBAR: kein
+ * Anbieter bietet dem Modell das Werkzeug `validate_calc_trace` an, alle drei
+ * reichen nur `VALIDATE_GRAPH_TOOL` und nur fuer Graph-Aktionen durch.
+ *
+ * WO DIE ECHTE PRUEFUNG STATTFINDET: in `parseGeneratedCalcTrace`. Die wirft,
+ * wenn die Summe der Kriterien-Punkte von der Punktzahl der Aufgabe abweicht,
+ * und richtet ungueltige `targetIndex`-Werte gerade. Ueber diesen Weg laeuft
+ * die tatsaechliche Erzeugung (`pages/api/generate-calc-trace.ts`).
+ *
+ * Wer den Werkzeug-Weg fertig baut, ersetzt diese Funktion durch eine echte
+ * Pruefung UND traegt das Werkzeug bei den Anbietern ein. Bis dahin bleibt sie
+ * als Geruest stehen — aber sichtbar als das, was sie ist.
+ */
+export function validateCalcTraceDeterminism(_trace: unknown): { isValid: boolean; error: string } {
     return { isValid: true, error: '' };
 }

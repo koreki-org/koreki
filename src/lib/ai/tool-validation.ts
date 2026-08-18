@@ -7,13 +7,20 @@ import type { TargetGoal } from '../grading/calc-trace-types';
  * Werkzeugaufrufe des Modells pruefen.
  * 🧪
  *
- * Beim Erzeugen eines Bewertungsgraphen oder einer Rechenkette liefert das
- * Modell seinen Entwurf nicht als Text, sondern als Werkzeugaufruf. Koreki
- * rechnet ihn probeweise durch, bevor er akzeptiert wird — haelt er nicht,
- * geht der konkrete Fehler zurueck ans Modell und es bessert nach.
+ * Beim Erzeugen eines Bewertungsgraphen liefert das Modell seinen Entwurf nicht
+ * als Text, sondern als Werkzeugaufruf. Koreki rechnet ihn probeweise durch,
+ * bevor er akzeptiert wird — haelt er nicht, geht der konkrete Fehler zurueck
+ * ans Modell und es bessert nach.
  *
- * Das ist der Grund, warum ein erzeugter Graph verlaesslich ist: er wurde
+ * Das ist der Grund, warum ein erzeugter GRAPH verlaesslich ist: er wurde
  * simuliert, nicht nur plausibel formuliert.
+ *
+ * 🚧 FUER RECHENKETTEN GILT DAS NICHT. Dieser Kopf versprach es bis zum
+ * 18.08.2026 — zu Unrecht. Der Zweig unten ist UNERREICHBAR (kein Anbieter
+ * bietet dem Modell `validate_calc_trace` an), und die dahinterliegende
+ * Pruefung ist ein Platzhalter, der bedingungslos zustimmt. Die echte Pruefung
+ * einer Rechenkette steckt in `parseGeneratedCalcTrace`, ueber das die
+ * tatsaechliche Erzeugung laeuft.
  *
  * WARUM DIESE DATEI EXISTIERT
  * ---------------------------

@@ -42,7 +42,8 @@ const ANY_BASELINE: Record<string, number> = {
     'components/settings/AiProfileSidebar.tsx': 6,
     'hooks/useSkillGovernance.ts': 6,
     'lib/ai/openai-provider.ts': 1,
-    'lib/grading/calc-trace-generator.ts': 6,
+    // 6 -> 5: der Platzhalter validateCalcTraceDeterminism nimmt jetzt `unknown`.
+    'lib/grading/calc-trace-generator.ts': 5,
     'lib/grading/graph-preview.ts': 5,
     'lib/services/local-profile-service.ts': 2,
     'pages/api/user.ts': 6,
