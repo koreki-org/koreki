@@ -6,6 +6,7 @@ import { getAvailablePluginManifest } from '../grading/graph-generator';
 import { buildGraphEngineReport, buildCalcTraceEngineReport } from './engine-report';
 import type { GradingCriterion } from '../grading/calc-trace-types';
 import { logger } from '../logger';
+import { setzeEin } from '../prompt-placeholder';
 
 /**
  * Helper to determine whether deterministic PANG engine point awarding should be disabled (default true for custom tasks).
@@ -101,7 +102,7 @@ export function buildCorrectionPrompt(
     }
 
     const expertText = cleanCustom ? `\n\nPÄDAGOGISCHE SPEZIALISIERUNG DES LEHRERS (ERGÄNZUNG):\n${cleanCustom}\n\n` : '';
-    system = system.replace('{{expertInstructions}}', expertText);
+    system = setzeEin(system, '{{expertInstructions}}', expertText);
 
     // Dynamic compilation and injection of active modular skills
     let skillsSection = '';
@@ -118,7 +119,7 @@ export function buildCorrectionPrompt(
     }
 
     if (system.includes('{{activeSkills}}')) {
-        system = system.replace('{{activeSkills}}', skillsSection);
+        system = setzeEin(system, '{{activeSkills}}', skillsSection);
     } else {
         // Fallback: If template does not explicitly contain placeholder, append to system instructions safely
         system += skillsSection;
@@ -132,7 +133,7 @@ export function buildCorrectionPrompt(
         system += buildCalcTraceEngineReport(tasksLayout);
     }
 
-    user = user.replace('{{modelSolution}}', modelSolution);
+    user = setzeEin(user, '{{modelSolution}}', modelSolution);
  
     let examplesText = '';
     if (gradingMemory && Array.isArray(gradingMemory) && gradingMemory.length > 0) {
@@ -202,7 +203,7 @@ export function buildCorrectionPrompt(
         user += `\n</task_to_evaluate>`;
     }
 
-    user = user.replace('{{studentText}}', studentText);
+    user = setzeEin(user, '{{studentText}}', studentText);
 
     return {
         system,
@@ -228,13 +229,13 @@ export function buildCleanAndAnalyzePrompt(modelSolution: string, model?: string
     const activeDomainsText = activeDomains.map(d => `"${d}"`).join(', ');
 
     if (system.includes('{{ACTIVE_DOMAINS}}')) {
-        system = system.replace('{{ACTIVE_DOMAINS}}', activeDomainsText);
+        system = setzeEin(system, '{{ACTIVE_DOMAINS}}', activeDomainsText);
     } else {
         // Safe append if specialized template lacks the placeholder
         system = system.replace('suggestGraph = false ist.', `suggestGraph = false ist.\nErlaubte Plugin-Domänen: [ ${activeDomainsText} ].`);
     }
 
-    user = user.replace('{{modelSolution}}', modelSolution);
+    user = setzeEin(user, '{{modelSolution}}', modelSolution);
     
     return { 
         system, 
@@ -258,8 +259,8 @@ export function buildCleanAndMapPrompt(studentText: string, tasksLayout?: Task[]
         ? tasksLayout.map(t => `- ${t.name} (${t.maxPoints} P)`).join('\n')
         : '';
     
-    user = user.replace('{{tasksLayout}}', layoutString);
-    user = user.replace('{{studentText}}', studentText);
+    user = setzeEin(user, '{{tasksLayout}}', layoutString);
+    user = setzeEin(user, '{{studentText}}', studentText);
 
     return { 
         system, 
@@ -286,13 +287,13 @@ export function buildStudentSimulatorPrompt(modelSolution: string, tasksLayout?:
     let system = studentSimulatorSystemDefault;
     let user = studentSimulatorUserDefault;
 
-    user = user.replace('{{modelSolution}}', modelSolution);
+    user = setzeEin(user, '{{modelSolution}}', modelSolution);
 
     const layoutString = tasksLayout && Array.isArray(tasksLayout)
         ? tasksLayout.map(t => `- ${t.name} (Max: ${t.maxPoints} P)`).join('\n')
         : 'Keine explizite Struktur vorhanden. Nimm Standardaufgaben an.';
     
-    user = user.replace('{{tasksLayout}}', layoutString);
+    user = setzeEin(user, '{{tasksLayout}}', layoutString);
 
     if (selectedTasks && selectedTasks.length > 0) {
         const selectedList = selectedTasks.map((t, idx) => {
@@ -368,16 +369,21 @@ export function buildSecondOpinionPrompt(
     const system = secondOpinionSystemDefault;
 
     // Interpolate variables into User Prompt Markdown
-    const user = secondOpinionUserDefault
-        .replace(/{{taskName}}/g, taskName)
-        .replace(/{{taskInstructions}}/g, safeTaskInstructions)
-        .replace(/{{sampleSolution}}/g, safeSampleSolution)
-        .replace(/{{maxPoints}}/g, String(safeMaxPoints))
-        .replace(/{{studentText}}/g, safeStudentText)
-        .replace(/{{currentPoints}}/g, String(safeCurrentPoints))
-        .replace(/{{currentFeedback}}/g, safeCurrentFeedback)
-        .replace(/{{historyText}}/g, historyText)
-        .replace(/{{teacherDoubt}}/g, safeTeacherDoubt);
+    const einsetzungen: [string, string][] = [
+        ['{{taskName}}', taskName],
+        ['{{taskInstructions}}', safeTaskInstructions],
+        ['{{sampleSolution}}', safeSampleSolution],
+        ['{{maxPoints}}', String(safeMaxPoints)],
+        ['{{studentText}}', safeStudentText],
+        ['{{currentPoints}}', String(safeCurrentPoints)],
+        ['{{currentFeedback}}', safeCurrentFeedback],
+        ['{{historyText}}', historyText],
+        ['{{teacherDoubt}}', safeTeacherDoubt]
+    ];
+    const user = einsetzungen.reduce(
+        (vorlage, [platzhalter, wert]) => setzeEin(vorlage, platzhalter, wert),
+        secondOpinionUserDefault
+    );
 
     return {
         system,
@@ -405,8 +411,8 @@ export function buildVariableExtractionPrompt(studentText: string, variables: an
         `- ID: "${v.id}" (Typ: "${v.type}", Standardwert/Erwartet: "${v.defaultValue !== undefined ? v.defaultValue : 'keine Vorgabe'}")`
     ).join('\n');
 
-    user = user.replace('{{studentText}}', studentText);
-    user = user.replace('{{variablesList}}', variablesList);
+    user = setzeEin(user, '{{studentText}}', studentText);
+    user = setzeEin(user, '{{variablesList}}', variablesList);
 
     return {
         system,

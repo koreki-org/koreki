@@ -3,6 +3,7 @@ import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source
 import type { GradingCriterion, TargetGoal, PerTargetResult } from '../grading/calc-trace-types';
 import type { StepResult } from '../grading/types';
 import { shouldDisablePoints } from './prompt-builder';
+import { setzeEin } from '../prompt-placeholder';
 import mathFallbackInstruction from '../../prompts/core/default/correction/math-engine/fallback-instruction.md';
 import mathAutoInstruction from '../../prompts/core/default/correction/math-engine/auto-instruction.md';
 import mathHybridInstruction from '../../prompts/core/default/correction/math-engine/hybrid-instruction.md';
@@ -57,7 +58,7 @@ export function buildGraphEngineReport(tasksLayout: Task[]): string {
             if (disablePointsActive) {
                 vorevaluierungBlock += `\n` + mathHybridInstruction;
             } else {
-                vorevaluierungBlock += `\n` + mathAutoInstruction.replace('{{POINTS}}', String(t.gradingResult.totalPoints));
+                vorevaluierungBlock += `\n` + setzeEin(mathAutoInstruction, '{{POINTS}}', String(t.gradingResult.totalPoints));
             }
         }
     });
@@ -138,16 +139,16 @@ export function buildCalcTraceEngineReport(tasksLayout: Task[]): string {
                 const disablePointsActive = shouldDisablePoints(t.taskType, t.targetGoal);
 
                 let templateStr = calcTraceTemplate;
-                templateStr = templateStr.replace('{{TASK_NAME}}', t.name ?? '');
-                templateStr = templateStr.replace('{{MATH_FALLBACK_INSTRUCTION}}', disablePointsActive ? mathHybridHeader : `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!\n\n${mathFallbackInstruction}`);
+                templateStr = setzeEin(templateStr, '{{TASK_NAME}}', t.name ?? '');
+                templateStr = setzeEin(templateStr, '{{MATH_FALLBACK_INSTRUCTION}}', disablePointsActive ? mathHybridHeader : `Für diese Aufgabe wurde eine exakte mathematische Vorevaluierung durchgeführt. Nutze diese Ergebnisse zwingend als absolute, fehlerfreie Wahrheit!\n\n${mathFallbackInstruction}`);
 
                 if (disablePointsActive) {
-                    templateStr = templateStr.replace('{{ENGINE_STATUS_TEXT}}', `Die Rechenkette wurde ausgewertet. Nutze diese Information (ob Ziel erreicht oder nicht) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.`);
+                    templateStr = setzeEin(templateStr, '{{ENGINE_STATUS_TEXT}}', `Die Rechenkette wurde ausgewertet. Nutze diese Information (ob Ziel erreicht oder nicht) zur Bestimmung der finalen Punkte gemäß deiner Musterlösung.`);
                 } else {
-                    templateStr = templateStr.replace('{{ENGINE_STATUS_TEXT}}', `Endziel erreicht: ${t.calcTraceResult.isGoalReached ? 'JA' : 'NEIN'}.`);
+                    templateStr = setzeEin(templateStr, '{{ENGINE_STATUS_TEXT}}', `Endziel erreicht: ${t.calcTraceResult.isGoalReached ? 'JA' : 'NEIN'}.`);
                 }
 
-                templateStr = templateStr.replace('{{POINTS_TEXT}}', `[Muss durch LLM auf Basis der Sandbox-Ergebnisse ermittelt werden (max ${t.calcTraceResult.maxPoints} P)]`);
+                templateStr = setzeEin(templateStr, '{{POINTS_TEXT}}', `[Muss durch LLM auf Basis der Sandbox-Ergebnisse ermittelt werden (max ${t.calcTraceResult.maxPoints} P)]`);
                 
                 let detailsStr = '';
                 if (t.calcTraceResult.reachedTargets && t.calcTraceResult.reachedTargets.length > 0) {
@@ -165,7 +166,7 @@ export function buildCalcTraceEngineReport(tasksLayout: Task[]): string {
                 }
                 templateStr = templateStr.replace('</engine_status>', `${detailsStr}</engine_status>`);
 
-                templateStr = templateStr.replace('{{HYBRID_INSTRUCTION_BLOCK}}', mathHybridInstruction);
+                templateStr = setzeEin(templateStr, '{{HYBRID_INSTRUCTION_BLOCK}}', mathHybridInstruction);
                 
                 calcTraceVorevaluierungBlock += `\n` + templateStr;
             }

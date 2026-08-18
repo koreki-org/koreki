@@ -21,6 +21,7 @@ import graphGenRefineSystemDefault from '../../prompts/graph-generation/refine-s
 import graphGenRefineUserDefault from '../../prompts/graph-generation/refine-user.md';
 import { logger } from '../logger';
 import { toErrorMessage } from '../error-message';
+import { setzeEin } from '../prompt-placeholder';
 
 
 // ──────────────────────────────────────────────────────────────────────────
@@ -99,16 +100,16 @@ export function buildGraphGenerationPrompt(
 ): StructuredPrompt {
   const pluginManifest = formatPluginManifestForPrompt();
 
-  const system = GRAPH_GENERATION_SYSTEM_PROMPT
-    .replace('{{PLUGIN_MANIFEST}}', pluginManifest);
+  const system = setzeEin(GRAPH_GENERATION_SYSTEM_PROMPT, '{{PLUGIN_MANIFEST}}', pluginManifest);
 
   const disciplineHint = discipline
     ? `Hinweis: Diese Aufgabe gehört zum Fachgebiet "${discipline}". Bevorzuge Plugin-Funktionen aus der passenden Domain.`
     : '';
 
-  let user = GRAPH_GENERATION_USER_PROMPT
-    .replace('{{TASK_TEXT}}', taskText)
-    .replace('{{DISCIPLINE_HINT}}', disciplineHint);
+  let user = setzeEin(
+    setzeEin(GRAPH_GENERATION_USER_PROMPT, '{{TASK_TEXT}}', taskText),
+    '{{DISCIPLINE_HINT}}', disciplineHint
+  );
 
   if (userNotes && userNotes.trim()) {
     user += `\n\nZUSÄTZLICHE BEDIENER-ANMERKUNGEN UND SPEZIFISCHE ANFORDERUNGEN AN DEN GRAPHEN:\n${userNotes.trim()}\n\nBerücksichtige diese Anmerkungen strikt bei der Strukturierung des Graphen!`;
@@ -144,11 +145,10 @@ export function buildGraphRefinementPrompt(
     ? `Hinweis: Diese Aufgabe gehört zum Fachgebiet "${discipline}". Bevorzuge Plugin-Funktionen aus der passenden Domain.`
     : '';
 
-  const user = graphGenRefineUserDefault
-    .replace('{{TASK_TEXT}}', taskText)
-    .replace('{{CURRENT_GRAPH}}', JSON.stringify(currentGraph, null, 2))
-    .replace('{{USER_INSTRUCTION}}', userInstruction)
-    .replace('{{DISCIPLINE_HINT}}', disciplineHint);
+  let user = setzeEin(graphGenRefineUserDefault, '{{TASK_TEXT}}', taskText);
+  user = setzeEin(user, '{{CURRENT_GRAPH}}', JSON.stringify(currentGraph, null, 2));
+  user = setzeEin(user, '{{USER_INSTRUCTION}}', userInstruction);
+  user = setzeEin(user, '{{DISCIPLINE_HINT}}', disciplineHint);
 
   return {
     system,

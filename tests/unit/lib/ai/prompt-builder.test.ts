@@ -94,3 +94,54 @@ describe('Grading Memory prompt formatting', () => {
         expect(prompt.user).toContain('Gut.');
     });
 });
+
+/**
+ * Wörtliche Einsetzung von Schülertext und Musterlösung
+ * 🔤🛡️
+ *
+ * GEFUNDEN BEIM LESEN, 18.08.2026. Die Platzhalter wurden per
+ * `String.replace` ersetzt — und dort hat der ERSATZTEXT Mustersemantik.
+ * Gewöhnlicher Fachinhalt reichte aus, um den Prompt zu verändern:
+ *
+ *   $$E = mc^2$$   Formelblock wurde still zu Inline-Mathematik
+ *   $&             der Platzhalter stand danach wieder da
+ *   $`             alles vor der Einsetzstelle wurde hineinkopiert
+ *   $'             alles danach — inklusive `</task_to_evaluate>`
+ *
+ * Der letzte Fall ist der ernste: Schülertext erzeugte damit Struktur-Markup
+ * des Prompts. Die Regel selbst steht in `src/lib/prompt-placeholder.ts`, der
+ * Wächter über alle Einsetzstellen in
+ * `tests/unit/prompt-placeholder-governance.test.ts`. Hier wird geprüft, dass
+ * sie im fertig gebauten Prompt ankommt.
+ */
+describe('Schuelertext und Musterloesung stehen woertlich im Prompt', () => {
+    it.each([
+        ['LaTeX-Formelblock', 'Die Lösung ist $$E = mc^2$$ und damit fertig.'],
+        ['Regex mit $&', 'Ersetzung per s/foo/$&/g durchgeführt.'],
+        ['Shell mit $-Anführung', "Zeilenumbruch als $' notiert."],
+        ['Backtick-Konstrukt', 'Aufruf mit $` als Argument.']
+    ])('gibt %s unveraendert weiter', (_was, schuelertext) => {
+        const prompt = buildCorrectionPrompt('Musterlösung', schuelertext);
+
+        expect(prompt.user).toContain(schuelertext);
+    });
+
+    /** Die Musterlösung der Lehrkraft ist genauso betroffen. */
+    it('gibt eine Musterloesung mit Formelblock unveraendert weiter', () => {
+        const muster = 'Erwartet: $$P = U \cdot I$$';
+        const prompt = buildCorrectionPrompt(muster, 'Schülerantwort');
+
+        expect(prompt.user).toContain(muster);
+    });
+
+    /**
+     * Der Kern des Befunds: Das schließende Tag steht genau einmal — am Ende,
+     * nicht mitten in der Schülerantwort.
+     */
+    it('laesst Schuelertext kein Endetag in die Antwort schreiben', () => {
+        const prompt = buildCorrectionPrompt('Muster', "Ich schrieb $' und dann weiter.");
+
+        expect(prompt.user.match(/<\/task_to_evaluate>/g)).toHaveLength(1);
+        expect(prompt.user.trimEnd().endsWith('</task_to_evaluate>')).toBe(true);
+    });
+});
