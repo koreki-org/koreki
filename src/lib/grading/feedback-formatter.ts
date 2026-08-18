@@ -42,9 +42,6 @@ export function formatPluginFeedback(
   // 3. Discipline Signature:
   const isNetworkDiscipline = discipline === 'computer-science-networking';
 
-  // 4. Tabular Structure Check (e.g., compound names like messebesucher_netzadresse)
-  const hasStructuredVariables = gradingResult.stepResults.some((s) => s.variableId.includes('_'));
-
   // If any check confirms a structured 2D task, format as a Generic Table!
   // BUT: Do not format as a VLSM table if the discipline is math, physics, or general.
   const isGeneralMathOrPhysics = discipline === 'math' || discipline === 'physics' || discipline === 'general' || discipline === 'general-science';
@@ -351,20 +348,32 @@ function formatVlsmTableFeedback(gradingResult: GradingResult, gradingGraph?: Gr
     
     const formatCell = (field: StepResult | undefined) => {
       if (!field) return "-";
-      
-      const val = field.studentValue !== undefined && field.studentValue !== "" ? String(field.studentValue) : "fehlt";
+
+      /**
+       * `null` heisst NICHT BEANTWORTET, genau wie `undefined`.
+       *
+       * Der GraphRunner setzt bei einem ausgelassenen Eingabewert
+       * ausdruecklich `studentValue: null`. Die Pruefung fing nur `undefined`
+       * und den Leerstring ab — in der Tabelle stand deshalb woertlich "null",
+       * wo "fehlt" stehen muss. Das liest die Schuelerin in ihrer Korrektur.
+       */
+      const val = field.studentValue !== undefined
+        && field.studentValue !== null
+        && field.studentValue !== ""
+        ? String(field.studentValue)
+        : "fehlt";
+
       let badge = "";
-      
+
       if (field.status === 'correct') {
         badge = `[r]`;
       } else if (field.status === 'consecutive_correct') {
         badge = `[FF]`;
       } else {
         // For primary error, show expected value
-        const expected = field.expectedValue !== undefined && field.expectedValue !== null ? String(field.expectedValue) : "k.A.";
-        badge = `[f] *(Erw: ${expected})*`;
+        badge = `[f] *(Erw: ${alsErwartungstext(field.expectedValue)})*`;
       }
-      
+
       return `${val} ${badge}`;
     };
 
@@ -377,6 +386,25 @@ function formatVlsmTableFeedback(gradingResult: GradingResult, gradingGraph?: Gr
   });
 
   return feedback;
+}
+
+/**
+ * Der Erwartungswert, wie ihn die Schuelerin lesen soll.
+ *
+ * Ein Erwartungswert darf eine Liste GLEICHWERTIGER Alternativen sein. Roh in
+ * eine Zeichenkette gegossen wurde daraus `192.168.1.0,192.168.1.1` — das liest
+ * sich wie ein einziger, seltsamer Wert. Ausgeschrieben ist erkennbar, dass
+ * beides gezaehlt haette.
+ */
+function alsErwartungstext(expected: StepResult['expectedValue']): string {
+  if (expected === undefined || expected === null) return 'k.A.';
+
+  if (Array.isArray(expected)) {
+    const brauchbare = expected.filter(v => v !== undefined && v !== null).map(String);
+    return brauchbare.length > 0 ? brauchbare.join(' oder ') : 'k.A.';
+  }
+
+  return String(expected);
 }
 
 /** Helper to format custom headers beautifully (snake_case -> Title Case) */
