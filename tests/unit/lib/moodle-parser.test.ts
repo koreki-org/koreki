@@ -6,7 +6,7 @@
 jest.mock('xlsx', () => jest.requireActual('xlsx'));
 
 import * as XLSX from 'xlsx';
-import { parseMoodleExcel } from '../../../src/lib/excel/parser';
+import { parseMoodleExcel, erklaereMoodleBefund } from '../../../src/lib/excel/parser';
 
 /**
  * Moodle-Export einlesen (Layer 1)
@@ -21,6 +21,9 @@ import { parseMoodleExcel } from '../../../src/lib/excel/parser';
  * unten ausdruecklich als solche beschrieben.
  */
 
+/** Nur die Arbeiten — der Befund wird eigens geprueft. */
+const arbeiten = async (datei: File) => (await parseMoodleExcel(datei)).arbeiten;
+
 /** Baut eine echte XLSX-Datei aus Zeilen, wie Moodle sie exportiert. */
 const alsDatei = (zeilen: Record<string, string | number>[]): File => {
     const blatt = XLSX.utils.json_to_sheet(zeilen);
@@ -32,7 +35,7 @@ const alsDatei = (zeilen: Record<string, string | number>[]): File => {
 
 describe('Namen aus dem Export', () => {
     it('liest die deutschen Spaltenueberschriften', async () => {
-        const [s] = await parseMoodleExcel(alsDatei([
+        const [s] = await arbeiten(alsDatei([
             { Nachname: 'Muster', Vorname: 'Alex', Antwort: 'Eine ausreichend lange Antwort.' }
         ]));
 
@@ -46,7 +49,7 @@ describe('Namen aus dem Export', () => {
         ['Last name', 'First name'],
         ['Surname', 'First name']
     ])('liest auch die englische Fassung (%s)', async (nachSpalte, vorSpalte) => {
-        const [s] = await parseMoodleExcel(alsDatei([
+        const [s] = await arbeiten(alsDatei([
             { [nachSpalte]: 'Muster', [vorSpalte]: 'Alex', Response: 'Eine ausreichend lange Antwort.' }
         ]));
 
@@ -60,7 +63,7 @@ describe('Namen aus dem Export', () => {
      * dass der Name durch die gesamte Verarbeitung wandert.
      */
     it('vergibt einen pseudonymen Anzeigenamen', async () => {
-        const alle = await parseMoodleExcel(alsDatei([
+        const alle = await arbeiten(alsDatei([
             { Nachname: 'Muster', Vorname: 'Alex', Antwort: 'Eine ausreichend lange Antwort.' },
             { Nachname: 'Beispiel', Vorname: 'Kim', Antwort: 'Noch eine lange Antwort dazu.' }
         ]));
@@ -70,7 +73,7 @@ describe('Namen aus dem Export', () => {
     });
 
     it('kommt ohne Namensspalten zurecht', async () => {
-        const [s] = await parseMoodleExcel(alsDatei([
+        const [s] = await arbeiten(alsDatei([
             { Antwort: 'Eine ausreichend lange Antwort.' }
         ]));
 
@@ -83,7 +86,7 @@ describe('Welche Spalten als Antwort gelten', () => {
     it.each(['Response 1', 'Antwort 2', 'Frage 3', 'F 4'])(
         'nimmt die Spalte "%s"',
         async (spalte) => {
-            const [s] = await parseMoodleExcel(alsDatei([
+            const [s] = await arbeiten(alsDatei([
                 { Nachname: 'M', [spalte]: 'Der Inhalt dieser Antwort.' }
             ]));
 
@@ -94,7 +97,7 @@ describe('Welche Spalten als Antwort gelten', () => {
 
     /** Verwaltungsspalten gehoeren nicht in den Bewertungstext. */
     it('uebergeht Spalten, die keine Antwort sind', async () => {
-        const [s] = await parseMoodleExcel(alsDatei([
+        const [s] = await arbeiten(alsDatei([
             {
                 Nachname: 'M',
                 'E-Mail': 'niemand@example.org',
@@ -109,7 +112,7 @@ describe('Welche Spalten als Antwort gelten', () => {
     });
 
     it('setzt mehrere Antwortspalten getrennt zusammen', async () => {
-        const [s] = await parseMoodleExcel(alsDatei([
+        const [s] = await arbeiten(alsDatei([
             { Nachname: 'M', 'Antwort 1': 'Erste Antwort dazu.', 'Antwort 2': 'Zweite Antwort dazu.' }
         ]));
 
@@ -134,7 +137,7 @@ describe('Was verlorengeht — bewusst und unbewusst', () => {
      * und nicht versehentlich in die eine oder andere Richtung kippt.
      */
     it('verwirft kurze Zahlen in Antwortspalten', async () => {
-        const alle = await parseMoodleExcel(alsDatei([
+        const alle = await arbeiten(alsDatei([
             { Nachname: 'M', 'Antwort 1': '42', 'Antwort 2': 'Eine ausreichend lange Antwort.' }
         ]));
 
@@ -143,7 +146,7 @@ describe('Was verlorengeht — bewusst und unbewusst', () => {
     });
 
     it('behaelt laengere Zahlen', async () => {
-        const [s] = await parseMoodleExcel(alsDatei([
+        const [s] = await arbeiten(alsDatei([
             { Nachname: 'M', Antwort: '1234567' }
         ]));
 
@@ -158,7 +161,7 @@ describe('Was verlorengeht — bewusst und unbewusst', () => {
      * Zeilen im Export, ohne dass irgendwo etwas gemeldet wird.
      */
     it('laesst Zeilen ohne jede Antwort weg', async () => {
-        const alle = await parseMoodleExcel(alsDatei([
+        const alle = await arbeiten(alsDatei([
             { Nachname: 'MitAntwort', Antwort: 'Eine ausreichend lange Antwort.' },
             { Nachname: 'OhneAntwort', Status: 'Nicht bearbeitet' }
         ]));
@@ -168,13 +171,13 @@ describe('Was verlorengeht — bewusst und unbewusst', () => {
     });
 
     it('liefert bei einer leeren Tabelle eine leere Liste', async () => {
-        expect(await parseMoodleExcel(alsDatei([]))).toEqual([]);
+        expect(await arbeiten(alsDatei([]))).toEqual([]);
     });
 });
 
 describe('Der eingelesene Stapel', () => {
     it('markiert jede Arbeit als offen und ausgewaehlt', async () => {
-        const [s] = await parseMoodleExcel(alsDatei([
+        const [s] = await arbeiten(alsDatei([
             { Nachname: 'M', Antwort: 'Eine ausreichend lange Antwort.' }
         ]));
 
@@ -190,7 +193,7 @@ describe('Der eingelesene Stapel', () => {
      * Credits und kann ihn verschlechtern.
      */
     it('kennzeichnet den Text als getippt und ohne Texterkennungsbedarf', async () => {
-        const [s] = await parseMoodleExcel(alsDatei([
+        const [s] = await arbeiten(alsDatei([
             { Nachname: 'M', Antwort: 'Eine ausreichend lange Antwort.' }
         ]));
 
@@ -199,24 +202,87 @@ describe('Der eingelesene Stapel', () => {
         expect(s.pageCount).toBe(1);
     });
 
-    /**
-     * BEFUND, 18.08.2026 — festgehalten, NICHT behoben.
-     *
-     * Eine Datei, die kein Moodle-Export ist, ergibt eine leere Liste statt
-     * eines Fehlers: `XLSX.read` wirft nicht, es liefert eine leere Mappe.
-     * Wer die falsche Datei erwischt, sieht also nichts passieren und bekommt
-     * keinen Hinweis, warum.
-     *
-     * Das ist dieselbe Klasse wie der Erfahrungsschatz-Import vom selben Tag:
-     * ein leeres Ergebnis, das aussieht wie „nichts zu tun". Die Entscheidung,
-     * ob der Parser das melden soll, gehoert dem Aufrufer — dieser Test haelt
-     * bis dahin fest, was tatsaechlich geschieht, damit es niemand fuer
-     * geprueft haelt.
-     */
     it.each([
         ['eine Textdatei', new File(['kein XLSX, nur Text'], 'kaputt.xlsx')],
         ['ein PDF', new File([new Uint8Array([0x25, 0x50, 0x44, 0x46])], 'arbeit.pdf')]
-    ])('liefert fuer %s stillschweigend eine leere Liste', async (_name, datei) => {
-        await expect(parseMoodleExcel(datei)).resolves.toEqual([]);
+    ])('liefert fuer %s keine Arbeiten', async (_name, datei) => {
+        await expect(arbeiten(datei)).resolves.toEqual([]);
+    });
+});
+
+/**
+ * WARUM keine Arbeiten herauskamen (behoben am 18.08.2026)
+ * ---------------------------------------------------------
+ * Vorher gab es nur eine leere Liste. Wer die falsche Datei erwischte, sah
+ * nichts passieren und erfuhr nicht warum — `XLSX.read` wirft bei einer
+ * Textdatei nicht, es liefert eine leere Mappe. Dieselbe Klasse wie der
+ * Erfahrungsschatz-Import vom selben Tag.
+ *
+ * Jede der drei Ursachen verlangt etwas anderes von der Lehrkraft: eine andere
+ * Datei waehlen, den Moodle-Export anders einstellen, oder nichts tun (weil
+ * niemand abgegeben hat). Deshalb werden sie unterschieden.
+ */
+describe('Der Befund', () => {
+    it('meldet "ok", wenn Arbeiten herauskamen', async () => {
+        const { befund } = await parseMoodleExcel(alsDatei([
+            { Nachname: 'M', Antwort: 'Eine ausreichend lange Antwort.' }
+        ]));
+
+        expect(befund.art).toBe('ok');
+        expect(erklaereMoodleBefund(befund)).toBe('');
+    });
+
+    it.each([
+        ['eine Textdatei', new File(['kein XLSX, nur Text'], 'kaputt.xlsx')],
+        ['ein PDF', new File([new Uint8Array([0x25, 0x50, 0x44, 0x46])], 'arbeit.pdf')],
+        ['eine leere Tabelle', alsDatei([])]
+    ])('meldet fuer %s "keine-tabelle"', async (_name, datei) => {
+        const { befund } = await parseMoodleExcel(datei);
+
+        expect(befund.art).toBe('keine-tabelle');
+        expect(erklaereMoodleBefund(befund)).toMatch(/nicht als Tabelle lesen/);
+    });
+
+    /**
+     * DER HAEUFIGSTE FALL IN DER PRAXIS: eine echte Moodle-Tabelle, aber ohne
+     * die Antwortspalten — beim Export war „Antworten einbeziehen" nicht
+     * gesetzt. Die Meldung sagt genau das, statt „Format nicht erkannt".
+     */
+    it('meldet fehlende Antwortspalten und nennt die gefundenen', async () => {
+        const { befund } = await parseMoodleExcel(alsDatei([
+            { Nachname: 'Muster', Vorname: 'Alex', 'E-Mail': 'a@b.c', Bewertung: '12,0' }
+        ]));
+
+        expect(befund.art).toBe('keine-antwortspalten');
+        const text = erklaereMoodleBefund(befund);
+        expect(text).toContain('Nachname');
+        expect(text).toContain('Bewertung');
+        expect(text).toMatch(/Antworten einbeziehen/);
+    });
+
+    /** Antwortspalten da, aber niemand hat etwas hineingeschrieben. */
+    it('meldet leere Antwortspalten samt Zeilenzahl', async () => {
+        const { befund } = await parseMoodleExcel(alsDatei([
+            { Nachname: 'A', Antwort: '' },
+            { Nachname: 'B', Antwort: '' }
+        ]));
+
+        expect(befund.art).toBe('alle-leer');
+        expect(erklaereMoodleBefund(befund)).toContain('2 Zeile');
+    });
+
+    /**
+     * Die Unterscheidung muss TRAGEN: „keine Antwortspalten" und „alle leer"
+     * verlangen verschiedene Schritte und duerfen nicht denselben Text ergeben.
+     */
+    it('erklaert die drei Ursachen verschieden', () => {
+        const texte = [
+            erklaereMoodleBefund({ art: 'keine-tabelle' }),
+            erklaereMoodleBefund({ art: 'keine-antwortspalten', spalten: ['Nachname'] }),
+            erklaereMoodleBefund({ art: 'alle-leer', zeilen: 3 })
+        ];
+
+        expect(new Set(texte).size).toBe(3);
+        texte.forEach(t => expect(t.length).toBeGreaterThan(40));
     });
 });

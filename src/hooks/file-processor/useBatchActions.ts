@@ -3,7 +3,7 @@ import { BatchFile, Task, AppSettings } from '../../types';
 import { reindexBatchFiles, calculatePercentageFromTasks, calculateGrade } from '../../lib/logic';
 import { performAIRequest, performOCRRequest } from '../../lib/ai-logic';
 import { extractTextFromFile, convertPdfToImage } from '../../lib/file-utils';
-import { parseMoodleExcel } from '../../lib/excel';
+import { parseMoodleExcel, erklaereMoodleBefund } from '../../lib/excel';
 import { toErrorMessage } from '../../lib/error-message';
 
 export const useBatchActions = (
@@ -73,10 +73,18 @@ export const useBatchActions = (
         let moodleItems: BatchFile[] = [];
         if (excelFile) {
             try {
-                const parsed = await parseMoodleExcel(excelFile);
-                moodleItems = parsed as BatchFile[];
+                const { arbeiten, befund } = await parseMoodleExcel(excelFile);
+                moodleItems = arbeiten as BatchFile[];
+
+                // Eine Tabelle, aus der keine Arbeiten wurden, sah bisher aus
+                // wie „nichts zu tun": kein Eintrag erschien, keine Meldung
+                // kam. Jede der drei Ursachen verlangt aber etwas anderes.
+                if (befund.art !== 'ok') {
+                    alert(`„${excelFile.name}" ergab keine Schülerarbeiten.\n\n` + erklaereMoodleBefund(befund));
+                }
             } catch (err) {
                 console.error("Moodle import failed", err);
+                alert(`„${excelFile.name}" liess sich nicht lesen.\n\n${toErrorMessage(err)}`);
             }
         }
 
