@@ -344,7 +344,23 @@ export function parseLlmJson<T = unknown>(raw: string): T {
     // zufrieden, waehrend ein Feld still verschwunden ist. Ein stiller
     // Datenverlust in einer Korrektur ist schlimmer als ein Fehlschlag — den
     // sieht der Lehrer wenigstens.
-    const kandidat = wirktAbgeschnitten(roh) ? repairTruncatedJson(roh) : roh;
+    //
+    // GEFUNDEN BEIM LESEN, 18.08.2026: Diese Reihenfolge ist richtig, die
+    // Entscheidung davor war es nicht. `wirktAbgeschnitten` zaehlt die
+    // Anfuehrungszeichen auf dem UNREPARIERTEN Text — also bevor
+    // `escapeInnerQuotes` die unmaskierten Zitate im Fliesstext geschlossen
+    // hat. Ein einziges davon (eine Zoll-Angabe: `notierte 5" statt 5 cm`)
+    // macht die Zaehlung ungerade, die vollstaendige Antwort gilt als
+    // abgeschnitten, und die Reparatur haengt ihr `"}]}` an. Danach ist nichts
+    // mehr zu retten: die GESAMTE Korrektur schlaegt fehl, obwohl dieselbe
+    // Antwort ohne diese Stufe sauber durchgeht (nachgestellt).
+    //
+    // Die Abschneide-Deutung behaelt deshalb den Vorrang — sie wird nur nicht
+    // mehr als einzige zugelassen. Erst wenn KEINE Stufe darauf zum Ziel
+    // fuehrt, wird die Antwort auch als vollstaendig gelesen. Ein stiller
+    // Datenverlust kommt dadurch nicht hinzu: Ergibt die Abschneide-Reparatur
+    // gueltiges JSON, gewinnt sie wie bisher.
+    const kandidaten = wirktAbgeschnitten(roh) ? [repairTruncatedJson(roh), roh] : [roh];
 
     const stufen: ((s: string) => string)[] = [
         s => s,
@@ -353,11 +369,13 @@ export function parseLlmJson<T = unknown>(raw: string): T {
     ];
 
     let letzterFehler = '';
-    for (const aufbereiten of stufen) {
-        try {
-            return JSON.parse(aufbereiten(kandidat)) as T;
-        } catch (e) {
-            letzterFehler = e instanceof Error ? e.message : String(e);
+    for (const kandidat of kandidaten) {
+        for (const aufbereiten of stufen) {
+            try {
+                return JSON.parse(aufbereiten(kandidat)) as T;
+            } catch (e) {
+                letzterFehler = e instanceof Error ? e.message : String(e);
+            }
         }
     }
 
