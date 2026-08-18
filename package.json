@@ -31,7 +31,8 @@
     "test:determinism:qwen": "cross-env KOREKI_TEST_PROVIDER=qwen KOREKI_REAL_FETCH=true jest tests/integration/CalcDeterminism.test.ts",
     "test:determinism:ollama": "cross-env KOREKI_TEST_PROVIDER=ollama KOREKI_REAL_FETCH=true jest tests/integration/CalcDeterminism.test.ts",
     "prepare": "husky",
-    "test:mutation": "stryker run"
+    "test:mutation": "stryker run",
+    "test:mutation:full": "stryker run --force"
   },
   "dependencies": {
     "@logto/next": "^4.2.9",
