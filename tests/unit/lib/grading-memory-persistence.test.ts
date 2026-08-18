@@ -76,11 +76,40 @@ describe('bestaetigeSchatzName', () => {
         expect(window.confirm).toHaveBeenCalledTimes(2);
     });
 
-    it('nennt den Namen in der Rueckfrage', () => {
+    /**
+     * DIE RUECKFRAGE MUSS SAGEN, WAS SIE ERSETZT.
+     *
+     * `overwriteQuestion` bekommt die Bezeichnung der Profil-Familie als
+     * Parameter — dieselbe Funktion formuliert auch die Rueckfrage fuer
+     * Expertise-Profile, KI-Profile und Skill-Sets. Steht dort die falsche oder
+     * gar keine Bezeichnung, liest die Lehrkraft „Ein  mit dem Namen ...
+     * existiert bereits" oder, schlimmer, den Namen einer anderen Familie — und
+     * bestaetigt ein Ueberschreiben, das sie nicht gemeint hat.
+     *
+     * Der Mutationstest hat gezeigt, dass die Bezeichnung ungeprueft war: sie
+     * liess sich durch eine leere Zeichenkette ersetzen, ohne dass ein Test
+     * anschlug.
+     */
+    it('nennt in der Rueckfrage die Familie UND den Namen', () => {
+        bestaetige(true);
+        bestaetigeSchatzName('Physik', [schatz('Physik')]);
+
+        const frage = (window.confirm as jest.Mock).mock.calls[0][0];
+        expect(frage).toContain('Ein Erfahrungsschatz mit dem Namen');
+        expect(frage).toContain('"Physik"');
+    });
+
+    /**
+     * Der Name erscheint GETRIMMT. Sonst steht in der Rueckfrage
+     * `"  Physik  "` — mit sichtbaren Leerzeichen zwischen den
+     * Anfuehrungszeichen, was aussieht wie ein anderer Eintrag als der
+     * gemeinte.
+     */
+    it('zeigt den Namen ohne Randleerzeichen', () => {
         bestaetige(true);
         bestaetigeSchatzName('  Physik  ', [schatz('Physik')]);
 
-        expect((window.confirm as jest.Mock).mock.calls[0][0]).toContain('Physik');
+        expect((window.confirm as jest.Mock).mock.calls[0][0]).toContain('"Physik"');
     });
 });
 
