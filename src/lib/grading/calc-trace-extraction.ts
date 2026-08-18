@@ -54,6 +54,71 @@ export const STUDENT_AST_SCHEMA = {
 };
 
 /**
+ * Eine Zahl, die eindeutig als solche gemeint ist.
+ *
+ * Das Schema verlangt `result` als JSON-Zahl. Modelle liefern sie trotzdem
+ * gelegentlich als Text — und dann wird es gefährlich: „2,300" ist im Deutschen
+ * ZWEIDEUTIG (2,3 oder 2300). Wer hier rät, rät gegen die Schülerin.
+ *
+ * Deshalb nur, was unmissverständlich ist: eine Zahl, oder eine Zeichenkette
+ * aus Ziffern mit höchstens einem Punkt. Alles andere gilt als nicht prüfbar.
+ */
+function alsEindeutigeZahl(wert: unknown): number | null {
+  if (typeof wert === 'number') return Number.isFinite(wert) ? wert : null;
+  if (typeof wert !== 'string') return null;
+
+  const knapp = wert.trim();
+  return /^-?\d+(\.\d+)?$/.test(knapp) ? parseFloat(knapp) : null;
+}
+
+/**
+ * Prüft die Schritte, bevor die Engine sie bewertet.
+ *
+ * WARUM DAS HIER STEHT — und nicht in der Engine:
+ *
+ * Diese Datei unterscheidet als einzige zwischen „der Schüler hat nichts
+ * gerechnet" (leeres Ergebnis, 0 Punkte) und „nicht prüfbar" (Fehler, manuelle
+ * Nachkontrolle). Genau diese Unterscheidung ging verloren, sobald ein Schritt
+ * unbrauchbar war: die Engine meldete dann einen RECHENFEHLER DES SCHÜLERS
+ * (18.08.2026 nachgestellt).
+ *
+ *   result: "2,300"   -> „Formel ergibt 2300, aber Schüler notierte …"
+ *   result fehlt      -> dieselbe Meldung
+ *   formula fehlt     -> „Syntax-Fehler … Cannot read properties of undefined"
+ *
+ * In allen drei Fällen hatte die Schülerin richtig gerechnet. Ein Fehler der
+ * Extraktion darf nicht zu ihren Lasten gehen — das steht im Kopf dieser Datei
+ * und galt für den Weg dorthin, nicht für das, was ankam.
+ */
+function pruefeSchritte(rohe: unknown[]): StudentASTStep[] {
+  return rohe.map((roh, i) => {
+    const stelle = `Schritt ${i + 1}`;
+    if (!roh || typeof roh !== 'object') {
+      throw new CalcTraceExtractionError(`${stelle} der Extraktion ist kein Objekt.`);
+    }
+
+    const s = roh as Record<string, unknown>;
+
+    if (typeof s.formula !== 'string' || !s.formula.trim()) {
+      throw new CalcTraceExtractionError(`${stelle} der Extraktion hat keine Formel.`);
+    }
+
+    const ergebnis = alsEindeutigeZahl(s.result);
+    if (ergebnis === null) {
+      throw new CalcTraceExtractionError(
+        `${stelle} der Extraktion hat kein eindeutiges Ergebnis (${JSON.stringify(s.result)}).`
+      );
+    }
+
+    return {
+      ...(s as unknown as StudentASTStep),
+      id: typeof s.id === 'string' && s.id.trim() ? s.id : `step_${i + 1}`,
+      result: ergebnis
+    };
+  });
+}
+
+/**
  * Extracts student answers into an AST.
  */
 export async function extractStudentAST(
@@ -198,7 +263,7 @@ WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt M
       throw new CalcTraceExtractionError('Antwort der Extraktions-KI enthaelt kein "steps"-Array.');
     }
 
-    return extracted.steps;
+    return pruefeSchritte(extracted.steps);
   } catch (err) {
     logger.error('[CalcTrace AST Extraction] LLM failed:', err);
     throw err instanceof CalcTraceExtractionError
