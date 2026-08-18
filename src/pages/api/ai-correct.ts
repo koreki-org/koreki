@@ -54,18 +54,6 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // --- COMPLIANCE EARLY GATEKEEPER ---
         await resolveActiveWorkspace(logtoId);
 
-        // Wo Graph oder Rechenkette hinterlegt sind, rechnet Koreki selbst — vor dem
-        // KI-Aufruf. Denselben Lauf macht der Client-Weg im ai-orchestrator.
-        if (tasksLayout && Array.isArray(tasksLayout)) {
-            await runLocalGradingEngines({
-                tasksLayout,
-                studentText,
-                appMode: 'STANDARD',
-                settings: settings as unknown as AppSettings,
-                herkunft: 'Server'
-            });
-        }
-
         const effectivePageCount = Math.max(1, pageCount || 1);
         const requiredCredits = effectivePageCount * 1;
 
@@ -75,6 +63,19 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         // Guthaben VOR dem Anbieter-Aufruf pruefen — die Abrechnung unten laeuft
         // erst danach und wuerde die Kosten sonst bereits ausgeloest haben.
+        //
+        // GEFUNDEN BEIM LESEN, 18.08.2026: Genau das stimmte nicht. Diese beiden
+        // Sperren standen HINTER `runLocalGradingEngines` — und dieser Lauf ruft
+        // selbst den Anbieter, einmal je Rechenketten- oder Graph-Aufgabe, plus
+        // Nachbesserungsversuche. Eine Lehrkraft ohne Guthaben loeste damit die
+        // gesamte Extraktion aus und bekam ERST DANACH die 402. Die
+        // Kostenbremse der Instanz (Saeule 7) war fuer dieselben Aufrufe
+        // ebenfalls wirkungslos, obwohl sie als absoluter Monatsdeckel gedacht
+        // ist.
+        //
+        // Das Geschwister-Modul `clean-and-analyze.ts` hatte die Reihenfolge von
+        // Anfang an richtig. Wieder dieselbe Klasse: die Regel galt an einer
+        // Stelle und an der Nachbarstelle nicht.
         const creditError = await checkCreditsAvailable(logtoId!, requiredCredits);
         if (creditError) {
             return res.status(402).json({ error: creditError });
@@ -84,6 +85,21 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const budgetError = await checkAiBudget('correction');
         if (budgetError) {
             return res.status(429).json({ error: budgetError });
+        }
+
+        // Wo Graph oder Rechenkette hinterlegt sind, rechnet Koreki selbst — vor dem
+        // KI-Aufruf. Denselben Lauf macht der Client-Weg im ai-orchestrator.
+        //
+        // Steht BEWUSST hinter den beiden Sperren: Der Lauf kostet echte
+        // Anbieter-Aufrufe (siehe oben).
+        if (tasksLayout && Array.isArray(tasksLayout)) {
+            await runLocalGradingEngines({
+                tasksLayout,
+                studentText,
+                appMode: 'STANDARD',
+                settings: settings as unknown as AppSettings,
+                herkunft: 'Server'
+            });
         }
 
         let analysis: any;
