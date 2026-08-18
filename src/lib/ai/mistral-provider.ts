@@ -28,6 +28,7 @@ import { alsText } from './chat-types';
 import type { ChatNachricht, ChatAnfrage, ChatAntwort, AntwortFormat, TokenVerbrauch, OcrAntwort } from './chat-types';
 import { pruefeWerkzeugAufruf } from './tool-validation';
 import { ueberDesktopProxy } from './desktop-proxy';
+import { parseLlmJson } from './llm-json';
 
 /**
  * Liest den Fehlertext einer abgelehnten Antwort für den Server-Log aus.
@@ -280,21 +281,44 @@ export async function executeMistralRequest(
     }
 
     // 4. Robust JSON Parsing (Standard Pattern)
+    //
+    // GEFUNDEN BEIM LESEN, 18.08.2026: Hier stand eine EIGENE, deutlich
+    // schwaechere Fassung des JSON-Lesens — dieselbe Doppelung, deretwegen
+    // `llm-json.ts` ueberhaupt angelegt wurde. Der dortige Kopf beschreibt den
+    // Zusammenschluss von `ollama-logic` und `openai-provider`; Mistral wurde
+    // dabei uebersehen und behielt seine Kopie.
+    //
+    // Was Mistral-Nutzern dadurch fehlte — jedes Einzelne davon fuehrt zum
+    // VOLLSTAENDIGEN Verlust der Korrektur, nicht zu einem Teilschaden:
+    //
+    //   - stripThinkingBlocks: Ein <think>-Block, der selbst eine geschweifte
+    //     Klammer enthaelt — und beim Nachdenken ueber JSON tut er das —,
+    //     laesst die gierige Entnahme danebengreifen.
+    //   - escapeInnerQuotes: Ein unmaskiertes Anfuehrungszeichen im Feedback
+    //     (notierte 5" statt 5 cm) machte die Antwort unlesbar.
+    //   - Die LaTeX-Rettung: einfach maskiertes rac wurde still zerstoert.
+    //   - repairTruncatedJson: Eine abgeschnittene Antwort war Totalverlust
+    //     statt "acht von zehn Aufgaben bewertet".
+    //   - Die gestuften Versuche: ein Anlauf, dann Fehlschlag.
+    //
+    // Architectural Vision §11 fordert fuer diese Datei ausdruecklich eine
+    // "Single Source of Truth" fuer robustes JSON-Parsing und identische
+    // Qualitaet ueber die Betriebsarten. Genau das war sie nicht.
+    //
+    // Die BEDINGUNG bleibt unangetastet: Mistral entscheidet am
+    // responseFormat, openai-provider an der Aktion. Ob geparst wird, ist eine
+    // andere Frage als wie — und nur die zweite war hier falsch.
     if (responseFormat?.type === 'json_object' || responseFormat?.type === 'json_schema') {
-        const repairUnescapedBackslashes = (jsonStr: string): string => {
-            return jsonStr.replace(/(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, '\\\\');
-        };
-
         try {
-            // Regex-Protection: Find the first { and the last } to ignore markdown fences
-            const jsonMatch = content.match(/\{[\s\S]*\}/);
-            const cleanJson = jsonMatch ? jsonMatch[0] : content;
             return {
-                ...JSON.parse(repairUnescapedBackslashes(cleanJson)),
+                ...parseLlmJson<Record<string, unknown>>(content),
                 usage: responseUsage // Pass usage data for billing
             };
         } catch (e) {
-            throw new Error("KI-Antwort konnte nicht als JSON verarbeitet werden.");
+            logger.error('JSON Parse Fatal Error: Mistral-Antwort konnte nicht gelesen werden', {
+                contentLength: content?.length || 0
+            });
+            throw new Error("KI-Antwort konnte nicht als JSON verarbeitet werden. (Möglicherweise unvollständige Antwort oder Formatierungsfehler im Thinking-Block)");
         }
     }
 
