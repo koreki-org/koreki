@@ -1,5 +1,6 @@
 import type { GradingGraph } from './types';
 import { toErrorMessage } from '../error-message';
+import { parseGeneratedGraph } from './graph-generator';
 
 /**
  * Aufnahme eines Graphen aus einer fremden Quelle.
@@ -26,24 +27,59 @@ export type GraphJsonParseResult =
 /**
  * Deutet den Text aus der JSON-Ansicht.
  *
- * Bewusst nur die Pruefung, die der Editor schon immer gemacht hat: gueltiges
- * JSON mit einer `variables`-Liste. Einzelne Variablen werden NICHT geprueft —
- * ein Eintrag ohne `id` kommt weiterhin durch. Das ist eine bekannte Luecke und
- * hier absichtlich unveraendert gelassen; sie zu schliessen waere eine
- * Verhaltensaenderung und gehoert in einen eigenen Schritt.
+ * BIS ZUM 18.08.2026 wurde hier nur geprueft, ob gueltiges JSON mit einer
+ * `variables`-Liste vorliegt — einzelne Variablen gar nicht. Der Kommentar an
+ * dieser Stelle nannte das eine bekannte Luecke, deren Schliessung "in einen
+ * eigenen Schritt" gehoere. Das ist dieser Schritt.
+ *
+ * Der Anlass: dieselben Pruefungen gibt es laengst fuer den KI-Weg. Wer den
+ * Graphen dagegen von Hand in die JSON-Ansicht schrieb, bekam KEINE davon —
+ * nachgestellt:
+ *
+ *   doppelte Variablen-Kennung -> 1 von 2 Punkten fuer eine richtige Antwort
+ *   Aequivalenzgruppe ohne `prefixes` -> Absturz mitten in der Bewertung
+ *
+ * Zwei Eingaenge, eine Regel. Die Punktverteilung bleibt dabei unangetastet
+ * (`skipSanitization`): sie ist die Entscheidung der Lehrkraft, und wer von
+ * Hand JSON schreibt, meint sie so.
  */
 export function parseGraphJson(text: string): GraphJsonParseResult {
+    let roh: unknown;
     try {
-        const parsed = JSON.parse(text);
-
-        if (!isUsableGraph(parsed)) {
-            return { ok: false, error: "Das JSON muss eine 'variables'-Liste enthalten." };
-        }
-
-        return { ok: true, graph: parsed as GradingGraph };
+        roh = JSON.parse(text);
     } catch (err) {
         return { ok: false, error: toErrorMessage(err, 'Ungültiges JSON-Format') };
     }
+
+    if (!isUsableGraph(roh)) {
+        return { ok: false, error: "Das JSON muss eine 'variables'-Liste enthalten." };
+    }
+
+    // Eine LEERE Liste bleibt zulaessig: die JSON-Ansicht wird waehrend des
+    // Tippens laufend gedeutet, und wer neu anfaengt, loescht zuerst alles. Ein
+    // Graph ohne Variablen bewertet ohnehin nichts — das faengt der Trockenlauf.
+    const vorher = (roh as { variables: unknown[] }).variables.length;
+    if (vorher === 0) {
+        return { ok: true, graph: roh as GradingGraph };
+    }
+
+    const geprueft = parseGeneratedGraph(text, { skipSanitization: true });
+    if (!geprueft) {
+        return { ok: false, error: 'Keine brauchbare Variable gefunden. Jede braucht eine `id` und den Typ `input` oder `formula`.' };
+    }
+
+    // Verworfene Variablen NICHT verschweigen: wer von Hand schreibt, soll
+    // erfahren, dass etwas nicht angekommen ist — sonst sucht er den Fehler
+    // spaeter in der Bewertung.
+    if (geprueft.variables.length < vorher) {
+        return {
+            ok: false,
+            error: `${vorher - geprueft.variables.length} von ${vorher} Variablen sind unbrauchbar `
+                + '(fehlende `id`, unbekannter Typ, doppelte Kennung oder unerlaubter Ausdruck).'
+        };
+    }
+
+    return { ok: true, graph: geprueft };
 }
 
 export interface RefinementResponse {

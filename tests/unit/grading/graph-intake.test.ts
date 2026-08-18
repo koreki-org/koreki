@@ -47,15 +47,87 @@ describe('graph-intake', () => {
         });
 
         /**
-         * Bekannte Luecke, hier absichtlich festgehalten statt stillschweigend
-         * repariert: einzelne Variablen werden nicht geprueft. Ein Eintrag ohne
-         * `id` kommt durch. Wer das aendert, aendert Verhalten — und sollte
-         * diesen Test bewusst umschreiben.
+         * BEWUSST UMGESCHRIEBEN am 18.08.2026 — der vorige Test hielt hier eine
+         * bekannte Luecke fest und forderte ausdruecklich, ihn zu aendern, wenn
+         * jemand sie schliesst.
+         *
+         * Der Anlass: Dieselben Pruefungen gibt es laengst fuer den KI-Weg. Wer
+         * den Graphen von Hand in die JSON-Ansicht schrieb, bekam KEINE davon —
+         * eine doppelte Variablen-Kennung kostete dort 1 von 2 Punkten fuer eine
+         * richtige Antwort, eine Aequivalenzgruppe ohne `prefixes` liess die
+         * Bewertung abstuerzen. Zwei Eingaenge, eine Regel.
          */
-        it('prueft die einzelnen Variablen NICHT', () => {
+        it('lehnt einen Graphen ohne brauchbare Variable ab', () => {
             const result = parseGraphJson('{"variables":[{"kein":"id"}]}');
 
+            expect(result.ok).toBe(false);
+            expect(result.ok === false && result.error).toMatch(/Keine brauchbare Variable/);
+        });
+
+        /**
+         * Bleibt etwas uebrig, wird die Zahl der verworfenen genannt — sonst
+         * sucht die Lehrkraft den Fehler spaeter in der Bewertung statt hier.
+         */
+        it('nennt die Zahl der verworfenen Variablen', () => {
+            const gemischt = JSON.stringify({
+                variables: [
+                    { id: 'gut', type: 'input', validationType: 'exact', defaultValue: 1 },
+                    { kein: 'id' },
+                    { id: 'auch_kaputt', type: 'unbekannt' }
+                ]
+            });
+
+            const result = parseGraphJson(gemischt);
+            expect(result.ok).toBe(false);
+            expect(result.ok === false && result.error).toMatch(/2 von 3/);
+        });
+
+        it('lehnt eine doppelte Variablen-Kennung ab', () => {
+            const doppelt = JSON.stringify({
+                variables: [
+                    { id: 'wert', type: 'input', validationType: 'exact', defaultValue: 10 },
+                    { id: 'wert', type: 'input', validationType: 'exact', defaultValue: 99 }
+                ]
+            });
+
+            const result = parseGraphJson(doppelt);
+            expect(result.ok).toBe(false);
+            expect(result.ok === false && result.error).toMatch(/doppelte Kennung/);
+        });
+
+        /** Kaputte Aequivalenzgruppen kommen gar nicht erst in den Graphen. */
+        it('entfernt eine Aequivalenzgruppe ohne Praefixe', () => {
+            const kaputt = JSON.stringify({
+                variables: [{ id: 'a_wert', type: 'input', validationType: 'exact', defaultValue: 1 }],
+                equivalenceGroups: [{ id: 'g1' }]
+            });
+
+            const result = parseGraphJson(kaputt);
             expect(result.ok).toBe(true);
+            expect(result.ok && result.graph.equivalenceGroups).toBeUndefined();
+        });
+
+        /**
+         * Die Punktverteilung bleibt unangetastet: sie ist die Entscheidung der
+         * Lehrkraft, und wer von Hand JSON schreibt, meint sie so.
+         */
+        it('laesst eine bewusst gesetzte Null-Punktzahl stehen', () => {
+            const mitNull = JSON.stringify({
+                variables: [
+                    { id: 'a', type: 'input', validationType: 'exact', defaultValue: 1, maxPoints: 0 },
+                    { id: 'b', type: 'formula', expression: 'a * 2', validationType: 'exact', maxPoints: 3 }
+                ]
+            });
+
+            const result = parseGraphJson(mitNull);
+            expect(result.ok).toBe(true);
+            expect(result.ok && result.graph.variables[0].maxPoints).toBe(0);
+            expect(result.ok && result.graph.variables[1].maxPoints).toBe(3);
+        });
+
+        /** Eine leere Liste ist ein gueltiger Zwischenstand beim Tippen. */
+        it('nimmt eine leere Variablenliste an', () => {
+            expect(parseGraphJson('{"variables":[]}').ok).toBe(true);
         });
     });
 
