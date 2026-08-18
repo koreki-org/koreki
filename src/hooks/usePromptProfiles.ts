@@ -191,18 +191,16 @@ export const usePromptProfiles = (
             return;
         }
 
-        const vergleichsName = nameToSave.toLowerCase();
-
         // Nur fürs Neuanlegen — das Speichern eines gewählten Profils ist der
         // reguläre Aktualisierungspfad (System-Vorlagen inklusive, die in SaaS
         // ein ADMIN bearbeiten darf). Siehe useSkillProfiles.
         if (isCreatingNew) {
-            if (profiles.some(p => p.isSystem && (p.name || '').trim().toLowerCase() === vergleichsName)) {
+            if (profiles.some(p => p.isSystem && isSameName(p.name, nameToSave))) {
                 alert('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
                 return;
             }
 
-            const belegt = profiles.some(p => !p.isSystem && (p.name || '').trim().toLowerCase() === vergleichsName);
+            const belegt = profiles.some(p => !p.isSystem && isSameName(p.name, nameToSave));
             if (belegt && !window.confirm(overwriteQuestion('Profil', nameToSave))) {
                 return;
             }

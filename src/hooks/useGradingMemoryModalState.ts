@@ -10,7 +10,6 @@ import { downloadFile } from '../lib/file-utils';
 import { resolveTaskName, resolveMaxPoints } from '../lib/grading-memory-utils';
 import { findNameCollision } from '../lib/local-vault';
 import { toErrorMessage } from '../lib/error-message';
-import { nameTakenMessage, overwriteQuestion } from '../lib/services/profile-naming';
 
 export interface UseGradingMemoryModalStateProps {
     isOpen: boolean;
@@ -155,7 +154,7 @@ export function useGradingMemoryModalState({
         };
     }, [isOpen, refreshMemories, tasksLayout]);
 
-    const library = useGradingMemoryLibrary({ addLocalMemory, refreshMemories });
+    const library = useGradingMemoryLibrary({ addLocalMemory, refreshMemories, memories });
 
     // Ueberladungen halten fest, was der Rumpf voraussetzt: `pointsObtained` ist
     // eine Zahl, alle uebrigen Felder sind Text. Mit einem gemeinsamen

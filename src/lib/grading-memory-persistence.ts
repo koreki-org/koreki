@@ -1,7 +1,7 @@
 import type { GradingMemory, GradingMemoryCase } from '@/types';
 import { apiClient } from '@/lib/api-client';
 import { isDesktopTarget } from '@/lib/env-context';
-import { overwriteQuestion } from '@/lib/services/profile-naming';
+import { isSameName, overwriteQuestion } from '@/lib/services/profile-naming';
 
 /**
  * Einen Erfahrungsschatz anlegen — lokal oder in der Datenbank.
@@ -53,7 +53,11 @@ export function bestaetigeSchatzName(name: string, vorhandene: GradingMemory[]):
         return { ok: false, fehler: 'Bitte gib dem Erfahrungsschatz einen aussagekräftigen Namen.' };
     }
 
-    const existing = vorhandene.find(m => m.name.toLowerCase() === name.trim().toLowerCase());
+    // Ueber `isSameName`, nicht von Hand: die Variante hier verglich den
+    // GESPEICHERTEN Namen ungetrimmt. Ein Eintrag mit angehaengtem
+    // Leerzeichen galt damit als anderer Name — die Rueckfrage blieb aus,
+    // und die Ablage ueberschrieb ihn trotzdem.
+    const existing = vorhandene.find(m => isSameName(m.name, name));
     if (!existing) return { ok: true };
 
     // Der Text versprach zuvor die Wahl zwischen Überschreiben und einem

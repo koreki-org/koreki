@@ -5,7 +5,8 @@ import { isDesktopTarget } from '@/lib/env-context';
 import { downloadFile } from '@/lib/file-utils';
 import { exportGradingMemoryToMarkdown, parseMarkdownGradingMemory } from '@/lib/parsers/markdown-grading-memory-parser';
 import { findNameCollision } from '@/lib/local-vault';
-import { nameTakenMessage } from '@/lib/services/profile-naming';
+import { isSameName, nameTakenMessage } from '@/lib/services/profile-naming';
+import { persistGradingMemory, bestaetigeSchatzName } from '@/lib/grading-memory-persistence';
 import { toErrorMessage } from '@/lib/error-message';
 
 /**
@@ -21,9 +22,15 @@ export interface UseGradingMemoryLibraryParams {
     /** Nimmt einen frisch importierten Schatz in die Liste auf. */
     addLocalMemory: (memory: GradingMemory) => void;
     refreshMemories: () => void;
+    /** Die vorhandenen Schätze — nötig für die Rückfrage vor dem Überschreiben. */
+    memories: GradingMemory[];
 }
 
-export function useGradingMemoryLibrary({ addLocalMemory, refreshMemories }: UseGradingMemoryLibraryParams) {
+export function useGradingMemoryLibrary({
+    addLocalMemory,
+    refreshMemories,
+    memories
+}: UseGradingMemoryLibraryParams) {
     const [editingMemoryId, setEditingMemoryId] = useState<string | null>(null);
     const [editingName, setEditingName] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -77,27 +84,32 @@ export function useGradingMemoryLibrary({ addLocalMemory, refreshMemories }: Use
                 return;
             }
 
-            if (isDesktopTarget()) {
-                addLocalMemory({
-                    id: `local-grading-memory-${Date.now()}`,
-                    name: parsed.name,
-                    cases: parsed.cases,
-                    userId: null,
-                    createdAt: new Date().toISOString()
-                });
-                alert(`Erfahrungsschatz "${parsed.name}" erfolgreich importiert!`);
+            /**
+             * Rückfrage vor dem Überschreiben — wie beim Speichern und wie in
+             * den drei Profil-Familien.
+             *
+             * Der Name steht im KOPF der Datei, nicht im Dateinamen. Eine
+             * umbenannte Datei trägt also weiterhin den alten Namen, und beide
+             * Ablagen überschreiben namensgleich (localStorage per `isSameName`,
+             * die Datenbank per `upsert`). Ohne diese Rückfrage verschwanden
+             * Änderungen still, die nach dem Export am bestehenden Schatz
+             * gemacht wurden — gemeldet am 18.08.2026.
+             */
+            const ersetzt = memories.some(m => isSameName(m.name, parsed.name));
+            const urteil = bestaetigeSchatzName(parsed.name, memories);
+            if (!urteil.ok) {
+                if (urteil.fehler) alert(urteil.fehler);
                 return;
             }
 
-            const response = await apiClient.post('/api/user/grading-memories', {
-                name: parsed.name,
-                cases: parsed.cases
-            });
-            if (!response.ok) {
-                throw new Error('Fehler beim Speichern des importierten Erfahrungsschatzes im Backend.');
-            }
-            addLocalMemory(await response.json());
-            alert(`Erfahrungsschatz "${parsed.name}" erfolgreich importiert!`);
+            await persistGradingMemory({ name: parsed.name, cases: parsed.cases, addLocalMemory });
+
+            // Sagt, was tatsächlich geschehen ist. „Importiert" bei einem
+            // Ersetzen liess die Lehrkraft nach einem neuen Eintrag suchen,
+            // den es nicht gab.
+            alert(ersetzt
+                ? `Erfahrungsschatz "${parsed.name}" ersetzt (${parsed.cases.length} Fallbeispiele).`
+                : `Erfahrungsschatz "${parsed.name}" importiert (${parsed.cases.length} Fallbeispiele).`);
         } catch (err) {
             alert('Import-Fehler: ' + toErrorMessage(err));
         }

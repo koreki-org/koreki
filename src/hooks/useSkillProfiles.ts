@@ -250,8 +250,7 @@ export const useSkillProfiles = (
         // gewählten Sets ist der reguläre Aktualisierungspfad — inklusive der
         // System-Vorlagen, die in SaaS ein ADMIN bearbeiten darf.
         if (isCreatingNew) {
-            const vergleichsName = nameToSave.toLowerCase();
-            const istSystemName = profiles.some(p => p.isSystem && (p.name || '').trim().toLowerCase() === vergleichsName);
+            const istSystemName = profiles.some(p => p.isSystem && isSameName(p.name, nameToSave));
 
             // Die Datenbank lehnt das Speichern unter einem System-Namen ab; die
             // dateibasierte und die Desktop-Ablage legten bisher ein gleichnamiges
@@ -264,7 +263,7 @@ export const useSkillProfiles = (
             // Speichern ist ein Upsert über den NAMEN. Beim Neuanlegen traf das
             // bisher ohne Rückfrage ein bestehendes gleichnamiges Set — dessen
             // Skills waren damit weg.
-            const belegt = profiles.some(p => !p.isSystem && (p.name || '').trim().toLowerCase() === vergleichsName);
+            const belegt = profiles.some(p => !p.isSystem && isSameName(p.name, nameToSave));
             if (belegt && !window.confirm(overwriteQuestion('Skill-Profil', nameToSave))) {
                 return;
             }
