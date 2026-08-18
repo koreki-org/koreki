@@ -11,6 +11,7 @@
  */
 
 import { GradingGraph, VariableDefinition } from './types';
+import { pruefeAequivalenzgruppen } from './equivalence-groups';
 import { plugins, PLUGIN_MANIFEST } from './plugins';
 import { StructuredPrompt } from '../ai/prompt-builder';
 import { GraphRunner } from './GraphRunner';
@@ -336,12 +337,14 @@ export function parseGeneratedGraph(llmResponse: string, options?: { skipSanitiz
     result.disablePoints = targetData.disablePoints;
   }
 
-  if (Array.isArray(targetData.equivalenceGroups)) {
-    result.equivalenceGroups = targetData.equivalenceGroups;
+  const gruppen = pruefeAequivalenzgruppen(targetData.equivalenceGroups);
+  if (gruppen) {
+    result.equivalenceGroups = gruppen;
   }
 
   return result;
 }
+
 
 /**
  * Smart Post-Processing Hygienization for GradingGraph Points Distribution.

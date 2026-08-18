@@ -2,6 +2,11 @@ import React from 'react';
 import { Zap, ShieldCheck, Cpu, Timer, Monitor, AlertCircle } from 'lucide-react';
 
 export const PerformanceSection: React.FC = () => {
+    // `tile` haelt die vollstaendigen Klassen als Literal. Frueher wurden sie zur
+    // Laufzeit zusammengesetzt (`bg-${s.color}-50`) — Tailwind scannt den Quelltext
+    // statisch und hat diese Namen nie erzeugt, die Kacheln blieben unsichtbar.
+    // Die Farbwahl ist rein visuelle Unterscheidung ohne Bedeutung; die Warnung des
+    // CPU-Szenarios steht separat als Text (s.warning).
     const scenarios = [
         {
             name: "Desktop (Ohne GPU)",
@@ -9,7 +14,7 @@ export const PerformanceSection: React.FC = () => {
             time: "290s – 500s",
             details: "Gemma 4B / Mistral Small 3.2",
             bestFor: "Einzelne Texte / Geduld erforderlich",
-            color: "slate",
+            tile: "bg-warning/10 text-warning",
             icon: Monitor,
             warning: true
         },
@@ -19,7 +24,7 @@ export const PerformanceSection: React.FC = () => {
             time: "25s",
             details: "Mistral Small 3.2 (20GB VRAM)",
             bestFor: "Institutioneller Dauereinsatz",
-            color: "emerald",
+            tile: "bg-accent-3/10 text-accent-3",
             icon: Cpu
         },
         {
@@ -28,7 +33,7 @@ export const PerformanceSection: React.FC = () => {
             time: "10s – 17s",
             details: "Mistral Cloud / Qwen 3.6 Pro",
             bestFor: "Größte Stapelverarbeitungen",
-            color: "blue",
+            tile: "bg-accent-1/10 text-accent-1",
             icon: Zap
         }
     ];
@@ -60,13 +65,13 @@ export const PerformanceSection: React.FC = () => {
                         }`}
                         style={{ animationDelay: `${idx * 150}ms` }}
                     >
-                        <div className={`w-14 h-14 rounded-2xl bg-${s.color}-50 text-${s.color}-600 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
+                        <div className={`w-14 h-14 rounded-2xl ${s.tile} flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500`}>
                             <s.icon size={28} />
                         </div>
 
                         <div className="mb-8">
                             <h3 className="text-xl font-black text-foreground mb-1 tracking-tight">{s.name}</h3>
-                            <p className={`text-xs font-black text-${s.color}-600 uppercase tracking-widest`}>{s.fokus}</p>
+                            <p className="text-xs font-black text-muted-foreground uppercase tracking-widest">{s.fokus}</p>
                         </div>
 
                         <div className="space-y-4 mb-8">

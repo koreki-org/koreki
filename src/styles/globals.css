@@ -12,6 +12,11 @@
   --primary: 239 84% 67%;
   /* Vibrant Koreki Indigo */
   --primary-foreground: 210 40% 98%;
+  /* Komma-getrennte RGB-Entsprechung von --primary, ausschliesslich fuer
+     rgba()-Aufrufe in arbitraeren Tailwind-Klassen (Hero-CTA-Schatten,
+     radiale Deko-Gradients). Muss bei jeder Aenderung von --primary
+     mitgezogen werden: hsl(239 84% 67%) === rgb(99 102 241). */
+  --primary-rgb: 99, 102, 241;
 
   --secondary: 220 14% 96%;
   --secondary-foreground: 224 71% 4%;
