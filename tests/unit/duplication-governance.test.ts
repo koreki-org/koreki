@@ -120,7 +120,6 @@ const DUPLICATION_BASELINE: Record<string, number> = {
     'components/batch/BatchFileListItem.tsx <-> components/batch/BatchItemDoneView.tsx': 6,
     'components/guards/AuthGuard.tsx <-> pages/login.tsx': 6,
     'components/settings/MistralConfig.tsx <-> components/settings/OpenAICompatibleConfig.tsx': 6,
-    'hooks/useAiProfiles.ts <-> hooks/usePromptProfiles.ts': 6,
     'lib/validation.ts <-> pages/api/generate-calc-trace.ts': 6,
     'lib/validation.ts <-> pages/api/generate-graph.ts': 6,
     'lib/validation.ts <-> pages/api/refine-graph.ts': 6,

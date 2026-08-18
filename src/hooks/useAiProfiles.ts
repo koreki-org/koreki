@@ -2,8 +2,16 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppSettings, AiProfile } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
-import { findNameCollision } from '@/lib/local-vault';
 import { isSameName, nameTakenMessage, overwriteQuestion, resolveProfileRef } from '@/lib/services/profile-naming';
+import { createProfileStore } from '@/lib/services/profile-store';
+import { toErrorMessage } from '@/lib/error-message';
+
+/** Ablage der KI-Profile — Desktop wie Server, siehe profile-store. */
+const aiProfileStore = createProfileStore<AiProfile>({
+    speicherSchluessel: 'koreki_local_ai_profiles',
+    endpunkt: '/api/user/ai-profiles',
+    idPraefix: 'local-ai'
+});
 
 /**
  * Standard default AI model profile values.
@@ -353,30 +361,14 @@ export const useAiProfiles = (
         if (profile?.isSystem) return;
         if (!window.confirm("Dieses KI-Profil wirklich dauerhaft löschen?")) return;
 
-        if (isLocal) {
-            const stored = localStorage.getItem('koreki_local_ai_profiles');
-            if (stored) {
-                let customProfiles = JSON.parse(stored);
-                customProfiles = customProfiles.filter((p: AiProfile) => p.id !== id);
-                localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));
-                await fetchProfiles();
-                if (selectedProfileData?.id === id) {
-                    handleSelectProfile(STANDARD_AI_PROFILE);
-                }
-            }
-            return;
-        }
-
         try {
-            const res = await apiClient.fetch(`/api/user/ai-profiles?id=${id}`, { method: 'DELETE' });
-            if (res.ok) {
-                await fetchProfiles();
-                if (selectedProfileData?.id === id) {
-                    handleSelectProfile(STANDARD_AI_PROFILE);
-                }
+            await aiProfileStore.loesche(id);
+            await fetchProfiles();
+            if (selectedProfileData?.id === id) {
+                handleSelectProfile(STANDARD_AI_PROFILE);
             }
         } catch (err) {
-            alert("Löschen fehlgeschlagen.");
+            alert(toErrorMessage(err, 'Löschen fehlgeschlagen.'));
         }
     };
 
@@ -386,43 +378,21 @@ export const useAiProfiles = (
             return;
         }
 
-        if (isLocal) {
-            const stored = localStorage.getItem('koreki_local_ai_profiles');
-            if (stored) {
-                let customProfiles = JSON.parse(stored);
-                if (findNameCollision(customProfiles, editingProfileId, editingName)) {
-                    alert(nameTakenMessage('KI-Profil'));
-                    return;
-                }
-                customProfiles = customProfiles.map((p: AiProfile) =>
-                    p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
-                );
-                localStorage.setItem('koreki_local_ai_profiles', JSON.stringify(customProfiles));
-                // Die Auswahl haengt an der Kennung — kein Nachziehen noetig.
-                await fetchProfiles();
-                setEditingProfileId(null);
-            }
-            return;
-        }
-
         try {
-            const res = await apiClient.fetch('/api/user/ai-profiles', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: editingProfileId, newName: editingName.trim() })
-            });
-
-            if (res.ok) {
-                await fetchProfiles();
-                setEditingProfileId(null);
-            } else {
-                const data = await res.json();
-                alert(data.message || "Fehler beim Umbenennen");
+            const erfolgreich = await aiProfileStore.benenneUm(editingProfileId, editingName);
+            if (!erfolgreich) {
+                alert(nameTakenMessage('KI-Profil'));
+                return;
             }
+
+            // Die Auswahl haengt an der Kennung — kein Nachziehen noetig.
+            await fetchProfiles();
+            setEditingProfileId(null);
         } catch (err) {
-            alert("Netzwerkfehler beim Umbenennen.");
+            alert(toErrorMessage(err, 'Fehler beim Umbenennen'));
         }
     };
+
 
     const handleApplyToSession = () => {
         const profile = selectedProfileData;

@@ -3,13 +3,22 @@ import { AppSettings } from '@/types';
 import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
-import { findNameCollision, readLocalArray, readLocalArrayForUpdate, writeLocalArray } from '@/lib/local-vault';
+import { readLocalArray, readLocalArrayForUpdate, writeLocalArray } from '@/lib/local-vault';
 import { isSameName, nameTakenMessage, overwriteQuestion, resolveProfileRef } from '@/lib/services/profile-naming';
+import { createProfileStore } from '@/lib/services/profile-store';
+import { toErrorMessage } from '@/lib/error-message';
 
 /** Kennung der Standard-Vorlage aus der Experten-Registry. */
 const DEFAULT_EXPERT_PROFILE_ID = 'id-standard';
 
 const PROFILE_KEY = 'koreki_local_profiles';
+
+/** Ablage der Experten-Profile — Desktop wie Server, siehe profile-store. */
+const promptProfileStore = createProfileStore<LocalPromptProfile>({
+    speicherSchluessel: PROFILE_KEY,
+    endpunkt: '/api/user/prompt-profiles',
+    idPraefix: 'local'
+});
 const AI_PROFILE_KEY = 'koreki_local_ai_profiles';
 
 interface LocalPromptProfile {
@@ -322,22 +331,12 @@ export const usePromptProfiles = (
     const handleDeleteProfile = async (id: string) => {
         if (!window.confirm("Dieses Profil wirklich dauerhaft löschen?")) return;
 
-        if (isDesktopTarget()) {
-            const remaining = readLocalArrayForUpdate<LocalPromptProfile>(PROFILE_KEY).filter(p => p.id !== id);
-            writeLocalArray(PROFILE_KEY, remaining);
+        try {
+            await promptProfileStore.loesche(id);
             await fetchProfiles();
             if (selectedProfileId === id) faellZurueckAufStandard();
-            return;
-        }
-
-        try {
-            const res = await apiClient.fetch(`/api/user/prompt-profiles?id=${id}`, { method: 'DELETE' });
-            if (res.ok) {
-                await fetchProfiles();
-                if (selectedProfileId === id) faellZurueckAufStandard();
-            }
         } catch (err) {
-            alert("Löschen fehlgeschlagen.");
+            alert(toErrorMessage(err, 'Löschen fehlgeschlagen.'));
         }
     };
 
@@ -347,40 +346,21 @@ export const usePromptProfiles = (
             return;
         }
 
-        if (isDesktopTarget()) {
-            const gespeicherte = readLocalArrayForUpdate<LocalPromptProfile>(PROFILE_KEY);
-            if (findNameCollision(gespeicherte, editingProfileId, editingName)) {
+        try {
+            const erfolgreich = await promptProfileStore.benenneUm(editingProfileId, editingName);
+            if (!erfolgreich) {
                 alert(nameTakenMessage('Profil'));
                 return;
             }
-            const renamed = gespeicherte.map(p =>
-                p.id === editingProfileId ? { ...p, name: editingName.trim() } : p
-            );
-            writeLocalArray(PROFILE_KEY, renamed);
+
             // Die Auswahl haengt an der Kennung — kein Nachziehen noetig.
             await fetchProfiles();
             setEditingProfileId(null);
-            return;
-        }
-
-        try {
-            const res = await apiClient.fetch('/api/user/prompt-profiles', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: editingProfileId, newName: editingName.trim() })
-            });
-
-            if (res.ok) {
-                await fetchProfiles();
-                setEditingProfileId(null);
-            } else {
-                const data = await res.json();
-                alert(data.message || "Fehler beim Umbenennen");
-            }
         } catch (err) {
-            alert("Netzwerkfehler beim Umbenennen.");
+            alert(toErrorMessage(err, 'Fehler beim Umbenennen'));
         }
     };
+
 
     return {
         profiles,

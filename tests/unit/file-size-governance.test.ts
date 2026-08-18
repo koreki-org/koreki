@@ -129,14 +129,17 @@ const SIZE_BASELINE: Record<string, number> = {
     'components/batch/parts/BatchTaskAnalysisCard.tsx': 577,
     // +7: der Kommentar, warum beim Aktualisieren die bestehende Kennung
     // gewinnt. Ohne ihn wird die Zeile beim naechsten Aufraeumen entfernt.
-    'hooks/useAiProfiles.ts': 498,
+    // 498 -> 468: Loeschen und Umbenennen gehen jetzt ueber den
+    // gemeinsamen profile-store, nicht mehr ueber eigene Desktop/Server-Zweige.
+    'hooks/useAiProfiles.ts': 468,
     // +5: initialTrace nimmt ausdruecklich beide Rechenketten-Formen entgegen —
     // der Rumpf unterschied sie schon, der Typ verschwieg es.
     'components/batch/CalcTraceModal.tsx': 430,
     // +13: der NutzerCache-Typ und die durchgezogenen Signaturen haben ALLE
     // 7 `any` dieser Datei abgeloest.
     'components/dashboard/DashboardModals.tsx': 436,
-    'hooks/usePromptProfiles.ts': 420, // s. useSkillProfiles — gleicher Wächter
+    // 420 -> 400: dieselbe Umstellung wie bei useAiProfiles.
+    'hooks/usePromptProfiles.ts': 400, // s. useSkillProfiles — gleicher Wächter
     'components/batch/parts/SecondOpinionDrawer.tsx': 388,
     'components/settings/ProfileModules.tsx': 349,
     'pages/features.tsx': 347,
