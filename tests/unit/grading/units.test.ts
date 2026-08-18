@@ -113,6 +113,81 @@ describe('normalizeUnitString', () => {
     });
 
     /**
+     * ALLE ZEHN ZIFFERN. Der Mutationstest hat gezeigt, dass acht davon
+     * ungeprueft waren: nur ² und ³ kamen vor. Eine vertauschte Ziffer in der
+     * Umschrifttabelle waere damit unbemerkt geblieben — und ergaebe eine
+     * Einheit, die mathematisch etwas anderes bedeutet als das, was die
+     * Schuelerin geschrieben hat.
+     */
+    it.each([
+        ['⁰', '0'], ['¹', '1'], ['²', '2'], ['³', '3'], ['⁴', '4'],
+        ['⁵', '5'], ['⁶', '6'], ['⁷', '7'], ['⁸', '8'], ['⁹', '9']
+    ])('schreibt die Hochzahl %s als ^%s', (hoch, ziffer) => {
+        expect(normalizeUnitString(`m${hoch}`)).toBe(`m^${ziffer}`);
+    });
+
+    /**
+     * MEHRSTELLIGE HOCHZAHLEN. Die Umschrift fasst aufeinanderfolgende
+     * Hochziffern zu EINER Potenz zusammen. Ohne das wuerde aus `m¹²` ein
+     * `m^1^2` — das ist m hoch 1 hoch 2, also m, statt m hoch zwoelf.
+     *
+     * In der Elektrotechnik sind solche Groessen alltaeglich (10¹² Hz).
+     */
+    it('fasst mehrstellige Hochzahlen zu einer Potenz zusammen', () => {
+        expect(normalizeUnitString('m¹²')).toBe('m^12');
+        expect(normalizeUnitString('cm¹⁰')).toBe('cm^10');
+        expect(normalizeUnitString('s⁻'.replace('⁻', '') + '¹²³')).toBe('s^123');
+    });
+
+    /** Randleerzeichen kommen aus Tabellen und Modell-Antworten staendig. */
+    it('entfernt Leerzeichen am Rand', () => {
+        expect(normalizeUnitString('  m²  ')).toBe('m^2');
+        expect(normalizeUnitString(' kohm ')).toBe('kohm');
+    });
+
+    /**
+     * Die Schreibweise mit ausgeschriebenem „Ohm" hinter einem Praefix wird
+     * ueber die Tabelle aufgeloest, nicht ueber die Regex darueber: `\bOhm\b`
+     * findet in `kOhm` keine Wortgrenze.
+     */
+    it.each([['kOhm', 'kohm'], ['MOhm', 'Mohm']])(
+        'loest die Praefix-Schreibweise %s auf',
+        (eingabe, erwartet) => {
+            expect(normalizeUnitString(eingabe)).toBe(erwartet);
+        }
+    );
+
+    /**
+     * JEDE SCHREIBWEISE DER TABELLE, festgehalten.
+     *
+     * `UNIT_ALIASES` wird an ZWEI Stellen benutzt — hier und in
+     * `normalizeExpressionFormula` —, und in beiden Wegen greifen ausserdem
+     * Regex-Ersetzungen. Manche Eintraege sind dadurch doppelt abgesichert,
+     * andere sind der einzige Weg (siehe `kOhm` oben, wo die Wortgrenze der
+     * Regex nicht passt).
+     *
+     * Welcher Eintrag welcher Fall ist, sieht man dem Code nicht an. Diese
+     * Liste haelt deshalb das ERGEBNIS fest, nicht den Weg dorthin: wer die
+     * Tabelle ausduennt, erfaehrt sofort, ob er einen tragenden Eintrag
+     * erwischt hat.
+     */
+    it.each([
+        ['Ohm', 'ohm'],
+        ['Ω', 'ohm'],
+        ['kΩ', 'kohm'],
+        ['MΩ', 'Mohm'],
+        ['mΩ', 'mohm'],
+        ['kOhm', 'kohm'],
+        ['MOhm', 'Mohm'],
+        ['€', 'EUR'],
+        ['EUR', 'EUR'],
+        ['$', 'USD'],
+        ['USD', 'USD']
+    ])('normalisiert die Schreibweise "%s" zu "%s"', (eingabe, erwartet) => {
+        expect(normalizeUnitString(eingabe)).toBe(erwartet);
+    });
+
+    /**
      * REGRESSION, 17.08.2026 beim Herausloesen des Moduls gefunden.
      *
      * mathjs versteht als Mikro-Praefix ausschliesslich `u`. Das Mikro-Zeichen
@@ -148,6 +223,27 @@ describe('normalizeExpressionFormula', () => {
     it('ersetzt Ohm- und Waehrungszeichen in der Formel', () => {
         expect(normalizeExpressionFormula('230 V / 6.5 kΩ')).toContain('kohm');
         expect(normalizeExpressionFormula('12 € + 3 $')).toBe('12 EUR + 3 USD');
+    });
+
+    /** Dieselbe Tabelle, derselbe Ausgang — auch auf dem Formel-Weg. */
+    it.each([
+        ['5 Ohm', '5 ohm'],
+        ['5 Ω', '5 ohm'],
+        ['5 kΩ', '5 kohm'],
+        ['5 MΩ', '5 Mohm'],
+        ['5 mΩ', '5 mohm'],
+        ['5 kOhm', '5 kohm'],
+        ['5 MOhm', '5 Mohm']
+    ])('loest "%s" in der Formel zu "%s" auf', (eingabe, erwartet) => {
+        expect(normalizeExpressionFormula(eingabe)).toBe(erwartet);
+    });
+
+    /**
+     * Mehrstellige Hochzahlen auch hier — sonst wuerde aus `10¹²` ein
+     * `10^1^2`, also 10, statt einer Billion.
+     */
+    it('fasst mehrstellige Hochzahlen auch in der Formel zusammen', () => {
+        expect(normalizeExpressionFormula('10¹² Hz')).toBe('10^12 Hz');
     });
 });
 
