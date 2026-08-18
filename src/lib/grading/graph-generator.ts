@@ -268,9 +268,34 @@ export function parseGeneratedGraph(llmResponse: string, options?: { skipSanitiz
   const validPrefixes = getValidPluginExpressionPrefixes();
   const validatedVariables: VariableDefinition[] = [];
 
+  /**
+   * Kennungen müssen eindeutig sein.
+   *
+   * Es gibt nur EINE Antwort je Kennung — `studentResults[id]`. Zwei Variablen
+   * mit demselben Namen lesen also beide dieselbe Antwort und werden trotzdem
+   * beide gezählt. Zwei Folgen, beide nachgestellt (18.08.2026):
+   *
+   * - Bei VERSCHIEDENEN Vorgabewerten bekam die Schülerin 1 von 2 Punkten für
+   *   eine richtige Antwort — die zweite Variable prüfte dieselbe Eingabe gegen
+   *   einen anderen Erwartungswert. Der Trockenlauf fängt diesen Fall ab.
+   * - Bei GLEICHEN Vorgabewerten zählt derselbe Schritt doppelt. Der
+   *   Trockenlauf sieht nichts, weil rechnerisch alles aufgeht — die Aufgabe
+   *   ist danach nur anders gewichtet, als die Lehrkraft es wollte.
+   *
+   * Behalten wird das ERSTE Vorkommen: deterministisch und näher an dem, was
+   * das Modell zuerst gemeint hat.
+   */
+  const vergebeneIds = new Set<string>();
+
   for (const v of targetData.variables as Record<string, unknown>[]) {
     if (!v.id || typeof v.id !== 'string') continue;
     if (v.type !== 'input' && v.type !== 'formula') continue;
+
+    if (vergebeneIds.has(v.id)) {
+      logger.warn(`Doppelte Variablen-Kennung "${v.id}" verworfen — es gibt nur eine Antwort je Kennung.`);
+      continue;
+    }
+    vergebeneIds.add(v.id);
 
     const variable: VariableDefinition = {
       id: v.id as string,
