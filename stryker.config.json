@@ -33,6 +33,22 @@
     "fileName": "tests/reports/mutation/index.html"
   },
   "coverageAnalysis": "all",
+  "_comment_ignoreStatic": [
+    "STATISCHE MUTANTEN werden uebersprungen. Das sind Mutanten in Code, der",
+    "beim LADEN des Moduls laeuft — Tabellen wie UNIT_ALIASES, Regex-Konstanten,",
+    "Schwellwerte. Stryker kann sie nicht einem einzelnen Test zuordnen und muss",
+    "fuer jeden einzelnen die gesamte Suite neu starten.",
+    "",
+    "Gemessen an src/lib/grading/units.ts: 224 von 231 Mutanten (97 %) sind",
+    "statisch und verursachen 100 % der Laufzeit. Ohne diesen Schalter ist das",
+    "Werkzeug unbenutzbar.",
+    "",
+    "Der Preis, ehrlich benannt: Aenderungen an solchen Tabellen werden hier",
+    "NICHT geprueft. Ein vertauschter Eintrag in UNIT_ALIASES faellt also nicht",
+    "dem Mutationstest auf — dafuer gibt es die gewoehnlichen Tests, die genau",
+    "diese Zuordnungen abfragen (tests/unit/grading/units.test.ts)."
+  ],
+  "ignoreStatic": true,
   "timeoutMS": 60000,
   "concurrency": 4,
   "mutate": [
