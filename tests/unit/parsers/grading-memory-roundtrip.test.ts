@@ -176,3 +176,55 @@ Alte Antwort.
         expect(parseMarkdownGradingMemory('Nur Text, kein Format.').cases).toEqual([]);
     });
 });
+
+describe('Der leere Erfahrungsschatz', () => {
+    /**
+     * DER GEMELDETE FALL, 18.08.2026 — wortgleich die Datei aus dem Bericht.
+     *
+     * Ein Erfahrungsschatz OHNE Fallbeispiele wurde exportiert und wieder
+     * abgelegt. Die Meldung lautete „Keine gültigen Fallbeispiele im KEP-MD-2
+     * Format gefunden" und schob es damit auf das Format — obwohl die Datei
+     * einwandfrei ist und aus unserem eigenen Export stammt. Sie enthielt
+     * schlicht nichts.
+     *
+     * Der Leser lag richtig, die Meldung lag falsch. Diese Datei muss deshalb
+     * als GÜLTIGER Erfahrungsschatz erkannt werden, der leer ist — nicht als
+     * Formatfehler.
+     */
+    const gemeldeteDatei = `---
+name: "Erfahrungsschatz (12.08.2026)"
+type: "grading_memory"
+version: "1.0.0"
+---
+
+# Erfahrungsschatz: Erfahrungsschatz (12.08.2026)
+
+Hier sind die kalibrierten fiktiven Fallbeispiele (Few-Shot), die verwendet werden, um der KI pädagogische Korrekturrichtlinien zu geben:
+
+`;
+
+    it('erkennt die Datei als Erfahrungsschatz, nicht als Formatfehler', () => {
+        const gelesen = parseMarkdownGradingMemory(gemeldeteDatei);
+
+        expect(gelesen.istErfahrungsschatzDatei).toBe(true);
+        expect(gelesen.cases).toEqual([]);
+        expect(gelesen.name).toBe('Erfahrungsschatz (12.08.2026)');
+    });
+
+    /** Eine fremde Markdown-Datei ist das Gegenstueck — DIE ist ein Formatfehler. */
+    it('erkennt eine fremde Datei als solche', () => {
+        expect(parseMarkdownGradingMemory('# Meine Notizen\n\nIrgendein Text.').istErfahrungsschatzDatei)
+            .toBe(false);
+    });
+
+    it('erkennt auch eine fremde Datei MIT Frontmatter als solche', () => {
+        const fremd = '---\nname: "Etwas"\ntype: "skill_profile"\n---\n\nInhalt.';
+
+        expect(parseMarkdownGradingMemory(fremd).istErfahrungsschatzDatei).toBe(false);
+    });
+
+    /** Der Export eines gefuellten Schatzes traegt den Kopf weiterhin. */
+    it('markiert den eigenen Export als Erfahrungsschatz', () => {
+        expect(rundlauf('T', [fall()]).istErfahrungsschatzDatei).toBe(true);
+    });
+});

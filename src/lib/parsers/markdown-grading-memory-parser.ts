@@ -55,16 +55,32 @@ export function exportGradingMemoryToMarkdown(name: string, cases: GradingMemory
     return md;
 }
 
-export function parseMarkdownGradingMemory(content: string): { name: string; cases: GradingMemoryCase[] } {
+export interface GeleseneErfahrungsschatzDatei {
+    name: string;
+    cases: GradingMemoryCase[];
+    /**
+     * Trägt die Datei den Kopf unseres eigenen Exports?
+     *
+     * Unterscheidet zwei Fälle, die ohne diese Angabe gleich aussahen: eine
+     * FREMDE Datei im falschen Format — und eine eigene, die schon beim
+     * Exportieren keine Fallbeispiele enthielt. Die Meldung „Format nicht
+     * erkannt" war im zweiten Fall schlicht falsch und schickte die Lehrkraft
+     * auf die Suche nach einem Fehler, den es nicht gab.
+     */
+    istErfahrungsschatzDatei: boolean;
+}
+
+export function parseMarkdownGradingMemory(content: string): GeleseneErfahrungsschatzDatei {
     // 1. Extract frontmatter
     const frontmatterMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n([\s\S]*)$/);
     let name = "Importierter Erfahrungsschatz";
     let remainingContent = content;
+    let istErfahrungsschatzDatei = false;
 
     if (frontmatterMatch) {
         const yamlBlock = frontmatterMatch[1];
         remainingContent = frontmatterMatch[2];
-        
+
         yamlBlock.split(/\r?\n/).forEach(line => {
             const colonIdx = line.indexOf(':');
             if (colonIdx > -1) {
@@ -72,6 +88,9 @@ export function parseMarkdownGradingMemory(content: string): { name: string; cas
                 const val = line.slice(colonIdx + 1).trim().replace(/^['"]|['"]$/g, '');
                 if (key === 'name') {
                     name = val;
+                }
+                if (key === 'type' && val === 'grading_memory') {
+                    istErfahrungsschatzDatei = true;
                 }
             }
         });
@@ -168,5 +187,5 @@ export function parseMarkdownGradingMemory(content: string): { name: string; cas
         }
     }
 
-    return { name, cases };
+    return { name, cases, istErfahrungsschatzDatei };
 }

@@ -45,17 +45,33 @@ export function useGradingMemoryLibrary({ addLocalMemory, refreshMemories }: Use
             const parsed = parseMarkdownGradingMemory(text);
 
             if (parsed.cases.length === 0) {
-                // Die Meldung nennt, WAS vorgefunden wurde. Ein blosses „nichts
-                // gefunden" liess offen, ob die Datei leer war, das falsche
-                // Format hatte oder an einer Stelle abbrach — und war damit
-                // ohne die Datei selbst nicht nachvollziehbar.
+                /**
+                 * Drei verschiedene Ursachen sahen bis zum 18.08.2026 gleich
+                 * aus — alle drei meldeten „Format nicht erkannt".
+                 *
+                 * Der gemeldete Fall war der erste: ein Erfahrungsschatz ohne
+                 * Fallbeispiele wurde exportiert und wieder abgelegt. Die Datei
+                 * war einwandfrei und stammte aus unserem eigenen Export; nur
+                 * enthielt sie nichts. Die Formatmeldung schickte die Lehrkraft
+                 * damit auf die Suche nach einem Fehler, den es nicht gab.
+                 */
                 const marken = (text.match(/\[CASE_START\]/g) || []).length;
+
+                if (parsed.istErfahrungsschatzDatei && marken === 0) {
+                    alert(
+                        `Der Erfahrungsschatz „${parsed.name}" enthält keine Fallbeispiele.\n\n`
+                        + 'Die Datei ist in Ordnung — sie war bereits beim Exportieren leer. '
+                        + 'Öffne den Erfahrungsschatz, füge Fallbeispiele hinzu und exportiere ihn erneut.'
+                    );
+                    return;
+                }
+
                 alert(
                     'Fehler: Keine gültigen Fallbeispiele im KEP-MD-2 Format gefunden.\n\n'
                     + `Datei: ${file.name} (${text.length} Zeichen)\n`
                     + `Gefundene Fallbeispiel-Marken: ${marken}\n\n`
                     + (marken === 0
-                        ? 'Die Datei enthält keinen einzigen Fallbeispiel-Block. Stammt sie aus dem Erfahrungsschatz-Export?'
+                        ? 'Die Datei trägt keinen Erfahrungsschatz-Kopf. Stammt sie aus dem Export?'
                         : 'Die Blöcke sind vorhanden, aber unvollständig — es fehlt „### Schülerantwort:" oder „### Erwartete Korrektur:".')
                 );
                 return;
@@ -100,6 +116,20 @@ export function useGradingMemoryLibrary({ addLocalMemory, refreshMemories }: Use
     };
 
     const handleExportMemory = async (memory: GradingMemory) => {
+        // Ein Erfahrungsschatz ohne Fallbeispiele ergibt eine Datei, die sich
+        // nicht wieder einlesen laesst — sein ganzer Inhalt SIND die Beispiele.
+        // Genau daraus entstand der Fehlerbericht vom 18.08.2026: exportiert,
+        // abgelegt, „Format nicht erkannt". Hier ist die Stelle, an der die
+        // Lehrkraft es erfahren muss, nicht erst beim Wiedereinlesen.
+        if (!memory.cases || memory.cases.length === 0) {
+            alert(
+                `Der Erfahrungsschatz „${memory.name}" enthält keine Fallbeispiele.\n\n`
+                + 'Eine solche Datei liesse sich später nicht wieder einlesen — '
+                + 'die Fallbeispiele sind ihr gesamter Inhalt.'
+            );
+            return;
+        }
+
         try {
             const markdown = exportGradingMemoryToMarkdown(memory.name, memory.cases);
             const filename = `${memory.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_grading_memory.md`;
