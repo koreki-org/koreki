@@ -10,6 +10,7 @@ import {
   GradingValue
 } from './types';
 import { evaluateExpression } from './plugins';
+import { TOLERANCE } from './numeric-tolerance';
 import { collectReferencedVariables } from './variable-references';
 
 export class GraphRunner {
@@ -340,12 +341,28 @@ export class GraphRunner {
     }
 
     if (typeof expectedVal === 'number' && typeof cleanStudentVal === 'number') {
-      if (type === 'tolerance' && tolerance !== undefined) {
-        const isAbsoluteMatch = Math.abs(cleanStudentVal - expectedVal) <= tolerance;
+      if (type === 'tolerance') {
+        /**
+         * Ohne Zahl gilt der voreingestellte Spielraum.
+         *
+         * Das Prompt-Schema erlaubt dem Modell ausdruecklich `tolerance: null`,
+         * und der Graph-Aufbau uebernimmt die Zahl nur, wenn eine da ist — die
+         * Kennzeichnung `validationType: 'tolerance'` bleibt aber stehen. Ohne
+         * diesen Rueckfall landete so ein Schritt bei EXAKTER Gleichheit: die
+         * Lehrkraft hat Spielraum vorgesehen, die Schuelerin bekam trotzdem
+         * null Punkte fuer eine gerundete Antwort. Der Fehler war lautlos, weil
+         * das Ergebnis plausibel aussieht.
+         *
+         * Der Wert ist derselbe wie in `numeric-tolerance` — damit rechnen
+         * Graph und Rechenkette nach derselben Regel.
+         */
+        const wirksameToleranz = tolerance ?? TOLERANCE;
+        const isAbsoluteMatch = Math.abs(cleanStudentVal - expectedVal) <= wirksameToleranz;
         
         // If tolerance is specified as a fraction (< 1.0, e.g., 0.05 for 5%),
         // also check it as a relative percentage tolerance based on the expected value.
-        const isRelativeMatch = tolerance < 1.0 && Math.abs(cleanStudentVal - expectedVal) <= (tolerance * Math.abs(expectedVal));
+        const isRelativeMatch = wirksameToleranz < 1.0
+          && Math.abs(cleanStudentVal - expectedVal) <= (wirksameToleranz * Math.abs(expectedVal));
         
         return isAbsoluteMatch || isRelativeMatch;
       }
