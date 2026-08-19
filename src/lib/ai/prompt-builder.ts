@@ -154,7 +154,12 @@ export function buildCorrectionPrompt(
             block += `[Schülerantwort]\n"${item.studentText}"\n\n`;
             block += `[Erwartete Bewertung]\n`;
             block += `- Vergebene Punkte: ${item.expectedCorrection.pointsObtained}`;
-            if (item.expectedCorrection.maxPoints !== undefined && item.expectedCorrection.maxPoints !== null) {
+            // `Number.isFinite` statt `!== undefined && !== null`: Ein NaN ist
+            // beides nicht — und stuende dann woertlich als "von NaN" im
+            // Prompt, also als Kalibrierungs-Beispiel fuer das Modell
+            // (19.08.2026). Dieselbe zu schwache Pruefung wie in
+            // correction-mapping.
+            if (Number.isFinite(item.expectedCorrection.maxPoints)) {
                 block += ` von ${item.expectedCorrection.maxPoints}`;
             }
             block += `\n`;

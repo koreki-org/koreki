@@ -91,7 +91,12 @@ export function useCorrectionRun({
                 if (storedCases) {
                     gradingMemoryCases = JSON.parse(storedCases);
                 }
-            } catch (e) {}
+            } catch (e) {
+                // Nicht verschweigen: Ohne den Erfahrungsschatz korrigiert das
+                // Modell nach einem anderen Massstab als dem, den die Lehrkraft
+                // eingestellt hat — und merkt es niemand.
+                console.error('Erfahrungsschatz konnte nicht gelesen werden — die Korrektur läuft ohne ihn.', e);
+            }
 
             console.log(`[Pipeline] Launching AI correction for index ${i}. Active memory cases sent:`, gradingMemoryCases?.length || 0);
 

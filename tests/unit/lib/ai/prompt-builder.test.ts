@@ -145,3 +145,53 @@ describe('Schuelertext und Musterloesung stehen woertlich im Prompt', () => {
         expect(prompt.user.trimEnd().endsWith('</task_to_evaluate>')).toBe(true);
     });
 });
+
+/**
+ * Kein "von NaN" im Erfahrungsschatz
+ * 🧮📚
+ *
+ * GEFUNDEN BEIM LESEN, 19.08.2026. Die Ausgabe prüfte
+ * `maxPoints !== undefined && !== null` — ein NaN ist beides nicht und stand
+ * dann wörtlich als "von NaN" im Prompt, also als Kalibrierungs-Beispiel für
+ * das Modell.
+ *
+ * Entstanden ist das NaN im Erfahrungsschatz-Assistenten
+ * (`useGradingMemoryWizard`), der `Number(tasksLayout[0].maxPoints)` ohne
+ * Rückfall rechnete. Beide Stellen sind repariert; diese hier ist die letzte
+ * Verteidigungslinie, denn ein Erfahrungsschatz kann auch importiert werden.
+ *
+ * Dieselbe zu schwache Prüfung wie in `correction-mapping` — dort war sie am
+ * 18.08.2026 der Grund für NaN-Punkte in ganzen Aufgaben.
+ */
+describe('Erfahrungsschatz mit unbrauchbarer Maximalpunktzahl', () => {
+    const fall = (maxPoints: unknown) => ([{
+        id: 'case-1',
+        studentText: 'Antwort',
+        taskName: 'Aufgabe 1',
+        expectedCorrection: {
+            pointsObtained: 1.5,
+            maxPoints,
+            correctionNotes: 'Begründung.'
+        }
+    }] as never);
+
+    it('schreibt kein "von NaN" in den Prompt', () => {
+        const prompt = buildCorrectionPrompt('Muster', 'Schüler', null, '', 'qwen3-vl:8b', fall(NaN));
+
+        expect(prompt.user).not.toContain('NaN');
+        expect(prompt.user).toContain('Vergebene Punkte: 1.5');
+    });
+
+    it('nennt die Maximalpunktzahl weiterhin, wenn sie brauchbar ist', () => {
+        const prompt = buildCorrectionPrompt('Muster', 'Schüler', null, '', 'qwen3-vl:8b', fall(2));
+
+        expect(prompt.user).toContain('Vergebene Punkte: 1.5 von 2');
+    });
+
+    it('laesst sie weg, wenn sie gar nicht angegeben ist', () => {
+        const prompt = buildCorrectionPrompt('Muster', 'Schüler', null, '', 'qwen3-vl:8b', fall(undefined));
+
+        expect(prompt.user).toContain('Vergebene Punkte: 1.5');
+        expect(prompt.user).not.toContain('1.5 von');
+    });
+});

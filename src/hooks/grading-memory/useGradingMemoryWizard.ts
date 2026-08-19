@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { alsModellzahl } from '@/lib/zahlen';
 import type { Task, AppSettings, GradingMemory, GradingMemoryCase } from '@/types';
 import { rufeSimulator, type SyntheticAnswer, type SimulatorAnswer, type Calibration } from '@/lib/grading-memory-simulator';
 import { isDesktopTarget } from '@/lib/env-context';
@@ -118,7 +119,12 @@ export function useGradingMemoryWizard({
                     // Der paraphrasierte Name des Simulators wuerde sonst eine Aufgabe vortaeuschen, die es nicht gibt.
                     const hasLayout = !!tasksLayout && tasksLayout.length > 0;
                     const actualTaskName = hasLayout ? (matchedTask?.name || '') : (ans.taskName || '');
-                    const actualMaxPoints = matchedTask ? Number(matchedTask.maxPoints || 5) : (ans.maxPoints || 5);
+                    // `alsModellzahl`: `maxPoints` ist `number | string` (getippt).
+                    // Eine untippbare Angabe ergab NaN — und `Math.min(NaN, ...)`
+                    // darunter machte daraus auch gleich NaN Punkte.
+                    const actualMaxPoints = matchedTask
+                        ? alsModellzahl(matchedTask.maxPoints, 5)
+                        : alsModellzahl(ans.maxPoints, 5);
                     const actualPointsObtained = ans.pointsObtained !== undefined 
                         ? Math.min(actualMaxPoints, ans.pointsObtained) 
                         : Math.round(actualMaxPoints * 0.6);
@@ -175,7 +181,9 @@ export function useGradingMemoryWizard({
             taskName: tasksLayout && tasksLayout.length > 0 ? tasksLayout[0].name : 'Aufgabe 1',
             expectedCorrection: {
                 pointsObtained: 0,
-                maxPoints: tasksLayout && tasksLayout.length > 0 ? Number(tasksLayout[0].maxPoints) : 5,
+                // Ohne Rueckfall stand hier NaN — und das wandert als
+                // "0 von NaN" in den Korrektur-Prompt.
+                maxPoints: alsModellzahl(tasksLayout?.[0]?.maxPoints, 5),
                 correctionNotes: 'Begründung für die Korrektur...',
                 feedback: ''
             }
