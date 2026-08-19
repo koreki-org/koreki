@@ -61,6 +61,31 @@ export const resolveProfileRef = <T extends { id?: string; name?: string }>(
     return profiles.find(p => p.id === ref) || profiles.find(p => isSameName(p.name, ref));
 };
 
+/**
+ * Findet einen noch freien Namen — fuer Kopier-Aktionen.
+ *
+ * GEFUNDEN BEIM LESEN, 19.08.2026: Der Knopf "Erfahrungsschatz kopieren"
+ * vergab immer denselben Namen ("Kopie von X"). Der Schreibpfad
+ * (`addLocalMemory`) sucht per `isSameName` und ueberschreibt bei einem
+ * Treffer. Zweimal kopieren hiess damit: die erste Kopie ist weg — wortlos,
+ * samt der Arbeit, die inzwischen daran haengt.
+ *
+ * Eine Rueckfrage waere hier das falsche Mittel: Wer "kopieren" klickt, will
+ * eine ZWEITE haben, keine Entscheidung ueber die erste. Deshalb ein freier
+ * Name statt eines Dialogs.
+ */
+export const findFreeName = <T extends { name?: string }>(entries: T[], wunsch: string): string => {
+    if (!findByName(entries, wunsch)) return wunsch;
+
+    // Die Schranke ist keine Erwartung, sondern eine Zusicherung gegen die
+    // Endlosschleife: Wer 99 gleichnamige Kopien hat, bekommt einen Zeitstempel.
+    for (let n = 2; n <= 99; n++) {
+        const kandidat = `${wunsch} (${n})`;
+        if (!findByName(entries, kandidat)) return kandidat;
+    }
+    return `${wunsch} (${Date.now()})`;
+};
+
 /** Einheitlicher Wortlaut — die Meldung erscheint in vier Modalen. */
 export const nameTakenMessage = (label: string): string =>
     `Ein ${label} mit diesem Namen existiert bereits`;

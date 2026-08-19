@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, Sparkles, Layers, Trash2, Link2Off, HelpCircle, AlertCircle, ShieldCheck, ShieldAlert, Clock, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Loader2, Sparkles, Layers, Trash2, Link2Off, HelpCircle, AlertCircle, ShieldCheck, ShieldAlert, Clock, ToggleLeft, ToggleRight, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
@@ -72,8 +72,29 @@ export const ModelSolutionTaskCard: React.FC<ModelSolutionTaskCardProps> = ({
                                     const batchState = batchStatus[originalIdx];
                                     const isGeneratingThisTask = generatingGraphForTask === originalIdx || batchState === 'generating';
                                     const validation = task.gradingGraph?.validation || (task.targetGoal as any)?.validation;
-                                    const isValid = validation?.isValid ?? true;
                                     const valError = validation?.error;
+
+                                    // Das Schild bedeutet "durchgerechnet und bestanden" — sonst nichts.
+                                    //
+                                    // GEFUNDEN BEIM LESEN, 19.08.2026: Hier stand
+                                    // `validation?.isValid ?? true`. Zwei Wege fuehrten damit
+                                    // zu einem gruenen "Verifiziert (Dry-Run bestanden)", ohne
+                                    // dass je etwas gerechnet wurde:
+                                    //
+                                    //   - Gar keine Validierung (ein von Hand geschriebener oder
+                                    //     importierter Graph) -> `?? true` behauptete Erfolg.
+                                    //   - Eine RECHENKETTE: fuer sie gibt es kein Trockenlauf-
+                                    //     Verfahren, `validateCalcTraceDeterminism` stimmt
+                                    //     bedingungslos zu. Ihr `isValid: true` sagt nur, dass
+                                    //     die Struktur gelesen wurde.
+                                    //
+                                    // `dryRunChecked` unterscheidet genau das, seit
+                                    // generate-calc-trace es nicht mehr faelschlich auf `true`
+                                    // setzt. Ohne Trockenlauf gibt es jetzt ein neutrales
+                                    // Zeichen statt eines gruenen Schildes.
+                                    const wurdeDurchgerechnet = validation?.dryRunChecked === true;
+                                    const isValid = wurdeDurchgerechnet && validation?.isValid === true;
+                                    const istUngeprueft = !wurdeDurchgerechnet;
 
                                     const statusIcon = (() => {
                                         if (isGeneratingThisTask) {
@@ -98,6 +119,19 @@ export const ModelSolutionTaskCard: React.FC<ModelSolutionTaskCardProps> = ({
                                             );
                                         }
                                         if (task.gradingGraph || task.targetGoal) {
+                                            // Weder bestanden noch durchgefallen: nichts gerechnet.
+                                            if (istUngeprueft) {
+                                                return (
+                                                    <div
+                                                        className="h-7 w-7 rounded-lg bg-muted border border-border text-muted-foreground flex items-center justify-center shrink-0"
+                                                        title={isCalcTrace
+                                                            ? 'Struktur gelesen — für Rechenketten gibt es keinen Dry-Run'
+                                                            : 'Nicht durchgerechnet'}
+                                                    >
+                                                        <Shield size={14} />
+                                                    </div>
+                                                );
+                                            }
                                             if (isValid) {
                                                 return (
                                                     <div className={cn(

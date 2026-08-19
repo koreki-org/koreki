@@ -8,7 +8,7 @@ import { FloatingActions } from '../ui/FloatingActions';
 import { PointInput } from '../ui/PointInput';
 import { cn } from '../../lib/utils';
 import { Task, GradingMemory } from '../../types';
-import { resolveTaskName, resolveMaxPoints } from '../../lib/grading-memory-utils';
+import { findFreeName } from '@/lib/services/profile-naming';
 import { UseGradingMemoryModalStateProps, useGradingMemoryModalState } from '../../hooks/useGradingMemoryModalState';
 import { GradingMemoryEditorView } from './GradingMemoryEditorView';
 
@@ -157,7 +157,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                                                     const newMemory: GradingMemory = {
                                                                         ...m,
                                                                         id: `local-grading-memory-${Date.now()}`,
-                                                                        name: `Kopie von ${m.name}`,
+                                                                        name: findFreeName(memories, `Kopie von ${m.name}`),
                                                                         createdAt: new Date().toISOString()
                                                                     };
                                                                     addLocalMemory(newMemory);

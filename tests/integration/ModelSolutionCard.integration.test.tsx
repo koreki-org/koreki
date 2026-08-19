@@ -16,6 +16,9 @@ jest.mock('lucide-react', () => ({
     Check: () => <div data-testid="check-icon" />,
     Sparkles: () => <div data-testid="sparkles-icon" />,
     Loader2: () => <div data-testid="loader2-icon" />,
+    // Neutrales Schild fuer "nicht durchgerechnet" (19.08.2026) — der gruene
+    // ShieldCheck steht nur noch fuer einen tatsaechlich bestandenen Dry-Run.
+    Shield: () => <div data-testid="shield-icon" />,
     Layers: () => <div data-testid="layers-icon" />,
     Link2Off: () => <div data-testid="link2off-icon" />,
     AlertCircle: () => <div data-testid="alertcircle-icon" />,
