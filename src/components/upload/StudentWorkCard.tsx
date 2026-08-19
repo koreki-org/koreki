@@ -51,7 +51,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     {hasStudents && (
                         <>
-                            <input type="file" accept=".pdf,.jpg,.jpeg,.png,.txt,.xlsx,.csv" multiple ref={studentInputRef} onChange={onStudentUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
+                            <input data-testid="upload-schuelerarbeit" type="file" accept=".pdf,.jpg,.jpeg,.png,.txt,.xlsx,.csv" multiple ref={studentInputRef} onChange={onStudentUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
                             <Button
                                 variant="chip"
                                 size="xs"
@@ -82,6 +82,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                         className="flex-1 border-2 border-dashed border-border/60 rounded-hero bg-muted/20 hover:bg-background/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
                     >
                         <input
+                            data-testid="upload-schuelerarbeit"
                             type="file"
                             accept=".pdf,.jpg,.jpeg,.png,.txt,.xlsx,.csv"
                             multiple

@@ -196,6 +196,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                             </div>
                         )}
                         <Button
+                            data-testid="korrigieren"
                             onClick={() => isReCorrectionMode ? onShowConfirm('reset') : onShowConfirm('process')}
                             disabled={loading || (pendingCount === 0 && !hasFinishedFiles) || (pendingCount > 0 && credits < totalPendingCredits) || ocrCreditsRequired > 0 || !avvAccepted}
                             title={!avvAccepted ? "AVV-Zustimmung erforderlich" : ""}

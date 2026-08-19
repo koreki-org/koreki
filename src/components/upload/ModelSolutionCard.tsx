@@ -172,7 +172,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     {hasModel && (
                         <>
-                            <input type="file" accept=".pdf,.txt,.jpg,.jpeg,.png" ref={modelInputRef} onChange={onModelUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
+                            <input data-testid="upload-musterloesung" type="file" accept=".pdf,.txt,.jpg,.jpeg,.png" ref={modelInputRef} onChange={onModelUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
                             <Button
                                 variant="chip"
                                 size="xs"
@@ -214,7 +214,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         onClick={() => modelInputRef.current?.click()}
                         className="flex-1 border-2 border-dashed border-border/60 rounded-hero bg-muted/20 hover:bg-background/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
                     >
-                        <input type="file" accept=".pdf,.txt,.jpg,.jpeg,.png" ref={modelInputRef} onChange={onModelUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
+                        <input data-testid="upload-musterloesung" type="file" accept=".pdf,.txt,.jpg,.jpeg,.png" ref={modelInputRef} onChange={onModelUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
                         <div className="bg-background p-4 rounded-2xl shadow-sm border border-border mb-4 group-hover/dropzone:scale-110 group-hover/dropzone:-translate-y-1 group-hover/dropzone:shadow-md transition-all duration-300">
                             <FileUp size={36} className="text-primary" />
                         </div>

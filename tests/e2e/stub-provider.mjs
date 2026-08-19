@@ -52,12 +52,22 @@ const PORT = Number(process.env.STUB_PORT || 4010);
  * unabhaengig von der Aufrufreihenfolge und lesen sich als das, was sie meinen:
  * "auf die KORREKTUR antworte so".
  */
-const warteschlangen = { extraktion: [], korrektur: [] };
+const warteschlangen = { extraktion: [], analyse: [], korrektur: [] };
 
-/** Woran die Art erkennbar ist. */
+/**
+ * Woran die Art erkennbar ist.
+ *
+ * Drei Arten, nicht zwei: Vor der Korrektur liest Koreki die MUSTERLOESUNG ein
+ * und leitet daraus die Aufgabenstruktur samt Maximalpunktzahlen ab. Wer diese
+ * Analyse mit der Korrektur in einen Topf wirft, bekommt Aufgaben ohne
+ * Maximalpunktzahl — und damit einen Prozentsatz von 0 und die Note 6,0.
+ * Genau darueber bin ich beim Bauen gestolpert.
+ */
 const bestimmeArt = (nachrichten) => {
     const system = nachrichten.find(n => n.role === 'system')?.content || '';
-    return system.includes('Extraktions-KI') ? 'extraktion' : 'korrektur';
+    if (system.includes('Extraktions-KI')) return 'extraktion';
+    if (system.includes('Analysiere die folgende Musterlösung')) return 'analyse';
+    return 'korrektur';
 };
 
 /**
@@ -68,6 +78,15 @@ const bestimmeArt = (nachrichten) => {
  * sie kuemmern muss.
  */
 const STANDARD_EXTRAKTION = { steps: [] };
+
+/**
+ * Die Aufgabenstruktur, die aus der Musterloesung gelesen wird. Sie bestimmt
+ * die MAXIMALPUNKTZAHL — ohne sie ist jeder Prozentsatz 0.
+ */
+const STANDARD_ANALYSE = {
+    tasks: [{ name: 'Aufgabe 1', maxPoints: 5, content: 'Berechne 2+2.' }],
+    documentType: 'typed'
+};
 
 const STANDARD_ANTWORT = {
     tasks: [
@@ -130,6 +149,7 @@ const server = createServer(async (req, res) => {
 
     if (req.url === '/__zuruecksetzen' && req.method === 'POST') {
         warteschlangen.extraktion = [];
+        warteschlangen.analyse = [];
         warteschlangen.korrektur = [];
         aufrufe.length = 0;
         return sende(res, 200, { ok: true });
@@ -150,7 +170,9 @@ const server = createServer(async (req, res) => {
         });
 
         const vorgabe = warteschlangen[art].shift();
-        const standard = art === 'extraktion' ? STANDARD_EXTRAKTION : STANDARD_ANTWORT;
+        const standard = art === 'extraktion' ? STANDARD_EXTRAKTION
+            : art === 'analyse' ? STANDARD_ANALYSE
+            : STANDARD_ANTWORT;
         const inhalt = vorgabe !== undefined ? vorgabe : JSON.stringify(standard);
         return sende(res, 200, alsModellAntwort(inhalt));
     }

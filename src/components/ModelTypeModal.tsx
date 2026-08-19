@@ -60,6 +60,7 @@ const ModelTypeModal: React.FC<ModelTypeModalProps> = ({ isOpen, onClose, onSele
                     <Button
                         variant="ghost"
                         className="group flex h-auto flex-col items-center text-center p-5 sm:p-6 bg-white border-2 border-border rounded-2xl hover:border-primary hover:bg-primary/[0.02] transition-all duration-300"
+                        data-testid="modelltyp-digital"
                         onClick={() => onSelect('typed')}
                     >
                         <div className="w-14 h-14 bg-primary/5 text-primary rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">

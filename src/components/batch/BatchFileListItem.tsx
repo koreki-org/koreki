@@ -103,7 +103,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                         ) : null}
                     </div>
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 max-w-full overflow-hidden">
-                        {item.status === 'error' && <AlertCircle size={20} className="text-destructive shrink-0 animate-pulse" />}
+                        {item.status === 'error' && <AlertCircle data-testid="fehler" size={20} className="text-destructive shrink-0 animate-pulse" />}
                         <div className="flex flex-col min-w-0">
                             <span className="font-bold text-foreground truncate tracking-tight text-sm sm:text-base font-outfit">{item.name}</span>
                             {isProcessing && streamedText && (
@@ -163,7 +163,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                             )}
                             <div className="flex items-center gap-3">
                                 {scorePercentage !== null && <span className="text-xxs sm:text-xs font-black text-muted-foreground">{scorePercentage}%</span>}
-                                <Badge className="bg-success text-white h-7 px-3 text-xs font-black tracking-tight shadow-sm border-0 rounded-lg">{item.grade}</Badge>
+                                <Badge data-testid="note" className="bg-success text-white h-7 px-3 text-xs font-black tracking-tight shadow-sm border-0 rounded-lg">{item.grade}</Badge>
                             </div>
                         </div>
                     )}

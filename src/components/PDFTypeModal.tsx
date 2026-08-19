@@ -62,6 +62,7 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                     <Button
                         variant="ghost"
                         className="group flex h-auto flex-col items-center text-center p-5 sm:p-6 bg-white border-2 border-border rounded-2xl hover:border-primary hover:bg-primary/[0.02] transition-all duration-200"
+                        data-testid="pdftyp-digital"
                         onClick={() => onSelect('typed', applyToAll)}
                     >
                         <div className="w-14 h-14 bg-primary/5 text-primary rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
