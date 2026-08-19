@@ -60,12 +60,30 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 });
 
                 // Set Active Context and elevate to STANDARD mode
+                //
+                // GEFUNDEN BEIM LESEN, 19.08.2026: Hier stand
+                // `user.role === 'ADMIN' ? 'ADMIN' : 'USER'`. Das ist die
+                // GLOBALE Nutzerrolle, nicht die Mitgliedschaftsrolle — und
+                // dieses Feld traegt auch 'EXPERTE'. Wer den Experten-Modus
+                // fuer 25 Credits freigeschaltet hatte und danach mit einem
+                // Einladungscode seiner Schule beitrat, verlor ihn wortlos:
+                // aus EXPERTE wurde USER, ohne Hinweis und ohne Erstattung.
+                //
+                // Die Regel "erhoehte Rolle bewahren" galt fuer ADMIN und
+                // nicht fuer das Geschwister EXPERTE — dieselbe Klasse wie an
+                // vielen Stellen dieser Durchsicht.
+                //
+                // Die Absicht bleibt erhalten: Wer keine erhoehte Rolle hat,
+                // bekommt beim Beitritt die Grundrolle. Die Mitgliedschaft
+                // darueber ist davon unberuehrt und bleibt 'MEMBER'.
+                const behaelt = user.role === 'ADMIN' || user.role === 'EXPERTE';
+
                 await tx.user.update({
                     where: { id: user.id },
                     data: { 
                         activeWorkspaceId: workspace.id,
                         appMode: user.appMode === 'PURE' ? 'PURE' : 'STANDARD',
-                        role: user.role === 'ADMIN' ? 'ADMIN' : 'USER'
+                        role: behaelt ? user.role : 'USER'
                     }
                 });
             });
