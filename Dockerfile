@@ -79,4 +79,20 @@ USER nextjs
 
 EXPOSE 3000
 
+# Lebenszeichen fuer die Orchestrierung (Coolify, Docker, Compose).
+#
+# Ohne diese Zeile bleibt der Orchestrierung nur "laeuft der Container" — und
+# das ist zu schwach: Ein Next.js-Server antwortet auf Port 3000 auch dann
+# noch, wenn die Datenbank weg ist. Also genau im Fall, den man bemerken will.
+# `/api/health` fasst sie deshalb wirklich an und meldet dann 503.
+#
+# `node` statt `curl`: Das schlanke Basis-Image bringt kein curl mit, und es
+# dafuer zu installieren hiesse, die Angriffsflaeche fuer eine Zeile zu
+# vergroessern.
+#
+# `start-period` grosszuegig, weil Next.js beim ersten Start compiliert — ohne
+# das meldete die Orchestrierung eine gesunde Instanz waehrend des Hochfahrens
+# als krank und startete sie im Kreis neu.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3     CMD node -e "require('http').get('http://127.0.0.1:3000/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+
 CMD ["./start.sh"]
