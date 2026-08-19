@@ -140,19 +140,59 @@ export function mergeRedactionTemplate(
 }
 
 /**
+ * Wird ausgeloest, wenn ein als geschwaerzt gefuehrtes Dokument keinen
+ * brauchbaren Abzug hat. Der Aufrufer markiert dann genau dieses Dokument als
+ * fehlerhaft — verarbeitet wird es NICHT.
+ */
+export class RedactionMissingError extends Error {
+    constructor(grund: string) {
+        super(`Geschwärztes Dokument ohne verwendbaren Abzug: ${grund}. `
+            + 'Bitte die Schwärzung erneut anwenden — das Original wird nicht verarbeitet.');
+        this.name = 'RedactionMissingError';
+    }
+}
+
+/**
  * Resolves the atomic source for OCR processing.
  * 🏮 CRITICAL RULE: If a file is redacted, the REDACTED data MUST be prioritized
  * to ensure sensitive original data never leaves the browser.
+ *
+ * GEFUNDEN BEIM LESEN, 19.08.2026: Die Regel stand da, die Bauart widersprach
+ * ihr. Fehlten bei einem als geschwaerzt gefuehrten Dokument die Bilder, gab
+ * diese Funktion `null` zurueck — und `null` heisst beim Aufrufer nicht "brich
+ * ab", sondern "nimm den Normalweg", also DAS ORIGINAL. Ein fail-open an genau
+ * der Stelle, die das Gegenteil verspricht.
+ *
+ * Heute tritt das nicht ein: Alle drei Stellen, die `isRedacted: true` setzen,
+ * legen die Bilder gleich mit dazu, und die Verarbeitungs-Pipeline setzt das
+ * Kennzeichen ausdruecklich zurueck, wenn sie keinen Abzug erzeugen kann. Die
+ * Zusicherung lebt also in den AUFRUFERN — und genau solche Zusicherungen
+ * driften in diesem Projekt.
+ *
+ * Deshalb faellt die Funktion jetzt zu: Kein Abzug, keine Verarbeitung. Der
+ * Aufrufer faengt den Fehler und markiert das Dokument sichtbar als
+ * fehlerhaft, statt still das Ungeschwaerzte zu verschicken.
  */
 export function resolveOCRSource(item: BatchFile): OCRSource | null {
     if (!item.files || item.files.length === 0) return null;
 
     // --- CASE A: REDACTED (Anonymisierungspfad) ---
-    if (item.isRedacted && item.redactedDataUrls && item.redactedDataUrls.length > 0) {
+    if (item.isRedacted) {
+        if (!item.redactedDataUrls || item.redactedDataUrls.length === 0) {
+            throw new RedactionMissingError('keine geschwärzten Seitenbilder vorhanden');
+        }
+
         // We strictly use the list of blacked-out images.
         const buffers = item.redactedDataUrls.map(url => url.split(',')[1]).filter(Boolean);
-        
-        if (buffers.length === 0) return null;
+
+        // Auch ein TEILWEISE unbrauchbarer Abzug faellt zu. Frueher schnitt
+        // `filter(Boolean)` die kaputten Seiten einfach heraus — die Texterkennung
+        // lief dann ueber vier statt fuenf Seiten, ohne dass es jemand merkte.
+        if (buffers.length !== item.redactedDataUrls.length) {
+            throw new RedactionMissingError(
+                `${item.redactedDataUrls.length - buffers.length} von ${item.redactedDataUrls.length} Seiten unlesbar`
+            );
+        }
 
         return {
             buffers,

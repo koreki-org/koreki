@@ -1,4 +1,4 @@
-import { resolveOCRSource } from '../../src/lib/privacy-utils';
+import { resolveOCRSource, RedactionMissingError } from '../../src/lib/privacy-utils';
 import { BatchFile } from '../../src/types';
 
 describe('Privacy Utils (Layer 1 Security Proof)', () => {
@@ -61,26 +61,34 @@ describe('Privacy Utils (Layer 1 Security Proof)', () => {
         expect(result?.mimeType).toBe('image/jpeg'); // We enforce jpeg for AI cost/speed
     });
 
-    it('should fail-safe (return null) if redaction is active but dataUrls are empty', () => {
+    /**
+     * KORRIGIERTE ERWARTUNG (19.08.2026).
+     *
+     * Diese beiden Tests hiessen "fail-safe" und verlangten `null`. Genau das
+     * war der Fehler: `null` bedeutet beim Aufrufer nicht "brich ab", sondern
+     * "nimm den Normalweg" — also DAS ORIGINAL. Der Test hat das Missverstaendnis
+     * festgeschrieben und damit verhindert, dass es auffiel.
+     *
+     * Sicher ist nur, gar nicht zu verarbeiten.
+     */
+    it('verarbeitet nichts, wenn die Schwaerzung ohne Bilder gefuehrt wird', () => {
         const item: Partial<BatchFile> = {
             files: [mockFile],
             isRedacted: true,
             redactedDataUrls: []
         };
 
-        const result = resolveOCRSource(item as BatchFile);
-        expect(result).toBeNull();
+        expect(() => resolveOCRSource(item as BatchFile)).toThrow(RedactionMissingError);
     });
 
-    it('should handle malformed dataUrls by returning null or empty set', () => {
+    it('verarbeitet nichts, wenn ein Seitenbild unlesbar ist', () => {
         const item: Partial<BatchFile> = {
             files: [mockFile],
             isRedacted: true,
             redactedDataUrls: ['invalid-data-string']
         };
 
-        const result = resolveOCRSource(item as BatchFile);
-        expect(result).toBeNull();
+        expect(() => resolveOCRSource(item as BatchFile)).toThrow(RedactionMissingError);
     });
 });
 

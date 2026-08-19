@@ -132,18 +132,28 @@ describe('Datenschutz', () => {
     });
 
     /**
-     * Als „geschwärzt" markiert, aber ohne Bilder: dann darf NICHT stillschweigend
-     * das Original genommen werden. `resolveOCRSource` liefert `null`, der
-     * Standardweg greift — der Fall ist damit sichtbar, nicht unterlaufen.
+     * Als „geschwärzt" markiert, aber ohne Bilder: dann darf NICHT das Original
+     * genommen werden.
+     *
+     * KORRIGIERTE ERWARTUNG (19.08.2026). Vorher prüfte dieser Test, dass
+     * `sourceOverride` undefined ist — und der Kommentar darüber widersprach
+     * sich selbst: „darf NICHT das Original genommen werden … der Standardweg
+     * greift". Der Standardweg IST das Original. Der Test hat also genau das
+     * abgesegnet, was er verhindern wollte.
+     *
+     * Sicher ist nur, gar nicht zu verarbeiten: Die Texterkennung läuft
+     * überhaupt nicht an, und das Dokument wird sichtbar als fehlerhaft
+     * markiert.
      */
-    it('faellt bei leerer Schwaerzungsliste nicht auf das Original zurueck', async () => {
-        const { result } = baue({ files: [arbeit({ isRedacted: true, redactedDataUrls: [] })] });
+    it('verarbeitet bei leerer Schwaerzungsliste gar nichts', async () => {
+        const { result, setBatchFiles } = baue({ files: [arbeit({ isRedacted: true, redactedDataUrls: [] })] });
 
         await act(async () => {
             await result.current.processSingleOCR(0);
         });
 
-        expect((runExtractionStrategy as jest.Mock).mock.calls[0][1].sourceOverride).toBeUndefined();
+        expect(runExtractionStrategy as jest.Mock).not.toHaveBeenCalled();
+        expect(setBatchFiles).toHaveBeenCalled();
     });
 });
 
