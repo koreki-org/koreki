@@ -5,6 +5,12 @@ import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source
 import { formatPluginFeedback } from '../grading/feedback-formatter';
 import { formatCalcTraceForPrompt } from '../grading/CalcTrace';
 import { shouldDisablePoints } from './prompt-builder';
+import { alsModellzahl } from '../zahlen';
+
+// Die Regel wohnt jetzt in `lib/zahlen` — sie wird auch beim Nachrechnen
+// nach einer manuellen Punktekorrektur gebraucht. Hier weiterhin sichtbar,
+// damit die Aufrufer nicht zwei Wege kennen muessen.
+export { alsModellzahl };
 
 /**
  * Eine Aufgabe der Musterloesung auf das KI-Ergebnis abbilden.
@@ -82,32 +88,6 @@ function kopfAusLayout(layoutTask: Task): Pick<AITask, 'name' | 'maxPoints'> {
         // optional, ein NaN dagegen wandert in die Gesamtpunktzahl der Arbeit.
         maxPoints: Number.isFinite(alsModellzahl(max, NaN)) ? alsModellzahl(max, NaN) : undefined
     };
-}
-
-/**
- * Eine Zahl aus einer Modell-Antwort — oder der Rueckfall.
- *
- * GEFUNDEN BEIM LESEN, 18.08.2026: Alle vier Abbildungs-Zweige rechneten die
- * Punktzahl des Modells mit `Number(...)` um, und keiner pruefte das Ergebnis.
- * `Number("drei")` und `Number(undefined)` ergeben beide NaN — und NaN ist
- * ansteckend: es wandert durch jede Summe, faerbt die Aufgabe, die Gesamtnote
- * und den Export ein. Nachgestellt: ein einziges Kriterium mit
- * `points: "drei"` liess eine vollstaendig richtig geloeste Aufgabe mit `NaN`
- * Punkten enden.
- *
- * Die beiden bisherigen Waechter davor griffen NICHT:
- * - `typeof x === 'number'` ist fuer NaN wahr,
- * - `x ?? y` und `x || 0` fangen nur null/undefined/leer.
- *
- * Reihenfolge der Pruefungen absichtlich so: leere Werte zuerst, damit
- * `alsModellzahl(null, rueckfall)` den Rueckfall liefert und nicht die 0, die
- * `Number(null)` ergaebe — sonst haette diese Absicherung stillschweigend die
- * Punktvergabe geaendert, statt nur das NaN zu verhindern.
- */
-export function alsModellzahl(wert: unknown, rueckfall: number): number {
-    if (wert === null || wert === undefined || wert === '') return rueckfall;
-    const zahl = Number(wert);
-    return Number.isFinite(zahl) ? zahl : rueckfall;
 }
 
 const CALC_TRACE_MARKER = '[📐 CalcTrace Engine - Mathematischer Abgleich]';

@@ -1,4 +1,5 @@
 import { diffWords, type Change } from 'diff';
+import { alsModellzahl } from './zahlen';
 import type { TargetGoal, CalcTraceResult, CalcTraceTemplate } from './grading/calc-trace-types';
 import type { GradingGraph, GradingResult } from './grading/types';
 
@@ -18,8 +19,27 @@ export function compareTexts(modelSolution: string, studentText: string): Change
  * Calculates a grade suggestion based on a linear key:
  * Einschätzung = 6 - 5 * (matchPercentage / 100)
  */
-export function calculateGrade(matchPercentage: number): string {
-    const p = Math.max(0, Math.min(100, matchPercentage));
+export function calculateGrade(matchPercentage: number | null | undefined): string {
+    // Ohne brauchbare Prozentzahl gibt es KEINE Note.
+    //
+    // GEFUNDEN BEIM LESEN, 19.08.2026: Der Parameter war als `number`
+    // deklariert, die Aufrufstelle liest ihn aber aus einer `any`-Antwort —
+    // der Compiler sah davon nichts. Und die Rechnung gab dann Auskunft, wo
+    // keine war:
+    //
+    //     calculateGrade(undefined) -> "NaN"   (steht so im Notenfeld)
+    //     calculateGrade(null)      -> "6,0"   (die SCHLECHTESTE Note)
+    //
+    // Der zweite Fall ist der gefaehrliche: `Math.min(100, null)` ist 0, und
+    // aus "keine Angabe" wird lautlos "durchgefallen" — eine plausibel
+    // aussehende Falschaussage ueber die Arbeit eines Schuelers.
+    //
+    // `'-'` ist der Platzhalter, den die Auswertung ohnehin schon kennt:
+    // `analytics-logic` schliesst ihn per `isNaN` aus dem Notenschnitt aus,
+    // und der Excel-Export schreibt ihn als Strich.
+    if (!Number.isFinite(matchPercentage)) return '-';
+
+    const p = Math.max(0, Math.min(100, matchPercentage as number));
     const grade = 6 - 5 * (p / 100);
     return grade.toFixed(1).replace('.', ',');
 }
@@ -48,11 +68,29 @@ export interface Task {
 
 export function calculatePercentageFromTasks(tasks: Task[]): number {
     if (!tasks || !Array.isArray(tasks)) return 0;
+
+    // Zaehler und Nenner umfassen DIESELBEN Aufgaben.
+    //
+    // GEFUNDEN BEIM LESEN, 19.08.2026: Hier stand zweimal `Number(...)`. Eine
+    // Maximalpunktzahl, die sich nicht deuten laesst, machte den Nenner zu NaN,
+    // die Bedingung `max > 0` falsch, und der Rueckgabewert 0 wurde ueber
+    // `calculateGrade` zur Note 6,0 — waehrend die Lehrkraft gerade Punkte
+    // korrigierte.
+    //
+    // Dieselbe Regel gilt seit dem 18.08.2026 in `parseCorrectionResult`; hier
+    // fehlte sie. Deshalb wohnt `alsModellzahl` jetzt in `lib/zahlen` statt in
+    // der KI-Abbildung: eine Regel, eine Stelle.
+    //
+    // Eine Aufgabe ohne deutbares Maximum laesst sich nicht anteilig
+    // verrechnen und bleibt aus BEIDEN Summen heraus — sonst zaehlten ihre
+    // Punkte mit, ihr Maximum aber nicht, und das Ergebnis stiege ueber 100 %.
     let obtained = 0;
     let max = 0;
     tasks.forEach(t => {
-        obtained += Number(t.pointsObtained || 0);
-        max += Number(t.maxPoints || 0);
+        const maximum = alsModellzahl(t.maxPoints, NaN);
+        if (!Number.isFinite(maximum)) return;
+        max += maximum;
+        obtained += alsModellzahl(t.pointsObtained, 0);
     });
     return max > 0 ? (obtained / max) * 100 : 0;
 }
