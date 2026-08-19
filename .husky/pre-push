@@ -1,8 +1,36 @@
 #!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
+
+# Bei der ERSTEN fehlgeschlagenen Pruefung abbrechen.
+#
+# GEFUNDEN AM 19.08.2026: Dieser Hook hat nie etwas aufgehalten. Ohne `set -e`
+# laeuft ein Shell-Skript nach einem Fehler einfach weiter, und der
+# Rueckgabewert ist der des LETZTEN Befehls — hier das `echo` ganz unten. Also
+# immer 0, also immer "bestanden".
+#
+# Nachgestellt: mit vier absichtlich zerstoerten Tests meldete der Hook
+# "✅ Pre-push checks passed!" und liess den Push durch. Dasselbe galt fuer
+# `tsc` (Rueckgabewert 2) und die beiden Pruefungen davor.
+#
+# Da `main` automatisch ausgeliefert wird, war damit gar kein Deploy-Tor da —
+# nur eines, das so aussah. Ein Waechter, der immer gruen meldet, ist
+# schlimmer als keiner: Man verlaesst sich auf ihn.
+set -e
 
 echo "🛡️ Running pre-push checks..."
+
 npm run security-check
 node scripts/ui-audit.js
 npx tsc --noEmit
+
+# Die Tests gehoeren hierher, weil der Push das Deployment ausloest.
+#
+# Bis heute prueste der Hook Sicherheit, UI-Audit und Typen — aber keinen
+# einzigen Test. Damit hielten 1711 Unit-Tests nichts auf.
+#
+# Die E2E-Kette (`npm run test:e2e`) steht BEWUSST nicht hier: Sie braucht
+# einen Dev-Server und kostet kalt eher anderthalb Minuten. Das bei jedem Push
+# zu zahlen fuehrt dazu, dass `--no-verify` zur Gewohnheit wird — und dann
+# schuetzt gar nichts mehr. Sie gehoert vor ein Release.
+npx jest --silent
+
 echo "✅ Pre-push checks passed!"
