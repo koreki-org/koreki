@@ -3,8 +3,7 @@ import {
     escapeRegExp,
     referencesVariable,
     renameVariableReferences,
-    variableReferencePattern
-} from '../../../src/lib/grading/variable-references';
+    variableReferencePattern, freieVariablenKennung } from '../../../src/lib/grading/variable-references';
 
 /**
  * Variablen-IDs sind frei eingebbar — beim Umbenennen wird nur auf
@@ -108,5 +107,61 @@ describe('variable-references', () => {
         it('liefert nichts ohne Formel', () => {
             expect(collectReferencedVariables(undefined, ['a'])).toEqual([]);
         });
+    });
+});
+
+/**
+ * Neue Variablen bekommen eine freie Kennung
+ * 🔑🛡️
+ *
+ * GEFUNDEN BEIM LESEN, 19.08.2026. Der Graph-Editor vergab beim Anlegen
+ * `${prefix}new_${Date.now().toString().slice(-4)}` — die letzten vier Stellen
+ * der Millisekunde — und prüfte NICHT, ob die Kennung schon vergeben ist. Zwei
+ * Variablen, die auf die Millisekunde genau zehn Sekunden auseinander angelegt
+ * werden, bekommen dieselbe. Bei zwanzig Variablen liegt das im Bereich
+ * weniger Prozent.
+ *
+ * Was eine doppelte Kennung anrichtet, steht in `graph-intake.ts`: Eine
+ * richtige Antwort bekommt 1 von 2 Punkten, weil zwei Variablen auf denselben
+ * Schülerwert zeigen.
+ *
+ * Das UMBENENNEN prüfte längst und warnt mit einer Meldung — nur das Anlegen
+ * tat es nicht. Wieder eine Regel, die an einer Stelle galt und an der
+ * Nachbarstelle fehlte.
+ */
+describe('freieVariablenKennung', () => {
+    const vars = (...ids: string[]) => ids.map(id => ({ id }));
+
+    it('nimmt die schlichte Kennung, solange sie frei ist', () => {
+        expect(freieVariablenKennung(vars('laenge', 'breite'), 'var_')).toBe('var_new');
+    });
+
+    /** DER BEFUND: vorher konnte hier dieselbe Kennung ein zweites Mal fallen. */
+    it('weicht aus, statt eine vergebene Kennung zu wiederholen', () => {
+        expect(freieVariablenKennung(vars('var_new'), 'var_')).toBe('var_new_2');
+    });
+
+    it('zaehlt weiter, solange belegt ist', () => {
+        expect(freieVariablenKennung(vars('var_new', 'var_new_2', 'var_new_3'), 'var_')).toBe('var_new_4');
+    });
+
+    /** Der Editor leitet den Prefix aus dem Gruppennamen ab (Subnetze). */
+    it('beachtet den uebergebenen Prefix', () => {
+        expect(freieVariablenKennung(vars('subneta_new'), 'subneta_')).toBe('subneta_new_2');
+        expect(freieVariablenKennung(vars('subneta_new'), 'subnetb_')).toBe('subnetb_new');
+    });
+
+    it('stoert sich nicht an Variablen ohne Kennung', () => {
+        expect(freieVariablenKennung([{ id: undefined }, { id: 'var_new' }], 'var_')).toBe('var_new_2');
+    });
+
+    /** Wiederholtes Anlegen bleibt eindeutig — das ist der eigentliche Zweck. */
+    it('liefert bei mehrfachem Anlegen lauter verschiedene Kennungen', () => {
+        const bestand: { id?: string }[] = [];
+        for (let i = 0; i < 25; i++) {
+            bestand.push({ id: freieVariablenKennung(bestand, 'var_') });
+        }
+
+        expect(new Set(bestand.map(v => v.id)).size).toBe(25);
     });
 });

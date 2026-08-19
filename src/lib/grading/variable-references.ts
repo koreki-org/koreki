@@ -75,3 +75,37 @@ export function collectReferencedVariables(
     if (!expression) return [];
     return candidateIds.filter(id => referencesVariable(expression, id));
 }
+
+/**
+ * Eine noch freie Variablen-Kennung.
+ *
+ * GEFUNDEN BEIM LESEN, 19.08.2026: Der Editor vergab beim Anlegen
+ * `${prefix}new_${Date.now().toString().slice(-4)}` — die letzten vier Stellen
+ * der Millisekunde — und prueste NICHT, ob die Kennung schon vergeben ist. Zwei
+ * Variablen, die auf die Millisekunde genau zehn Sekunden auseinander angelegt
+ * werden, bekommen dieselbe. Bei zwanzig Variablen liegt das im Bereich von
+ * ein paar Prozent.
+ *
+ * Was eine doppelte Kennung anrichtet, steht in `graph-intake.ts`: eine
+ * richtige Antwort bekommt 1 von 2 Punkten. Das UMBENENNEN prueft laengst und
+ * warnt — nur das Anlegen tat es nicht.
+ *
+ * Der Zaehler ist bewusst schlicht: Er muss nicht huebsch sein, sondern frei.
+ */
+export function freieVariablenKennung(
+    vorhandene: { id?: string }[],
+    prefix: string
+): string {
+    const belegt = new Set(vorhandene.map(v => v.id).filter(Boolean));
+
+    const kandidat = `${prefix}new`;
+    if (!belegt.has(kandidat)) return kandidat;
+
+    for (let n = 2; n <= 999; n++) {
+        const naechster = `${prefix}new_${n}`;
+        if (!belegt.has(naechster)) return naechster;
+    }
+
+    // Schranke gegen die Endlosschleife; hierher kommt niemand.
+    return `${prefix}new_${Date.now()}`;
+}

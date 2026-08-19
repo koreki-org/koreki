@@ -6,7 +6,7 @@ import {
     Send, MessageSquare
 } from 'lucide-react';
 import { GradingGraph, VariableDefinition, VariableType, ValidationType } from '../../lib/grading/types';
-import { renameVariableReferences } from '../../lib/grading/variable-references';
+import { renameVariableReferences, freieVariablenKennung } from '../../lib/grading/variable-references';
 import { buildPerfectInputs, computeExpectedValues, parsePlaygroundInputs } from '../../lib/grading/graph-preview';
 import { GraphJsonPanel } from './parts/GraphJsonPanel';
 import { GraphTestingPanel } from './parts/GraphTestingPanel';
@@ -200,7 +200,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
             prefix = `subnet${groupName.replace("Subnetz ", "").toLowerCase()}_`;
         }
 
-        const newId = `${prefix}new_${Date.now().toString().slice(-4)}`;
+        const newId = freieVariablenKennung(graph?.variables || [], prefix);
         const newVar: VariableDefinition = {
             id: newId,
             type: 'input',
