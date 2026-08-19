@@ -93,17 +93,34 @@ EXPOSE 3000
 # `start-period` grosszuegig, weil Next.js beim ersten Start compiliert — ohne
 # das meldete die Orchestrierung eine gesunde Instanz waehrend des Hochfahrens
 # als krank und startete sie im Kreis neu.
-# Der Check SAGT, warum er scheitert.
+# Lebenszeichen fuer die Orchestrierung (Coolify, Docker, Compose).
 #
-# Die erste Fassung beendete sich stumm mit 1. Im Log der Orchestrierung stand
-# dann `"Output": ""` — und aus einer leeren Ausgabe laesst sich nicht
+# Ohne das bleibt der Orchestrierung nur "laeuft der Container / antwortet der
+# Port". Zu schwach: Ein Next.js-Server antwortet auch dann noch, wenn die
+# Datenbank weg ist — also genau im Fall, den man bemerken will.
+# `/api/health` fasst sie deshalb wirklich an und meldet sonst 503.
+#
+# DER PORT KOMMT AUS `PORT`, NICHT AUS EINER ZAHL HIER.
+#
+# Die erste Fassung schrieb 3000 fest hinein und blockierte damit die
+# Auslieferung: Coolify setzt `PORT=80`, der Check klopfte an 3000, bekam
+# ECONNREFUSED — und Coolify rollte den neuen Container zurueck. Dieselbe Falle
+# steckte in den Compose-Dateien: `community-multi-full` betreibt den Container
+# ebenfalls auf 80, waehrend die beiden anderen 3000 nutzen. Zwei von vier
+# Auslieferungswegen waeren gescheitert.
+#
+# `process.env.PORT` statt `$PORT` in der Shell: HEALTHCHECK ersetzt keine
+# Build-Variablen, und so bleibt die Aufloesung dort, wo sie zur Laufzeit
+# stimmt.
+#
+# Der Check SAGT ausserdem, warum er scheitert. Die erste Fassung endete stumm
+# mit 1; im Log stand `"Output": ""`, und daraus liess sich nicht
 # unterscheiden, ob der Dienst noch startet, die Datenbank fehlt oder der
-# Befehl selbst gar nicht gefunden wurde. Eine Sonde, die nur "kaputt" sagt und
-# nicht "warum", verschiebt die Arbeit auf den schlechtesten Zeitpunkt: den
-# Ausfall.
+# Befehl gar nicht gefunden wurde. Erst die Klartext-Meldung hat den
+# Port-Fehler oben sichtbar gemacht.
 #
-# `--start-period=120s`: Der Container fuehrt vor dem Start noch Migrationen
-# aus (start.sh). Waehrend dieser Zeit zaehlen Fehlschlaege nicht als krank.
-HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3     CMD node -e "const r=require('http').get('http://127.0.0.1:3000/api/health',s=>{let b='';s.on('data',c=>b+=c);s.on('end',()=>{console.log('HTTP '+s.statusCode+' '+b);process.exit(s.statusCode===200?0:1)})});r.on('error',e=>{console.log('Verbindung fehlgeschlagen: '+e.message);process.exit(1)});r.setTimeout(9000,()=>{console.log('Zeitueberschreitung');r.destroy();process.exit(1)})"
+# `--start-period=120s`: Der Container fuehrt vor dem Start Migrationen aus
+# (start.sh); waehrenddessen sind Fehlschlaege normal.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3     CMD node -e "const p=process.env.PORT||3000;const r=require('http').get('http://127.0.0.1:'+p+'/api/health',s=>{let b='';s.on('data',c=>b+=c);s.on('end',()=>{console.log('HTTP '+s.statusCode+' '+b);process.exit(s.statusCode===200?0:1)})});r.on('error',e=>{console.log('Port '+p+': '+e.message);process.exit(1)});r.setTimeout(9000,()=>{console.log('Zeitueberschreitung auf Port '+p);r.destroy();process.exit(1)})"
 
 CMD ["./start.sh"]
