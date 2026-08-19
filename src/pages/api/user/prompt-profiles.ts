@@ -61,9 +61,22 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 return res.status(200).json({ success: true });
             }
             if (req.method === 'DELETE') {
-                await LocalProfileService.deleteProfile(req.query.id as string, userId);
+            // Die ID pruefen, bevor sie in den Dienst geht. Ohne das filtert
+            // `deleteProfile` auf `x.id !== undefined`, loescht also NICHTS und
+            // meldet trotzdem `200 success` — die Oberflaeche entfernt den
+            // Eintrag, und beim naechsten Laden ist er wieder da. Die drei
+            // Geschwister-Familien pruefen hier laengst (19.08.2026).
+                const validation = deleteSchema.safeParse(req.query);
+                if (!validation.success) return res.status(400).json({ message: 'ID erforderlich' });
+
+                await LocalProfileService.deleteProfile(validation.data.id, userId);
                 return res.status(200).json({ success: true });
             }
+
+            // Ohne dieses `return` faellt eine andere Methode aus dem lokalen
+            // Zweig heraus und laeuft in den SaaS-Pfad — der greift auf die
+            // Datenbank zu, die es auf dem Desktop gar nicht gibt.
+            return res.status(405).json({ message: 'Method not allowed' });
         } catch (err) {
             const { status, message } = toProfileHttpError(err, 'Lokaler Fehler beim Verarbeiten der Profile');
             if (status === 500) {

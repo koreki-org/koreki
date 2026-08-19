@@ -238,3 +238,93 @@ describe('Profil-Familien-Symmetrie', () => {
         });
     });
 });
+
+/**
+ * Dieselbe Symmetrie auf der ROUTEN-Seite.
+ * 🛣️
+ *
+ * Die Prüfungen oben lesen die Hooks — also die Client-Seite. Am 19.08.2026
+ * zeigte sich beim Lesen von `pages/api`, dass dieselben vier Familien auch
+ * dort auseinandergelaufen waren, und zwar in DREI Richtungen gleichzeitig:
+ *
+ *   - `skill-profiles` und `prompt-profiles` prüften im lokalen Zweig die
+ *     DELETE-ID nicht. `deleteProfile(undefined)` filtert auf
+ *     `x.id !== undefined`, löscht also NICHTS — und meldet `200 success`.
+ *     Die Oberfläche entfernt den Eintrag, beim nächsten Laden ist er zurück.
+ *   - Dieselben zwei hatten am Ende ihres lokalen Zweigs kein `405`. Eine
+ *     andere HTTP-Methode fiel dadurch in den SaaS-Pfad — der auf die
+ *     Datenbank zugreift, die es auf dem Desktop nicht gibt.
+ *   - `ai-profiles` las beim PATCH `req.body` roh, während die drei anderen
+ *     ein Schema benutzten.
+ *
+ * Keine dieser Lücken war ein falsch verstandener Sonderfall. Jede war eine
+ * Regel, die drei Familien kannten und die vierte nicht — dieselbe Klasse wie
+ * oben, nur eine Etage tiefer.
+ */
+const ROUTEN: Record<string, string> = {
+    'Expertise-Profile': 'pages/api/user/prompt-profiles.ts',
+    'KI-Profile': 'pages/api/user/ai-profiles.ts',
+    'Skill-Sets': 'pages/api/user/skill-profiles.ts',
+    'Erfahrungsschätze': 'pages/api/user/grading-memories.ts'
+};
+
+/**
+ * Schneidet den lokalen Zweig heraus: von `isLocalInstance()` bis zum ersten
+ * Datenbank-Zugriff. Letzterer ist der unverwechselbare Anfang des SaaS-Pfads
+ * — auf einer lokalen Instanz darf er nie erreicht werden.
+ *
+ * Ein erster Anlauf schnitt bei `const { claims }` ab. Das steht aber AUCH
+ * gleich zu Beginn des lokalen Zweigs, sodass der Ausschnitt fast leer blieb
+ * und der Test bei drei Familien fehlschlug, obwohl der Code stimmte.
+ */
+const lokalerZweig = (quelltext: string): string => {
+    const start = quelltext.indexOf('isLocalInstance()');
+    if (start === -1) return '';
+    const rest = quelltext.slice(start);
+    const ende = rest.indexOf('prisma.user.findUnique');
+    return ende === -1 ? rest : rest.slice(0, ende);
+};
+
+describe('Profil-Familien-Symmetrie: API-Routen', () => {
+    const routenQuellen = Object.fromEntries(
+        Object.entries(ROUTEN).map(([familie, datei]) => [
+            familie,
+            readFileSync(join(SRC_DIR, ...datei.split('/')), 'utf8')
+        ])
+    );
+
+    /**
+     * NUR den DELETE-Block betrachten, nicht den ganzen lokalen Zweig.
+     *
+     * Die erste Fassung dieses Tests prüfte den gesamten Zweig auf ein
+     * `if (!validation.success)` — und fand es, weil der PATCH-Block darüber
+     * eines enthält. Sie bestand damit auch gegen den fehlerhaften Stand. Die
+     * Mutationsprobe hat das aufgedeckt; ohne sie wäre hier ein Wächter
+     * eingezogen, der nichts bewacht.
+     */
+    it.each(Object.keys(ROUTEN))('%s prueft die DELETE-ID auch im lokalen Zweig', (familie) => {
+        const zweig = lokalerZweig(routenQuellen[familie]);
+        expect(zweig).toContain("req.method === 'DELETE'");
+
+        const deleteBlock = zweig.slice(zweig.indexOf("req.method === 'DELETE'"));
+        // Bis zum Aufruf des Dienstes: DAVOR muss die Pruefung stehen.
+        const bisZumDienst = deleteBlock.slice(0, deleteBlock.indexOf('.deleteProfile('));
+
+        expect(bisZumDienst).toMatch(/deleteSchema\.safeParse|if \(!profileId\)/);
+    });
+
+    it.each(Object.keys(ROUTEN))('%s beendet den lokalen Zweig mit 405', (familie) => {
+        expect(lokalerZweig(routenQuellen[familie])).toContain('405');
+    });
+
+    it.each(Object.keys(ROUTEN))('%s validiert das Umbenennen per Schema', (familie) => {
+        const quelle = routenQuellen[familie];
+        const patchStellen = quelle.split("req.method === 'PATCH'").slice(1);
+
+        expect(patchStellen.length).toBeGreaterThan(0);
+        patchStellen.forEach(abschnitt => {
+            // Nur den Anfang des Zweigs betrachten, nicht den Rest der Datei.
+            expect(abschnitt.slice(0, 400)).toMatch(/renameSchema\.safeParse|validation\.data/);
+        });
+    });
+});

@@ -28,6 +28,18 @@ const aiProfileSchema = z.object({
     ollamaNumCtx: z.number().optional(),
 });
 
+/**
+ * Umbenennen. Die drei Geschwister-Familien (Expertise, Skills,
+ * Erfahrungsschatz) hatten dieses Schema laengst — nur die KI-Profile lasen
+ * `req.body` roh und prueften bloss auf "nicht leer". Damit bestimmte der
+ * Client auch den TYP: ein Objekt statt einer Zeichenkette lief bis in die
+ * Datenbank-Abfrage und kam als 500 zurueck statt als 400 (19.08.2026).
+ */
+const renameSchema = z.object({
+    id: z.string().min(1),
+    newName: z.string().min(1)
+});
+
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
     // --- LOCAL INSTANCE BYPASS (Desktop & Community Single-User use file-based LocalAiProfileService) ---
     if (isLocalInstance()) {
@@ -50,8 +62,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 return res.status(200).json(profile);
             }
             if (req.method === 'PATCH') {
-                const { id, newName } = req.body;
-                if (!id || !newName) return res.status(400).json({ message: 'ID und Name erforderlich' });
+                const validation = renameSchema.safeParse(req.body);
+                if (!validation.success) return res.status(400).json({ message: 'ID und Name erforderlich' });
+                const { id, newName } = validation.data;
                 
                 await LocalAiProfileService.renameProfile(id, newName, userId);
                 return res.status(200).json({ success: true });
@@ -129,8 +142,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         }
 
         if (req.method === 'PATCH') {
-            const { id, newName } = req.body;
-            if (!id || !newName) return res.status(400).json({ message: 'ID und Name erforderlich' });
+            const validation = renameSchema.safeParse(req.body);
+            if (!validation.success) return res.status(400).json({ message: 'ID und Name erforderlich' });
+            const { id, newName } = validation.data;
 
             const existing = await prisma.aiProfile.findUnique({ where: { id } });
             if (!existing || existing.userId !== dbUserId) {
