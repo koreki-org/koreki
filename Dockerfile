@@ -93,6 +93,17 @@ EXPOSE 3000
 # `start-period` grosszuegig, weil Next.js beim ersten Start compiliert — ohne
 # das meldete die Orchestrierung eine gesunde Instanz waehrend des Hochfahrens
 # als krank und startete sie im Kreis neu.
-HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3     CMD node -e "require('http').get('http://127.0.0.1:3000/api/health',r=>process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"
+# Der Check SAGT, warum er scheitert.
+#
+# Die erste Fassung beendete sich stumm mit 1. Im Log der Orchestrierung stand
+# dann `"Output": ""` — und aus einer leeren Ausgabe laesst sich nicht
+# unterscheiden, ob der Dienst noch startet, die Datenbank fehlt oder der
+# Befehl selbst gar nicht gefunden wurde. Eine Sonde, die nur "kaputt" sagt und
+# nicht "warum", verschiebt die Arbeit auf den schlechtesten Zeitpunkt: den
+# Ausfall.
+#
+# `--start-period=120s`: Der Container fuehrt vor dem Start noch Migrationen
+# aus (start.sh). Waehrend dieser Zeit zaehlen Fehlschlaege nicht als krank.
+HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3     CMD node -e "const r=require('http').get('http://127.0.0.1:3000/api/health',s=>{let b='';s.on('data',c=>b+=c);s.on('end',()=>{console.log('HTTP '+s.statusCode+' '+b);process.exit(s.statusCode===200?0:1)})});r.on('error',e=>{console.log('Verbindung fehlgeschlagen: '+e.message);process.exit(1)});r.setTimeout(9000,()=>{console.log('Zeitueberschreitung');r.destroy();process.exit(1)})"
 
 CMD ["./start.sh"]
