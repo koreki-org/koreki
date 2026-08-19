@@ -1,8 +1,22 @@
 import type { NextApiResponse } from 'next';
+import { z } from 'zod';
 import prisma from '@/lib/prisma';
 import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/security';
 import { logger } from '@/lib/logger';
 import { toErrorMessage } from '@/lib/error-message';
+
+/**
+ * Der Rumpf dieser Anfrage.
+ *
+ * Vorher stand hier `const { workspaceId } = req.body` mit einer blossen
+ * Leer-Pruefung — der Client bestimmte damit auch den TYP. Ein Objekt statt
+ * einer Zeichenkette lief bis in die Datenbank-Abfrage und endete dort als
+ * 500 statt als 400. `architectural-vision` §8 verlangt das Schema; die Regel
+ * hatte bis zum 19.08.2026 nur keinen Waechter.
+ */
+const switchWorkspaceSchema = z.object({
+    workspaceId: z.string().min(1, 'workspaceId fehlt.')
+});
 
 /**
  * Switch Workspace API
@@ -14,8 +28,11 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
     const logtoId = requireUserId(req);
 
-    const { workspaceId } = req.body;
-    if (!workspaceId) return res.status(400).json({ error: 'workspaceId fehlt.' });
+    const validation = switchWorkspaceSchema.safeParse(req.body);
+    if (!validation.success) {
+        return res.status(400).json({ error: validation.error.issues[0].message });
+    }
+    const { workspaceId } = validation.data;
 
     try {
         // --- INDUSTRIAL MEMBERSHIP VERIFICATION ---
