@@ -8,7 +8,35 @@ test.describe('Koreki Golden Thread (Zone B) - Full Suite', () => {
     const screenshotDir = path.resolve(process.cwd(), 'tests', 'reports', 'screenshots');
     if (!fs.existsSync(screenshotDir)) fs.mkdirSync(screenshotDir, { recursive: true });
 
-    test('should perform full correction workflow from upload to final result', async ({ page }) => {
+    /**
+     * STILLGELEGT AM 19.08.2026 — dieser Test belegt nichts.
+     *
+     * Drei Gruende, jeder fuer sich ausreichend:
+     *
+     * 1. Er lief gegen die PRODUKTION (`baseURL: https://koreki.org`) und
+     *    begann mit einem Aufraeumschritt, der jeden gefundenen
+     *    "Loeschen"-Knopf klickte und bestaetigte — auf dem echten Konto. Der
+     *    Block ist entfernt; hier stand er.
+     *
+     * 2. Sieben Schritte sind bedingt (`if (sichtbar) { ... } else { weiter }`).
+     *    Findet er den Bilderkennungs-Knopf nicht, ueberspringt er die
+     *    Bilderkennung — und ist gruen. Ein Test, der gruen sein kann, waehrend
+     *    der geprueste Schritt gar nicht stattfand, ist schlimmer als keiner:
+     *    Er gibt Sicherheit vor.
+     *
+     * 3. `click({ force: true })` umgeht Playwrights Pruefung, ob ein Element
+     *    ueberhaupt klickbar ist. Ein von einem Overlay verdeckter Knopf wird
+     *    trotzdem "geklickt" — die Oberflaeche kann kaputt sein, ohne dass es
+     *    auffaellt. Dazu feste Wartezeiten statt Zustandspruefung.
+     *
+     * Er bleibt als Beschreibung der Nutzerreise stehen, bis der Ersatz gegen
+     * einen LOKALEN Dev-Server steht — deterministisch, ohne Credits, und mit
+     * gestubbtem KI-Anbieter, damit auch die boesen Antworten pruefbar sind.
+     *
+     * ACHTUNG: Die Skill `layer3-smoke` zeigt auf diesen Test und laeuft damit
+     * ins Leere, bis der Ersatz da ist.
+     */
+    test.skip('should perform full correction workflow from upload to final result', async ({ page }) => {
         // --- 1. Dashboard Access & Reset ---
         await page.goto('https://koreki.org/app');
         await page.waitForTimeout(3000); // Let React fully hydrate
@@ -31,17 +59,6 @@ test.describe('Koreki Golden Thread (Zone B) - Full Suite', () => {
         
         await page.screenshot({ path: path.join(screenshotDir, '00_dashboard_start.png'), fullPage: true });
 
-        // Cleanup existing assets
-        const deleteBtns = await page.getByRole('button').filter({ hasText: /Löschen/i }).all();
-        for (const btn of deleteBtns) {
-            await btn.click();
-            const confirmDel = page.getByRole('button', { name: /Ja|Bestätigen|Löschen/i }).first();
-            if (await confirmDel.isVisible({ timeout: 2000 }).catch(() => false)) {
-                await confirmDel.click();
-            }
-            await page.waitForTimeout(500);
-        }
-        console.log('Cleanup done.');
 
         // --- 2. Musterlösung Upload ---
         console.log('Uploading Musterlösung (via setInputFiles)...');

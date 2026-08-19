@@ -2,7 +2,18 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 import fs from 'fs';
 
-test('DEBUG: Test file upload triggers React onChange', async ({ page }) => {
+/**
+ * STILLGELEGT AM 19.08.2026.
+ *
+ * Eine Debug-Restdatei — der Name sagt es selbst. Sie laedt eine Datei nach
+ * PRODUKTION (koreki.org) hoch, um zu sehen, ob React ein onChange ausloest.
+ * Als Test belegt sie nichts, als Werkzeug gehoert sie nicht ins Repo.
+ *
+ * Nicht geloescht, weil das eine Entscheidung des Betreibers ist — aber
+ * stillgelegt, damit `npm run test:e2e` nicht ungefragt in die Produktion
+ * schreibt.
+ */
+test.skip('DEBUG: Test file upload triggers React onChange', async ({ page }) => {
     await page.goto('https://koreki.org/app');
     await page.waitForTimeout(5000);
 
