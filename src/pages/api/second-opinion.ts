@@ -7,7 +7,7 @@ import { executeOllamaRequest } from '../../lib/ai/ollama-logic';
 import { logger } from '../../lib/logger';
 import { withSecurity, AuthenticatedRequest } from '../../lib/security';
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
-import { checkAiBudget, checkAndDeductCredits } from '../../lib/billing';
+import { checkAiBudget, checkAndDeductCredits, resolveActiveWorkspace } from '../../lib/billing';
 import { isLocalInstance } from '../../lib/env-context';
 import { requireOpenAiConnection } from '../../lib/ai/provider-connection';
 import { toErrorMessage } from '../../lib/error-message';
@@ -81,6 +81,33 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const userId = claims?.sub;
 
         // --- AI Cost Brake (Saeule 7): absoluter Monatsdeckel der Instanz ---
+        // --- COMPLIANCE EARLY GATEKEEPER ---
+        //
+        // GEFUNDEN BEIM LESEN, 19.08.2026: Diese Route war die einzige der
+        // vier, die SCHUELERTEXT verarbeiten, ohne eigenen Compliance-Gate.
+        // Sie verliess sich auf `checkAndDeductCredits` weiter unten — und das
+        // wird bei Rueckfragen ABSICHTLICH uebersprungen, weil eine Rueckfrage
+        // nichts kosten soll. Die Kulanz-Entscheidung hat damit nebenbei die
+        // AVV-Pruefung abgeschaltet: Ein Folge-Aufruf schickte Schuelertext an
+        // den Anbieter, ohne dass die Zustimmung der Schulleitung geprueft war.
+        //
+        // Kein offenes Tor — die ERSTE Nachricht eines Gespraechs wird
+        // weiterhin geprueft, ein Folge-Aufruf setzt sie also voraus. Aber die
+        // Pruefung darf nicht an der Abrechnung haengen, sonst nimmt jede
+        // kuenftige Kostenbefreiung sie wieder mit.
+        //
+        // Behandlung woertlich wie in clean-and-analyze.ts, damit dieselbe Lage
+        // nicht zwei verschiedene Antworten erzeugt. An den Kosten aendert sich
+        // nichts: `resolveActiveWorkspace` bucht nicht.
+        try {
+            await resolveActiveWorkspace(userId ?? '');
+        } catch (error) {
+            const message = toErrorMessage(error);
+            return res
+                .status(message.includes('Compliance') || message.includes('AVV') ? 403 : 500)
+                .json({ error: message });
+        }
+
         const budgetError = await checkAiBudget('correction');
         if (budgetError) {
             return res.status(429).json({ error: budgetError });

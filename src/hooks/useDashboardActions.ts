@@ -31,7 +31,22 @@ export const useDashboardActions = (
         try {
             const res = await apiClient.post('/api/user/unlock-expert', {});
             if (res.ok) {
-                setUserData((prev: any) => ({ ...prev, role: 'ADMIN' }));
+                // Die Rolle nehmen, die der Server vergeben HAT.
+                //
+                // GEFUNDEN BEIM LESEN, 19.08.2026: Hier stand fest 'ADMIN'.
+                // Die Route vergibt aber 'EXPERTE' und meldet das auch so
+                // zurueck (`newRole`). Der Client-Zustand behauptete danach
+                // Systemadministrator — und der Zugang zu den
+                // System-Einstellungen haengt in AppHeader genau daran.
+                //
+                // Echte Rechte entstanden dadurch nicht: Die Admin-Routen
+                // pruefen die Rolle in der Datenbank (`requireAdmin: 'SYS'`)
+                // und antworten mit 403. Der Nutzer sah nach dem Kauf also
+                // einen Knopf, der ihn ins Leere fuehrt — bis zum naechsten
+                // Neuladen.
+                const daten = await res.json().catch(() => null);
+                const neueRolle = daten?.newRole ?? 'EXPERTE';
+                setUserData((prev: any) => ({ ...prev, role: neueRolle }));
             }
         } catch (err) {
             console.error("Expert unlock error:", err);

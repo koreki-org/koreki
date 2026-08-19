@@ -31,6 +31,64 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const currentTOM = getLatestLegalDocument('tom');
         const currentManual = getLatestLegalDocument('betriebsanleitung');
 
+        // Ziel-Workspace und Berechtigung ZUERST — vor dem Protokolleintrag.
+        //
+        // Stand die Pruefung dahinter, hinterliess ein abgelehnter Versuch
+        // trotzdem einen Eintrag "AVV_CONSENT_ACCEPTED". Ein Protokoll, das
+        // eine Zustimmung ausweist, die nie erteilt wurde, ist schlimmer als
+        // keines: Es ist ausgerechnet der Nachweis, auf den sich im Ernstfall
+        // jemand beruft.
+        let targetWorkspaceId: string | undefined = workspaceId;
+
+        if (!targetWorkspaceId) {
+            // Ohne Angabe gilt der persoenliche Workspace.
+            const personalWS = await prisma.membership.findFirst({
+                where: { userId: user.id, workspace: { type: 'PERSONAL' } }
+            });
+            targetWorkspaceId = personalWS?.workspaceId;
+        }
+
+        if (targetWorkspaceId) {
+            // --- MANDANTEN-GRENZE ---
+            //
+            // GEFUNDEN BEIM LESEN, 19.08.2026: Die Aktualisierung unten stand
+            // ohne jede Pruefung. `workspaceId` kam ungeprueft aus dem
+            // Anfrage-Rumpf — JEDER angemeldete Nutzer konnte damit fuer einen
+            // BELIEBIGEN fremden Workspace `avvAccepted: true` setzen.
+            //
+            // Das ist nicht irgendein Flag: An ihm haengt der Compliance-Riegel
+            // vor der KI-Verarbeitung ("Compliance: AVV-Zustimmung der
+            // Schulleitung fehlt", siehe lib/billing.ts). Ein Fremder konnte
+            // damit die Verarbeitung fuer eine Schule freischalten, deren
+            // Leitung nie zugestimmt hat.
+            //
+            // Architectural Vision §4 sagt es woertlich: "Jede Query muss
+            // zwingend auf die organization_id filtern."
+            //
+            // Geprueft wird wie in `withSecurity({ requireAdmin: 'ORG' })`:
+            // Mitgliedschaft im Ziel-Workspace mit der Rolle ADMIN oder OWNER,
+            // oder globaler Systemadministrator. Persoenliche Workspaces
+            // bekommen ihrem Besitzer bei der Anlage die Rolle OWNER — der
+            // uebliche Weg bleibt damit unveraendert.
+            const mitgliedschaft = await prisma.membership.findFirst({
+                where: { userId: user.id, workspaceId: targetWorkspaceId }
+            });
+            const darfZustimmen =
+                (mitgliedschaft?.role === 'ADMIN' || mitgliedschaft?.role === 'OWNER')
+                || user.role === 'ADMIN';
+
+            if (!darfZustimmen) {
+                logger.security('AVV-Zustimmung fuer fremden Workspace abgelehnt', {
+                    endpoint: req.url,
+                    userId: user.id,
+                    workspaceId: targetWorkspaceId
+                });
+                return res.status(403).json({
+                    error: 'Nur die Leitung des Workspace kann die AVV-Zustimmung erteilen.'
+                });
+            }
+        }
+
         // 1. Structural Audit Log Entry
         await prisma.privacyLog.create({
             data: {
@@ -45,16 +103,6 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         });
 
         // 2. Update Fast-Lookup Flags (UNIFIED: Always Workspace-Centric)
-        let targetWorkspaceId = workspaceId;
-        
-        if (!targetWorkspaceId) {
-            // Find Personal Workspace if no ID provided
-            const personalWS = await prisma.membership.findFirst({
-                where: { userId: user.id, workspace: { type: 'PERSONAL' } }
-            });
-            targetWorkspaceId = personalWS?.workspaceId;
-        }
-
         if (targetWorkspaceId) {
             await prisma.workspace.update({
                 where: { id: targetWorkspaceId },
