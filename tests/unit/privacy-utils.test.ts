@@ -190,4 +190,55 @@ describe('applyRedactionsToPreviews (Layer 1 Security Proof)', () => {
         expect(mockFillRect).toHaveBeenNthCalledWith(1, 10, 20, 100, 50);
         expect(mockFillRect).toHaveBeenNthCalledWith(2, 200, 300, 150, 60);
     });
+
+    /**
+     * DER BEFUND vom 19.08.2026 — der schwerste dieser Durchsicht.
+     *
+     * Liess sich fuer eine Seite keine Zeichenflaeche anlegen, stand hier
+     * `results.push(url)` — also das ORIGINAL. Diese Liste wird zu
+     * `redactedDataUrls` und geht an den KI-Anbieter, waehrend das Dokument als
+     * geschwaerzt gilt und in der Liste eine gruene Kennzeichnung traegt. Eine
+     * Seite, die sich nicht schwaerzen liess, wurde damit im Klartext
+     * verschickt.
+     *
+     * Selten, aber nicht theoretisch: `getContext('2d')` scheitert unter
+     * Speicherdruck, und mehrseitige Scans werden mit Faktor 2.0 bis 2.5
+     * gerendert.
+     */
+    it('liefert NIEMALS die ungeschwaerzte Seite, wenn die Leinwand fehlt', async () => {
+        const { applyRedactionsToPreviews, RedactionMissingError } = require('../../src/lib/privacy-utils');
+
+        (document.createElement as jest.Mock).mockImplementation((tagName: string) => {
+            if (tagName === 'canvas') {
+                return { width: 0, height: 0, getContext: () => null, toDataURL: () => '' };
+            }
+            return originalCreateElement(tagName);
+        });
+
+        const previewUrls = ['data:image/jpeg;base64,GEHEIM'];
+        const rects = { 0: [{ x: 10, y: 20, w: 100, h: 50 }] };
+
+        await expect(applyRedactionsToPreviews(previewUrls, rects))
+            .rejects.toThrow(RedactionMissingError);
+    });
+
+    /**
+     * Die Ausnahme gilt nur fuer Seiten MIT Balken. Eine Seite ohne
+     * Schwaerzung geht weiterhin unveraendert durch — dort gibt es nichts zu
+     * verdecken, und der frueher genutzte Durchreich-Pfad ist korrekt.
+     */
+    it('reicht eine Seite ohne Balken weiterhin durch', async () => {
+        const { applyRedactionsToPreviews } = require('../../src/lib/privacy-utils');
+
+        (document.createElement as jest.Mock).mockImplementation((tagName: string) => {
+            if (tagName === 'canvas') {
+                return { width: 0, height: 0, getContext: () => null, toDataURL: () => '' };
+            }
+            return originalCreateElement(tagName);
+        });
+
+        const result = await applyRedactionsToPreviews(['data:image/jpeg;base64,OHNE_PII'], {});
+
+        expect(result).toEqual(['data:image/jpeg;base64,OHNE_PII']);
+    });
 });

@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { zeichneSchwaerzungsVorschau } from '@/lib/redaction-preview';
 import { X, Trash2, Check, RotateCcw, ChevronLeft, ChevronRight, PenTool, Loader2, Users, AlertTriangle } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Checkbox } from './ui/Checkbox';
@@ -63,6 +64,19 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
      * einem separat mitgeführten Schalter. Der Haken bleibt als zusätzlicher
      * Auslöser erhalten, damit er auch ohne neu gezogenen Balken wirkt.
      */
+    /**
+     * Anwenden — und einen Fehlschlag NICHT verschlucken. Die Knoepfe riefen
+     * die Schwaerzung ohne `await` und ohne `catch`; seit sie abbricht, statt
+     * eine Seite wegzulassen, braucht es beides (19.08.2026).
+     */
+    const anwenden = async () => {
+        try {
+            await handlers.processAndAnonymize(handleSave);
+        } catch (err) {
+            alert(err instanceof Error ? err.message : 'Die Schwärzung konnte nicht angewendet werden.');
+        }
+    };
+
     const handleSave = (redactedDataUrls: string[], savedRects: RedactionRectMap) => {
         const hasSharedRects = Object.values(savedRects)
             .some(pageRects => pageRects?.some(r => r.scope === 'shared'));
@@ -93,58 +107,18 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
     }, [activeImage]);
 
     // UI-Level Drawing Effect (keeps the canvas state reactive)
+    //
+    // Das Zeichnen selbst steht in `lib/redaction-preview` — hier bleibt nur,
+    // WANN gezeichnet wird.
     useEffect(() => {
         if (!canvasRef.current || !activeImage) return;
-        const canvas = canvasRef.current;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        const primary = readPrimaryColor();
-
-        // Clear and redraw
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(activeImage, 0, 0, canvas.width, canvas.height);
-
-        // 🏮 Die Einfärbung und die Beschriftung existieren AUSSCHLIESSLICH hier
-        // in der Vorschau. Der gespeicherte Abzug entsteht in einer eigenen
-        // Leinwand (processAndAnonymize) und ist durchgehend schwarz — Text im
-        // Bild würde von der Bilderkennung mit-transkribiert und landete als
-        // Fremdwort in der Schülerarbeit.
-        const fontSize = Math.max(12, Math.round(canvas.width / 55));
-        ctx.textBaseline = 'middle';
-
-        rects.forEach(r => {
-            const isShared = r.scope === 'shared';
-            ctx.fillStyle = isShared ? primary : '#0f172a';
-            ctx.fillRect(r.x, r.y, r.w, r.h);
-
-            const label = isShared ? 'ALLE SCANS' : 'NUR HIER';
-            ctx.font = `700 ${fontSize}px Inter, sans-serif`;
-            const labelWidth = ctx.measureText(label).width;
-
-            // Nur beschriften, wenn der Balken den Text trägt — schmale Streifen
-            // bleiben unbeschriftet, dort trägt allein die Farbe die Information.
-            if (r.w > labelWidth * 1.4 && r.h > fontSize * 1.6) {
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-                ctx.fillText(label, r.x + fontSize * 0.6, r.y + r.h / 2);
-            }
-        });
-
-        // Draw current drag rect
-        if (isDrawing) {
-            ctx.strokeStyle = primary;
-            const displayWidth = canvas.clientWidth || 1;
-            ctx.lineWidth = Math.max(2, (2 * canvas.width) / displayWidth);
-
-            const x = Math.min(startPos.x, currentPos.x);
-            const y = Math.min(startPos.y, currentPos.y);
-            const w = Math.abs(startPos.x - currentPos.x);
-            const h = Math.abs(startPos.y - currentPos.y);
-
-            ctx.strokeRect(x, y, w, h);
-            ctx.fillStyle = 'rgba(37, 99, 235, 0.2)';
-            ctx.fillRect(x, y, w, h);
-        }
+        zeichneSchwaerzungsVorschau(
+            canvasRef.current,
+            activeImage,
+            rects,
+            readPrimaryColor(),
+            isDrawing ? { start: startPos, aktuell: currentPos } : undefined
+        );
     }, [activeImage, rects, isDrawing, startPos, currentPos]);
 
     if (!isOpen) return null;
@@ -170,7 +144,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                             variant="default" 
                             size="icon" 
                             className="sm:hidden h-10 w-10 rounded-xl transition-all shadow-sm"
-                            onClick={() => handlers.processAndAnonymize(handleSave)}
+                            onClick={() => void anwenden()}
                             disabled={loading || Object.keys(images).length === 0}
                             title="Schwärzung anwenden"
                         >
@@ -325,7 +299,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                         <Button variant="outline" onClick={onClose} className="h-10 px-5 font-semibold hidden sm:flex">
                             Abbrechen
                         </Button>
-                        <Button onClick={() => handlers.processAndAnonymize(handleSave)} disabled={loading || Object.keys(images).length === 0} className="h-10 px-6 font-bold flex-1 sm:flex-none shadow-lg shadow-primary/20 gap-2">
+                        <Button onClick={() => void anwenden()} disabled={loading || Object.keys(images).length === 0} className="h-10 px-6 font-bold flex-1 sm:flex-none shadow-lg shadow-primary/20 gap-2">
                             <Check size={18} />
                             {applyToAllScans
                                 ? `${templateSize} Balken auf ${otherScanCount + 1} Scans`

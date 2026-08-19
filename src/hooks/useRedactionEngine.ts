@@ -231,9 +231,28 @@ export const useRedactionEngine = (
     };
 
     // --- Final Anonymization Logic ---
+    /**
+     * Erzeugt den geschwaerzten Abzug — vollstaendig oder gar nicht.
+     *
+     * GEFUNDEN BEIM LESEN, 19.08.2026: Hier stand `if (!offCtx) continue;`.
+     * Liess sich fuer eine Seite keine Leinwand anlegen, verschwand sie
+     * lautlos aus dem Abzug. Der Lehrkraft wurde ein fertiges Ergebnis
+     * gemeldet, tatsaechlich hatte das Dokument eine Seite weniger — und die
+     * Texterkennung lief anschliessend ueber eine Schuelerseite weniger, ohne
+     * dass irgendwo etwas fehlte, das jemandem aufgefallen waere.
+     *
+     * Selten, aber nicht theoretisch: `getContext('2d')` scheitert unter
+     * Speicherdruck, und mehrseitige Scans werden hier mit Faktor 2.0
+     * gerendert.
+     *
+     * Ein Teil-Abzug ist die schlechteste aller Antworten — er sieht aus wie
+     * ein ganzer. Deshalb: entweder alle Seiten oder ein Fehler.
+     */
     const processAndAnonymize = async (onSave: (dataUrls: string[], rects: Record<number, Rect[]>) => void) => {
         const pageIndices = Object.keys(images).map(Number).sort((a, b) => a - b);
-        if (pageIndices.length === 0) return;
+        if (pageIndices.length === 0) {
+            throw new Error('Es sind keine Seitenbilder geladen — die Schwärzung kann nicht angewendet werden.');
+        }
 
         const results: string[] = [];
 
@@ -245,7 +264,12 @@ export const useRedactionEngine = (
             offCanvas.width = img.width;
             offCanvas.height = img.height;
             const offCtx = offCanvas.getContext('2d');
-            if (!offCtx) continue;
+            if (!offCtx) {
+                throw new Error(
+                    `Seite ${i + 1} konnte nicht geschwärzt werden (keine Zeichenfläche verfügbar). `
+                    + 'Es wurde nichts gespeichert — bitte andere Anwendungen schließen und erneut versuchen.'
+                );
+            }
 
             // Draw original page
             offCtx.drawImage(img, 0, 0);

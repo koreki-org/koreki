@@ -19,10 +19,30 @@ const mockedRenderDocumentPages = renderDocumentPages as jest.MockedFunction<typ
  */
 describe('useRedactionBroadcast', () => {
     const OriginalImage = global.Image;
+    let originalCreateElement: typeof document.createElement;
 
     beforeEach(() => {
         mockedRenderDocumentPages.mockReset();
         mockedRenderDocumentPages.mockResolvedValue(['data:image/jpeg;base64,RENDERED']);
+
+        // jsdom liefert fuer `getContext('2d')` null. Bis zum 19.08.2026 fiel
+        // das nicht auf, weil `applyRedactionsToPreviews` dann das ORIGINAL
+        // durchreichte — dieser Test bestand also, waehrend die "geschwaerzten"
+        // Bilder in Wahrheit die ungeschwaerzten waren. Er hat den Fehler
+        // mitgetragen, statt ihn zu zeigen.
+        //
+        // Mit einer funktionierenden Leinwand pruefen die Zusicherungen unten
+        // das, was sie behaupten.
+        originalCreateElement = document.createElement.bind(document);
+        jest.spyOn(document, 'createElement').mockImplementation(((tag: string) => {
+            if (tag !== 'canvas') return originalCreateElement(tag);
+            return {
+                width: 0,
+                height: 0,
+                getContext: () => ({ drawImage: jest.fn(), fillRect: jest.fn(), fillStyle: '' }),
+                toDataURL: () => 'data:image/jpeg;base64,GESCHWAERZT'
+            };
+        }) as typeof document.createElement);
 
         class LoadingImage {
             onload: (() => void) | null = null;
@@ -41,6 +61,7 @@ describe('useRedactionBroadcast', () => {
 
     afterEach(() => {
         (global as any).Image = OriginalImage;
+        jest.restoreAllMocks();
     });
 
     const scan = (name: string, overrides: Partial<BatchFile> = {}): BatchFile => ({

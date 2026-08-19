@@ -141,9 +141,32 @@ export const useRedactionBroadcast = (
                     continue;
                 }
 
+                // Ein Fehlschlag betrifft nur DIESES Dokument.
+                //
+                // `applyRedactionsToPreviews` bricht seit dem 19.08.2026 ab,
+                // statt eine nicht schwaerzbare Seite im Klartext
+                // durchzureichen. Ohne dieses `catch` risse der Abbruch die
+                // ganze Sammel-Uebertragung mit — und zwar unbemerkt, weil der
+                // Aufrufer sie mit `void` startet.
+                //
+                // Behandelt wie der Fall ohne Seitenbilder direkt darueber: Die
+                // Rechtecke werden vorgemerkt, das Dokument aber NICHT als
+                // geschwaerzt gekennzeichnet. Dann greift die
+                // Datenschutz-Warnung vor dem Absenden.
+                let abzug: string[];
+                try {
+                    abzug = await applyRedactionsToPreviews(basis, merged);
+                } catch (err) {
+                    logger.warn("Sammel-Schwärzung für ein Dokument fehlgeschlagen", {
+                        index: i, message: String(err)
+                    });
+                    updates.set(i, { redactionRects: merged });
+                    continue;
+                }
+
                 const verwirftOcr = invalidatesOcr(item, merged);
                 updates.set(i, {
-                    redactedDataUrls: await applyRedactionsToPreviews(basis, merged),
+                    redactedDataUrls: abzug,
                     redactionRects: merged,
                     isRedacted: true,
                     ...(verwirftOcr ? { fileText: "", ocrDone: false } : {}),

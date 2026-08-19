@@ -239,9 +239,24 @@ export async function applyRedactionsToPreviews(
         canvas.height = img.height;
         const ctx = canvas.getContext('2d');
         
+        // NIEMALS die ungeschwaerzte Seite ausliefern.
+        //
+        // GEFUNDEN BEIM LESEN, 19.08.2026: Hier stand `results.push(url)` —
+        // also das ORIGINAL. Diese Liste wird zu `redactedDataUrls` und geht an
+        // den KI-Anbieter, waehrend das Dokument als geschwaerzt gilt und in
+        // der Liste eine gruene Kennzeichnung traegt. Eine Seite, die sich
+        // nicht schwaerzen liess, wurde damit im Klartext verschickt.
+        //
+        // Es trifft nur Seiten, fuer die es ueberhaupt Balken gibt — Seiten
+        // ohne Schwaerzung gehen weiter unveraendert durch (oben abgehandelt).
+        //
+        // Selten, aber nicht theoretisch: `getContext('2d')` scheitert unter
+        // Speicherdruck, und mehrseitige Scans werden mit Faktor 2.0 bis 2.5
+        // gerendert.
         if (!ctx) {
-            results.push(url);
-            continue;
+            throw new RedactionMissingError(
+                `Seite ${i + 1} konnte nicht geschwärzt werden (keine Zeichenfläche verfügbar)`
+            );
         }
 
         ctx.drawImage(img, 0, 0);
