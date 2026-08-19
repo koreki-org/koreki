@@ -8,14 +8,17 @@ Dieser Workflow verifiziert die Kette von der Musterlösung bis zur Note.
 > Golden-Thread-Test **gegen die Produktion** (`koreki.org`). Der begann mit
 > einem Aufräumschritt, der dort jeden gefundenen „Löschen"-Knopf klickte und
 > bestätigte, verbrauchte echte Credits und konnte ungetaggte Änderungen gar
-> nicht prüfen. Er ist stillgelegt; der Befehl zeigte danach auf einen Test,
-> der gar nicht mehr lief — er hätte „0 Tests" gemeldet und wie ein Erfolg
-> ausgesehen.
+> nicht prüfen.
+>
+> Er ist gelöscht, zusammen mit der produktionsgebundenen Playwright-Konfiguration
+> und dem Login-Setup, das sich bei jedem Lauf mit echten Zugangsdaten in der
+> Produktion anmeldete. `npm run test:e2e` läuft jetzt von sich aus lokal — die
+> sichere Variante ist die bequeme.
 
 ## Ausführung
 
 ```bash
-npm run test:e2e:local
+npm run test:e2e
 ```
 
 Playwright startet dabei selbst, was es braucht:

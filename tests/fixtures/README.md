@@ -4,8 +4,8 @@ Testdaten mit erfundenen Namen — keine echten Schülerarbeiten.
 
 | Datei | Verwendung |
 |---|---|
-| `musterloesung.pdf` | Golden-Thread E2E (`tests/e2e/golden-thread.spec.ts`) |
-| `schuelerloesung.pdf` | Golden-Thread E2E — **nicht löschen**, der Test lädt sie fest |
+| `musterloesung.pdf` | Nutzerreise (`tests/e2e/local/nutzerreise.spec.ts`) |
+| `schuelerloesung.pdf` | Nutzerreise — **nicht löschen**, der Test lädt sie fest |
 | `schuelerloesung-handschrift.jpg` | Handschrift-Referenz, Direktfoto (2304×3264 px, ~275 DPI) |
 | `schuelerloesung-handschrift.pdf` | Dieselbe Handschrift als PDF (eingebetteter Scan 1669×2340 px, ~200 DPI, 2 Seiten) |
 

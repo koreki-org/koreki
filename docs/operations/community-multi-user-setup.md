@@ -97,6 +97,6 @@ Im mitgelieferten Stack wird der Realm automatisch aus `keycloak/koreki-realm.js
 
 ## 5. Testing & Referenzen
 * **Verwandte Dokumente:** [Community Persistence Doku](../technical/community-edition-persistence.md)
-* **Test-Coverage:** Playwright E2E Tests decken den Keycloak-Login-Flow ab (`tests/e2e/auth.setup.ts`).
+* **Test-Coverage:** Der Keycloak-Login-Flow ist derzeit NICHT durch E2E-Tests abgedeckt. Das frühere `tests/e2e/auth.setup.ts` meldete sich gegen die Produktion an und wurde am 19.08.2026 entfernt; die lokale Test-Kette läuft ohne Login (`NEXT_PUBLIC_AUTH_TYPE=NONE`).
 
 ---
