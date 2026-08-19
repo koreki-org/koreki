@@ -52,16 +52,51 @@ export function requireUserId(req: AuthenticatedRequest): string {
 }
 
 /**
- * Utility to reliably extract the client IP address.
+ * Die IP des Aufrufers — aus dem Glied, das UNSER Proxy geschrieben hat.
+ *
  * Standardized for Koreki Infrastructure (Traefik/Coolify/IONOS).
+ *
+ * GEFUNDEN BEIM LESEN, 19.08.2026: Hier stand `split(',')[0]`, also das
+ * LINKESTE Glied von `X-Forwarded-For`. Das ist genau das, welches der
+ * Aufrufer selbst mitschicken kann — ein Reverse Proxy haengt seine
+ * Beobachtung hinten an, statt die Kette zu ersetzen. Wer also
+ *
+ *     X-Forwarded-For: 1.2.3.4
+ *
+ * selbst setzt, bekommt daraus eine Kette `1.2.3.4, <echte IP>`, und gelesen
+ * wurde die frei erfundene 1.2.3.4.
+ *
+ * Zwei Dinge haengen daran, und beide sind mehr als Kosmetik:
+ *
+ * - Die Flut-Sperre `checkIpFloodLimit` VOR der Authentifizierung. Mit
+ *   wechselnden Fantasie-Werten zaehlt jede Anfrage auf ein eigenes Konto —
+ *   die erste Verteidigungslinie zaehlt dann gar nichts mehr. Fuer anonyme
+ *   Anfragen ist die IP zudem die Zaehleinheit des eigentlichen Limits.
+ * - Das Feld `ip` im PrivacyLog. Dort steht es unter anderem am
+ *   AVV-Zustimmungs-Eintrag — einem Nachweis, auf den sich im Ernstfall
+ *   jemand beruft. Eine frei gewaehlte IP in so einem Eintrag ist schlimmer
+ *   als gar keine.
+ *
+ * Richtig ist das RECHTE Glied: Das hat unser eigener Proxy angehaengt, es
+ * kann der Aufrufer nicht bestimmen. Ersetzt der Proxy die Kette statt sie zu
+ * erweitern, steht dort ohnehin nur ein Wert — dann sind linkes und rechtes
+ * Glied dasselbe und nichts aendert sich.
  */
 export function getClientIp(req: NextApiRequest): string {
     const forwarded = req.headers ? req.headers['x-forwarded-for'] : undefined;
+
+    const letztesGlied = (kette: string): string | undefined => {
+        const glieder = kette.split(',').map(t => t.trim()).filter(Boolean);
+        return glieder[glieder.length - 1];
+    };
+
     if (typeof forwarded === 'string') {
-        return forwarded.split(',')[0].trim();
+        return letztesGlied(forwarded) ?? '0.0.0.0';
     }
     if (Array.isArray(forwarded)) {
-        return forwarded[0].trim();
+        // Mehrfach gesetzter Header: Node reicht ihn als Feld durch. Auch hier
+        // gilt der zuletzt angehaengte Wert.
+        return letztesGlied(forwarded.join(',')) ?? '0.0.0.0';
     }
     return req.socket ? (req.socket.remoteAddress || '0.0.0.0') : '0.0.0.0';
 }
