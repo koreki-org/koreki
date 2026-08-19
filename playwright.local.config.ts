@@ -1,8 +1,19 @@
 import { defineConfig } from '@playwright/test';
 
 /**
- * Layer 3 gegen den EIGENEN Rechner.
+ * Layer 2 gegen den EIGENEN Rechner — nicht Layer 3.
  * 🏠
+ *
+ * DIE EINORDNUNG STIMMTE ZUERST NICHT, und die Korrektur gehoert hierher:
+ * Diese Konfiguration hiess anfangs "Layer 3". Sie ist es nicht. Der
+ * `playwright-pro`-Skill (§3) verlangt fuer Layer 3 die Nutzerreise durch die
+ * OBERFLAECHE — Login, Upload, Korrektur, Pruefung der Punkte, Export mit
+ * Dateiintegritaet. Davon steht hier nichts; die Tests sprechen HTTP.
+ *
+ * Was sie tun, ist woertlich die Layer-2-Beschreibung aus `industrial-testing`:
+ * "Validierung des Zusammenspiels mehrerer Module und Services". Playwright ist
+ * hier nur das Startprogramm, weil es Dienste hochfahren und HTTP sprechen kann
+ * — nicht, weil ein Browser beteiligt waere.
  *
  * WARUM ES EINE ZWEITE KONFIGURATION GIBT
  * ---------------------------------------

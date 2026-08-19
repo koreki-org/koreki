@@ -1,8 +1,14 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
 
 /**
- * Die Korrektur-Kette gegen einen steuerbaren KI-Anbieter (Layer 3)
+ * Die Korrektur-Kette gegen einen steuerbaren KI-Anbieter (Layer 2)
  * ⛓️🎭
+ *
+ * EINORDNUNG: Layer 2, nicht Layer 3. Diese Datei trug zuerst die falsche
+ * Nummer. Layer 3 waere die Nutzerreise durch die Oberflaeche (`playwright-pro`
+ * §3: Login, Upload, Korrektur, Pruefung, Export); hier laeuft nichts davon.
+ * Geprueft wird das Zusammenspiel der Module hinter der HTTP-Schnittstelle —
+ * das ist Layer 2, auch wenn Playwright es startet.
  *
  * WAS DIESER TEST LEISTET, DEN UNIT-TESTS NICHT LEISTEN
  * -----------------------------------------------------
@@ -24,8 +30,16 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
  * -----------------------------------------------
  * Der geprüfte Weg ist der Server. Ihn durch Klicks anzusteuern würde den Test
  * von Beschriftungen und Ladezuständen abhängig machen — genau daran ist der
- * alte Golden Thread zerbrochen. Die Oberfläche gehört in einen eigenen Test
- * mit eigenen Zusicherungen.
+ * alte Golden Thread zerbrochen.
+ *
+ * Das heißt aber auch: Diese Datei ERSETZT den Golden Thread nicht, sie
+ * ergänzt ihn. Was hier fehlt und nur Layer 3 leisten kann:
+ *
+ *   - dass der Upload in der Oberfläche überhaupt ankommt,
+ *   - dass die Punkte dort erscheinen, wo die Lehrkraft sie liest,
+ *   - dass der Excel-/ZIP-Export eine brauchbare Datei ergibt.
+ *
+ * Solange das aussteht, ist die Nutzerreise ungeprüft.
  */
 
 const STUB = 'http://localhost:4010';
