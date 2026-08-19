@@ -182,7 +182,15 @@ describeFn('CalcTrace Determinism Tests (Layer 2)', () => {
     } else if (providerOverride === 'ollama') {
       settings = {
         provider: 'ollama',
-        ollamaUrl: process.env.OLLAMA_API_BASE || 'http://192.168.250.12:11434',
+        // Rueckfall auf den eigenen Rechner, nicht auf eine fremde LAN-Adresse.
+        //
+        // Hier stand die Adresse eines konkreten Ollama-Servers aus einem
+        // privaten Netz — in einem OEFFENTLICHEN Repository. Kein Geheimnis
+        // (RFC-1918-Adressen sind von aussen nicht erreichbar), aber zwei
+        // Nachteile: Sie verraet eine Infrastruktur-Einzelheit, und auf jedem
+        // fremden Klon zeigt der Test in ein fremdes Netz — dort antwortet
+        // entweder nichts oder ein beliebiges anderes Geraet.
+        ollamaUrl: process.env.OLLAMA_API_BASE || 'http://localhost:11434',
         ollamaModel: process.env.OLLAMA_API_MODEL || 'qwen3.6:35b',
         ollamaNumCtx: Number(process.env.OLLAMA_NUM_CTX) || 32768 // Configurable context size (defaults to 32k)
       };
@@ -207,7 +215,7 @@ describeFn('CalcTrace Determinism Tests (Layer 2)', () => {
           json: async () => ({ status: 'ok' })
         } as Response);
       }
-      if ((urlString.includes('api.mistral.ai') || urlString.includes('openai') || urlString.includes('11434') || urlString.includes('192.168.250.12') || urlString.includes('api/chat')) && options && typeof options.body === 'string') {
+      if ((urlString.includes('api.mistral.ai') || urlString.includes('openai') || urlString.includes('11434') || urlString.includes('api/chat')) && options && typeof options.body === 'string') {
         try {
           const body = JSON.parse(options.body);
           // Check if it's a grading request (legacy or structured criteria)
