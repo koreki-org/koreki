@@ -94,8 +94,27 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             effectivePageCount = dataBuffer.length;
         }
 
+        // `isScan` waehlt das VERFAHREN, nicht den PREIS.
+        //
+        // GEFUNDEN BEIM LESEN, 19.08.2026: Hier stand
+        // `effectivePageCount * (isScan ? 1 : 0)`. Damit entschied der Browser
+        // mit, ob ein Lauf ueberhaupt etwas kostet — der Server glaubte ihm.
+        // Der Anbieter wurde unabhaengig davon gerufen, ein `isScan: false`
+        // haette also echte Kosten auf unserem Schluessel erzeugt und null
+        // Credits gebucht.
+        //
+        // Fuer echte Nutzer aendert sich dadurch NICHTS, und das ist geprueft:
+        // Jeder Weg, der hier ankommt, meldet `isScan: true`. Digitale PDFs
+        // nehmen in extraction-logic.ts einen ganz anderen Weg (Text lokal per
+        // pdf.js, gar keine Anfrage an diese Route), gescannte PDFs und Bilder
+        // rufen sie mit `true`, und der Schwaerzungs-Pfad setzt fest
+        // `isScanned: true`. Der Null-Fall war nur von Hand erreichbar.
+        //
+        // Das Feld bleibt erhalten — es entscheidet weiter ueber die Wahl
+        // zwischen Mistrals OCR-Endpunkt und dem Vision-Weg (siehe unten). Nur
+        // die Abrechnung hoert nicht mehr darauf.
         const isScan = req.body.isScan === true;
-        const OCR_CREDIT_COST = effectivePageCount * (isScan ? 1 : 0);
+        const OCR_CREDIT_COST = effectivePageCount;
 
         // --- AI Cost Brake (Saeule 7): absoluter Monatsdeckel der Instanz ---
         const budgetError = await checkAiBudget('ocr');
