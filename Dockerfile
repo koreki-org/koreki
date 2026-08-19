@@ -104,10 +104,17 @@ EXPOSE 3000
 #
 # Die erste Fassung schrieb 3000 fest hinein und blockierte damit die
 # Auslieferung: Coolify setzt `PORT=80`, der Check klopfte an 3000, bekam
-# ECONNREFUSED — und Coolify rollte den neuen Container zurueck. Dieselbe Falle
-# steckte in den Compose-Dateien: `community-multi-full` betreibt den Container
-# ebenfalls auf 80, waehrend die beiden anderen 3000 nutzen. Zwei von vier
-# Auslieferungswegen waeren gescheitert.
+# ECONNREFUSED — und Coolify rollte den neuen Container zurueck.
+#
+# KORREKTUR MEINER ERSTEN DIAGNOSE: Ich hatte behauptet, `community-multi-full`
+# betreibe den Container ebenfalls auf 80. Das war falsch — dort ist die 80 der
+# Port von NGINX. Koreki laeuft auch in diesem Compose auf 3000, nginx leitet
+# mit `proxy_pass http://koreki:3000` dorthin. Alle drei Compose-Wege nutzen
+# 3000; nur Coolify setzt 80.
+#
+# Die Lehre bleibt dieselbe und ist der Grund fuer diese Zeilen: Ein fest
+# verdrahteter Port ist eine Annahme ueber die Umgebung, und die haelt genau so
+# lange, bis eine andere dazukommt.
 #
 # `process.env.PORT` statt `$PORT` in der Shell: HEALTHCHECK ersetzt keine
 # Build-Variablen, und so bleibt die Aufloesung dort, wo sie zur Laufzeit
