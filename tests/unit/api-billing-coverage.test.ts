@@ -39,9 +39,16 @@ const BILLING_MARKERS = [
  * ein Eintrag ohne Grund ist ein Bug, kein Ausnahmefall.
  */
 const DOCUMENTED_EXEMPTIONS: Record<string, string> = {
-    'pure/proxy.ts':
-        'BYOK: Der Nutzer zahlt den Provider mit eigenem Key. Die Service-Gebuehr laeuft ' +
-        'separat ueber api/billing/pure-deduct.ts.'
+    // Der einzige Eintrag (pure/proxy.ts) ist am 19.08.2026 entfallen: Die Route
+    // hatte keinen Aufrufer. Sie war ein serverseitiger Umweg fuer BYOK — gebaut
+    // in der Annahme, der Browser koenne die Mistral-API im PURE-Modus nicht
+    // direkt erreichen. Er kann: `mistral-provider.ts` ruft api.mistral.ai
+    // unmittelbar auf. Der eine Fall, in dem das wirklich nicht geht (die
+    // Tauri-Desktop-Huelle), laeuft ueber `desktop-proxy.ts` per Rust-Befehl.
+    //
+    // Bleibt bewusst als leeres Verzeichnis stehen: Der naechste, der eine
+    // abrechnungsfreie KI-Route braucht, findet hier die Regel dafuer —
+    // ein Eintrag ohne fachliche Begruendung ist ein Bug, kein Ausnahmefall.
 };
 
 function collectApiRoutes(dir: string): string[] {

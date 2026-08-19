@@ -60,7 +60,6 @@ const ANY_BASELINE: Record<string, number> = {
     'lib/file-utils.ts': 4,
     'lib/grading/types.ts': 1,
     'pages/api/ai-correct.ts': 1,
-    'pages/api/pure/proxy.ts': 3,
     'pages/api/stripe/checkout.ts': 3,
     'pages/api/user/grading-memories/append.ts': 2,
     'components/batch/parts/GraphTestingPanel.tsx': 3,
