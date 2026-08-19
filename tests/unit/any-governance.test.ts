@@ -54,7 +54,9 @@ const ANY_BASELINE: Record<string, number> = {
     'hooks/useFileProcessor.ts': 4,
     'lib/ai/prompt-builder.ts': 2,
     'lib/grading/graph-intake.ts': 4,
-    'pages/api/generate-calc-trace.ts': 3,
+    // 3 -> 2: die Zusicherung am erzeugten Rechenziel wird nicht mehr ueber
+    // `as any` angehaengt, sondern ueber einen ausgeschriebenen Typ.
+    'pages/api/generate-calc-trace.ts': 2,
     'hooks/useAiGovernance.ts': 4,
     'hooks/useDashboardActions.ts': 4,
     'lib/file-utils.ts': 4,

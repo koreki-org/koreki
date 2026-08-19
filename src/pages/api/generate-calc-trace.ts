@@ -146,12 +146,33 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             });
         }
 
-        // Add dummy validation metadata for frontend UI consumption
-        (trace as any).validation = {
-            isValid: true,
+        // Was hier zugesichert wird — und was NICHT.
+        //
+        // GEFUNDEN BEIM LESEN, 19.08.2026: Hier stand `dryRunChecked: true`,
+        // darueber der Kommentar "Add dummy validation metadata". Genau das war
+        // es: eine behauptete Verifikation, die nie stattgefunden hat.
+        //
+        // Beim Graphen bedeutet `dryRunChecked`, dass `validateGraphDeterminism`
+        // ihn tatsaechlich durchgerechnet hat — das ist der Grund, warum ein
+        // erzeugter Graph verlaesslich ist. Fuer eine Rechenkette gibt es dieses
+        // Verfahren nicht: `validateCalcTraceDeterminism` ist ein Platzhalter,
+        // der bedingungslos zustimmt (siehe Kopf von lib/ai/tool-validation.ts).
+        // Geprueft wurde allein die STRUKTUR, durch `parseGeneratedCalcTrace`.
+        //
+        // Kein akuter Schaden: Zurzeit liest niemand `targetGoal.validation`,
+        // der Kommentar "for frontend UI consumption" ging ins Leere. Aber die
+        // Zusicherung steht in den Daten, und wer sie spaeter liest — ein
+        // Export, eine neue Ansicht — bekaeme eine Falschaussage.
+        //
+        // `false` ist deshalb nicht bloss ehrlicher, sondern nutzt das
+        // vorhandene UI-Muster richtig: Die Plakette "Plausibilitaet
+        // verifiziert!" haengt an `{validation?.dryRunChecked && ...}` und
+        // bleibt damit aus, solange nichts simuliert wurde.
+        (trace as { validation?: unknown }).validation = {
+            isValid: true,          // Struktur gelesen und angenommen
             error: '',
             retriesUsed: attempts - 1,
-            dryRunChecked: true
+            dryRunChecked: false    // NICHT durchgerechnet — anders als beim Graphen
         };
 
         // --- ATOMIC BILLING (SaaS only) ---
