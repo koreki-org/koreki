@@ -246,11 +246,30 @@ export function withSecurity(
                     }
 
                     // Industrial Debugging for Auth Failures 🔍
-                    // Capture state of body to detect Zod-failing patterns
+                    //
+                    // Nur die GESTALT des Rumpfs, nicht sein Inhalt.
+                    //
+                    // Hier stand bis zum 19.08.2026 zusaetzlich eine Vorschau
+                    // der ersten 100 Zeichen. `logSecurityEvent` reicht seinen
+                    // Text ungefiltert in die Datenbank durch — damit war das
+                    // die einzige Stelle im Projekt, die rohen Anfrage-Inhalt
+                    // dauerhaft speichert. Bei einer abgelaufenen Sitzung
+                    // mitten in der Korrektur ist dieser Rumpf Schuelertext.
+                    //
+                    // In der Praxis griff es selten, weil Next.js JSON zu
+                    // Objekten parst und dann nur 'object' protokolliert wurde
+                    // — aber "meistens harmlos" ist bei personenbezogenen Daten
+                    // kein Massstab, und §8 verlangt fuer Server-Logs den
+                    // bereinigten Weg.
+                    //
+                    // Der Zweck bleibt erhalten: Um ein fehlgeschlagenes
+                    // Zod-Muster zu erkennen, genuegen Typ und Groesse.
                     const bodyType = typeof req.body;
-                    const bodyPreview = bodyType === 'string' ? req.body.substring(0, 100) : (req.body ? 'object' : 'empty');
+                    const bodyGroesse = typeof req.body === 'string'
+                        ? `${req.body.length} Zeichen`
+                        : (req.body ? `${Object.keys(req.body).length} Felder` : 'leer');
 
-                    await logSecurityEvent('anonymous', null, 'AUTH_FAILURE', `Unauthenticated access to ${req.url} (Type: ${bodyType}, Preview: ${bodyPreview})`, ip);
+                    await logSecurityEvent('anonymous', null, 'AUTH_FAILURE', `Unauthenticated access to ${req.url} (Type: ${bodyType}, Size: ${bodyGroesse})`, ip);
                     return res.status(401).json({ error: 'Nicht angemeldet.' });
                 }
 

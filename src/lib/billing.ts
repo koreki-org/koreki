@@ -47,6 +47,72 @@ export async function resolveActiveWorkspace(logtoId: string): Promise<Workspace
 }
 
 /**
+ * Darf fuer diesen Mandanten ueberhaupt verarbeitet werden?
+ * ⚖️
+ *
+ * Die AVV-Zustimmung ist der Riegel vor jeder Verarbeitung personenbezogener
+ * Schuelerdaten. Diese Funktion formuliert ihn EINMAL; `checkCompliance` fragt
+ * ihn vor dem Anbieter-Aufruf ab, `performBillingAction` wirft ihn innerhalb
+ * der Abrechnungs-Transaktion noch einmal als zweite Sicherung.
+ *
+ * @returns Fehlermeldung, oder null wenn verarbeitet werden darf.
+ */
+function komplianzFehler(
+    workspace: Pick<Workspace, 'avvAccepted' | 'type'>,
+    user: { role: string; appMode: string | null }
+): string | null {
+    const istSystemAdmin = user.role === 'ADMIN';
+    if (workspace.avvAccepted || istSystemAdmin) return null;
+
+    // Der Probemodus darf ohne AVV erkunden — dort werden bewusst keine
+    // echten Schuelerdaten verarbeitet.
+    if (user.appMode === 'TRIAL') return null;
+
+    if (workspace.type === 'ORGANIZATION') {
+        return 'Compliance: AVV-Zustimmung der Schulleitung fehlt. Verarbeitung gesperrt.';
+    }
+    if (user.appMode === 'STANDARD' || user.appMode === 'PURE') {
+        return 'Compliance: AVV-Zustimmung erforderlich für Standard-Modus.';
+    }
+    return null;
+}
+
+/**
+ * Der Compliance-Riegel VOR dem Anbieter-Aufruf.
+ * 🚧
+ *
+ * GEFUNDEN BEIM LESEN, 19.08.2026: Es gab ihn nicht. Vier KI-Routen tragen
+ * ueber ihrem Aufruf von `resolveActiveWorkspace` die Ueberschrift
+ * "COMPLIANCE EARLY GATEKEEPER" — aber diese Funktion prueft die
+ * AVV-Zustimmung gar nicht und wirft ueberhaupt nie. Sie schlaegt nur einen
+ * Workspace nach. Die einzige echte Pruefung stand in `performBillingAction`,
+ * und die laeuft NACH dem Anbieter-Aufruf.
+ *
+ * Damit war die Wirkung: Schuelertext ging an den Anbieter, und erst
+ * anschliessend fiel auf, dass die Schule nie zugestimmt hatte. Der Riegel hat
+ * gehalten — aber zu spaet, um die Verarbeitung zu verhindern, die er
+ * verhindern soll.
+ *
+ * @returns Fehlermeldung, oder null wenn verarbeitet werden darf.
+ */
+export async function checkCompliance(logtoId: string): Promise<string | null> {
+    if (isLocalInstance()) return null;
+
+    const user = await prisma.user.findUnique({
+        where: { logtoId },
+        include: { memberships: { include: { workspace: true } } }
+    });
+    if (!user) return 'Kein gültiger Workspace gefunden.';
+
+    const personalWsId = user.memberships.find(m => m.workspace.type === 'PERSONAL')?.workspaceId;
+    const targetWsId = user.activeWorkspaceId || personalWsId;
+    const workspace = user.memberships.find(m => m.workspaceId === targetWsId)?.workspace;
+    if (!workspace) return 'Kein gültiger Workspace gefunden.';
+
+    return komplianzFehler(workspace, { role: user.role, appMode: user.appMode });
+}
+
+/**
  * Saeule 7: absoluter Monatsdeckel in Euro.
  *
  * Anders als die Credits ist das keine Grenze pro Mandant, sondern die
@@ -98,7 +164,15 @@ export async function checkCreditsAvailable(
     logtoId: string,
     creditCost: number
 ): Promise<string | null> {
-    if (isLocalInstance() || creditCost <= 0) return null;
+    if (isLocalInstance()) return null;
+
+    // Die Komplianz zuerst — und BEVOR der Kostenfall abkuerzt. Ein Lauf, der
+    // bewusst nichts kostet (kombinierte Abrechnung, inklusive Laeufe),
+    // verarbeitet trotzdem Schuelerdaten und braucht dieselbe Zustimmung.
+    const komplianz = await checkCompliance(logtoId);
+    if (komplianz) return komplianz;
+
+    if (creditCost <= 0) return null;
 
     const workspace = await resolveActiveWorkspace(logtoId);
     if (!workspace) {
@@ -155,19 +229,13 @@ export async function performBillingAction(params: {
         const workspace = activeMembership.workspace;
 
         // --- COMPLIANCE GATEKEEPER: No AVV = No Processing ---
-        const isSystemAdmin = user.role === 'ADMIN';
-
-        if (!workspace.avvAccepted && !isSystemAdmin) {
-            // Allow processing in TRIAL mode (Sandbox)
-            if (user.appMode === 'TRIAL') {
-                // Trial is allowed for both Personal and Org for exploration
-                // as long as they have credits.
-            } else if (workspace.type === 'ORGANIZATION') {
-                throw new Error('Compliance: AVV-Zustimmung der Schulleitung fehlt. Verarbeitung gesperrt.');
-            } else if (user.appMode === 'STANDARD' || user.appMode === 'PURE') {
-                throw new Error('Compliance: AVV-Zustimmung erforderlich für Standard-Modus.');
-            }
-        }
+        //
+        // Dieselbe Regel wie in `checkCompliance`, hier als zweite Sicherung
+        // innerhalb der Transaktion. Die Formulierung steht nur an einer
+        // Stelle (`komplianzFehler`) — zwei Fassungen derselben Regel waeren
+        // in diesem Projekt schon mehrfach auseinandergelaufen.
+        const komplianz = komplianzFehler(workspace, { role: user.role, appMode: user.appMode });
+        if (komplianz) throw new Error(komplianz);
 
         // 2. Check Credits
         if (creditCost > 0 && workspace.credits < creditCost) {

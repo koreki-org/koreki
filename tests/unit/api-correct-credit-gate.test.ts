@@ -24,6 +24,8 @@ import { checkCreditsAvailable, checkAiBudget } from '../../src/lib/billing';
  */
 
 jest.mock('../../src/lib/billing', () => ({
+    // Der Compliance-Riegel vor dem Anbieter-Aufruf: null = darf verarbeiten.
+    checkCompliance: jest.fn(async () => null),
     resolveActiveWorkspace: jest.fn(async () => ({ activeWorkspaceId: 'ws-1' })),
     performBillingAction: jest.fn(async () => true),
     checkCreditsAvailable: jest.fn(async () => null),

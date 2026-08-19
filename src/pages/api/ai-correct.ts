@@ -8,7 +8,7 @@ import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
 import { CorrectionSchema } from '@/lib/validation';
 import { AppSettings } from '@/types';
-import { checkAiBudget, checkCreditsAvailable, performBillingAction, resolveActiveWorkspace } from '@/lib/billing';
+import { checkAiBudget, checkCompliance, checkCreditsAvailable, performBillingAction } from '@/lib/billing';
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
 import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
@@ -52,7 +52,18 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
 
         // --- COMPLIANCE EARLY GATEKEEPER ---
-        await resolveActiveWorkspace(logtoId);
+        //
+        // GEFUNDEN BEIM LESEN, 19.08.2026: Hier stand `resolveActiveWorkspace`.
+        // Diese Funktion prueft die AVV-Zustimmung gar nicht und wirft nie —
+        // sie schlaegt nur einen Workspace nach. Die Ueberschrift stimmte
+        // also nicht: Der Riegel war an dieser Stelle wirkungslos, und die
+        // einzige echte Pruefung lief in `performBillingAction`, also NACH
+        // dem Anbieter-Aufruf. Schuelertext ging raus, und erst danach fiel
+        // auf, dass die Schule nie zugestimmt hatte.
+        const komplianzFehler = await checkCompliance(logtoId);
+        if (komplianzFehler) {
+            return res.status(403).json({ error: komplianzFehler });
+        }
 
         const effectivePageCount = Math.max(1, pageCount || 1);
         const requiredCredits = effectivePageCount * 1;

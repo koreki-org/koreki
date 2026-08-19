@@ -6,6 +6,8 @@ import { executeOllamaRequest } from '../../src/lib/ai/ollama-logic';
 import { isLocalInstance } from '../../src/lib/env-context';
 
 jest.mock('../../src/lib/billing', () => ({
+    // Der Compliance-Riegel vor dem Anbieter-Aufruf: null = darf verarbeiten.
+    checkCompliance: jest.fn(async () => null),
     resolveActiveWorkspace: jest.fn(async () => ({ activeWorkspaceId: 'ws-1' })),
     performBillingAction: jest.fn(async () => true),
     // Guthaben-Vorpruefung vor dem Anbieter-Aufruf: null = ausreichend gedeckt.

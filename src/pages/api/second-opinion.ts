@@ -7,7 +7,7 @@ import { executeOllamaRequest } from '../../lib/ai/ollama-logic';
 import { logger } from '../../lib/logger';
 import { withSecurity, AuthenticatedRequest } from '../../lib/security';
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
-import { checkAiBudget, checkAndDeductCredits, resolveActiveWorkspace } from '../../lib/billing';
+import { checkAiBudget, checkAndDeductCredits, checkCompliance } from '../../lib/billing';
 import { isLocalInstance } from '../../lib/env-context';
 import { requireOpenAiConnection } from '../../lib/ai/provider-connection';
 import { toErrorMessage } from '../../lib/error-message';
@@ -83,29 +83,21 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         // --- AI Cost Brake (Saeule 7): absoluter Monatsdeckel der Instanz ---
         // --- COMPLIANCE EARLY GATEKEEPER ---
         //
-        // GEFUNDEN BEIM LESEN, 19.08.2026: Diese Route war die einzige der
-        // vier, die SCHUELERTEXT verarbeiten, ohne eigenen Compliance-Gate.
-        // Sie verliess sich auf `checkAndDeductCredits` weiter unten — und das
-        // wird bei Rueckfragen ABSICHTLICH uebersprungen, weil eine Rueckfrage
-        // nichts kosten soll. Die Kulanz-Entscheidung hat damit nebenbei die
-        // AVV-Pruefung abgeschaltet: Ein Folge-Aufruf schickte Schuelertext an
-        // den Anbieter, ohne dass die Zustimmung der Schulleitung geprueft war.
+        // Diese Route war die einzige der fuenf mit Schuelertext ohne eigenen
+        // Riegel. Sie verliess sich auf `checkAndDeductCredits` weiter unten —
+        // und das wird bei Rueckfragen absichtlich uebersprungen, weil eine
+        // Rueckfrage nichts kosten soll. Die Kulanz-Entscheidung hat damit
+        // nebenbei die AVV-Pruefung abgeschaltet.
         //
-        // Kein offenes Tor — die ERSTE Nachricht eines Gespraechs wird
-        // weiterhin geprueft, ein Folge-Aufruf setzt sie also voraus. Aber die
-        // Pruefung darf nicht an der Abrechnung haengen, sonst nimmt jede
-        // kuenftige Kostenbefreiung sie wieder mit.
-        //
-        // Behandlung woertlich wie in clean-and-analyze.ts, damit dieselbe Lage
-        // nicht zwei verschiedene Antworten erzeugt. An den Kosten aendert sich
-        // nichts: `resolveActiveWorkspace` bucht nicht.
-        try {
-            await resolveActiveWorkspace(userId ?? '');
-        } catch (error) {
-            const message = toErrorMessage(error);
-            return res
-                .status(message.includes('Compliance') || message.includes('AVV') ? 403 : 500)
-                .json({ error: message });
+        // ZWEITER ANLAUF (19.08.2026): Der erste Versuch rief hier
+        // `resolveActiveWorkspace` in einem try/catch auf und erwartete einen
+        // Compliance-Fehler. Diese Funktion wirft aber NIE — sie schlaegt nur
+        // einen Workspace nach. Die Reparatur war ein Blindgaenger, und
+        // dieselbe Annahme steckte in vier weiteren Routen. Jetzt gibt es mit
+        // `checkCompliance` einen Riegel, der tatsaechlich prueft.
+        const komplianzFehler = await checkCompliance(userId ?? '');
+        if (komplianzFehler) {
+            return res.status(403).json({ error: komplianzFehler });
         }
 
         const budgetError = await checkAiBudget('correction');

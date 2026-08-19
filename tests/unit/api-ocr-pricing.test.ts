@@ -33,6 +33,8 @@ import { executeMistralRequest } from '../../src/lib/ai/mistral-provider';
  */
 
 jest.mock('../../src/lib/billing', () => ({
+    // Der Compliance-Riegel vor dem Anbieter-Aufruf: null = darf verarbeiten.
+    checkCompliance: jest.fn(async () => null),
     resolveActiveWorkspace: jest.fn(async () => ({ id: 'ws-1' })),
     checkAiBudget: jest.fn(async () => null),
     checkCreditsAvailable: jest.fn(async () => null),

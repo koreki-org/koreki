@@ -6,6 +6,8 @@ import { isLocalInstance } from '../../src/lib/env-context';
 import { MISTRAL_OCR_MODEL } from '../../src/lib/ai/constants';
 
 jest.mock('../../src/lib/billing', () => ({
+    // Der Compliance-Riegel vor dem Anbieter-Aufruf: null = darf verarbeiten.
+    checkCompliance: jest.fn(async () => null),
     resolveActiveWorkspace: jest.fn(async () => ({ activeWorkspaceId: 'ws-1' })),
     performBillingAction: jest.fn(async () => true),
     checkCreditsAvailable: jest.fn(async () => null),
