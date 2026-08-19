@@ -11,7 +11,15 @@ jest.mock('../../src/lib/prisma', () => ({
                 user: {
                     findUnique: jest.fn().mockResolvedValue({ 
                         id: 'user-1', 
-                        memberships: [{ workspace: { type: 'PERSONAL', id: 'ws-1', credits: 100, avvAccepted: true } }] 
+                        activeWorkspaceId: 'ws-1',
+                        // `workspaceId` gehoerte hier immer hin — es ist der
+                        // Fremdschluessel der Mitgliedschaft und in der Datenbank nie
+                        // leer. Der Mock liess ihn weg, und die alte Aufloesung fand
+                        // die Mitgliedschaft trotzdem: Sie verglich `m.workspaceId`
+                        // mit einem ebenfalls undefinierten Zielwert, also
+                        // `undefined === undefined`. Ein Zufallstreffer, der die
+                        // Luecke im Mock verdeckt hat (19.08.2026).
+                        memberships: [{ workspaceId: 'ws-1', workspace: { type: 'PERSONAL', id: 'ws-1', credits: 100, avvAccepted: true } }] 
                     }),
                     update: jest.fn().mockResolvedValue({ id: 'user-1' }),
                 },

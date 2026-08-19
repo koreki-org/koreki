@@ -9,6 +9,34 @@ export type BillingModule = 'ocr' | 'correction';
  * 1. Priority: If the user belongs to an ORGANIZATION, that's their billing workspace.
  * 2. Fallback: Use the PERSONAL workspace.
  */
+/**
+ * Welcher Workspace zaehlt fuer diesen Nutzer?
+ *
+ * Der aktive, sonst der persoenliche — und in beiden Faellen nur, wenn eine
+ * Mitgliedschaft dazu besteht. Ueber diese letzte Bedingung laeuft die
+ * Mandanten-Grenze: Ein `activeWorkspaceId`, das auf einen fremden Workspace
+ * zeigt, findet keine Mitgliedschaft und ergibt `undefined`.
+ *
+ * Stand dreimal wortgleich im Code — in `resolveActiveWorkspace`, in
+ * `performBillingAction` und (seit dem 19.08.2026) in `checkCompliance`. Alle
+ * drei stimmten ueberein, aber genau solche Kopien laufen auseinander: Wenn
+ * der Compliance-Riegel einen anderen Workspace prueft als die Abrechnung
+ * belastet, sperrt er entweder zahlende Nutzer aus oder laesst durch, was er
+ * aufhalten soll.
+ */
+function waehleWorkspace<W>(user: {
+    activeWorkspaceId: string | null;
+    memberships: { workspaceId: string; workspace: W }[];
+}, istPersoenlich: (w: W) => boolean): W | undefined {
+    const persoenlich = user.memberships.find(m => istPersoenlich(m.workspace))?.workspaceId;
+    const ziel = user.activeWorkspaceId || persoenlich;
+    if (!ziel) return undefined;
+    return user.memberships.find(m => m.workspaceId === ziel)?.workspace;
+}
+
+/** Ein persoenlicher Workspace — die Unterscheidung steht nur hier. */
+const istPersoenlich = (w: { type: string }): boolean => w.type === 'PERSONAL';
+
 export async function resolveActiveWorkspace(logtoId: string): Promise<Workspace | null> {
     if (isLocalInstance()) {
         // Lokale Instanzen haben keine Mandanten und keine Abrechnung. Der
@@ -36,14 +64,7 @@ export async function resolveActiveWorkspace(logtoId: string): Promise<Workspace
     
     if (!user) return null;
 
-    const activeWsId = user.activeWorkspaceId;
-    const personalMembership = user.memberships.find(m => m.workspace.type === 'PERSONAL');
-    const targetWsId = activeWsId || personalMembership?.workspaceId;
-    
-    if (!targetWsId) return null;
-
-    const membership = user.memberships.find(m => m.workspaceId === targetWsId);
-    return membership?.workspace || null;
+    return waehleWorkspace(user, istPersoenlich) || null;
 }
 
 /**
@@ -104,9 +125,7 @@ export async function checkCompliance(logtoId: string): Promise<string | null> {
     });
     if (!user) return 'Kein gültiger Workspace gefunden.';
 
-    const personalWsId = user.memberships.find(m => m.workspace.type === 'PERSONAL')?.workspaceId;
-    const targetWsId = user.activeWorkspaceId || personalWsId;
-    const workspace = user.memberships.find(m => m.workspaceId === targetWsId)?.workspace;
+    const workspace = waehleWorkspace(user, istPersoenlich);
     if (!workspace) return 'Kein gültiger Workspace gefunden.';
 
     return komplianzFehler(workspace, { role: user.role, appMode: user.appMode });
@@ -219,14 +238,11 @@ export async function performBillingAction(params: {
         // Meldung. Verdeckt hat es ein `as any` auf dem Ergebnis.
         if (!user) throw new Error('Nutzer für die Abrechnung nicht gefunden.');
 
-        const activeWsId = user.activeWorkspaceId;
-        const personalWsId = user.memberships?.find(m => m.workspace?.type === 'PERSONAL')?.workspaceId;
-        let targetWsId = activeWsId || personalWsId;
-        const activeMembership = user.memberships.find(m => m.workspaceId === targetWsId);
-
-        if (!activeMembership) throw new Error('Kein gültiger Workspace gefunden.');
-
-        const workspace = activeMembership.workspace;
+        // Dieselbe Auswahl wie im Compliance-Riegel und in
+        // `resolveActiveWorkspace` — sie stand hier bis zum 19.08.2026 als
+        // dritte Kopie.
+        const workspace = waehleWorkspace(user, istPersoenlich);
+        if (!workspace) throw new Error('Kein gültiger Workspace gefunden.');
 
         // --- COMPLIANCE GATEKEEPER: No AVV = No Processing ---
         //
