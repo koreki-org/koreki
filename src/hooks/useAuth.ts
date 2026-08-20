@@ -2,7 +2,7 @@ import { apiClient } from '@/lib/api-client';
 import { useRouter } from 'next/router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
-import { isLocalInstance, getKorekiMode, isKeycloakAuth, isDesktopTarget } from '@/lib/env-context';
+import { isLocalInstance, isKeycloakAuth, isDesktopTarget } from '@/lib/env-context';
 import { User, AiStatus } from '../types';
 import { getOidcUser, handleOidcCallback } from '@/lib/auth-keycloak';
 
@@ -12,9 +12,6 @@ export const useAuth = () => {
 
     // --- AUTH BYPASS (CENTRALIZED) ---
     const localInstance = isLocalInstance();
-    if (localInstance && typeof window !== 'undefined') {
-        console.log(`🏮 Koreki ${getKorekiMode()} Mode Active (Local Instance)`);
-    }
 
     // 1. Fetch User Data with TanStack Query
     const {

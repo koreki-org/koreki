@@ -19,7 +19,12 @@ export async function ensureActiveGradingMemorySynced() {
         if (!activeId) {
             localStorage.removeItem('koreki_active_grading_memory_cases');
             localStorage.removeItem('koreki_active_grading_memory_name');
-            logger.info('[GradingMemory Sync] No active grading memory configured. Cleared cases.');
+            // `debug`, nicht `info`: Das ist der Normalfall, kein Ereignis. Die
+            // drei Geschwister-Zeilen darunter melden einen tatsaechlichen
+            // Abgleich und bleiben deshalb auf `info`. Nur weglassen laesst sich
+            // die Zeile nicht — glaubt die Lehrkraft, ein Schatz sei aktiv, und
+            // er ist es nicht, ist sie der einzige Beleg dafuer.
+            logger.debug('[GradingMemory Sync] No active grading memory configured. Cleared cases.');
             return;
         }
 
