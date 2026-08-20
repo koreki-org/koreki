@@ -118,7 +118,7 @@ const perFileRatchets = [
         'src/pages/privacy.tsx': 7,
         'src/pages/features.tsx': 6,
         'src/pages/index.tsx': 6,
-        'src/components/batch/BatchFileListItem.tsx': 5,
+        'src/components/batch/BatchFileListItem.tsx': 3,
         'src/components/batch/GradingMemoryEditorView.tsx': 5,
         'src/components/layout/HeaderBadges.tsx': 5,
         'src/components/marketing/ShowroomCard.tsx': 5,
