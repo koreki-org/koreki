@@ -52,7 +52,7 @@ export const useDemoScenario = ({
         setModelSolution(scenario.modelSolution);
         setModelSolutionContext(scenario.modelSolutionContext);
         setTasksLayout(scenario.tasksLayout);
-        setBatchFiles([scenario.studentBatchFile]);
+        setBatchFiles(scenario.studentBatchFiles);
 
         setShowDemoHint(true);
         if (hintTimeout.current) clearTimeout(hintTimeout.current);

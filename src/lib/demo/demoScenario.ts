@@ -13,19 +13,35 @@ import { buildModelSolutionFromTasks } from '@/lib/task-utils';
  * (proofB, deterministisch) — zwei der drei Kriterien sind damit sandbox-gepruefte
  * Fakten statt KI-Ermessen, was das Risiko einer schiefen Demo-Bewertung senkt.
  *
- * Aufgabe 2 traegt bewusst einen echten, unzweideutigen Fachfehler statt einer guten
- * Antwort: Der Schueler dreht den wirtschaftlichen Mechanismus um (behauptet, die
- * Einspeisevergütung liege ÜBER dem Bezugspreis und man verdiene am Verkauf, statt am
- * gesparten Eigenverbrauch — real ist es umgekehrt). Anders als bei Aufgabe 1 gibt es
- * hier keine Sandbox, die das deterministisch garantiert — nur ein moeglichst
+ * Zwei Schueler mit gegenlaeufigem Profil — erst dadurch zeigt der Stapel, wozu er da
+ * ist: Der eine rechnet sauber und irrt fachlich, der andere umgekehrt.
+ *
+ * Schueler #1 loest Aufgabe 1 vollstaendig (3/3) und traegt in Aufgabe 2 bewusst einen
+ * unzweideutigen Fachfehler: Er dreht den wirtschaftlichen Mechanismus um (behauptet,
+ * die Einspeisevergütung liege ÜBER dem Bezugspreis und man verdiene am Verkauf, statt
+ * am gesparten Eigenverbrauch — real ist es umgekehrt). Anders als bei Aufgabe 1 gibt
+ * es hier keine Sandbox, die das deterministisch garantiert — nur ein moeglichst
  * eindeutiger Fachfehler, den eine vernuenftig kalibrierte Korrektur zuverlaessig als
  * falsch erkennen sollte.
+ *
+ * Schueler #2 erreicht in Aufgabe 1 deterministisch 2 von 3 Punkten. Entscheidend ist
+ * die ART des Fehlers, gemessen an der Engine:
+ *
+ *   - Ein echter Verrechner (richtige Werte, falsches Ergebnis) kostet BEIDE
+ *     deterministischen Punkte — die Sandbox meldet "Formel ergibt X, Schueler
+ *     notierte Y", damit faellt proofA UND proofB.
+ *   - Ein falsch abgelesener Eingangswert (hier 1000 statt 1200 kWh/m²) laesst den
+ *     Rechenweg in sich fehlerfrei: proofA haelt, nur proofB faellt.
+ *
+ * Genau deshalb liest Schueler #2 falsch ab, statt sich zu verrechnen — nur so ergibt
+ * sich 2/3, und es zeigt die Folgefehler-Logik: Methode richtig, Ergebnis falsch,
+ * Teilpunkt trotzdem. Aufgabe 2 beantwortet er vollstaendig, Aufgabe 3 gar nicht.
  */
 export interface DemoScenario {
     modelSolution: string;
     modelSolutionContext: string;
     tasksLayout: Task[];
-    studentBatchFile: BatchFile;
+    studentBatchFiles: BatchFile[];
 }
 
 export function buildDemoScenario(): DemoScenario {
@@ -66,22 +82,43 @@ export function buildDemoScenario(): DemoScenario {
     const modelSolutionContext = `Die Schule plant eine eigene Photovoltaikanlage auf dem Dach der Sporthalle. Alle drei Aufgaben drehen sich um dieses gemeinsame Projekt "Solaranlage für die Schule" — jede aus einer anderen fachlichen Perspektive (Physik/Mathe, Wirtschaft, Ethik).`;
     const modelSolution = buildModelSolutionFromTasks(modelSolutionContext, tasksLayout);
 
-    const studentText = `=== TASK: Aufgabe 1 ===\nIch nutze die Formel E = A · η · H.\nEinsetzen: E = 40 m² · 0,2 · 1200 kWh/m²\nE = 9600 kWh\n\n=== TASK: Aufgabe 2 ===\nEine Solaranlage lohnt sich vor allem, weil man den Strom teurer verkaufen kann, als man ihn selbst einkaufen müsste. Für den Strom, den die Schule ins Netz einspeist, gibt es mehr Geld, als sie für Strom vom Anbieter zahlen würde — deswegen macht man damit Gewinn, egal wie viel man selbst verbraucht. Außerdem ist es gut fürs Klima.\n\n=== TASK: Aufgabe 3 ===\nDie Aussage stimmt teilweise. Eine einzelne Anlage auf einem Dach spart nur sehr wenig CO2 im Vergleich zu dem, was weltweit ausgestoßen wird. Trotzdem finde ich, dass es nicht „gar nichts“ bringt: Wenn viele Schulen das machen, kommt schon mehr zusammen, und die Schüler lernen dabei, wie sowas funktioniert. Das kann später mal wichtiger sein als der direkte CO2-Effekt.`;
+    const studentTextNele = `=== TASK: Aufgabe 1 ===\nIch nutze die Formel E = A · η · H.\nEinsetzen: E = 40 m² · 0,2 · 1200 kWh/m²\nE = 9600 kWh\n\n=== TASK: Aufgabe 2 ===\nEine Solaranlage lohnt sich vor allem, weil man den Strom teurer verkaufen kann, als man ihn selbst einkaufen müsste. Für den Strom, den die Schule ins Netz einspeist, gibt es mehr Geld, als sie für Strom vom Anbieter zahlen würde — deswegen macht man damit Gewinn, egal wie viel man selbst verbraucht. Außerdem ist es gut fürs Klima.\n\n=== TASK: Aufgabe 3 ===\nDie Aussage stimmt teilweise. Eine einzelne Anlage auf einem Dach spart nur sehr wenig CO2 im Vergleich zu dem, was weltweit ausgestoßen wird. Trotzdem finde ich, dass es nicht „gar nichts“ bringt: Wenn viele Schulen das machen, kommt schon mehr zusammen, und die Schüler lernen dabei, wie sowas funktioniert. Das kann später mal wichtiger sein als der direkte CO2-Effekt.`;
 
-    const studentBatchFile: BatchFile = {
-        name: "Schüler #1",
-        originalName: "Nele Beispielfeld",
-        status: 'pending',
-        result: null,
-        error: null,
-        fileText: studentText,
-        tasks: [],
-        documentType: 'typed',
-        pageCount: 1,
-        estimatedCredits: 1,
-        selected: true,
-        ocrDone: true
-    };
+    // Aufgabe 1: Formel korrekt genannt, Rechenweg in sich fehlerfrei — aber mit
+    // H = 1000 statt 1200 kWh/m² aus der Aufgabenstellung abgelesen. Ergebnis-Punkt
+    // faellt, Rechenweg-Punkt haelt (siehe Kopf der Datei).
+    const studentTextJonas = `=== TASK: Aufgabe 1 ===\nFormel: E = A · η · H\nEinsetzen: E = 40 m² · 0,2 · 1000 kWh/m²\nE = 8000 kWh\n\n=== TASK: Aufgabe 2 ===\nDer größte Vorteil ist, dass die Schule den Strom, den sie selbst erzeugt, auch direkt selbst verbraucht. Dadurch muss sie weniger teuren Strom vom Netzbetreiber einkaufen, und genau diese Ersparnis macht den Hauptteil des Nutzens aus. Für überschüssigen Strom gibt es zwar eine Einspeisevergütung, die liegt heute aber unter dem Preis, den man für Netzstrom zahlt — damit allein würde sich die Anlage also nicht rechnen.\n\nAußerdem macht sich die Schule unabhängiger von steigenden Strompreisen, weil ein Teil des Verbrauchs vom eigenen Dach kommt und nicht mehr eingekauft werden muss.\n\nDazu kommt der pädagogische Nutzen: Die Schule zeigt, dass sie das Thema Klimaschutz ernst nimmt, und wir können im Unterricht direkt an einer echten Anlage lernen, wie sowas funktioniert.\n\n=== TASK: Aufgabe 3 ===\nWeiß ich leider nicht.`;
 
-    return { modelSolution, modelSolutionContext, tasksLayout, studentBatchFile };
+    const studentBatchFiles: BatchFile[] = [
+        {
+            name: "Schüler #1",
+            originalName: "Nele Beispielfeld",
+            status: 'pending',
+            result: null,
+            error: null,
+            fileText: studentTextNele,
+            tasks: [],
+            documentType: 'typed',
+            pageCount: 1,
+            estimatedCredits: 1,
+            selected: true,
+            ocrDone: true
+        },
+        {
+            name: "Schüler #2",
+            originalName: "Jonas Beispielfeld",
+            status: 'pending',
+            result: null,
+            error: null,
+            fileText: studentTextJonas,
+            tasks: [],
+            documentType: 'typed',
+            pageCount: 1,
+            estimatedCredits: 1,
+            selected: true,
+            ocrDone: true
+        }
+    ];
+
+    return { modelSolution, modelSolutionContext, tasksLayout, studentBatchFiles };
 }
