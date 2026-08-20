@@ -46,6 +46,23 @@ describe('BatchProcessor Integration (Steel Thread A)', () => {
         avvAccepted: true
     };
 
+    // Der stapelweite Wiederlauf verwarf die Pruefarbeit der Lehrkraft wortlos:
+    // onResetResults setzt result und grade jeder fertigen Arbeit zurueck,
+    // der Dialog davor sprach nur vom Datenschutz.
+    it('warnt vor dem stapelweiten Wiederlauf, dass die Bewertungen verworfen werden', () => {
+        render(<BatchProcessor {...defaultProps} batchFiles={[
+            createBatchFile({ name: 'S1', status: 'done', pageCount: 1, grade: '2,0', result: { tasks: [] } }),
+            createBatchFile({ name: 'S2', status: 'done', pageCount: 1, grade: '3,0', result: { tasks: [] } })
+        ]} />);
+
+        fireEvent.click(screen.getByText(/Erneut korrigieren/i));
+
+        expect(screen.getByText('Bewertungen werden verworfen')).toBeInTheDocument();
+        expect(screen.getByText(/Bewertungen von 2 Arbeit\(en\)/i)).toBeInTheDocument();
+        // Der Titel darf nicht mehr vom Datenschutz sprechen, wenn Bewertungen fallen.
+        expect(screen.getByText('Bewertungen verwerfen und neu korrigieren')).toBeInTheDocument();
+    });
+
     it('should render the dashboard and trigger the Start Correction funnel', async () => {
         // 1. Initial Render
         render(<BatchProcessor {...defaultProps} />);

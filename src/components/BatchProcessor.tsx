@@ -1,5 +1,5 @@
 import React from 'react';
-import { Info, Highlighter } from 'lucide-react';
+import { Info, Highlighter, AlertTriangle } from 'lucide-react';
 import { BatchFile, Task, AppSettings } from '../types';
 import { Button } from './ui/Button';
 import { Card, CardContent } from './ui/Card';
@@ -98,6 +98,13 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     // Knopf eine abgewählte Arbeit, die die Warnung gar nicht ausgelöst hat.
     const firstUnredactedScanIdx = batchFiles.findIndex(f => f.documentType === 'scanned' && !f.isRedacted && f.selected !== false);
 
+    // Der stapelweite Wiederlauf setzt `result` und `grade` jeder fertigen Arbeit
+    // zurueck (useBatchActions.onResetResults) und startet sofort neu. Damit faellt
+    // auch jede von Hand geaenderte Punktzahl und Rueckmeldung weg. Die Zeilen-
+    // Rueckfrage benennt das seit dem 20.08.2026 — der Stapel-Dialog sprach bis
+    // dahin nur vom Datenschutz und verwarf die Pruefarbeit wortlos.
+    const bewerteteArbeiten = batchFiles.filter(f => f.status === 'done').length;
+
     // Nachträgliches Schwärzen entwertet eine bereits gelaufene Bilderkennung.
     const redactionDiscardsOcr = batchFiles.some(f => f.documentType === 'scanned' && !f.isRedacted && f.ocrDone && f.selected !== false);
 
@@ -119,9 +126,18 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                 {/* Privacy Confirmation System */}
                 <ConfirmationModal
                     isOpen={showConfirm !== null}
-                    title="Datenschutz-Bestätigung"
+                    title={showConfirm === 'reset' ? "Bewertungen verwerfen und neu korrigieren" : "Datenschutz-Bestätigung"}
                     message={
                         <>
+                            {showConfirm === 'reset' && bewerteteArbeiten > 0 && (
+                                <div className="mb-4 p-4 bg-destructive/5 border border-destructive/20 rounded-xl text-destructive text-sm flex items-start gap-3">
+                                    <AlertTriangle size={18} className="mt-0.5 shrink-0" />
+                                    <div>
+                                        <p className="font-bold mb-1">Bewertungen werden verworfen</p>
+                                        <p>Die Bewertungen von {bewerteteArbeiten} Arbeit(en) werden gelöscht und neu erzeugt — auch deine Änderungen an Punkten und Rückmeldungen. Deine Korrekturen am Schülertext bleiben erhalten.</p>
+                                    </div>
+                                </div>
+                            )}
                             {unredactedScansCount > 0 && (
                                 <div className="mb-4 p-4 bg-warning/5 border border-warning/20 rounded-xl text-warning text-sm flex items-start gap-3">
                                     <Info size={18} className="mt-0.5 shrink-0" />

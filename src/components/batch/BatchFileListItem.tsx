@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
     CheckCircle, AlertCircle, AlertTriangle, ChevronDown, Scissors, 
-    Trash2, Highlighter, Loader2, RotateCcw
+    Trash2, Highlighter, Loader2
 } from 'lucide-react';
 import { BatchFile, Task, AppSettings } from '../../types';
 import { Button } from '../ui/Button';
@@ -12,6 +12,7 @@ import { useBatchItemDerivations } from '../../hooks/useBatchItemDerivations';
 import { BatchItemPendingView } from './BatchItemPendingView';
 import { BatchItemDoneView } from './BatchItemDoneView';
 import { BatchItemStatusSummary } from './parts/BatchItemStatusSummary';
+import { BatchItemRunActions } from './parts/BatchItemRunActions';
 import { MobileViewSelector } from './parts/MobileViewSelector';
 import { useOllamaToken } from '@/hooks/useOllamaToken';
 
@@ -117,33 +118,6 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                         
                         <BatchItemStatusSummary item={item} isDone={isDone} onToggleType={onToggleType} idx={idx} itemHasWarnings={!!itemHasWarnings} />
                         
-                        {item.status === 'error' && item.ocrDone && onProcessSingleFile && !isProcessing && (
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={(e) => { e.stopPropagation(); onProcessSingleFile(idx); }}
-                                className="h-7 px-3 bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive hover:text-white transition-all rounded-full flex items-center gap-2 font-bold text-xxs uppercase tracking-wider"
-                            >
-                                <RotateCcw size={12} />
-                                Korrektur neu starten
-                            </Button>
-                        )}
-
-                        {item.documentType === 'scanned' && 
-                        (item.status === 'pending' || (item.status === 'error' && !item.ocrDone)) && 
-                        canRerunSingleOcr &&
-                        !isProcessing && 
-                        onProcessSingleOCR && (
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                onClick={(e) => { e.stopPropagation(); onProcessSingleOCR(idx); }}
-                                className="h-7 px-3 bg-primary/10 text-primary border-primary/20 hover:bg-primary hover:text-white transition-all rounded-full flex items-center gap-2 font-bold text-xxs uppercase tracking-wider"
-                            >
-                                <RotateCcw size={12} />
-                                OCR neu starten
-                            </Button>
-                        )}
                     </div>
                 </div>
 
@@ -167,6 +141,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                             </div>
                         </div>
                     )}
+                    <BatchItemRunActions item={item} idx={idx} loading={loading} isProcessing={isProcessing} onProcessSingleFile={onProcessSingleFile} onProcessSingleOCR={onProcessSingleOCR} canRerunSingleOcr={canRerunSingleOcr} />
                     {!isProcessing && <Button variant="ghost" size="icon" onClick={() => onRemoveFile(idx)} className="h-8 w-8 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/5 transition-all rounded-lg"><Trash2 size={14}/></Button>}
                     {(item.fileText || item.tasks) && <Button variant="ghost" size="icon" onClick={() => onToggleExpand(isExpanded ? null : idx)} aria-label="Details" className="h-8 w-8 text-muted-foreground transition-transform duration-300 rounded-lg" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}><ChevronDown size={18} /></Button>}
                 </div>
