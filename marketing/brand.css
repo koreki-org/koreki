@@ -208,6 +208,40 @@ h1.xs { font-size: 62px; line-height: 1.02; }
 }
 .swipe .arrow { font-size: 30px; line-height: 1; }
 
+/* Vorher/Nachher-Gegenueberstellung (LinkedIn, Haltungs-Posts) */
+.ba {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 22px; padding: 26px 30px; box-shadow: var(--shadow-card);
+}
+.ba + .ba { margin-top: 18px; }
+.ba .tag {
+    font-size: 17px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; margin-bottom: 14px;
+}
+.ba.before .tag { color: var(--faint); }
+.ba.after  .tag { color: var(--emerald); }
+.ba.after { border-color: rgba(5, 150, 105, 0.28); }
+.ba p {
+    font-family: 'Outfit', sans-serif; font-weight: 600;
+    font-size: 26px; line-height: 1.42;
+}
+.ba p + p { margin-top: 10px; }
+.ba.before p {
+    color: var(--faint);
+    text-decoration: line-through; text-decoration-thickness: 2px;
+}
+.ba.after p { color: var(--ink); }
+
+/* Kernaussage am Fuss eines Haltungs-Posts */
+.pull {
+    border-left: 4px solid var(--primary);
+    padding-left: 28px;
+    font-family: 'Outfit', sans-serif; font-weight: 600;
+    font-size: 32px; line-height: 1.35; letter-spacing: -0.015em;
+    color: var(--ink);
+}
+.pull b { color: var(--primary); font-weight: 700; }
+
 /* Verkleinerter Feed-Post fuer Story-Reposts */
 .repost {
     display: block; width: 620px; margin: 0 auto;
