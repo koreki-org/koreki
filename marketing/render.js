@@ -20,6 +20,7 @@ const FORMATS = {
     square: { width: 1080, height: 1080 },
     story: { width: 1080, height: 1920 },
     linkedin: { width: 1200, height: 1500 },
+    'linkedin-cover': { width: 1128, height: 191 },
     youtube: { width: 1280, height: 720 }
 };
 
@@ -29,7 +30,7 @@ const OUT = path.join(DIR, 'out');
 /** Liest data-format aus dem Quelltext — der Viewport muss vor dem Laden stehen. */
 function readFormat(file) {
     const html = fs.readFileSync(file, 'utf8');
-    const match = html.match(/<body[^>]*data-format="([a-z]+)"/i);
+    const match = html.match(/<body[^>]*data-format="([a-z-]+)"/i);
     const name = match ? match[1] : 'feed';
     if (!FORMATS[name]) throw new Error(`Unbekanntes Format "${name}" in ${path.basename(file)}`);
     return { name, ...FORMATS[name] };

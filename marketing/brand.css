@@ -65,6 +65,20 @@ body[data-format="square"]   .slide { width: 1080px; height: 1080px; padding: 72
 body[data-format="linkedin"] .slide { width: 1200px; height: 1500px; padding: 84px 80px; }
 body[data-format="youtube"]  .slide { width: 1280px; height: 720px;  padding: 64px 72px; }
 
+/* LinkedIn-Seitenkopf. Das Seitenlogo ueberlagert die untere linke Ecke —
+   die ersten ~300px bleiben deshalb frei. */
+body[data-format="linkedin-cover"] .slide {
+    width: 1128px; height: 191px;
+    padding: 0 48px 0 300px;
+    flex-direction: row; align-items: center; justify-content: flex-start;
+}
+.cover-claim {
+    font-family: 'Outfit', sans-serif; font-weight: 800;
+    font-size: 40px; letter-spacing: -0.03em; line-height: 1.05;
+}
+.cover-sub { font-size: 17px; font-weight: 600; color: var(--muted); margin-top: 9px; }
+.cover-sub b { color: var(--primary); font-weight: 700; }
+
 /* Story: oben/unten bleibt Platz fuer die Instagram-Bedienelemente.
    Faustregel ~250px oben, ~340px unten — nichts Wichtiges dort platzieren. */
 body[data-format="story"] .slide { width: 1080px; height: 1920px; padding: 270px 76px 350px; }
