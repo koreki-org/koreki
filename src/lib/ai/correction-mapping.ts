@@ -215,6 +215,7 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
                 ...kopfAusLayout(layoutTask),
                 pointsObtained: enginePoints,
                 feedback: aiTask!.feedback,
+                correctionNotes: aiTask!.correctionNotes || '',
                 confidence: 95,
                 content: aiTask!.content || ''
             }
@@ -310,6 +311,7 @@ export function mapGraphTask(layoutTask: Task, aiTask: AITask | undefined): Task
                 ...kopfAusLayout(layoutTask),
                 pointsObtained: enginePoints,
                 feedback: aiTask!.feedback,
+                correctionNotes: aiTask!.correctionNotes || '',
                 confidence: 95,
                 content: aiTask!.content || ''
             }
@@ -329,6 +331,7 @@ export function mapGraphTask(layoutTask: Task, aiTask: AITask | undefined): Task
             ...kopfAusLayout(layoutTask),
             pointsObtained: enginePoints,
             feedback: finalFeedback,
+            correctionNotes: aiTask ? (aiTask.correctionNotes || '') : '',
             confidence: 95,
             content: aiTask ? (aiTask.content || '') : ''
         }
@@ -370,6 +373,7 @@ export function mapModelTask(layoutTask: Task, aiTask: AITask): TaskMappingResul
             ...kopfAusLayout(layoutTask),
             pointsObtained: alsModellzahl(aiTask.pointsObtained, 0),
             feedback,
+            correctionNotes: aiTask.correctionNotes || '',
             confidence,
             content: aiTask.content || '',
             sandboxBypassed: isSandboxBypassed ? true : undefined
@@ -399,6 +403,7 @@ export function mapMissingTask(layoutTask: Task, aiTasks: AITask[]): TaskMapping
                 ...kopfAusLayout(layoutTask),
                 pointsObtained: alsModellzahl(nearMiss.pointsObtained, 0),
                 feedback: `[KI-FEHLER?] Name nicht exakt ("${nearMiss.name}" statt "${layoutTask.name}")\n\n${nearMiss.feedback || ''}`,
+                correctionNotes: nearMiss.correctionNotes || '',
                 confidence: alsModellzahl(nearMiss.confidence, 0),
                 content: nearMiss.content || ''
             }
@@ -411,6 +416,10 @@ export function mapMissingTask(layoutTask: Task, aiTasks: AITask[]): TaskMapping
             ...kopfAusLayout(layoutTask),
             pointsObtained: 0,
             feedback: 'Vom System nicht erkannt oder von der KI übersprungen.',
+            // ARCH: Kein `correctionNotes`. Hier liegt keine KI-Aufgabe vor, aus der
+            // Notizen stammen koennten — die Aufgabe fehlt in der Antwort vollstaendig.
+            // Ein leerer String waere zwar korrekt, behauptete aber, es habe einen
+            // Notizzettel gegeben. Die Abwesenheit ist hier die Wahrheit.
             confidence: 0,
             content: ''
         },

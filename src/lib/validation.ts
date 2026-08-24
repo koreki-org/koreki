@@ -97,6 +97,14 @@ export const AIAnalysisResultSchema = z.object({
                 return isNaN(num) ? undefined : num;
             }, z.number().optional()),
             feedback: z.preprocess(toSafeString, z.string()).optional(),
+            // Notizzettel des Modells: die Begruendung, die es VOR der Punktevergabe
+            // schreibt (siehe correction/system.md). Das Feld war hier nicht deklariert
+            // und ueberlebte allein durch das `.passthrough()` am Ende — ungeprueft,
+            // waehrend `feedback` und `content` durch `toSafeString` laufen. Liefert ein
+            // Modell dort ein Objekt statt einer Zeichenkette, kam das bis zur Anzeige
+            // durch. Folgenlos, solange es nirgends ankam; seit es angezeigt wird, nicht
+            // mehr (24.08.2026).
+            correctionNotes: z.preprocess(toSafeString, z.string()).optional(),
             confidence: z.preprocess((val) => {
                 if (val === undefined || val === null) return undefined;
                 const num = Number(val);
