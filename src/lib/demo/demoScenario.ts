@@ -36,6 +36,16 @@ import { buildModelSolutionFromTasks } from '@/lib/task-utils';
  * Genau deshalb liest Schueler #2 falsch ab, statt sich zu verrechnen — nur so ergibt
  * sich 2/3, und es zeigt die Folgefehler-Logik: Methode richtig, Ergebnis falsch,
  * Teilpunkt trotzdem. Aufgabe 2 beantwortet er vollstaendig, Aufgabe 3 gar nicht.
+ *
+ * ZUR FORMULIERUNG DER PUNKTEBLOECKE (24.08.2026): Jeder Block nennt die geforderte
+ * LEISTUNG, nicht das Themengebiet. Der Block "Paedagogischer Nutzen" hiess frueher
+ * "Vorbild- und Bildungsfunktion im Bereich Klimaschutz" — und das Themenwort baute
+ * dem Modell eine Bruecke: Ein Schueler, der nur "man muss etwas gegen den Klimawandel
+ * tun" schrieb, bekam den Block angerechnet. Gemessen an einer duennen Antwort ueber
+ * 10 Laeufe: volle Punktzahl in 7 von 10 Faellen, mit der jetzigen Formulierung in 3
+ * von 10. Eine umformulierte Zeile wirkte damit staerker als sechs durchgemessene
+ * Prompt-Varianten. Dieses Szenario ist die Vorlage, an der Lehrkraefte lernen, wie
+ * ein Erwartungshorizont auszusehen hat — deshalb steht hier die scharfe Fassung.
  */
 export interface DemoScenario {
     modelSolution: string;
@@ -66,7 +76,7 @@ export function buildDemoScenario(): DemoScenario {
         {
             name: "Aufgabe 2",
             maxPoints: 6,
-            content: `### Aufgabe 2: Wirtschaftlichkeit der Anlage (AFB II) (6 P) ###\nFragestellung: Erläutere, warum sich die Investition in eine eigene Solaranlage für die Schule langfristig lohnen kann.\n\nMusterlösung: Erwartet wird eine begründete Erläuterung ökonomischer und pädagogischer Vorteile.\n- Kernmechanismus (2P): Der Nutzen entsteht vor allem durch Eigenverbrauch — die Schule muss weniger teuren Strom vom Netzbetreiber zukaufen, statt mit der Einspeisevergütung Gewinn zu erzielen (diese liegt heute unter dem Bezugspreis, nicht darüber).\n- Weiterer Vorteil (2P): Unabhängigkeit von steigenden Energiepreisen und/oder korrekt eingeordnete Einspeisevergütung als Zusatzeinnahme (nicht als Hauptgewinnquelle).\n- Pädagogischer Nutzen (2P): Vorbild- und Bildungsfunktion im Bereich Klimaschutz.`
+            content: `### Aufgabe 2: Wirtschaftlichkeit der Anlage (AFB II) (6 P) ###\nFragestellung: Erläutere, warum sich die Investition in eine eigene Solaranlage für die Schule langfristig lohnen kann.\n\nMusterlösung: Erwartet wird eine begründete Erläuterung ökonomischer und pädagogischer Vorteile.\n- Kernmechanismus (2P): Der Nutzen entsteht vor allem durch Eigenverbrauch — die Schule muss weniger teuren Strom vom Netzbetreiber zukaufen, statt mit der Einspeisevergütung Gewinn zu erzielen (diese liegt heute unter dem Bezugspreis, nicht darüber).\n- Weiterer Vorteil (2P): Unabhängigkeit von steigenden Energiepreisen und/oder korrekt eingeordnete Einspeisevergütung als Zusatzeinnahme (nicht als Hauptgewinnquelle).\n- Pädagogischer Nutzen (2P): Die Schule wirkt als Vorbild, und die Schülerinnen und Schüler lernen im Unterricht an der eigenen Anlage.`
         },
         {
             name: "Aufgabe 3",
