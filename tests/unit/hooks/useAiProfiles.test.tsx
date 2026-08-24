@@ -1,6 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { useAiProfiles, STANDARD_AI_PROFILE } from '../../../src/hooks/useAiProfiles';
 import { isDesktopTarget } from '../../../src/lib/env-context';
+import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from '@/lib/ai/temperature-guidance';
 
 // Mock env context
 jest.mock('../../../src/lib/env-context', () => ({
@@ -27,8 +28,8 @@ describe('useAiProfiles Hook 🧪🛡️', () => {
         mockIsDesktopTarget.mockReturnValue(false); // Default to SaaS mode
         mockSettings = {
             provider: 'mistral',
-            temperature: 0.2,
-            topP: 0.8,
+            temperature: TEMPERATURE_MINIMUM,
+            topP: TOP_P_DEFAULT,
             maxTokens: 32768,
             presencePenalty: 0.0,
             enableThinking: true,
@@ -50,25 +51,26 @@ describe('useAiProfiles Hook 🧪🛡️', () => {
     it('should initialize with default settings', () => {
         const { result } = renderHook(() => useAiProfiles(mockSettings, mockOnSave, mockOnClose));
 
-        expect(result.current.temperature).toBe(0.2);
+        expect(result.current.temperature).toBe(TEMPERATURE_MINIMUM);
         expect(result.current.visionTemperature).toBe(0.0);
         expect(result.current.ollamaNumCtx).toBe(0);
         expect(result.current.isDirty).toBe(false);
     });
 
-    it('should clamp temperature to 0.2 for Ollama and OpenAI-Compatible providers', () => {
+    it('should clamp temperature to the minimum for Ollama and OpenAI-Compatible providers', () => {
         mockSettings.provider = 'ollama';
         mockSettings.temperature = 0.0;
         mockSettings.visionTemperature = 0.0;
 
         const { result: resultOllama } = renderHook(() => useAiProfiles(mockSettings, mockOnSave, mockOnClose));
-        expect(resultOllama.current.temperature).toBe(0.2);
+        expect(resultOllama.current.temperature).toBe(TEMPERATURE_MINIMUM);
+        // Vision behaelt bewusst ihre 0.2 — eigener Boden im Inferenz-Layer.
         expect(resultOllama.current.visionTemperature).toBe(0.2);
 
         // Reset and test with openai-compatible
         mockSettings.provider = 'openai-compatible';
         const { result: resultOpenAI } = renderHook(() => useAiProfiles(mockSettings, mockOnSave, mockOnClose));
-        expect(resultOpenAI.current.temperature).toBe(0.2);
+        expect(resultOpenAI.current.temperature).toBe(TEMPERATURE_MINIMUM);
         expect(resultOpenAI.current.visionTemperature).toBe(0.2);
     });
 
@@ -135,7 +137,7 @@ describe('useAiProfiles Hook 🧪🛡️', () => {
 
         expect(result.current.isCreatingNew).toBe(true);
         expect(result.current.newProfileName).toBe('');
-        expect(result.current.temperature).toBe(0.2); // Default standard
+        expect(result.current.temperature).toBe(TEMPERATURE_MINIMUM); // Default standard
         expect(result.current.ollamaNumCtx).toBe(0); // Default auto
     });
 

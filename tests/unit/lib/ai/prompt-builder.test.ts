@@ -1,5 +1,6 @@
 import { buildCleanAndAnalyzePrompt, buildCorrectionPrompt, buildCleanAndMapPrompt, buildVariableExtractionPrompt, buildVisionPrompt } from '../../../../src/lib/ai/prompt-builder';
 import { splitSkillSnippet } from '../../../../src/lib/ai/prompt-library';
+import { TEMPERATURE_MINIMUM } from '@/lib/ai/temperature-guidance';
 
 describe('Prompt Builder Specialized Routing', () => {
     
@@ -20,7 +21,7 @@ describe('Prompt Builder Specialized Routing', () => {
             const prompt = buildCorrectionPrompt('Muster', 'Schüler', null, '', qwenModel);
             expect(prompt.user).toContain('Muster');
             expect(prompt.user).toContain('Schüler');
-            expect(prompt.options?.temperature).toBe(0.2);
+            expect(prompt.options?.temperature).toBe(TEMPERATURE_MINIMUM);
         });
 
         it('should correctly build clean-and-map prompt for Qwen using default template', () => {

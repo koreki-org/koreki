@@ -7,6 +7,7 @@ import { isLocalInstance } from '../../../lib/env-context';
 import { LocalAiProfileService } from '../../../lib/services/local-profile-service';
 import { isSameName, nameTakenMessage, toProfileHttpError } from '../../../lib/services/profile-naming';
 import { toErrorMessage } from '../../../lib/error-message';
+import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from '@/lib/ai/temperature-guidance';
 
 /**
  * AI Profiles API Controller (Stage 18)
@@ -16,8 +17,8 @@ import { toErrorMessage } from '../../../lib/error-message';
 const aiProfileSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1, 'Name ist erforderlich'),
-    temperature: z.number().default(0.2),
-    topP: z.number().default(0.8),
+    temperature: z.number().default(TEMPERATURE_MINIMUM),
+    topP: z.number().default(TOP_P_DEFAULT),
     maxTokens: z.number().default(32768),
     presencePenalty: z.number().default(0.0),
     enableThinking: z.boolean().default(true),

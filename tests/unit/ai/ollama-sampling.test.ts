@@ -1,6 +1,7 @@
 import { berechneSamplingParameter, bestimmeModellArt } from '../../../src/lib/ai/ollama-sampling';
 import type { AppSettings } from '../../../src/types';
 import type { AIAction } from '../../../src/lib/ai/prompt-dispatch';
+import { FREETEXT_TEMPERATURE_MINIMUM, TEMPERATURE_MINIMUM } from '@/lib/ai/temperature-guidance';
 
 /**
  * Sampling-Disziplin fuer lokale Modelle (Layer 1)
@@ -79,21 +80,34 @@ describe('Temperatur nach Aufgabenart', () => {
 
 describe('Stabilitaetsboden lokaler Modelle', () => {
     /**
-     * Qwen wiederholt in Ollama bei sehr niedriger Temperatur im FREITEXT ganze
-     * Absaetze. Nur dort greift der Boden — in strukturierter Ausgabe haelt das
-     * Schema dagegen, und Determinismus ist wichtiger.
+     * Modelle wiederholen in Ollama bei sehr niedriger Temperatur im FREITEXT ganze
+     * Absaetze. Nur dort liegt der hoehere Boden — in strukturierter Ausgabe zwingt
+     * das Schema die Antwort zum Ende, eine Schleife kann nicht entstehen.
+     *
+     * Betrifft heute genau eine Aktion: die Zweitmeinung. Alles andere liefert JSON.
      */
-    it('hebt Qwen im Freitext an, nicht in strukturierter Ausgabe', () => {
+    it('haelt den Freitext hoeher als die strukturierte Ausgabe', () => {
         const freitext = rechne('second-opinion', 'qwen3:8b', { temperature: 0.0 });
-        expect(freitext.temperature).toBe(0.2);
+        expect(freitext.temperature).toBe(FREETEXT_TEMPERATURE_MINIMUM);
 
         const strukturiert = rechne('second-opinion', 'qwen3:8b', { temperature: 0.0 }, { hasResponseSchema: true });
-        expect(strukturiert.temperature).toBe(0.0);
+        expect(strukturiert.temperature).toBe(TEMPERATURE_MINIMUM);
     });
 
-    it('haelt Gemma und MoE bei mindestens 0.5', () => {
-        expect(rechne('correction', 'gemma3:12b', { temperature: 0.1 }).temperature).toBe(0.5);
-        expect(rechne('correction', 'qwen3-a4b', { temperature: 0.1 }).temperature).toBe(0.5);
+    /**
+     * Bis zum 24.08.2026 lag der Boden fuer Gemma/MoE bei 0.5 und fuer Qwen bei 0.2 —
+     * Stabilitaetsaufschlaege gegen dieselbe Wiederholungsschleife. Sie trafen aber
+     * auch die strukturierte Korrektur, wo die Schleife gar nicht auftreten kann, und
+     * kosteten dort Reproduzierbarkeit. Jetzt gilt eine Grenze fuer alle Modelle.
+     */
+    it('behandelt alle Modelle gleich, solange die Ausgabe strukturiert ist', () => {
+        expect(rechne('correction', 'gemma3:12b', { temperature: 0.0 }).temperature).toBe(TEMPERATURE_MINIMUM);
+        expect(rechne('correction', 'qwen3-a4b', { temperature: 0.0 }).temperature).toBe(TEMPERATURE_MINIMUM);
+        expect(rechne('correction', 'qwen3:8b', { temperature: 0.0 }).temperature).toBe(TEMPERATURE_MINIMUM);
+    });
+
+    it('laesst hoehere Werte unangetastet', () => {
+        expect(rechne('correction', 'gemma3:12b', { temperature: 0.7 }).temperature).toBe(0.7);
     });
 
     /**

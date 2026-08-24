@@ -1,5 +1,6 @@
 import type { AppSettings } from '../../types';
 import type { AIAction } from './prompt-dispatch';
+import { FREETEXT_TEMPERATURE_MINIMUM, TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from './temperature-guidance';
 
 /**
  * Wie heiss das lokale Modell rechnen darf.
@@ -150,9 +151,11 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
             targetTopP = settings.topP ?? defaultTopP;
         }
     } else {
-        const defaultTemp = isGemmaOrMoE ? 0.5 : (isQwen ? 0.3 : 0.1);
-        targetTemp = settings.temperature ?? promptOptions?.temperature ?? defaultTemp;
-        targetTopP = settings.topP ?? promptOptions?.topP ?? 1.0;
+        // Ein Standardwert fuer alle Modelle (24.08.2026). Vorher lag er je Modell
+        // verschieden (Gemma/MoE 0.5, Qwen 0.3) — das waren Stabilitaetsaufschlaege,
+        // keine paedagogischen Werte, und sie kosteten Reproduzierbarkeit.
+        targetTemp = settings.temperature ?? promptOptions?.temperature ?? TEMPERATURE_MINIMUM;
+        targetTopP = settings.topP ?? promptOptions?.topP ?? TOP_P_DEFAULT;
     }
 
     // ─── Stabilitaetsboden ───────────────────────────────────────────────────
@@ -160,17 +163,17 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
     if (isVision) {
         if (targetTemp < 0.4) targetTemp = 0.4;
     } else {
-        if (isQwen) {
-            // Qwen wiederholt in Ollama bei <= 0.1 im Freitext ganze Absaetze,
-            // bis der Puffer voll ist. In strukturierter Ausgabe haelt ein
-            // Schema dagegen — dort darf es bis 0.0 herunter.
-            const hasStructuredFormat = hasResponseSchema || isSystemAction || action !== 'second-opinion';
-            if (!hasStructuredFormat && targetTemp < 0.2) targetTemp = 0.2;
-        } else if (targetTemp === 0) {
-            targetTemp = 0.1;
-        }
+        // Freitext zuerst: Dort wiederholt Qwen bei <= 0.1 ganze Absaetze, bis der
+        // Puffer voll ist. In strukturierter Ausgabe haelt das Schema dagegen — es
+        // zwingt die Antwort zum Ende, eine Schleife kann gar nicht entstehen.
+        // Betrifft heute genau die Zweitmeinung; sie behaelt deshalb ihre 0.2.
+        const hasStructuredFormat = hasResponseSchema || isSystemAction || action !== 'second-opinion';
+        const untergrenze = hasStructuredFormat ? TEMPERATURE_MINIMUM : FREETEXT_TEMPERATURE_MINIMUM;
 
-        if (isGemmaOrMoE && targetTemp < 0.5) targetTemp = 0.5;
+        // Gilt jetzt fuer ALLE Modelle. Der frueher hoehere Boden fuer Gemma/MoE (0.5)
+        // ist entfallen: Er war als Schutz vor derselben Wiederholungsschleife gedacht,
+        // traf aber auch die strukturierte Korrektur, wo sie nicht auftreten kann.
+        if (targetTemp < untergrenze) targetTemp = untergrenze;
     }
 
     // ─── Kontextfenster ──────────────────────────────────────────────────────

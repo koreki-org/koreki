@@ -15,6 +15,7 @@ import {
 import { VALIDATE_GRAPH_TOOL } from '../grading/graph-generator';
 import { logger } from '@/lib/logger';
 import { parseLlmJson } from './llm-json';
+import { FREETEXT_TEMPERATURE_MINIMUM, TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from './temperature-guidance';
 import { isDesktopTarget } from '@/lib/env-context';
 import { AIProviderError } from './provider-error';
 import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
@@ -110,24 +111,30 @@ export async function executeOpenAIRequest(
     // Respect the prompt's defined temperature/topP if not overridden by explicit options
     let targetTemp = isSystemAction 
         ? (promptObj.options?.temperature ?? 0.0)
-        : (options.temperature ?? promptObj.options?.temperature ?? (isThinking ? 1.0 : 0.2));
+        : (options.temperature ?? promptObj.options?.temperature ?? (isThinking ? 1.0 : TEMPERATURE_MINIMUM));
         
     if (action === 'correction' && options.temperature === undefined) {
-        targetTemp = isThinking ? 0.6 : 0.2;
+        targetTemp = isThinking ? 0.6 : TEMPERATURE_MINIMUM;
     }
 
-    // Clamp minimum temperature to 0.2 for Qwen models on reasoning/correction tasks to prevent
-    // degenerate loops or hangs. Extraction tasks (calc-trace-extraction, variable-extraction etc.)
-    // must be allowed to run at 0.0 for deterministic, verbatim results.
+    // Untergrenze fuer Qwen bei Ermessens- und Korrekturaufgaben: Schutz vor
+    // Wiederholungsschleifen. Extraktions-Aufgaben (calc-trace-extraction,
+    // variable-extraction) duerfen weiterhin auf 0.0 laufen — sie schreiben ab,
+    // dort ist jede Abweichung ein Fehler.
+    //
+    // Lag bis zum 24.08.2026 bei 0.2. Die Zweitmeinung behaelt diesen Wert, weil sie
+    // als einzige dieser Aktionen in Prosa antwortet und kein Schema die Ausgabe zum
+    // Ende zwingt; alle uebrigen liefern JSON.
     const isQwen = targetModel.toLowerCase().includes('qwen');
     const isReasoningAction = ['correction', 'second-opinion', 'generate-graph', 'refine-graph', 'generate-calc-trace'].includes(action);
-    if (isQwen && isReasoningAction && targetTemp < 0.2) {
-        targetTemp = 0.2;
+    if (isQwen && isReasoningAction) {
+        const untergrenze = action === 'second-opinion' ? FREETEXT_TEMPERATURE_MINIMUM : TEMPERATURE_MINIMUM;
+        if (targetTemp < untergrenze) targetTemp = untergrenze;
     }
 
     const targetTopP = isSystemAction
         ? (promptObj.options?.topP ?? 0.1)
-        : (options.topP ?? promptObj.options?.topP ?? (isThinking ? 0.95 : 0.8));
+        : (options.topP ?? promptObj.options?.topP ?? TOP_P_DEFAULT);
         
     // presence_penalty: Always respect user-configured value from AI profile.
     // Default 0.0 matches the UI default in useAiProfiles.ts. The old hardcoded 1.5 caused OCR

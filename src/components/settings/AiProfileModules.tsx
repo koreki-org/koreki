@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { FloatingActions } from '@/components/ui/FloatingActions';
 import { cn } from '@/lib/utils';
 import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
-import { describeTemperature } from '@/lib/ai/temperature-guidance';
+import { describeTemperature, TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from '@/lib/ai/temperature-guidance';
 import { ParameterSlider } from './ParameterSlider';
 
 
@@ -199,7 +199,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                 tooltipContent="Steuert die Kreativität des Modells. 0.0 ist maximal deterministisch (präzise). Höhere Werte erlauben kreativeres und abwechslungsreicheres Feedback."
                                 value={temperature}
                                 onChange={setTemperature}
-                                min={(provider === 'ollama' || provider === 'openai-compatible') ? "0.2" : "0.0"}
+                                min={(provider === 'ollama' || provider === 'openai-compatible') ? String(TEMPERATURE_MINIMUM) : "0.0"}
                                 max="2.0"
                                 step="0.1"
                                 decimals={1}
@@ -218,7 +218,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                 step="0.05"
                                 decimals={2}
                                 description="Beschränkt den Token-Auswahlpool"
-                                defaultHint={enableThinking ? "0.95" : "0.80"}
+                                defaultHint={String(TOP_P_DEFAULT)}
                             />
 
                             <ParameterSlider

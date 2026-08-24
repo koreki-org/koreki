@@ -9,6 +9,7 @@ import { isLocalInstance } from '../env-context';
 import { GradingMemoryCase, GradingMemory } from '../../types';
 import { readJsonArray, readJsonArrayForUpdate, readJsonObject, writeJsonAtomic } from './json-vault';
 import { isSameName, nameTakenMessage } from './profile-naming';
+import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from '@/lib/ai/temperature-guidance';
 
 interface StoredExpertProfile {
     id: string;
@@ -158,8 +159,8 @@ export const LocalAiProfileService = {
         const profileData = {
             id: data.id || `local-ai-${Date.now()}`,
             name: data.name,
-            temperature: Number(data.temperature ?? 0.2),
-            topP: Number(data.topP ?? 0.8),
+            temperature: Number(data.temperature ?? TEMPERATURE_MINIMUM),
+            topP: Number(data.topP ?? TOP_P_DEFAULT),
             maxTokens: Number(data.maxTokens ?? 32768),
             presencePenalty: Number(data.presencePenalty ?? 0.0),
             enableThinking: data.enableThinking !== undefined ? Boolean(data.enableThinking) : true,

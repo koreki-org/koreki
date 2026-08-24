@@ -21,6 +21,45 @@ export type TemperatureContext = 'correction' | 'vision';
 export const CORRECTION_TEMPERATURE_LIMIT = 1.2;
 
 /**
+ * Untergrenze und Standardwert fuer die Korrektur-Temperatur.
+ *
+ * Lag bis zum 24.08.2026 bei 0.2 — als Sicherheitsabstand zu 0.1, dem Wert, ab dem
+ * Qwen in Ollama im FREITEXT Absaetze wiederholt, bis der Puffer voll ist. Gemessen
+ * an 120 Korrekturlaeufen zeigte sich: In strukturierter Ausgabe (JSON) tritt das
+ * nicht auf, und niedrigere Temperatur bringt dort messbar stabilere Punktzahlen.
+ *
+ * Die Zahl steht hier und nicht in den Providern, weil Oberflaeche und Inferenz-Layer
+ * dieselbe Grenze nennen muessen: Zeigt der Schieberegler 0.1 an, waehrend der Server
+ * auf 0.2 anhebt, zaehlt die Oberflaeche etwas an, das nie ankommt.
+ */
+export const TEMPERATURE_MINIMUM = 0.1;
+
+/**
+ * Der Freitext bleibt bei 0.2 — bewusste Ausnahme.
+ *
+ * Betrifft in Koreki genau eine Aktion: die KI-Zweitmeinung. Sie antwortet der
+ * Lehrkraft in Prosa, ohne Schema, das die Ausgabe zum Ende zwingen wuerde. Genau
+ * dort beschreibt der Ollama-Kommentar seine Schleife, und genau dort liegen keine
+ * Messwerte vor — die Laeufe vom 24.08.2026 waren alle strukturierte Korrekturen.
+ */
+export const FREETEXT_TEMPERATURE_MINIMUM = 0.2;
+
+/**
+ * Standardwert fuer Top P bei der Korrektur.
+ *
+ * Stand vorher an drei Stellen verschieden: Das Standardprofil speicherte 0.8, der
+ * Hinweis im Modal nannte 0.95, und ohne Profil fiel der Ollama-Pfad auf 1.0 zurueck
+ * — drei Zahlen fuer dieselbe Sache, von denen der angezeigte Standard nicht der war,
+ * den ein Nutzer bekam.
+ *
+ * Gemessen (60 Laeufe, Temperatur 0.1, Thinking an): Zwischen 0.8, 0.95 und 1.0 ist
+ * kein Unterschied in Streuung oder Laufzeit nachweisbar. Die Wahl faellt deshalb
+ * nicht auf einen gemessenen Sieger, sondern auf den Wert, mit dem im Betrieb
+ * Erfahrung besteht.
+ */
+export const TOP_P_DEFAULT = 0.95;
+
+/**
  * Beschreibt, was ein Temperaturwert praktisch bedeutet.
  *
  * Die Schwellen sind bewusst unterschiedlich: bei der Texterkennung geht es um

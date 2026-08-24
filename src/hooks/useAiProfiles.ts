@@ -1,3 +1,4 @@
+import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from '@/lib/ai/temperature-guidance';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppSettings, AiProfile } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
@@ -19,8 +20,8 @@ const aiProfileStore = createProfileStore<AiProfile>({
 export const STANDARD_AI_PROFILE: AiProfile & { isSystem: boolean } = {
     id: 'system-standard',
     name: 'Standard',
-    temperature: 0.2,
-    topP: 0.8,
+    temperature: TEMPERATURE_MINIMUM,
+    topP: TOP_P_DEFAULT,
     maxTokens: 32768,
     presencePenalty: 0.0,
     enableThinking: true,
@@ -71,8 +72,8 @@ export const useAiProfiles = (
     const [editingName, setEditingName] = useState('');
 
     // Active tuning slider properties
-    const [temperature, setTemperature] = useState(settings.temperature ?? 0.2);
-    const [topP, setTopP] = useState(settings.topP ?? 0.8);
+    const [temperature, setTemperature] = useState(settings.temperature ?? TEMPERATURE_MINIMUM);
+    const [topP, setTopP] = useState(settings.topP ?? TOP_P_DEFAULT);
     const [maxTokens, setMaxTokensState] = useState(settings.maxTokens ?? 32768);
     const [presencePenalty, setPresencePenalty] = useState(settings.presencePenalty ?? 0.0);
     const [enableThinking, setEnableThinking] = useState(settings.enableThinking ?? true);
@@ -213,8 +214,8 @@ export const useAiProfiles = (
 
         if (template) {
             setNewProfileName(`Kopie von ${template.name}`);
-            setTemperature(template.temperature ?? 0.2);
-            setTopP(template.topP ?? 0.8);
+            setTemperature(template.temperature ?? TEMPERATURE_MINIMUM);
+            setTopP(template.topP ?? TOP_P_DEFAULT);
             setMaxTokensState(template.maxTokens ?? 32768);
             setPresencePenalty(template.presencePenalty ?? 0.0);
             setEnableThinking(template.enableThinking ?? true);
@@ -227,8 +228,8 @@ export const useAiProfiles = (
         } else {
             setNewProfileName('');
             // Reset settings to default values for a clean start
-            setTemperature(0.2);
-            setTopP(0.8);
+            setTemperature(TEMPERATURE_MINIMUM);
+            setTopP(TOP_P_DEFAULT);
             setMaxTokensState(32768);
             setPresencePenalty(0.0);
             setEnableThinking(true);
@@ -415,10 +416,9 @@ export const useAiProfiles = (
 
     useEffect(() => {
         if (settings.provider === 'ollama' || settings.provider === 'openai-compatible') {
-            // For Ollama / openai-compatible: enforce a minimum of 0.2 to avoid instability.
-            // Users can raise this freely in the AI params modal.
-            if (temperature < 0.2) setTemperature(0.2);
-            if (visionTemperature < 0.2) setVisionTemperature(0.2);
+            // Untergrenze gegen Wiederholungsschleifen; nach oben bleibt alles frei.
+            if (temperature < TEMPERATURE_MINIMUM) setTemperature(TEMPERATURE_MINIMUM);
+            if (visionTemperature < 0.2) setVisionTemperature(0.2); // Vision: eigener Boden von 0.4 im Inferenz-Layer
         }
     }, [settings.provider, temperature, visionTemperature]);
 

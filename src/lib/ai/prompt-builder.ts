@@ -38,6 +38,7 @@ import mathHybridInstruction from '../../prompts/core/default/correction/math-en
 import calcTraceTemplate from '../../prompts/core/default/correction/math-engine/calc-trace-template.md';
 import mathHybridHeader from '../../prompts/core/default/correction/math-engine/hybrid-header.md';
 import mathAutoHeader from '../../prompts/core/default/correction/math-engine/auto-header.md';
+import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from './temperature-guidance';
 
 import analyzeCleanSystemDefault from '../../prompts/core/default/analyze-and-clean/system.md';
 import analyzeCleanUserDefault from '../../prompts/core/default/analyze-and-clean/user.md';
@@ -213,7 +214,7 @@ export function buildCorrectionPrompt(
     return {
         system,
         user,
-        options: { temperature: 0.2, topP: 1.0 } // Pedagogical Flexibility
+        options: { temperature: TEMPERATURE_MINIMUM, topP: TOP_P_DEFAULT } // Reproduzierbare Benotung
     };
 }
 

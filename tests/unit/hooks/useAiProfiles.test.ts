@@ -1,6 +1,7 @@
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useAiProfiles, STANDARD_AI_PROFILE, MATH_AI_PROFILE } from '../../../src/hooks/useAiProfiles';
 import { AppSettings } from '../../../src/types';
+import { TEMPERATURE_MINIMUM } from '@/lib/ai/temperature-guidance';
 
 // Mock dependencies
 jest.mock('../../../src/lib/env-context', () => ({
@@ -151,7 +152,7 @@ describe('useAiProfiles - Industrial Hook Verification', () => {
             expect(gespeichert).toHaveLength(1);
             expect(gespeichert[0].id).toBe('local-ai-1');
             // Die Standardwerte des leeren Formulars haben die alten ersetzt.
-            expect(gespeichert[0].temperature).toBe(0.2);
+            expect(gespeichert[0].temperature).toBe(TEMPERATURE_MINIMUM);
         });
 
         it('weist den Namen einer System-Vorlage ab', async () => {
