@@ -407,7 +407,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                         )}
 
                         <EditableMathArea
-                            value={aiResult?.feedback || ''}
+                            value={aiResult?.feedback || ''} aiNotes={aiResult?.correctionNotes}
                             onChange={(newVal) => handleReviewFeedbackChange(idx, task.name || '', newVal)}
                             placeholder="Feedback ..."
                             className="w-full"

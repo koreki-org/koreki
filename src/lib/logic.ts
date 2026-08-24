@@ -52,6 +52,16 @@ export interface Task {
     maxPoints?: number | string;
     name?: string;
     feedback?: string;
+    /**
+     * Notizzettel des Modells vor der Punktevergabe.
+     *
+     * Steht hier, weil die Oberflaeche das Korrekturergebnis als `Task` sieht
+     * (`Analysis.tasks`), waehrend die KI-Abbildung `AITask` liefert — beide
+     * beschreiben dieselben Objekte. Die uebrigen Ergebnisfelder oben
+     * (`pointsObtained`, `feedback`, `confidence`, `sandboxBypassed`) stehen aus
+     * demselben Grund hier.
+     */
+    correctionNotes?: string;
     content?: string;
     confidence?: number; // 0-1 or 0-100
     taskType?: string;

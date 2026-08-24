@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pencil, Check, Eye, ChevronDown, Settings } from 'lucide-react';
+import { Pencil, Check, Eye, ChevronDown, Settings, FileText } from 'lucide-react';
 import { MathMarkdown } from './MathMarkdown';
 import { HighlightableTextArea } from './HighlightableTextArea';
 import { Button } from './Button';
@@ -13,6 +13,16 @@ interface EditableMathAreaProps {
     initialEditMode?: boolean;
     label?: string;
     leftAction?: React.ReactNode;
+    /**
+     * Notizzettel des Modells zu dieser Aufgabe (`AITask.correctionNotes`).
+     *
+     * Kommt bewusst als eigener Wert und nicht im Feedback-Text: Der Engine-Block
+     * liegt dort und muss deshalb von jedem schuelergerichteten Ausgabeweg per
+     * `stripPangBlock` wieder herausgeschnitten werden. Eine weitere solche Stelle
+     * waere eine weitere Gelegenheit, es zu vergessen — und ein vergessener Schnitt
+     * setzte das Selbstgespraech der KI auf das PDF eines Schuelers.
+     */
+    aiNotes?: string;
 }
 
 /** Welche Engine den technischen Block erzeugt hat — bestimmt seine Beschriftung. */
@@ -27,6 +37,66 @@ const ENGINE_LABELS: Record<FeedbackEngine, string> = {
     PANG: 'Technische PANG-Detailanalyse einblenden',
     AGS: 'Technische AGS-Detailanalyse einblenden',
     CalcTrace: 'Technische Rechenketten-Detailanalyse einblenden'
+};
+
+/**
+ * Zwei Sorten Inhalt teilen sich den Aufklapper, und sie sind NICHT gleichwertig:
+ *
+ * - `engine` — was eine Rechen-Engine bewiesen hat. Stimmt per Konstruktion mit der
+ *   Punktzahl ueberein. Blau, wie alles Belastbare in dieser Karte.
+ * - `notizen` — der Notizzettel des Modells vor der Punktevergabe. Ein Entwurf, der
+ *   der Punktzahl widersprechen KANN (gemessen am 24.08.2026: "Insgesamt 5-6 Punkte
+ *   moeglich" gefolgt von voller Punktzahl). Grau, weil es Maschinen-Innenleben ist
+ *   und kein Beweis.
+ *
+ * Bewusst EIN Bauteil mit zwei Toenen statt zweier Aufklapper: Sie treten nie
+ * gleichzeitig auf, und eine Kopie waere wortgleich.
+ */
+type AufklapperTon = 'engine' | 'notizen';
+
+const TON: Record<AufklapperTon, { rahmen: string; flaeche: string; schrift: string; anriss: string; marke: string; trenner: string }> = {
+    engine: {
+        rahmen: 'border-primary/20',
+        flaeche: 'bg-primary/5',
+        schrift: 'text-primary',
+        anriss: 'hover:bg-primary/10',
+        marke: 'bg-primary/15 text-primary',
+        trenner: 'border-primary/10'
+    },
+    notizen: {
+        rahmen: 'border-border',
+        flaeche: 'bg-muted/40',
+        schrift: 'text-muted-foreground',
+        anriss: 'hover:bg-muted/60',
+        marke: 'bg-muted text-muted-foreground',
+        trenner: 'border-border'
+    }
+};
+
+const Aufklapper: React.FC<{
+    titel: string;
+    ton: AufklapperTon;
+    icon: React.ReactNode;
+    children: React.ReactNode;
+}> = ({ titel, ton, icon, children }) => {
+    const t = TON[ton];
+    return (
+        <details className={cn('group rounded-xl border overflow-hidden transition-all duration-300 mb-4', t.rahmen, t.flaeche)}>
+            <summary className={cn(
+                'flex items-center justify-between p-3.5 cursor-pointer list-none select-none text-xs font-bold transition-all [&::-webkit-details-marker]:hidden',
+                t.schrift, t.anriss
+            )}>
+                <div className="flex items-center gap-2.5">
+                    <div className={cn('flex items-center justify-center w-5 h-5 rounded-md', t.marke)}>{icon}</div>
+                    <span>{titel}</span>
+                </div>
+                <ChevronDown size={14} className={cn('transition-transform duration-300 group-open:rotate-180', t.schrift)} />
+            </summary>
+            <div className={cn('border-t p-4 bg-background/30 text-xs leading-relaxed font-mono', t.trenner)}>
+                {children}
+            </div>
+        </details>
+    );
 };
 
 interface SplitFeedback {
@@ -115,11 +185,13 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
     className,
     initialEditMode = false,
     label,
-    leftAction
+    leftAction,
+    aiNotes
 }) => {
     const [isEditing, setIsEditing] = useState(initialEditMode);
 
     const { technical, engine, pedagogical } = splitFeedback(value);
+    const notizen = (aiNotes || '').trim();
 
     return (
         <div className={cn("relative group w-full", className)}>
@@ -158,27 +230,37 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
                     />
                 ) : (
                     <div className="p-5 min-h-[140px] space-y-4">
-                        {value.trim() ? (
+                        {value.trim() || notizen ? (
                             <>
-                                {technical && (
-                                    <details className="group border border-primary/20 dark:border-primary/20 rounded-xl bg-primary/5 dark:bg-primary/5 overflow-hidden transition-all duration-300 mb-4">
-                                        <summary className="flex items-center justify-between p-3.5 cursor-pointer list-none select-none text-xs font-bold text-primary dark:text-primary hover:bg-primary/10 dark:hover:bg-primary/10 transition-all [&::-webkit-details-marker]:hidden">
-                                            <div className="flex items-center gap-2.5">
-                                                <div className="flex items-center justify-center w-5 h-5 rounded-md bg-primary/15 dark:bg-primary/15 text-primary dark:text-primary">
-                                                    <Settings size={12} className="transition-transform duration-500 group-open:rotate-90" />
-                                                </div>
-                                                <span>{engine ? ENGINE_LABELS[engine] : 'Technische Detailanalyse einblenden'}</span>
-                                            </div>
-                                            <ChevronDown size={14} className="text-primary dark:text-primary transition-transform duration-300 group-open:rotate-180" />
-                                        </summary>
-                                        <div className="border-t border-primary/10 dark:border-primary/10 p-4 bg-background/30 text-xs leading-relaxed font-mono">
-                                            <MathMarkdown content={technical} />
-                                        </div>
-                                    </details>
-                                )}
+                                {technical ? (
+                                    <Aufklapper
+                                        titel={engine ? ENGINE_LABELS[engine] : 'Technische Detailanalyse einblenden'}
+                                        ton="engine"
+                                        icon={<Settings size={12} className="transition-transform duration-500 group-open:rotate-90" />}
+                                    >
+                                        <MathMarkdown content={technical} />
+                                    </Aufklapper>
+                                ) : notizen ? (
+                                    // Nur wo keine Engine gerechnet hat, also bei Textaufgaben. Bei Rechen- und
+                                    // Graphaufgaben liegen die Notizen zwar ebenfalls vor, bleiben aber bewusst
+                                    // ungezeigt — der Engine-Beweis ist dort das Verlaesslichere, und zwei
+                                    // Aufklapper uebereinander ueberladen die Karte.
+                                    <Aufklapper
+                                        titel="Notizen der KI zur Punktevergabe einblenden"
+                                        ton="notizen"
+                                        icon={<FileText size={12} />}
+                                    >
+                                        {/* Roher Text, kein Markdown: Der Notizzettel ist Fliesstext mit
+                                            Zeilenumbruechen, den ein Markdown-Renderer zusammenziehen wuerde. */}
+                                        <div className="whitespace-pre-wrap">{notizen}</div>
+                                        <p className="mt-3 pt-3 border-t border-border text-muted-foreground/70 font-sans not-italic">
+                                            Notizzettel des Modells, unredigiert — nicht für Schüler bestimmt.
+                                        </p>
+                                    </Aufklapper>
+                                ) : null}
                                 {pedagogical.trim() ? (
                                     <MathMarkdown content={pedagogical} />
-                                ) : !technical ? (
+                                ) : !technical && !notizen ? (
                                     <span className="text-muted-foreground/50 italic text-xs">
                                         {placeholder || "Kein Inhalt vorhanden."}
                                     </span>
