@@ -204,7 +204,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                 step="0.1"
                                 decimals={1}
                                 description={getTempDescription(temperature, 'correction')}
-                                defaultHint={enableThinking ? "0.6" : "0.7"}
+                                defaultHint={String(TEMPERATURE_MINIMUM)}
                             />
 
                             <ParameterSlider

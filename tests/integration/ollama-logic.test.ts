@@ -99,7 +99,14 @@ describe('Ollama Provider - Layer 2 Integration Tests', () => {
         }));
     });
 
-    it('should clamp temperature to 0.5 for Gemma/MoE models if temperature is low', async () => {
+    /**
+     * Bis zum 24.08.2026 hob Gemma/MoE jede Temperatur unter 0.5 an — als Schutz vor
+     * Wiederholungsschleifen. Der Schutz traf aber auch die strukturierte Korrektur,
+     * wo eine Schleife nicht entstehen kann: Das JSON zwingt die Antwort zum Ende.
+     * Jetzt gilt eine Untergrenze fuer alle Modelle, und ein eingestellter Wert
+     * darueber bleibt stehen.
+     */
+    it('laesst Gemma/MoE bei der Korrektur den eingestellten Wert behalten', async () => {
         mockInvoke.mockResolvedValueOnce('{"status": "success"}');
 
         const lowSettings = { ollamaUrl: 'http://localhost:11434', ollamaModel: 'gemma4:26b-a4b-it-qat', temperature: 0.2 };
@@ -107,7 +114,7 @@ describe('Ollama Provider - Layer 2 Integration Tests', () => {
         await executeOllamaRequest('correction', payload as any, lowSettings as any);
 
         expect(mockInvoke).toHaveBeenCalledWith('execute_ollama_command', expect.objectContaining({
-            temperature: 0.5
+            temperature: 0.2
         }));
     });
 
