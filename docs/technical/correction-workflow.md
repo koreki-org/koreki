@@ -3,7 +3,7 @@ title: "Korrektur-Workflow (Technical Lifecycle)"
 description: "Technisches Architektur-Dokument: Korrektur-Workflow (Technical Lifecycle)"
 author: "@principal_architect"
 date: "2026-04-06"
-last_updated: "2026-04-07"
+last_updated: "2026-08-25"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -76,6 +76,39 @@ Die `MistralBridge` (`src/lib/ai/mistral-provider.ts`) ist das Herzstück der ak
     - **Isolation**: Texterkennung, Layout-Analyse und pädagogische Bewertung sind getrennte Verantwortlichkeiten.
     - **Präzision**: Ein Modell, das nur transkribiert ("Robotic Writing Head"), liefert eine höhere Verbatim-Treue als ein Modell, das gleichzeitig interpretieren muss.
     - **Wartbarkeit (ISP)**: Änderungen an der Analyse-Logik (z.B. Token-Upgrade auf 4000) können vorgenommen werden, ohne die Korrektur-Logik zu gefährden.
+
+---
+
+## 3.1 Der Notizzettel des Modells (`correctionNotes`)
+
+Die Korrektur-KI schreibt zu jeder Aufgabe eine Begründung, **bevor** sie die Punkte setzt —
+gemessen 899 bis 4221 Zeichen, auch ohne besondere Aufforderung. Sie steht im Feld
+`correctionNotes` und ist bei Textaufgaben im Aufklapper der Korrekturkarte einsehbar
+(»Notizen der KI zur Punktevergabe«), unter derselben Schaltfläche, die bei Rechen- und
+Graphaufgaben die technische Detailanalyse zeigt.
+
+Drei Eigenschaften sind bewusst so gewählt:
+
+* **Nur lesbar.** Das Feld wird von zwei Parsern gelesen (`parseCriteriaScoresFromNotes`,
+  `resolveTaskName`). Eine Lehrkraft, die dort »Teilaufgabe b: 2 / 3 Punkte« hineinschriebe,
+  erzeugte lautlos ein Kriterium mit der Kennung `b`.
+* **Nicht »Begründung« genannt.** Das Wort bezeichnet in dieser Oberfläche die Aussage der
+  Lehrkraft und landet im Prüfungskontext potenziell in einer Akte.
+* **Getrennt vom Feedback-Text.** Der Engine-Block liegt im Feedback und muss deshalb von
+  jedem schülergerichteten Ausgabeweg per `stripPangBlock` wieder herausgeschnitten werden
+  (`pdf.ts` an drei, `DigitalSlipsModal` an zwei Stellen). Als eigenes Feld sind alle
+  Ausgabewege konstruktiv dicht — es gibt keine Ausnahme, an die jemand denken müsste.
+
+> [!WARNING]
+> Bis zum 24.08.2026 ging das Feld bei Textaufgaben verloren: Von den sieben `return`-Objekten
+> in `correction-mapping.ts` trug genau eines es weiter. Die Lehrkraft sah eine Punktzahl ohne
+> Herleitung, und die Fehlersuche musste sie aus dem Feedback rückwärts erschließen.
+> [tests/unit/correction-notes-governance.test.ts](../../tests/unit/correction-notes-governance.test.ts)
+> hält das jetzt offen — der Test prüft den Quelltext, weil sieben Fixtures den achten Ausgang
+> nicht fangen würden.
+>
+> Der Verlust war **nicht** die Ursache der bekannten Nachsicht bei dünnen Antworten: Er
+> passierte, nachdem die Punkte feststanden.
 
 ---
 

@@ -3,7 +3,7 @@ title: "Unified AI Provider Infrastructure & Reasoning Mode"
 description: "Dokumentation der provider-agnostischen KI-Architektur, des Qwen 3.6 'Thinking Mode' und der tier-spezifischen Konfigurationslogik."
 author: "@principal_architect"
 date: "2026-04-30"
-last_updated: "2026-08-10"
+last_updated: "2026-08-25"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -65,11 +65,15 @@ In der **Community Edition** kann die KI-Infrastruktur auf zwei Ebenen konfiguri
 
 Koreki optimiert die Inferenz-Parameter automatisch, sobald der **Thinking Mode** (gesteuert über `enableThinking` im KI-Intelligenz-Modal) aktiviert wird, um die Reasoning-Qualität von Qwen 3.6 zu maximieren:
 
-1.  **Temperature Hardening & Clamping:** 
-    *   Standard (Thinking): `1.0`
-    *   Korrektur-Modus (Thinking): `0.6` (Erhöht die Präzision bei Code- und Logikanalysen).
-    *   **UI-Clamping (Sicherheitsgrenze):** Sobald `ollama` oder `openai-compatible` als Provider ausgewählt ist, wird im KI-Intelligenz-Modal (React-Hook `useAiProfiles`) und den Slidern ein sicheres Minimum von **`0.2`** für Temperatur und Vision-Temperatur erzwungen. Dies verhindert, dass über system- oder nutzerdefinierte Profile (z. B. "Logik & Mathe" mit `0.0`) zu niedrige Temperaturen geladen werden, die bei Qwen-Inferenz-Engines zu unendlichen Generierungsschleifen führen.
-    *   **Backend-Sicherung (Inferenz-Sperre):** Bei Qwen-Modellen wird im Inferenz-Layer (`ollama-logic.ts` und `openai-provider.ts`) eine Temperatur kleiner als `0.2` im System- und Bewertungskontext automatisch auf mindestens `0.2` angehoben.
+1.  **Temperature Hardening & Clamping** (überarbeitet am 25.08.2026):
+    *   **Eine Quelle, keine Kopien:** Untergrenzen und Standardwerte stehen als Konstanten in [temperature-guidance.ts](../../src/lib/ai/temperature-guidance.ts). Oberfläche, beide Provider und der Prompt-Bau beziehen sie von dort. Zeigt der Regler eine Zahl an, die der Server anschließend anhebt, zählt die Oberfläche etwas an, das nie ankommt — genau dieser Zustand bestand vorher an drei Parametern gleichzeitig.
+    *   **Korrektur:** `0.1`, zugleich Untergrenze. Kein providerspezifischer Sonderwert mehr — der OpenAI-Weg setzte hier bis dahin eigenmächtig `0.6`, sobald Thinking aktiv war.
+    *   **Zweitmeinung:** Untergrenze `0.2`. Die einzige Aktion, die in Prosa antwortet; dort kann die Wiederholungsschleife tatsächlich auftreten, weil kein Schema die Ausgabe zum Ende zwingt.
+    *   **Bilderkennung:** Untergrenze `0.4` bei lokalen Modellen.
+    *   **Kein modellspezifischer Boden mehr:** Der frühere Aufschlag für Gemma/MoE (`0.5`) ist entfallen. Er schützte vor derselben Schleife, traf aber auch die strukturierte Korrektur, wo sie nicht entstehen kann — und kostete dort Reproduzierbarkeit.
+
+    > [!WARNING]
+    > **Frühere Fassungen dieses Dokuments beschrieben eine Backend-Sperre in `ollama-logic.ts`, die es dort nie gab.** Sie existierte ausschließlich im `openai-provider.ts` und in der Oberfläche. Wer sich darauf verließ, dass eine zu niedrige Temperatur serverseitig abgefangen wird, lag beim Ollama-Weg falsch. Die Untergrenze greift dort jetzt tatsächlich.
 2.  **Context Escalation:** Setzt `max_tokens` automatisch auf bis zu `32.768`, um Raum für die Reasoning-Kette zu schaffen.
 3.  **Response Sanitizing:** Der Provider bereinigt die Antwort chirurgisch von `<thinking>` Blöcken und Markdown-Fences, um die Datenintegrität für den nachgelagerten JSON-Parser zu gewährleisten.
 
@@ -100,6 +104,13 @@ Um die absolute Integrität von Schülerabgaben zu schützen und unerwünschte �
 * **Vision-Steuerung:** Die benutzerspezifischen Parameter aus dem Intelligenz-Modal (`settings.visionTemperature`, `settings.visionTopP`, etc.) werden nun über alle Schnittstellen (einschließlich des OCR-Endpunkts `extract-image.ts`) getreu berücksichtigt.
 * **Thinking-Governance (Selektive Deaktivierung):**
   * **Didaktische Aktionen (Thinking AN):** Der Thinking-Modus wird standardmäßig ausschließlich für didaktische Kernbereiche verwendet, die menschliche Bewertung und Freitext-Feedback erfordern. Dies betrifft die Aktionen `correction` und `second-opinion`.
+
+    > [!NOTE]
+    > **Gemessen am 24.08.2026** (120 Korrekturläufe gegen `qwen3.6:35b`, lokal): Thinking ist der wirksamste Einzelschalter für die Genauigkeit der Punktevergabe. Auf einer Aufgabe, bei der die Korrektur ohne Thinking in 1 von 10 Läufen den fachlich verteidigbaren Wert traf, traf sie ihn mit Thinking und Temperatur `0.0` in **10 von 10** — bei einer Streuung von null. Die Toleranz gegenüber eigener Formulierung litt dabei nicht: Eine vollständige Antwort in eigenen Worten behielt 10/10 die volle Punktzahl. Endlosschleifen traten in keinem der 80 Thinking-Läufe auf.
+    >
+    > **Der Preis ist Rechenzeit: Faktor 4,4** (14,8 s → 64,7 s je Aufgabe). Bei 25 Schülern ist das der Unterschied zwischen etwa 6 und etwa 27 Minuten. Auf einem Rechner ohne GPU, wo bereits ohne Thinking 290–500 s je Korrektur anfallen, ist das nicht zumutbar — die Voreinstellung gehört deshalb an die verfügbare Rechenleistung gebunden, nicht global gesetzt. Gegen Mistral ist der Effekt ungemessen.
+    >
+    > Der Rückfallwert im Ollama-Pfad stand bis zum 25.08.2026 auf `false` und widersprach damit dieser Governance, dem Standardprofil und ADR 001. Ohne geladenes Profil lief die Korrektur also ohne Denkschritt.
   * **Strukturelle Systemaktionen & Tool-Calling (Thinking AUS):** Um massive Latenz-Verzögerungen (z. B. bei Mittwald) und unvollständige JSON-Generierungen zu unterbinden, ist Thinking für alle rein strukturellen Aktionen standardmäßig global **deaktiviert** (sowohl bei Ollama als auch beim OpenAI-Provider). Dies betrifft `generate-graph`, `refine-graph`, `generate-calc-trace`, `refine-calc-trace`, `calc-trace-extraction` und `variable-extraction`. Diese Aktionen erzeugen direkt kompakte JSONs oder Tool-Calls in wenigen Sekunden.
   * **vLLM-Konformität (Mittwald) — überholt:** Frühere Revisionen dieses Dokuments beschrieben, der Thinking-Modus werde über das vLLM-spezifische `chat_template_kwargs`-Objekt gesteuert. **Das ist nicht mehr der Fall.** Mittwalds LiteLLM-Proxy stürzt bei nicht-standardisierten Zusatzfeldern (`chat_template_kwargs`, `enable_thinking`) ab, weil er die Anfrage fälschlich einem Anthropic-/Custom-Katalog zuordnet. `openai-provider.ts` sendet diese Felder deshalb bewusst **nicht** mehr; das Reasoning-Verhalten ergibt sich aus dem System-Prompt und dem nativen Modellverhalten.
   * `enableThinking` steuert damit beim OpenAI-kompatiblen Provider ausschließlich die Inferenz-Parameter (Temperatur, `top_p`, `max_tokens`), nicht mehr ein eigenes Request-Feld.

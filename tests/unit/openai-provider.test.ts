@@ -1,5 +1,6 @@
 import { executeOpenAIRequest } from '../../src/lib/ai/openai-provider';
 import * as constants from '../../src/lib/ai/constants';
+import { TEMPERATURE_MINIMUM } from '@/lib/ai/temperature-guidance';
 
 // Mock fetchWithRetry
 jest.mock('../../src/lib/ai/constants', () => ({
@@ -58,7 +59,13 @@ describe('OpenAI Provider (Bridge) - Unit Tests', () => {
             expect(body).not.toHaveProperty('enable_thinking');
         });
 
-        it('should force temperature 0.6 for "correction" when Thinking Mode is active', async () => {
+        /**
+         * Bis zum 25.08.2026 setzte der Provider bei der Korrektur mit Thinking eine
+         * eigene Temperatur von 0.6 — unabhaengig davon, was Profil und Oberflaeche
+         * anzeigten. Damit rechneten OpenAI- und Ollama-Weg bei sonst gleicher
+         * Einstellung verschieden. Jetzt gilt fuer beide derselbe Standardwert.
+         */
+        it('nimmt bei der Korrektur den Standardwert, auch mit Thinking', async () => {
             mockFetchWithRetry.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({ choices: [{ message: { content: '{}' } }] })
@@ -70,7 +77,7 @@ describe('OpenAI Provider (Bridge) - Unit Tests', () => {
             });
             
             const body = JSON.parse(mockFetchWithRetry.mock.calls[0][1].body);
-            expect(body.temperature).toBe(0.6);
+            expect(body.temperature).toBe(TEMPERATURE_MINIMUM);
         });
     });
 

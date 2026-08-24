@@ -60,6 +60,20 @@ export const FREETEXT_TEMPERATURE_MINIMUM = 0.2;
 export const TOP_P_DEFAULT = 0.95;
 
 /**
+ * Untergrenze fuer die Bilderkennung.
+ *
+ * Deutlich hoeher als beim Bewerten, und das ist kein Widerspruch: Beim Abschreiben
+ * einer Seite ist zwar jede Kreativitaet eine Halluzination — aber lokale Modelle
+ * bleiben bei zu kalter Einstellung an Wiederholungen haengen, statt die Seite
+ * fertig zu lesen. Ein abgebrochener Text ist schlimmer als ein unsicheres Wort.
+ *
+ * Der Wert stand bis zum 25.08.2026 an drei Stellen verschieden: Das Standardprofil
+ * lieferte 0.0, die Oberflaeche hob auf 0.2, und der Ollama-Pfad rechnete mit 0.4.
+ * Die Lehrkraft sah also eine Zahl, mit der nie gerechnet wurde.
+ */
+export const VISION_TEMPERATURE_MINIMUM = 0.4;
+
+/**
  * Beschreibt, was ein Temperaturwert praktisch bedeutet.
  *
  * Die Schwellen sind bewusst unterschiedlich: bei der Texterkennung geht es um

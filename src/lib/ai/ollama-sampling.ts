@@ -1,6 +1,6 @@
 import type { AppSettings } from '../../types';
 import type { AIAction } from './prompt-dispatch';
-import { FREETEXT_TEMPERATURE_MINIMUM, TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from './temperature-guidance';
+import { FREETEXT_TEMPERATURE_MINIMUM, TEMPERATURE_MINIMUM, TOP_P_DEFAULT, VISION_TEMPERATURE_MINIMUM } from './temperature-guidance';
 
 /**
  * Wie heiss das lokale Modell rechnen darf.
@@ -124,7 +124,12 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
     const shouldIncludeThink = settings.enableThinking === true || isReasoningModel;
     // Bilderkennung und Struktur-Aktionen denken nicht laut: der Denktext
     // landete sonst im JSON, das sie erzeugen sollen.
-    const think = (isVision || isSystemAction) ? false : (settings.enableThinking ?? false);
+    // Rueckfall `true`, wie ihn ADR 001, das Standardprofil und die
+    // Thinking-Governance in ai-provider-infrastructure.md vorsehen. Stand hier bis
+    // zum 25.08.2026 auf `false` — ohne geladenes Profil lief die Korrektur damit
+    // ohne Denkschritt, obwohl jede andere Stelle das Gegenteil sagte. Gemessen am
+    // 24.08.2026 ist es der Schalter mit dem groessten Einfluss auf die Genauigkeit.
+    const think = (isVision || isSystemAction) ? false : (settings.enableThinking ?? true);
 
     // ─── Temperatur und top_p ────────────────────────────────────────────────
     let targetTemp: number;
@@ -161,7 +166,7 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
     // ─── Stabilitaetsboden ───────────────────────────────────────────────────
     // Nicht die paedagogische Regel, sondern der Schutz vor Endlosschleifen.
     if (isVision) {
-        if (targetTemp < 0.4) targetTemp = 0.4;
+        if (targetTemp < VISION_TEMPERATURE_MINIMUM) targetTemp = VISION_TEMPERATURE_MINIMUM;
     } else {
         // Freitext zuerst: Dort wiederholt Qwen bei <= 0.1 ganze Absaetze, bis der
         // Puffer voll ist. In strukturierter Ausgabe haelt das Schema dagegen — es

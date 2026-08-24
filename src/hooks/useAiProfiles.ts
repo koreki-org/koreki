@@ -1,4 +1,4 @@
-import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from '@/lib/ai/temperature-guidance';
+import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT, VISION_TEMPERATURE_MINIMUM } from '@/lib/ai/temperature-guidance';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppSettings, AiProfile } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
@@ -418,7 +418,7 @@ export const useAiProfiles = (
         if (settings.provider === 'ollama' || settings.provider === 'openai-compatible') {
             // Untergrenze gegen Wiederholungsschleifen; nach oben bleibt alles frei.
             if (temperature < TEMPERATURE_MINIMUM) setTemperature(TEMPERATURE_MINIMUM);
-            if (visionTemperature < 0.2) setVisionTemperature(0.2); // Vision: eigener Boden von 0.4 im Inferenz-Layer
+            if (visionTemperature < VISION_TEMPERATURE_MINIMUM) setVisionTemperature(VISION_TEMPERATURE_MINIMUM);
         }
     }, [settings.provider, temperature, visionTemperature]);
 

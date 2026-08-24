@@ -166,7 +166,7 @@ export const LocalAiProfileService = {
             enableThinking: data.enableThinking !== undefined ? Boolean(data.enableThinking) : true,
             visionTemperature: Number(data.visionTemperature ?? 0.0),
             visionTopP: Number(data.visionTopP ?? 0.8),
-            visionMaxTokens: Number(data.visionMaxTokens ?? 4000),
+            visionMaxTokens: Number(data.visionMaxTokens ?? 16000),
             visionPresencePenalty: Number(data.visionPresencePenalty ?? 0.0),
             ollamaNumCtx: data.ollamaNumCtx !== undefined ? Number(data.ollamaNumCtx) : undefined
         };

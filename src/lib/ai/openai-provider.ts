@@ -113,10 +113,6 @@ export async function executeOpenAIRequest(
         ? (promptObj.options?.temperature ?? 0.0)
         : (options.temperature ?? promptObj.options?.temperature ?? (isThinking ? 1.0 : TEMPERATURE_MINIMUM));
         
-    if (action === 'correction' && options.temperature === undefined) {
-        targetTemp = isThinking ? 0.6 : TEMPERATURE_MINIMUM;
-    }
-
     // Untergrenze fuer Qwen bei Ermessens- und Korrekturaufgaben: Schutz vor
     // Wiederholungsschleifen. Extraktions-Aufgaben (calc-trace-extraction,
     // variable-extraction) duerfen weiterhin auf 0.0 laufen — sie schreiben ab,

@@ -1,7 +1,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { useAiProfiles, STANDARD_AI_PROFILE } from '../../../src/hooks/useAiProfiles';
 import { isDesktopTarget } from '../../../src/lib/env-context';
-import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from '@/lib/ai/temperature-guidance';
+import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT, VISION_TEMPERATURE_MINIMUM } from '@/lib/ai/temperature-guidance';
 
 // Mock env context
 jest.mock('../../../src/lib/env-context', () => ({
@@ -64,14 +64,14 @@ describe('useAiProfiles Hook 🧪🛡️', () => {
 
         const { result: resultOllama } = renderHook(() => useAiProfiles(mockSettings, mockOnSave, mockOnClose));
         expect(resultOllama.current.temperature).toBe(TEMPERATURE_MINIMUM);
-        // Vision behaelt bewusst ihre 0.2 — eigener Boden im Inferenz-Layer.
-        expect(resultOllama.current.visionTemperature).toBe(0.2);
+        // Vision liegt hoeher: Zu kalt bleiben lokale Modelle beim Lesen einer Seite haengen.
+        expect(resultOllama.current.visionTemperature).toBe(VISION_TEMPERATURE_MINIMUM);
 
         // Reset and test with openai-compatible
         mockSettings.provider = 'openai-compatible';
         const { result: resultOpenAI } = renderHook(() => useAiProfiles(mockSettings, mockOnSave, mockOnClose));
         expect(resultOpenAI.current.temperature).toBe(TEMPERATURE_MINIMUM);
-        expect(resultOpenAI.current.visionTemperature).toBe(0.2);
+        expect(resultOpenAI.current.visionTemperature).toBe(VISION_TEMPERATURE_MINIMUM);
     });
 
     it('should NOT clamp temperature for other providers', () => {
