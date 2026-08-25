@@ -163,7 +163,7 @@ Koreki operiert in drei klar definierten Deployment-Szenarien, um unterschiedlic
 | :--- | :--- | :--- | :--- |
 | **Datenbank** | **Keine** (Dateisystem / JSON) | **Keine** (Dateisystem / JSON) | **PostgreSQL** |
 | **Auth** | **Mock/Local Auth** (Auto-Login) | **Mock/Local Auth** (Auto-Login) | **Logto** (Managed + M2M Sync) |
-| **Email / SMTP** | **Keiner** | **SendGrid / SMTP** | **SendGrid (Managed)** |
+| **Email / SMTP** | **Keiner** | **SMTP (frei waehlbar)** | **SMTP-Relay** (Brevo) |
 | **Billing** | **Cut** (Flat-Modus) | **Cut** (Lizenz-Modus) | **Stripe** (SaaS) |
 | **LLM Interface** | **Native Vault** (Secured Keys) / Ollama | **Standard (Proxy)** / Ollama | Mistral Managed |
 

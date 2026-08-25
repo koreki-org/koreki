@@ -129,27 +129,33 @@ Die Desktop-App nutzt das Crate `keyring` (Version 2.3.3, da Version 3 standardm
 | **Konfiguration** | `src/lib/logto.ts` | Definition von Endpoint, App-ID und Scopes. |
 | **M2M Logik** | `src/lib/logto-mgmt.ts` | Authoritative Abfrage von Profilen und Rollen. |
 | **Auth-Handler** | `src/pages/api/logto/[action].ts` | Einstiegspunkt (sign-in, sign-up, sign-out, callback, forgot-password). |
-| **Email-Dienst** | **SendGrid** | Versendet Verifizierungscodes und Password-Reset Links. |
+| **Email-Dienst** | **SMTP-Relay** (aktuell Brevo) | Versendet die Einmalcodes fuer Registrierung und Passwort-Reset. Konfiguriert im Logto-Connector, nicht im Code. |
 | **User Service** | `src/lib/services/user-service.ts` | JIT Provisioning, Atomare Transaktionen, Sync-Logik. |
 | **Sync-Endpoint** | `src/pages/api/user.ts` | Orchestriert Sync, Context-Rückgabe und Audit Logging. |
 | **User-Management** | `src/pages/api/admin/users.ts` | Admin-Interface zur Verwaltung der lokalen User-Daten. |
-| **Email-Dienst** | **SendGrid** | Versendet Verifizierungscodes und Password-Reset Links. |
 
 ---
 
-## 7. Password Recovery & Email Integration (SendGrid) 📧🛡️
+## 7. Password Recovery & Email Integration (SMTP) 📧🛡️
 
 Seit V0.9.15 verfügt Koreki über eine integrierte Passwort-Wiederherstellung. 
 
 ### Architektur des Password-Resets:
 1.  **Hosted Flow**: Der "Passwort vergessen"-Link leitet den Nutzer an Logto weiter (`interactionMode: 'forgot_password'`).
-2.  **Mailing-Infrastruktur**: Koreki nutzt **SendGrid** als verifizierten SMTP-Relay. Die Domain `koreki.org` ist mittels DKIM, SPF und DMARC (Pillar 10 Hardening) bei Ionos autorisiert.
+2.  **Mailing-Infrastruktur**: Koreki versendet ueber einen generischen **SMTP-Relay** (aktuell **Brevo**, EU-gehostet). Die Domain `koreki.org` ist dort per DKIM authentifiziert; SPF und DMARC liegen bei Ionos (Pillar 10 Hardening). Der Relay ist bewusst austauschbar (Architectural Vision §5): ein Wechsel ist Konfiguration in der Logto-Konsole und in den `SMTP_*`-Variablen, kein Code.
 3.  **Hybrid-Identität**: Nutzer können sich wahlweise via **Username** oder **Email** anmelden. Passwörter können jedoch nur wiederhergestellt werden, wenn der Account mit einer verifizierten E-Mail verknüpft ist.
 4.  **OTP-Verifizierung**: Statt unsicherer Links setzt Koreki auf 6-stellige **One-Time-Passwords (OTP)**, die direkt in der Logto-Maske eingegeben werden.
 
 ### Konfiguration (SaaS/On-Prem):
 *   Der Mail-Versand wird über den Logto-Connector konfiguriert. 
 *   Absenderadresse: `no-reply@koreki.org` (Industrial Standard).
+
+> [!WARNING]
+> **Bekannte Ausfallursache:** Laeuft das Kontingent des Relays ab, meldet Logto
+> `Error occurred in connector` mit der Fehlerantwort des Anbieters. Registrierung und
+> Passwort-Reset stehen dann still, waehrend die Anmeldung mit Passwort weiterlaeuft —
+> der Ausfall ist deshalb leicht zu uebersehen. Am 25.08.2026 war das der Fall
+> (`Maximum credits exceeded`, abgelaufener SendGrid-Trial).
 
 ---
 

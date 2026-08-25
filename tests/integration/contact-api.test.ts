@@ -1,5 +1,4 @@
 import handler from '@/pages/api/contact';
-import sgMail from '@sendgrid/mail';
 
 jest.mock('@/lib/logto', () => ({
     logtoClient: {
@@ -11,13 +10,21 @@ jest.mock('@/lib/logto', () => ({
     }
 }));
 
-jest.mock('@sendgrid/mail', () => ({
-    setApiKey: jest.fn(),
-    send: jest.fn().mockResolvedValue([{}]),
+// Der Name muss mit `mock` beginnen — sonst verbietet Jest die Referenz in der
+// hochgezogenen Modul-Fabrik.
+const mockSendMail = jest.fn().mockResolvedValue({ messageId: 'test-id' });
+const mockCreateTransport = jest.fn(() => ({ sendMail: mockSendMail }));
+
+jest.mock('nodemailer', () => ({
+    __esModule: true,
+    default: { createTransport: () => mockCreateTransport() },
+    createTransport: () => mockCreateTransport(),
 }));
 
 // Mock the environment variables
-process.env.SENDGRID_API_KEY = 'test-key';
+process.env.SMTP_HOST = 'smtp.example.com';
+process.env.SMTP_USER = 'test-user';
+process.env.SMTP_PASS = 'test-pass';
 
 describe('Contact API Integration (Layer 2)', () => {
     let req: any;
@@ -70,13 +77,51 @@ describe('Contact API Integration (Layer 2)', () => {
         };
         await handler(req, res);
         expect(res.status).toHaveBeenCalledWith(200);
-        expect(sgMail.send).toHaveBeenCalled();
+        expect(mockSendMail).toHaveBeenCalled();
     });
 
-    it('should return 500 if SENDGRID_API_KEY is missing', async () => {
-        const originalKey = process.env.SENDGRID_API_KEY;
-        delete process.env.SENDGRID_API_KEY;
-        
+    it('should answer the sender via replyTo, not via the From header', async () => {
+        req = {
+            method: 'POST',
+            body: {
+                name: 'Max Mustermann',
+                email: 'max@example.com',
+                subject: 'Test Subject',
+                message: 'This is a test message that is long enough.'
+            },
+            headers: { 'x-forwarded-for': '1.2.3.7' },
+            socket: {}
+        };
+        await handler(req, res);
+        // Der Absender muss die eigene, authentifizierte Domain bleiben. Stuende
+        // dort die Adresse des Einsenders, wuerde der Relay die Mail ablehnen.
+        expect(mockSendMail).toHaveBeenCalledWith(expect.objectContaining({
+            replyTo: 'max@example.com',
+            from: expect.not.stringContaining('max@example.com'),
+        }));
+    });
+
+    it('should strip line breaks from the subject before it becomes a header', async () => {
+        req = {
+            method: 'POST',
+            body: {
+                name: 'Max Mustermann',
+                email: 'max@example.com',
+                subject: 'Hallo\r\nBcc: opfer@example.com',
+                message: 'This is a test message that is long enough.'
+            },
+            headers: { 'x-forwarded-for': '1.2.3.8' },
+            socket: {}
+        };
+        await handler(req, res);
+        const sent = mockSendMail.mock.calls[0][0];
+        expect(sent.subject).not.toMatch(/[\r\n]/);
+    });
+
+    it('should return 500 if the SMTP configuration is incomplete', async () => {
+        const originalPass = process.env.SMTP_PASS;
+        delete process.env.SMTP_PASS;
+
         req = {
             method: 'POST',
             body: {
@@ -94,7 +139,7 @@ describe('Contact API Integration (Layer 2)', () => {
             error: 'Mail service not configured'
         }));
 
-        process.env.SENDGRID_API_KEY = originalKey;
+        process.env.SMTP_PASS = originalPass;
     });
 
     it('should trigger rate limiting after multiple requests', async () => {
