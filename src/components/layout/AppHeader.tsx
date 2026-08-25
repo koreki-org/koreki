@@ -5,7 +5,7 @@ import Logo from '../Logo';
 import { Button } from '../ui/Button';
 import { HeaderBadges } from './HeaderBadges';
 import { useGlobalStatus } from '../../hooks/useGlobalStatus';
-import { isLocalInstance, isKeycloakAuth } from '../../lib/env-context';
+import { isLocalInstance, isKeycloakAuth, getAuthType } from '../../lib/env-context';
 import { User } from '../../types';
 import { cn } from '@/lib/utils';
 
@@ -171,8 +171,8 @@ const Header: React.FC<HeaderProps> = ({
                 </Button>
             </HeaderPortalTooltip>
             
-            {(userData?.role === 'ADMIN' || (isLocalInstance() && !isKeycloakAuth())) && (
-                <HeaderPortalTooltip title="System-Einstellungen">
+            {(userData?.role === 'ADMIN' || getAuthType() === 'LOGTO' || (isLocalInstance() && !isKeycloakAuth())) && (
+                <HeaderPortalTooltip title={userData?.role === 'ADMIN' ? 'System-Einstellungen' : 'Konto & Einstellungen'}>
                     <Button 
                         variant="outline" 
                         size="icon" 

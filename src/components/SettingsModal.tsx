@@ -61,13 +61,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 {/* Header - Fixed */}
                 <div className="flex justify-start items-center p-8 pb-4">
-                    <h2 className="text-2xl font-bold tracking-tight text-foreground">Einstellungen</h2>
+                    <h2 className="text-2xl font-bold tracking-tight text-foreground">{isUserAdmin ? 'Einstellungen' : 'Konto'}</h2>
                 </div>
 
                 {/* Content - Scrollable */}
                 <div className="flex-1 overflow-y-auto px-8 pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
 
-                {!isAdminView && (
+                {/* Systemeinstellungen bleiben Admins vorbehalten. Fuer alle anderen enthaelt
+                    der Dialog ausschliesslich die Konto-Loeschung: sie muss ohne Admin
+                    erreichbar sein (DSGVO Art. 17, Recht auf Loeschung), und genau dafuer
+                    ist das Zahnrad im AppHeader fuer jeden Nutzer sichtbar. Diese Auswahl
+                    ist Darstellung, keine Absicherung — die Rolle prueft der Server
+                    unabhaengig davon selbst (siehe /api/admin/settings). */}
+                {!isAdminView && isUserAdmin && (
                     <PrivacySection 
                         appMode={appMode}
                         avvAccepted={avvAccepted}
@@ -77,22 +83,26 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     />
                 )}
 
-                <AIProviderSection 
-                    settings={settings}
-                    onSave={(upd) => updateSettings(upd, settings, isUserAdmin)}
-                    isAdmin={isUserAdmin}
-                />
+                {isUserAdmin && (
+                    <AIProviderSection 
+                        settings={settings}
+                        onSave={(upd) => updateSettings(upd, settings, isUserAdmin)}
+                        isAdmin={isUserAdmin}
+                    />
+                )}
 
                 {!isAdminView && !isDesktop && (
                     <>
-                        <AccountSection 
-                            username={username || 'Benutzer'}
-                            role={userRole || 'USER'}
-                            inviteCode={inviteCode}
-                            setInviteCode={setInviteCode}
-                            onJoin={handleJoinOrganization}
-                            joinLoading={joinLoading}
-                        />
+                        {isUserAdmin && (
+                            <AccountSection 
+                                username={username || 'Benutzer'}
+                                role={userRole || 'USER'}
+                                inviteCode={inviteCode}
+                                setInviteCode={setInviteCode}
+                                onJoin={handleJoinOrganization}
+                                joinLoading={joinLoading}
+                            />
+                        )}
                         <DangerZoneSection 
                             onDelete={handleDeleteAccount}
                             loading={delLoading}
