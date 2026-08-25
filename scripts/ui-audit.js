@@ -103,7 +103,7 @@ const perFileRatchets = [
         baseline: {
         'src/components/batch/parts/GraphAiPanel.tsx': 15,
         'src/components/batch/GradingGraphModal.tsx': 9,
-        'src/components/OnboardingModal.tsx': 9,
+        'src/components/OnboardingModal.tsx': 2,
         'src/pages/agb.tsx': 9,
         'src/pages/desktop.tsx': 9,
         'src/components/batch/CorrectionAnalytics.tsx': 8,
