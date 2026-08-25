@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { AppSettings } from '@/types';
 import { getKorekiMode } from '@/lib/env-context';
+import { askConfirmation } from '@/lib/confirm-dialog';
 
 interface OpenAICompatibleConfigProps {
     settings: Partial<AppSettings>;
@@ -23,7 +24,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
     const isPure = appMode === 'PURE';
 
     const handleClearKey = async () => {
-        if (confirm('Möchtest du die Zugangsdaten wirklich sicher vom Rechner löschen?')) {
+        if (await askConfirmation({ title: 'Zugangsdaten löschen', message: 'Möchtest du die Zugangsdaten wirklich sicher vom Rechner löschen?' })) {
             if (isDesktop) {
                 try {
                     const { vaultService } = await import('@/lib/ai/vault-service');

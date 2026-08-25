@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { apiClient } from '@/lib/api-client';
 import { meldeFehler } from '@/lib/notify';
+import { askConfirmation } from '@/lib/confirm-dialog';
 
 export interface OrgMember {
     id: string;
@@ -77,7 +78,10 @@ export const useOrgManagement = () => {
 
     const handleUpdateCode = async () => {
         if (!workspace) return;
-        if (!confirm('Möchtest du wirklich einen neuen Beitritts-Code für dein Institut generieren?\n\nACHTUNG: Der ALTE Code wird dadurch sofort ungültig!')) return;
+        if (!(await askConfirmation({
+            title: 'Neuen Beitritts-Code erzeugen',
+            message: 'Möchtest du wirklich einen neuen Beitritts-Code für dein Institut generieren?\n\nACHTUNG: Der ALTE Code wird dadurch sofort ungültig!'
+        }))) return;
 
         setActionLoading('update-code');
         const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -99,7 +103,10 @@ export const useOrgManagement = () => {
     };
 
     const handleRemoveMember = async (memberUserId: string, mId: string, username: string) => {
-        if (!confirm(`Möchtest du ${username} wirklich aus deinem Institut entfernen?\n\nDer Lehrer wird automatisch auf TRIAL zurückgestuft und verliert den Zugriff auf das Schul-Budget.`)) return;
+        if (!(await askConfirmation({
+            title: 'Mitglied entfernen',
+            message: `Möchtest du ${username} wirklich aus deinem Institut entfernen?\n\nDer Lehrer wird automatisch auf TRIAL zurückgestuft und verliert den Zugriff auf das Schul-Budget.`
+        }))) return;
 
         setActionLoading(mId);
         try {

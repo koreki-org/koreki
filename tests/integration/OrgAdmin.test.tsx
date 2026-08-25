@@ -15,6 +15,11 @@ jest.mock('../../src/hooks/useAuth', () => ({
 
 import { useAuth } from '../../src/hooks/useAuth';
 import { meldeFehler } from '@/lib/notify';
+import { askConfirmation } from '@/lib/confirm-dialog';
+
+jest.mock('@/lib/confirm-dialog', () => ({
+    askConfirmation: jest.fn().mockResolvedValue(true)
+}));
 
 jest.mock('@/lib/notify', () => ({
     meldeErfolg: jest.fn(),
@@ -45,7 +50,6 @@ describe('Org-Admin Dashboard Integration (God Mode & Interactive)', () => {
         });
         
         // Mock global window interactions
-        window.confirm = jest.fn(() => true);
         window.alert = jest.fn();
     });
 
@@ -151,7 +155,7 @@ describe('Org-Admin Dashboard Integration (God Mode & Interactive)', () => {
         fireEvent.click(regenButton);
 
         await waitFor(() => {
-            expect(window.confirm).toHaveBeenCalled();
+            expect(askConfirmation).toHaveBeenCalled();
             expect(global.fetch).toHaveBeenCalledWith('/api/org-admin/update-code', expect.anything());
         });
     });
@@ -181,7 +185,7 @@ describe('Org-Admin Dashboard Integration (God Mode & Interactive)', () => {
         fireEvent.click(removeButton);
 
         await waitFor(() => {
-            expect(window.confirm).toHaveBeenCalled();
+            expect(askConfirmation).toHaveBeenCalled();
             expect(global.fetch).toHaveBeenCalledWith('/api/org-admin/remove-member', expect.anything());
         });
     });

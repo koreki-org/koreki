@@ -19,6 +19,7 @@ import { CalcTraceModal } from '../batch/CalcTraceModal';
 import { isLocalInstance } from '@/lib/env-context';
 import { useAuth } from '@/hooks/useAuth';
 import { meldeErfolg, meldeFehler, meldeHinweis } from '@/lib/notify';
+import { askConfirmation } from '@/lib/confirm-dialog';
 
 
 
@@ -482,7 +483,7 @@ ${skill.prompt || ''}`;
                                                             <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-muted/80" onClick={() => handleEditSkillClick(skill)}>
                                                                 <Pencil size={14} />
                                                             </Button>
-                                                            <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-muted/80" onClick={() => { if (confirm(`Möchtest du den Skill "${skill.name}" wirklich löschen?`)) onDeleteCustomSkill(skill.id); }}>
+                                                            <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-muted/80" onClick={async () => { if (await askConfirmation({ title: 'Skill löschen', message: `Möchtest du den Skill "${skill.name}" wirklich löschen?` })) onDeleteCustomSkill(skill.id); }}>
                                                                 <Trash2 size={14} />
                                                             </Button>
                                                         </>

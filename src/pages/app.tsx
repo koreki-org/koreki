@@ -32,6 +32,7 @@ import { isDesktopTarget } from '@/lib/env-context';
 import AuthGuard from '@/components/guards/AuthGuard';
 import { toErrorMessage } from '@/lib/error-message';
 import { useTaskEngineGeneration } from '@/hooks/useTaskEngineGeneration';
+import { askConfirmation } from '@/lib/confirm-dialog';
 
 export default function Home() {
     // Core Auth & Logic Hooks
@@ -157,9 +158,9 @@ export default function Home() {
         }
     }, [showDemoHint]);
 
-    const handleStartNew = () => {
+    const handleStartNew = async () => {
         if (fileProcessor.batchFiles.length > 0 || data.modelSolution) {
-            if (confirm("Möchtest du wirklich alle aktuellen Daten löschen und eine neue Korrektur starten?")) {
+            if (await askConfirmation({ title: 'Neue Korrektur starten', message: 'Möchtest du wirklich alle aktuellen Daten löschen und eine neue Korrektur starten?' })) {
                 fileProcessor.setBatchFiles([]);
                 data.setModelSolution("");
                 data.setModelSolutionContext("");

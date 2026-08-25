@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { DbUser, Workspace, AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
 import { meldeFehler } from '@/lib/notify';
+import { askConfirmation } from '@/lib/confirm-dialog';
 
 export const useAdminData = () => {
     const [users, setUsers] = useState<DbUser[]>([]);
@@ -152,7 +153,10 @@ export const useAdminData = () => {
     };
 
     const deleteUser = async (userId: string, username: string) => {
-        if (!confirm(`Nutzer "${username}" wirklich löschen?`)) return;
+        if (!(await askConfirmation({
+            title: 'Nutzer löschen',
+            message: `Nutzer "${username}" wirklich löschen?`
+        }))) return;
         setActionLoading(userId);
         try {
             const res = await apiClient.post('/api/admin/users', { 
@@ -177,7 +181,10 @@ export const useAdminData = () => {
     };
 
     const updateInviteCode = async (wsId: string) => {
-        if (!confirm('Neuen Code generieren?')) return;
+        if (!(await askConfirmation({
+            title: 'Neuen Beitritts-Code erzeugen',
+            message: 'Der bisherige Code wird dadurch ungültig. Fortfahren?'
+        }))) return;
         setActionLoading(wsId);
         const fullCode = `JOIN-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
         try {
@@ -191,7 +198,10 @@ export const useAdminData = () => {
     };
 
     const deleteWorkspace = async (workspaceId: string, name: string) => {
-        if (!confirm(`Organisation "${name}" wirklich löschen?`)) return;
+        if (!(await askConfirmation({
+            title: 'Organisation löschen',
+            message: `Organisation "${name}" wirklich löschen?`
+        }))) return;
         setActionLoading(workspaceId);
         try {
             await apiClient.post('/api/admin/workspaces', { 

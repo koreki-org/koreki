@@ -26,8 +26,8 @@ const MarketingFooter: React.FC = () => {
                         </p>
                         <div className="flex gap-4 items-center">
                             <a href="https://www.instagram.com/koreki_org/" target="_blank" rel="noopener noreferrer" aria-label="Koreki auf Instagram" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"><Instagram className="w-5 h-5" /></a>
-                            <a href="#" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"><Linkedin className="w-5 h-5" /></a>
-                            <a href="https://github.com/koreki-org/koreki" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"><Github className="w-5 h-5" /></a>
+                            <a href="https://www.linkedin.com/company/koreki-org/" target="_blank" rel="noopener noreferrer" aria-label="Koreki auf LinkedIn" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"><Linkedin className="w-5 h-5" /></a>
+                            <a href="https://github.com/koreki-org/koreki" target="_blank" rel="noopener noreferrer" aria-label="Koreki auf GitHub" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"><Github className="w-5 h-5" /></a>
                         </div>
                     </div>
 

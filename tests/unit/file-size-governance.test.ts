@@ -82,7 +82,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // 1459 -> 507: erst vier Reiter als eigene Panels, jetzt der Zustand in
     // vier Hooks unter hooks/grading-graph/. Hook-Aufrufe 25 -> 10, damit aus
     // HOOK_BASELINE verschwunden.
-    'components/batch/GradingGraphModal.tsx': 508,
+    'components/batch/GradingGraphModal.tsx': 507,
     // Die beiden groessten Reiter aus dem Modal, bewusst aufgenommen: sie sind
     // unveraendert umgezogen (reine Darstellung, kein Zustand untereinander).
     // Ein Zerlegen waere ein zweiter, eigener Schritt — den 1404-Zeiler zuerst
@@ -101,7 +101,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // 1033 -> 525: der Skill-Editor liegt jetzt als SkillEditorPanel daneben,
     // sein Motor-Abschnitt als SkillEngineSection. Beide neuen Dateien halten
     // die 300er-Grenze ein — deshalb stehen sie nicht hier.
-    'components/settings/SkillsModules.tsx': 526,
+    'components/settings/SkillsModules.tsx': 527,
     'components/settings/AiProfileModules.tsx': 402,
     // 704 -> 411: die reinen Helfer nach lib/skills/skill-dedup, die
     // Skill-Verwaltung nach hooks/skills/useCustomSkillCrud, und die sechs
@@ -125,7 +125,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // eigenen Schritt.
     // 495 -> 488: die beiden .koreki-Exporte standen zweimal ausgeschrieben da,
     // unterschieden durch ein einziges `true`.
-    'pages/app.tsx': 488,
+    'pages/app.tsx': 489,
     'components/batch/parts/BatchTaskAnalysisCard.tsx': 578,
     // +7: der Kommentar, warum beim Aktualisieren die bestehende Kennung
     // gewinnt. Ohne ihn wird die Zeile beim naechsten Aufraeumen entfernt.

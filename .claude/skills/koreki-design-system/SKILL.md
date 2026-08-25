@@ -281,7 +281,7 @@ Koreki spricht mit der Lehrkraft **nie über den Browser**. `alert()` und `confi
 - **Kein Modal für eine Erfolgsmeldung.** Ein Dialog, der „gespeichert" meldet und einen Klick auf OK verlangt, bestraft die Lehrkraft dafür, dass etwas geklappt hat.
 - **Die Fläche eines Toasts ist undurchsichtig.** Die Tonlage trägt der farbige Streifen links, nicht eine Einfärbung der Fläche. Grund: `cn()` fasst über `tailwind-merge` zusammen und behält von zwei `bg-*`-Klassen nur die letzte — `bg-background` neben `bg-success/5` ergibt fünf Prozent Deckkraft.
 
-Beide Regeln haben Wächter: [tests/unit/confirm-dialog-governance.test.ts](../../../tests/unit/confirm-dialog-governance.test.ts) hält `alert(` im gesamten `src/` auf null und friert die verbliebenen `confirm(`-Altfälle als Ratsche ein.
+Beide Regeln haben einen Wächter: [tests/unit/confirm-dialog-governance.test.ts](../../../tests/unit/confirm-dialog-governance.test.ts) hält `alert(` **und** `confirm(` im gesamten `src/` auf null — in der langen Form (`window.confirm(`) wie in der kurzen. Es gibt keinen eingefrorenen Altbestand mehr, den man noch abtragen dürfte.
 
 ## Tabs & Dropdown Usage
 

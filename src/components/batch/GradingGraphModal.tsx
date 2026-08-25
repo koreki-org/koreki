@@ -28,6 +28,7 @@ import { performAIRequest } from '@/lib/ai/ai-orchestrator';
 import { isLocalInstance } from '@/lib/env-context';
 import { toErrorMessage } from '../../lib/error-message';
 import { meldeErfolg, meldeFehler, meldeHinweis } from '@/lib/notify';
+import { askConfirmation } from '@/lib/confirm-dialog';
 
 interface GradingGraphModalProps {
     isOpen: boolean;
@@ -372,10 +373,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                     {onDeleteGraph && initialGraph && !isLocked && (
                                         <Button
                                             variant="outline"
-                                            onClick={() => {
-                                                if (confirm("Möchtest du den Bewertungs-Graphen wirklich unwiderruflich löschen?")) {
-                                                    onDeleteGraph();
-                                                }
+                                            onClick={async () => {
+                                                if (await askConfirmation({ title: 'Bewertungs-Graph löschen', message: 'Möchtest du den Bewertungs-Graphen wirklich unwiderruflich löschen?' })) onDeleteGraph();
                                             }}
                                             className="flex-1 sm:flex-initial h-8 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive/10 hover:text-destructive transition-all text-xs font-bold gap-1 px-3 flex items-center justify-center shrink-0"
                                             title="Bewertungs-Graph löschen und Aufgabe zurücksetzen"

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { AppSettings } from '@/types';
 import { getKorekiMode } from '@/lib/env-context';
 import { vaultService } from '@/lib/ai/vault-service';
+import { askConfirmation } from '@/lib/confirm-dialog';
 
 interface MistralConfigProps {
     settings: Partial<AppSettings>;
@@ -23,7 +24,7 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
     const isPure = appMode === 'PURE';
 
     const handleClearKey = async () => {
-        if (confirm('Möchtest du den Key wirklich sicher vom Rechner löschen?')) {
+        if (await askConfirmation({ title: 'Schlüssel löschen', message: 'Möchtest du den Key wirklich sicher vom Rechner löschen?' })) {
             if (isDesktop) {
                 try {
                     await vaultService.deleteSecret('koreki-mistral-key');
