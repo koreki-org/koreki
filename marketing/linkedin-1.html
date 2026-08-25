@@ -3,14 +3,15 @@
 <head><meta charset="utf-8"><link rel="stylesheet" href="brand.css"></head>
 <body data-format="linkedin">
 <!--
-    Erster LinkedIn-Post: Haltung statt Produktvorstellung.
+    Erster Beitrag der LinkedIn-Unternehmensseite: Vorstellung.
 
-    Zielgruppe ist nicht die Lehrkraft, sondern wer ueber den Einsatz an einer
-    Schule entscheidet. Deren erste Frage ist nicht "was kann das", sondern
-    "koennen wir dem Anbieter trauen". Deshalb fuehrt der Post ueber die
-    zurueckgenommenen Werbeaussagen ins Compliance-Thema.
+    Adressat ist nicht die Lehrkraft, sondern wer ueber den Einsatz an einer
+    Schule entscheidet. Deshalb stehen die drei Betriebsarten im Zentrum und
+    nicht die Bedienschritte — die Frage vor jedem Schulkauf lautet "wo
+    liegen unsere Daten", nicht "wie klicke ich das".
 
-    Die vier zitierten Saetze sind echt und nachpruefbar (Commit b49bf83).
+    Der Haltungs-Post (linkedin-haltung.html) setzt voraus, dass man Koreki
+    kennt, und kommt deshalb spaeter.
 -->
 <div class="slide">
 
@@ -24,36 +25,47 @@
 
     <div class="h44"></div>
 
-    <div class="eyebrow">Aus dem Maschinenraum</div>
+    <div class="eyebrow">KI-Korrektur für Schulen</div>
     <div class="h20"></div>
-    <h1 class="m">Wir haben unsere<br>eigene Werbung<br><span class="grad">entschärft.</span></h1>
+    <h1 class="m">KI-Korrektur,<br>die im Haus<br><span class="grad">bleiben darf.</span></h1>
     <div class="h32"></div>
-    <p class="lead">Zwei Sätze über Koreki klangen gut — und ließen sich nicht belegen.
-        Also sind sie weg.</p>
+    <p class="lead">Koreki bewertet Klassenarbeiten kriterienweise gegen Ihre
+        Musterlösung — <b>die Notenentscheidung bleibt bei der Lehrkraft.</b></p>
 
     <div class="h44"></div>
 
-    <div class="ba before">
-        <div class="tag">Vorher</div>
-        <p>„Von Stunden auf Minuten.“</p>
-        <p>„Objektive Bewertungen.“</p>
+    <div class="modes">
+        <div class="mode">
+            <span class="badge b1">Desktop</span>
+            <p>Läuft lokal auf dem Rechner der Lehrkraft.</p>
+        </div>
+        <div class="mode">
+            <span class="badge b2">Community</span>
+            <p>Self-hosted auf dem Schulserver, ohne Telemetrie.</p>
+        </div>
+        <div class="mode">
+            <span class="badge b3">Cloud</span>
+            <p>Verwaltet auf koreki.org.</p>
+        </div>
     </div>
 
-    <div class="ba after">
-        <div class="tag">Jetzt</div>
-        <p>„Entlastet dich beim Korrigieren.“</p>
-        <p>„Unvoreingenommene Bewertungen — Namen werden vor der KI pseudonymisiert.“</p>
+    <div class="h32"></div>
+
+    <div class="notes">
+        <div class="note">
+            <h4>Daten bleiben im Netz</h4>
+            <p>Mit lokalen KI-Modellen über Ollama verlässt kein Schülertext Ihre Infrastruktur.</p>
+        </div>
+        <div class="note">
+            <h4>Unsicherheit sichtbar</h4>
+            <p>Jede Einschätzung trägt einen Vertrauenswert. Unsichere Aufgaben werden markiert.</p>
+        </div>
     </div>
-
-    <div class="h44"></div>
-
-    <p class="pull">Belegbare Aussagen beschreiben, was ein System <b>tut</b> —
-        nicht, wie <b>gut</b> sein Ergebnis ist.</p>
 
     <div class="spacer"></div>
 
     <div class="footline">
-        <div>Hochrisiko-KI nach <b>Anhang III Nr. 3 b, EU-KI-VO</b></div>
+        <div>Desktop &amp; Community: <b>für Lehrkräfte kostenlos</b></div>
         <div><b>koreki.org</b></div>
     </div>
 

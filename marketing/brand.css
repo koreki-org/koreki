@@ -246,6 +246,26 @@ h1.xs { font-size: 62px; line-height: 1.02; }
 }
 .ba.after p { color: var(--ink); }
 
+/* Betriebsarten-Liste — Zeile mit Namens-Pille statt Nummer */
+.modes { display: flex; flex-direction: column; gap: 16px; }
+.mode {
+    display: flex; align-items: center; gap: 24px;
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 22px; padding: 22px 30px; box-shadow: var(--shadow-card);
+}
+/* Feste Breite, damit der Fliesstext aller Zeilen an derselben Kante beginnt —
+   sonst franst die Liste aus, weil die Namen unterschiedlich lang sind. */
+.mode .badge {
+    flex: 0 0 auto; min-width: 190px; text-align: center;
+    border-radius: 999px; padding: 9px 20px; color: #fff;
+    font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 21px;
+}
+.b1 { background: linear-gradient(140deg, #34D399, #059669); }
+.b2 { background: linear-gradient(140deg, #60A5FA, #2563EB); }
+.b3 { background: linear-gradient(140deg, #C084FC, #9333EA); }
+.mode p { font-size: 23px; line-height: 1.35; color: var(--muted); }
+.mode p b { color: var(--ink); font-weight: 600; }
+
 /* Kernaussage am Fuss eines Haltungs-Posts */
 .pull {
     border-left: 4px solid var(--primary);
