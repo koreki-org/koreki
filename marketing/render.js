@@ -15,13 +15,19 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 
+/**
+ * Breite/Hoehe sind die CSS-Masse aus brand.css. `scale` verdoppelt die
+ * Pixeldichte beim Export, ohne das Layout anzufassen — noetig, wo die
+ * Plattform das Bild auf HiDPI-Displays groesser darstellt, als es ist.
+ * Instagram bleibt bei 1:1, weil 1080px dort das native Ziel ist.
+ */
 const FORMATS = {
     feed: { width: 1080, height: 1350 },
     square: { width: 1080, height: 1080 },
     story: { width: 1080, height: 1920 },
-    linkedin: { width: 1200, height: 1500 },
-    'linkedin-cover': { width: 1584, height: 396 },
-    youtube: { width: 1280, height: 720 }
+    linkedin: { width: 1200, height: 1500, scale: 2 },
+    'linkedin-cover': { width: 1584, height: 396, scale: 2 },
+    youtube: { width: 1280, height: 720, scale: 2 }
 };
 
 const DIR = __dirname;
@@ -55,9 +61,10 @@ function readFormat(file) {
         const src = path.join(DIR, file);
         const format = readFormat(src);
 
+        const scale = format.scale || 1;
         const page = await browser.newPage({
             viewport: { width: format.width, height: format.height },
-            deviceScaleFactor: 1
+            deviceScaleFactor: scale
         });
 
         await page.goto('file:///' + src.replace(/\\/g, '/'), { waitUntil: 'networkidle' });
@@ -69,7 +76,8 @@ function readFormat(file) {
         await page.close();
 
         const kb = Math.round(fs.statSync(target).size / 1024);
-        console.log(`  ${file.padEnd(26)} ${format.name.padEnd(9)} ${format.width}x${format.height}  ${kb} KB`);
+        const px = `${format.width * scale}x${format.height * scale}`;
+        console.log(`  ${file.padEnd(26)} ${format.name.padEnd(15)} ${px.padEnd(11)} ${scale > 1 ? `@${scale}x ` : '     '}${kb} KB`);
     }
 
     await browser.close();
