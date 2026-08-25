@@ -59,7 +59,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
                 <div className="bg-primary/5 p-5 rounded-xl border border-primary/20 mb-8 flex items-start gap-4">
                     <AlertTriangle size={24} className="text-primary shrink-0 mt-0.5" />
-                    <div id={MESSAGE_ID} className="text-sm font-medium text-foreground leading-relaxed">
+                    <div id={MESSAGE_ID} className="text-sm font-medium text-foreground leading-relaxed whitespace-pre-line">
                         {message}
                     </div>
                 </div>

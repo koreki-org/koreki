@@ -4,7 +4,8 @@ import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
 import { readLocalArray, readLocalArrayForUpdate, writeLocalArray } from '@/lib/local-vault';
-import { isSameName, nameTakenMessage, overwriteQuestion, resolveProfileRef } from '@/lib/services/profile-naming';
+import { isSameName, nameTakenMessage, resolveProfileRef } from '@/lib/services/profile-naming';
+import { askConfirmation, confirmOverwrite } from '@/lib/confirm-dialog';
 import { createProfileStore } from '@/lib/services/profile-store';
 import { toErrorMessage } from '@/lib/error-message';
 
@@ -201,9 +202,7 @@ export const usePromptProfiles = (
             }
 
             const belegt = profiles.some(p => !p.isSystem && isSameName(p.name, nameToSave));
-            if (belegt && !window.confirm(overwriteQuestion('Profil', nameToSave))) {
-                return;
-            }
+            if (belegt && !(await confirmOverwrite('Profil', nameToSave))) return;
         }
 
         setSaving(true);
@@ -327,7 +326,7 @@ export const usePromptProfiles = (
     };
 
     const handleDeleteProfile = async (id: string) => {
-        if (!window.confirm("Dieses Profil wirklich dauerhaft löschen?")) return;
+        if (!(await askConfirmation({ title: 'Profil löschen', message: 'Dieses Profil wirklich dauerhaft löschen?' }))) return;
 
         try {
             await promptProfileStore.loesche(id);

@@ -8,7 +8,8 @@ import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { STANDARD_SKILL_PROFILES, DEFAULT_SKILL_PROFILE_ID } from '@/lib/ai/standard-skills-profiles';
 import { findNameCollision } from '@/lib/local-vault';
-import { isSameName, nameTakenMessage, overwriteQuestion, resolveProfileRef } from '@/lib/services/profile-naming';
+import { isSameName, nameTakenMessage, resolveProfileRef } from '@/lib/services/profile-naming';
+import { askConfirmation, confirmOverwrite } from '@/lib/confirm-dialog';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import type { ParsedProfile } from '@/lib/parsers/markdown-profile-parser';
 
@@ -264,9 +265,7 @@ export const useSkillProfiles = (
             // bisher ohne Rückfrage ein bestehendes gleichnamiges Set — dessen
             // Skills waren damit weg.
             const belegt = profiles.some(p => !p.isSystem && isSameName(p.name, nameToSave));
-            if (belegt && !window.confirm(overwriteQuestion('Skill-Profil', nameToSave))) {
-                return;
-            }
+            if (belegt && !(await confirmOverwrite('Skill-Profil', nameToSave))) return;
         }
 
         setSaving(true);
@@ -330,7 +329,7 @@ export const useSkillProfiles = (
     };
 
     const handleDeleteProfile = async (id: string) => {
-        if (!window.confirm("Dieses Skill-Profil wirklich dauerhaft löschen?")) return;
+        if (!(await askConfirmation({ title: 'Skill-Set löschen', message: 'Dieses Skill-Profil wirklich dauerhaft löschen?' }))) return;
 
         try {
             await loescheSkillProfil(id);

@@ -6,6 +6,7 @@ import { awaitSettlingSlot, SettlingSlot } from '../lib/session-settling';
 import { apiClient } from '../lib/api-client';
 import { readLocalArray, readLocalArrayForUpdate, writeLocalArray } from '../lib/local-vault';
 import { isSameName } from '../lib/services/profile-naming';
+import { askConfirmation } from '../lib/confirm-dialog';
 
 const MEMORY_KEY = 'koreki_local_grading_memories';
 
@@ -149,7 +150,7 @@ export const useGradingMemories = (userData?: any) => {
     };
 
     const deleteMemory = async (id: string) => {
-        if (!window.confirm("Diesen Erfahrungsschatz wirklich dauerhaft löschen?")) return;
+        if (!(await askConfirmation({ title: 'Erfahrungsschatz löschen', message: 'Diesen Erfahrungsschatz wirklich dauerhaft löschen?' }))) return;
 
         if (isDesktopTarget()) {
             const list = readLocalArrayForUpdate<GradingMemory>(MEMORY_KEY).filter(m => m.id !== id);

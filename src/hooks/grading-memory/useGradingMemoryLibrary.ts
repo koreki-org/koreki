@@ -96,7 +96,7 @@ export function useGradingMemoryLibrary({
              * gemacht wurden — gemeldet am 18.08.2026.
              */
             const ersetzt = memories.some(m => isSameName(m.name, parsed.name));
-            const urteil = bestaetigeSchatzName(parsed.name, memories);
+            const urteil = await bestaetigeSchatzName(parsed.name, memories);
             if (!urteil.ok) {
                 if (urteil.fehler) alert(urteil.fehler);
                 return;

@@ -90,6 +90,9 @@ export const findFreeName = <T extends { name?: string }>(entries: T[], wunsch: 
 export const nameTakenMessage = (label: string): string =>
     `Ein ${label} mit diesem Namen existiert bereits`;
 
+/** Kopfzeile der Rückfrage — der Wortlaut steht wie die Meldung nur hier. */
+export const overwriteTitle = (label: string): string => `${label} überschreiben?`;
+
 /** Fragt vor dem Überschreiben eines gleichnamigen Eintrags. */
 export const overwriteQuestion = (label: string, name: string): string =>
     `Ein ${label} mit dem Namen "${name}" existiert bereits.\n\n` +

@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { AppSettings, AiProfile } from '@/types';
 import { isDesktopTarget } from '@/lib/env-context';
 import { apiClient } from '@/lib/api-client';
-import { isSameName, nameTakenMessage, overwriteQuestion, resolveProfileRef } from '@/lib/services/profile-naming';
+import { isSameName, nameTakenMessage, resolveProfileRef } from '@/lib/services/profile-naming';
+import { askConfirmation, confirmOverwrite } from '@/lib/confirm-dialog';
 import { createProfileStore } from '@/lib/services/profile-store';
 import { toErrorMessage } from '@/lib/error-message';
 
@@ -264,9 +265,8 @@ export const useAiProfiles = (
 
             const belegt = profiles.find(p => !p.isSystem && isSameName(p.name, nameToSave));
             if (belegt) {
-                if (!window.confirm(overwriteQuestion('KI-Profil', nameToSave))) return;
-                // Zugesagtes Überschreiben heisst: den bestehenden Datensatz
-                // treffen, nicht einen zweiten daneben legen.
+                if (!(await confirmOverwrite('KI-Profil', nameToSave))) return;
+                // Zugesagtes Überschreiben trifft den bestehenden Datensatz, statt einen zweiten daneben zu legen.
                 zielId = belegt.id;
             }
         }
@@ -360,7 +360,7 @@ export const useAiProfiles = (
         if (e) e.stopPropagation();
         const profile = profiles.find(p => p.id === id);
         if (profile?.isSystem) return;
-        if (!window.confirm("Dieses KI-Profil wirklich dauerhaft löschen?")) return;
+        if (!(await askConfirmation({ title: 'KI-Profil löschen', message: 'Dieses KI-Profil wirklich dauerhaft löschen?' }))) return;
 
         try {
             await aiProfileStore.loesche(id);

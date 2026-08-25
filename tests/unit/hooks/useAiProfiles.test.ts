@@ -2,6 +2,12 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { useAiProfiles, STANDARD_AI_PROFILE, MATH_AI_PROFILE } from '../../../src/hooks/useAiProfiles';
 import { AppSettings } from '../../../src/types';
 import { TEMPERATURE_MINIMUM } from '@/lib/ai/temperature-guidance';
+import { askConfirmation, confirmOverwrite } from '@/lib/confirm-dialog';
+
+jest.mock('@/lib/confirm-dialog', () => ({
+    askConfirmation: jest.fn().mockResolvedValue(true),
+    confirmOverwrite: jest.fn().mockResolvedValue(true)
+}));
 
 // Mock dependencies
 jest.mock('../../../src/lib/env-context', () => ({
@@ -135,7 +141,7 @@ describe('useAiProfiles - Industrial Hook Verification', () => {
         };
 
         it('legt bei abgelehnter Rückfrage keine Dublette an', async () => {
-            jest.spyOn(window, 'confirm').mockReturnValue(false);
+            (confirmOverwrite as jest.Mock).mockResolvedValue(false);
 
             const gespeichert = await anlegenAls('Mein Tuning');
 
@@ -144,7 +150,7 @@ describe('useAiProfiles - Industrial Hook Verification', () => {
         });
 
         it('überschreibt den bestehenden Eintrag statt ihn zu verdoppeln', async () => {
-            jest.spyOn(window, 'confirm').mockReturnValue(true);
+            (confirmOverwrite as jest.Mock).mockResolvedValue(true);
             jest.spyOn(window, 'alert').mockImplementation(() => {});
 
             const gespeichert = await anlegenAls('  mein tuning ');

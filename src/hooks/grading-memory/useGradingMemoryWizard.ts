@@ -4,6 +4,7 @@ import type { Task, AppSettings, GradingMemory, GradingMemoryCase } from '@/type
 import { rufeSimulator, type SyntheticAnswer, type SimulatorAnswer, type Calibration } from '@/lib/grading-memory-simulator';
 import { isDesktopTarget } from '@/lib/env-context';
 import { persistGradingMemory, bestaetigeSchatzName } from '@/lib/grading-memory-persistence';
+import { askConfirmation } from '@/lib/confirm-dialog';
 import { resolveTaskName } from '@/lib/grading-memory-utils';
 import { toErrorMessage } from '@/lib/error-message';
 
@@ -154,7 +155,7 @@ export function useGradingMemoryWizard({
 
     /** Legt einen leeren Schatz an, den die Lehrkraft von Hand befuellt. */
     const handleCreateEmptyMemory = async () => {
-        const pruefung = bestaetigeSchatzName(profileName, memories);
+        const pruefung = await bestaetigeSchatzName(profileName, memories);
         if (!pruefung.ok) {
             if (pruefung.fehler) setError(pruefung.fehler);
             return;
@@ -198,7 +199,7 @@ export function useGradingMemoryWizard({
         }));
     };
 
-    const handleSkip = () => {
+    const handleSkip = async () => {
         if (!syntheticAnswers || syntheticAnswers.length === 0) return;
         
         const newAnswers = [...syntheticAnswers];
@@ -206,7 +207,7 @@ export function useGradingMemoryWizard({
         setSyntheticAnswers(newAnswers);
         
         if (newAnswers.length === 0) {
-            const proceed = window.confirm("Alle fiktiven Schülerabgaben wurden übersprungen. Möchtest du den Erfahrungsschatz trotzdem als leeres Profil erstellen?");
+            const proceed = await askConfirmation({ title: 'Leeren Erfahrungsschatz anlegen?', message: 'Alle fiktiven Schülerabgaben wurden übersprungen. Möchtest du den Erfahrungsschatz trotzdem als leeres Profil erstellen?' });
             if (proceed) {
                 handleSave([]);
             } else {
@@ -230,7 +231,7 @@ export function useGradingMemoryWizard({
     const handleSave = async (answersToSave?: SyntheticAnswer[]) => {
         const actualAnswers = Array.isArray(answersToSave) ? answersToSave : syntheticAnswers;
 
-        const pruefung = bestaetigeSchatzName(profileName, memories);
+        const pruefung = await bestaetigeSchatzName(profileName, memories);
         if (!pruefung.ok) {
             if (pruefung.fehler) setError(pruefung.fehler);
             return;

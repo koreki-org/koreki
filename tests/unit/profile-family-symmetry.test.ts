@@ -120,7 +120,7 @@ const AUS_DATEI = ['parseMarkdown', 'file.text()', 'parsed.cases', 'parsed.name'
 /** Hier wird tatsaechlich abgelegt. */
 const SCHREIBT = ['persistGradingMemory(', 'speichereSkillProfil(', '.speichere(', 'apiClient.post('];
 /** Hier wird vorher gefragt. */
-const FRAGT = ['overwriteQuestion', 'bestaetigeSchatzName', 'window.confirm'];
+const FRAGT = ['overwriteQuestion', 'confirmOverwrite', 'bestaetigeSchatzName', 'askConfirmation'];
 
 const enthaelt = (rumpf: string, marker: string[]) => marker.some(m => rumpf.includes(m));
 

@@ -4,10 +4,12 @@ import {
 } from '../../../src/lib/grading-memory-persistence';
 import { isDesktopTarget } from '../../../src/lib/env-context';
 import { apiClient } from '../../../src/lib/api-client';
+import { confirmOverwrite } from '../../../src/lib/confirm-dialog';
 import type { GradingMemory } from '../../../src/types';
 
 jest.mock('../../../src/lib/env-context', () => ({ isDesktopTarget: jest.fn() }));
 jest.mock('../../../src/lib/api-client', () => ({ apiClient: { post: jest.fn() } }));
+jest.mock('../../../src/lib/confirm-dialog', () => ({ confirmOverwrite: jest.fn() }));
 
 /**
  * Erfahrungsschatz ablegen und die Rueckfrage davor (Layer 1)
@@ -33,7 +35,7 @@ const schatz = (name: string): GradingMemory => ({
 });
 
 const bestaetige = (ja: boolean) => {
-    window.confirm = jest.fn(() => ja);
+    (confirmOverwrite as jest.Mock).mockResolvedValue(ja);
 };
 
 beforeEach(() => {
@@ -42,25 +44,25 @@ beforeEach(() => {
 });
 
 describe('bestaetigeSchatzName', () => {
-    it('verlangt einen Namen', () => {
-        expect(bestaetigeSchatzName('   ', []).ok).toBe(false);
-        expect(bestaetigeSchatzName('   ', []).fehler).toMatch(/Namen/);
+    it('verlangt einen Namen', async () => {
+        expect((await bestaetigeSchatzName('   ', [])).ok).toBe(false);
+        expect((await bestaetigeSchatzName('   ', [])).fehler).toMatch(/Namen/);
     });
 
-    it('laesst einen freien Namen ohne Rueckfrage durch', () => {
+    it('laesst einen freien Namen ohne Rueckfrage durch', async () => {
         bestaetige(false);
 
-        expect(bestaetigeSchatzName('Neu', [schatz('Anderer')]).ok).toBe(true);
-        expect(window.confirm).not.toHaveBeenCalled();
+        expect((await bestaetigeSchatzName('Neu', [schatz('Anderer')])).ok).toBe(true);
+        expect(confirmOverwrite).not.toHaveBeenCalled();
     });
 
     /** DIE STELLE, die den gemeldeten Datenverlust verhindert. */
-    it('fragt bei einem belegten Namen und gehorcht der Antwort', () => {
+    it('fragt bei einem belegten Namen und gehorcht der Antwort', async () => {
         bestaetige(false);
-        expect(bestaetigeSchatzName('Physik', [schatz('Physik')]).ok).toBe(false);
+        expect((await bestaetigeSchatzName('Physik', [schatz('Physik')])).ok).toBe(false);
 
         bestaetige(true);
-        expect(bestaetigeSchatzName('Physik', [schatz('Physik')]).ok).toBe(true);
+        expect((await bestaetigeSchatzName('Physik', [schatz('Physik')])).ok).toBe(true);
     });
 
     /**
@@ -68,12 +70,12 @@ describe('bestaetigeSchatzName', () => {
      * Ein Eintrag mit angehaengtem Leerzeichen galt damit als anderer Name —
      * die Rueckfrage blieb aus, die Ablage ueberschrieb ihn trotzdem.
      */
-    it('erkennt die Namensgleichheit unabhaengig von Rand und Schreibweise', () => {
+    it('erkennt die Namensgleichheit unabhaengig von Rand und Schreibweise', async () => {
         bestaetige(false);
 
-        expect(bestaetigeSchatzName('physik', [schatz('  Physik ')]).ok).toBe(false);
-        expect(bestaetigeSchatzName('  PHYSIK  ', [schatz('Physik')]).ok).toBe(false);
-        expect(window.confirm).toHaveBeenCalledTimes(2);
+        expect((await bestaetigeSchatzName('physik', [schatz('  Physik ')])).ok).toBe(false);
+        expect((await bestaetigeSchatzName('  PHYSIK  ', [schatz('Physik')])).ok).toBe(false);
+        expect(confirmOverwrite).toHaveBeenCalledTimes(2);
     });
 
     /**
@@ -90,13 +92,13 @@ describe('bestaetigeSchatzName', () => {
      * liess sich durch eine leere Zeichenkette ersetzen, ohne dass ein Test
      * anschlug.
      */
-    it('nennt in der Rueckfrage die Familie UND den Namen', () => {
+    it('nennt in der Rueckfrage die Familie UND den Namen', async () => {
         bestaetige(true);
-        bestaetigeSchatzName('Physik', [schatz('Physik')]);
+        await bestaetigeSchatzName('Physik', [schatz('Physik')]);
 
-        const frage = (window.confirm as jest.Mock).mock.calls[0][0];
-        expect(frage).toContain('Ein Erfahrungsschatz mit dem Namen');
-        expect(frage).toContain('"Physik"');
+        // Der Wortlaut selbst liegt in `confirmOverwrite` und wird dort geprueft.
+        // Hier zaehlt, dass die richtige FAMILIE und der getrimmte NAME ankommen.
+        expect(confirmOverwrite).toHaveBeenCalledWith('Erfahrungsschatz', 'Physik');
     });
 
     /**
@@ -105,11 +107,11 @@ describe('bestaetigeSchatzName', () => {
      * Anfuehrungszeichen, was aussieht wie ein anderer Eintrag als der
      * gemeinte.
      */
-    it('zeigt den Namen ohne Randleerzeichen', () => {
+    it('zeigt den Namen ohne Randleerzeichen', async () => {
         bestaetige(true);
-        bestaetigeSchatzName('  Physik  ', [schatz('Physik')]);
+        await bestaetigeSchatzName('  Physik  ', [schatz('Physik')]);
 
-        expect((window.confirm as jest.Mock).mock.calls[0][0]).toContain('"Physik"');
+        expect(confirmOverwrite).toHaveBeenCalledWith('Erfahrungsschatz', 'Physik');
     });
 });
 

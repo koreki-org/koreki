@@ -18,6 +18,9 @@ jest.mock('@/lib/env-context', () => ({
     isLocalInstance: () => true
 }));
 
+jest.mock('@/lib/confirm-dialog', () => ({
+    askConfirmation: jest.fn().mockResolvedValue(true)
+}));
 jest.mock('@/lib/api-client', () => ({
     apiClient: {
         get: jest.fn(),

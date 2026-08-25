@@ -3,6 +3,7 @@ import { useGradingMemoryLibrary } from '../../../src/hooks/grading-memory/useGr
 import { persistGradingMemory } from '../../../src/lib/grading-memory-persistence';
 import { downloadFile } from '../../../src/lib/file-utils';
 import { isDesktopTarget } from '../../../src/lib/env-context';
+import { confirmOverwrite } from '../../../src/lib/confirm-dialog';
 import type { GradingMemory } from '../../../src/types';
 
 jest.mock('../../../src/lib/grading-memory-persistence', () => ({
@@ -10,6 +11,7 @@ jest.mock('../../../src/lib/grading-memory-persistence', () => ({
     persistGradingMemory: jest.fn()
 }));
 jest.mock('../../../src/lib/file-utils', () => ({ downloadFile: jest.fn() }));
+jest.mock('../../../src/lib/confirm-dialog', () => ({ confirmOverwrite: jest.fn() }));
 jest.mock('../../../src/lib/env-context', () => ({ isDesktopTarget: jest.fn(() => false) }));
 jest.mock('../../../src/lib/api-client', () => ({
     apiClient: { post: jest.fn(), fetch: jest.fn() }
@@ -82,7 +84,7 @@ beforeEach(() => {
     (isDesktopTarget as jest.Mock).mockReturnValue(false);
     (persistGradingMemory as jest.Mock).mockResolvedValue(undefined);
     window.alert = jest.fn();
-    window.confirm = jest.fn(() => true);
+    (confirmOverwrite as jest.Mock).mockResolvedValue(true);
 });
 
 const gemeldet = () => (window.alert as jest.Mock).mock.calls.map(c => String(c[0])).join('\n');
@@ -95,7 +97,7 @@ describe('Import', () => {
             await result.current.importMemoryFile(gueltigeDatei('Neu'));
         });
 
-        expect(window.confirm).not.toHaveBeenCalled();
+        expect(confirmOverwrite).not.toHaveBeenCalled();
         expect(persistGradingMemory).toHaveBeenCalledWith(
             expect.objectContaining({ name: 'Neu' })
         );
@@ -115,12 +117,12 @@ describe('Import', () => {
             await result.current.importMemoryFile(gueltigeDatei('Physik'));
         });
 
-        expect(window.confirm).toHaveBeenCalled();
+        expect(confirmOverwrite).toHaveBeenCalled();
         expect(gemeldet()).toMatch(/ersetzt/);
     });
 
     it('legt nichts ab, wenn die Rueckfrage verneint wird', async () => {
-        (window.confirm as jest.Mock).mockReturnValue(false);
+        (confirmOverwrite as jest.Mock).mockResolvedValue(false);
         const { result } = baue([schatz('Physik')]);
 
         await act(async () => {
@@ -138,7 +140,7 @@ describe('Import', () => {
             await result.current.importMemoryFile(gueltigeDatei('PHYSIK'));
         });
 
-        expect(window.confirm).toHaveBeenCalled();
+        expect(confirmOverwrite).toHaveBeenCalled();
     });
 
     /**

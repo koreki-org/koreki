@@ -4,6 +4,7 @@ import 'katex/dist/katex.min.css';
 
 import Head from 'next/head';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ConfirmationHost } from '../components/ConfirmationHost';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -21,6 +22,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                 <link rel="icon" href="/favicon.png?v=1.0.1" />
             </Head>
             <Component {...pageProps} />
+            <ConfirmationHost />
         </QueryClientProvider>
     );
 }

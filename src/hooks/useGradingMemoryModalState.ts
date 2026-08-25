@@ -10,6 +10,7 @@ import { downloadFile } from '../lib/file-utils';
 import { resolveTaskName, resolveMaxPoints } from '../lib/grading-memory-utils';
 import { findNameCollision } from '../lib/local-vault';
 import { toErrorMessage } from '../lib/error-message';
+import { askConfirmation } from '@/lib/confirm-dialog';
 
 export interface UseGradingMemoryModalStateProps {
     isOpen: boolean;
@@ -185,9 +186,9 @@ export function useGradingMemoryModalState({
         }));
     };
 
-    const handleDeleteCase = (caseId: string) => {
+    const handleDeleteCase = async (caseId: string) => {
         if (!activeMemoryId) return;
-        if (!window.confirm("Möchtest du dieses Fallbeispiel wirklich aus dem Erfahrungsschatz löschen?")) return;
+        if (!(await askConfirmation({ title: 'Fallbeispiel löschen', message: 'Möchtest du dieses Fallbeispiel wirklich aus dem Erfahrungsschatz löschen?' }))) return;
 
         setMemories(prev => prev.map(m => {
             if (m.id !== activeMemoryId) return m;

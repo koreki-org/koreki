@@ -108,7 +108,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // Desktop/SaaS-Verzweigungen nach lib/skills/skill-profile-store.
     // Weiterhin ueber der Grenze — der naechste Schnitt trennt Profil-Auswahl
     // von Editor-Zustand.
-    'hooks/useSkillProfiles.ts': 410,
+    'hooks/useSkillProfiles.ts': 409,
     // 598 -> 495: die vier Generierungs-Handler liegen als
     // useTaskEngineGeneration daneben.
     //
@@ -142,7 +142,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // Nachweisgrenze des Duplikat-Waechters.
     'components/dashboard/DashboardModals.tsx': 432,
     // 420 -> 400: dieselbe Umstellung wie bei useAiProfiles.
-    'hooks/usePromptProfiles.ts': 398, // s. useSkillProfiles — gleicher Wächter
+    'hooks/usePromptProfiles.ts': 397, // s. useSkillProfiles — gleicher Wächter
     'components/batch/parts/SecondOpinionDrawer.tsx': 388,
     'components/settings/ProfileModules.tsx': 349,
     'pages/features.tsx': 347,

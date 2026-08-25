@@ -1,7 +1,8 @@
 import type { GradingMemory, GradingMemoryCase } from '@/types';
 import { apiClient } from '@/lib/api-client';
 import { isDesktopTarget } from '@/lib/env-context';
-import { isSameName, overwriteQuestion } from '@/lib/services/profile-naming';
+import { isSameName } from '@/lib/services/profile-naming';
+import { confirmOverwrite } from '@/lib/confirm-dialog';
 
 /**
  * Einen Erfahrungsschatz anlegen — lokal oder in der Datenbank.
@@ -48,7 +49,7 @@ export async function persistGradingMemory(p: PersistGradingMemoryParams): Promi
  *
  * @returns `false`, wenn nicht weitergemacht werden soll.
  */
-export function bestaetigeSchatzName(name: string, vorhandene: GradingMemory[]): { ok: boolean; fehler?: string } {
+export async function bestaetigeSchatzName(name: string, vorhandene: GradingMemory[]): Promise<{ ok: boolean; fehler?: string }> {
     if (!name.trim()) {
         return { ok: false, fehler: 'Bitte gib dem Erfahrungsschatz einen aussagekräftigen Namen.' };
     }
@@ -63,5 +64,5 @@ export function bestaetigeSchatzName(name: string, vorhandene: GradingMemory[]):
     // Der Text versprach zuvor die Wahl zwischen Überschreiben und einem
     // zweiten Eintrag gleichen Namens. Beide Ablagen überschreiben aber
     // immer — die Datenbank erzwingt Eindeutigkeit je Nutzer.
-    return { ok: window.confirm(overwriteQuestion('Erfahrungsschatz', name.trim())) };
+    return { ok: await confirmOverwrite('Erfahrungsschatz', name.trim()) };
 }
