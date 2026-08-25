@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import SettingsModal from '@/components/SettingsModal';
 
@@ -22,11 +22,17 @@ jest.mock('@/lib/env-context', () => ({
     isKeycloakAuth: jest.fn(() => false),
 }));
 
+jest.mock('@/lib/api-client', () => ({
+    apiClient: { post: jest.fn() }
+}));
+
 // Die KI-Konfiguration bringt eigene Netzwerk- und Modell-Logik mit, die hier
 // nichts zur Frage beitraegt.
 jest.mock('@/components/settings/UnifiedAiConfig', () => ({
     UnifiedAiConfig: () => <div data-testid="ai-config" />
 }));
+
+import { apiClient } from '@/lib/api-client';
 
 const LOESCH_BUTTON = /Konto unwiderruflich löschen/i;
 const DATENSCHUTZ_ABSCHNITT = /Modus & Datenschutz/i;
@@ -44,6 +50,14 @@ const renderModal = (userRole: string) =>
     );
 
 describe('SettingsModal — Rollenabstufung (Layer 2)', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+        // Der Erfolgsfall navigiert zum Sign-out; das kann jsdom nicht. Der
+        // abgelehnte Aufruf beweist dieselbe Sache ohne Navigation.
+        (apiClient.post as jest.Mock).mockRejectedValue(new Error('offline'));
+        window.alert = jest.fn();
+    });
+
     it('laesst einen normalen Nutzer sein Konto loeschen', () => {
         renderModal('USER');
         expect(screen.getByRole('button', { name: LOESCH_BUTTON })).toBeInTheDocument();
@@ -62,5 +76,36 @@ describe('SettingsModal — Rollenabstufung (Layer 2)', () => {
         expect(screen.getByText(DATENSCHUTZ_ABSCHNITT)).toBeInTheDocument();
         expect(screen.getByText(ACCOUNT_ABSCHNITT)).toBeInTheDocument();
         expect(screen.getByTestId('ai-config')).toBeInTheDocument();
+    });
+
+    it('fragt ueber den Projekt-Dialog nach, nicht per Browser-Kasten', () => {
+        const browserKasten = jest.spyOn(window, 'confirm');
+        renderModal('USER');
+
+        fireEvent.click(screen.getByRole('button', { name: LOESCH_BUTTON }));
+
+        expect(browserKasten).not.toHaveBeenCalled();
+        expect(screen.getByTestId('bestaetigen')).toBeInTheDocument();
+        // Entscheidend: der Klick allein loescht noch nichts.
+        expect(apiClient.post).not.toHaveBeenCalled();
+    });
+
+    it('loescht erst nach der Bestaetigung', async () => {
+        renderModal('USER');
+
+        fireEvent.click(screen.getByRole('button', { name: LOESCH_BUTTON }));
+        fireEvent.click(screen.getByTestId('bestaetigen'));
+
+        await waitFor(() => expect(apiClient.post).toHaveBeenCalledWith('/api/user/delete', {}));
+    });
+
+    it('loescht nicht, wenn die Rueckfrage abgebrochen wird', () => {
+        renderModal('USER');
+
+        fireEvent.click(screen.getByRole('button', { name: LOESCH_BUTTON }));
+        fireEvent.click(screen.getByRole('button', { name: /Abbrechen/i }));
+
+        expect(screen.queryByTestId('bestaetigen')).not.toBeInTheDocument();
+        expect(apiClient.post).not.toHaveBeenCalled();
     });
 });

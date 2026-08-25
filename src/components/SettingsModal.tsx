@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { AppSettings, WaehlbarerAppModus } from '../types';
 import { Button } from './ui/Button';
@@ -10,6 +11,12 @@ import { PrivacySection, AIProviderSection, AccountSection, DangerZoneSection } 
 
 // Hooks
 import { useSystemSettings } from '../hooks/useSystemSettings';
+import { useDialogA11y, useEscapeKey } from '@/hooks/useDialogA11y';
+
+// Rueckfrage vor der Loeschung
+import ConfirmationModal from './ConfirmationModal';
+
+const TITLE_ID = 'settings-modal-title';
 
 interface SettingsModalProps {
     settings: AppSettings;
@@ -36,6 +43,9 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 }) => {
     const {
         delLoading,
+        deleteConfirmOpen,
+        requestDeleteAccount,
+        cancelDeleteAccount,
         inviteCode,
         setInviteCode,
         joinLoading,
@@ -44,12 +54,28 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         updateSettings
     } = useSystemSettings(onSave);
 
+    // Solange die Loesch-Rueckfrage oben liegt, ruhen Fokusfalle und Escape
+    // dieses Dialogs: sonst kaempfen zwei Fallen um denselben Tabulator und ein
+    // einziger Tastendruck schliesst beide Ebenen auf einmal.
+    const { mounted, dialogRef } = useDialogA11y<HTMLDivElement>(!deleteConfirmOpen);
+    useEscapeKey(!deleteConfirmOpen, onClose);
+
     const isDesktop = isLocalInstance();
     const isUserAdmin = isAdminView || (isLocalInstance() && !isKeycloakAuth()) || userRole === 'ADMIN';
 
-    return (
-        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300">
-            <div className="relative w-full max-w-[550px] bg-white rounded-hero shadow-glass border border-border max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-500 text-foreground">
+    if (!mounted) return null;
+
+    return createPortal(
+        <>
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-fade-in">
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={TITLE_ID}
+                tabIndex={-1}
+                className="relative w-full max-w-[550px] bg-white rounded-hero shadow-glass border border-border max-h-[85vh] flex flex-col overflow-hidden text-foreground focus:outline-none"
+            >
                 <Button
                     variant="ghost"
                     size="icon"
@@ -61,11 +87,11 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 {/* Header - Fixed */}
                 <div className="flex justify-start items-center p-8 pb-4">
-                    <h2 className="text-2xl font-bold tracking-tight text-foreground">{isUserAdmin ? 'Einstellungen' : 'Konto'}</h2>
+                    <h2 id={TITLE_ID} className="text-2xl font-bold tracking-tight text-foreground">{isUserAdmin ? 'Einstellungen' : 'Konto'}</h2>
                 </div>
 
                 {/* Content - Scrollable */}
-                <div className="flex-1 overflow-y-auto px-8 pb-4 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                <div className="flex-1 overflow-y-auto px-8 pb-4">
 
                 {/* Systemeinstellungen bleiben Admins vorbehalten. Fuer alle anderen enthaelt
                     der Dialog ausschliesslich die Konto-Loeschung: sie muss ohne Admin
@@ -104,7 +130,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                             />
                         )}
                         <DangerZoneSection 
-                            onDelete={handleDeleteAccount}
+                            onDelete={requestDeleteAccount}
                             loading={delLoading}
                         />
                     </>
@@ -123,6 +149,22 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
             </div>
         </div>
+
+        <ConfirmationModal
+            isOpen={deleteConfirmOpen}
+            title="Konto unwiderruflich löschen"
+            message={
+                <>
+                    Möchten Sie Ihr Konto wirklich unwiderruflich löschen? Alle Daten sowie
+                    verbleibende Credits verfallen sofort und können weder erstattet noch
+                    wiederhergestellt werden.
+                </>
+            }
+            onConfirm={handleDeleteAccount}
+            onCancel={cancelDeleteAccount}
+        />
+        </>,
+        document.body
     );
 };
 

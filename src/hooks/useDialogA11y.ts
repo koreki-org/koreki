@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from 'react';
  *
  * Bewusst NICHT enthalten: ein Escape-Handler. Dieser Hook bedient auch
  * Dialoge, die man nicht wegdruecken darf (Onboarding-Auswahl). Wer schliessbar
- * ist, verdrahtet Escape selbst mit seiner eigenen `onClose`-Zusage.
+ * ist, nimmt dafuer `useEscapeKey` weiter unten.
  */
 
 /** Was ueberhaupt Fokus annehmen kann. Deckungsgleich mit der Tab-Reihenfolge des Browsers. */
@@ -93,4 +93,28 @@ export function useDialogA11y<T extends HTMLElement>(active: boolean = true) {
     }, [mounted, active]);
 
     return { mounted, dialogRef };
+}
+
+/**
+ * Escape schliesst den Dialog.
+ *
+ * Getrennt von `useDialogA11y`, weil nicht jeder Dialog einen Ausgang hat: ein
+ * blockierender Dialog, den Escape wegdrueckt, waere ein Ausgang, den es
+ * fachlich nicht gibt.
+ *
+ * `active` erlaubt es einem Dialog, seine Zusage ruhen zu lassen, solange ein
+ * weiterer Dialog ueber ihm liegt — sonst schliesst ein einziger Tastendruck
+ * beide Ebenen auf einmal.
+ */
+export function useEscapeKey(active: boolean, onEscape: () => void) {
+    useEffect(() => {
+        if (!active) return;
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onEscape();
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [active, onEscape]);
 }

@@ -7,14 +7,17 @@ export const useSystemSettings = (onSave: (newSettings: AppSettings) => void) =>
     const [delLoading, setDelLoading] = useState(false);
     const [inviteCode, setInviteCode] = useState('');
     const [joinLoading, setJoinLoading] = useState(false);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+    // Die Rueckfrage laeuft ueber das ConfirmationModal des Projekts statt ueber
+    // window.confirm: eine unwiderrufliche Loeschung mit sofortigem Verfall von
+    // Guthaben verdient keinen Browser-Kasten, der wie eine Systemmeldung
+    // aussieht und dessen Text sich weder gestalten noch uebersetzen laesst.
+    const requestDeleteAccount = () => setDeleteConfirmOpen(true);
+    const cancelDeleteAccount = () => setDeleteConfirmOpen(false);
 
     const handleDeleteAccount = async () => {
-        const confirmDelete = window.confirm(
-            'Möchtest du dein Konto wirklich unwiderruflich löschen?\n\nACHTUNG: Alle Daten sowie verbleibende Credits verfallen sofort und können nicht erstattet oder wiederhergestellt werden!'
-        );
-
-        if (!confirmDelete) return;
-
+        setDeleteConfirmOpen(false);
         setDelLoading(true);
         try {
             const res = await apiClient.post('/api/user/delete', {});
@@ -69,6 +72,9 @@ export const useSystemSettings = (onSave: (newSettings: AppSettings) => void) =>
 
     return {
         delLoading,
+        deleteConfirmOpen,
+        requestDeleteAccount,
+        cancelDeleteAccount,
         inviteCode,
         setInviteCode,
         joinLoading,

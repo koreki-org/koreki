@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { createPortal } from 'react-dom';
 import { ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Button } from './ui/Button';
-import { useDialogA11y } from '@/hooks/useDialogA11y';
+import { useDialogA11y, useEscapeKey } from '@/hooks/useDialogA11y';
 
 interface ConfirmationModalProps {
     isOpen: boolean;
@@ -31,17 +31,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     onCancel
 }) => {
     const { mounted, dialogRef } = useDialogA11y<HTMLDivElement>(isOpen);
-
-    useEffect(() => {
-        if (!isOpen) return;
-
-        const handleEscape = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') onCancel();
-        };
-
-        document.addEventListener('keydown', handleEscape);
-        return () => document.removeEventListener('keydown', handleEscape);
-    }, [isOpen, onCancel]);
+    useEscapeKey(isOpen, onCancel);
 
     if (!isOpen || !mounted) return null;
 
