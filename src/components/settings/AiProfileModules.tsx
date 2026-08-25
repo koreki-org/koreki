@@ -67,7 +67,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
     ollamaNumCtx,
     setOllamaNumCtx
 }) => {
-    const getTempDescription = describeTemperature;
+    const istLokalerAnbieter = provider === 'ollama' || provider === 'openai-compatible'; // Nur lokale Modelle brauchen die Temperaturboeden
 
     return (
         <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 overflow-y-auto p-4 sm:p-8">
@@ -199,11 +199,11 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                 tooltipContent="Steuert die Kreativität des Modells. 0.0 ist maximal deterministisch (präzise). Höhere Werte erlauben kreativeres und abwechslungsreicheres Feedback."
                                 value={temperature}
                                 onChange={setTemperature}
-                                min={(provider === 'ollama' || provider === 'openai-compatible') ? String(TEMPERATURE_MINIMUM) : "0.0"}
+                                min={istLokalerAnbieter ? String(TEMPERATURE_MINIMUM) : "0.0"}
                                 max="2.0"
                                 step="0.1"
                                 decimals={1}
-                                description={getTempDescription(temperature, 'correction')}
+                                description={describeTemperature(temperature, 'correction')}
                                 defaultHint={String(TEMPERATURE_MINIMUM)}
                             />
 
@@ -256,12 +256,12 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                 tooltipContent="Steuert die Temperatur speziell für die Handschriften-Erkennung (OCR). Werte nahe 0.4 werden erzwungen, um lokale Schleifen bei unklaren Schriftzeichen zu verhindern."
                                 value={visionTemperature}
                                 onChange={setVisionTemperature}
-                                min={(provider === 'ollama' || provider === 'openai-compatible') ? String(VISION_TEMPERATURE_MINIMUM) : "0.0"}
+                                min={istLokalerAnbieter ? String(VISION_TEMPERATURE_MINIMUM) : "0.0"}
                                 max="2.0"
                                 step="0.1"
                                 decimals={1}
-                                description={getTempDescription(visionTemperature, 'vision')}
-                                defaultHint={String(VISION_TEMPERATURE_MINIMUM)}
+                                description={describeTemperature(visionTemperature, 'vision')}
+                                defaultHint={istLokalerAnbieter ? String(VISION_TEMPERATURE_MINIMUM) : "0.0"}
                             />
 
                             <ParameterSlider
