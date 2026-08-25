@@ -20,7 +20,7 @@ const FORMATS = {
     square: { width: 1080, height: 1080 },
     story: { width: 1080, height: 1920 },
     linkedin: { width: 1200, height: 1500 },
-    'linkedin-cover': { width: 1128, height: 191 },
+    'linkedin-cover': { width: 1584, height: 396 },
     youtube: { width: 1280, height: 720 }
 };
 
