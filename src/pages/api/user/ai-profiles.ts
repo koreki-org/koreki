@@ -9,6 +9,7 @@ import { isSameName, nameTakenMessage, toProfileHttpError } from '../../../lib/s
 import { toErrorMessage } from '../../../lib/error-message';
 import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from '@/lib/ai/temperature-guidance';
 import { pruefeProfilGrenze } from '@/lib/services/profile-limits';
+import { UserService } from '@/lib/services/user-service';
 
 /**
  * AI Profiles API Controller (Stage 18)
@@ -134,7 +135,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 });
             } else {
                 const eigene = await prisma.aiProfile.count({ where: { userId: dbUserId } });
-                pruefeProfilGrenze('KI', eigene, user.role);
+                pruefeProfilGrenze('KI', eigene, await UserService.grenzKontext(dbUserId, user.role));
 
                 profile = await prisma.aiProfile.create({
                     data: {

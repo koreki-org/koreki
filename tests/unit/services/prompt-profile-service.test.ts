@@ -14,6 +14,11 @@ jest.mock('../../../src/lib/prisma', () => ({
             upsert: jest.fn(),
             delete: jest.fn(),
             deleteMany: jest.fn(),
+        },
+        // Die Mengengrenze fragt beim Neuanlegen, ob der Nutzer einem Institut
+        // angehoert — dort gilt sie nicht.
+        membership: {
+            count: jest.fn().mockResolvedValue(0)
         }
     }
 }));

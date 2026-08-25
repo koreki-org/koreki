@@ -2,6 +2,7 @@ import prisma from '../prisma';
 import { getLogtoUserRoles, checkLogtoUserExists, getLogtoUserProfile } from '../logto-mgmt';
 import { logger } from '../logger';
 import { toErrorCode } from '../error-message';
+import { istUnbegrenzt, type GrenzKontext } from './profile-limits';
 
 /**
  * User Service (Industrial Identity Layer)
@@ -9,6 +10,27 @@ import { toErrorCode } from '../error-message';
  * Implements Just-In-Time (JIT) Provisioning and Profile Synchronization.
  */
 export class UserService {
+    /**
+     * Baut den Kontext fuer die Mengengrenze der Profil-Familien.
+     *
+     * Die Abfrage nach der Instituts-Zugehoerigkeit unterbleibt, wenn schon die
+     * Rolle unbegrenzt ist — ein Experte soll fuer jedes Speichern keine
+     * zusaetzliche Runde zur Datenbank ausloesen.
+     *
+     * Steht hier und nicht in `profile-limits`: jene Datei wird ueber
+     * `profile-naming` bis in die Hooks gezogen und muss deshalb frei von
+     * Prisma bleiben.
+     */
+    static async grenzKontext(userId: string, rolle?: string | null): Promise<GrenzKontext> {
+        if (istUnbegrenzt({ rolle })) return { rolle };
+
+        const imInstitut = await prisma.membership.count({
+            where: { userId, workspace: { type: 'ORGANIZATION' } }
+        });
+
+        return { rolle, imInstitut: imInstitut > 0 };
+    }
+
     /**
      * Ensures a user exists in the local database and is synchronized with Logto.
      * Uses atomic transactions and upsert logic to prevent race conditions.

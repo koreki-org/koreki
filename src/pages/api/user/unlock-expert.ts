@@ -4,6 +4,7 @@ import { withSecurity, requireUserId, AuthenticatedRequest } from '@/lib/securit
 import { checkAndDeductCredits } from '@/lib/billing';
 import { logger } from '@/lib/logger';
 import { toErrorMessage } from '@/lib/error-message';
+import { EXPERTEN_MODUS_CREDITS } from '@/lib/services/profile-limits';
 
 /**
  * Unlock Expert Mode API
@@ -29,7 +30,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         // --- NEW CENTRALIZED BILLING ---
         try {
-            await checkAndDeductCredits(logtoId, 25);
+            await checkAndDeductCredits(logtoId, EXPERTEN_MODUS_CREDITS);
         } catch (billingError) {
             return res.status(402).json({ error: toErrorMessage(billingError) });
         }
@@ -40,7 +41,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             data: { role: 'EXPERTE' }
         });
 
-        logger.info(`[Expert Unlock] User ${user.username} successfully upgraded to EXPERTE (25 credits deducted from active workspace).`);
+        logger.info(`[Expert Unlock] User ${user.username} successfully upgraded to EXPERTE (${EXPERTEN_MODUS_CREDITS} credits deducted from active workspace).`);
 
         return res.status(200).json({
             success: true,

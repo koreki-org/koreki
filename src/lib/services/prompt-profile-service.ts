@@ -2,6 +2,7 @@ import prisma from '../prisma';
 import { EXPERT_REGISTRY } from '@/prompts/expert-profiles';
 import { isSameName, nameTakenMessage } from './profile-naming';
 import { pruefeProfilGrenze } from './profile-limits';
+import { UserService } from './user-service';
 
 /**
  * Industrial Prompt Profile Service (Stage 16)
@@ -126,7 +127,7 @@ export const PromptProfileService = {
         // Nur beim Neuanlegen pruefen: ein bestehendes Profil zu
         // ueberschreiben ist kein weiterer Eintrag.
         if (!eigene.some(p => isSameName(p.name, data.name))) {
-            pruefeProfilGrenze('EXPERTISE', eigene.length, userRole);
+            pruefeProfilGrenze('EXPERTISE', eigene.length, await UserService.grenzKontext(userId, userRole));
         }
 
         return prisma.promptProfile.upsert({

@@ -44,11 +44,25 @@ const zahlAusUmgebung = (wert: string | undefined, standard: number): number => 
     return Number.isInteger(gelesen) && gelesen >= 0 ? gelesen : standard;
 };
 
-/** Eigene Einträge je Familie im Grundzustand. */
-export const PROFIL_GRENZE = zahlAusUmgebung(process.env.KOREKI_PROFIL_GRENZE, 1);
+/**
+ * Wie viel im Grundzustand frei ist.
+ *
+ * EINE Zahl fuer alle vier Familien UND fuer die selbst gebauten Skills. Fuenf
+ * getrennte Stellschrauben waeren fuenf Gelegenheiten, dass eine davon beim
+ * naechsten Preiswechsel vergessen wird — und fuer die Lehrkraft fuenf Zahlen,
+ * die sie sich merken muesste, statt einer Regel: eins von allem.
+ */
+export const FREI_GRENZE = zahlAusUmgebung(process.env.KOREKI_FREI_GRENZE, 1);
 
-/** Selbst gebaute Skills neben den mitgelieferten. */
-export const SKILL_GRENZE = zahlAusUmgebung(process.env.KOREKI_SKILL_GRENZE, 1);
+/**
+ * Was die Freischaltung kostet.
+ *
+ * Steht hier und nicht in der Route, weil der Preis an zwei Stellen erscheint:
+ * beim Abbuchen und im Hinweis am Knopf. Zwei von Hand gepflegte Zahlen laufen
+ * auseinander, und dann verspricht die Oberflaeche einen Preis, den die Kasse
+ * nicht nimmt.
+ */
+export const EXPERTEN_MODUS_CREDITS = 5;
 
 /**
  * Erkennungszeichen für die HTTP-Abbildung.
@@ -59,9 +73,20 @@ export const SKILL_GRENZE = zahlAusUmgebung(process.env.KOREKI_SKILL_GRENZE, 1);
  */
 export const GRENZE_MARKER = 'Experten-Modus';
 
+/**
+ * Woran haengt, ob jemand die Grenze spuert.
+ *
+ * `imInstitut` ist bewusst dabei: Eine Schule zahlt fuer ihre Lehrkraefte, und
+ * sie dann einzeln zum Freischalten zu schicken waere doppelt kassiert.
+ */
+export interface GrenzKontext {
+    rolle?: string | null;
+    imInstitut?: boolean;
+}
+
 /** Wer die Grenze nicht spürt. */
-export const istUnbegrenzt = (rolle?: string | null): boolean =>
-    rolle === 'EXPERTE' || rolle === 'ADMIN';
+export const istUnbegrenzt = (kontext: GrenzKontext): boolean =>
+    kontext.rolle === 'EXPERTE' || kontext.rolle === 'ADMIN' || kontext.imInstitut === true;
 
 /**
  * Wirft, wenn ein weiterer EIGENER Eintrag die Grenze überschreiten würde.
@@ -72,30 +97,28 @@ export const istUnbegrenzt = (rolle?: string | null): boolean =>
 export function pruefeProfilGrenze(
     familie: ProfilFamilie,
     anzahlEigene: number,
-    rolle?: string | null
+    kontext: GrenzKontext
 ): void {
-    if (istUnbegrenzt(rolle)) return;
-    if (anzahlEigene < PROFIL_GRENZE) return;
+    if (istUnbegrenzt(kontext)) return;
+    if (anzahlEigene < FREI_GRENZE) return;
 
-    const bezeichnung = BEZEICHNUNG[familie];
     throw new Error(
-        `Ohne ${GRENZE_MARKER} ${PROFIL_GRENZE === 1 ? 'ist ein' : `sind ${PROFIL_GRENZE}`} eigenes `
-        + `${bezeichnung} möglich. Für weitere schalte den ${GRENZE_MARKER} frei.`
+        `Ohne ${GRENZE_MARKER} ${FREI_GRENZE === 1 ? 'ist ein' : `sind ${FREI_GRENZE}`} eigenes `
+        + `${BEZEICHNUNG[familie]} möglich. Für weitere schalte den ${GRENZE_MARKER} frei.`
     );
 }
 
 /** Wirft, wenn ein Skill-Set mehr selbst gebaute Skills mitbringt als erlaubt. */
 export function pruefeSkillGrenze(
     customSkills: Record<string, unknown> | undefined | null,
-    rolle?: string | null
+    kontext: GrenzKontext
 ): void {
-    if (istUnbegrenzt(rolle)) return;
+    if (istUnbegrenzt(kontext)) return;
 
-    const anzahl = Object.keys(customSkills || {}).length;
-    if (anzahl <= SKILL_GRENZE) return;
+    if (Object.keys(customSkills || {}).length <= FREI_GRENZE) return;
 
     throw new Error(
-        `Ohne ${GRENZE_MARKER} ${SKILL_GRENZE === 1 ? 'ist ein' : `sind ${SKILL_GRENZE}`} eigener `
+        `Ohne ${GRENZE_MARKER} ${FREI_GRENZE === 1 ? 'ist ein' : `sind ${FREI_GRENZE}`} eigener `
         + `Skill möglich. Für weitere schalte den ${GRENZE_MARKER} frei.`
     );
 }

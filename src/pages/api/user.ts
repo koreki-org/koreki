@@ -127,6 +127,10 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     activeWorkspaceType: activeWorkspace?.type,
                     activeMembershipRole: activeMembership?.role,
                     canBuyCredits,
+                    // Instituts-Mitglieder sind von der Mengengrenze ausgenommen; ohne
+                    // diese Angabe boete die Oberflaeche ihnen einen Kauf an, der
+                    // nichts mehr freischaltet.
+                    imInstitut: hasOrgMembership,
                     hasGlobalAiKey: !!process.env.MISTRAL_API_KEY || !!process.env.MITTWALD_API_KEY || !!process.env.OPENAI_API_KEY
                 },
                 aiStatus: await getSystemAiStatus()

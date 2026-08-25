@@ -143,6 +143,7 @@ export interface User extends AktiveAuswahl {
     activeWorkspaceType?: 'PERSONAL' | 'ORGANIZATION';
     activeMembershipRole?: 'OWNER' | 'ADMIN' | 'MEMBER';
     canBuyCredits?: boolean;
+    imInstitut?: boolean;
     onboardingDone?: boolean;
     hasGlobalAiKey?: boolean;
 }

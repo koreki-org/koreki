@@ -8,6 +8,7 @@ import { logger } from '../../../lib/logger';
 import { isLocalInstance } from '../../../lib/env-context';
 import { toErrorMessage } from '../../../lib/error-message';
 import { pruefeProfilGrenze } from '@/lib/services/profile-limits';
+import { UserService } from '@/lib/services/user-service';
 
 /**
  * Grading Memories API Controller
@@ -164,7 +165,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             // Nur beim Neuanlegen pruefen: ein bestehender Schatz, der
             // ueberschrieben wird, ist kein weiterer Eintrag.
             if (!eigene.some(m => isSameName(m.name, validation.data.name))) {
-                pruefeProfilGrenze('ERFAHRUNG', eigene.length, user.role);
+                pruefeProfilGrenze('ERFAHRUNG', eigene.length, await UserService.grenzKontext(dbUserId, user.role));
             }
 
             const memory = await prisma.gradingMemory.upsert({

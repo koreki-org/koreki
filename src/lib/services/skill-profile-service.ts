@@ -2,6 +2,7 @@ import prisma from '../prisma';
 import { STANDARD_SKILL_PROFILES } from '../ai/standard-skills-profiles';
 import { isSameName, nameTakenMessage } from './profile-naming';
 import { pruefeProfilGrenze, pruefeSkillGrenze } from './profile-limits';
+import { UserService } from './user-service';
 
 /**
  * Industrial Skill Profile Service
@@ -89,7 +90,8 @@ export const SkillProfileService = {
     async upsertProfile(userId: string, data: { id?: string, name: string, activeSkillIds: string[], customSkills?: any }, userRole: string = 'USER') {
         // Gilt bei JEDEM Speichern, nicht nur beim Neuanlegen: sonst liesse
         // sich ein zweiter eigener Skill in ein bestehendes Set nachtragen.
-        pruefeSkillGrenze(data.customSkills, userRole);
+        const grenzKontext = await UserService.grenzKontext(userId, userRole);
+        pruefeSkillGrenze(data.customSkills, grenzKontext);
 
         const existingSystem = await prisma.skillProfile.findFirst({
             where: { name: data.name, isSystem: true }
@@ -139,7 +141,7 @@ export const SkillProfileService = {
         // Nur beim Neuanlegen pruefen: ein bestehendes Set zu ueberschreiben
         // ist kein weiterer Eintrag.
         if (!eigene.some(p => isSameName(p.name, data.name))) {
-            pruefeProfilGrenze('SKILLS', eigene.length, userRole);
+            pruefeProfilGrenze('SKILLS', eigene.length, grenzKontext);
         }
 
         return prisma.skillProfile.upsert({
