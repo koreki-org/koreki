@@ -75,6 +75,9 @@ export interface ChatAnfrage {
     max_tokens?: number;
     tools?: unknown[];
     tool_choice?: string;
+    /** Fester Startwert. Mistral nennt ihn `random_seed`, die OpenAI-Schnittstelle `seed`. */
+    random_seed?: number;
+    seed?: number;
     [key: string]: unknown;
 }
 

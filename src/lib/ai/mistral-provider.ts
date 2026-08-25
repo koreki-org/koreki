@@ -29,6 +29,7 @@ import type { ChatNachricht, ChatAnfrage, ChatAntwort, AntwortFormat, TokenVerbr
 import { pruefeWerkzeugAufruf } from './tool-validation';
 import { ueberDesktopProxy } from './desktop-proxy';
 import { parseLlmJson } from './llm-json';
+import { nutztFestenStartwert, SAMPLING_SEED } from './temperature-guidance';
 
 /**
  * Liest den Fehlertext einer abgelehnten Antwort für den Server-Log aus.
@@ -180,6 +181,12 @@ export async function executeMistralRequest(
         top_p: targetTemp === 0 ? 1.0 : targetTopP, // Safety: use 1.0 if greedy to avoid 422
         max_tokens: options.maxTokens ?? 4000
     };
+
+    // Gleiche Eingabe, gleiche Ausgabe — siehe SAMPLING_SEED. Ohne Startwert wuerfelt
+    // Mistral bei jedem Aufruf neu, auch bei niedriger Temperatur.
+    if (nutztFestenStartwert(action)) {
+        body.random_seed = SAMPLING_SEED;
+    }
 
     // Elevate max tokens if thinking is enabled to allow room for the reasoning chain
     const isThinking = options.enableThinking ?? false;

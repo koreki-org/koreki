@@ -15,7 +15,7 @@ import {
 import { VALIDATE_GRAPH_TOOL } from '../grading/graph-generator';
 import { logger } from '@/lib/logger';
 import { parseLlmJson } from './llm-json';
-import { FREETEXT_TEMPERATURE_MINIMUM, TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from './temperature-guidance';
+import { FREETEXT_TEMPERATURE_MINIMUM, nutztFestenStartwert, SAMPLING_SEED, TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from './temperature-guidance';
 import { isDesktopTarget } from '@/lib/env-context';
 import { AIProviderError } from './provider-error';
 import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
@@ -162,6 +162,11 @@ export async function executeOpenAIRequest(
         presence_penalty: presencePenalty,
         max_tokens: calculatedMaxTokens
     };
+
+    // Gleiche Eingabe, gleiche Ausgabe — siehe SAMPLING_SEED.
+    if (nutztFestenStartwert(action)) {
+        body.seed = SAMPLING_SEED;
+    }
     
     // Extraction actions use json_object instead of json_schema:
     // Qwen/vLLM on Mittwald does not reliably support strict json_schema mode for simple

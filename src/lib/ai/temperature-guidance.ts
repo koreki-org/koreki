@@ -1,6 +1,10 @@
 /**
- * Einordnung der Temperatur-Einstellung.
+ * Die Sampling-Vorgaben und ihre Einordnung.
  * 🌡️
+ *
+ * Hier stehen die Zahlen, die Oberflaeche und Inferenz-Layer GEMEINSAM brauchen.
+ * Wuerden sie an beiden Orten stehen, liefen sie auseinander — genau das war bis
+ * zum 25.08.2026 bei Temperatur, Top P und Vision-Temperatur der Fall.
  *
  * Die Temperatur steuert, wie stark das Modell variiert. Fuer eine Korrektur
  * ist das keine Geschmacksfrage: hohe Werte bedeuten, dass dieselbe Arbeit bei
@@ -98,4 +102,33 @@ export function describeTemperature(value: number, context: TemperatureContext):
 /** Warnt der Text die Lehrkraft vor diesem Wert? */
 export function isTemperatureRiskyForGrading(value: number, context: TemperatureContext): boolean {
     return context === 'vision' ? value > 0.7 : value > CORRECTION_TEMPERATURE_LIMIT;
+}
+
+/**
+ * Fester Startwert fuer die Zufallsauswahl des Modells.
+ *
+ * Gleiche Eingabe, gleiche Ausgabe: Ein Stapel, den eine Lehrkraft ein zweites Mal
+ * laufen laesst, liefert dieselben Zahlen statt neuer. Koreki sendete bis zum
+ * 25.08.2026 an keinen Provider einen Startwert — auch bei niedriger Temperatur
+ * wuerfelte das Modell damit bei jedem Aufruf neu.
+ *
+ * Was das NICHT leistet: Die Bewertung wird davon nicht richtiger, nur wiederholbar.
+ * Und bei Mixture-of-Experts-Modellen sowie serverseitiger Buendelung ist ein
+ * Startwert eine starke Tendenz, keine harte Zusicherung.
+ */
+export const SAMPLING_SEED = 42;
+
+/**
+ * Nicht jede Aktion darf sich wiederholen.
+ *
+ * Der Schueler-Simulator erzeugt fiktive Abgaben fuer die Kalibrierung — bewusst bei
+ * Temperatur 0.7, "High creativity for diverse answers". Ein fester Startwert lieferte
+ * dort bei jedem Aufruf DIESELBEN Schueler und machte den Assistenten wertlos.
+ *
+ * Der Parameter ist absichtlich `string` und nicht `AIAction`: Diese Datei soll von
+ * der Oberflaeche wie vom Inferenz-Layer importierbar bleiben, ohne einen Ringschluss
+ * ueber prompt-dispatch zu erzeugen.
+ */
+export function nutztFestenStartwert(action: string): boolean {
+    return action !== 'student-simulator';
 }

@@ -10,6 +10,7 @@ import { parseLlmJson, LlmJsonParseError } from './llm-json';
 import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
 import { berechneSamplingParameter } from './ollama-sampling';
 import { leseOllamaStream } from './ollama-stream';
+import { nutztFestenStartwert, SAMPLING_SEED } from './temperature-guidance';
 import { pruefeWerkzeugAufruf, MAX_TOOL_RETRIES } from './tool-validation';
 
 import type { AIAction } from './prompt-dispatch';
@@ -237,7 +238,9 @@ export async function executeOllamaRequest(
                     top_p: targetTopP,
                     num_predict: finalMaxTokens,
                     repeat_penalty: isVision ? 1.2 : 1.15,
-                    presence_penalty: settings.presencePenalty ?? 0.0
+                    presence_penalty: settings.presencePenalty ?? 0.0,
+                    // Gleiche Eingabe, gleiche Ausgabe — siehe SAMPLING_SEED.
+                    ...(nutztFestenStartwert(action) ? { seed: SAMPLING_SEED } : {})
                 }
             })
         });
