@@ -71,51 +71,44 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
                 </header>
 
                 <section className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-left transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 focus-within:border-primary/40 md:p-card-padding-sm">
-                    <div className="flex flex-col items-start gap-4 md:flex-row md:items-center">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                            <Zap className="h-6 w-6" aria-hidden="true" />
-                        </div>
-                        <div className="flex-1">
-                            <div className="mb-1 flex flex-wrap items-center gap-3">
-                                <h2 className="font-outfit text-lg font-bold tracking-tight text-foreground">Koreki Trial</h2>
-                                <Badge variant="light">Kostenlos testen</Badge>
-                            </div>
-                            <p className="mb-3 text-sm leading-snug text-muted-foreground">
-                                Alle Standard-Funktionen gratis testen mit Ihren 20 Start-Credits. Perfekt für den ersten Eindruck.
-                            </p>
-
-                            <OnboardingHighlights items={TRIAL_HIGHLIGHTS} className="mb-4" />
-
-                            <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
-                                <label
-                                    htmlFor={CONSENT_ID}
-                                    className="flex flex-1 cursor-pointer select-none items-center gap-3 rounded-xl border border-primary/20 bg-white p-3 text-sm font-medium leading-tight text-primary transition-colors duration-300 hover:border-primary/40"
-                                >
-                                    <Checkbox
-                                        id={CONSENT_ID}
-                                        checked={trialAgreement}
-                                        aria-describedby={CONSENT_HINT_ID}
-                                        onChange={(event) => setTrialAgreement(event.target.checked)}
-                                    />
-                                    <span>Ich bestätige, dass ich <strong>keine echten Schülerdaten</strong> verwende.</span>
-                                </label>
-
-                                <Button
-                                    size="lg"
-                                    className="w-full sm:w-auto"
-                                    disabled={!trialAgreement}
-                                    aria-describedby={CONSENT_HINT_ID}
-                                    onClick={() => onSelectMode('TRIAL', true)}
-                                >
-                                    Trial starten
-                                    <ChevronRight className="ml-2 h-5 w-5" aria-hidden="true" />
-                                </Button>
-                            </div>
-                            <p id={CONSENT_HINT_ID} className="mt-2 text-sm text-muted-foreground">
-                                Ohne diese Bestätigung lässt sich der Trial nicht starten.
-                            </p>
-                        </div>
+                    <div className="mb-1 flex flex-wrap items-center gap-3">
+                        <h2 className="font-outfit text-lg font-bold tracking-tight text-foreground">Koreki Trial</h2>
+                        <Badge variant="light">Kostenlos testen</Badge>
                     </div>
+                    <p className="mb-3 text-sm leading-snug text-muted-foreground">
+                        Alle Standard-Funktionen gratis testen mit Ihren 20 Start-Credits. Perfekt für den ersten Eindruck.
+                    </p>
+
+                    <OnboardingHighlights items={TRIAL_HIGHLIGHTS} className="mb-4" />
+
+                    <div className="flex flex-col items-stretch gap-4 sm:flex-row sm:items-center">
+                        <label
+                            htmlFor={CONSENT_ID}
+                            className="flex flex-1 cursor-pointer select-none items-center gap-3 rounded-xl border border-primary/20 bg-white p-3 text-sm font-medium leading-tight text-primary transition-colors duration-300 hover:border-primary/40"
+                        >
+                            <Checkbox
+                                id={CONSENT_ID}
+                                checked={trialAgreement}
+                                aria-describedby={CONSENT_HINT_ID}
+                                onChange={(event) => setTrialAgreement(event.target.checked)}
+                            />
+                            <span>Ich bestätige, dass ich <strong>keine echten Schülerdaten</strong> verwende.</span>
+                        </label>
+
+                        <Button
+                            size="lg"
+                            className="w-full sm:w-auto"
+                            disabled={!trialAgreement}
+                            aria-describedby={CONSENT_HINT_ID}
+                            onClick={() => onSelectMode('TRIAL', true)}
+                        >
+                            Trial starten
+                            <ChevronRight className="ml-2 h-5 w-5" aria-hidden="true" />
+                        </Button>
+                    </div>
+                    <p id={CONSENT_HINT_ID} className="mt-2 text-sm text-muted-foreground">
+                        Ohne diese Bestätigung lässt sich der Trial nicht starten.
+                    </p>
                 </section>
 
                 <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
