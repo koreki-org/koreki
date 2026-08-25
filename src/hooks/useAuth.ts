@@ -33,7 +33,6 @@ export const useAuth = () => {
                         appMode: 'PURE',
                         credits: 9999,
                         avvAccepted: true,
-                        canEditPrompts: true,
                         hasGlobalAiKey: process.env.NEXT_PUBLIC_HAS_GLOBAL_MISTRAL_KEY === 'true'
                     } as User,
                     aiStatus: { ocrBrakeActive: false, correctionBrakeActive: false, message: '' } as AiStatus,

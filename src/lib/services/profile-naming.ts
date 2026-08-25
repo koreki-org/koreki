@@ -1,3 +1,5 @@
+import { GRENZE_MARKER } from './profile-limits';
+
 /**
  * Namensregeln für Profil-Familien (Experten-Profile, KI-Profile, Skill-Sets,
  * Erfahrungsschätze)
@@ -128,6 +130,10 @@ export const toProfileHttpError = (
     }
 
     const message = err instanceof Error ? err.message : '';
+    // Die Mengengrenze ist kein Fehler des Nutzers, sondern eine Tarifgrenze:
+    // 403 mit der fachlichen Meldung, damit die Oberflaeche den Weg zum
+    // Experten-Modus anbieten kann statt einen Serverfehler zu zeigen.
+    if (message.includes(GRENZE_MARKER)) return { status: 403, message };
     if (message.includes('existiert bereits')) return { status: 409, message };
     if (message.includes('nicht gefunden')) return { status: 404, message };
 

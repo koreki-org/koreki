@@ -225,45 +225,43 @@ const Header: React.FC<HeaderProps> = ({
                     <div className="h-4 w-px bg-border hidden lg:block shrink-0" />
 
                     {/* Classic Labeled Configuration Pill Row - strictly horizontal on desktop */}
-                    {(isLocalInstance() || userData?.canEditPrompts) && (
-                        <div className="flex flex-row flex-nowrap shrink-0 items-center justify-start gap-1.5 sm:gap-2 w-auto bg-background/70 backdrop-blur-xl p-1.5 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 md:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none md:border-0 md:shadow-none md:ring-0">
-                            <ProfileConfigButton 
-                                icon={<GraduationCap size={14} />} 
-                                label="Expertise"
-                                value={activeProfileName || 'Standard'} 
-                                onClick={onShowPrompts!} 
-                                description="Expert Center: Fachprofile & Prompts verwalten" 
-                                isActive={!!activeProfileName && activeProfileName !== 'Standard'}
-                            />
-                            
-                            <ProfileConfigButton 
-                                icon={<Wrench size={14} />} 
-                                label="Skills"
-                                value={activeSkillsProfileName || 'MINT Standard'} 
-                                onClick={onShowSkills!} 
-                                description="Skills Center: Modulare AI-Kompetenzen konfigurieren" 
-                                isActive={!!activeSkillsProfileName && activeSkillsProfileName !== 'MINT Standard'}
-                            />
-                            
-                            <ProfileConfigButton 
-                                icon={<BookOpen size={14} />} 
-                                label="Erfahrung"
-                                value={activeGradingMemoryName || 'Standard-Korrektur'} 
-                                onClick={onShowGradingMemory!} 
-                                description="GradingMemory: Korrektur-Erfahrung kalibrieren" 
-                                isActive={!!activeGradingMemoryName && activeGradingMemoryName !== 'Standard-Korrektur'}
-                            />
-                            
-                            <ProfileConfigButton 
-                                icon={<Brain size={14} />} 
-                                label="Intelligenz"
-                                value={activeAiProfileName || 'Standard'} 
-                                onClick={onShowAiParams!} 
-                                description="Intelligenz: AI-Leistungskraft steuern" 
-                                isActive={!!activeAiProfileName && activeAiProfileName !== 'Standard'}
-                            />
-                        </div>
-                    )}
+                    <div className="flex flex-row flex-nowrap shrink-0 items-center justify-start gap-1.5 sm:gap-2 w-auto bg-background/70 backdrop-blur-xl p-1.5 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 md:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none md:border-0 md:shadow-none md:ring-0">
+                        <ProfileConfigButton 
+                            icon={<GraduationCap size={14} />} 
+                            label="Expertise"
+                            value={activeProfileName || 'Standard'} 
+                            onClick={onShowPrompts!} 
+                            description="Expert Center: Fachprofile & Prompts verwalten" 
+                            isActive={!!activeProfileName && activeProfileName !== 'Standard'}
+                        />
+                        
+                        <ProfileConfigButton 
+                            icon={<Wrench size={14} />} 
+                            label="Skills"
+                            value={activeSkillsProfileName || 'MINT Standard'} 
+                            onClick={onShowSkills!} 
+                            description="Skills Center: Modulare AI-Kompetenzen konfigurieren" 
+                            isActive={!!activeSkillsProfileName && activeSkillsProfileName !== 'MINT Standard'}
+                        />
+                        
+                        <ProfileConfigButton 
+                            icon={<BookOpen size={14} />} 
+                            label="Erfahrung"
+                            value={activeGradingMemoryName || 'Standard-Korrektur'} 
+                            onClick={onShowGradingMemory!} 
+                            description="GradingMemory: Korrektur-Erfahrung kalibrieren" 
+                            isActive={!!activeGradingMemoryName && activeGradingMemoryName !== 'Standard-Korrektur'}
+                        />
+                        
+                        <ProfileConfigButton 
+                            icon={<Brain size={14} />} 
+                            label="Intelligenz"
+                            value={activeAiProfileName || 'Standard'} 
+                            onClick={onShowAiParams!} 
+                            description="Intelligenz: AI-Leistungskraft steuern" 
+                            isActive={!!activeAiProfileName && activeAiProfileName !== 'Standard'}
+                        />
+                    </div>
                 </div>
 
                 {/* Right Side: Quick Action Utilities */}

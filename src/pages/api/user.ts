@@ -51,7 +51,6 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                         credits: 9999,
                         appMode,
                         avvAccepted: true,
-                        canEditPrompts: true,
                         canBuyCredits: false,
                         // Gegenstueck zum SaaS-Zweig: ohne diese Werte faende die Sitzung die
                         // zuletzt getroffene Profilwahl nur im localStorage desselben Browsers.
@@ -90,8 +89,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const isOrgWorkspace = activeWorkspace?.type === 'ORGANIZATION';
             const isOrgAdmin = activeMembership?.role === 'ADMIN' || activeMembership?.role === 'OWNER';
 
-            // Expert Button visibility: 🏢 Auto-Expert for all org members or trial mode users
-            const canEditPrompts = isSystemAdmin || isExpert || hasOrgMembership || user.appMode === 'TRIAL';
+            // Die vier Konfigurations-Modale stehen jedem offen. Begrenzt ist
+            // nicht der ZUGANG, sondern die MENGE — siehe lib/services/profile-limits.
             const canBuyCredits = isSystemAdmin || !isOrgWorkspace || isOrgAdmin;
 
             // 5. LOGIN LOGGING (Eingabekontrolle) 📝🛡️
@@ -127,7 +126,6 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     activeWorkspaceName: activeWorkspace?.name,
                     activeWorkspaceType: activeWorkspace?.type,
                     activeMembershipRole: activeMembership?.role,
-                    canEditPrompts,
                     canBuyCredits,
                     hasGlobalAiKey: !!process.env.MISTRAL_API_KEY || !!process.env.MITTWALD_API_KEY || !!process.env.OPENAI_API_KEY
                 },

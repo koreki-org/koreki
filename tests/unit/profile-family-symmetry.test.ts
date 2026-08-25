@@ -328,3 +328,40 @@ describe('Profil-Familien-Symmetrie: API-Routen', () => {
         });
     });
 });
+
+/**
+ * Die Mengengrenze auf der SCHREIB-Seite.
+ * 📦
+ *
+ * Seit dem 25.08.2026 begrenzt Koreki nicht mehr den ZUGANG zu den vier
+ * Modalen, sondern die MENGE der eigenen Eintraege. Eine Grenze, die in drei
+ * Familien gilt und in der vierten fehlt, ist keine Grenze — dort legt der
+ * Nutzer weiter unbegrenzt an, und die drei anderen wirken willkuerlich.
+ *
+ * Geprueft wird der SaaS-Neuanlagepfad. Er liegt nicht ueberall an derselben
+ * Stelle: zwei Familien haben einen Dienst, zwei legen in der Route selbst an.
+ * Genau deshalb braucht es hier einen Waechter und nicht das blosse Vertrauen
+ * darauf, dass beim naechsten Mal alle vier bedacht werden.
+ */
+const SCHREIBPFADE: Record<string, string> = {
+    'Expertise-Profile': 'lib/services/prompt-profile-service.ts',
+    'Skill-Sets': 'lib/services/skill-profile-service.ts',
+    'Erfahrungsschätze': 'pages/api/user/grading-memories.ts',
+    'KI-Profile': 'pages/api/user/ai-profiles.ts'
+};
+
+describe('Profil-Familien-Symmetrie: Mengengrenze', () => {
+    it.each(Object.entries(SCHREIBPFADE))('%s prueft die Grenze beim Neuanlegen', (_familie, datei) => {
+        const quelle = readFileSync(join(SRC_DIR, ...datei.split('/')), 'utf8');
+        expect(quelle).toContain('pruefeProfilGrenze');
+    });
+
+    /**
+     * Die Skills liegen als JSON IM Skill-Set, sind also keine eigene Familie —
+     * ihre Grenze haengt deshalb allein an dieser einen Stelle.
+     */
+    it('begrenzt auch die selbst gebauten Skills', () => {
+        const quelle = readFileSync(join(SRC_DIR, 'lib', 'services', 'skill-profile-service.ts'), 'utf8');
+        expect(quelle).toContain('pruefeSkillGrenze');
+    });
+});

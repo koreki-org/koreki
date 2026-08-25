@@ -77,14 +77,16 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
             )}
 
             {/* Expert Unlock Button */}
-            {!isLocalInstance() && !userData?.canEditPrompts && userData?.role === 'USER' && (
+            {/* Der Experten-Modus hebt die Mengengrenze auf; die vier Modale selbst
+                stehen jedem offen. Siehe lib/services/profile-limits. */}
+            {!isLocalInstance() && userData?.role === 'USER' && (
                 <Button
                     variant="outline"
                     size="sm"
                     onClick={onUnlockExpert}
                     disabled={upgrading}
                     className="relative group bg-primary/10 text-primary hover:bg-primary hover:text-white border border-primary/20 rounded-full px-3.5 h-8 font-bold text-xs transition-all animate-pulse hover:animate-none shrink-0"
-                    title="Experten-Modus für 25 Credits freischalten"
+                    title="Experten-Modus für 25 Credits: unbegrenzt eigene Profile"
                 >
                     <Sparkles size={14} className="mr-1.5 text-primary group-hover:text-white" />
                     Experte werden
@@ -92,10 +94,11 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                     <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 w-48 bg-foreground text-white text-xxs p-3 rounded-xl shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none z-[100] transition-opacity">
                         <p className="font-bold mb-1 text-primary">💎 EXPERTEN-MODUS (25 CR)</p>
                         <ul className="space-y-0.5 text-background/80">
-                            <li>• Alle Fachprofile nutzen</li>
-                            <li>• Eigene Prompts erstellen</li>
-                            <li>• Volle Inhaltskontrolle</li>
+                            <li>• Unbegrenzt eigene Expertise-Profile</li>
+                            <li>• Unbegrenzt Skill-Sets, Erfahrungsschätze, KI-Profile</li>
+                            <li>• Unbegrenzt eigene Skills</li>
                         </ul>
+                        <p className="mt-2 text-background/60">Ohne Freischaltung: je ein eigener Eintrag.</p>
                     </div>
                 </Button>
             )}

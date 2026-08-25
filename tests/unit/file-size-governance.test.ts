@@ -149,7 +149,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // 342 -> 316: die Vorschau-Zeichnung ist nach lib/redaction-preview gezogen
     // (architectural-vision §6.1 — die Komponente steuert nur noch, WANN gezeichnet wird).
     'components/RedactionModal.tsx': 316,
-    'components/layout/AppHeader.tsx': 337,
+    'components/layout/AppHeader.tsx': 335,
     // +24 gegenueber 306: Import-Knopf aus dem Inhaltsbereich in die
     // Seitenleiste gezogen und Ablagezone ergaenzt — beides zur Angleichung an
     // die drei Profil-Seitenleisten.

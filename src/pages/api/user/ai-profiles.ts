@@ -8,6 +8,7 @@ import { LocalAiProfileService } from '../../../lib/services/local-profile-servi
 import { isSameName, nameTakenMessage, toProfileHttpError } from '../../../lib/services/profile-naming';
 import { toErrorMessage } from '../../../lib/error-message';
 import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from '@/lib/ai/temperature-guidance';
+import { pruefeProfilGrenze } from '@/lib/services/profile-limits';
 
 /**
  * AI Profiles API Controller (Stage 18)
@@ -132,6 +133,9 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     data
                 });
             } else {
+                const eigene = await prisma.aiProfile.count({ where: { userId: dbUserId } });
+                pruefeProfilGrenze('KI', eigene, user.role);
+
                 profile = await prisma.aiProfile.create({
                     data: {
                         ...data,
