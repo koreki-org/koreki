@@ -33,11 +33,20 @@ Dieses Dokument definiert das Erscheinungsbild und die Interaktionsstandards fü
 - **Next.js 15 Link Compliance**: Nutze niemals verschachtelte `<a>` Tags innerhalb von `<Link>`, es sei denn, `legacyBehavior` ist explizit gefordert. Styles gehören direkt auf die `Link`-Komponente.
 
 ## Global Stacking Context (Z-Index)
-Um visuelle Überlagerungen (Clipping) zu verhindern, folgt Koreki einer strikten Hierarchie:
+Um visuelle Überlagerungen (Clipping) zu verhindern, folgt Koreki einer Hierarchie aus **Bändern**. Zwischen den Bändern ist die Reihenfolge unverhandelbar; innerhalb eines Bandes entscheidet der konkrete Wert, welcher Dialog über welchem liegt.
+
 - **Z-0**: Footer / Hintergrund-Elemente.
 - **Z-10**: Main Content Shell.
 - **Z-20**: Active Layout Content (Navigation / Cards).
-- **Z-9999**: Modals & Overlays (stets via Portals am Body).
+- **Z-100 – Z-2300**: Verankerte Overlays — Dropdowns, Tooltips, Popover-Menüs, Kontextleisten.
+- **Z-6000 – Z-10000**: Modals, Drawers & Lightboxen (stets via Portals am Body). Ein Dialog, der über einem anderen liegen muss, bekommt einen höheren Wert **innerhalb** dieses Bandes.
+- **Z-10001**: Flüchtige Meldungen (Toasts, `ToastHost`). Die oberste Ebene überhaupt.
+
+> **Warum Meldungen ganz oben liegen.** Ein Toast berichtet über das, was gerade *in* einem Dialog geschehen ist — „Profil erfolgreich gespeichert". Läge er darunter, verschwände genau die Rückmeldung hinter genau dem Fenster, das sie ausgelöst hat. Am 25.08.2026 war das der Fall: Der Toast stand auf `z-9999` und verließ sich darauf, später im Dokument zu stehen als die Dialoge — `AVVUploadModal` und `QuickStartModal` lagen aber schon auf `z-10000`.
+>
+> Der oberste Rang ist testgesichert: [tests/unit/components/ToastHost.test.tsx](../../../tests/unit/components/ToastHost.test.tsx) liest **alle** `z-[N]` in `src/` und verlangt, dass die Meldungs-Ebene strikt darüber liegt. Wer künftig ein Modal höher legt, bekommt einen roten Test statt einer unsichtbaren Meldung.
+
+> **Zum Bestand.** Die Werte im Baum sind historisch gewachsen — es gibt derzeit 14 verschiedene. Die Bänder oben beschreiben, wo eine Ebene **hingehört**, nicht jede Zahl, die existiert. Wer eine neue Ebene braucht, ordnet sie einem Band zu, statt eine weitere Zahl zu erfinden.
 
 ## Responsive First
 - **Mobile First Spacing**: Richte Abstände primär mobil-first aus (z. B. `px-6`) und füge die Desktop-Tokens mit dem standardmäßigen Tailwind-Präfix `md:` hinzu (z. B. `md:px-page-inline`).
@@ -249,6 +258,30 @@ Das Branding von Koreki folgt strikten typografischen Regeln:
 - **Z-Index & Stacking**: Niemals Modals inline in Pages implementieren. Sie MÜSSEN über **React Portals** (`ReactDOM.createPortal`) an den `document.body` gehängt werden.
 - **Rationale**: Dies verhindert "Clipping" durch CSS-Transformationen oder Animationen in Eltern-Containern (Stacking Context).
 - **UX**: Den Body-Scroll beim Öffnen sperren (`overflow: hidden`).
+- **Barrierefreiheit**: Portal-Montage, Scroll-Sperre und Fokusfalle kommen aus dem Hook `useDialogA11y`. Ohne Fokusfalle läuft der Tastatur-Fokus hinter das Overlay weiter — der Nutzer bedient dann Elemente, die er nicht sieht. Wer schließbar ist, nimmt zusätzlich `useEscapeKey`; ein **blockierender** Dialog bekommt bewusst keinen Escape-Ausgang, den es fachlich nicht gibt.
+- **Scroll-Sperre zurücksetzen**: Beim Aufräumen den **vorher gemerkten** `overflow`-Wert wiederherstellen, nicht hart auf `unset`. Sonst hebt ein schließender Dialog die Sperre eines noch offenen mit auf.
+
+---
+
+## Meldungen & Rückfragen
+
+Koreki spricht mit der Lehrkraft **nie über den Browser**. `alert()` und `confirm()` sehen aus wie Meldungen des Betriebssystems, tragen keine Warnfarbe und lassen sich weder gestalten noch übersetzen: eine belanglose Nachfrage sieht darin genauso aus wie ein endgültiger Verlust.
+
+| Zweck | Aufruf | Import |
+|---|---|---|
+| Bestätigung („gespeichert") | `meldeErfolg(text)` | `@/lib/notify` |
+| Offene Aufgabe („Bitte gib einen Namen ein") | `meldeHinweis(text)` | `@/lib/notify` |
+| Fehlschlag | `meldeFehler(text)` | `@/lib/notify` |
+| Rückfrage vor folgenreicher Aktion | `askConfirmation({ title, message })` | `@/lib/confirm-dialog` |
+| Rückfrage vor dem Überschreiben | `confirmOverwrite(label, name)` | `@/lib/confirm-dialog` |
+
+### Regeln
+- **Drei Tonlagen, nicht zwei.** `hinweis` steht zwischen Erfolg und Fehler. Ein fehlender Name ist eine offene Aufgabe, kein Defekt — rot signalisiert der Lehrkraft, etwas sei kaputt.
+- **Erfolg blendet sich aus, Fehler bleiben stehen.** Fehler enthalten oft, was zu tun ist; einer, der sich vor dem Lesen schließt, ist schlimmer als keiner.
+- **Kein Modal für eine Erfolgsmeldung.** Ein Dialog, der „gespeichert" meldet und einen Klick auf OK verlangt, bestraft die Lehrkraft dafür, dass etwas geklappt hat.
+- **Die Fläche eines Toasts ist undurchsichtig.** Die Tonlage trägt der farbige Streifen links, nicht eine Einfärbung der Fläche. Grund: `cn()` fasst über `tailwind-merge` zusammen und behält von zwei `bg-*`-Klassen nur die letzte — `bg-background` neben `bg-success/5` ergibt fünf Prozent Deckkraft.
+
+Beide Regeln haben Wächter: [tests/unit/confirm-dialog-governance.test.ts](../../../tests/unit/confirm-dialog-governance.test.ts) hält `alert(` im gesamten `src/` auf null und friert die verbliebenen `confirm(`-Altfälle als Ratsche ein.
 
 ## Tabs & Dropdown Usage
 
@@ -276,5 +309,5 @@ Das Branding von Koreki folgt strikten typografischen Regeln:
 ## Industrial Maintenance Protocol 🏮
 1. **Consistency First**: Neue Komponenten müssen das bestehende Design-Vokabular (Rundungen, Schatten, HSL) von Koreki nutzen.
 2. **Refactor-Trigger**: Fällt eine Komponente durch das LOC-Limit (> 300 Zeilen), wird sie unmittelbar modularisiert.
-3. **No-Bypass**: Manuelle z-index Vergaben außerhalb der globalen Strategie sind untersagt.
+3. **No-Bypass**: Manuelle z-index Vergaben außerhalb der Bänder des *Global Stacking Context* sind untersagt. Wer eine neue Ebene braucht, ordnet sie einem Band zu, statt eine weitere Zahl zu erfinden.
 
