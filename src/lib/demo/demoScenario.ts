@@ -24,6 +24,18 @@ import { buildModelSolutionFromTasks } from '@/lib/task-utils';
  * eindeutiger Fachfehler, den eine vernuenftig kalibrierte Korrektur zuverlaessig als
  * falsch erkennen sollte.
  *
+ * In Aufgabe 2 ist der letzte Satz seiner Antwort woertlich an den Punkteblock
+ * "Paedagogischer Nutzen" angelehnt. Er lautete bis zum 25.08.2026 "Ausserdem ist es gut
+ * fuers Klima" und war damit die einzige Stelle des Szenarios, die WEDER klar erfuellt
+ * NOCH klar verfehlt war — gegen Mistral schwankte die Bewertung dort zwischen 0, 1 und 2
+ * Punkten. Ein Demo-Szenario darf keine Ermessensfrage enthalten: Es zeigt den Ablauf,
+ * nicht die Grenzen der KI.
+ *
+ * Gemessen nach der Aenderung (5 Laeufe, qwen3.6:35b, mit festem Startwert): stabil
+ * 3 von 6, Spanne 0. Bewusst steht hier KEINE zugesagte Punktzahl wie bei Aufgabe 1 —
+ * die exakte Zahl bleibt Sache des Modells, weil keine Sandbox sie belegt. Zugesichert
+ * ist nur, dass sie sich zwischen zwei Laeufen nicht mehr aendert.
+ *
  * Schueler #2 erreicht in Aufgabe 1 deterministisch 2 von 3 Punkten. Entscheidend ist
  * die ART des Fehlers, gemessen an der Engine:
  *
@@ -76,7 +88,7 @@ export function buildDemoScenario(): DemoScenario {
         {
             name: "Aufgabe 2",
             maxPoints: 6,
-            content: `### Aufgabe 2: Wirtschaftlichkeit der Anlage (AFB II) (6 P) ###\nFragestellung: Erläutere, warum sich die Investition in eine eigene Solaranlage für die Schule langfristig lohnen kann.\n\nMusterlösung: Erwartet wird eine begründete Erläuterung ökonomischer und pädagogischer Vorteile.\n- Kernmechanismus (2P): Der Nutzen entsteht vor allem durch Eigenverbrauch — die Schule muss weniger teuren Strom vom Netzbetreiber zukaufen, statt mit der Einspeisevergütung Gewinn zu erzielen (diese liegt heute unter dem Bezugspreis, nicht darüber).\n- Weiterer Vorteil (2P): Unabhängigkeit von steigenden Energiepreisen und/oder korrekt eingeordnete Einspeisevergütung als Zusatzeinnahme (nicht als Hauptgewinnquelle).\n- Pädagogischer Nutzen (2P): Die Schule wirkt als Vorbild, und die Schülerinnen und Schüler lernen im Unterricht an der eigenen Anlage.`
+            content: `### Aufgabe 2: Wirtschaftlichkeit der Anlage (AFB II) (6 P) ###\nFragestellung: Erläutere, warum sich die Investition in eine eigene Solaranlage für die Schule langfristig lohnen kann.\n\nMusterlösung: Erwartet wird eine begründete Erläuterung ökonomischer und pädagogischer Vorteile.\n- Kernmechanismus (2P): Der Nutzen entsteht vor allem durch Eigenverbrauch — die Schule muss weniger teuren Strom vom Netzbetreiber zukaufen, statt mit der Einspeisevergütung Gewinn zu erzielen (diese liegt heute unter dem Bezugspreis, nicht darüber).\n- Weiterer Vorteil (2P): Die Schule macht sich unabhängiger von steigenden Strompreisen — oder: Der Verkauf überschüssigen Stroms bringt weniger ein als der vermiedene Zukauf und trägt deshalb nur ergänzend bei.\n- Pädagogischer Nutzen (2P): Die Schule wirkt als Vorbild, und die Schülerinnen und Schüler lernen im Unterricht an der eigenen Anlage.`
         },
         {
             name: "Aufgabe 3",
@@ -92,7 +104,7 @@ export function buildDemoScenario(): DemoScenario {
     const modelSolutionContext = `Die Schule plant eine eigene Photovoltaikanlage auf dem Dach der Sporthalle. Alle drei Aufgaben drehen sich um dieses gemeinsame Projekt "Solaranlage für die Schule" — jede aus einer anderen fachlichen Perspektive (Physik/Mathe, Wirtschaft, Ethik).`;
     const modelSolution = buildModelSolutionFromTasks(modelSolutionContext, tasksLayout);
 
-    const studentTextNele = `=== TASK: Aufgabe 1 ===\nIch nutze die Formel E = A · η · H.\nEinsetzen: E = 40 m² · 0,2 · 1200 kWh/m²\nE = 9600 kWh\n\n=== TASK: Aufgabe 2 ===\nEine Solaranlage lohnt sich vor allem, weil man den Strom teurer verkaufen kann, als man ihn selbst einkaufen müsste. Für den Strom, den die Schule ins Netz einspeist, gibt es mehr Geld, als sie für Strom vom Anbieter zahlen würde — deswegen macht man damit Gewinn, egal wie viel man selbst verbraucht. Außerdem ist es gut fürs Klima.\n\n=== TASK: Aufgabe 3 ===\nDie Aussage stimmt teilweise. Eine einzelne Anlage auf einem Dach spart nur sehr wenig CO2 im Vergleich zu dem, was weltweit ausgestoßen wird. Trotzdem finde ich, dass es nicht „gar nichts“ bringt: Wenn viele Schulen das machen, kommt schon mehr zusammen, und die Schüler lernen dabei, wie sowas funktioniert. Das kann später mal wichtiger sein als der direkte CO2-Effekt.`;
+    const studentTextNele = `=== TASK: Aufgabe 1 ===\nIch nutze die Formel E = A · η · H.\nEinsetzen: E = 40 m² · 0,2 · 1200 kWh/m²\nE = 9600 kWh\n\n=== TASK: Aufgabe 2 ===\nEine Solaranlage lohnt sich vor allem, weil man den Strom teurer verkaufen kann, als man ihn selbst einkaufen müsste. Für den Strom, den die Schule ins Netz einspeist, gibt es mehr Geld, als sie für Strom vom Anbieter zahlen würde — deswegen macht man damit Gewinn, egal wie viel man selbst verbraucht. Je mehr man einspeist, desto mehr verdient die Schule — deshalb sollte sie den Strom gar nicht selbst verbrauchen, sondern alles ins Netz geben.\n\n=== TASK: Aufgabe 3 ===\nDie Aussage stimmt teilweise. Eine einzelne Anlage auf einem Dach spart nur sehr wenig CO2 im Vergleich zu dem, was weltweit ausgestoßen wird. Trotzdem finde ich, dass es nicht „gar nichts“ bringt: Wenn viele Schulen das machen, kommt schon mehr zusammen, und die Schüler lernen dabei, wie sowas funktioniert. Das kann später mal wichtiger sein als der direkte CO2-Effekt.`;
 
     // Aufgabe 1: Formel korrekt genannt, Rechenweg in sich fehlerfrei — aber mit
     // H = 1000 statt 1200 kWh/m² aus der Aufgabenstellung abgelesen. Ergebnis-Punkt

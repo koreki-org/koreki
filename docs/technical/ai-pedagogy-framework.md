@@ -3,7 +3,7 @@ title: "AI Pedagogy Framework (V13/VRE)"
 description: "Framework für faire, präzise und pädagogisch sinnvolle KI-Korrekturen via VRE Parameter-Steuerung"
 author: "@principal_architect"
 date: "2026-04-06"
-last_updated: "2026-06-13"
+last_updated: "2026-08-25"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -74,7 +74,16 @@ Koreki implementiert das **Scratchpad-Verfahren (Chain-of-Thought)** zur drastis
 *   **Der "correctionNotes"-Puffer**: Vor der finalen numerischen Festlegung der Punkte (`pointsObtained`) wird die KI über das JSON-Schema gezwungen, ein internes Feld `"correctionNotes"` zu befüllen.
 *   **Warum dieser Ablauf entscheidend ist:** Da Large Language Models sequentiell (Wort für Wort von links nach rechts) generieren, neigen sie zu Berechnungsfehlern oder voreiligen Schlüssen, wenn sie sofort eine Zahl (`pointsObtained`) ausgeben müssen. 
 *   **Kognitiver Schmierzettel:** Durch das Vorschalten des Textfeldes `"correctionNotes"` führt die KI den logischen Abgleich (Fakten, Syntax oder schrittweise Berechnungen) explizit durch, *bevor* die Bewertung deterministisch festgelegt wird.
-*   **Backend-Robustheit:** Unser isomorpher JSON-Parser in `ai-orchestrator.ts` ist so konzipiert, dass er die zusätzliche `"correctionNotes"`-Eigenschaft beim Mapping auf das Koreki-Datenmodell verwirft. Dadurch bleibt das System zu 100 % abwärtskompatibel, und es entstehen keinerlei Parsing-Fehler oder Performance-Overheads im Backend.
+*   **Der Notizzettel kommt an — seit dem 24.08.2026.**
+
+> [!WARNING]
+> **Frühere Fassungen dieses Abschnitts beschrieben das Verwerfen des Feldes als Entwurfsziel** („der Parser verwirft die zusätzliche `correctionNotes`-Eigenschaft beim Mapping, dadurch bleibt das System zu 100 % abwärtskompatibel"). Das war kein Entwurfsziel, sondern ein Fehler: `mapModelTask` in `correction-mapping.ts` baute das Ergebnis neu auf und ließ das Feld weg — bei **jeder** Textaufgabe.
+>
+> Die Folge widersprach genau dem Zweck, den dieser Abschnitt beschreibt: Der Denkschritt fand statt (gemessen 899 bis 4221 Zeichen, auch ohne besondere Aufforderung), aber niemand konnte ihn sehen. Die Lehrkraft bekam eine Punktzahl ohne Herleitung.
+>
+> Behoben, mit einem Wächter dagegen ([correction-notes-governance.test.ts](../../tests/unit/correction-notes-governance.test.ts)). Die Notizen erscheinen bei Textaufgaben im Aufklapper der Korrekturkarte — Einzelheiten in [correction-workflow.md](./correction-workflow.md#31-der-notizzettel-des-modells-correctionnotes).
+>
+> **Nicht überdehnen:** Der Verlust erklärt *nicht* die bekannte Nachsicht bei dünnen Antworten. Er passierte, nachdem die Punkte feststanden.
 
 ---
 
@@ -90,10 +99,67 @@ Bei der Texterkennung (Vision) und Layout-Analyse (Mapping) wird eine **Temperat
 > **Ausnahme für Lokale Ollama-Modelle (Inferenz-Stabilität):** 
 > Bei der lokalen Ausführung über Ollama ( z. B. mit `gemma4` oder `qwen`) wird bei `clean-and-map` und `clean-and-analyze` eine höhere Mindesttemperatur verwendet (Gemma/MoE: `0.5`, Qwen: `0.3`, Sonstige: `0.2`), da extrem niedrige Temperaturen bei lokalen Modellen im JSON-Modus zu Endlosschleifen oder Inferenz-Abstürzen führen können.
 
-### Phase 2: Die "Pädagogische Wärme" (Grading-Kulanz)
-Bei der inhaltlichen Bewertung (Correction) wird eine **Temperature von 0.7** verwendet.
-*   **Rational:** Nur hier ist "Fuzzy-Logic" erwünscht, um semantische Ähnlichkeiten zu erkennen (z.B. "höhere Geschwindigkeit" vs. "Durchsatz"). Ohne diese Wärme würde die KI zu einer pedantischen Wort-Suchmaschine degradieren.
+### Phase 2: Die Bewertung (Grading)
+Bei der inhaltlichen Bewertung (Correction) wird seit dem 25.08.2026 eine **Temperature von 0.1** verwendet (`TEMPERATURE_MINIMUM`).
 
+*   **Rational:** Dieselbe Arbeit soll bei zweimaligem Durchlauf dieselbe Note bekommen. Die Richtigkeit steuert die Lehrkraft über Expertise-Profil, Skills und Erfahrungsschatz — die Maschine hat reproduzierbar zu sein, damit diese Steuerung überhaupt greift.
+
+> [!IMPORTANT]
+> **Die frühere Begründung für 0.7 hat die Messung nicht gestützt.** Sie lautete: Ohne „pädagogische Wärme" degradiere die KI zu einer pedantischen Wort-Suchmaschine und erkenne semantische Ähnlichkeiten nicht mehr.
+>
+> Geprüft am 24.08.2026 mit einer vollständigen Antwort, die bewusst in eigenen Worten und in anderer Reihenfolge als die Musterlösung formuliert war: Sie behielt bei Temperatur 0.0 **zehnmal von zehn** die volle Punktzahl — genauso wie bei 0.3. Die befürchtete Wörtlichkeit trat nicht ein.
+>
+> Die niedrige Temperatur räumte dagegen Ausreißer weg, die selbst sandbox-gestützte Rechenaufgaben trafen. Gemessen gegen `qwen3.6:35b`; gegen Mistral steht die Gegenprobe aus.
+
+**Ausnahme Freitext:** Die KI-Zweitmeinung behält eine Untergrenze von 0.2 (`FREETEXT_TEMPERATURE_MINIMUM`). Sie ist die einzige Aktion, die in Prosa antwortet — ohne Schema, das die Ausgabe zum Ende zwingt. Dort können lokale Modelle bei zu kalter Einstellung an Wiederholungen hängen bleiben.
+
+
+---
+
+## 7. Der Erwartungshorizont: Leistung nennen, nicht Themengebiet
+
+Der wirksamste Hebel auf die Bewertungsschärfe liegt **nicht** im Prompt, sondern in der
+Musterlösung. Gemessen am 25.08.2026: Eine einzige umformulierte Zeile senkte die Rate
+unverdient voller Punktzahlen von 7 von 10 auf 3 von 10 — stärker als sechs durchgemessene
+Prompt-Varianten zusammen, deren Unterschiede am Ende im Rauschen lagen.
+
+### Die Regel
+
+Ein Punkteblock nennt, **was der Schüler leisten muss** — nicht, **worum es geht**.
+
+| | |
+| :--- | :--- |
+| ❌ unscharf | „Pädagogischer Nutzen (2P): Vorbild- und Bildungsfunktion im Bereich **Klimaschutz**." |
+| ✅ scharf | „Pädagogischer Nutzen (2P): Die Schule wirkt als Vorbild, und die Schülerinnen und Schüler lernen im Unterricht an der eigenen Anlage." |
+
+### Warum das so stark wirkt
+
+Das Themenwort baut eine Brücke. Ein Schüler, der nur „man muss etwas gegen den
+**Klimawandel** tun" schreibt, hat von Vorbild- oder Bildungsfunktion nichts gesagt — aber
+die beiden Wörter liegen nebeneinander, und das Modell verbindet sie. In seinen eigenen
+Notizen liest sich das dann so:
+
+> „Der zweite Aspekt wird **implizit** durch 'wichtig für die Umwelt' abgedeckt"
+
+Es erfindet nichts. Es rechnet thematische Nähe als Erfüllung an. Je konkreter der Block
+die geforderte Aussage benennt, desto weniger Raum bleibt für dieses „implizit".
+
+### Für die Praxis
+
+*   Formuliere jeden Block als **Aussage, die im Schülertext stehen muss** — nicht als
+    Überschrift eines Themenfelds.
+*   Vermeide das Fachgebiet als Stichwort im Block, wenn die geforderte Leistung enger
+    ist als das Gebiet.
+*   Das Demo-Szenario in `src/lib/demo/demoScenario.ts` ist die Vorlage, an der neue
+    Nutzer das ablesen. Seine sechs Blöcke sind bewusst in dieser Form geschrieben.
+
+> [!NOTE]
+> **Daraus folgt auch, was ein Demo-Szenario nicht enthalten darf.** Bis zum 25.08.2026
+> endete eine der Beispielantworten mit „Außerdem ist es gut fürs Klima" — ein Satz, der
+> den Block weder klar erfüllte noch klar verfehlte. Gegen Mistral schwankte die Bewertung
+> dort zwischen 0, 1 und 2 Punkten. Ein Demo-Szenario zeigt den **Ablauf**, nicht die
+> Grenzen des Ermessens; Grenzfälle gehören in die Messreihe, nicht in die Vorführung.
+> Der Satz ist ersetzt durch einen, der den Punkteblock eindeutig erfüllt.
 
 ---
 
