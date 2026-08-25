@@ -32,7 +32,8 @@
     "test:determinism:ollama": "cross-env KOREKI_TEST_PROVIDER=ollama KOREKI_REAL_FETCH=true jest tests/integration/CalcDeterminism.test.ts",
     "prepare": "husky",
     "test:mutation": "stryker run",
-    "test:mutation:full": "stryker run --force"
+    "test:mutation:full": "stryker run --force",
+    "test:bias": "cross-env TS_NODE_PROJECT=docs/internal/bias-tests/tsconfig.json ts-node -T -r tsconfig-paths/register docs/internal/bias-tests/run_register_bias_check.ts"
   },
   "dependencies": {
     "@logto/next": "^4.2.9",

@@ -23,11 +23,11 @@ Trotz hoher technologischer Standards kann die KI fehlerhafte Ergebnisse liefern
 *   **Zeichenlimit:** Es gelten die systemseitigen Fair-Use-Limits (siehe AVV).
 
 ## 5. Risikovermeidung & Antidiskriminierung
-Das System wurde auf die Vermeidung von Bias (Voreingenommenheit) geprüft. Dennoch sollten Lehrkräfte darauf achten, dass die KI keine diskriminierenden Muster (z.B. aufgrund von Ausdrucksweise oder Herkunft) reproduziert. Bei Verdacht auf systematische Fehlbehandlung ist der Support zu informieren.
+Das System wird stichprobenartig auf sprachbedingte Ungleichbehandlung geprüft. Im Test vom 23.08.2026 wurde dieselbe fachliche Leistung in Standardsprache, in einfacher Umgangssprache und in nicht-muttersprachlicher Formulierung identisch bewertet (je 4 von 4 Punkten, keine Abweichung). Eine systematische Prüfung über mehrere Fächer, Aufgabentypen und Modelle hinweg steht aus. Lehrkräfte sollten darauf achten, dass die KI keine diskriminierenden Muster (z.B. aufgrund von Ausdrucksweise oder Herkunft) reproduziert. Bei Verdacht auf systematische Fehlbehandlung ist der Support zu informieren.
 
 ## 6. Wartung & Updates
 *   Das Gesamtsystem wird **kontinuierlich/agil** aktualisiert, um Sicherheit und Stabilität zu gewährleisten.
-*   **Modell-APIs:** Die verwendeten KI-Modelle werden mit **festen Versionen** betrieben. Aktualisierungen der Kern-Logik (Modell-Wechsel) erfolgen kontrolliert und werden den Nutzern vorab angekündigt.
+*   **Modell-APIs:** Die verwendeten KI-Modelle werden über die `latest`-Kennungen des Anbieters angesprochen (z. B. `mistral-medium-latest`). Der Anbieter kann das dahinterliegende Modell daher ohne Vorankündigung austauschen. Ein Wechsel der von Koreki angesprochenen Modellfamilie erfolgt kontrolliert und wird den Nutzern vorab angekündigt.
 
 ***
 **Stand: 07. April 2026 (v1.0)**
