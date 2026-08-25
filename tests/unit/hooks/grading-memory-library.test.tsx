@@ -5,6 +5,14 @@ import { downloadFile } from '../../../src/lib/file-utils';
 import { isDesktopTarget } from '../../../src/lib/env-context';
 import { confirmOverwrite } from '../../../src/lib/confirm-dialog';
 import type { GradingMemory } from '../../../src/types';
+import { meldeErfolg, meldeHinweis, meldeFehler } from '@/lib/notify';
+
+jest.mock('@/lib/notify', () => ({
+    meldeErfolg: jest.fn(),
+    meldeHinweis: jest.fn(),
+    meldeFehler: jest.fn(),
+    meldeNachNeuladen: jest.fn()
+}));
 
 jest.mock('../../../src/lib/grading-memory-persistence', () => ({
     ...jest.requireActual('../../../src/lib/grading-memory-persistence'),
@@ -83,11 +91,18 @@ beforeEach(() => {
     jest.clearAllMocks();
     (isDesktopTarget as jest.Mock).mockReturnValue(false);
     (persistGradingMemory as jest.Mock).mockResolvedValue(undefined);
-    window.alert = jest.fn();
     (confirmOverwrite as jest.Mock).mockResolvedValue(true);
 });
 
-const gemeldet = () => (window.alert as jest.Mock).mock.calls.map(c => String(c[0])).join('\n');
+/**
+ * Sammelt, was der Lehrkraft gesagt wurde — unabhaengig von der Tonlage.
+ * Die Tests hier pruefen den INHALT der Meldung; ob sie gruen oder rot
+ * erscheint, ist Sache der Toast-Tests.
+ */
+const gemeldet = () => [meldeErfolg, meldeHinweis, meldeFehler]
+    .flatMap(f => (f as jest.Mock).mock.calls)
+    .map(c => String(c[0]))
+    .join('\n');
 
 describe('Import', () => {
     it('legt einen neuen Schatz ohne Rueckfrage ab', async () => {

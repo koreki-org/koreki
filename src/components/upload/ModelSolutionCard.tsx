@@ -30,6 +30,7 @@ import { buildAutoSkillName, resolveCustomSkillId } from '@/lib/custom-skill-id'
 import { useModelSolutionAutopilot } from '@/hooks/useModelSolutionAutopilot';
 import { useModelSolutionDerivations } from '@/hooks/useModelSolutionDerivations';
 import { buildDefaultGradingGraph } from '@/lib/model-solution-derivations';
+import { meldeErfolg, meldeFehler } from '@/lib/notify';
 
 
 
@@ -117,7 +118,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
         if (editingGraphTaskIdx === null) return;
         
         await persistGraphAsSkill(name, graph, editingGraphTaskIdx);
-        alert(`Skill "${name}" erfolgreich im Skill Center gespeichert und dem active Skill-Profil hinzugefügt!`);
+        meldeErfolg(`Skill "${name}" erfolgreich im Skill Center gespeichert und dem active Skill-Profil hinzugefügt!`);
     }, [editingGraphTaskIdx, persistGraphAsSkill]);
 
     const handleSectionChange = useCallback((idx: number, newText: string) => {
@@ -149,7 +150,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
             await downloadFile(data, buildModelSolutionExportFilename(now), 'application/json;charset=utf-8');
         } catch (error) {
             console.error('Fehler beim Exportieren der Musterlösung:', error);
-            alert('Export der Musterlösung fehlgeschlagen.');
+            meldeFehler('Export der Musterlösung fehlgeschlagen.');
         }
     };
 

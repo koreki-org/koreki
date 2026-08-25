@@ -11,6 +11,7 @@ import { logger } from '@/lib/logger';
 import { splitTextByTasks } from '@/lib/task-utils';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
 import { ensureActiveGradingMemorySynced } from '@/lib/grading-memory-sync';
+import { meldeHinweis } from '@/lib/notify';
 
 /**
  * Der Korrektur-Lauf.
@@ -181,8 +182,8 @@ export function useCorrectionRun({
         // INDUSTRIAL FIX: Get FRESH state to prevent closure staleness on auto-start
         const freshFiles = useBatchStore.getState().batchFiles;
         
-        if (aiStatus?.correctionBrakeActive) return alert(aiStatus.message);
-        if (!modelSolution) return alert("Bitte zuerst Musterlösung hochladen.");
+        if (aiStatus?.correctionBrakeActive) return meldeHinweis(aiStatus.message || 'Die KI-Korrektur ist derzeit gesperrt.');
+        if (!modelSolution) return meldeHinweis("Bitte zuerst Musterlösung hochladen.");
         setIsLoadingBatch(true);
 
         const controller = new AbortController();
@@ -203,8 +204,8 @@ export function useCorrectionRun({
     }, [internalCorrectionPipeline, setIsLoadingBatch, setCurrentProcessingIndex, modelSolution]);
 
     const processSingleFile = useCallback(async (i: number, aiStatus?: AiStatus | null) => {
-        if (aiStatus?.correctionBrakeActive) return alert(aiStatus.message);
-        if (!modelSolution) return alert("Bitte zuerst Musterlösung hochladen.");
+        if (aiStatus?.correctionBrakeActive) return meldeHinweis(aiStatus.message || 'Die KI-Korrektur ist derzeit gesperrt.');
+        if (!modelSolution) return meldeHinweis("Bitte zuerst Musterlösung hochladen.");
         
         setIsLoadingBatch(true);
         const controller = new AbortController();

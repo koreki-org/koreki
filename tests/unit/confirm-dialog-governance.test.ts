@@ -2,41 +2,39 @@ import { readFileSync, readdirSync, lstatSync } from 'fs';
 import { join, relative, sep } from 'path';
 
 /**
- * Wächter über die Rückfragen
- * 🗣️🛡️
+ * Wächter über Rückfragen und Meldungen
+ * 🗣️🔔🛡️
  *
  * WARUM ES DIESEN TEST GIBT
  * -------------------------
- * Koreki hat mit `ConfirmationModal` einen eigenen Dialog für Rückfragen. Über
- * Monate lief ein Großteil trotzdem über den Browser-Kasten — zuletzt sogar die
- * Konto-Löschung, also die folgenreichste Aktion des Produkts. Der Kasten sieht
- * aus wie eine Meldung des Betriebssystems, trägt keine Warnfarbe und lässt
- * sich weder gestalten noch übersetzen: eine belanglose Nachfrage sieht darin
- * genauso aus wie ein endgültiger Verlust.
+ * Koreki hat mit `ConfirmationModal` einen eigenen Dialog für Rückfragen und
+ * mit `lib/notify` eigene Meldungen. Über Monate liefen beide trotzdem über den
+ * Browser — zuletzt sogar die Konto-Löschung, also die folgenreichste Aktion
+ * des Produkts. Der Browser-Kasten sieht aus wie eine Meldung des
+ * Betriebssystems, trägt keine Warnfarbe und lässt sich weder gestalten noch
+ * übersetzen: eine belanglose Nachfrage sieht darin genauso aus wie ein
+ * endgültiger Verlust.
  *
  * Das ist keine Regel, die man einmal aufräumt. Sie driftet zurück, sobald
- * jemand schnell eine Rückfrage braucht — der Browser-Kasten ist immer zur Hand
- * und immer einen Federstrich billiger.
+ * jemand schnell etwas melden will — der Browser-Kasten ist immer zur Hand und
+ * immer einen Federstrich billiger.
  *
  * ZWEI SCHREIBWEISEN
  * ------------------
  * `window.confirm(...)` und das blanke `confirm(...)` sind dasselbe. Die erste
- * Fassung dieses Wächters kannte nur die lange Form und bestand deshalb, obwohl
- * zehn Aufrufe der kurzen Form im Baum standen. Beide werden gezählt.
- *
- * RATSCHE
- * -------
- * Die vier Profil-Familien, die Konto-Löschung und der Erfahrungsschatz sind
- * umgestellt und stehen auf null. Der Rest (Admin-Verwaltung, Instituts-
- * Verwaltung, Einstellungs-Widgets) ist eingefroren und darf nur schrumpfen.
- * Wer eine dieser Stellen anfasst, stellt sie auf `askConfirmation` um.
+ * Fassung dieses Wächters kannte nur die lange Form und bestand deshalb,
+ * obwohl zehn Aufrufe der kurzen Form im Baum standen. Beide werden gezählt.
  */
 
 const SRC_DIR = join(process.cwd(), 'src');
 
 /**
- * Altbestand, Stand 25.08.2026. Nur schrumpfen, nie wachsen.
- * Neue Dateien dürfen gar nicht auftauchen.
+ * Altbestand der RÜCKFRAGEN, Stand 25.08.2026. Nur schrumpfen, nie wachsen.
+ *
+ * Die vier Profil-Familien, die Konto-Löschung und der Erfahrungsschatz sind
+ * umgestellt und stehen auf null. Der Rest (Admin- und Instituts-Verwaltung,
+ * Einstellungs-Widgets) ist eingefroren. Wer eine dieser Stellen anfasst,
+ * stellt sie auf `askConfirmation` um.
  */
 const ALTFAELLE: Record<string, number> = {
     'hooks/useAdminData.ts': 3,
@@ -54,24 +52,31 @@ const alleQuellen = (dir: string): string[] =>
         return lstatSync(pfad).isDirectory() ? alleQuellen(pfad) : [pfad];
     });
 
-/** `window.confirm(` und das blanke `confirm(` — aber nicht `askConfirmation(`. */
-const zaehleAufrufe = (quelle: string): number =>
-    quelle.split('\n')
-        .filter(zeile => !/^\s*(\/\/|\*|\/\*)/.test(zeile))
-        .reduce((summe, zeile) => {
-            const lang = zeile.match(/window\.confirm\s*\(/g)?.length ?? 0;
-            const kurz = zeile.match(/(?<![.\w])confirm\s*\(/g)?.length ?? 0;
-            return summe + lang + kurz;
-        }, 0);
+/** Zählt Aufrufe eines Browser-Dialogs — die lange Form und die kurze. */
+const zaehleAufrufe = (quelle: string, name: string): number => {
+    const lang = new RegExp(String.raw`window\.${name}\s*\(`, 'g');
+    const kurz = new RegExp(String.raw`(?<![.\w])${name}\s*\(`, 'g');
 
-describe('Rückfragen-Governance', () => {
-    const gezaehlt = alleQuellen(SRC_DIR)
+    return quelle.split('\n')
+        // Der Kommentar, der die Entscheidung begründet, darf den Namen nennen —
+        // sonst ließe sich die Regel nicht erklären.
+        .filter(zeile => !/^\s*(\/\/|\*|\/\*)/.test(zeile))
+        .reduce((summe, zeile) => summe
+            + (zeile.match(lang)?.length ?? 0)
+            + (zeile.match(kurz)?.length ?? 0), 0);
+};
+
+const zaehleJeDatei = (name: string) =>
+    alleQuellen(SRC_DIR)
         .filter(f => f.endsWith('.ts') || f.endsWith('.tsx'))
         .map(pfad => ({
             datei: relative(SRC_DIR, pfad).split(sep).join('/'),
-            anzahl: zaehleAufrufe(readFileSync(pfad, 'utf8'))
+            anzahl: zaehleAufrufe(readFileSync(pfad, 'utf8'), name)
         }))
         .filter(e => e.anzahl > 0);
+
+describe('Rückfragen-Governance', () => {
+    const gezaehlt = zaehleJeDatei('confirm');
 
     it('öffnet in keiner neuen Datei einen Browser-Kasten', () => {
         const neu = gezaehlt.filter(e => ALTFAELLE[e.datei] === undefined);
@@ -119,5 +124,41 @@ describe('Rückfragen-Governance', () => {
     it('sieht überhaupt Quelldateien', () => {
         const quellen = alleQuellen(SRC_DIR).filter(f => f.endsWith('.ts') || f.endsWith('.tsx'));
         expect(quellen.length).toBeGreaterThan(100);
+    });
+});
+
+/**
+ * Dasselbe für die MELDUNGEN.
+ * 🔔
+ *
+ * Koreki fragte im eigenen Dialog und antwortete im Browser-Kasten — eine halbe
+ * Migration, die als Bruch sichtbar war: „Profil erfolgreich gespeichert!"
+ * erschien als Systemmeldung mit OK-Knopf.
+ *
+ * Anders als bei den Rückfragen gibt es hier KEINE Ratsche mit Altbestand: alle
+ * 92 Aufrufe sind umgestellt, der Stand ist null, und das soll er bleiben.
+ */
+describe('Meldungs-Governance', () => {
+    it('zeigt nirgends einen Browser-Kasten statt eines Toasts', () => {
+        const verstoesse = zaehleJeDatei('alert');
+
+        if (verstoesse.length > 0) {
+            throw new Error(
+                'alert() statt einer Meldung:\n  - '
+                + verstoesse.map(e => `${e.datei} (${e.anzahl}x)`).join('\n  - ')
+                + '\n\n  `meldeErfolg` / `meldeHinweis` / `meldeFehler` aus lib/notify nutzen.'
+            );
+        }
+    });
+
+    /**
+     * Ein Wirt, den niemand montiert, verschluckt jede Meldung — lautlos, was
+     * die unangenehmste Art des Verschwindens ist.
+     */
+    it('hält beide Wirte in _app montiert', () => {
+        const app = readFileSync(join(SRC_DIR, 'pages', '_app.tsx'), 'utf8');
+
+        expect(app).toContain('<ToastHost />');
+        expect(app).toContain('<ConfirmationHost />');
     });
 });

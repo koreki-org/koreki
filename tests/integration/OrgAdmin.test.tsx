@@ -14,6 +14,14 @@ jest.mock('../../src/hooks/useAuth', () => ({
 }));
 
 import { useAuth } from '../../src/hooks/useAuth';
+import { meldeFehler } from '@/lib/notify';
+
+jest.mock('@/lib/notify', () => ({
+    meldeErfolg: jest.fn(),
+    meldeHinweis: jest.fn(),
+    meldeFehler: jest.fn(),
+    meldeNachNeuladen: jest.fn()
+}));
 
 describe('Org-Admin Dashboard Integration (God Mode & Interactive)', () => {
     jest.setTimeout(20000); // Increase timeout for industrial-grade integration
@@ -235,7 +243,7 @@ describe('Org-Admin Dashboard Integration (God Mode & Interactive)', () => {
         fireEvent.click(toggleButton);
 
         await waitFor(() => {
-            expect(window.alert).toHaveBeenCalledWith('Error from server');
+            expect(meldeFehler).toHaveBeenCalledWith('Error from server');
         });
     });
 

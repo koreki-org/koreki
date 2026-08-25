@@ -11,6 +11,7 @@ import { resolveTaskName, resolveMaxPoints } from '../lib/grading-memory-utils';
 import { findNameCollision } from '../lib/local-vault';
 import { toErrorMessage } from '../lib/error-message';
 import { askConfirmation } from '@/lib/confirm-dialog';
+import { meldeErfolg, meldeFehler } from '@/lib/notify';
 
 export interface UseGradingMemoryModalStateProps {
     isOpen: boolean;
@@ -215,7 +216,7 @@ export function useGradingMemoryModalState({
                     }
                     localStorage.setItem('koreki_local_grading_memories', JSON.stringify(list));
                     refreshMemories();
-                    alert("Änderungen erfolgreich lokal gespeichert!");
+                    meldeErfolg("Änderungen erfolgreich lokal gespeichert!");
                 }
             } else {
                 const response = await apiClient.post('/api/user/grading-memories', {
@@ -225,13 +226,13 @@ export function useGradingMemoryModalState({
                 });
                 if (response.ok) {
                     refreshMemories();
-                    alert("Änderungen erfolgreich gespeichert!");
+                    meldeErfolg("Änderungen erfolgreich gespeichert!");
                 } else {
                     throw new Error("Fehler beim Speichern im Backend.");
                 }
             }
         } catch (e) {
-            alert("Fehler beim Speichern: " + toErrorMessage(e));
+            meldeFehler("Fehler beim Speichern: " + toErrorMessage(e));
         } finally {
             wizard.setIsSaving(false);
         }
@@ -249,7 +250,7 @@ export function useGradingMemoryModalState({
                     createdAt: new Date().toISOString()
                 };
                 addLocalMemory(localMemory);
-                alert(`Erfahrungsschatz "${memory.name}" erfolgreich in deiner lokalen Bibliothek gespeichert!`);
+                meldeErfolg(`Erfahrungsschatz "${memory.name}" erfolgreich in deiner lokalen Bibliothek gespeichert!`);
             } else {
                 const response = await apiClient.post('/api/user/grading-memories', {
                     name: memory.name,
@@ -258,14 +259,14 @@ export function useGradingMemoryModalState({
                 if (response.ok) {
                     const saved = await response.json();
                     addLocalMemory(saved);
-                    alert(`Erfahrungsschatz "${memory.name}" erfolgreich in deiner Bibliothek gespeichert!`);
+                    meldeErfolg(`Erfahrungsschatz "${memory.name}" erfolgreich in deiner Bibliothek gespeichert!`);
                 } else {
                     const errData = await response.json();
                     throw new Error(errData.message || "Fehler beim Speichern des importierten Erfahrungsschatzes im Backend.");
                 }
             }
         } catch (e) {
-            alert("Fehler beim Speichern: " + toErrorMessage(e));
+            meldeFehler("Fehler beim Speichern: " + toErrorMessage(e));
         } finally {
             wizard.setIsSaving(false);
         }

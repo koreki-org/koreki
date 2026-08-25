@@ -8,6 +8,7 @@ import { findNameCollision } from '@/lib/local-vault';
 import { isSameName, nameTakenMessage } from '@/lib/services/profile-naming';
 import { persistGradingMemory, bestaetigeSchatzName } from '@/lib/grading-memory-persistence';
 import { toErrorMessage } from '@/lib/error-message';
+import { meldeErfolg, meldeFehler, meldeHinweis } from '@/lib/notify';
 
 /**
  * Die Sammlung der Erfahrungsschätze verwalten.
@@ -65,7 +66,7 @@ export function useGradingMemoryLibrary({
                 const marken = (text.match(/\[CASE_START\]/g) || []).length;
 
                 if (parsed.istErfahrungsschatzDatei && marken === 0) {
-                    alert(
+                    meldeHinweis(
                         `Der Erfahrungsschatz „${parsed.name}" enthält keine Fallbeispiele.\n\n`
                         + 'Die Datei ist in Ordnung — sie war bereits beim Exportieren leer. '
                         + 'Öffne den Erfahrungsschatz, füge Fallbeispiele hinzu und exportiere ihn erneut.'
@@ -73,7 +74,7 @@ export function useGradingMemoryLibrary({
                     return;
                 }
 
-                alert(
+                meldeFehler(
                     'Fehler: Keine gültigen Fallbeispiele im KEP-MD-2 Format gefunden.\n\n'
                     + `Datei: ${file.name} (${text.length} Zeichen)\n`
                     + `Gefundene Fallbeispiel-Marken: ${marken}\n\n`
@@ -98,7 +99,7 @@ export function useGradingMemoryLibrary({
             const ersetzt = memories.some(m => isSameName(m.name, parsed.name));
             const urteil = await bestaetigeSchatzName(parsed.name, memories);
             if (!urteil.ok) {
-                if (urteil.fehler) alert(urteil.fehler);
+                if (urteil.fehler) meldeHinweis(urteil.fehler);
                 return;
             }
 
@@ -107,11 +108,11 @@ export function useGradingMemoryLibrary({
             // Sagt, was tatsächlich geschehen ist. „Importiert" bei einem
             // Ersetzen liess die Lehrkraft nach einem neuen Eintrag suchen,
             // den es nicht gab.
-            alert(ersetzt
+            meldeErfolg(ersetzt
                 ? `Erfahrungsschatz "${parsed.name}" ersetzt (${parsed.cases.length} Fallbeispiele).`
                 : `Erfahrungsschatz "${parsed.name}" importiert (${parsed.cases.length} Fallbeispiele).`);
         } catch (err) {
-            alert('Import-Fehler: ' + toErrorMessage(err));
+            meldeFehler('Import-Fehler: ' + toErrorMessage(err));
         }
     };
 
@@ -134,7 +135,7 @@ export function useGradingMemoryLibrary({
         // abgelegt, „Format nicht erkannt". Hier ist die Stelle, an der die
         // Lehrkraft es erfahren muss, nicht erst beim Wiedereinlesen.
         if (!memory.cases || memory.cases.length === 0) {
-            alert(
+            meldeHinweis(
                 `Der Erfahrungsschatz „${memory.name}" enthält keine Fallbeispiele.\n\n`
                 + 'Eine solche Datei liesse sich später nicht wieder einlesen — '
                 + 'die Fallbeispiele sind ihr gesamter Inhalt.'
@@ -148,7 +149,7 @@ export function useGradingMemoryLibrary({
             await downloadFile(markdown, filename, 'text/markdown;charset=utf-8');
         } catch (error) {
             console.error('Fehler beim Exportieren des Erfahrungsschatzes:', toErrorMessage(error));
-            alert('Export fehlgeschlagen.');
+            meldeFehler('Export fehlgeschlagen.');
         }
     };
 
@@ -162,7 +163,7 @@ export function useGradingMemoryLibrary({
 
                 let list: GradingMemory[] = JSON.parse(stored);
                 if (findNameCollision(list, editingMemoryId, editingName)) {
-                    alert(nameTakenMessage('Erfahrungsschatz'));
+                    meldeHinweis(nameTakenMessage('Erfahrungsschatz'));
                     return;
                 }
                 list = list.map(m => m.id === editingMemoryId ? { ...m, name: editingName.trim() } : m);
@@ -188,7 +189,7 @@ export function useGradingMemoryLibrary({
             refreshMemories();
             setEditingMemoryId(null);
         } catch (e) {
-            alert('Fehler beim Umbenennen: ' + toErrorMessage(e));
+            meldeFehler('Fehler beim Umbenennen: ' + toErrorMessage(e));
         }
     };
 

@@ -10,6 +10,7 @@ import { cn } from '@/lib/utils';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
 import { useFileDropZone } from '@/hooks/useFileDropZone';
 import { downloadFile } from '@/lib/file-utils';
+import { meldeFehler, meldeHinweis } from '@/lib/notify';
 
 
 interface SidebarProps {
@@ -57,7 +58,7 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
         try {
             onImportParsedProfile(parseMarkdownProfile(await file.text()));
         } catch (err) {
-            alert('Ungültiges Experten-Profil-Format (Markdown erwartet).');
+            meldeHinweis('Ungültiges Experten-Profil-Format (Markdown erwartet).');
         }
     };
 
@@ -261,7 +262,7 @@ ${correctionPrompt}`;
             await downloadFile(markdown, filename, 'text/markdown;charset=utf-8');
         } catch (error) {
             console.error('Fehler beim Exportieren des Profils:', error);
-            alert('Export fehlgeschlagen.');
+            meldeFehler('Export fehlgeschlagen.');
         }
     };
 

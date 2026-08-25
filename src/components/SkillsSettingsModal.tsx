@@ -13,6 +13,7 @@ import { SkillsEditor } from './settings/SkillsModules';
 // Hooks
 import { useSkillProfiles } from '../hooks/useSkillProfiles';
 import { DEFAULT_SKILL_PROFILE_ID } from '@/lib/ai/standard-skills-profiles';
+import { meldeFehler } from '@/lib/notify';
 
 interface SkillsSettingsModalProps {
     settings: AppSettings;
@@ -73,7 +74,7 @@ const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
       await downloadFile(markdown, filename, 'text/markdown;charset=utf-8');
     } catch (error) {
       console.error('Export error:', error);
-      alert('Export failed.');
+      meldeFehler('Export failed.');
     }
   };
 

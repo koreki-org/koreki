@@ -8,6 +8,7 @@ import { isSameName, nameTakenMessage, resolveProfileRef } from '@/lib/services/
 import { askConfirmation, confirmOverwrite } from '@/lib/confirm-dialog';
 import { createProfileStore } from '@/lib/services/profile-store';
 import { toErrorMessage } from '@/lib/error-message';
+import { meldeErfolg, meldeFehler, meldeHinweis } from '@/lib/notify';
 
 /** Kennung der Standard-Vorlage aus der Experten-Registry. */
 const DEFAULT_EXPERT_PROFILE_ID = 'id-standard';
@@ -184,11 +185,11 @@ export const usePromptProfiles = (
         const zielId = isCreatingNew ? '' : selectedProfileId;
         const nameToSave = isCreatingNew ? newProfileName.trim() : (selectedProfileData?.name || '');
         if (!nameToSave) {
-            alert("Bitte gib einen Namen für das Profil ein.");
+            meldeHinweis("Bitte gib einen Namen für das Profil ein.");
             return;
         }
         if (!correctionPrompt.trim()) {
-            alert("Bitte gib erst deine pädagogischen Anweisungen ein.");
+            meldeHinweis("Bitte gib erst deine pädagogischen Anweisungen ein.");
             return;
         }
 
@@ -197,7 +198,7 @@ export const usePromptProfiles = (
         // ein ADMIN bearbeiten darf). Siehe useSkillProfiles.
         if (isCreatingNew) {
             if (profiles.some(p => p.isSystem && isSameName(p.name, nameToSave))) {
-                alert('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
+                meldeHinweis('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
                 return;
             }
 
@@ -252,7 +253,7 @@ export const usePromptProfiles = (
             setIsCreatingNew(false);
             setNewProfileName('');
             setImportedAiParams(null);
-            alert("Profil erfolgreich lokal gespeichert!");
+            meldeErfolg("Profil erfolgreich lokal gespeichert!");
             setSaving(false);
             return;
         }
@@ -285,13 +286,13 @@ export const usePromptProfiles = (
                 setIsCreatingNew(false);
                 setNewProfileName('');
                 setImportedAiParams(null);
-                alert("Profil erfolgreich gespeichert!");
+                meldeErfolg("Profil erfolgreich gespeichert!");
             } else {
-                alert(`Fehler: ${data.message || 'Speichern fehlgeschlagen'}`);
+                meldeFehler(`Fehler: ${data.message || 'Speichern fehlgeschlagen'}`);
             }
         } catch (err) {
             console.error("Save Error:", err);
-            alert("Speichern fehlgeschlagen. Bitte prüfe deine Internetverbindung oder ob der Server erreichbar ist.");
+            meldeFehler("Speichern fehlgeschlagen. Bitte prüfe deine Internetverbindung oder ob der Server erreichbar ist.");
         } finally {
             setSaving(false);
         }
@@ -333,7 +334,7 @@ export const usePromptProfiles = (
             await fetchProfiles();
             if (selectedProfileId === id) faellZurueckAufStandard();
         } catch (err) {
-            alert(toErrorMessage(err, 'Löschen fehlgeschlagen.'));
+            meldeFehler(toErrorMessage(err, 'Löschen fehlgeschlagen.'));
         }
     };
 
@@ -346,7 +347,7 @@ export const usePromptProfiles = (
         try {
             const erfolgreich = await promptProfileStore.benenneUm(editingProfileId, editingName);
             if (!erfolgreich) {
-                alert(nameTakenMessage('Profil'));
+                meldeHinweis(nameTakenMessage('Profil'));
                 return;
             }
 
@@ -354,7 +355,7 @@ export const usePromptProfiles = (
             await fetchProfiles();
             setEditingProfileId(null);
         } catch (err) {
-            alert(toErrorMessage(err, 'Fehler beim Umbenennen'));
+            meldeFehler(toErrorMessage(err, 'Fehler beim Umbenennen'));
         }
     };
 

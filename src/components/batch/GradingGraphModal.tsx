@@ -27,6 +27,7 @@ import { apiClient } from '@/lib/api-client';
 import { performAIRequest } from '@/lib/ai/ai-orchestrator';
 import { isLocalInstance } from '@/lib/env-context';
 import { toErrorMessage } from '../../lib/error-message';
+import { meldeErfolg, meldeFehler, meldeHinweis } from '@/lib/notify';
 
 interface GradingGraphModalProps {
     isOpen: boolean;
@@ -171,7 +172,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
         if (!newId || newId === oldId) return;
         const vars = graph?.variables || [];
         if (vars.some(v => v.id === newId)) {
-            alert("Fehler: Eine Variable mit dieser ID existiert bereits.");
+            meldeFehler("Fehler: Eine Variable mit dieser ID existiert bereits.");
             return;
         }
 
@@ -352,14 +353,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         <Button
                                             onClick={() => {
                                                 if (!skillName.trim()) {
-                                                    alert("Bitte gib einen Namen für den Skill ein.");
+                                                    meldeHinweis("Bitte gib einen Namen für den Skill ein.");
                                                     return;
                                                 }
                                                 if (onSaveCustomSkill) {
                                                     onSaveCustomSkill(skillName.trim(), graph);
                                                 } else {
                                                     onSave(graph);
-                                                    alert(`Änderungen am Graphen wurden in den Skill "${skillName.trim()}" übernommen. Klicke gleich im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern!`);
+                                                    meldeErfolg(`Änderungen am Graphen wurden in den Skill "${skillName.trim()}" übernommen. Klicke gleich im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern!`);
                                                 }
                                             }}
                                             className="flex-1 sm:flex-initial h-8 rounded-full text-xs font-black uppercase border border-primary/20 text-primary bg-primary/5 hover:bg-primary/5 gap-1.5 px-4 transition-all flex items-center justify-center shrink-0 shadow-xs duration-300 active:scale-95"

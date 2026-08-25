@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { DbUser, Workspace, AppSettings } from '../types';
 import { apiClient } from '@/lib/api-client';
+import { meldeFehler } from '@/lib/notify';
 
 export const useAdminData = () => {
     const [users, setUsers] = useState<DbUser[]>([]);
@@ -131,7 +132,7 @@ export const useAdminData = () => {
             if (res.ok) await fetchData();
             else {
                 const errorData = await res.json();
-                alert(`Fehler: ${errorData.message}`);
+                meldeFehler(`Fehler: ${errorData.message}`);
             }
         } finally {
             setActionLoading(null);

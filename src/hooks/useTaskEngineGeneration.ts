@@ -4,6 +4,7 @@ import type { TargetGoal } from '@/lib/grading/calc-trace-types';
 import { performAIRequest } from '@/lib/ai/ai-orchestrator';
 import { alsAnfrageModus } from '@/lib/ai/app-mode';
 import { toErrorMessage } from '@/lib/error-message';
+import { meldeFehler, meldeHinweis } from '@/lib/notify';
 
 /**
  * Bewertungs-Engines von der KI erzeugen lassen.
@@ -41,7 +42,13 @@ const meldeGraphFehler = (error: unknown) => {
     const fachlich = lower.includes('422') || lower.includes('validation')
         || lower.includes('keinen') || lower.includes('bewertungs') || lower.includes('gültig');
 
-    alert(fachlich ? GRAPH_NICHT_MOEGLICH : `Fehler bei der Graph-Generierung: ${msg}`);
+    // Der Unterschied stand schon im Code, nur nicht in der Darstellung: Eine
+    // Aufgabe, die sich nicht als Graph fassen laesst, ist kein Defekt.
+    if (fachlich) {
+        meldeHinweis(GRAPH_NICHT_MOEGLICH);
+    } else {
+        meldeFehler(`Fehler bei der Graph-Generierung: ${msg}`);
+    }
 };
 
 export interface UseTaskEngineGenerationParams {
@@ -129,7 +136,7 @@ export function useTaskEngineGeneration(p: UseTaskEngineGenerationParams) {
             return response;
         } catch (error) {
             console.error('Error generating calc trace:', toErrorMessage(error));
-            alert(`Fehler bei der Rechenketten-Generierung: ${toErrorMessage(error)}`);
+            meldeFehler(`Fehler bei der Rechenketten-Generierung: ${toErrorMessage(error)}`);
             throw error;
         }
     };
@@ -151,7 +158,7 @@ export function useTaskEngineGeneration(p: UseTaskEngineGenerationParams) {
             return await erzeugeRechenziel(taskText, userNotes);
         } catch (error) {
             console.error('Error generating custom calc trace:', toErrorMessage(error));
-            alert(`Fehler bei der Rechenketten-Generierung: ${toErrorMessage(error)}`);
+            meldeFehler(`Fehler bei der Rechenketten-Generierung: ${toErrorMessage(error)}`);
             return null;
         }
     };

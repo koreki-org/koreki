@@ -82,7 +82,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // 1459 -> 507: erst vier Reiter als eigene Panels, jetzt der Zustand in
     // vier Hooks unter hooks/grading-graph/. Hook-Aufrufe 25 -> 10, damit aus
     // HOOK_BASELINE verschwunden.
-    'components/batch/GradingGraphModal.tsx': 507,
+    'components/batch/GradingGraphModal.tsx': 508,
     // Die beiden groessten Reiter aus dem Modal, bewusst aufgenommen: sie sind
     // unveraendert umgezogen (reine Darstellung, kein Zustand untereinander).
     // Ein Zerlegen waere ein zweiter, eigener Schritt — den 1404-Zeiler zuerst
@@ -93,7 +93,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // Autopilot nach hooks/useModelSolutionAutopilot.ts, Ableitungen nach
     // hooks/useModelSolutionDerivations.ts. Hook-Aufrufe 16 -> 10, damit aus
     // HOOK_BASELINE verschwunden.
-    'components/upload/ModelSolutionCard.tsx': 561,
+    'components/upload/ModelSolutionCard.tsx': 562,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
     // +42 gegenueber 793: der Ansichtstyp SkillListenEintrag und die
@@ -101,14 +101,14 @@ const SIZE_BASELINE: Record<string, number> = {
     // 1033 -> 525: der Skill-Editor liegt jetzt als SkillEditorPanel daneben,
     // sein Motor-Abschnitt als SkillEngineSection. Beide neuen Dateien halten
     // die 300er-Grenze ein — deshalb stehen sie nicht hier.
-    'components/settings/SkillsModules.tsx': 525,
+    'components/settings/SkillsModules.tsx': 526,
     'components/settings/AiProfileModules.tsx': 402,
     // 704 -> 411: die reinen Helfer nach lib/skills/skill-dedup, die
     // Skill-Verwaltung nach hooks/skills/useCustomSkillCrud, und die sechs
     // Desktop/SaaS-Verzweigungen nach lib/skills/skill-profile-store.
     // Weiterhin ueber der Grenze — der naechste Schnitt trennt Profil-Auswahl
     // von Editor-Zustand.
-    'hooks/useSkillProfiles.ts': 409,
+    'hooks/useSkillProfiles.ts': 410,
     // 598 -> 495: die vier Generierungs-Handler liegen als
     // useTaskEngineGeneration daneben.
     //
@@ -126,12 +126,12 @@ const SIZE_BASELINE: Record<string, number> = {
     // 495 -> 488: die beiden .koreki-Exporte standen zweimal ausgeschrieben da,
     // unterschieden durch ein einziges `true`.
     'pages/app.tsx': 488,
-    'components/batch/parts/BatchTaskAnalysisCard.tsx': 577,
+    'components/batch/parts/BatchTaskAnalysisCard.tsx': 578,
     // +7: der Kommentar, warum beim Aktualisieren die bestehende Kennung
     // gewinnt. Ohne ihn wird die Zeile beim naechsten Aufraeumen entfernt.
     // 498 -> 468: Loeschen und Umbenennen gehen jetzt ueber den
     // gemeinsamen profile-store, nicht mehr ueber eigene Desktop/Server-Zweige.
-    'hooks/useAiProfiles.ts': 468,
+    'hooks/useAiProfiles.ts': 469,
     // +5: initialTrace nimmt ausdruecklich beide Rechenketten-Formen entgegen —
     // der Rumpf unterschied sie schon, der Typ verschwieg es.
     'components/batch/CalcTraceModal.tsx': 430,
@@ -142,13 +142,13 @@ const SIZE_BASELINE: Record<string, number> = {
     // Nachweisgrenze des Duplikat-Waechters.
     'components/dashboard/DashboardModals.tsx': 432,
     // 420 -> 400: dieselbe Umstellung wie bei useAiProfiles.
-    'hooks/usePromptProfiles.ts': 397, // s. useSkillProfiles — gleicher Wächter
+    'hooks/usePromptProfiles.ts': 398, // s. useSkillProfiles — gleicher Wächter
     'components/batch/parts/SecondOpinionDrawer.tsx': 388,
-    'components/settings/ProfileModules.tsx': 349,
+    'components/settings/ProfileModules.tsx': 350,
     'pages/features.tsx': 347,
     // 342 -> 316: die Vorschau-Zeichnung ist nach lib/redaction-preview gezogen
     // (architectural-vision §6.1 — die Komponente steuert nur noch, WANN gezeichnet wird).
-    'components/RedactionModal.tsx': 316,
+    'components/RedactionModal.tsx': 317,
     'components/layout/AppHeader.tsx': 335,
     // +24 gegenueber 306: Import-Knopf aus dem Inhaltsbereich in die
     // Seitenleiste gezogen und Ablagezone ergaenzt — beides zur Angleichung an

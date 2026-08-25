@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { AppSettings } from '@/types';
 import { apiClient } from '@/lib/api-client';
 import { isLocalInstance } from '@/lib/env-context';
+import { meldeFehler, meldeNachNeuladen } from '@/lib/notify';
 
 export const useSystemSettings = (onSave: (newSettings: AppSettings) => void) => {
     const [delLoading, setDelLoading] = useState(false);
@@ -26,11 +27,11 @@ export const useSystemSettings = (onSave: (newSettings: AppSettings) => void) =>
                 window.location.href = '/api/logto/sign-out';
             } else {
                 const data = await res.json();
-                alert(data.message || 'Fehler beim Löschen des Kontos.');
+                meldeFehler(data.message || 'Fehler beim Löschen des Kontos.');
                 setDelLoading(false);
             }
         } catch (err) {
-            alert('Ein Netzwerkfehler ist aufgetreten.');
+            meldeFehler('Ein Netzwerkfehler ist aufgetreten.');
             setDelLoading(false);
         }
     };
@@ -44,13 +45,16 @@ export const useSystemSettings = (onSave: (newSettings: AppSettings) => void) =>
             });
             const data = await res.json();
             if (res.ok) {
-                alert(`Erfolgreich beigetreten: ${data.workspaceName}`);
+                // Das Neuladen uebernimmt den neuen Arbeitsbereich und raeumt
+                // dabei jeden Toast mit weg. Frueher trug `alert` die Meldung
+                // ueber diesen Moment, weil es anhielt, bis jemand OK drueckte.
+                meldeNachNeuladen('erfolg', `Erfolgreich beigetreten: ${data.workspaceName}`);
                 window.location.reload();
             } else {
-                alert(data.message || 'Fehler beim Beitreten.');
+                meldeFehler(data.message || 'Fehler beim Beitreten.');
             }
         } catch (err) {
-            alert('Netzwerkfehler.');
+            meldeFehler('Netzwerkfehler.');
         } finally {
             setJoinLoading(false);
         }

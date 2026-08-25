@@ -3,6 +3,14 @@ import { useAiProfiles, STANDARD_AI_PROFILE, MATH_AI_PROFILE } from '../../../sr
 import { AppSettings } from '../../../src/types';
 import { TEMPERATURE_MINIMUM } from '@/lib/ai/temperature-guidance';
 import { askConfirmation, confirmOverwrite } from '@/lib/confirm-dialog';
+import { meldeHinweis } from '@/lib/notify';
+
+jest.mock('@/lib/notify', () => ({
+    meldeErfolg: jest.fn(),
+    meldeHinweis: jest.fn(),
+    meldeFehler: jest.fn(),
+    meldeNachNeuladen: jest.fn()
+}));
 
 jest.mock('@/lib/confirm-dialog', () => ({
     askConfirmation: jest.fn().mockResolvedValue(true),
@@ -167,7 +175,7 @@ describe('useAiProfiles - Industrial Hook Verification', () => {
             const gespeichert = await anlegenAls('Logik & Mathe');
 
             expect(gespeichert).toHaveLength(1);
-            expect(alertSpy).toHaveBeenCalledWith(expect.stringContaining('System-Vorlage'));
+            expect(meldeHinweis).toHaveBeenCalledWith(expect.stringContaining('System-Vorlage'));
         });
     });
 });

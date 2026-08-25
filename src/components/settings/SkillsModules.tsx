@@ -18,6 +18,7 @@ import { useSkillGeneration } from '@/hooks/useSkillGeneration';
 import { CalcTraceModal } from '../batch/CalcTraceModal';
 import { isLocalInstance } from '@/lib/env-context';
 import { useAuth } from '@/hooks/useAuth';
+import { meldeErfolg, meldeFehler, meldeHinweis } from '@/lib/notify';
 
 
 
@@ -180,11 +181,11 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
 
     const handleSaveCustomSkillClick = () => {
         if (!editingSkillData?.name?.trim()) { // `?.` verengt auch die Basis auf non-null
-            alert("Bitte gib einen Namen für den Skill ein.");
+            meldeHinweis("Bitte gib einen Namen für den Skill ein.");
             return;
         }
         if (!editingSkillData.promptSnippet?.trim()) {
-            alert("Bitte gib die KI-Anweisung (Prompt Snippet) ein.");
+            meldeHinweis("Bitte gib die KI-Anweisung (Prompt Snippet) ein.");
             return;
         }
 
@@ -202,7 +203,7 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
             const newSkills = [...activeSkillIds, skillToSave.id];
             onStartNew(newSkills);
             setNewProfileName(`Kopie von ${selectedProfile}`);
-            alert(`Ein neues, anpassbares Skill-Set "Kopie von ${selectedProfile}" wurde erstellt und dein neuer Skill "${skillToSave.name}" wurde darin aktiviert!`);
+            meldeErfolg(`Ein neues, anpassbares Skill-Set "Kopie von ${selectedProfile}" wurde erstellt und dein neuer Skill "${skillToSave.name}" wurde darin aktiviert!`);
         } else {
             // Auto-check/enable newly created skill
             if (!editingSkillData.id && !activeSkillIds.includes(skillToSave.id)) {
@@ -244,7 +245,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
             await downloadFile(markdown, filename, 'text/markdown;charset=utf-8');
         } catch (error) {
             console.error('Fehler beim Exportieren des Skill-Profils:', error);
-            alert('Export fehlgeschlagen.');
+            meldeFehler('Export fehlgeschlagen.');
         }
     };
 

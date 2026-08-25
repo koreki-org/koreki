@@ -3,6 +3,7 @@ import { X, Scissors, Info, Plus, Trash2, FileSpreadsheet } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
+import { meldeFehler, meldeHinweis } from '@/lib/notify';
 
 interface StudentConfig {
     firstName: string;
@@ -136,11 +137,11 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                     });
                     setStudents(newStudents);
                 } else {
-                    alert("Keine gültigen Namen in der Excel-Datei gefunden.");
+                    meldeHinweis("Keine gültigen Namen in der Excel-Datei gefunden.");
                 }
             } catch (err) {
                 console.error("Excel import error:", err);
-                alert("Fehler beim Lesen der Excel-Datei.");
+                meldeFehler("Fehler beim Lesen der Excel-Datei.");
             }
         };
         reader.readAsBinaryString(file);

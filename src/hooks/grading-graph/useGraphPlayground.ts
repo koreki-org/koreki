@@ -3,6 +3,7 @@ import type { GradingGraph, GradingResult } from '@/lib/grading/types';
 import { GraphRunner } from '@/lib/grading/GraphRunner';
 import { buildPerfectInputs, computeExpectedValues, parsePlaygroundInputs } from '@/lib/grading/graph-preview';
 import { toErrorMessage } from '@/lib/error-message';
+import { meldeFehler } from '@/lib/notify';
 
 /**
  * Der Probelauf: einen Graphen mit erfundenen Schülerwerten durchrechnen.
@@ -43,7 +44,7 @@ export function useGraphPlayground({ graph }: UseGraphPlaygroundParams) {
         try {
             setPlaygroundResult(GraphRunner.grade(graph, studentValues));
         } catch (e) {
-            alert(`Fehler beim Berechnen der Bewertung: ${toErrorMessage(e)}`);
+            meldeFehler(`Fehler beim Berechnen der Bewertung: ${toErrorMessage(e)}`);
         }
     };
 

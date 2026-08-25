@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/Input';
 import { FloatingActions } from '@/components/ui/FloatingActions';
 import { parseMarkdownProfile } from '@/lib/parsers/markdown-profile-parser';
 import { useFileDropZone } from '@/hooks/useFileDropZone';
+import { meldeHinweis } from '@/lib/notify';
 
 /**
  * Seitenleiste der Skill-Profile — Auswahl, Umbenennen, Import, Export.
@@ -61,7 +62,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
             const text = await file.text();
             onImportParsedProfile(parseMarkdownProfile(text));
         } catch (err) {
-            alert('Ungültiges Skill-Profil-Format (Markdown erwartet).');
+            meldeHinweis('Ungültiges Skill-Profil-Format (Markdown erwartet).');
         }
     };
 

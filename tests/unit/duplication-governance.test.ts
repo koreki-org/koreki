@@ -99,7 +99,7 @@ const DUPLICATION_BASELINE: Record<string, number> = {
     'pages/agb.tsx <-> pages/impressum.tsx': 10,
     'pages/api/user/prompt-profiles.ts <-> pages/api/user/skill-profiles.ts': 10,
     'components/batch/BatchItemPendingView.tsx <-> components/batch/parts/BatchSolutionPanel.tsx': 9,
-    'components/settings/AiProfileSidebar.tsx <-> components/settings/ProfileModules.tsx': 9,
+    'components/settings/AiProfileSidebar.tsx <-> components/settings/ProfileModules.tsx': 6,
     'pages/api/clean-and-analyze.ts <-> pages/api/second-opinion.ts': 9,
     'pages/api/clean-and-analyze.ts <-> pages/api/user/grading-memories/anonymize.ts': 9,
     'pages/api/clean-and-analyze.ts <-> pages/api/user/grading-memories/generate.ts': 9,

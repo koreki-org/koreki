@@ -3,6 +3,14 @@ import { useCorrectionRun } from '../../../src/hooks/file-processor/useCorrectio
 import { performAIRequest } from '../../../src/lib/ai/ai-orchestrator';
 import { useBatchStore } from '../../../src/hooks/store/useBatchStore';
 import type { BatchFile, Task, User, AppSettings, AiStatus } from '../../../src/types';
+import { meldeHinweis } from '@/lib/notify';
+
+jest.mock('@/lib/notify', () => ({
+    meldeErfolg: jest.fn(),
+    meldeHinweis: jest.fn(),
+    meldeFehler: jest.fn(),
+    meldeNachNeuladen: jest.fn()
+}));
 
 jest.mock('../../../src/lib/ai/ai-orchestrator', () => ({
     performAIRequest: jest.fn(),
@@ -87,7 +95,6 @@ const antwort = (p: Record<string, unknown> = {}) => ({
 beforeEach(() => {
     jest.clearAllMocks();
     localStorage.clear();
-    window.alert = jest.fn();
     (performAIRequest as jest.Mock).mockResolvedValue(antwort());
 });
 
@@ -207,7 +214,7 @@ describe('Wann gar nicht erst gefragt wird', () => {
         });
 
         expect(performAIRequest).not.toHaveBeenCalled();
-        expect(window.alert).toHaveBeenCalledWith('Budget erschöpft');
+        expect(meldeHinweis).toHaveBeenCalledWith('Budget erschöpft');
     });
 
     it('verlangt eine Musterloesung, bevor der Stapel laeuft', async () => {
@@ -218,7 +225,7 @@ describe('Wann gar nicht erst gefragt wird', () => {
         });
 
         expect(performAIRequest).not.toHaveBeenCalled();
-        expect(window.alert).toHaveBeenCalledWith(expect.stringMatching(/Musterlösung/));
+        expect(meldeHinweis).toHaveBeenCalledWith(expect.stringMatching(/Musterlösung/));
     });
 });
 

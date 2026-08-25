@@ -55,7 +55,6 @@ describe('SettingsModal — Rollenabstufung (Layer 2)', () => {
         // Der Erfolgsfall navigiert zum Sign-out; das kann jsdom nicht. Der
         // abgelehnte Aufruf beweist dieselbe Sache ohne Navigation.
         (apiClient.post as jest.Mock).mockRejectedValue(new Error('offline'));
-        window.alert = jest.fn();
     });
 
     it('laesst einen normalen Nutzer sein Konto loeschen', () => {

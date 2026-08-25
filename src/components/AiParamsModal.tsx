@@ -10,6 +10,7 @@ import { AiProfileEditor } from './settings/AiProfileModules';
 
 // Hooks
 import { useAiProfiles } from '../hooks/useAiProfiles';
+import { meldeFehler } from '@/lib/notify';
 
 interface AiParamsModalProps {
     isOpen: boolean;
@@ -78,7 +79,7 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
             await downloadFile(jsonContent, filename, 'application/json;charset=utf-8');
         } catch (error) {
             console.error('Fehler beim Exportieren des KI-Profils:', error);
-            alert('Export fehlgeschlagen.');
+            meldeFehler('Export fehlgeschlagen.');
         }
     };
 

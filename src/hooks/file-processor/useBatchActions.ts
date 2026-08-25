@@ -5,6 +5,7 @@ import { performAIRequest, performOCRRequest } from '../../lib/ai-logic';
 import { extractTextFromFile, convertPdfToImage } from '../../lib/file-utils';
 import { parseMoodleExcel, erklaereMoodleBefund } from '../../lib/excel';
 import { toErrorMessage } from '../../lib/error-message';
+import { meldeFehler, meldeHinweis } from '@/lib/notify';
 
 export const useBatchActions = (
     state: any,
@@ -51,7 +52,7 @@ export const useBatchActions = (
             setIsImportedSession(true);
             return data;
         } catch (err) {
-            alert("Import fehlgeschlagen: " + toErrorMessage(err));
+            meldeFehler("Import fehlgeschlagen: " + toErrorMessage(err));
             return null;
         }
     }, [setBatchFiles, setIsImportedSession, setModelSolution, setTasksLayout, setModelSolutionContext]);
@@ -80,11 +81,11 @@ export const useBatchActions = (
                 // wie „nichts zu tun": kein Eintrag erschien, keine Meldung
                 // kam. Jede der drei Ursachen verlangt aber etwas anderes.
                 if (befund.art !== 'ok') {
-                    alert(`„${excelFile.name}" ergab keine Schülerarbeiten.\n\n` + erklaereMoodleBefund(befund));
+                    meldeHinweis(`„${excelFile.name}" ergab keine Schülerarbeiten.\n\n` + erklaereMoodleBefund(befund));
                 }
             } catch (err) {
                 console.error("Moodle import failed", err);
-                alert(`„${excelFile.name}" liess sich nicht lesen.\n\n${toErrorMessage(err)}`);
+                meldeFehler(`„${excelFile.name}" liess sich nicht lesen.\n\n${toErrorMessage(err)}`);
             }
         }
 

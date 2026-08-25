@@ -12,6 +12,7 @@ import { isSameName, nameTakenMessage, resolveProfileRef } from '@/lib/services/
 import { askConfirmation, confirmOverwrite } from '@/lib/confirm-dialog';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import type { ParsedProfile } from '@/lib/parsers/markdown-profile-parser';
+import { meldeErfolg, meldeFehler, meldeHinweis } from '@/lib/notify';
 
 /**
  * Deterministischer, Key-sortierter Objekt-Stringifier für robustes Dirty-Checking.
@@ -217,7 +218,7 @@ export const useSkillProfiles = (
                 if (prev.includes(newSkill.id)) return prev;
                 return [...prev, newSkill.id];
             });
-            alert(`Skill "${newSkill.name}" erfolgreich importiert und aktiviert!`);
+            meldeErfolg(`Skill "${newSkill.name}" erfolgreich importiert und aktiviert!`);
             return;
         }
 
@@ -233,7 +234,7 @@ export const useSkillProfiles = (
             return;
         }
 
-        alert("Warnung: Die importierte Datei enthält kein gültiges Skill-Set. Bitte nutze die Upload-Area für Skills rechts, wenn du einen einzelnen Skill importieren möchtest.");
+        meldeHinweis("Warnung: Die importierte Datei enthält kein gültiges Skill-Set. Bitte nutze die Upload-Area für Skills rechts, wenn du einen einzelnen Skill importieren möchtest.");
     };
 
     const handleSaveToDB = async () => {
@@ -243,7 +244,7 @@ export const useSkillProfiles = (
         const zielId = isCreatingNew ? '' : selectedProfileId;
         const nameToSave = isCreatingNew ? newProfileName.trim() : (selectedProfileData?.name || '');
         if (!nameToSave) {
-            alert("Bitte gib einen Namen für das Skill-Profil ein.");
+            meldeHinweis("Bitte gib einen Namen für das Skill-Profil ein.");
             return;
         }
 
@@ -257,7 +258,7 @@ export const useSkillProfiles = (
             // dateibasierte und die Desktop-Ablage legten bisher ein gleichnamiges
             // Nutzerprofil daneben — es erschien dann in beiden Listen-Abschnitten.
             if (istSystemName) {
-                alert('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
+                meldeHinweis('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
                 return;
             }
 
@@ -297,12 +298,12 @@ export const useSkillProfiles = (
             setLastSavedSkillIds(gespeicherte);
             setIsCreatingNew(false);
             setNewProfileName('');
-            alert(isDesktopTarget()
+            meldeErfolg(isDesktopTarget()
                 ? 'Skill-Profil erfolgreich lokal gespeichert!'
                 : 'Skill-Profil erfolgreich gespeichert!');
         } catch (err) {
             console.error('Save Skill Error:', toErrorMessage(err));
-            alert(`Fehler: ${toErrorMessage(err, 'Speichern fehlgeschlagen')}`);
+            meldeFehler(`Fehler: ${toErrorMessage(err, 'Speichern fehlgeschlagen')}`);
         } finally {
             setSaving(false);
         }
@@ -344,7 +345,7 @@ export const useSkillProfiles = (
                 setLastSavedSkillIds(standard.activeSkillIds);
             }
         } catch (err) {
-            alert(toErrorMessage(err, 'Löschen fehlgeschlagen.'));
+            meldeFehler(toErrorMessage(err, 'Löschen fehlgeschlagen.'));
         }
     };
 
@@ -357,7 +358,7 @@ export const useSkillProfiles = (
         try {
             const erfolgreich = await benenneSkillProfilUm(editingProfileId, editingName);
             if (!erfolgreich) {
-                alert(nameTakenMessage('Skill-Profil'));
+                meldeHinweis(nameTakenMessage('Skill-Profil'));
                 return;
             }
 
@@ -367,7 +368,7 @@ export const useSkillProfiles = (
             await fetchProfiles();
             setEditingProfileId(null);
         } catch (err) {
-            alert(toErrorMessage(err, 'Fehler beim Umbenennen'));
+            meldeFehler(toErrorMessage(err, 'Fehler beim Umbenennen'));
         }
     };
 

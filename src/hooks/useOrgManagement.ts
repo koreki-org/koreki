@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { apiClient } from '@/lib/api-client';
+import { meldeFehler } from '@/lib/notify';
 
 export interface OrgMember {
     id: string;
@@ -90,7 +91,7 @@ export const useOrgManagement = () => {
                 await fetchData();
             } else {
                 const data = await res.json();
-                alert(data.message || "Fehler beim Aktualisieren");
+                meldeFehler(data.message || "Fehler beim Aktualisieren");
             }
         } finally {
             setActionLoading(null);
@@ -109,7 +110,7 @@ export const useOrgManagement = () => {
                 await fetchData();
             } else {
                 const data = await res.json();
-                alert(data.message || "Fehler beim Entfernen");
+                meldeFehler(data.message || "Fehler beim Entfernen");
             }
         } finally {
             setActionLoading(null);
@@ -128,7 +129,7 @@ export const useOrgManagement = () => {
                 await fetchData();
             } else {
                 const data = await res.json();
-                alert(data.message || "Fehler beim Rollenwechsel");
+                meldeFehler(data.message || "Fehler beim Rollenwechsel");
             }
         } finally {
             setActionLoading(null);

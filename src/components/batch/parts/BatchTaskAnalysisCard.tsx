@@ -14,6 +14,7 @@ import { SecondOpinionDrawer } from './SecondOpinionDrawer';
 import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
 import { AnonymizeModal } from './AnonymizeModal';
 import { toErrorMessage } from '../../../lib/error-message';
+import { meldeErfolg, meldeFehler, meldeHinweis } from '@/lib/notify';
 
 interface BatchTaskAnalysisCardProps {
     item: BatchFile;
@@ -127,15 +128,15 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
 
     const handleStartAnonymize = async (taskName: string, originalText: string, points: number, notes: string, maxPoints?: number) => {
         if (!targetMemoryId) {
-            alert('Bitte wähle zuerst einen Ziel-Erfahrungsschatz aus.');
+            meldeHinweis('Bitte wähle zuerst einen Ziel-Erfahrungsschatz aus.');
             return;
         }
         if (!originalText.trim()) {
-            alert('Keine Schülerlösung für diese Aufgabe gefunden.');
+            meldeHinweis('Keine Schülerlösung für diese Aufgabe gefunden.');
             return;
         }
         if (!notes.trim()) {
-            alert('Bitte trage zuerst eine Begründung im Feedback-Feld ein.');
+            meldeHinweis('Bitte trage zuerst eine Begründung im Feedback-Feld ein.');
             return;
         }
 
@@ -229,15 +230,15 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
 
     const handleSaveToMemory = async (taskName: string, studentText: string, points: number, notes: string, maxPoints?: number) => {
         if (!targetMemoryId) {
-            alert('Bitte wähle zuerst einen Ziel-Erfahrungsschatz aus.');
+            meldeHinweis('Bitte wähle zuerst einen Ziel-Erfahrungsschatz aus.');
             return;
         }
         if (!studentText.trim()) {
-            alert('Keine Schülerlösung für diese Aufgabe gefunden.');
+            meldeHinweis('Keine Schülerlösung für diese Aufgabe gefunden.');
             return;
         }
         if (!notes.trim()) {
-            alert('Bitte trage zuerst eine Begründung im Feedback-Feld ein.');
+            meldeHinweis('Bitte trage zuerst eine Begründung im Feedback-Feld ein.');
             return;
         }
 
@@ -289,7 +290,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                 
                 await refreshMemories();
                 setSavingTaskId(null);
-                alert('Erfolgreich in den lokalen Erfahrungsschatz aufgenommen! 🎓');
+                meldeErfolg('Erfolgreich in den lokalen Erfahrungsschatz aufgenommen! 🎓');
             } else {
                 // --- SAAS VPS CLOUD DB SYNC ---
                 const res = await apiClient.post('/api/user/grading-memories/append', {
@@ -306,15 +307,15 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                 if (res.ok) {
                     await refreshMemories();
                     setSavingTaskId(null);
-                    alert('Erfolgreich in den Erfahrungsschatz aufgenommen! 🎓');
+                    meldeErfolg('Erfolgreich in den Erfahrungsschatz aufgenommen! 🎓');
                 } else {
                     const errData = await res.json();
-                    alert(errData.message || 'Fehler beim Speichern in den Erfahrungsschatz.');
+                    meldeFehler(errData.message || 'Fehler beim Speichern in den Erfahrungsschatz.');
                 }
             }
         } catch (err) {
             console.error('[BatchTaskAnalysisCard:Append] Unexpected error:', err);
-            alert('Netzwerkfehler beim Anlernen des Falls.');
+            meldeFehler('Netzwerkfehler beim Anlernen des Falls.');
         } finally {
             setIsPending(false);
         }

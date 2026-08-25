@@ -10,6 +10,7 @@ import { useBatchState } from './file-processor/useBatchState';
 import { useBatchActions } from './file-processor/useBatchActions';
 import { useProcessingPipeline } from './file-processor/useProcessingPipeline';
 import { toErrorMessage, isRateLimitError } from '../lib/error-message';
+import { meldeFehler, meldeHinweis } from '@/lib/notify';
 
 export const useFileProcessor = (
     userData: any,
@@ -145,11 +146,13 @@ export const useFileProcessor = (
                 throw new Error("Koreki konnte keine Aufgabenstruktur in diesem Dokument erkennen. Bitte prüfe die PDF-Qualität.");
             }
         } catch (err) {
-            const isRateLimit = isRateLimitError(err);
-            alert(isRateLimit 
-                ? "Der KI-Server ist gerade ausgelastet. Bitte warten Sie ca. 30 Sekunden und versuchen es erneut."
-                : "Fehler bei Musterlösung: " + toErrorMessage(err)
-            );
+            // Ein ausgelasteter Server ist kein Defekt, sondern eine Bitte um
+            // Geduld — und er verlangt vom Nutzer etwas anderes als ein Fehler.
+            if (isRateLimitError(err)) {
+                meldeHinweis('Der KI-Server ist gerade ausgelastet. Bitte warten Sie ca. 30 Sekunden und versuchen es erneut.');
+            } else {
+                meldeFehler('Fehler bei Musterlösung: ' + toErrorMessage(err));
+            }
         } finally {
             setIsLoadingModel(false);
         }

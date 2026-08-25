@@ -7,6 +7,7 @@ import { isSameName, nameTakenMessage, resolveProfileRef } from '@/lib/services/
 import { askConfirmation, confirmOverwrite } from '@/lib/confirm-dialog';
 import { createProfileStore } from '@/lib/services/profile-store';
 import { toErrorMessage } from '@/lib/error-message';
+import { meldeErfolg, meldeFehler, meldeHinweis } from '@/lib/notify';
 
 /** Ablage der KI-Profile — Desktop wie Server, siehe profile-store. */
 const aiProfileStore = createProfileStore<AiProfile>({
@@ -249,7 +250,7 @@ export const useAiProfiles = (
         let zielId = isCreatingNew ? '' : selectedProfileId;
         const nameToSave = isCreatingNew ? newProfileName.trim() : (selectedProfileData?.name || '');
         if (!nameToSave) {
-            alert("Bitte gib einen Namen für das KI-Profil ein.");
+            meldeHinweis("Bitte gib einen Namen für das KI-Profil ein.");
             return;
         }
 
@@ -259,7 +260,7 @@ export const useAiProfiles = (
         // ungefragt eine namensgleiche Dublette.
         if (isCreatingNew) {
             if (profiles.some(p => p.isSystem && isSameName(p.name, nameToSave))) {
-                alert('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
+                meldeHinweis('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
                 return;
             }
 
@@ -330,7 +331,7 @@ export const useAiProfiles = (
             setNewProfileName('');
             setSelectedProfileId(gespeicherteId);
             await fetchProfiles();
-            alert("KI-Profil erfolgreich lokal gespeichert!");
+            meldeErfolg("KI-Profil erfolgreich lokal gespeichert!");
             setSaving(false);
             return;
         }
@@ -344,13 +345,13 @@ export const useAiProfiles = (
                 await fetchProfiles();
                 setIsCreatingNew(false);
                 setNewProfileName('');
-                alert("KI-Profil erfolgreich gespeichert!");
+                meldeErfolg("KI-Profil erfolgreich gespeichert!");
             } else {
-                alert(`Fehler: ${data.message || 'Speichern fehlgeschlagen'}`);
+                meldeFehler(`Fehler: ${data.message || 'Speichern fehlgeschlagen'}`);
             }
         } catch (err) {
             console.error("Save AI Profile Error:", err);
-            alert("Speichern fehlgeschlagen. Bitte Internetverbindung prüfen.");
+            meldeFehler("Speichern fehlgeschlagen. Bitte Internetverbindung prüfen.");
         } finally {
             setSaving(false);
         }
@@ -369,7 +370,7 @@ export const useAiProfiles = (
                 handleSelectProfile(STANDARD_AI_PROFILE);
             }
         } catch (err) {
-            alert(toErrorMessage(err, 'Löschen fehlgeschlagen.'));
+            meldeFehler(toErrorMessage(err, 'Löschen fehlgeschlagen.'));
         }
     };
 
@@ -382,7 +383,7 @@ export const useAiProfiles = (
         try {
             const erfolgreich = await aiProfileStore.benenneUm(editingProfileId, editingName);
             if (!erfolgreich) {
-                alert(nameTakenMessage('KI-Profil'));
+                meldeHinweis(nameTakenMessage('KI-Profil'));
                 return;
             }
 
@@ -390,7 +391,7 @@ export const useAiProfiles = (
             await fetchProfiles();
             setEditingProfileId(null);
         } catch (err) {
-            alert(toErrorMessage(err, 'Fehler beim Umbenennen'));
+            meldeFehler(toErrorMessage(err, 'Fehler beim Umbenennen'));
         }
     };
 

@@ -5,6 +5,7 @@ import { Button } from './ui/Button';
 import { Checkbox } from './ui/Checkbox';
 import { useRedactionEngine } from '../hooks/useRedactionEngine';
 import { RedactionRectMap, RedactionScope, buildRedactionTemplate } from '../lib/privacy-utils';
+import { meldeFehler } from '@/lib/notify';
 
 /**
  * Industrial Redaction Modal (Stage 8)
@@ -73,7 +74,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
         try {
             await handlers.processAndAnonymize(handleSave);
         } catch (err) {
-            alert(err instanceof Error ? err.message : 'Die Schwärzung konnte nicht angewendet werden.');
+            meldeFehler(err instanceof Error ? err.message : 'Die Schwärzung konnte nicht angewendet werden.');
         }
     };
 

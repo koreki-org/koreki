@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { FloatingActions } from '@/components/ui/FloatingActions';
 import { useFileDropZone } from '@/hooks/useFileDropZone';
+import { meldeHinweis } from '@/lib/notify';
 
 /**
  * Seitenleiste der KI-Profile — Auswahl, Umbenennen, Import, Export.
@@ -53,7 +54,7 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
         try {
             onImportProfile(JSON.parse(await file.text()));
         } catch (err) {
-            alert('Ungültiges KI-Profil-Format (JSON erwartet).');
+            meldeHinweis('Ungültiges KI-Profil-Format (JSON erwartet).');
         }
     };
 
