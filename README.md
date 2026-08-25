@@ -97,6 +97,14 @@ Koreki verfolgt eine klare **Open-Core & Dual-Licensing** Strategie:
 
 ---
 
+## 📣 Auf dem Laufenden bleiben
+
+- **Website**: [koreki.org](https://koreki.org)
+- **LinkedIn**: [Koreki](https://www.linkedin.com/company/koreki-org/) — Datenhoheit, Regulatorik und Einsatz an Schulen
+- **Instagram**: [@koreki_org](https://www.instagram.com/koreki_org/) — Einblicke für Lehrkräfte
+
+---
+
 ## ⚖️ Rechtlicher Hinweis & Haftungsausschluss
 
 **WICHTIG:** Koreki ist ein Werkzeug zur *Unterstützung* des Korrekturprozesses. Die finale pädagogische Verantwortung und die Notengebung liegen ausschließlich bei der Lehrkraft.
