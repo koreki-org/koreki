@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ShieldCheck, AlertTriangle } from 'lucide-react';
 import { Button } from './ui/Button';
+import { useDialogA11y } from '@/hooks/useDialogA11y';
 
 interface ConfirmationModalProps {
     isOpen: boolean;
@@ -11,6 +12,17 @@ interface ConfirmationModalProps {
     onCancel: () => void;
 }
 
+const TITLE_ID = 'confirmation-modal-title';
+const MESSAGE_ID = 'confirmation-modal-message';
+
+/**
+ * Rueckfrage vor einer folgenreichen Aktion.
+ *
+ * Anders als das Onboarding-Modal ist dieser Dialog schliessbar — es gibt einen
+ * Abbruch-Weg, also muss er auch ueber Escape und den Backdrop erreichbar sein.
+ * Deshalb der eigene Escape-Handler: `useDialogA11y` liefert bewusst keinen,
+ * weil er auch blockierende Dialoge bedient.
+ */
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     isOpen,
     title,
@@ -18,39 +30,46 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     onConfirm,
     onCancel
 }) => {
-    const [mounted, setMounted] = useState(false);
+    const { mounted, dialogRef } = useDialogA11y<HTMLDivElement>(isOpen);
 
     useEffect(() => {
-        setMounted(true);
-        if (isOpen) {
-            document.body.style.overflow = 'hidden';
-        }
-        return () => {
-            document.body.style.overflow = 'unset';
+        if (!isOpen) return;
+
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') onCancel();
         };
-    }, [isOpen]);
+
+        document.addEventListener('keydown', handleEscape);
+        return () => document.removeEventListener('keydown', handleEscape);
+    }, [isOpen, onCancel]);
 
     if (!isOpen || !mounted) return null;
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[8000] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300"
+            className="fixed inset-0 z-[8000] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-fade-in"
             onClick={onCancel}
         >
             <div
-                className="relative w-full max-w-[500px] bg-white rounded-hero p-8 shadow-glass border border-border animate-in zoom-in-95 duration-500 overflow-hidden"
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={TITLE_ID}
+                aria-describedby={MESSAGE_ID}
+                tabIndex={-1}
+                className="relative w-full max-w-[500px] bg-white rounded-hero p-8 shadow-glass border border-border overflow-hidden focus:outline-none"
                 onClick={e => e.stopPropagation()}
             >
                 <div className="flex items-center gap-4 mb-6 text-primary">
-                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
                         <ShieldCheck size={28} />
                     </div>
-                    <h2 className="text-xl font-bold tracking-tight text-foreground">{title}</h2>
+                    <h2 id={TITLE_ID} className="text-xl font-bold tracking-tight text-foreground">{title}</h2>
                 </div>
 
-                <div className="bg-primary/5 p-5 rounded-2xl border border-primary/20 mb-8 flex items-start gap-4">
+                <div className="bg-primary/5 p-5 rounded-xl border border-primary/20 mb-8 flex items-start gap-4">
                     <AlertTriangle size={24} className="text-primary shrink-0 mt-0.5" />
-                    <div className="text-sm font-medium text-foreground leading-relaxed">
+                    <div id={MESSAGE_ID} className="text-sm font-medium text-foreground leading-relaxed">
                         {message}
                     </div>
                 </div>

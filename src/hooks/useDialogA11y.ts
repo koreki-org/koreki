@@ -8,6 +8,12 @@ import { useEffect, useRef, useState } from 'react';
  * eine Fokusfalle. Ohne die Falle laeuft der Tastatur-Fokus hinter das Overlay
  * weiter — der Nutzer bedient dann Bedienelemente, die er nicht sieht.
  *
+ * Der Parameter `active` steuert, ob der Dialog gerade offen ist. Dialoge, die
+ * ueber eine Prop auf- und zugeschaltet werden (ConfirmationModal), bleiben als
+ * Komponente montiert — ohne diesen Schalter liefe der Aufbau genau einmal und
+ * beim zweiten Oeffnen gaebe es weder Scroll-Sperre noch Fokusfalle. Wer
+ * dauerhaft offen ist (Onboarding), laesst ihn weg.
+ *
  * Der Hook gibt nur zwei Dinge zurueck:
  * - `mounted`: erst nach dem ersten Client-Render `true`, damit `createPortal`
  *   nicht schon beim Server-Rendering nach `document.body` greift.
@@ -32,7 +38,7 @@ const collectFocusable = (root: HTMLElement): HTMLElement[] =>
     Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR))
         .filter((element) => element.offsetParent !== null || element === root);
 
-export function useDialogA11y<T extends HTMLElement>() {
+export function useDialogA11y<T extends HTMLElement>(active: boolean = true) {
     const [mounted, setMounted] = useState(false);
     const dialogRef = useRef<T | null>(null);
 
@@ -42,7 +48,7 @@ export function useDialogA11y<T extends HTMLElement>() {
 
     useEffect(() => {
         const dialog = dialogRef.current;
-        if (!mounted || !dialog) return;
+        if (!mounted || !active || !dialog) return;
 
         const previouslyFocused = document.activeElement instanceof HTMLElement
             ? document.activeElement
@@ -84,7 +90,7 @@ export function useDialogA11y<T extends HTMLElement>() {
             document.body.style.overflow = previousOverflow;
             previouslyFocused?.focus();
         };
-    }, [mounted]);
+    }, [mounted, active]);
 
     return { mounted, dialogRef };
 }
