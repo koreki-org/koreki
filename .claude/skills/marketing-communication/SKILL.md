@@ -25,9 +25,11 @@ Details im Skill `koreki-design-system`. Farbwerte in `brand.css` sind Kopien de
 
 ## 3. Keine Zahl ohne Beleg
 
-Koreki ist als **Hochrisiko-KI-System** eingestuft (Anhang III Nr. 3 b, EU-Verordnung 2024/1689). Art. 13 verpflichtet zur Transparenz über Fähigkeiten, Grenzen und systemimmanente Verzerrungen. Werbung, die dem widerspricht, erzeugt einen Konflikt zwischen Marketing und Betriebsanleitung.
+Keine Zeitersparnis, kein Prozentsatz, keine Geschwindigkeitsangabe ohne Messung, auf die man zeigen kann.
 
-Praktisch heißt das: keine Zeitersparnis, kein Prozentsatz, keine Geschwindigkeitsangabe ohne Messung, auf die man zeigen kann.
+Der Grund ist nicht Bescheidenheit. Koreki bewegt sich in einem regulierten Feld — KI zur Bewertung von Lernergebnissen —, in dem die eigene Dokumentation über Fähigkeiten und Grenzen Aufschluss geben muss. Werbung, die mehr verspricht als die Dokumentation hergibt, erzeugt einen Widerspruch im eigenen Haus.
+
+> **Keine regulatorische Selbsteinstufung in Marketing-Material.** Ob und wie Koreki unter die EU-KI-Verordnung fällt, ist eine Rechtsfrage, die je nach Betriebsart unterschiedlich ausfallen kann und die nicht in einer Grafik beantwortet wird. Werbetexte beschreiben, was das System tut — nicht, welchen Rechtsstatus es hat.
 
 **Die Regel, die trägt:** Belegbare Aussagen beschreiben, was das System *tut* oder *weiß* — nicht, wie gut sein Ergebnis ist.
 
@@ -42,7 +44,7 @@ Kein Fachvokabular. Begriffe wie „Telemetrie", „Open Source" oder „determi
 
 ## 5. Was nie behauptet wird
 
-Die Notengebung liegt bei der Lehrkraft. Kein Post, kein Screenshot und keine Überschrift darf Vollautomatik suggerieren — das widerspricht der menschlichen Aufsicht (Art. 14) und der Betriebsanleitung.
+Die Notengebung liegt bei der Lehrkraft. Kein Post, kein Screenshot und keine Überschrift darf Vollautomatik suggerieren. Das ist keine Formulierungsfrage: Dass Koreki ausschließlich Vorschläge macht und die Entscheidung nachweislich beim Menschen bleibt, ist eine tragende Eigenschaft des Produkts — Werbung, die etwas anderes andeutet, beschädigt sie.
 
 Konkrete Bewertungsergebnisse gehören nicht auf Grafiken, soweit sie aus KI-Ermessen stammen: Ein abgedrucktes „9/15, Note 3,0" ist ein Versprechen, das ein realer Durchlauf nicht halten muss. Deterministisch geprüfte Werte (CalcTrace-Sandbox) sind die Ausnahme.
 
