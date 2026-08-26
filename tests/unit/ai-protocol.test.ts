@@ -2,6 +2,7 @@ import {
     erzeugeBewertungsEintraege,
     erzeugeKorrekturEintraege,
     erzeugeFehlerEintrag,
+    erzeugeBestaetigungsEintrag,
     alsProtokolltext,
     type PunktStand
 } from '@/lib/ai-protocol';
@@ -113,6 +114,20 @@ describe('Protokoll der KI-Laeufe', () => {
         expect(felder).not.toContain('studentText');
         expect(felder).not.toContain('name');
         expect(felder).not.toContain('feedback');
+    });
+
+    it('haelt EINE Bestaetigung fuer den ganzen Stapel fest, nicht eine je Arbeit', () => {
+        const eintrag = erzeugeBestaetigungsEintrag(25);
+        expect(eintrag).toMatchObject({ ereignis: 'bestaetigt', punkte: null });
+        expect(eintrag.aufgabe).toContain('25 Arbeiten');
+
+        // Eine menschliche Bestaetigung traegt keine Modellangabe — sie wuerde
+        // etwas ueber einen Aufruf behaupten, den es nicht gab. Auch dann nicht,
+        // wenn Einstellungen uebergeben werden.
+        const text = alsProtokolltext([erzeugeBestaetigungsEintrag(25, settings)]);
+        expect(text).not.toContain('mistral');
+        // Sie gehoert auch zu keiner einzelnen Arbeit.
+        expect(text).not.toContain('Schüler #0');
     });
 
     it('bleibt bei leerem Protokoll ausgebbar', () => {

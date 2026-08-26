@@ -3,8 +3,9 @@ import { Download, Info, BarChart3, QrCode, ChevronDown, ScrollText } from 'luci
 import { Button } from '../ui/Button';
 import { cn } from '@/lib/utils';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
-import { alsProtokolltext } from '@/lib/ai-protocol';
+import { alsProtokolltext, erzeugeBestaetigungsEintrag } from '@/lib/ai-protocol';
 import { downloadFile } from '@/lib/file-utils';
+import { askConfirmation } from '@/lib/confirm-dialog';
 
 interface ExportToolbarProps {
     onExportTeacher: () => void;
@@ -34,6 +35,35 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
     // sie steht unter der Groessen-Ratsche.
     const protokoll = useBatchStore((state) => state.protokoll);
 
+    const bestaetigt = useBatchStore((state) => state.bewertungenBestaetigt);
+    const anzahlArbeiten = useBatchStore(
+        (state) => state.batchFiles.filter((f) => f.status === 'done').length
+    );
+
+    /**
+     * Einmalige Bestaetigung, bevor Bewertungen das Haus verlassen.
+     *
+     * Vorbild ist die Bestaetigung vor der Bilderkennung: eine bewusste
+     * Erklaerung an der Stelle, an der es darauf ankommt — nicht ein Haken je
+     * Arbeit. Art. 14 verlangt, dass wirksame Aufsicht moeglich ist, nicht dass
+     * der Anbieter jeden Blick der Lehrkraft mitschreibt. Ein neuer
+     * Korrekturlauf setzt die Bestaetigung zurueck.
+     */
+    const mitBestaetigung = (aktion: () => void) => async () => {
+        if (!bestaetigt) {
+            const weiter = await askConfirmation({
+                title: 'Bewertungen bestätigen',
+                message: `Du exportierst die Bewertungen von ${anzahlArbeiten} ${anzahlArbeiten === 1 ? 'Arbeit' : 'Arbeiten'}. Bitte bestätige, dass du sie geprüft hast — die Verantwortung für die Noten liegt bei dir.`
+            });
+            if (!weiter) return;
+
+            const store = useBatchStore.getState();
+            store.setBewertungenBestaetigt(true);
+            store.protokollAnhaengen([erzeugeBestaetigungsEintrag(anzahlArbeiten)]);
+        }
+        aktion();
+    };
+
     const onProtokollSpeichern = () => {
         const datum = new Date().toISOString().slice(0, 10);
         downloadFile(alsProtokolltext(protokoll), `koreki-protokoll-${datum}.txt`, 'text/plain;charset=utf-8');
@@ -55,7 +85,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
             <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={onExportTeacher} 
+                onClick={mitBestaetigung(onExportTeacher)} 
                 className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-background border border-border hover:bg-muted/50 transition-all rounded-xl shadow-sm whitespace-nowrap"
             >
                 <Download size={16} /> Einschätzungsliste
@@ -146,7 +176,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                 <Button
                                     size="sm"
                                     onClick={() => {
-                                        onExportPDFs(pointsMode);
+                                        mitBestaetigung(() => onExportPDFs(pointsMode))();
                                         setIsFeedbackOpen(false);
                                         setPdfSettingsOpen(false);
                                     }}
@@ -160,7 +190,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        onExportStudents();
+                                        mitBestaetigung(onExportStudents)();
                                         setIsFeedbackOpen(false);
                                     }}
                                     className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-all text-left"
@@ -170,7 +200,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        onExportIndividual();
+                                        mitBestaetigung(onExportIndividual)();
                                         setIsFeedbackOpen(false);
                                     }}
                                     className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-all text-left"
@@ -198,7 +228,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
             <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={onExportDigitalSlips} 
+                onClick={mitBestaetigung(onExportDigitalSlips)} 
                 className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-background border border-border hover:bg-muted/50 transition-all rounded-xl shadow-sm whitespace-nowrap"
             >
                 <QrCode size={16} /> Digitale Slips

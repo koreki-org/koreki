@@ -26,7 +26,7 @@ import type { AppSettings } from '@/types';
  *    Nummer der Arbeit, nie der Name.
  */
 
-export type ProtokollEreignis = 'bewertung' | 'korrektur' | 'fehler';
+export type ProtokollEreignis = 'bewertung' | 'korrektur' | 'fehler' | 'bestaetigt';
 
 export interface ProtokollEintrag {
     zeit: string;
@@ -169,17 +169,40 @@ export function erzeugeKorrekturEintraege(
     return eintraege;
 }
 
+/**
+ * Die Lehrkraft bestaetigt, dass sie die Bewertungen dieses Stapels geprueft hat.
+ *
+ * EIN Eintrag fuer den ganzen Stapel, nicht einer je Arbeit. Art. 14 verlangt,
+ * dass wirksame Aufsicht MOEGLICH ist und dass der Aufbau der Automation Bias
+ * entgegenwirkt — nicht, dass der Anbieter die Lehrkraft ueberwacht. Wer jede
+ * Arbeit einzeln abhaken muesste, klickt bei 25 Arbeiten 25 Mal, und ein
+ * mechanischer Klick belegt nichts, was ein bewusster nicht auch belegt.
+ * Vorbild ist die Bestaetigung vor der Bilderkennung.
+ */
+export function erzeugeBestaetigungsEintrag(
+    anzahlArbeiten: number,
+    settings?: AppSettings
+): ProtokollEintrag {
+    return {
+        ...grundgeruest(0, ermittleHerkunft(settings || {}), 'bestaetigt'),
+        aufgabe: `${anzahlArbeiten} ${anzahlArbeiten === 1 ? 'Arbeit' : 'Arbeiten'} von der Lehrkraft geprüft`,
+        maxPunkte: null,
+        punkte: null
+    };
+}
+
 function alsZeile(e: ProtokollEintrag): string {
     const punkte = e.punkte === null ? '—' : `${e.punkte}${e.maxPunkte === null ? '' : `/${e.maxPunkte}`}`;
     const teile = [
         e.zeit,
-        e.ereignis.padEnd(9),
-        `Schüler #${e.schuelerNr}`,
+        e.ereignis.padEnd(11),
+        e.ereignis === 'bestaetigt' ? '—' : `Schüler #${e.schuelerNr}`,
         e.aufgabe,
         punkte
     ];
     if (e.ereignis === 'korrektur') teile.push(`(KI-Vorschlag: ${e.punkteVorher ?? '—'})`);
-    teile.push(`${e.anbieter}/${e.modell}`, `v${e.appVersion}`);
+    if (e.ereignis !== 'bestaetigt') teile.push(`${e.anbieter}/${e.modell}`);
+    teile.push(`v${e.appVersion}`);
     if (typeof e.dauerMs === 'number') teile.push(`${e.dauerMs}ms`);
     if (e.fehler) teile.push(`Fehler: ${e.fehler}`);
     return teile.join('  ');

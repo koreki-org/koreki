@@ -165,6 +165,9 @@ export function useCorrectionRun({
                     erzeugeBewertungsEintraege(i + 1, data.tasks, settings, duration)
                 );
             }
+            // Neue Ergebnisse, alte Bestaetigung ungueltig: die Lehrkraft hat
+            // diese Bewertung noch nicht gesehen.
+            useBatchStore.getState().setBewertungenBestaetigt(false);
 
             if (userData?.appMode !== 'PURE') {
                 setUserData(u => u ? { ...u, credits: Math.max(0, u.credits - (currentFile.pageCount || 1)) } : null);

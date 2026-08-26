@@ -40,6 +40,12 @@ interface BatchStateStore {
      *  Anhaengen wuerde Eintraege mit fremder Schuelernummerierung mischen. */
     protokollErsetzen: (eintraege: ProtokollEintrag[]) => void;
 
+    /** Die Lehrkraft hat die Bewertungen dieses Stapels bestaetigt (Art. 14 KI-VO).
+     *  Ein neuer Korrekturlauf setzt das zurueck — die Bestaetigung galt den
+     *  alten Ergebnissen. */
+    bewertungenBestaetigt: boolean;
+    setBewertungenBestaetigt: (wert: boolean) => void;
+
     activeBatchController: AbortController | null;
     registerBatchController: (controller: AbortController) => void;
     abortBatch: () => void;
@@ -83,6 +89,9 @@ export const useBatchStore = create<BatchStateStore>((set) => ({
     protokoll: [],
     protokollAnhaengen: (eintraege) => set((state) => ({ protokoll: [...state.protokoll, ...eintraege] })),
     protokollErsetzen: (eintraege) => set({ protokoll: eintraege }),
+
+    bewertungenBestaetigt: false,
+    setBewertungenBestaetigt: (wert) => set({ bewertungenBestaetigt: wert }),
 
     activeBatchController: null,
     registerBatchController: (controller) => set({ activeBatchController: controller }),
