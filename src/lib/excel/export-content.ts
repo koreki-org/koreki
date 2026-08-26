@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import { downloadFile } from '../file-utils';
 import { StudentResult } from './types';
-import { downloadWorkbook } from './utils';
+import { downloadWorkbook, schreibeWorkbook } from './utils';
 
 /** Eine Zeile des Feedback-Blatts. */
 export interface FeedbackZeile {
@@ -201,7 +201,7 @@ export const exportIndividualFeedbacks = async (results: StudentResult[]): Promi
 
     results.forEach((r, index) => {
         const wb = generateStudentWorkbook(r);
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const wbout = schreibeWorkbook(wb);
         const safeName = (r.studentName || 'Unbekannt').replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
         const fileName = `${index + 1}_Feedback_${safeName}_${dateStr}.xlsx`;
         zip.file(fileName, wbout);

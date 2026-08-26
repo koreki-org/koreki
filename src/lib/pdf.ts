@@ -4,6 +4,7 @@ import JSZip from 'jszip';
 import { StudentResult } from './excel';
 import { downloadFile } from './file-utils';
 import { toSafeString } from './validation';
+import { KI_HINWEIS_FUSSZEILE, pdfKennzeichnung } from './ai-disclosure';
 
 import { cleanDidacticalMarks, formatMarkdownTableForPDF, stripPangBlock } from './pdf-utils';
 
@@ -161,8 +162,10 @@ const generateStudentPDF = (r: StudentResult, pointsMode: 'none' | 'total' | 'de
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
         doc.text(`Seite ${i} von ${pageCount}`, 196, 285, { align: 'right' });
-        doc.text('Generiert mit Koreki - Die KI für Lehrer', 14, 285);
+        doc.text(KI_HINWEIS_FUSSZEILE, 14, 285);
     }
+
+    doc.setProperties(pdfKennzeichnung(`Feedback ${toSafeString(r.studentName || '')}`.trim()));
 
     return doc.output('blob');
 };
@@ -319,8 +322,10 @@ export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<v
         doc.setFontSize(8);
         doc.setTextColor(150, 150, 150);
         doc.text(`Seite ${i} von ${pageCount}`, 196, 285, { align: 'right' });
-        doc.text('Generiert mit Koreki - Die KI für Lehrer', 14, 285);
+        doc.text(KI_HINWEIS_FUSSZEILE, 14, 285);
     }
+
+    doc.setProperties(pdfKennzeichnung('Koreki Analyse-Report'));
 
     const blob = doc.output('blob');
     await downloadFile(blob, `Koreki_Analyse_${dateStr.replace(/\./g, '_')}.pdf`, 'application/pdf');

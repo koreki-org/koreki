@@ -6,6 +6,7 @@ import { BatchFile } from '../../types';
 import { FeedbackData, encodeFeedback } from '@/lib/distribution';
 import { stripPangBlock } from '@/lib/pdf-utils';
 import { downloadFile } from '@/lib/file-utils';
+import { KI_HINWEIS_KURZ, pdfKennzeichnung } from '@/lib/ai-disclosure';
 import { Button } from '../ui/Button';
 import Logo from '../Logo';
 
@@ -111,11 +112,13 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
             doc.setFont('helvetica', 'normal');
             doc.setTextColor(148, 163, 184);
             doc.text('Scan QR-Code für detaillierte Analyse', margin + 8, currentY + 32);
-            doc.text('Verschlüsseltes Feedback | koreki.org', margin + 8, currentY + 36);
+            doc.text(`Verschlüsseltes Feedback | ${KI_HINWEIS_KURZ}`, margin + 8, currentY + 36);
 
             currentY += slipHeight;
             count++;
         }
+
+        doc.setProperties(pdfKennzeichnung('Koreki Feedback-Slips'));
 
         const pdfBlob = doc.output('blob');
         await downloadFile(pdfBlob, `Koreki_Feedback_Slips_${new Date().toISOString().split('T')[0]}.pdf`, 'application/pdf');
