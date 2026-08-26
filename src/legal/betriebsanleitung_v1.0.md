@@ -31,4 +31,4 @@ Das System wird stichprobenartig auf sprachbedingte Ungleichbehandlung geprüft.
 
 ***
 **Stand: 07. April 2026 (v1.0)**
-*Konform gemäß Verordnung (EU) 2024/1689 (AI Act)*
+*Erstellt in Anlehnung an die Transparenzanforderungen der Verordnung (EU) 2024/1689*
