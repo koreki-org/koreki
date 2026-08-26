@@ -12,6 +12,7 @@ import { splitTextByTasks } from '@/lib/task-utils';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
 import { ensureActiveGradingMemorySynced } from '@/lib/grading-memory-sync';
 import { meldeHinweis } from '@/lib/notify';
+import { erzeugeBewertungsEintraege, erzeugeFehlerEintrag } from '@/lib/ai-protocol';
 
 /**
  * Der Korrektur-Lauf.
@@ -157,6 +158,14 @@ export function useCorrectionRun({
                 return next;
             });
 
+            // Protokoll (Art. 12 KI-VO): der Lauf wird festgehalten, sobald er
+            // abgeschlossen ist — automatisch, nicht auf Knopfdruck.
+            if (data && Array.isArray(data.tasks)) {
+                useBatchStore.getState().protokollAnhaengen(
+                    erzeugeBewertungsEintraege(i + 1, data.tasks, settings, duration)
+                );
+            }
+
             if (userData?.appMode !== 'PURE') {
                 setUserData(u => u ? { ...u, credits: Math.max(0, u.credits - (currentFile.pageCount || 1)) } : null);
             }
@@ -175,6 +184,11 @@ export function useCorrectionRun({
                 next[i] = { ...next[i], status: 'error', error: toErrorMessage(err) };
                 return next;
             });
+            // Fehlschlaege gehoeren ins Protokoll: gehaeuft sind sie das
+            // Risikosignal aus Art. 12 Abs. 2 lit. a.
+            useBatchStore.getState().protokollAnhaengen(
+                [erzeugeFehlerEintrag(i + 1, settings, toErrorMessage(err))]
+            );
         }
     }, [modelSolution, tasksLayout, userData, settings, setUserData, setBatchFiles, setCurrentProcessingIndex, ocrStrategy, expertProfileName]);
 

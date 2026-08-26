@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { BatchFile } from '../../types';
+import type { ProtokollEintrag } from '../../lib/ai-protocol';
 
 type Setter<T> = (val: T | ((prev: T) => T)) => void;
 
@@ -31,6 +32,14 @@ interface BatchStateStore {
     ocrStrategy: 'standard' | 'handwriting';
     setOcrStrategy: Setter<'standard' | 'handwriting'>;
     
+    /** Anhaengendes Protokoll der KI-Laeufe (Art. 12 KI-VO). Wird nie geaendert,
+     *  nur ergaenzt — siehe lib/ai-protocol.ts. */
+    protokoll: ProtokollEintrag[];
+    protokollAnhaengen: (eintraege: ProtokollEintrag[]) => void;
+    /** Beim Laden einer Sitzung: das Protokoll gehoert zu DIESEN Arbeiten.
+     *  Anhaengen wuerde Eintraege mit fremder Schuelernummerierung mischen. */
+    protokollErsetzen: (eintraege: ProtokollEintrag[]) => void;
+
     activeBatchController: AbortController | null;
     registerBatchController: (controller: AbortController) => void;
     abortBatch: () => void;
@@ -70,6 +79,10 @@ export const useBatchStore = create<BatchStateStore>((set) => ({
     
     ocrStrategy: 'standard',
     setOcrStrategy: createSetter(set, 'ocrStrategy'),
+
+    protokoll: [],
+    protokollAnhaengen: (eintraege) => set((state) => ({ protokoll: [...state.protokoll, ...eintraege] })),
+    protokollErsetzen: (eintraege) => set({ protokoll: eintraege }),
 
     activeBatchController: null,
     registerBatchController: (controller) => set({ activeBatchController: controller }),

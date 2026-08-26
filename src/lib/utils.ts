@@ -3,6 +3,7 @@ import { extendTailwindMerge } from 'tailwind-merge';
 
 import { BatchFile } from '../types';
 import { downloadFile } from './file-utils';
+import { useBatchStore } from '@/hooks/store/useBatchStore';
 
 const customTwMerge = extendTailwindMerge({
     classGroups: {
@@ -40,7 +41,12 @@ export async function exportSessionToJson(
         tasksLayout,
         batchFiles,
         timestamp: new Date().toISOString(),
-        metadata: metadata || {}
+        metadata: metadata || {},
+        // Das Protokoll der KI-Laeufe reist mit der Sitzung (Art. 12 KI-VO).
+        // Es kommt direkt aus dem Store — der Weg ueber app.tsx waere der
+        // einzige, der jene Datei vergroessern wuerde, und die steht unter der
+        // Groessen-Ratsche. Vorbild: lib/skills/skill-persistence.ts.
+        protokoll: useBatchStore.getState().protokoll
     };
 
     const data = JSON.stringify(exportData, (key, value) => {

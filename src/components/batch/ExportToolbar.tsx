@@ -1,7 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Download, Info, BarChart3, QrCode, ChevronDown } from 'lucide-react';
+import { Download, Info, BarChart3, QrCode, ChevronDown, ScrollText } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { cn } from '@/lib/utils';
+import { useBatchStore } from '@/hooks/store/useBatchStore';
+import { alsProtokolltext } from '@/lib/ai-protocol';
+import { downloadFile } from '@/lib/file-utils';
 
 interface ExportToolbarProps {
     onExportTeacher: () => void;
@@ -26,6 +29,15 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
     const [pdfSettingsOpen, setPdfSettingsOpen] = useState(false);
     const [pointsMode, setPointsMode] = useState<'none' | 'total' | 'detailed'>('detailed');
     const feedbackRef = useRef<HTMLDivElement>(null);
+    // Das Protokoll kommt direkt aus dem Store statt als Eigenschaft: der Weg
+    // ueber app.tsx waere der einzige, der jene Datei vergroessern wuerde, und
+    // sie steht unter der Groessen-Ratsche.
+    const protokoll = useBatchStore((state) => state.protokoll);
+
+    const onProtokollSpeichern = () => {
+        const datum = new Date().toISOString().slice(0, 10);
+        downloadFile(alsProtokolltext(protokoll), `koreki-protokoll-${datum}.txt`, 'text/plain;charset=utf-8');
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -191,6 +203,18 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
             >
                 <QrCode size={16} /> Digitale Slips
             </Button>
+
+            {protokoll.length > 0 && (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onProtokollSpeichern}
+                    title="Aufzeichnung der KI-Läufe speichern (Art. 12 KI-VO)"
+                    className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-background border border-border hover:bg-muted/50 transition-all rounded-xl shadow-sm whitespace-nowrap"
+                >
+                    <ScrollText size={16} /> Protokoll
+                </Button>
+            )}
 
             <div className="flex items-center gap-3 w-full lg:w-auto mt-1 lg:mt-0 lg:ml-auto flex-wrap sm:flex-nowrap">
                 <Button 

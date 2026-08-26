@@ -6,6 +6,8 @@ import { extractTextFromFile, convertPdfToImage } from '../../lib/file-utils';
 import { parseMoodleExcel, erklaereMoodleBefund } from '../../lib/excel';
 import { toErrorMessage } from '../../lib/error-message';
 import { meldeFehler, meldeHinweis } from '@/lib/notify';
+import { useBatchStore } from '@/hooks/store/useBatchStore';
+import { erzeugeKorrekturEintraege } from '@/lib/ai-protocol';
 
 export const useBatchActions = (
     state: any,
@@ -47,6 +49,9 @@ export const useBatchActions = (
                 // Aeltere .koreki-Dateien kennen das Feld nicht — dann bleibt der Rahmen leer.
                 if (setModelSolutionContext) setModelSolutionContext(typeof data.modelSolutionContext === 'string' ? data.modelSolutionContext : '');
             }
+
+            // Aeltere .koreki-Dateien kennen kein Protokoll — dann bleibt es leer.
+            useBatchStore.getState().protokollErsetzen(Array.isArray(data?.protokoll) ? data.protokoll : []);
 
             setBatchFiles(importedFiles);
             setIsImportedSession(true);
@@ -170,6 +175,17 @@ export const useBatchActions = (
     }, [setBatchFiles]);
 
     const onUpdateText = useCallback((idx: number, text: string, tasksForResults?: Task[]) => {
+        // Protokoll (Art. 12 KI-VO): Die Korrektur der Lehrkraft ist ein eigener
+        // Eintrag, kein Ueberschreiben des alten — so entsteht die Abweichung
+        // zwischen KI-Vorschlag und Endnote von selbst.
+        if (tasksForResults) {
+            const vorher = useBatchStore.getState().batchFiles[idx];
+            if (vorher?.status === 'done' && vorher.result?.tasks) {
+                useBatchStore.getState().protokollAnhaengen(
+                    erzeugeKorrekturEintraege(idx + 1, vorher.result.tasks, tasksForResults, settings)
+                );
+            }
+        }
         setBatchFiles((prev: BatchFile[]) => {
             const next = [...prev];
             const updatedItem = { ...next[idx] };
@@ -208,7 +224,7 @@ export const useBatchActions = (
             next[idx] = updatedItem;
             return next;
         });
-    }, [setBatchFiles]);
+    }, [setBatchFiles, settings]);
 
     /**
      * INDUSTRIAL RE-CORRECTION: Resets all 'done' and 'error' files to 'pending' to allow re-run with new prompts.

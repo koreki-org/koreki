@@ -11,6 +11,12 @@ const nextConfig = {
         return config;
     },
     reactStrictMode: true,
+    // Die App-Version wandert in jeden Protokolleintrag (Art. 12 KI-VO). Die
+    // Prompts haengen ueber Git am Build, deshalb identifiziert die Version den
+    // verwendeten Prompt-Stand.
+    env: {
+        NEXT_PUBLIC_APP_VERSION: require('./package.json').version,
+    },
     // TypeScript strict mode: Build fails on type errors.
     // All 21 original TS errors were resolved (2026-05-03).
     typescript: {
