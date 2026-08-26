@@ -157,6 +157,8 @@ jest.mock('jspdf', () => {
         getTextWidth: jest.fn().mockReturnValue(10),
         addImage: jest.fn(),
         addPage: jest.fn(),
+        // Kennzeichnung KI-erzeugter Inhalte (siehe src/lib/ai-disclosure.ts).
+        setProperties: jest.fn(),
     }));
     return {
         __esModule: true,
