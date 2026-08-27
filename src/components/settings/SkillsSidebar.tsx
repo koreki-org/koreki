@@ -66,15 +66,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
         }
     };
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        await importProfileFile(file);
-        if (fileInputRef.current) fileInputRef.current.value = '';
-    };
-
-    const { isDragging, dragProps } = useFileDropZone(importProfileFile);
+    const { isDragging, dragProps, onFileInputChange } = useFileDropZone(importProfileFile);
 
     return (
         <div 
@@ -99,7 +91,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                 <input 
                     type="file" 
                     ref={fileInputRef} 
-                    onChange={handleFileChange} 
+                    onChange={onFileInputChange}
                     accept=".md" 
                     className="hidden" 
                 />

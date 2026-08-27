@@ -62,16 +62,7 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
         }
     };
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        await importProfileFile(file);
-        // Reset input so the same file can be uploaded again if needed
-        if (fileInputRef.current) fileInputRef.current.value = '';
-    };
-
-    const { isDragging, dragProps } = useFileDropZone(importProfileFile);
+    const { isDragging, dragProps, onFileInputChange } = useFileDropZone(importProfileFile);
 
     return (
     <div 
@@ -96,7 +87,7 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
             <input 
                 type="file" 
                 ref={fileInputRef} 
-                onChange={handleFileChange} 
+                onChange={onFileInputChange}
                 accept=".md,.json" 
                 className="hidden" 
             />

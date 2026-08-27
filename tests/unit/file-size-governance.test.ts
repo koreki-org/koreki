@@ -144,7 +144,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // 420 -> 400: dieselbe Umstellung wie bei useAiProfiles.
     'hooks/usePromptProfiles.ts': 398, // s. useSkillProfiles — gleicher Wächter
     'components/batch/parts/SecondOpinionDrawer.tsx': 388,
-    'components/settings/ProfileModules.tsx': 350,
+    'components/settings/ProfileModules.tsx': 341,
     'pages/features.tsx': 347,
     // 342 -> 316: die Vorschau-Zeichnung ist nach lib/redaction-preview gezogen
     // (architectural-vision §6.1 — die Komponente steuert nur noch, WANN gezeichnet wird).
