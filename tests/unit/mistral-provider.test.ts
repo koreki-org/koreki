@@ -168,12 +168,20 @@ describe('Mistral Provider (Bridge) - Unit Tests', () => {
         });
 
         it('should use valid official Mistral model identifiers', () => {
-            const validModelRegex = /^mistral-(large|medium|small|ocr|embed|chats)-latest$|^pixtral-/;
+            // Seit 27.08.2026 sind feste Versionen vorgeschrieben: 'mistral-large-2512'
+            // statt 'mistral-large-latest'. Bewegliche Kennungen fallen hier durch.
+            const validModelRegex = /^mistral-(large|medium|small|ocr|embed|chats)-\d[\d.-]*$|^pixtral-/;
             expect(constants.MISTRAL_CORE_MODEL).toMatch(validModelRegex);
             expect(constants.MISTRAL_MEDIUM_MODEL).toMatch(validModelRegex);
             expect(constants.MISTRAL_UTILS_MODEL).toMatch(validModelRegex);
             expect(constants.MISTRAL_OCR_MODEL).toMatch(validModelRegex);
-            expect(constants.MISTRAL_MEDIUM_MODEL).not.toContain('2604');
+            // UMGEKEHRT am 27.08.2026. Hier stand `not.toContain('2604')` — der
+            // Riegel aus 25168ec ("model aliases", 29.07.2026) erzwang die
+            // bewegliche Kennung und verbot die datierte Version. Seit der
+            // Umstellung auf feste Versionen gilt das Gegenteil: Ein Modell, das
+            // sich hinter dem Ruecken aendern kann, macht jede gemessene
+            // Genauigkeit und jeden Protokolleintrag wertlos.
+            expect(constants.MISTRAL_MEDIUM_MODEL).not.toMatch(/-latest$/);
         });
     });
 

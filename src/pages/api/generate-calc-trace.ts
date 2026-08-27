@@ -1,4 +1,5 @@
 import { AIConfigError, resolveAiHttpError } from '@/lib/ai/provider-error';
+import { MISTRAL_MEDIUM_MODEL } from '@/lib/ai/constants';
 import type { NextApiResponse } from 'next';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
@@ -96,7 +97,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                     if (!apiKey) throw new AIConfigError('Mistral API-Key fehlt.');
 
                     // Always use the highly capable medium model for complex extraction tasks when using Mistral
-                    const mistralModel = settings?.model || 'mistral-medium-latest';
+                    const mistralModel = settings?.model || MISTRAL_MEDIUM_MODEL;
 
                     rawResult = await executeMistralRequest(
                         'generate-calc-trace',

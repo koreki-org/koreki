@@ -102,7 +102,7 @@ export async function executeMistralRequest(
             // Math-optimized reasoning at a better cost/performance ratio than Large
             model = MISTRAL_MEDIUM_MODEL;
         } else if (action === 'second-opinion') {
-            model = MISTRAL_CORE_MODEL; // mistral-large-latest (Mistral Large) as preferred by the user
+            model = MISTRAL_CORE_MODEL; // feste Version, siehe constants.ts
         }
     }
 

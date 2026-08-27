@@ -143,7 +143,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 // Dieser Zweig IST die Schalterstellung "Hohe Genauigkeit aus" und damit
                 // Mistrals Aufgabe. Der auskommentierte Vision-Pfad unten stammt aus der
                 // Zeit vor Qwen: Mistrals 'vision'-Aktion laeuft ueber /chat/completions
-                // mit mistral-large-latest und ist NICHT der OCR-Pfad.
+                // mit MISTRAL_CORE_MODEL und ist NICHT der OCR-Pfad.
                 //
                 // Handschrift traegt Mistral OCR derzeit nicht — auf Wortebene verfaelscht
                 // es genau die Fachbegriffe, an denen die Bewertung haengt. Handschrift

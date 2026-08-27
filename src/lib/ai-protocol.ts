@@ -72,10 +72,16 @@ interface Herkunft {
 }
 
 /**
- * Welches Modell hat geantwortet? Protokolliert wird die *konfigurierte*
- * Kennung. Bei `latest`-Kennungen ist das nicht zwingend die Version, die der
- * Anbieter tatsaechlich bedient hat — die stuende in seiner Antwort. Solange
- * das nicht durchgereicht wird, ist die Zeile ein Hinweis, kein Beweis.
+ * Welches Modell hat geantwortet? Protokolliert wird die konfigurierte Kennung.
+ *
+ * Seit dem 27.08.2026 sind das feste Versionen (`mistral-medium-2604` statt
+ * `mistral-medium-latest`, siehe `lib/ai/constants.ts`), erzwungen durch
+ * `tests/unit/model-pinning-governance.test.ts`. Damit benennt die Zeile
+ * tatsaechlich das Modell, das geantwortet hat — vorher war sie bei
+ * beweglichen Kennungen nur ein Hinweis.
+ *
+ * Ausnahme bleibt der lokale Betrieb: Welches Modell hinter einer
+ * Ollama-Kennung steckt, bestimmt der Betreiber auf seinem Rechner.
  */
 export function ermittleHerkunft(settings: AppSettings): Herkunft {
     const anbieter = settings.provider || 'unbekannt';

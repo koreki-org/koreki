@@ -1,10 +1,35 @@
 import { apiClient } from '../api-client';
 
-export const MISTRAL_OCR_MODEL = 'mistral-ocr-latest';
-export const MISTRAL_CORE_MODEL = 'mistral-large-latest';
-export const MISTRAL_UTILS_MODEL = 'mistral-small-latest';
-export const MISTRAL_CHATS_MODEL = 'mistral-large-latest'; // Hardened: Using flagship instead of pixtral for better instruction following
-export const MISTRAL_MEDIUM_MODEL = 'mistral-medium-latest'; // Brand new math-optimized reasoning model
+/**
+ * Feste Modellversionen — bewusst KEINE `-latest`-Kennungen.
+ * 🏛️
+ *
+ * Hinter `mistral-medium-latest` kann der Anbieter jederzeit ein anderes Modell
+ * legen. Fuer ein Bewertungssystem ist das zweifach untragbar: Eine gemessene
+ * Genauigkeit ist am Tag darauf womoeglich wertlos, und das Protokoll benennt
+ * dann ein Modell, das so nie geantwortet hat. Art. 13 Abs. 3 lit. c verlangt
+ * ausserdem, vorab bestimmte Aenderungen zu beschreiben — was bei einem
+ * beweglichen Ziel nicht geht.
+ *
+ * Die Zuordnung wurde am 27.08.2026 gegen `GET /v1/models/<alias>` ermittelt
+ * (Feld `aliases`) und jede Zielversion mit einem echten Aufruf geprueft:
+ *
+ *   mistral-ocr-latest    -> mistral-ocr-4-1      (POST /v1/ocr, HTTP 200)
+ *   mistral-large-latest  -> mistral-large-2512   (HTTP 200)
+ *   mistral-small-latest  -> mistral-small-2603   (HTTP 200)
+ *   mistral-medium-latest -> mistral-medium-2604  (HTTP 200)
+ *
+ * WARTUNG: Feste Versionen werden vom Anbieter irgendwann abgekuendigt. Das ist
+ * der Preis dafuer, den Wechsel selbst zu bestimmen statt ihn zu erleiden. Vor
+ * einem Wechsel gehoert die neue Version gemessen, nicht nur eingetragen —
+ * sonst ist die Zahl in der Betriebsanleitung wieder unbelegt. Das Feld
+ * `deprecation` der Modell-Abfrage zeigt eine Abkuendigung an.
+ */
+export const MISTRAL_OCR_MODEL = 'mistral-ocr-4-1';
+export const MISTRAL_CORE_MODEL = 'mistral-large-2512';
+export const MISTRAL_UTILS_MODEL = 'mistral-small-2603';
+export const MISTRAL_CHATS_MODEL = 'mistral-large-2512'; // Hardened: Using flagship instead of pixtral for better instruction following
+export const MISTRAL_MEDIUM_MODEL = 'mistral-medium-2604'; // math-optimiertes Modell, traegt die Korrektur
 
 export const DEFAULT_OPENAI_COMPATIBLE_BASE_URL = 'https://llm.aihosting.mittwald.de/v1';
 

@@ -10,6 +10,7 @@ import { CorrectionSchema } from '@/lib/validation';
 import { AppSettings } from '@/types';
 import { checkAiBudget, checkCompliance, checkCreditsAvailable, performBillingAction } from '@/lib/billing';
 import { sanitizeClientAiSettings } from '@/lib/ai/client-settings-gate';
+import { MISTRAL_MEDIUM_MODEL } from '@/lib/ai/constants';
 import { logger } from '@/lib/logger';
 import { isLocalInstance } from '@/lib/env-context';
 
@@ -118,7 +119,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         const isComplex = validation.data.isComplex === true;
         
         // In local instances (Desktop/Community), the "High Accuracy" toggle (isComplex)
-        // should stay on Mistral (if Mistral is selected) but switch to the 'mistral-medium-latest' model.
+        // should stay on Mistral (if Mistral is selected) but switch to the pinned MISTRAL_MEDIUM_MODEL.
         // In SaaS mode (where we manage centralized billing/scaling), we keep the default behavior of routing isComplex to OpenAI/Qwen.
         const useOpenAI = settings.provider === 'openai-compatible' || (isComplex && !isLocalInstance());
 
@@ -132,7 +133,8 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
             if (!apiKey) throw new AIConfigError('Mistral API-Key fehlt.');
 
-            const mistralModel = 'mistral-medium-latest';
+            // Eine Zeichenkette an dieser Stelle lief an der Pinnung in constants.ts vorbei.
+            const mistralModel = MISTRAL_MEDIUM_MODEL;
 
             analysis = await executeMistralRequest(
                 'correction',

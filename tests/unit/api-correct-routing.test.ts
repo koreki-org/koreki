@@ -143,7 +143,7 @@ describe('ai-correct API Provider Routing Guards (Layer 1 & 2)', () => {
             'correction',
             expect.anything(),
             'm-key-123',
-            expect.objectContaining({ model: 'mistral-medium-latest' })
+            expect.objectContaining({ model: 'mistral-medium-2604' })
         );
         expect(executeOpenAIRequest).not.toHaveBeenCalled();
     });

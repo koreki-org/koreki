@@ -120,7 +120,9 @@ describe('extract-image: Anbieter-Weiche der Bilderkennung (SaaS)', () => {
 
         const options = (executeMistralRequest as jest.Mock).mock.calls[0][3] || {};
         expect(options.model).toBeUndefined();
-        expect(MISTRAL_OCR_MODEL).toBe('mistral-ocr-latest');
+        // Feste Version statt beweglicher Kennung — siehe tests/unit/model-pinning-governance.test.ts.
+        // Diese Zeile ist als Bremsschwelle gedacht: Ein Modellwechsel MUSS hier auffallen.
+        expect(MISTRAL_OCR_MODEL).toBe('mistral-ocr-4-1');
     });
 
     it('schaltet bei eingeschaltetem Schalter auf Qwen um', async () => {

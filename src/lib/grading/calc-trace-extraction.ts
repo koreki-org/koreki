@@ -6,6 +6,7 @@
  */
 
 import { executeMistralRequest } from '../ai/mistral-provider';
+import { MISTRAL_MEDIUM_MODEL } from '../ai/constants';
 import { executeOllamaRequest } from '../ai/ollama-logic';
 import { executeOpenAIRequest } from '../ai/openai-provider';
 import { isDesktopTarget } from '@/lib/env-context';
@@ -211,7 +212,7 @@ WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt M
         const mistralKey = settings?.mistralKey;
         if (!mistralKey) throw new Error('PURE_KEY_MISSING');
         extracted = await executeMistralRequest('calc-trace-extraction', payload, mistralKey, {
-          model: settings?.model || 'mistral-medium-latest',
+          model: settings?.model || MISTRAL_MEDIUM_MODEL,
           temperature: 0.0,
           topP: 0.1,
           maxTokens: 1000,
@@ -227,7 +228,7 @@ WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt M
           const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;
           if (!apiKey) throw new Error('Mistral API-Key fehlt.');
           extracted = await executeMistralRequest('calc-trace-extraction', payload, apiKey, {
-            model: settings?.model || 'mistral-medium-latest', // Always use the highly capable medium model for extraction by default
+            model: settings?.model || MISTRAL_MEDIUM_MODEL, // Always use the highly capable medium model for extraction by default
             temperature: 0.0,
             topP: 0.1,
             maxTokens: 1000,
