@@ -1,92 +1,131 @@
 ---
-title: "Specialized Prompt Routing (V13)"
-description: "Hierarchisches Prompt-Management zur Modell-spezifischen Optimierung via System/User Split"
+title: "Modellspezifische Prompt-Zusätze"
+description: "Wie Koreki einzelnen Modellfamilien zusätzliche Anweisungen mitgibt, ohne die Grundanweisung zu verdoppeln"
 author: "@principal_architect"
 date: "2026-04-12"
-last_updated: "2026-04-16"
+last_updated: "2026-08-27"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
 ---
 
-# Specialized Prompt Routing (V13)
+# Modellspezifische Prompt-Zusätze
+
+> [!IMPORTANT]
+> **Inhalt am 27.08.2026 vollständig gegen den Code geprüft und korrigiert.** Die vorige Fassung stammte vom 16.04.2026 und beschrieb an drei Stellen etwas anderes, als der Code tut — siehe Abschnitt 6.
 
 ## 1. Executive Summary & Kontext
 > [!NOTE]
-> **Zusammenfassung:** Dieses System ermöglicht es Koreki, für verschiedene KI-Modelle unterschiedliche Instruktions-Sätze (Prompts) zu verwenden, ohne den Quellcode zu verdoppeln. Es löst das Problem von "Modell-Inkompatibilitäten", bei denen Optimierungen für ein Modell (z.B. Gemma 4) negative Seiteneffekte bei anderen Modellen (z.B. Mistral Small) verursachen würden.
-> **Zielgruppe:** @principal_architect, Core-Entwickler, QA.
+> **Zusammenfassung:** Koreki spricht Modelle verschiedener Anbieter mit derselben Grundanweisung an. Wo ein Modell eine zusätzliche Schranke braucht, bekommt es einen **Zusatz**, der an die Grundanweisung angehängt wird — statt einer eigenen Kopie der ganzen Anweisung. So wirkt eine Anpassung für ein Modell nicht auf alle anderen.
+> **Zielgruppe:** Entwicklung, QA.
 
-Koreki verfolgt eine Multi-Modell-Strategie (Mistral SaaS & Ollama Local). Da jedes Modell unterschiedliche Stärken und Schwächen in der Befolgung von JSON-Formaten und Namens-Konventionen hat, entkoppelt das V10-Routing die Instruktionen von der Ausführungs-Logik.
+Koreki arbeitet mit Mistral, mit OpenAI-kompatiblen Endpunkten und mit lokalen Ollama-Modellen. Die Modelle unterscheiden sich darin, wie zuverlässig sie das geforderte JSON-Format einhalten und wie sie mit Formatierungszeichen umgehen. Eine Anweisung, die alle Eigenheiten aller Modelle abdeckt, wäre für jedes einzelne schlechter als eine gezielte.
 
 ---
 
 ## 2. Architektur & Systemdesign
-Das System nutzt ein **Base + Override** Pattern:
+
+Das Muster ist **Grundanweisung + Zusatz** (nicht Grundanweisung + Ersatz):
 
 ```mermaid
 graph TD
-    A[Request Trigger] --> B{Prompt Resolver}
-    B -- "Model matches 'gemma'" --> C[Specialized Gemma Template]
-    B -- "Model matches 'mistral-small'" --> G[Mistral Small Template]
-    B -- "Default / No Match" --> D[Base Template (Root)]
-    C --> E[AI Provider (Ollama)]
-    G --> E
-    D --> F[AI Provider (Mistral/SaaS)]
-    E --> G[Standardized JSON Output]
-    F --> G
+    A[Korrektur-Anfrage] --> B[Grundanweisung aus core/default laden]
+    B --> C{Modellname enthält 'gemma'?}
+    C -- ja --> D[Zusatz aus core/specialized/gemma4 anhaengen]
+    C -- nein --> E[unveraendert weiter]
+    D --> F[Platzhalter ueber setzeEin fuellen]
+    E --> F
+    F --> G[Anbieter aufrufen]
 ```
 
-### Komponenten (Industrial Split Architecture):
-* **Default Templates (`src/prompts/default/`):** Das globale Framework, unterteilt in `system.md` und `user.md`. Optimiert für Mistral Large (SaaS).
-* **Specialized Templates (`src/prompts/specialized/`):** Modell-spezifische Klone (z.B. `/gemma4/`), die eigene `system.md` und `user.md` Dateien besitzen. Dies erlaubt die physische Trennung von modell-spezifischen JSON-Schranken vom globalen Standard.
-* **Dispatcher (`prompt-builder.ts`):** Orchestriert die Auswahl des Templates und die Injektion der **VRE (Variable Rule Execution)** Parameter (Temperature/Top-P).
-* **VRE-Binding:** Der Dispatcher bindet Sampling-Parameter direkt an den Prompt-Typ (z.B. Vision: T:0, Grading: T:0.7). Dies entkoppelt die Modell-Stabilität vom UI-Status.
+### Ablage
+
+| Zweck | Ort |
+|---|---|
+| Grundanweisungen | `src/prompts/core/default/<schritt>/system.md` und `user.md` |
+| Modellzusätze | `src/prompts/core/specialized/<modellfamilie>/<schritt>/guard.md` |
+| Zusammensetzung | `src/lib/ai/prompt-builder.ts` |
+
+Die Schritte unter `core/default/` sind: `correction`, `analyze-and-clean`, `analyze-and-map`, `vision`, `anonymize`, `variable-extraction`, `calc-trace-generation`. Für gerechnete Aufgaben liegen Zusatzbausteine unter `correction/math-engine/`.
+
+### Was es tatsächlich an Zusätzen gibt
+
+Genau **eine** Modellfamilie hat Zusätze, und zwar drei Dateien:
+
+```
+src/prompts/core/specialized/gemma4/correction/guard.md
+src/prompts/core/specialized/gemma4/analyze-and-clean/guard.md
+src/prompts/core/specialized/gemma4/analyze-and-map/guard.md
+```
+
+Für Mistral, Qwen oder andere Modelle existieren **keine** Zusätze. Sie laufen mit der unveränderten Grundanweisung.
 
 ---
 
 ## 3. Implementierung & Nutzung
-Der Resolver prüft zur Laufzeit das gewählte Modell:
+
+Die Auswahl ist eine Zeichenketten-Prüfung auf den Modellnamen, an drei Stellen in `prompt-builder.ts` — je einmal für Korrektur, Aufbereitung und Zuordnung:
 
 ```typescript
-function resolveTemplate(action: string, model?: string): string {
-    const isGemma = model?.toLowerCase().includes('gemma');
-    if (isGemma) return gemmaTemplates[action];
-    
-    const isMistralSmall = model?.toLowerCase().includes('mistral-small');
-    if (isMistralSmall) return mistralSmallTemplates[action];
-
-    return defaultTemplates[action];
+if (model?.toLowerCase().includes('gemma')) {
+    system = system + "\n\n" + gemma4CorrectionGuard;
 }
 ```
 
-> [!NOTE]
-> **Optimierungspotenzial (Custom Models):**
-> Ähnlich wie bei der Kontext-Eskalation greifen spezialisierte Mistral-Templates aktuell nur bei Modellen, die `mistral-small` im Namen tragen. Custom-Modelle (z.B. `mistral-nemo`) fallen auf die `defaultTemplates` zurück. Eine Erfassung aller `mistral`-Identifier wird für zukünftige Iterationen empfohlen.
+Der Zusatz wird also an die Grundanweisung **angehängt**, nicht gegen sie ausgetauscht.
 
-### Härtungs-Maßnahmen:
+> [!WARNING]
+> Die Prüfung greift auf jeden Modellnamen, der `gemma` enthält — unabhängig von der Version. Ein künftiges `gemma5` bekäme die für Gemma 4 gedachten Schranken mit.
 
-#### A. Gemma 4 Spezialisierung
-1. **Clean Identifiers:** Strikte Unterbindung von Punktangaben `(3 P)` in Aufgabennamen.
-2. **No-Talk-Constraint:** Unterdrückung von Markdown-Rauschen (Backticks), um das native JSON-Parsing von Ollama nicht zu stören.
+### Was die Gemma-Zusätze bewirken
 
-#### B. Mistral Small 3.2 Spezialisierung („OCR Fidelity“)
-1. **Subtle Error Detection:** Explizite Instruktion zur Erkennung von „subtilen“ OCR-Fehlern (z.B. „Arpaden“ statt „anpassen“).
-2. **(?) Marker Logic:** Automatisches Setzen des Unsicherheits-Markers hinter fehlerhaften Worten zur Unterstützung der Confidence-Brake.
+1. **Saubere Bezeichner:** Punktangaben wie `(3 P)` sollen nicht in Aufgabennamen auftauchen.
+2. **Kein Formatierungsrauschen:** Unterdrückung von Backticks und Markdown, damit die JSON-Auswertung nicht stolpert.
 
-#### C. Vision Siding & High-Precision Routing (V12)
-1. **isComplex Siding:** Im SaaS-Modus werden Bild-Uploads (Scans von **Schüler- und Musterlösungen**) über das Flag `isComplex: true` priorisiert. Dies erzwingt die Nutzung von **Mistral Large Vision** anstatt der Standard-OCR.
-2. **Robotic Protocol Integration:** Für Vision-Tasks wird das dedizierte `vision.md` Template (bzw. das hard-coded Backup in `prompt-builder.ts`) verwendet.
-3. **Role Segregation:** Die Routing-Logik trennt Instruktionen (System) von Bilddaten (User), um die Befolgungs-Rate des "Robotic Writing Head" Protokolls zu maximieren.
+### Platzhalter
+
+Werte werden in Vorlagen ausschließlich über `setzeEin` aus `src/lib/prompt-placeholder.ts` eingesetzt, erzwungen durch `tests/unit/prompt-placeholder-governance.test.ts`. `String.replace` ist an dieser Stelle verboten: In seinem Ersatztext haben `$&`, `` $` ``, `$'` und `$$` Sonderbedeutung, wodurch Schülertext den Aufbau der Anweisung beeinflussen könnte.
 
 ---
 
-## 4. Security & Compliance
-* **Datenverarbeitung:** Das Routing selbst verarbeitet keine personenbezogenen Daten (PII). Es steuert lediglich die Instruktionen, die an die Schicht 5 (AI Provider) gesendet werden.
-* **Fidelity:** Durch die Trennung wird sichergestellt, dass die strengen Datenschutz-Anweisungen (Cleaning-Rules) für jedes Modell optimal formuliert werden können.
+## 4. Sampling-Parameter
+
+Temperatur und Top-P hängen **nicht** an der Art der Anweisung, sondern am KI-Profil, das die Lehrkraft ausgewählt hat. Voreinstellungen laut `prisma/schema.prisma`:
+
+| Feld | Vorgabe |
+|---|---|
+| `temperature` | 0.2 |
+| `topP` | 0.8 |
+| `visionTemperature` | 0.0 |
+
+Eine einzige Ausnahme ist im Code fest verdrahtet: Der Schüler-Simulator arbeitet mit Temperatur 0.7 und Top-P 0.9, um absichtlich unterschiedliche Antworten zu erzeugen (`prompt-builder.ts`). Diese Werte gelten **nicht** für die Bewertung.
+
+Hinweise und Warnschwellen zur Temperaturwahl stehen in `src/lib/ai/temperature-guidance.ts`.
 
 ---
 
-## 5. Testing & Referenzen
-* **Verwandte Dokumente:** [Architecture](./architecture.md), [Ollama Hardening](./ollama-integration-hardening.md)
-* **Test-Coverage:** Die Routing-Logik ist durch Integrationstests in `ollama-logic.test.ts` abgedeckt (Prüfung, ob der korrekte Prompt-String generiert wird).
-* **Entwicklungs-ADR:** Industrialization Phase V10.
+## 5. Security & Compliance
+> [!IMPORTANT]
+> * **Datenverarbeitung:** Die Auswahl des Zusatzes verarbeitet keine personenbezogenen Daten. Sie entscheidet allein, welche Anweisung mitgeschickt wird.
+> * **Zugriff:** keine eigene Zugriffskontrolle; die Zusammensetzung läuft innerhalb der jeweiligen Anfrage.
+> * **Prompt Injection:** Der Schutz liegt nicht im Routing, sondern in der Platzhalter-Einsetzung (Abschnitt 3) und der Einfassung des Schülertextes in `<task_to_evaluate>`-Marken.
+
+---
+
+## 6. Was an der vorigen Fassung falsch war
+
+Festgehalten, weil dieselben Angaben in andere Dokumente gewandert sein könnten:
+
+| Behauptung (Fassung vom 16.04.2026) | Tatsächlich |
+|---|---|
+| Ablage unter `src/prompts/default/` und `src/prompts/specialized/` | liegt unter `src/prompts/core/…` |
+| Spezialisierte Vorlagen seien vollständige Klone mit eigener `system.md` und `user.md` | es sind einzelne `guard.md`, die **angehängt** werden |
+| Es gebe eine Mistral-Small-Spezialisierung mit „OCR Fidelity" und `(?)`-Markern | existiert nicht; es gibt ausschließlich `gemma4` |
+| Eine Funktion `resolveTemplate(action, model)` wähle die Vorlage aus | existiert nicht; es sind drei Zeichenketten-Prüfungen an den jeweiligen Stellen |
+| Sampling sei an den Anweisungstyp gebunden, Bewertung mit Temperatur 0.7 | Sampling kommt aus dem KI-Profil, Vorgabe 0.2; die 0.7 gehören zum Schüler-Simulator |
+
+---
+
+## 7. Testing & Referenzen
+* **Test-Coverage:** `tests/unit/prompt-placeholder-governance.test.ts` erzwingt die Platzhalter-Regel. Für die Auswahl des Modellzusatzes selbst gibt es **keinen** eigenen Test — eine Umbenennung der Modellfamilie fiele nicht auf.
+* **Verwandte Dokumente:** [Architecture](./architecture.md), [Ollama Hardening](./ollama-integration-hardening.md), [Prompt-Architektur](./prompt-architecture-v2.md) — Inhalt dieser Dokumente ist nicht mitgeprüft.

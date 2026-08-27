@@ -3,13 +3,16 @@ title: "Software-Onboarding: Koreki verstehen & loslegen"
 description: "Praxisnahes Onboarding für neue Entwickler. Erklärt was die Software tut, wie sie gebaut ist und wie man produktiv wird."
 author: "@principal_architect"
 date: "2026-04-06"
-last_updated: "2026-04-06"
+last_updated: "2026-08-27"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
 ---
 
 # Software-Onboarding: Koreki verstehen & loslegen
+
+> [!IMPORTANT]
+> **Inhalt am 27.08.2026 gegen den Code geprüft.** Korrigiert wurden: das Modell der Korrekturroute, die Nebenläufigkeit, drei Dateipfade und die Zuordnung des Korrekturlaufs. Der übrige Aufbau des Dokuments hat sich als zutreffend erwiesen.
 
 ## 1. Executive Summary & Kontext
 
@@ -125,8 +128,8 @@ sequenceDiagram
 
     Note over L: 3. "Korrigieren" klicken
     L->>H: processBatch()
-    H->>API: POST /api/ai-correct (pro Schüler, 2 parallel)
-    API->>AI: Bewertung (mistral-large)
+    H->>API: POST /api/ai-correct (pro Schüler, nacheinander)
+    API->>AI: Bewertung (mistral-medium)
     AI-->>API: { tasks[].pointsObtained, feedback }
     API-->>H: Ergebnis + Note berechnet
     H-->>L: Ergebnisse in der UI
@@ -143,15 +146,16 @@ sequenceDiagram
 | **Einstiegspunkt** | `pages/app.tsx` | Thin Controller — verbindet Hooks mit UI-Komponenten |
 | **Datei-Verarbeitung** | `hooks/useFileProcessor.ts` | Fassade: delegiert an Sub-Hooks |
 | **→ Upload & Extraktion** | `hooks/file-processor/useBatchActions.ts` | Dateien annehmen, Batch aufbauen |
-| **→ OCR + Cleaning + Korrektur** | `hooks/file-processor/useProcessingPipeline.ts` | Die eigentliche Pipeline-Logik |
+| **→ OCR + Cleaning + Zuordnung** | `hooks/file-processor/useProcessingPipeline.ts` | Aufbereitung bis zur Aufgaben-Zuordnung |
+| **→ Korrekturlauf** | `hooks/file-processor/useCorrectionRun.ts` | Bewertung je Arbeit, Nebenläufigkeit 1, schreibt das Protokoll |
 | **KI-Routing** | `lib/ai/ai-orchestrator.ts` | Entscheidet: PURE (direkt) vs. STANDARD (Server) |
 | **Prompt-Bau** | `lib/ai/prompt-builder.ts` | Baut die System-Prompts zusammen |
-| **Prompts (Markdown)** | `src/prompts/*.md` | Die tatsächlichen Anweisungen an die KI |
+| **Prompts (Markdown)** | `src/prompts/core/default/<schritt>/system.md` und `user.md` | Die tatsächlichen Anweisungen an die KI |
 | **Server: OCR** | `pages/api/extract-image.ts` | Vision-API aufrufen, Billing |
 | **Server: Cleaning** | `pages/api/clean-and-analyze.ts` | Musterlösung → Aufgaben-Struktur |
 | **Server: Mapping** | `pages/api/clean-and-map.ts` | Schülertext → Aufgaben zuordnen |
 | **Server: Korrektur** | `pages/api/ai-correct.ts` | Pädagogische Bewertung |
-| **Export** | `lib/excel.ts`, `lib/pdf.ts` | Excel/PDF-Generierung (alles client-side) |
+| **Export** | `lib/excel/` (Modulverzeichnis), `lib/pdf.ts` | Excel/PDF-Generierung (alles client-side) |
 
 ### 2.4 Welches KI-Modell für welche Aufgabe?
 
@@ -161,9 +165,14 @@ Aus `src/lib/ai/constants.ts`:
 |---|---|---|---|
 | `MISTRAL_OCR_MODEL` | `mistral-ocr-latest` | Text aus Scans extrahieren | Spezialisierte OCR-Engine |
 | `MISTRAL_UTILS_MODEL` | `mistral-small-latest` | Layout-Analyse (Digital) | Effizient für strukturierte Digital-Texte |
-| `MISTRAL_CORE_MODEL` | `mistral-large-latest` | Analyse (Scan) & Korrektur | Maximale Präzision für unstrukturierte Inhalte |
+| `MISTRAL_CORE_MODEL` | `mistral-large-latest` | Analyse von Scans, Standardmodell des Mistral-Providers | Maximale Präzision für unstrukturierte Inhalte |
+| `MISTRAL_MEDIUM_MODEL` | `mistral-medium-latest` | **die Korrektur selbst** | rechenstärkeres Modell; die Route setzt es fest |
+| `MISTRAL_CHATS_MODEL` | `mistral-large-latest` | Chat-Funktionen | bewusst statt Pixtral, folgt Anweisungen zuverlässiger |
 
-> **Merke:** Digitale Vorverarbeitung nutzt das **schnelle** Modell (`small`). Komplexe Analysen von Scans und die finale pädagogische Korrektur nutzen das **große** Modell (`large`).
+> [!WARNING]
+> Die Korrekturroute wählt **nicht** `MISTRAL_CORE_MODEL`. `src/pages/api/ai-correct.ts` setzt `mistral-medium-latest` fest. Eine frühere Fassung dieses Dokuments nannte hier `mistral-large`.
+
+> **Merke:** Digitale Vorverarbeitung nutzt das **schnelle** Modell (`small`), Analysen von Scans das **große** (`large`), die pädagogische Korrektur das **mittlere, rechenstärkere** (`medium`).
 
 ### 2.5 Die zentrale Datenstruktur: `BatchFile`
 
@@ -477,5 +486,5 @@ npm run security-check  # Security Audit (obligatorisch vor Release)
 1. **App lokal starten** und den Demo-Modus testen (Button im Header)
 2. **`app.tsx`** lesen — es ist nur ein Thin Controller, der Hooks zusammensteckt
 3. **`useProcessingPipeline.ts`** lesen — hier passiert die eigentliche Arbeit
-4. **Einen Prompt ändern** in `src/prompts/correction.md` und sehen, wie es die Bewertung verändert
+4. **Einen Prompt ändern** in `src/prompts/core/default/correction/system.md` und sehen, wie es die Bewertung verändert
 5. **`npm test`** laufen lassen und schauen, was alles abgedeckt ist

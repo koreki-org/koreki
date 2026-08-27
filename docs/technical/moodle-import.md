@@ -3,13 +3,16 @@ title: "Moodle Quiz Export Import"
 description: "Integration von Moodle (XLSX/CSV) Exporten als direkt importierbare Schülerlösungen."
 author: "@principal_architect"
 date: "2026-04-17"
-last_updated: "2026-04-17"
+last_updated: "2026-08-27"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
 ---
 
 # Moodle Quiz Export Import
+
+> [!IMPORTANT]
+> **Inhalt am 27.08.2026 gegen den Code geprüft.** Korrigiert: der Ort des Parsers. Präzisiert: wie die Klarnamen beim Export zurückkommen. Bestätigt: die Header-Erkennung, die Pseudonymisierung in der Oberfläche und die Unit-Tests.
 
 ## 1. Executive Summary & Kontext
 > [!NOTE]
@@ -28,7 +31,7 @@ Der Moodle-Import wurde eingeführt, um digitale Prüfungsformate nahtlos in den
 sequenceDiagram
     participant User
     participant StudentWorkCard
-    participant MoodleParser as lib/excel.ts
+    participant MoodleParser as lib/excel/parser.ts
     participant Pipeline as useProcessingPipeline
     participant AI as clean-and-map (LLM)
 
@@ -46,7 +49,7 @@ sequenceDiagram
 ---
 
 ## 3. Implementierung & Nutzung
-Der Parser in `src/lib/excel.ts` nutzt die `xlsx` Library und bietet ein robustes Pattern-Matching für Header:
+Der Parser liegt in **`src/lib/excel/parser.ts`** und nutzt die `xlsx` Library und bietet ein robustes Pattern-Matching für Header:
 
 * **Names**: `Nachname`, `Last name`, `Vorname`, `First name`.
 * **Responses**: Alle Spalten, die mit `Response`, `Antwort`, `Frage` oder `F ` beginnen.
@@ -65,13 +68,13 @@ if (looksLikePoint(valStr)) return; // Ignoriere reine Punktzahlen
 > **Industrial Anonymisierungs-Standard:** Moodle-Exporte enthalten PII (Namen). Diese werden in der UI automatisch durch Platzhalter ("Schüler #1") ersetzt.
 
 * **Datenverarbeitung:** PII (Name, Vorname) wird als Identifier in `originalName` lokal gespeichert, aber nicht in der "Stapelverarbeitung" angezeigt. Die KI-Korrektur erfolgt auf anonymisierten Daten.
-* **De-Anonymisierung:** Die Klarnamen werden erst beim Export (Lehrer-Excel oder Feedback-PDF) durch die `getExportName`-Logik wieder eingesetzt.
+* **De-Anonymisierung:** Die Klarnamen werden erst beim Export wieder eingesetzt. Die Zusammenführung `getExportName` liegt in `src/pages/app.tsx`; die Ausgabe greift auf die Felder `studentFirstName` und `studentLastName` zu (`src/lib/excel/export-content.ts`). Eine Hilfsfunktion dieses Namens in `src/lib/` gibt es **nicht**.
 * **Audit-Logs:** Import-Aktionen werden im lokalen Session-Log (Logger) vermerkt.
 
 ---
 
 ## 5. Testing & Referenzen
 
-* **Unit-Tests:** `tests/unit/lib/moodle-import.test.ts`
+* **Unit-Tests:** `tests/unit/lib/moodle-import.test.ts` und `tests/unit/lib/moodle-parser.test.ts`
 * **Verwandte Dokumente:** [Batch Processing Lifecycle](./batch-processing-lifecycle.md)
 * **Status:** Industrial Grade Stage 3 (Local First).

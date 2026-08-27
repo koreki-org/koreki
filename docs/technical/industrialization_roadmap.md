@@ -3,13 +3,37 @@ title: "🗺️ Koreki Industrialization Roadmap: Die finale Säuberung"
 description: "Technisches Architektur-Dokument: 🗺️ Koreki Industrialization Roadmap: Die finale Säuberung"
 author: "@principal_architect"
 date: "2026-04-05"
-last_updated: "2026-04-05"
-status: "Approved"
+last_updated: "2026-08-27"
+status: "Deprecated"
 domain: "technical"
 security_classification: "Public"
 ---
 
 # 🗺️ Koreki Industrialization Roadmap: Die finale Säuberung
+
+> [!WARNING]
+> **Historisches Dokument. Stand der Prüfung: 27.08.2026.**
+> Dieser Fahrplan stammt vom 05.05.2026 und beschreibt einen Plan, nicht das System. Die geplanten Extraktionen sind umgesetzt — die Größenziele wurden überwiegend verfehlt, in zwei Fällen ins Gegenteil. Er ist als Absichtserklärung von damals zu lesen, nicht als Beschreibung von heute. Verbindlich sind stattdessen die Grenzen aus `tests/unit/file-size-governance.test.ts`.
+
+## Prüfung vom 27.08.2026
+
+**Umgesetzt:** Alle drei geplanten Hooks existieren — `useDashboardOrchestrator.ts` (Stufe 7), `useRedactionEngine.ts` (Stufe 8), `useGlobalStatus.ts` (Stufe 9).
+
+**Größenziele:** Das Ziel „jede Datei unter 150 Zeilen" wurde aufgegeben. Maßgeblich sind heute 300 Zeilen für Komponenten, Hooks und Seiten sowie 500 für `lib/`, erzwungen durch einen Wächter-Test mit eingefrorenen Altlasten.
+
+| Datei | damals | heute | |
+|---|---|---|---|
+| `RedactionModal.tsx` | 367 | 316 | geschrumpft, weiterhin über der Grenze |
+| `features.tsx` | 301 | 346 | gewachsen |
+| `app.tsx` | 293 | **488** | **um 195 Zeilen gewachsen** — trotz Extraktion des Orchestrators |
+| `AVVUploadModal.tsx` | 242 | 152 | Ziel erreicht |
+| `AppHeader.tsx` | 237 | verschoben nach `src/components/layout/` | |
+| `api/admin/users.ts` | 237 | 94 | Ziel erreicht |
+| `BatchProcessor.tsx` | 221 | 275 | gewachsen |
+
+`app.tsx` ist der auffälligste Fall: Die Extraktion fand statt, die Datei wuchs trotzdem. Sie steht heute unter einer Ratsche bei 489 Zeilen und darf nur noch schrumpfen.
+
+---
 
 ## 1. Executive Summary & Kontext
 

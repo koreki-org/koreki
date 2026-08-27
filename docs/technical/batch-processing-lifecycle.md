@@ -3,13 +3,16 @@ title: "Batch-Processing Lifecycle & UI State Management"
 description: "Technische Guideline zur Architektur der Stapelverarbeitung, Datenreinigung beim Splitting und Performance-Bypasses."
 author: "@principal_architect & @ui_expert"
 date: "2026-04-15"
-last_updated: "2026-04-15"
+last_updated: "2026-08-27"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
 ---
 
 # Batch-Processing Lifecycle & UI State Management
+
+> [!IMPORTANT]
+> **Inhalt am 27.08.2026 gegen den Code geprüft.** Korrigiert: die angegebene Nebenläufigkeit (Abschnitt 2). Ergänzt: Protokollierung und Prüfbestätigung, die seit dem 27.08.2026 Teil des Lebenszyklus sind (Abschnitt 3 E). Die Aussagen zum Mistral-Bypass, zur Datenreinigung beim Splitten und zum Routing manueller Änderungen wurden bestätigt.
 
 ## 1. Executive Summary & Kontext
 > [!NOTE]
@@ -51,10 +54,10 @@ stateDiagram-v2
     }
     
     OCR_Validation --> ReadyCorrect
-    ReadyCorrect --> Processing : via processBatch (Concurrency: 2)
-    Processing --> Done : KI Feedback generiert
-    
-    Done --> [*]
+    ReadyCorrect --> Processing : via processBatch (Nebenlaeufigkeit 1)
+    Processing --> Done : KI Feedback generiert, Protokolleintrag geschrieben
+    Done --> Bestaetigt : Lehrkraft bestaetigt vor dem Export
+    Bestaetigt --> [*]
 ```
 
 ---
@@ -85,11 +88,23 @@ Die Methode `onUpdateText` empfängt Änderungen aus Formularfeldern sowohl VOR 
 - Ist `status === 'pending'`, so werden die Änderungen in `item.tasks` (Rohstruktur) gespeichert.
 - Ist `status === 'done'`, so werden Änderungen in `item.result.tasks` (Bewertungsstruktur) gespeichert.
 
+> [!WARNING]
+> Die Nebenläufigkeit ist **1**, nicht 2: `promisePool(indices, 1, …)` in `useCorrectionRun.ts`. Die Arbeiten werden nacheinander bewertet. Eine frühere Fassung dieses Dokuments nannte 2.
+
 ### D) Visuelles Queue-Feedback im UI (`BatchFileListItem.tsx`)
 Während die globale Variable `loading === true` ist:
 - Das aktiv bearbeitete Item (`isProcessing === true`) zeigt einen blauen Spinner (`text-primary`).
 - Items, die auf **Bilderkennung** warten (`!ocrDone`), zeigen einen gedimmten Wartespinner.
 - Items, die "ready" sind (`ocrDone: true` oder `documentType: typed`), behalten ihr Checkbox-Symbol (im Status `disabled={loading}`), um als "Bereit für den nächsten Schritt" wahrgenommen zu werden, ohne Interaktionen während des Lade-Locks zuzulassen.
+
+### E) Protokollierung und Prüfbestätigung (seit 27.08.2026)
+
+Zwei Schritte sind seither Teil des Lebenszyklus:
+
+* **Beim Abschluss jeder Bewertung** entsteht automatisch je Aufgabe ein Protokolleintrag (`src/lib/ai-protocol.ts`, angehängt in `useCorrectionRun.ts`). Ändert die Lehrkraft danach eine Punktzahl, entsteht ein **zusätzlicher** Eintrag mit dem ursprünglichen Vorschlag daneben — der alte wird nie überschrieben. Das Protokoll enthält keine Schülertexte und keine Namen.
+* **Vor jedem Export** bestätigt die Lehrkraft einmal je Stapel, dass sie die Bewertungen geprüft hat (`src/components/batch/ExportToolbar.tsx`). Die Bestätigung wird protokolliert und von einem neuen Korrekturlauf zurückgesetzt.
+
+Für den Zustand heißt das: `status === 'done'` bedeutet weiterhin ausschließlich „die KI ist fertig". Ein Prüfzustand je Arbeit existiert bewusst nicht; die Bestätigung gilt dem Stapel.
 
 ---
 
@@ -106,4 +121,4 @@ Während die globale Variable `loading === true` ist:
 > Fehler im `status` oder beim Vererben von `fileText` lösen schwer debbuggbare Endlosschleifen oder duplizierten Text in der KI-Bewertung aus. Darf nur in Kombination mit UI-State geprüft werden.
 
 * **Verwandte Dokumente:** [Korrektur-Workflow](./correction-workflow.md)
-* **Test-Coverage:** Splitter UI Logic und Batch State Transitions sind Teil der Layer 3 Smoke-Tests.
+* **Test-Coverage:** `tests/integration/BatchProcessor.test.tsx` und `tests/unit/logic_batch.test.ts` decken Teile der Zustandsübergänge ab; `tests/unit/ai-protocol.test.ts` sichert die Protokollierung. Splitter-UI und vollständige Übergänge sind Teil der Layer-3-Smoke-Tests.

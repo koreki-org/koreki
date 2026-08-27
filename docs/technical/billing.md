@@ -3,13 +3,16 @@ title: "Koreki Abrechnungssystem (Billing & Tokens)"
 description: "Technisches Architektur-Dokument: Koreki Abrechnungssystem (Industrial Precision Billing)"
 author: "@principal_architect"
 date: "2026-05-03"
-last_updated: "2026-05-03"
+last_updated: "2026-08-27"
 status: "Stable"
 domain: "technical"
 security_classification: "Public"
 ---
 
 # Koreki Abrechnungssystem (Billing & Tokens)
+
+> [!IMPORTANT]
+> **Inhalt am 27.08.2026 gegen den Code geprüft.** Drei Angaben waren überholt: die zentrale Abrechnungsfunktion samt ihrer Datei, die Zeichengrenze und die Credit-Tabelle. Bestätigt: das Split-Pricing, die Budget-Bremse mit `429`, die Felder in `SystemSettings` und der Bypass für lokale Instanzen.
 
 ## 1. Executive Summary & Kontext
 
@@ -20,10 +23,13 @@ Koreki nutzt ein **hochpräzises Abrechnungssystem (Industrial Precision Billing
 Credits dienen der einfachen Abstraktion für Endnutzer. Abrechnungsbasis ist die **Analyseseite**.
 
 ### A) Workflow-Kosten
-- **Musterlösung (Digital):** 1 Credit / Seite (Layout & Parsing)
-- **Musterlösung (Scan):** 2 Credits / Seite (OCR + Layout)
-- **Schülerabgabe (Digital):** 2 Credits / Seite (Cleaning + Korrektur)
-- **Schülerabgabe (Scan):** 3 Credits / Seite (OCR + Cleaning + Korrektur)
+
+Abgerechnet wird **je Aufruf**, nicht je erzeugtem Teilergebnis. Ein Korrekturlauf kostet `pageCount` Credits, also 1 Credit je Seite (`src/hooks/file-processor/useCorrectionRun.ts`, `src/pages/api/billing/pure-deduct.ts`). Eine vorgeschaltete Bilderkennung wird als eigener Aufruf abgerechnet.
+
+Die Voranzeige in der Oberfläche schätzt entsprechend: 1 Credit je Seite für digitale Abgaben, 2 für eingescannte, weil dort die Bilderkennung hinzukommt (`estimatedCredits` in `src/hooks/file-processor/useBatchActions.ts`).
+
+> [!WARNING]
+> Die frühere Staffel an dieser Stelle (1/2/2/3 Credits je Seite nach Dokumentart) entspricht nicht dem Code.
 
 ### B) PURE Modus & Zero-Ops Bypass
 - **PURE Modus (SaaS):** Nutzer mit eigenem API-Key zahlen 0 Credits für Infrastruktur-Schritte. Die Schlüssel werden im Browser-RAM gehalten.
@@ -36,7 +42,7 @@ Credits dienen der einfachen Abstraktion für Endnutzer. Abrechnungsbasis ist di
 Seit Version 0.9.x nutzt Koreki ein **reines Split-Pricing-Verfahren**. Es gibt keine Pauschalpreise pro 1M Tokens mehr. Jeder Aufruf wird nach Input- und Output-Tokens getrennt bewertet.
 
 ### A) Kostenträger-Rechnung (Präzisions-Modus)
-Jeder API-Call wird über `processBillingAndUsage()` (in `src/lib/billing-utils.ts`) verbucht. Dabei werden folgende Daten erfasst:
+Jeder API-Call wird über `performBillingAction()` in `src/lib/billing.ts` verbucht. Die früher hier genannte Funktion `processBillingAndUsage()` und die Datei `src/lib/billing-utils.ts` existieren **nicht mehr**; `performBillingAction` hat sie abgelöst und übernimmt zusätzlich die Auflösung des Arbeitsbereichs. Dabei werden folgende Daten erfasst:
 - **Input-Tokens:** Die an die KI gesendeten Daten (Texte, Bilder).
 - **Output-Tokens:** Die von der KI generierte Antwort.
 
@@ -64,15 +70,16 @@ Dies ermöglicht eine lückenlose Transparenz darüber, welche Workflows die Clo
 
 ### A) Textmengen-Limit (Halluzinations-Schutz)
 Vor jedem KI-Aufruf wird die Textmenge geprüft:
-`text.length <= pageCount * 4000`
-Dies verhindert "Runaway-Kosten" durch fehlerhafte OCR-Ergebnisse oder böswillige Überlastung.
+`studentText.length <= min(pageCount * 10000, 100000)`
+
+Also **10.000 Zeichen je Seite**, gedeckelt bei 100.000 Zeichen je Anfrage (`src/lib/security.ts`). Die frühere Angabe von 4.000 stimmt nicht. Ein Überschreiten wird als `AI_PIPELINE_ANOMALY` im Sicherheitsprotokoll vermerkt. Dies verhindert "Runaway-Kosten" durch fehlerhafte OCR-Ergebnisse oder böswillige Überlastung.
 
 ### B) API-Schutz (Expert Role)
 Die Rolle `EXPERTE` kann zwar Prompts anpassen, hat aber **keinen Zugriff** auf die finanziellen Billing-Einstellungen. Diese sind strikt der Rolle `ADMIN` vorbehalten.
 
 ## Code Map
-- **Zentrale Abrechnungs-Engine:** `src/lib/billing-utils.ts`
+- **Zentrale Abrechnungs-Engine:** `src/lib/billing.ts` → `performBillingAction()`
 - **Preiskalkulation (Pure):** `src/lib/billing-logic.ts`
-- **Monatlicher Reset:** `src/lib/billing.ts`
+- **Monatlicher Reset & Bypass für lokale Instanzen:** `src/lib/billing.ts`
 - **Admin Interface:** `src/components/settings/GlobalBillingSettings.tsx`
 - **API-Endpoint:** `src/pages/api/admin/settings.ts`

@@ -3,13 +3,16 @@ title: "Koreki Desktop: Native Architecture & Local-First Capability"
 description: "Technische Dokumentation der Koreki Desktop-Applikation inklusive nativer Bridges (Tauri), Ollama-Integration und dem Unified Export System."
 author: "@principal_architect"
 date: "2026-04-12"
-last_updated: "2026-04-12"
+last_updated: "2026-08-27"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
 ---
 
 # Koreki Desktop: Native Architecture & Local-First Capability 💻🛡️🏛️
+
+> [!IMPORTANT]
+> **Inhalt am 27.08.2026 gegen den Code geprüft.** Korrigiert: der Name des Guards (`isDesktopMode` existiert nicht), die Zuordnung der Domain-Sperre, ein Testpfad und die Aussage zur Schlüsselhaltung. Bestätigt: Tauri V2, das Rust-Kommando `save_file_native` mit `rfd`, der Betriebssystem-Tresor über die Abhängigkeit `keyring`, und die Liste der nativen Kommandos.
 
 ## 1. Executive Summary & Kontext
 > [!NOTE]
@@ -62,7 +65,7 @@ Um die Parity zwischen Web und Desktop zu wahren, werden alle Exporte (Excel, PD
 ```typescript
 // src/lib/file-utils.ts
 export const downloadFile = async (data, fileName, mimeType) => {
-    if (isDesktopMode()) {
+    if (isDesktopTarget()) {
         // Nutzt die native Rust-Bridge für Speicherdialoge
         await invoke('save_file_native', { data, filename: fileName });
     } else {
@@ -74,7 +77,9 @@ export const downloadFile = async (data, fileName, mimeType) => {
 ```
 
 ### 3.2 Native Save Bridge (Rust Side)
-Der Desktop-Modus verzichtet auf schwere JS-Plugins im Frontend und nutzt stattdessen einen spezialisierten Rust-Command mit dem `rfd` Crate (Recursive File Dialog).
+Der Desktop-Modus verzichtet auf schwere JS-Plugins im Frontend und nutzt stattdessen einen spezialisierten Rust-Command mit dem `rfd` Crate (*Rustic File Dialogs*, Version 0.14).
+
+Die Tauri-Schicht stellt insgesamt diese Kommandos bereit (`src-tauri/src/lib.rs`): `ping_ollama_command`, `get_ollama_models_command`, `execute_ollama_command`, `save_file_native`, `open_file_native`, `execute_ai_proxy_command`.
 
 ```rust
 #[tauri::command]
@@ -97,8 +102,11 @@ async fn save_file_native(data: Vec<u8>, filename: String) -> Result<bool, Strin
 > **Data Sovereignty by Design**: Im Desktop-Modus findet keine Verarbeitung von Schülerdaten auf Koreki-Zentral-Servern statt.
 
 * **Datenverarbeitung:** Alle Dokumente verbleiben im Arbeitsspeicher des Clients oder werden lokal gespeichert. Bei Nutzung von Ollama fließen Daten ausschließlich zum lokalen Endpoint (`localhost:11434`).
-* **Credential Security:** Im Gegensatz zur SaaS-Variante werden API-Keys (z.B. Mistral) auf Desktop **niemals im RAM oder LocalStorage** gehalten. Sie werden direkt an den verschlüsselten Tresor des Betriebssystems (Windows Safe Store / Linux Secret Service / macOS Keychain) delegiert.
-* **SaaS Priority Protection**: Die Desktop-Bypasses sind über `isDesktopMode()` in `src/lib/env-context.ts` abgesichert (Domain-Lock), um eine versehentliche Aktivierung in der Cloud-Produktion zu verhindern.
+* **Credential Security:** API-Keys werden auf dem Desktop **nicht im `localStorage` abgelegt**, sondern im verschlüsselten Tresor des Betriebssystems (Windows Credential Manager / Linux Secret Service / macOS Keychain). Eingebunden über die Rust-Abhängigkeit `keyring = "2.3.3"`; die Fallunterscheidung liegt in `src/lib/ai/vault-service.ts` und ist durch `tests/unit/vault-service.test.ts` abgedeckt. Im Browserbetrieb gilt eine RAM-only-Regel.
+
+  > Zur Genauigkeit: Während eines Aufrufs liegt der Schlüssel zwangsläufig im Arbeitsspeicher. Die frühere Formulierung „niemals im RAM" war zu weit gefasst — gemeint und zutreffend ist: er wird dort nicht **aufbewahrt**.
+
+* **SaaS Priority Protection**: Zwei getrennte Guards in `src/lib/env-context.ts`. `isDesktopTarget()` prüft allein, ob die Anwendung als Desktop-Ziel gebaut wurde, und entscheidet über den Aufruf nativer Funktionen. Die **Domain-Sperre** gegen eine versehentliche Aktivierung in der Produktion sitzt dagegen in `isLocalInstance()`, das Authentifizierung und Abrechnung steuert. Eine Funktion `isDesktopMode()` existiert nicht.
 * **Audit-Logs**: Kritische Aktionen werden lokal über Tauri-Log-Plugins protokolliert, nicht serverseitig.
 
 ---
@@ -108,7 +116,7 @@ async fn save_file_native(data: Vec<u8>, filename: String) -> Result<bool, Strin
 * **Tiers-Vergleich:** [SaaS vs. Community vs. Desktop Comparison](./deployment-tiers-comparison.md)
 * **KI-Härtung:** [Ollama Integration & Hardening](./ollama-integration-hardening.md)
 * **Offline-Status:** [Disconnected Mode](./disconnected-mode.md)
-* **Unit-Tests:** `tests/unit/lib/file-utils.test.ts` verifiziert die korrekte Pfadwahl der Export-Bridge.
+* **Unit-Tests:** `tests/unit/file-utils.test.ts` verifiziert die korrekte Pfadwahl der Export-Bridge; `tests/unit/vault-service.test.ts` die Schlüsselablage.
 
 ## 6. Build & Deployment 🚀
 

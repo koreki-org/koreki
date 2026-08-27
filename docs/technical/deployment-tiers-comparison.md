@@ -3,13 +3,16 @@ title: "Architektur-Vergleich: Deployment Tiers (SaaS vs. Community vs. Desktop)
 description: "Technische Gegenüberstellung der Cloud-basierten SaaS-Variante, der On-Premise Community Edition und der Standalone Desktop-App von Koreki."
 author: "@principal_architect"
 date: "2026-04-10"
-last_updated: "2026-04-26"
+last_updated: "2026-08-27"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
 ---
 
 # Architektur-Vergleich: Deployment Tiers (SaaS vs. Community vs. Desktop) 🏮🛡️🏛️
+
+> [!IMPORTANT]
+> **Inhalt am 27.08.2026 gegen den Code geprüft.** Die Gegenüberstellung stimmte im Wesentlichen; korrigiert wurden das Codebeispiel zu `isLocalInstance` (Abschnitt 3) und ein Testpfad (Abschnitt 5). Bestätigt wurden unter anderem die Keycloak-Option der Community Edition und der Betriebssystem-Tresor der Desktop-App.
 
 ## 1. Executive Summary & Kontext
 > [!NOTE]
@@ -33,7 +36,7 @@ Der Hauptunterschied liegt in der Infrastruktur‑Abhängigkeit und dem "Schnitt
 | **KI‑Execution** | Mistral Bridge (Browser) | Mistral Bridge (Browser) | Bridge / Ollama Proxy |
 | **Export‑Weg** | Browser‑Download | Browser‑Download | **Native OS‑Dialoge** (Tauri) |
 | **Billing / Credits** | `/api/billing/*` (Stripe) | Bypass (Lizenz‑Modus) | Bypass (Unlimited) |
-| **Plattform** | Web‑Browser | Web‑Browser (Docker) | **Native App** (Windows/Mac) |
+| **Plattform** | Web‑Browser | Web‑Browser (Docker) | **Native App**; `tauri.conf.json` baut `targets: "all"`, ausgeliefert wird bislang Windows |
 
 | **Data Sovereignty** | Koreki Cloud (EU) | Kunden‑eigener Server | 100 % Lokal beim Endnutzer |
 | **Persistenz** | Cloud DB / PostgreSQL | Server‑Dateisystem (JSON) | Lokaler Client (**JSON + Native OS Vault**) |
@@ -60,15 +63,33 @@ Um eine saubere Trennung zwischen **Berechtigungen** (Bypass) und **Plattform‑
 Dies verhindert `TypeErrors` im Browser, wenn die Community Edition versucht, auf nicht vorhandene native Funktionen zuzugreifen.
 
 ```typescript
-// src/lib/env-context.ts (vereinfacht)
+// src/lib/env-context.ts — tatsaechliche Fassung, Stand 27.08.2026
 export function isLocalInstance(): boolean {
-    return mode === 'desktop' || (mode === 'community' && isSingleUser);
+    // Pillar 1: LOGTO bedeutet immer SaaS
+    if (getAuthType() === 'LOGTO') return false;
+
+    // Domain-Sperre: lokale Flags auf der Produktivdomain werden ignoriert
+    if (typeof window !== 'undefined') {
+        const hostname = window.location.hostname;
+        if (PROD_DOMAINS.includes(hostname) || hostname.endsWith('.koreki.org')) {
+            logger.security('SECURITY ALERT: Local instance flags detected on production domain! Ignoring flags.');
+            return false;
+        }
+    }
+
+    const mode = getKorekiMode();
+    return mode === 'desktop' || mode === 'community';
 }
 
 export function isDesktopTarget(): boolean {
-    return getKorekiMode() === 'desktop'; // Nur aktiv für native Desktop‑App
+    return getKorekiMode() === 'desktop';
 }
 ```
+
+> [!WARNING]
+> Zwei Punkte, an denen eine frühere Fassung dieses Dokuments danebenlag:
+> * `isLocalInstance` prüft **nicht** auf Einzelbenutzerbetrieb. Jede Community-Instanz gilt als lokal, unabhängig von `NEXT_PUBLIC_SINGLE_USER_MODE`.
+> * Die beiden Schutzmechanismen — Vorrang von `LOGTO` und die Domain-Sperre — fehlten im Beispiel. Sie sind der Grund, warum gesetzte Lokal-Flags auf der Produktivdomain nichts bewirken.
 
 ### Die Unified Export Bridge (`downloadFile`)
 
@@ -95,7 +116,8 @@ Ab April 2026 nutzt Koreki eine einheitliche Abstraktion für alle Dateiexporte.
 * **Architecture:** [Korrektur‑Workflow](./correction-workflow.md)
 * **KI‑Pedagogy Framework:** [AI Pedagogy Framework](./ai-pedagogy-framework.md)
 * **Desktop‑Export Bridge:** [Koreki Desktop](./koreki-desktop.md)
-* **Unit‑Tests:** `tests/unit/lib/file-utils.test.ts` verifiziert die korrekte Pfadwahl der Export‑Bridge.
+* **Unit‑Tests:** `tests/unit/file-utils.test.ts` verifiziert die korrekte Pfadwahl der Export‑Bridge. `tests/unit/vault-service.test.ts` prüft die Schlüsselablage: im Browser nur im Arbeitsspeicher, auf dem Desktop im Betriebssystem-Tresor.
+* **Belegstellen:** Der Betriebssystem-Tresor ist über die Rust-Abhängigkeit `keyring = "2.3.3"` in `src-tauri/Cargo.toml` eingebunden. Die Keycloak-Option ist in `src/lib/env-context.ts` als `isKeycloakAuth()` umgesetzt und greift ausschließlich im Community-Modus.
 
 ---
 
