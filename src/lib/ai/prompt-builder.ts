@@ -6,7 +6,7 @@ import { getAvailablePluginManifest } from '../grading/graph-generator';
 import { buildGraphEngineReport, buildCalcTraceEngineReport } from './engine-report';
 import type { GradingCriterion } from '../grading/calc-trace-types';
 import { logger } from '../logger';
-import { setzeEin } from '../prompt-placeholder';
+import { setzeEin, entschaerfeMarken } from '../prompt-placeholder';
 
 /**
  * Helper to determine whether deterministic PANG engine point awarding should be disabled (default true for custom tasks).
@@ -134,7 +134,7 @@ export function buildCorrectionPrompt(
         system += buildCalcTraceEngineReport(tasksLayout);
     }
 
-    user = setzeEin(user, '{{modelSolution}}', modelSolution);
+    user = setzeEin(user, '{{modelSolution}}', entschaerfeMarken(modelSolution));
  
     let examplesText = '';
     if (gradingMemory && Array.isArray(gradingMemory) && gradingMemory.length > 0) {
@@ -152,7 +152,7 @@ export function buildCorrectionPrompt(
             if (showTaskName && item.taskName) {
                 block += `[Betrifft Aufgabe]\n"${item.taskName}"\n\n`;
             }
-            block += `[Schülerantwort]\n"${item.studentText}"\n\n`;
+            block += `[Schülerantwort]\n"${entschaerfeMarken(item.studentText)}"\n\n`;
             block += `[Erwartete Bewertung]\n`;
             block += `- Vergebene Punkte: ${item.expectedCorrection.pointsObtained}`;
             // `Number.isFinite` statt `!== undefined && !== null`: Ein NaN ist
@@ -209,7 +209,7 @@ export function buildCorrectionPrompt(
         user += `\n</task_to_evaluate>`;
     }
 
-    user = setzeEin(user, '{{studentText}}', studentText);
+    user = setzeEin(user, '{{studentText}}', entschaerfeMarken(studentText));
 
     return {
         system,
@@ -241,7 +241,7 @@ export function buildCleanAndAnalyzePrompt(modelSolution: string, model?: string
         system = system.replace('suggestGraph = false ist.', `suggestGraph = false ist.\nErlaubte Plugin-Domänen: [ ${activeDomainsText} ].`);
     }
 
-    user = setzeEin(user, '{{modelSolution}}', modelSolution);
+    user = setzeEin(user, '{{modelSolution}}', entschaerfeMarken(modelSolution));
     
     return { 
         system, 
@@ -266,7 +266,7 @@ export function buildCleanAndMapPrompt(studentText: string, tasksLayout?: Task[]
         : '';
     
     user = setzeEin(user, '{{tasksLayout}}', layoutString);
-    user = setzeEin(user, '{{studentText}}', studentText);
+    user = setzeEin(user, '{{studentText}}', entschaerfeMarken(studentText));
 
     return { 
         system, 
@@ -293,7 +293,7 @@ export function buildStudentSimulatorPrompt(modelSolution: string, tasksLayout?:
     let system = studentSimulatorSystemDefault;
     let user = studentSimulatorUserDefault;
 
-    user = setzeEin(user, '{{modelSolution}}', modelSolution);
+    user = setzeEin(user, '{{modelSolution}}', entschaerfeMarken(modelSolution));
 
     const layoutString = tasksLayout && Array.isArray(tasksLayout)
         ? tasksLayout.map(t => `- ${t.name} (Max: ${t.maxPoints} P)`).join('\n')
@@ -417,7 +417,7 @@ export function buildVariableExtractionPrompt(studentText: string, variables: an
         `- ID: "${v.id}" (Typ: "${v.type}", Standardwert/Erwartet: "${v.defaultValue !== undefined ? v.defaultValue : 'keine Vorgabe'}")`
     ).join('\n');
 
-    user = setzeEin(user, '{{studentText}}', studentText);
+    user = setzeEin(user, '{{studentText}}', entschaerfeMarken(studentText));
     user = setzeEin(user, '{{variablesList}}', variablesList);
 
     return {
