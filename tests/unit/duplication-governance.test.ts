@@ -201,7 +201,18 @@ const aussagekraeftigeZeilen = (quelltext: string): { nummer: number; text: stri
     );
 
     const ergebnis: { nummer: number; text: string }[] = [];
-    ohneBloecke.split('\n').forEach((zeile, index) => {
+    ohneBloecke.split('\n').forEach((rohzeile, index) => {
+        // 🏮 Das Wagenruecklauf-Zeichen MUSS vor dem Kommentar-Muster weg.
+        //
+        // `(^|[^:])//.*$` findet mit angehaengtem \r keinen Treffer: In
+        // JavaScript passt `$` ohne `m`-Flag nur auf das absolute Stringende,
+        // und `.` deckt Zeilenendezeichen nicht ab — `.*$` kommt dort also nie
+        // an. Die Folge war eine Pruefung, die auf zwei Plattformen zweierlei
+        // misst: Auf Windows-Checkouts (core.autocrlf=true, CRLF) zaehlte JEDER
+        // Kommentar als Code, unter Linux (LF) nicht. Ein wortgleich kopierter
+        // Erklaerungsblock schlug dadurch lokal als Doppelung an, in der CI
+        // nicht — und umgekehrt blieb hier verborgen, was dort rot war.
+        const zeile = rohzeile.replace(/\r$/, '');
         const ohneKommentar = zeile.replace(/(^|[^:])\/\/.*$/, '$1');
         const knapp = ohneKommentar.replace(/\s+/g, ' ').trim();
         if (knapp.length < MIN_ZEICHEN) return;
