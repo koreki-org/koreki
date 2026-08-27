@@ -3,7 +3,7 @@ title: "Koreki Storage, Export & Import Architecture"
 description: "Technisches Konzept zur Datenhaltung, Sicherung von Sitzungen (.koreki) und dem Lösen von Export-Konflikten."
 author: "@principal_architect"
 date: "2026-04-06"
-last_updated: "2026-04-06"
+last_updated: "2026-08-25"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -37,6 +37,21 @@ graph TD;
 Das Kernkonzept basiert darauf, dass es keine persistente serverseitige Speicherung sensibler Inhaltsdaten in der Datenbank gibt:
 *   **Model Solution & Tasks Layout:** Die vom Lehrer definierten Musterlösungen.
 *   **BatchFiles (Schülerarbeiten):** Das Array aller verarbeiteten Arbeiten inklusive AI-Zensuren.
+    Dazu gehört seit dem 24.08.2026 auch der **Notizzettel des Modells** (`correctionNotes`) je
+    Aufgabe — die Begründung, die die KI vor der Punktevergabe schreibt. Sie reist mit, weil der
+    Export den gesamten Baum serialisiert und der Filter in `exportSessionToJson` nur die fünf
+    Binär-Felder entfernt (`previewDataUrls`, `redactedDataUrls`, `redactedDataUrl`, `file`,
+    `files`). Der Import gibt `batchFiles` unverändert zurück, der Rundlauf trägt sie also.
+
+> [!NOTE]
+> **Ältere `.koreki`-Dateien enthalten die Notizen bei Textaufgaben nicht.** Bis zum 24.08.2026
+> verwarf `mapModelTask` das Feld, bevor es überhaupt in `batchFiles` landete (siehe
+> [correction-workflow.md](./correction-workflow.md#31-der-notizzettel-des-modells-correctionnotes)).
+> Beim Wiedereinlesen einer alten Sicherung bleibt der Aufklapper in der Korrekturkarte deshalb
+> leer. Das ist kein Fehler, sondern der Stand jener Datei.
+>
+> Datenschutzlich kommt nichts Neues hinzu: Die Notizen zitieren Schülertext wörtlich, doch die
+> `.koreki`-Datei enthält den vollständigen Schülertext ohnehin im Klartext (`fileText`).
 
 ### Zwischenstand-Sicherungen (Intermediate Exports)
 
