@@ -41,6 +41,26 @@ export function pdfKennzeichnung(titel: string): {
     };
 }
 
+/**
+ * Maschinenlesbare Kennung fuer Webseiten, die KI-erzeugten Text zeigen.
+ *
+ * Der digitale Rueckmeldezettel ist der einzige Weg, auf dem Feedback die
+ * Schuelerin oder den Schueler NICHT als Datei erreicht — dort greifen weder
+ * PDF- noch Excel-Eigenschaften. Ohne diese Kennung waere ausgerechnet die
+ * Ausgabe an die betroffene Person die einzige ungekennzeichnete.
+ *
+ * `generator` ist ein etablierter Meta-Name und damit von jedem Werkzeug
+ * lesbar; `ai-generated` sagt es zusaetzlich ausdruecklich. Artikel 50 Absatz 2
+ * verlangt ein maschinenlesbares Format, nennt aber bewusst keine Technik —
+ * Metadaten sind hier das Gegenstueck zu dem, was Dateien schon tragen.
+ */
+export function htmlKennzeichnung(): { generator: string; aiGenerated: string } {
+    return {
+        generator: `Koreki — ${KENNZEICHEN}`,
+        aiGenerated: KENNZEICHEN
+    };
+}
+
 /** Dateieigenschaften fuer Excel-Exporte (SheetJS `Props`). */
 export function excelKennzeichnung(): {
     Company: string;

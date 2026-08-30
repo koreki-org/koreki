@@ -4,7 +4,8 @@ import {
     KI_HINWEIS_FUSSZEILE,
     KI_HINWEIS_KURZ,
     pdfKennzeichnung,
-    excelKennzeichnung
+    excelKennzeichnung,
+    htmlKennzeichnung
 } from '@/lib/ai-disclosure';
 
 /**
@@ -50,6 +51,12 @@ describe('Kennzeichnung KI-erzeugter Inhalte', () => {
         expect(props.Category).toMatch(/AI-generated/);
         expect(props.Comments).toBe(KI_HINWEIS_FUSSZEILE);
     });
+
+    it('legt eine maschinenlesbare Kennung fuer Webseiten bereit', () => {
+        const meta = htmlKennzeichnung();
+        expect(meta.generator).toMatch(/AI-generated/);
+        expect(meta.aiGenerated).toMatch(/AI-generated/);
+    });
 });
 
 describe('Waechter: kein Ausgabeweg ohne Kennzeichnung', () => {
@@ -59,6 +66,15 @@ describe('Waechter: kein Ausgabeweg ohne Kennzeichnung', () => {
         ).map((d) => relativ(d.pfad));
 
         expect(ohne).toEqual([]);
+    });
+
+    it('die Seite, die Schuelern Feedback zeigt, traegt die Kennzeichnung', () => {
+        // Der digitale Rueckmeldezettel ist der einzige Ausgabeweg ohne Datei —
+        // und ausgerechnet der zur betroffenen Person.
+        const seite = DATEIEN.find((d) => d.pfad.endsWith(path.join('pages', 'view.tsx')));
+        expect(seite).toBeDefined();
+        expect(seite!.inhalt).toMatch(/htmlKennzeichnung\(\)/);
+        expect(seite!.inhalt).toMatch(/KI_HINWEIS_KURZ/);
     });
 
     it('Excel-Dateien entstehen nur ueber den gemeinsamen Schreibpunkt', () => {

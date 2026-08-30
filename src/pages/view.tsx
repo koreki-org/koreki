@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import Logo from '@/components/Logo';
+import { KI_HINWEIS_KURZ, htmlKennzeichnung } from '@/lib/ai-disclosure';
 
 export default function StudentFeedbackView() {
     const [data, setData] = useState<FeedbackData | null>(null);
@@ -142,6 +143,9 @@ export default function StudentFeedbackView() {
             <Head>
                 <title>Koreki | Dein Feedback</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />
+                {/* Kennzeichnung nach Art. 50 Abs. 2 KI-VO — siehe lib/ai-disclosure.ts */}
+                <meta name="generator" content={htmlKennzeichnung().generator} />
+                <meta name="ai-generated" content={htmlKennzeichnung().aiGenerated} />
             </Head>
  
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
@@ -249,6 +253,7 @@ export default function StudentFeedbackView() {
                         Deine Daten wurden nicht auf Koreki-Servern gespeichert.
                     </p>
                     <div className="mt-8 pt-8 border-t border-border/50">
+                        <p className="text-xs text-muted-foreground mb-3">{KI_HINWEIS_KURZ}</p>
                         <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">Powered by Koreki.org</p>
                     </div>
                 </div>
