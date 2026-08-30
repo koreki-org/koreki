@@ -69,7 +69,13 @@ Feedbacktexte und Punktvorschläge werden maschinell erzeugt. Diese Herkunft ble
 ## 8. Risikovermeidung & Antidiskriminierung
 Das System wird stichprobenartig auf sprachbedingte Ungleichbehandlung geprüft. Im Test vom 23.08.2026 wurde dieselbe fachliche Leistung in Standardsprache, in einfacher Umgangssprache und in nicht-muttersprachlicher Formulierung identisch bewertet (je 4 von 4 Punkten, keine Abweichung). Eine systematische Prüfung über mehrere Fächer, Aufgabentypen und Modelle hinweg steht aus. Lehrkräfte sollten darauf achten, dass die KI keine diskriminierenden Muster (z.B. aufgrund von Ausdrucksweise oder Herkunft) reproduziert. Bei Verdacht auf systematische Fehlbehandlung ist der Support zu informieren.
 
-**Zur Pseudonymisierung, klar gesagt:** Koreki ersetzt den **Dateinamen** durch eine Bezeichnung wie „Schüler #1", bevor der Text an das Sprachmodell geht. **Der Name, der auf dem Blatt steht, bleibt stehen** und wird mit übertragen. Die Schwärzung von Bildbereichen ist ein optionales Werkzeug, das Sie je Datei von Hand anwenden. Entfernen oder schwärzen Sie Namen auf der Arbeit, bevor Sie hochladen, oder verwenden Sie von vornherein Nummern statt Namen.
+**Zur Pseudonymisierung, klar gesagt:** Koreki ersetzt den **Dateinamen** automatisch durch eine Bezeichnung wie „Schüler #1". Das geschieht ohne Ihr Zutun.
+
+**Namen auf dem Blatt** erfasst diese automatische Ersetzung nicht. Dafür gibt es die **Schwärzung**: Markieren Sie die Stelle, und Koreki verwendet für die Texterkennung ausschließlich den geschwärzten Abzug — der Name gelangt dann nicht an das Sprachmodell. Fehlt zu einer als geschwärzt geführten Arbeit auch nur eine geschwärzte Seite, bricht der Vorgang mit einer Fehlermeldung ab, statt heimlich das Original zu verwenden.
+
+Die Schwärzung ist allerdings **freiwillig und je Datei von Hand anzuwenden**. Wer sie nicht nutzt, überträgt einen auf dem Blatt stehenden Namen mit. Bei Verdacht auf einen Klarnamen im erkannten Text zeigt Koreki einen Hinweis, hält den Vorgang aber nicht an.
+
+**Empfehlung:** Schwärzen Sie Namen vor dem Hochladen, oder lassen Sie die Arbeiten von vornherein mit Nummern statt Namen schreiben.
 
 **Nachteilsausgleich:** Ein gewährter Nachteilsausgleich — etwa bei Legasthenie — ist dem System nicht bekannt und wird von ihm nicht berücksichtigt. Sie müssen ihn bei der Durchsicht selbst einbringen.
 
