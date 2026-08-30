@@ -151,7 +151,7 @@ export default function AVVPage({ content, version, isAcceptedVersion }: AVVPage
             <footer className="bg-foreground text-white py-12 md:py-20 mt-20 text-center no-print">
                 <div className="max-w-4xl mx-auto px-6">
                     <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
-                        &copy; {new Date().getFullYear()} Max Mustermann UG (haftungsbeschränkt) - Koreki<span className="text-primary">.</span> Alle Rechte vorbehalten.
+                        &copy; {new Date().getFullYear()} {LEGAL_CONFIG.controller.name} - Koreki<span className="text-primary">.</span> Alle Rechte vorbehalten.
                     </p>
                 </div>
             </footer>
@@ -161,6 +161,7 @@ export default function AVVPage({ content, version, isAcceptedVersion }: AVVPage
 
 import { getLatestLegalDocument } from '@/lib/legal';
 import type { GetStaticProps } from 'next';
+import { LEGAL_CONFIG } from '@/config/legal-contact';
 
 export const getStaticProps: GetStaticProps = async () => {
     const type = 'avv'; 
