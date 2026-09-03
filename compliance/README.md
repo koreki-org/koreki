@@ -18,7 +18,7 @@ Wer wissen will, was noch fehlt, liest diese Seite. Wer wissen will, warum etwas
 
 | Artikel | Was verlangt wird | Wo die Antwort steht | Stand |
 |---|---|---|---|
-| **Art. 4** | KI-Kompetenz bei Anbieter und Betreiber | — | **offen** |
+| **Art. 4** | KI-Kompetenz bei Anbieter und Betreiber | [betriebsanleitung_v1.2.md](../src/legal/betriebsanleitung_v1.2.md) §5 | erfüllt |
 | **Art. 5** | Verbotene Praktiken | `selbsteinschaetzung.md` | erfüllt — keine Emotionserkennung, kein Social Scoring |
 | **Art. 6 Abs. 3** | Einstufung als Hochrisiko | `selbsteinschaetzung.md` | Entwurf |
 | **Art. 9** | Risikomanagement | `risikomanagement.md` | erfüllt — 16 Risiken, 3 offene Punkte |
@@ -29,7 +29,7 @@ Wer wissen will, was noch fehlt, liest diese Seite. Wer wissen will, warum etwas
 | **Art. 14** | Menschliche Aufsicht | `anhang-iv.md` §3.3 | erfüllt — Bestätigung vor Export |
 | **Art. 15** | Genauigkeit, Robustheit, Sicherheit | `anhang-iv.md` §4 | erfüllt — gemessen, Schwellen festgelegt |
 | **Art. 16** | Pflichten des Anbieters | `anhang-iv.md` §1.2 | **blockiert** — Anbieter nicht benannt |
-| **Art. 17** | Qualitätsmanagementsystem | — | **offen** |
+| **Art. 17** | Qualitätsmanagementsystem | `qualitaetsmanagement.md` | Entwurf — zwölf von dreizehn Punkten belegt |
 | **Art. 25** | Rollenverteilung in der Wertschöpfungskette | `anhang-iv.md` §1.2 | erfüllt |
 | **Art. 26** | Pflichten der Betreiber | [betriebsanleitung_v1.2.md](../src/legal/betriebsanleitung_v1.2.md) | erfüllt |
 | **Art. 43 + Anhang VI** | Konformitätsbewertung (interne Kontrolle) | `anhang-iv.md` §8 | **blockiert** — braucht Anbieter |
@@ -37,16 +37,16 @@ Wer wissen will, was noch fehlt, liest diese Seite. Wer wissen will, warum etwas
 | **Art. 49** | Registrierung in der EU-Datenbank | `selbsteinschaetzung.md` | **blockiert** — braucht Anbieter |
 | **Art. 50** | Kennzeichnung KI-erzeugter Inhalte | [ai-disclosure.ts](../src/lib/ai-disclosure.ts) · `anhang-iv.md` §3.6 | erfüllt |
 | **Art. 72** | Beobachtung nach Inverkehrbringen | `anhang-iv.md` §9 | Entwurf |
-| **Art. 73** | Meldung schwerwiegender Vorfälle | `anhang-iv.md` §9.6 | **blockiert** — braucht Anbieter |
+| **Art. 73** | Meldung schwerwiegender Vorfälle | `anhang-iv.md` §9.6 | Entwurf — Eingangsweg steht, Meldung an die Behörde braucht den Anbieter |
 | **Art. 111 Abs. 2** | Bestandsschutz für Altsysteme | `selbsteinschaetzung.md` | erfüllt |
 
 ## Was das zusammenfasst
 
-**Fünf Zeilen hängen an einer einzigen Sache:** Art. 16, 43, 47, 49 und 73 sind alle mit *„braucht Anbieter"* blockiert. Solange Rechtsform und Anschrift nicht feststehen, ist keine davon zu schließen — und mit der Angabe fallen alle fünf auf einmal.
+**Vier Zeilen hängen an einer einzigen Sache:** Art. 16, 43, 47 und 49 sind mit *„braucht Anbieter"* blockiert. Art. 73 nur zur Hälfte — der Weg, auf dem eine Schule einen Vorfall meldet, steht; die Meldung an die Marktaufsicht setzt den benannten Anbieter voraus. Solange Rechtsform und Anschrift nicht feststehen, ist keine davon zu schließen — und mit der Angabe fallen alle fünf auf einmal.
 
 Das ist bewusst vertagt: Ein Inverkehrbringen im Sinne der Verordnung findet derzeit nicht statt, und die Hochrisiko-Pflichten gelten erst ab dem **02.12.2027** (Digital Omnibus, VO (EU) 2026/1744). Die Transparenzpflicht aus Art. 50 gilt dagegen seit dem **02.08.2026** — sie ist erfüllt.
 
-**Zwei Zeilen sind echte Lücken**, unabhängig vom Anbieter: Art. 4 (KI-Kompetenz) und Art. 17 (Qualitätsmanagementsystem). Beide sind bisher nirgends behandelt.
+**Keine Zeile ist mehr unbearbeitet.** Art. 4 (KI-Kompetenz) und Art. 17 (Qualitätsmanagementsystem) waren am 03.09.2026 die letzten beiden Lücken und wurden geschlossen: Die Betriebsanleitung erklärt jetzt in fünf Punkten, was eine Lehrkraft über das System wissen muss; das Qualitätsmanagement beschreibt das Verfahren, das ohnehin lief — nichts davon wurde für die Verordnung erfunden.
 
 ---
 
@@ -59,6 +59,7 @@ Das ist bewusst vertagt: Ein Inverkehrbringen im Sinne der Verordnung findet der
 | `selbsteinschaetzung.md` | Einstufung: Warum Koreki unter Anhang III Nr. 3 fällt und was daraus folgt. |
 | `entscheidungen.md` | Was der Anbieter wann festgelegt hat, mit Begründung. |
 | `leitlinien.md` | Auszüge und Auslegungshilfen zur Verordnung. |
+| `qualitaetsmanagement.md` | Qualitätsmanagementsystem nach Art. 17, verhältnismäßig zur Ein-Personen-Organisation. |
 | `betriebsanleitung-entwurf.md` | Arbeitsfassung. Die **ausgelieferte** Betriebsanleitung liegt unter [`src/legal/`](../src/legal/) und wird mit der Anwendung versioniert. |
 
 ## Die Nachweise

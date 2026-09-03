@@ -73,9 +73,41 @@ Für Rechenaufgaben können Sie in der Musterlösung ein Rechenziel hinterlegen;
 **Was Sie trotzdem beachten sollten:** In der Messung trafen alle sechs Rechenaufgaben **ohne** hinterlegtes Rechenziel die Sollpunktzahl exakt; **mit** Rechenziel lag die Abweichung bei 0,67 Punkten. Die Rechenkette liegt also weiterhin etwas höher; woran das liegt, ist nicht abschließend geklärt. Prüfen Sie mehrschrittige Rechenaufgaben deshalb weiterhin aufmerksam.
 
 ### 4.4 Was das für Ihre Arbeit heißt
-Ein Punktvorschlag bleibt ein Entwurf. Die Zahl oben beschreibt, wie nah die Vorschläge im Mittel lagen — sie sagt nichts über den einzelnen Fall vor Ihnen. Die Prüfpflicht aus Abschnitt 5 wird durch sie nicht kleiner.
+Ein Punktvorschlag bleibt ein Entwurf. Die Zahl oben beschreibt, wie nah die Vorschläge im Mittel lagen — sie sagt nichts über den einzelnen Fall vor Ihnen. Die Prüfpflicht aus Abschnitt 6 wird durch sie nicht kleiner.
 
-## 5. Menschliche Aufsicht (Human-in-the-Loop)
+## 5. Was Sie über KI wissen sollten (Art. 4 EU AI Act)
+
+Artikel 4 verlangt, dass alle, die mit einem KI-System arbeiten, es hinreichend verstehen. Nicht als Schulung — sondern so weit, dass Sie einschätzen können, wann Sie dem System trauen dürfen und wann nicht. Diese fünf Punkte genügen dafür.
+
+### 5.1 Eine KI kann überzeugend falsch sein
+Das ist der wichtigste Punkt. Ein Sprachmodell erzeugt Text, der **plausibel klingt** — nicht Text, der wahr ist. Eine falsche Bewertung kommt in demselben ruhigen, sachlichen Ton daher wie eine richtige. Sie wirkt nicht unsicher, sie zögert nicht, sie schreibt keine Fragezeichen.
+
+Bei einem Menschen ist Unsicherheit meist zu hören. Hier nicht. Verlassen Sie sich deshalb nie darauf, dass ein Fehler „schon auffallen" wird.
+
+### 5.2 Der Vertrauenswert misst nicht, ob die Bewertung stimmt
+Jede Aufgabe trägt einen Vertrauenswert. Er sagt: *Wie eindeutig war dieser Fall für das Modell?* Er sagt **nicht**: *Wie wahrscheinlich ist die Punktzahl richtig?*
+
+Ein niedriger Wert ist ein verlässliches Warnsignal — dort lohnt das Nachsehen besonders. Ein hoher Wert ist dagegen **keine Zusicherung**. Eine falsche Bewertung mit hohem Vertrauenswert ist möglich und kommt vor.
+
+### 5.3 Dieselbe Arbeit kann beim zweiten Lauf anders ausfallen
+Koreki sendet an alle KI-Anbieter einen festen Startwert, damit ein wiederholter Lauf dieselben Zahlen liefert. Innerhalb einer Sitzung ist darauf Verlass. Über längere Zeiträume — etwa nach einem Neustart des Modellservers — können einzelne Punktzahlen dennoch um ein bis zwei Punkte abweichen.
+
+Wenn Sie eine Bewertung später belegen müssen, **speichern Sie das Protokoll**. Ein zweiter Lauf ist kein Ersatz dafür.
+
+### 5.4 Das System liest den Text, nicht die Absicht
+Koreki vergleicht, was auf dem Blatt steht, mit Ihrer Musterlösung. Es weiß nicht, was eine Schülerin gemeint hat, kennt Ihren Unterricht nicht und erkennt keine Ironie. Eine sachlich richtige Antwort in ungewöhnlicher Formulierung kann es verfehlen — und eine gut klingende Leerformel gelegentlich zu hoch bewerten.
+
+Genau deshalb sind **Ihre Bewertungshinweise in der Musterlösung** der wirksamste Hebel: Je klarer dort steht, wann ein Punkt erfüllt ist, desto weniger muss das System raten.
+
+### 5.5 Wenn ein Vorschlag falsch aussieht
+Er ist es vermutlich. Ändern Sie die Punktzahl — sie ist genau dafür überschreibbar. Zwei Dinge helfen darüber hinaus:
+
+* **Sehen Sie die Begründung an.** Zu jeder Aufgabe steht, warum die Punkte so vergeben wurden. Meist zeigt sich dort, ob das System die Antwort missverstanden hat oder ob Ihre Musterlösung an dieser Stelle mehrdeutig ist.
+* **Melden Sie es.** Wiederkehrende Fehlbewertungen sind für die Weiterentwicklung wertvoll. Die Kontaktadresse steht in Abschnitt 1.
+
+**Kein Grund zur Sorge ist dagegen:** dass Koreki gelegentlich strenger bewertet als Sie. In der Messung vom 03.09.2026 lag die einzige Abweichung in diese Richtung. Ein System, das zu streng ist, korrigieren Sie beim Durchsehen. Eines, das zu großzügig ist, fällt seltener auf.
+
+## 6. Menschliche Aufsicht (Human-in-the-Loop)
 **WICHTIGER HINWEIS:** Koreki ist ein Assistenzsystem, kein Ersatz für die pädagogische Fachkraft.
 *   Jeder Bewertungsvorschlag der KI **muss** durch die Lehrkraft geprüft und ggf. korrigiert werden.
 *   Die KI kann "halluzinieren" (Inhalte erfinden oder Fakten falsch verknüpfen). Die Letztverantwortung für die Note liegt ausschließlich bei der Lehrkraft.
@@ -85,31 +117,31 @@ Ein Punktvorschlag bleibt ein Entwurf. Die Zahl oben beschreibt, wie nah die Vor
 
 Die Software erzwingt die Durchsicht nicht und gibt auch nicht vor, es zu tun. Die Bestätigung ist Ihre Erklärung, kein Nachweis, dass jede Arbeit geöffnet wurde.
 
-## 6. Kennzeichnung KI-erzeugter Inhalte
+## 7. Kennzeichnung KI-erzeugter Inhalte
 Feedbacktexte und Punktvorschläge werden maschinell erzeugt. Diese Herkunft bleibt auf allen Ausgabewegen erkennbar:
 *   **Exportierte Dateien** tragen sie maschinenlesbar in den Dateieigenschaften (PDF-Schlüsselwörter, Excel-Kategorie) und lesbar in der Fußzeile.
 *   **Der digitale Rückmeldezettel** trägt sie als Angabe im Seitenkopf und als Zeile unter dem Feedback.
 
 **Grenze:** Die Kennzeichnung hängt an der Datei beziehungsweise an der Seite, nicht am Text selbst. Wer einen Feedbacksatz herauskopiert, nimmt sie nicht mit.
 
-## 7. Technische Grenzen
+## 8. Technische Grenzen
 *   **Dateien:** Unterstützt werden PDF, JPG, PNG, TXT, XLSX und CSV bis maximal 50 MB pro Datei.
 *   **Sprachen:** Belastbare Aussagen zur Qualität in einzelnen Unterrichtssprachen liegen nicht vor. Die frühere Angabe „optimiert für Deutsch, Englisch und Französisch" ließ sich nicht belegen und ist entfallen.
 *   **Zeichenlimit:** 10.000 Zeichen je Seite, höchstens 100.000 Zeichen je Anfrage.
 
-### 7.1 Betrieb ohne Anmeldung
+### 8.1 Betrieb ohne Anmeldung
 Die Community- und Desktop-Ausgabe lässt sich mit `AUTH_TYPE=NONE` ohne Anmeldung betreiben. **Für den Mehrbenutzerbetrieb an einer Schule ist dieser Modus ungeeignet.** Es gibt dann keine Benutzertrennung: Wer Zugriff auf den Rechner oder die Adresse hat, sieht alle Arbeiten. Der Zugang ist genau so weit geschützt wie der Rechner selbst.
 
 Für den Betrieb an einer Schule verwenden Sie die Anmeldung über Keycloak oder betreiben Koreki auf einem Einzelplatzrechner, zu dem nur die korrigierende Lehrkraft Zugang hat.
 
-### 7.2 Schülerinnen und Schüler mit Notenschutz
+### 8.2 Schülerinnen und Schüler mit Notenschutz
 Liegt für ein Kind **Notenschutz** vor — Rechtschreib- oder Leseleistung wird ganz oder teilweise nicht bewertet —, lässt sich das über die Bewertungs-Skills abbilden (etwa „Kulante Bewertung (Rechtschreibungs-Blind)").
 
 **Beachten Sie dabei:** Die Skill-Auswahl gilt für den **gesamten Stapel**, nicht für einzelne Arbeiten. Korrigieren Sie die betroffene Arbeit deshalb in einem **eigenen Durchlauf** mit dem passenden Profil. Andernfalls fließt die Rechtschreibung in die Bewertung ein, obwohl sie es nicht darf — und das fällt nicht auf, weil die Punktzahl plausibel aussieht.
 
 Der **Nachteilsausgleich** (verlängerte Bearbeitungszeit, Hilfsmittel) betrifft dagegen die Bedingungen der Arbeit und nicht die Bewertung; er berührt Koreki nicht.
 
-## 8. Risikovermeidung & Antidiskriminierung
+## 9. Risikovermeidung & Antidiskriminierung
 Das System wird stichprobenartig auf sprachbedingte Ungleichbehandlung geprüft. Im Test vom 23.08.2026 wurde dieselbe fachliche Leistung in Standardsprache, in einfacher Umgangssprache und in nicht-muttersprachlicher Formulierung identisch bewertet (je 4 von 4 Punkten, keine Abweichung). Eine systematische Prüfung über mehrere Fächer, Aufgabentypen und Modelle hinweg steht aus. Lehrkräfte sollten darauf achten, dass die KI keine diskriminierenden Muster (z.B. aufgrund von Ausdrucksweise oder Herkunft) reproduziert. Bei Verdacht auf systematische Fehlbehandlung ist der Support zu informieren.
 
 **Zur Pseudonymisierung, klar gesagt:** Koreki ersetzt den **Dateinamen** automatisch durch eine Bezeichnung wie „Schüler #1". Das geschieht ohne Ihr Zutun.
@@ -122,14 +154,14 @@ Die Schwärzung ist allerdings **freiwillig und je Datei von Hand anzuwenden**. 
 
 **Nachteilsausgleich:** Ein gewährter Nachteilsausgleich — etwa bei Legasthenie — ist dem System nicht bekannt und wird von ihm nicht berücksichtigt. Sie müssen ihn bei der Durchsicht selbst einbringen.
 
-## 9. Anweisungen im Schülertext
+## 10. Anweisungen im Schülertext
 Der Text einer Arbeit wird dem Modell im selben Zusammenhang vorgelegt wie die Bewertungsregeln. Daraus folgt eine Möglichkeit, die es bei einer Korrektur auf Papier nicht gibt: Jemand könnte versuchen, eine Anweisung in die Arbeit zu schreiben, um die Bewertung zu beeinflussen.
 
 Dagegen ist vorgesorgt: Werte werden nur über ein abgesichertes Verfahren in die Anweisung eingesetzt, Steuerzeichen im Schülertext werden neutralisiert, und die Bewertungsanweisung lässt Text innerhalb der Arbeit ausdrücklich nicht als Anweisung gelten. Am 27.08.2026 wurden sechs Angriffsarten geprüft; nach der Härtung wirkte keine mehr.
 
 Sechs Angriffsarten sind eine Stichprobe, kein Sicherheitsnachweis. Fällt Ihnen in einer Arbeit Text auf, der sich an die Software statt an die Aufgabe richtet, bewerten Sie diese Arbeit von Hand und melden Sie den Fall.
 
-## 10. Wartung & Updates
+## 11. Wartung & Updates
 *   Das Gesamtsystem wird **kontinuierlich/agil** aktualisiert, um Sicherheit und Stabilität zu gewährleisten.
 *   **Modellversionen:** Koreki spricht **feste Modellversionen** an, keine gleitenden Kennungen. Verwendet werden `mistral-medium-2604` für die Bewertung, `mistral-ocr-4-1` für die Texterkennung, `mistral-large-2512` und `mistral-small-2603` für die Aufbereitung. Ein stiller Austausch des Modells durch den Anbieter ist damit ausgeschlossen.
 *   **So läuft ein Wechsel ab:** Bevor eine neue Modellversion in Betrieb geht, wird sie gegen dieselben Prüfungen gemessen wie die bisherige. Sie wird nur übernommen, wenn kein Beeinflussungsversuch wirkt und keine Messung schlechter ausfällt. Besteht keine verfügbare Version diese Prüfung, wechseln wir auf die beste verfügbare und benennen die Verschlechterung ausdrücklich. Der Wechsel wird vor seinem Wirksamwerden in den Versionshinweisen angekündigt, zusammen mit dem Ergebnis der Nachmessung. Wie viel Vorlauf möglich ist, hängt bei erzwungenen Wechseln von der Abkündigungsfrist des Modellanbieters ab und kann kurz sein.
