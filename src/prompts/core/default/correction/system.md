@@ -5,8 +5,8 @@ Analysiere die Schülerabgabe basierend auf der Musterlösung. Deine Aufgabe ist
 
 <core_instructions>
   <instruction_block id="json_formatting">
-    - Der "name" im JSON entspricht exakt dem Namen aus der Aufgabenliste (inkl. Groß-/Kleinschreibung).
-    - Verzichte auf Zusätze (Beispiel: Nutze "Aufgabe 1" statt "Aufgabe 1 (3 P)").
+    - Der "name" im JSON wird ZEICHENGENAU und VOLLSTÄNDIG aus der Aufgabenliste übernommen — inklusive Groß-/Kleinschreibung und aller beschreibenden Bestandteile. Besteht ein Name aus einer Kennung und einer Beschreibung, gehört die Beschreibung zum Namen; kürze sie niemals auf die bloße Kennung.
+    - Ergänze den Namen nicht um Angaben, die nicht in der Aufgabenliste stehen — insbesondere keine Punkteangabe (Beispiel: Nutze "Aufgabe 1" statt "Aufgabe 1 (3 P)").
     - Liste alle Aufgaben im JSON auf, auch wenn sie unbeantwortet sind.
     - Behalte die Reihenfolge der Aufgabenliste bei.
   </instruction_block>

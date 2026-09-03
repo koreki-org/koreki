@@ -1,4 +1,5 @@
 import { Task, AITask } from '../../types';
+import { findeVeraenderteAufgabe } from './aufgabenname-zuordnung';
 import { StepResult } from '../grading/types';
 import { TargetGoal, GradingCriterion } from '../grading/calc-trace-types';
 import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source';
@@ -390,19 +391,25 @@ export function mapModelTask(layoutTask: Task, aiTask: AITask): TaskMappingResul
  * im ersten Fall ist die Bewertung brauchbar und nur der Name schief, im
  * zweiten fehlt sie ganz und das ganze Dokument braucht einen Blick.
  */
-export function mapMissingTask(layoutTask: Task, aiTasks: AITask[]): TaskMappingResult {
-    const layoutName = (layoutTask.name ?? '').toLowerCase().trim();
-    const nearMiss = layoutName
-        ? aiTasks.find((t: AITask) => t.name?.toLowerCase().trim() === layoutName)
-        : undefined;
+export function mapMissingTask(
+    layoutTask: Task,
+    aiTasks: AITask[],
+    allesLayout: Task[] = [layoutTask]
+): TaskMappingResult {
+    const gerettet = findeVeraenderteAufgabe(layoutTask, aiTasks, allesLayout);
 
-    if (nearMiss) {
-        // SOFT ERROR: Case mismatch or whitespace issues -> Keep Confidence, but show warning
+    if (gerettet) {
+        const nearMiss = gerettet.treffer;
+        const hinweis = gerettet.art === 'kern'
+            ? `[KI-FEHLER?] Name nicht exakt ("${nearMiss.name}" statt "${layoutTask.name}")`
+            : `[KI-FEHLER?] Name gekuerzt oder erweitert ("${nearMiss.name}" statt "${layoutTask.name}") — Zuordnung war eindeutig, bitte pruefen`;
+        // SOFT ERROR: Die Bewertung ist brauchbar, nur der Name war schief.
+        // Punkte und Vertrauenswert bleiben, der Hinweis macht es sichtbar.
         return {
             task: {
                 ...kopfAusLayout(layoutTask),
                 pointsObtained: alsModellzahl(nearMiss.pointsObtained, 0),
-                feedback: `[KI-FEHLER?] Name nicht exakt ("${nearMiss.name}" statt "${layoutTask.name}")\n\n${nearMiss.feedback || ''}`,
+                feedback: `${hinweis}\n\n${nearMiss.feedback || ''}`,
                 correctionNotes: nearMiss.correctionNotes || '',
                 confidence: alsModellzahl(nearMiss.confidence, 0),
                 content: nearMiss.content || ''
@@ -433,11 +440,22 @@ export function mapMissingTask(layoutTask: Task, aiTasks: AITask[]): TaskMapping
  * Die Reihenfolge ist bedeutsam: Wo eine Engine gerechnet hat, gilt deren
  * Ergebnis — das Modell darf es nicht ueberschreiben.
  */
-export function mapLayoutTask(layoutTask: Task, aiTasks: AITask[]): TaskMappingResult {
+export function mapLayoutTask(
+    layoutTask: Task,
+    aiTasks: AITask[],
+    /**
+     * Alle Aufgaben der Musterloesung.
+     *
+     * Nur fuer die Rettung eines veraenderten Namens: Ohne den Blick auf die
+     * uebrigen Aufgaben laesst sich nicht feststellen, ob ein Treffer eindeutig
+     * ist. Ohne Angabe verhaelt sich die Funktion wie zuvor.
+     */
+    allesLayout: Task[] = [layoutTask]
+): TaskMappingResult {
     const aiTask = aiTasks.find((t: AITask) => t.name === layoutTask.name);
 
     if (layoutTask.calcTraceResult) return mapCalcTraceTask(layoutTask, aiTask);
     if (layoutTask.gradingResult) return mapGraphTask(layoutTask, aiTask);
     if (aiTask) return mapModelTask(layoutTask, aiTask);
-    return mapMissingTask(layoutTask, aiTasks);
+    return mapMissingTask(layoutTask, aiTasks, allesLayout);
 }

@@ -15,7 +15,6 @@ import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source
 import { SKILL_REGISTRY } from '@/prompts/skills';
 import { splitSkillSnippet } from './prompt-library';
 import { splitTextByTasks } from '../task-utils';
-import { evaluateCalcTrace, formatCalcTraceForPrompt } from '../grading/CalcTrace';
 import { extractStudentAST } from '../grading/calc-trace-extraction';
 import { shouldDisablePoints } from './prompt-builder';
 import { requireOpenAiConnection } from './provider-connection';
@@ -40,7 +39,7 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
 
     if (tasksLayout && Array.isArray(tasksLayout) && tasksLayout.length > 0) {
         const aiTasks = analysis.tasks || [];
-        const ergebnisse = tasksLayout.map((layoutTask: Task) => mapLayoutTask(layoutTask, aiTasks));
+        const ergebnisse = tasksLayout.map((layoutTask: Task) => mapLayoutTask(layoutTask, aiTasks, tasksLayout));
         const mappedTasks = ergebnisse.map(e => e.task);
 
         // Zaehler und Nenner muessen DIESELBEN Aufgaben umfassen.
