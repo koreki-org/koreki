@@ -35,6 +35,7 @@ Koreki ist ein KI-gestütztes Assistenzsystem zur Unterstützung von Lehrkräfte
 *   **Zweck:** Analyse von Schülerantworten gegen eine Musterlösung, Punktvorschläge und Feedback-Entwürfe.
 *   **Nicht-Zweck:** Koreki darf **nicht** zur Erstellung von psychologischen Profilen, zur Verhaltensvorhersage oder zur automatisierten, alleinigen Entscheidung über Noten ohne menschliche Kontrolle verwendet werden.
 *   **Keine Profilbildung:** Das System speichert keine Profile über einzelne Schülerinnen und Schüler, schreibt keine Bewertungen über mehrere Arbeiten hinweg fort und trifft keine Aussagen über künftige Leistung, Eignung oder Verhalten. Jeder Durchlauf bewertet genau ein Dokument gegen die vorgegebenen Kriterien.
+*   **Prüfungen mit Zulassungs- oder Abschlusswirkung:** Für Abschlussprüfungen, zentrale Prüfungen und vergleichbare Verfahren liegt **kein Eignungsnachweis** vor — die Genauigkeitsmessung (Abschnitt 4) deckt sie nicht ab. Ob und wie KI-gestützte Korrektur dort zulässig ist, richtet sich nach der jeweiligen Prüfungsordnung; das zu prüfen liegt bei der Schule. **Ist eine unabhängige Zweitkorrektur vorgeschrieben, darf der Zweitkorrektor den Vorschlag nicht sehen** — sonst ist die Zweitkorrektur nicht mehr unabhängig, sondern am Vorschlag verankert.
 
 ## 4. Genauigkeit & Fehlerquellen
 Trotz hoher technologischer Standards kann die KI fehlerhafte Ergebnisse liefern. Bekannte Fehlerquellen sind:
@@ -47,12 +48,12 @@ Seit dem 02.09.2026 liegt eine erste Messung vor. Zwölf Referenzaufgaben aus zw
 
 | Kennzahl | Wert |
 |---|---|
-| Mittlere Abweichung | **0,17 Punkte je Aufgabe** (4,2 % der erreichbaren Punkte) |
-| Aufgaben ohne jede Abweichung | 10 von 12 |
+| Mittlere Abweichung | **0,08 Punkte je Aufgabe** (2,1 % der erreichbaren Punkte) |
+| Aufgaben ohne jede Abweichung | 11 von 12 |
 | Wiederholter Lauf, gleiche Sitzung | dreimal dieselbe Punktzahl, in allen zwölf Fällen |
 | Wiederholter Lauf, andere Sitzung | in zwei bis drei von zwölf Fällen 1 bis 2 Punkte Unterschied |
 
-In beiden abweichenden Fällen bewertete Koreki **strenger** als die Referenz, nicht großzügiger.
+Im einen abweichenden Fall bewertete Koreki **strenger** als die Referenz, nicht großzügiger.
 
 **Zur Wiederholbarkeit.** Koreki sendet an alle KI-Anbieter einen festen Startwert, damit derselbe Stapel beim zweiten Durchlauf dieselben Zahlen ergibt und nicht neue. Das wirkt zuverlässig, solange Sie innerhalb einer Sitzung arbeiten. Über längere Zeiträume hinweg — etwa wenn der Modellserver zwischendurch neu geladen hat — können einzelne Punktzahlen dennoch um ein bis zwei Punkte abweichen. Verlassen Sie sich daher nicht darauf, eine einmal erzeugte Bewertung Wochen später zeichengenau reproduzieren zu können; **speichern oder exportieren Sie das Protokoll**, wenn Sie eine Bewertung später belegen müssen.
 
@@ -69,7 +70,7 @@ Für Rechenaufgaben können Sie in der Musterlösung ein Rechenziel hinterlegen;
 
 **Folgefehler werden dabei nicht doppelt bestraft.** Wer sich in Teilaufgabe a) verrechnet und in b) mit seinem eigenen falschen Wert korrekt weiterrechnet, erhält den Ergebnispunkt für b). Der Abzug bleibt dort, wo der Fehler entstanden ist. Ein in der **Aufgabe gegebener** Wert muss dagegen richtig eingesetzt werden — ein Fehler dort ist ein eigener Fehler und kostet Punkte.
 
-**Was Sie trotzdem beachten sollten:** In der Messung lag die Abweichung bei den sechs Rechenaufgaben **mit** hinterlegtem Rechenziel bei 0,50 Punkten, **ohne** bei 0,17 Punkten. Die Rechenkette liegt also weiterhin etwas höher; woran das liegt, ist nicht abschließend geklärt. Prüfen Sie mehrschrittige Rechenaufgaben deshalb weiterhin aufmerksam.
+**Was Sie trotzdem beachten sollten:** In der Messung trafen alle sechs Rechenaufgaben **ohne** hinterlegtes Rechenziel die Sollpunktzahl exakt; **mit** Rechenziel lag die Abweichung bei 0,67 Punkten. Die Rechenkette liegt also weiterhin etwas höher; woran das liegt, ist nicht abschließend geklärt. Prüfen Sie mehrschrittige Rechenaufgaben deshalb weiterhin aufmerksam.
 
 ### 4.4 Was das für Ihre Arbeit heißt
 Ein Punktvorschlag bleibt ein Entwurf. Die Zahl oben beschreibt, wie nah die Vorschläge im Mittel lagen — sie sagt nichts über den einzelnen Fall vor Ihnen. Die Prüfpflicht aus Abschnitt 5 wird durch sie nicht kleiner.
@@ -95,6 +96,18 @@ Feedbacktexte und Punktvorschläge werden maschinell erzeugt. Diese Herkunft ble
 *   **Dateien:** Unterstützt werden PDF, JPG, PNG, TXT, XLSX und CSV bis maximal 50 MB pro Datei.
 *   **Sprachen:** Belastbare Aussagen zur Qualität in einzelnen Unterrichtssprachen liegen nicht vor. Die frühere Angabe „optimiert für Deutsch, Englisch und Französisch" ließ sich nicht belegen und ist entfallen.
 *   **Zeichenlimit:** 10.000 Zeichen je Seite, höchstens 100.000 Zeichen je Anfrage.
+
+### 7.1 Betrieb ohne Anmeldung
+Die Community- und Desktop-Ausgabe lässt sich mit `AUTH_TYPE=NONE` ohne Anmeldung betreiben. **Für den Mehrbenutzerbetrieb an einer Schule ist dieser Modus ungeeignet.** Es gibt dann keine Benutzertrennung: Wer Zugriff auf den Rechner oder die Adresse hat, sieht alle Arbeiten. Der Zugang ist genau so weit geschützt wie der Rechner selbst.
+
+Für den Betrieb an einer Schule verwenden Sie die Anmeldung über Keycloak oder betreiben Koreki auf einem Einzelplatzrechner, zu dem nur die korrigierende Lehrkraft Zugang hat.
+
+### 7.2 Schülerinnen und Schüler mit Notenschutz
+Liegt für ein Kind **Notenschutz** vor — Rechtschreib- oder Leseleistung wird ganz oder teilweise nicht bewertet —, lässt sich das über die Bewertungs-Skills abbilden (etwa „Kulante Bewertung (Rechtschreibungs-Blind)").
+
+**Beachten Sie dabei:** Die Skill-Auswahl gilt für den **gesamten Stapel**, nicht für einzelne Arbeiten. Korrigieren Sie die betroffene Arbeit deshalb in einem **eigenen Durchlauf** mit dem passenden Profil. Andernfalls fließt die Rechtschreibung in die Bewertung ein, obwohl sie es nicht darf — und das fällt nicht auf, weil die Punktzahl plausibel aussieht.
+
+Der **Nachteilsausgleich** (verlängerte Bearbeitungszeit, Hilfsmittel) betrifft dagegen die Bedingungen der Arbeit und nicht die Bewertung; er berührt Koreki nicht.
 
 ## 8. Risikovermeidung & Antidiskriminierung
 Das System wird stichprobenartig auf sprachbedingte Ungleichbehandlung geprüft. Im Test vom 23.08.2026 wurde dieselbe fachliche Leistung in Standardsprache, in einfacher Umgangssprache und in nicht-muttersprachlicher Formulierung identisch bewertet (je 4 von 4 Punkten, keine Abweichung). Eine systematische Prüfung über mehrere Fächer, Aufgabentypen und Modelle hinweg steht aus. Lehrkräfte sollten darauf achten, dass die KI keine diskriminierenden Muster (z.B. aufgrund von Ausdrucksweise oder Herkunft) reproduziert. Bei Verdacht auf systematische Fehlbehandlung ist der Support zu informieren.
