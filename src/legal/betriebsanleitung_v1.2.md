@@ -42,7 +42,37 @@ Trotz hoher technologischer Standards kann die KI fehlerhafte Ergebnisse liefern
 *   **Ironie & Nuancen:** Subtile sprachliche Mittel wie Ironie, Sarkasmus oder extrem spezifische Dialekte werden unter Umständen nicht korrekt erfasst.
 *   **Kontext:** Die KI bewertet semantisch. Bei fachspezifischen Abkürzungen, die nicht in der Musterlösung definiert sind, kann es zu Punktabzug kommen.
 
-Eine gemessene Genauigkeit gegen Referenznoten von Lehrkräften liegt bisher **nicht** vor. Behandeln Sie jeden Punktvorschlag entsprechend als Entwurf, dessen Trefferquote Sie nicht kennen.
+### 4.1 Was gemessen wurde
+Seit dem 02.09.2026 liegt eine erste Messung vor. Zwölf Referenzaufgaben aus zwölf Fächern — von Deutsch über Mathematik und Chemie bis Pflege und Kaufmännisches — wurden mit einer festgelegten Sollpunktzahl versehen und von einer Lehrkraft durchgesehen. Gemessen wurde, wie weit der Punktvorschlag davon abweicht.
+
+| Kennzahl | Wert |
+|---|---|
+| Mittlere Abweichung | **0,17 Punkte je Aufgabe** (4,2 % der erreichbaren Punkte) |
+| Aufgaben ohne jede Abweichung | 10 von 12 |
+| Wiederholter Lauf, gleiche Sitzung | dreimal dieselbe Punktzahl, in allen zwölf Fällen |
+| Wiederholter Lauf, andere Sitzung | in zwei bis drei von zwölf Fällen 1 bis 2 Punkte Unterschied |
+
+In beiden abweichenden Fällen bewertete Koreki **strenger** als die Referenz, nicht großzügiger.
+
+**Zur Wiederholbarkeit.** Koreki sendet an alle KI-Anbieter einen festen Startwert, damit derselbe Stapel beim zweiten Durchlauf dieselben Zahlen ergibt und nicht neue. Das wirkt zuverlässig, solange Sie innerhalb einer Sitzung arbeiten. Über längere Zeiträume hinweg — etwa wenn der Modellserver zwischendurch neu geladen hat — können einzelne Punktzahlen dennoch um ein bis zwei Punkte abweichen. Verlassen Sie sich daher nicht darauf, eine einmal erzeugte Bewertung Wochen später zeichengenau reproduzieren zu können; **speichern oder exportieren Sie das Protokoll**, wenn Sie eine Bewertung später belegen müssen.
+
+### 4.2 Wofür diese Zahl gilt — und wofür nicht
+Bitte lesen Sie die Zahl mit ihren Grenzen:
+*   Sie gilt **ausschließlich** für die Konfiguration `qwen3.6:35b` über lokales Ollama (Temperatur 0.2, Standardprofil „MINT Standard"). **Jedes andere Modell — auch Mistral — ist ungeprüft.** Da Sie das Modell selbst wählen, kann Ihre Konfiguration abweichen.
+*   Als auffällig gilt eine Abweichung von mehr als **10 %** im Mittel oder mehr als **25 %** in einem einzelnen Fall. Diese Grenzen hat der Anbieter vorab festgelegt; die oben genannte Messung hält beide ein.
+*   Zwölf Aufgaben sind eine erste Messung, kein Nachweis über alle Fächer. Der Prüfsatz enthält gezielt schwierige Grenzfälle und entspricht nicht einer durchschnittlichen Klassenarbeit.
+*   Die Eingabe war durchweg **getippter** Text. Fehler der Handschrifterkennung sind darin **nicht** enthalten und kommen hinzu.
+*   Gemessen wurde die Übereinstimmung mit einer Referenzbewertung — nicht, ob eine Note richtig ist.
+
+### 4.3 Rechenaufgaben mit hinterlegter Rechenkette
+Für Rechenaufgaben können Sie in der Musterlösung ein Rechenziel hinterlegen; Koreki rechnet den Weg dann selbst nach.
+
+**Folgefehler werden dabei nicht doppelt bestraft.** Wer sich in Teilaufgabe a) verrechnet und in b) mit seinem eigenen falschen Wert korrekt weiterrechnet, erhält den Ergebnispunkt für b). Der Abzug bleibt dort, wo der Fehler entstanden ist. Ein in der **Aufgabe gegebener** Wert muss dagegen richtig eingesetzt werden — ein Fehler dort ist ein eigener Fehler und kostet Punkte.
+
+**Was Sie trotzdem beachten sollten:** In der Messung lag die Abweichung bei den sechs Rechenaufgaben **mit** hinterlegtem Rechenziel bei 0,50 Punkten, **ohne** bei 0,17 Punkten. Die Rechenkette liegt also weiterhin etwas höher; woran das liegt, ist nicht abschließend geklärt. Prüfen Sie mehrschrittige Rechenaufgaben deshalb weiterhin aufmerksam.
+
+### 4.4 Was das für Ihre Arbeit heißt
+Ein Punktvorschlag bleibt ein Entwurf. Die Zahl oben beschreibt, wie nah die Vorschläge im Mittel lagen — sie sagt nichts über den einzelnen Fall vor Ihnen. Die Prüfpflicht aus Abschnitt 5 wird durch sie nicht kleiner.
 
 ## 5. Menschliche Aufsicht (Human-in-the-Loop)
 **WICHTIGER HINWEIS:** Koreki ist ein Assistenzsystem, kein Ersatz für die pädagogische Fachkraft.
