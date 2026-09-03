@@ -2,6 +2,24 @@ node_modules
 .next
 out
 internal/
+
+# Regulatorische Unterlagen.
+#
+# OEFFENTLICH ist allein compliance/README.md — die Landkarte, die fuer jede
+# Anforderung der KI-Verordnung sagt, wo die Antwort steht und wie es darum steht.
+#
+# NICHT OEFFENTLICH sind die Unterlagen dahinter: technische Dokumentation nach
+# Anhang IV, Risikoregister, Selbsteinschaetzung, Entscheidungsprotokoll und die
+# Nachweis-Laeufe. Artikel 11 verlangt, sie zu ERSTELLEN, Artikel 18, sie zehn
+# Jahre fuer Behoerden BEREITZUHALTEN — nicht, sie zu veroeffentlichen. Sie
+# enthalten offene Punkte und interne Abwaegungen und sind fuer Behoerden und
+# Betreiber gedacht.
+#
+# `compliance/*` statt `compliance/`: Nur so laesst sich eine einzelne Datei
+# darin wieder aufnehmen — bei einem ausgeschlossenen Verzeichnis sieht Git den
+# Inhalt gar nicht erst an.
+compliance/*
+!compliance/README.md
 .env
 .env.local
 .env.production
