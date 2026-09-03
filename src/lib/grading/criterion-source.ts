@@ -182,6 +182,22 @@ export function resolveEngineVerdict(
     };
   }
 
+  // Folgefehler: Der Musterwert ist verfehlt, aber nur, weil ein selbst
+  // erzeugter falscher Wert aus einer frueheren Aufgabe weiterverwendet wurde.
+  // Die Rechnung hier ist fehlerfrei — der Fehler steckt in der frueheren
+  // Aufgabe und ist dort bereits abgezogen.
+  //
+  // ABSICHTLICH NUR HIER, nicht bei `proofValues`: Wer zusaetzlich einen in der
+  // Aufgabe GEGEBENEN Wert falsch einsetzt, macht einen zweiten, eigenen
+  // Fehler. Wuerde die Kulanz auch dort greifen, bliebe der straffrei.
+  if (pt?.folgefehlerAus) {
+    return {
+      erfuellt: true,
+      begruendung: `Folgefehler aus ${pt.folgefehlerAus}: mit dem eigenen Wert korrekt weitergerechnet`,
+      stepIds: associated,
+    };
+  }
+
   return { erfuellt: false, begruendung: 'Zielwert nicht erreicht/nicht notiert', stepIds: associated };
 }
 

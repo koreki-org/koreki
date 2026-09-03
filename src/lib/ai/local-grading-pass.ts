@@ -4,6 +4,7 @@ import { GraphRunner } from '../grading/GraphRunner';
 import type { GradingGraph } from '../grading/types';
 import { TargetGoal } from '../grading/calc-trace-types';
 import { evaluateCalcTrace } from '../grading/CalcTrace';
+import { falscheWerteAus, type FruehererWert } from '../grading/consecutive-values';
 import { extractStudentAST } from '../grading/calc-trace-extraction';
 import { splitTextByTasks } from '../task-utils';
 import { shouldDisablePoints } from './prompt-builder';
@@ -99,7 +100,12 @@ async function bewerteMitGraph(task: Task, graph: GradingGraph, aufgabenText: st
     }
 }
 
-async function bewerteMitRechenkette(task: Task, aufgabenText: string, p: LocalGradingPassParams): Promise<void> {
+async function bewerteMitRechenkette(
+    task: Task,
+    aufgabenText: string,
+    p: LocalGradingPassParams,
+    fruehereWerte: FruehererWert[] = []
+): Promise<void> {
     const customSkills = p.settings?.customSkills || {};
     const targetGoal: TargetGoal = task.targetGoal
         || (task.taskType ? customSkills[task.taskType]?.targetGoal : undefined)
@@ -122,7 +128,7 @@ async function bewerteMitRechenkette(task: Task, aufgabenText: string, p: LocalG
     }
 
     let astResult = await extractStudentAST(aufgabenText, p.appMode, p.settings, task.name);
-    let calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
+    let calcTraceResult = evaluateCalcTrace(astResult, targetGoal, fruehereWerte);
 
     const maxRetries = maxRetriesFuer(p.settings);
     let retryCount = 0;
@@ -150,7 +156,7 @@ async function bewerteMitRechenkette(task: Task, aufgabenText: string, p: LocalG
             });
             break;
         }
-        calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
+        calcTraceResult = evaluateCalcTrace(astResult, targetGoal, fruehereWerte);
         retryCount++;
     }
 
@@ -172,9 +178,43 @@ export async function runLocalGradingEngines(p: LocalGradingPassParams): Promise
     const customSkills = settings?.customSkills || {};
     const rawSplit = splitTextByTasks(studentText, tasksLayout);
 
+    /**
+     * Das Gedaechtnis ueber Aufgabengrenzen: Werte, die der Schueler in bereits
+     * bewerteten Aufgaben erzeugt hat, deren Ziel er dort VERFEHLT hat.
+     *
+     * Bewusst eine lokale Variable und KEIN Feld auf `Task`: Die Aufgabenliste
+     * wird auf dem Client fuer jede Arbeit des Stapels wiederverwendet: ein
+     * Feld darauf waere ein zweiter klebriger Zustand — genau die Fehlerklasse,
+     * die zwei Bildschirme weiter oben gerade behoben wurde.
+     */
+    const fruehereWerte: FruehererWert[] = [];
+
     for (let i = 0; i < tasksLayout.length; i++) {
         const task = tasksLayout[i];
         const aufgabenText = textFuerAufgabe(rawSplit, i, studentText);
+
+        // Das Urteil der vorigen Arbeit loeschen, BEVOR gerechnet wird.
+        //
+        // GEFUNDEN BEIM ARCHITEKTUR-REVIEW, 02.09.2026. Beide Engine-Zweige
+        // schreiben ihr Ergebnis erst am ENDE in die Aufgabe. Scheitert der
+        // Lauf davor, faengt die Schleife den Fehler ab und protokolliert ihn —
+        // aber das Feld behaelt seinen alten Inhalt.
+        //
+        // Das faellt nur auf dem Client-Weg auf, und dort schwer: `useCorrectionRun`
+        // reicht fuer JEDE Arbeit des Stapels DIESELBE `tasksLayout`-Referenz
+        // durch, und diese Funktion aendert sie an Ort und Stelle. Scheitert die
+        // Extraktion bei der fuenften Schuelerin, bewertet `mapLayoutTask` sie
+        // anschliessend mit dem Sandbox-Urteil des vierten Schuelers — nicht mit
+        // einer Warnung, sondern mit fremden Punkten, die plausibel aussehen.
+        // Auf dem Server-Weg ist der Layout-Baum je Anfrage frisch; dort trat es
+        // nie auf. Wieder eine Regel, die auf einem Weg hielt und auf dem
+        // anderen nicht.
+        //
+        // Der Kommentar am `catch` unten beschreibt bereits die richtige Absicht
+        // ("faellt in den Warnhinweis statt auf null Punkte"). Sie galt nur,
+        // wenn das Feld vorher leer war. Hier wird sie hergestellt.
+        task.calcTraceResult = undefined;
+        task.gradingResult = undefined;
 
         if (task.gradingGraph) {
             try {
@@ -186,7 +226,7 @@ export async function runLocalGradingEngines(p: LocalGradingPassParams): Promise
             }
         } else if (istRechenkettenAufgabe(task, customSkills)) {
             try {
-                await bewerteMitRechenkette(task, aufgabenText, p);
+                await bewerteMitRechenkette(task, aufgabenText, p, fruehereWerte);
             } catch (err) {
                 // Kein calcTraceResult -> die Aufgabe laeuft in den Warnhinweis "ohne
                 // Sandbox-Pruefung, bitte manuell gegenpruefen" statt in 0 Punkte.
@@ -195,5 +235,9 @@ export async function runLocalGradingEngines(p: LocalGradingPassParams): Promise
                 });
             }
         }
+
+        // Was diese Aufgabe an die naechste weitergibt. Nur bei verfehltem Ziel:
+        // Wer sein Ziel getroffen hat, gibt keinen Fehler weiter.
+        fruehereWerte.push(...falscheWerteAus(task.name ?? `Aufgabe ${i + 1}`, task.calcTraceResult));
     }
 }

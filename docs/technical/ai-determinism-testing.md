@@ -117,6 +117,8 @@ Um die restliche Fluktuation bei Skalenwechseln (z.B. Wh vs. kWh, oder A vs. mA)
 ### 7.1 Root Cause
 Der `criteriaBlock`-Generator (`prompt-builder.ts`, Zeile ~170ff.) übergibt der Grading-LLM für `_formel`-Kriterien nur einen Hinweis zur Notations-Kulanz (Variablennamen, fehlende linke Seite), aber **keine explizite Aussage zur Unabhängigkeit der Zielgrößen voneinander**. Dadurch generalisieren manche Modelle einen lokal gemeldeten Rechenfehler fälschlich auf die gesamte Aufgabe ("Kreuz-Kriterien-Kontamination").
 
+**Laufzeit (gemessen 03.09.2026).** Gegen ein lokales `qwen3.6:35b` braucht Phase 2 (Hybrid-Bewertung) rund **sieben Minuten je Iteration**. Bei `ITERATIONS = 5` reisst der Lauf damit das in der Datei gesetzte Jest-Limit von 20 Minuten (`jest.setTimeout(1200000)`) — das ist ein Laufzeit-Abbruch, kein Bewertungsfehler. Wer den Test lokal vollstaendig fahren will, braucht ein hoeheres Limit oder weniger Iterationen. Phase 1 (reine Sandbox-Auswertung) laeuft in gut zwei Minuten durch.
+
 Zusätzlich hatte der Layer-2.5-Determinismus-Test (`tests/integration/CalcDeterminism.test.ts`) `settings.activeSkillIds` initial nie gesetzt, obwohl die App für MINT-Aufgaben standardmäßig Folgefehler-Fairness-Skills aktiviert (`ModelSolutionCard.tsx:257/301`). Ein frisches SaaS-Konto hat laut `prisma/schema.prisma` (`activeSkillIds Json @default("[]")`) ebenfalls initial keine Skills aktiv, bis der Nutzer aktiv ein Profil in den Settings speichert.
 
 ### 7.2 Angewendeter Fix

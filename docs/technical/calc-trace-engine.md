@@ -3,7 +3,7 @@ title: "CalcTrace Engine V9: Natively Unit-Aware Hybrid Grading Sandbox"
 description: "Technische Dokumentation des KI-gestützten, deterministischen Evaluierungssystems für MINT-Fächer mit nativer physikalischer und monetärer Unit-Awareness in der mathjs Sandbox (CalcTrace V9)."
 author: "@principal_architect"
 date: "2026-07-15"
-last_updated: "2026-08-06"
+last_updated: "2026-09-03"
 status: "Approved"
 domain: "technical"
 security_classification: "Internal"
@@ -13,7 +13,7 @@ security_classification: "Internal"
 
 ## 1. Executive Summary & Kontext
 > [!NOTE]
-> **Zusammenfassung:** Die CalcTrace Engine V9 kombiniert LLM-basierte Extraktion mit einer physikalisch und monetär einheitenbewussten, hermetisch abgeriegelten `mathjs` Sandbox. Sie bewertet MINT-Rechenwege durch Trennung in **Proof A (Interne Rechenkonsistenz)** und **Proof B (Unit-Aware Zielerreichung)** und liefert strukturierte Kriterien-Ergebnisse (`perTargetResult`) inklusive Vorevaluierungen wie `hasCorrectValues`.
+> **Zusammenfassung:** Die CalcTrace Engine V9 kombiniert LLM-basierte Extraktion mit einer physikalisch und monetär einheitenbewussten, hermetisch abgeriegelten `mathjs` Sandbox. Sie bewertet MINT-Rechenwege durch Trennung in **Proof A (Interne Rechenkonsistenz)** und **Proof B (Unit-Aware Zielerreichung)** und liefert strukturierte Kriterien-Ergebnisse (`perTargetResult`) inklusive Vorevaluierungen wie `hasCorrectValues`. Seit dem 03.09.2026 führt der Lauf über die Aufgaben ein **Gedächtnis über Aufgabengrenzen**, damit ein Folgefehler aus einer früheren Teilaufgabe nicht ein zweites Mal zu Buche schlägt (Abschnitt 3.6).
 > **Zielgruppe:** Core-Entwickler, QA-Ingenieure und Product Manager.
 
 
@@ -136,13 +136,20 @@ export interface CalcTraceResult {
   totalPoints?: number;     // Nur bei Tier A (exakter Match) gesetzt
   unitMismatch?: boolean;   // Flag für Tier B
   unitDetails?: UnitComparisonDetail[];
-  perTargetResult?: Array<{
-    targetIndex: number;
-    reached: boolean;
-    hasCorrectValues?: boolean;
-    hasCalculationError: boolean;
-    associatedStepIds: string[];
-  }>;
+  perTargetResult?: PerTargetResult[];
+}
+
+// Befund je Zielwert. Bis 03.09.2026 stand diese Form zusaetzlich als
+// Inline-Literal in CalcTrace.ts — beide Fassungen mussten von Hand
+// gleichgehalten werden. Es gibt jetzt nur noch diesen Typ.
+export interface PerTargetResult {
+  targetIndex: number;
+  reached: boolean;
+  hasCorrectValues?: boolean;
+  hasCalculationError: boolean;
+  associatedStepIds: string[];
+  /** Name der frueheren Aufgabe, aus der ein uebernommener Wert stammt (Abschnitt 3.6). */
+  folgefehlerAus?: string;
 }
 ```
 
@@ -218,7 +225,7 @@ noch die Punktevergabe leiten die Zuständigkeit aus `id` oder `label` ab.
 
 | `source` | Entscheidet | Grundlage |
 | :--- | :--- | :--- |
-| `proofB` | Engine | Ergebnis **gegen die Musterlösung**: `reached && !hasCalculationError` |
+| `proofB` | Engine | Ergebnis **gegen die Musterlösung**: `reached && !hasCalculationError` — oder ein erkannter Folgefehler (Abschnitt 3.6) |
 | `proofA` | Engine | Rechenweg **gegen sich selbst**: der Schüler hat seine eigene Rechnung fehlerfrei ausgeführt — unabhängig davon, ob das Ziel getroffen wurde |
 | `proofValues` | Engine | `hasCorrectValues` |
 | `llm` | Modell | Ermessensfrage (Formelstrenge, Ansatz, Begründung) |
@@ -245,6 +252,61 @@ gesetzter gültiger Wert wird dabei immer respektiert.
 
 ---
 
+### 3.6 Folgefehler über Aufgabengrenzen
+
+`evaluateCalcTrace` sieht den Rechenweg **einer** Aufgabe und **ihr** Ziel. Teilaufgabe a) und b) sind
+getrennte Aufgaben mit je eigenem `targetGoal`. Damit konnte die Sandbox zwei grundverschiedene Fälle
+nicht unterscheiden — beide sehen als „Ziel verfehlt, Arithmetik sauber" identisch aus:
+
+1. Der Schüler übernimmt seinen **eigenen** falschen Wert aus a) und rechnet in b) fehlerfrei weiter.
+   Ein Fehler, einmal zu bestrafen.
+2. Der Schüler schreibt einen in der **Aufgabe gegebenen** Wert falsch ab. Ein zweiter, eigener Fehler.
+
+Fall 1 fiel dadurch doppelt zur Last. Gemessen an sechs Rechenaufgaben (02.09.2026) lag die Abweichung
+von der Lehrkraft-Sollpunktzahl **mit** hinterlegtem Rechenziel bei 1,00 Punkten, **ohne** bei 0,17 —
+die Sandbox verschlechterte die Bewertung, statt sie zu verbessern.
+
+Der mitgelieferte Skill `skill-consecutive-errors` konnte das nicht auffangen: Er ist eine Anweisung an
+das Modell, und über `proofB` und `proofValues` entscheidet die Engine allein.
+
+**Die Lösung** sitzt in der Schleife von [local-grading-pass.ts](../../src/lib/ai/local-grading-pass.ts),
+dem einzigen Ort, der alle Aufgaben in Reihenfolge sieht und auf Client- **wie** Server-Weg läuft. Nach
+jeder Aufgabe, die ihr Ziel **verfehlt** hat, wandern deren Zwischenergebnisse in eine Liste, die die
+nächste Aufgabe mitbekommt ([consecutive-values.ts](../../src/lib/grading/consecutive-values.ts)).
+Verfehlt eine Aufgabe ihr Ziel bei fehlerfreier eigener Rechnung und steckt einer dieser Werte in ihrer
+Rechnung, wird `folgefehlerAus` gesetzt und der Ergebnispunkt gilt als erreicht.
+
+Drei Entwurfsentscheidungen, die dabei bewusst so getroffen wurden:
+
+*   **Die Kulanz gilt ausschließlich für `proofB`, nicht für `proofValues`.** Wer zusätzlich einen
+    gegebenen Wert falsch einsetzt, macht einen zweiten, eigenen Fehler. Würde die Kulanz auch dort
+    greifen, bliebe genau dieser straffrei — die Regel wäre ins Gegenteil verkehrt.
+*   **Das Gedächtnis ist eine lokale Variable, kein Feld auf `Task`.** Die Oberfläche reicht für jede
+    Arbeit eines Stapels dieselbe Aufgabenliste durch; ein Feld darauf wäre ein Zustand, der zwischen
+    Schülern haften bleibt.
+*   **Verglichen werden Zahlenwerte, nicht Rechenwege.** Der `GraphRunner` rechnet für dieselbe Semantik
+    (`consecutive_correct`) mit dem Schülerwert nach — das setzt aber die Formel der Musterlösung voraus,
+    die ein `TargetGoal` nicht enthält. Als Gegengewicht sind Trivialwerte (0, 1, 2, 10, 100, 1000)
+    ausgenommen, weil sich sonst in fast jeder Rechnung eine „Übernahme" fände.
+
+**Wirkung**, gemessen an denselben sechs Aufgaben: Abweichung von 1,00 auf **0,50 Punkte**. Zwei Fälle
+wurden besser (Chemie exakt, Physik halbiert), keiner schlechter. Die Sandbox liegt damit weiterhin über
+der rein sprachlichen Bewertung (0,17); die verbleibende Differenz ist nicht aufgeklärt.
+
+### 3.7 Engine-Zustand gilt je Arbeit
+
+`runLocalGradingEngines` ändert die Aufgabenliste **an Ort und Stelle**. Beide Engine-Zweige schrieben ihr
+Urteil erst am Ende in die Aufgabe; scheiterte der Lauf davor, wurde der Fehler protokolliert, das Feld
+behielt aber seinen alten Inhalt. Da die Oberfläche für jede Arbeit eines Stapels **dieselbe** Liste
+durchreicht, konnte eine Schülerin mit dem Engine-Urteil des vorherigen Schülers bewertet werden — nicht
+als sichtbare Warnung, sondern als plausible Punktzahl. Betroffen war nur der Client-Weg; serverseitig ist
+der Layout-Baum je Anfrage frisch.
+
+Seit dem 03.09.2026 werden `calcTraceResult` und `gradingResult` zu Beginn **jeder** Aufgabe gelöscht.
+Bleibt ein Lauf ohne Ergebnis, greift wie vorgesehen der Hinweis „ohne Sandbox-Prüfung, bitte manuell
+gegenprüfen". Abgesichert durch
+[engine-zustand-je-arbeit.test.ts](../../tests/unit/ai/engine-zustand-je-arbeit.test.ts).
+
 ## 4. Security & Compliance
 *   **Datenminimierung:** Es werden ausschließlich physikalische/mathematische Kennwerte und Zwischenschritte im LLM verarbeitet. 
 *   **Ausführungssicherheit:** Durch die mathjs-AST-Validierung läuft die mathematische Evaluierung in einer hermetisch abgeriegelten Sandbox. Injection von Schadcode ist ausgeschlossen.
@@ -253,6 +315,8 @@ gesetzter gültiger Wert wird dabei immer respektiert.
 
 ## 5. Testing & Referenzen
 *   **Unit-Tests:** Die gesamte logische Integrität, 3-Tier Unit-Awareness und Fehlerkompensation ist in [CalcTrace.test.ts](../../tests/unit/lib/CalcTrace.test.ts) abgesichert (inklusive Folgefehler und SI-Präfix Normalisierung).
+*   **Folgefehler über Aufgabengrenzen:** [folgefehler-uebernahme.test.ts](../../tests/unit/grading/folgefehler-uebernahme.test.ts). Die Hälfte der Fälle prüft, dass die Kulanz **nicht** greift — insbesondere, dass ein falsch eingesetzter gegebener Wert nicht mitverziehen wird.
+*   **Zehnerpotenzen im Zielwert:** [units.test.ts](../../tests/unit/grading/units.test.ts). Ein Zielwert wie „1,2044 * 10^24" wurde bis zum 02.09.2026 in **drei** Zielwerte zerlegt (1,2044 / 10 / 24); auch eine vollkommen richtige Schülerantwort erhielt dadurch 0 Punkte.
 *   **Verwandte Dokumente:** [PANG-Engine Dokumentation](./pang-engine.md), [Architekturübersicht](./architecture.md).
 
 ---
@@ -263,6 +327,8 @@ gesetzter gültiger Wert wird dabei immer respektiert.
 *   **Fehlende Einheit = falsche Einheit:** Am 05.08.2026 wurde entschieden, eine fehlende Einheit genauso zu behandeln wie eine falsche. **Entscheidung:** Angenommen. Bisher galt ein Zahlenwert ohne Einheit als exakter Treffer, während derselbe Wert mit falschem Präfix den Zielwert verfehlte — nichts zu notieren brachte volle Punkte, etwas Falsches zu notieren null. Zusätzlich waren die differenzierten Meldungen im Beweistext („PRÄFIX-FEHLER", „keine Einheit angegeben") durch ihre Vorbedingungen unerreichbar, sodass das Modell bei Einheitenfehlern nur „Zielwert NICHT erreicht" erfuhr und die richtige Rechnung nicht würdigen konnte. Die Zielerreichung stützt sich nun auf `isExactMatch`; `isValueMatch` behält die Tatsache „Zahlenwert stimmt" und wird auch bei verfehlten Zielen gemeldet. **Bewusste Folge:** Die Regel „Ergebnis-Punkt setzt die korrekte Einheit voraus" liegt damit in der Engine, nicht im Erwartungshorizont. Weist eine Musterlösung Ergebnis und Einheit als getrennte Punkte aus, urteilt die Engine strenger als beabsichtigt; für diesen Fall wäre ein eigenes Einheiten-Kriterium (`proofUnit`) der nächste Schritt. Er wurde bewusst zurückgestellt, bis der Fall in echten Musterlösungen auftritt. Siehe Abschnitt 2.2.
 *   **Die Punktzahl der Aufgabe wird der Generierung vorgegeben, nicht geraten:** Am 05.08.2026 wurde beschlossen, `maxPoints` der Aufgabe an die TargetGoal-Generierung zu übergeben. **Entscheidung:** Angenommen. Bisher erhielt das Modell nur den Aufgabentext und musste die Gesamtpunktzahl aus der Prosa erschließen. In Verbindung mit der strikten Regel „Summe der Kriterien = maxPoints" (bei gleichzeitigem Verbot, `maxPoints` anzupassen) verzerrte eine falsch geratene Gesamtzahl anschließend jeden einzelnen Punktwert. Beobachteter Fall: Eine 2-Punkte-Aufgabe mit dem Erwartungshorizont „jeweils 1 P Rechenweg, 1 P Ergebnis" führte zu `maxPoints: 4`, weil das Modell aus „jeweils" zwei Teilaufgaben las und das Ergebnis-Kriterium von 1 auf 3 Punkte aufblähte, um auf die Summe zu kommen. Die verzerrten Werte landeten zusätzlich im `gradingRubric` und wirkten so bis in die Korrektur. Die Punktzahl wird jetzt als verbindliche Vorgabe übergeben; weicht die Kriterien-Summe davon ab, wirft `parseGeneratedCalcTrace` und die bestehende Selbstkorrektur-Schleife der API-Route generiert mit einem gezielten Hinweis neu. Der Prompt untersagt jetzt symmetrisch beides: weder `maxPoints` noch einzelne Kriterien-Punktwerte dürfen zum Ausgleich verfälscht werden. Zusätzlich hat die in der Oberfläche gesetzte Punktzahl der Aufgabe beim Korrigieren Vorrang vor der des TargetGoals.
 *   **`proofA` prüft den Rechenweg gegen sich selbst, nicht gegen die Musterlösung:** Am 05.08.2026 wurde die Bedingung für `proofA` korrigiert. **Entscheidung:** Angenommen. Bisher setzte `proofA` — wie `proofB` — voraus, dass der Zielwert der Musterlösung erreicht wurde; beide Quellen prüften damit exakt dieselbe Bedingung, und der Rechenweg-Punkt war faktisch ein zweiter Ergebnis-Punkt. Das widerspricht der Trennung von Proof A (interne Rechenkonsistenz) und Proof B (Zielerreichung), auf der die Engine aufbaut. Ein Schüler, der `12 / 4000 = 0.003` rechnet, hat die falsche Ausgangsgröße gewählt (Ergebnis- und Einsetzungs-Punkt zu Recht verloren), sich aber nicht verrechnet — der Rechenweg-Punkt steht ihm zu. Da die Engine ihre Befunde je Zielwert ablegt und einem verfehlten Zielwert keine Schritte zugeordnet werden, greift `proofA` in diesem Fall auf die übrigen Schritte des Rechenwegs zurück. **Bewusste Folge:** Rechenweg-Punkte können jetzt deterministisch vergeben werden, statt dem Modell überlassen zu werden. Siehe Abschnitt 3.5.
+*   **Die Sandbox führt ein Gedächtnis über Aufgabengrenzen:** Am 03.09.2026 wurde entschieden, dem Lauf über die Aufgaben die falschen Zwischenwerte früherer Teilaufgaben mitzugeben. **Entscheidung:** Angenommen. Ohne dieses Gedächtnis kann die Engine „eigener falscher Wert weiterverwendet“ nicht von „gegebenen Wert falsch abgeschrieben“ unterscheiden; beide erscheinen als „Ziel verfehlt, Arithmetik sauber“. Gemessen kostete das 0,83 Punkte je Rechenaufgabe (1,00 mit Rechenkette gegen 0,17 ohne). Erwogen und verworfen wurde, das Ergebnis-Kriterium schlicht auf `proofA` umzustellen: Das hätte auch den Fall verziehen, in dem gar kein Folgefehler vorliegt. Ebenfalls verworfen wurde, die Extraktion Schritt-Referenzen statt Literale schreiben zu lassen — die bestehende Regel „schreibe die Zahl wörtlich ab“ schützt davor, dass ein falsch übertragener eigener Wert unsichtbar wird. **Bewusste Folge:** Die Bewertung von Aufgabe b) hängt jetzt vom Ergebnis der Aufgabe a) ab. Die Reihenfolge-Annahme bestand bereits (`splitTextByTasks` nutzt denselben Index), neue Nebenwirkungen entstehen dadurch nicht. Siehe Abschnitt 3.6.
+*   **Engine-Ergebnisse werden je Aufgabe zurückgesetzt:** Ebenfalls am 03.09.2026, gefunden beim Architektur-Review zur Maßnahme oben. **Entscheidung:** Angenommen. Ein gescheiterter Engine-Lauf ließ das Urteil der vorigen Arbeit stehen, weil die Oberfläche dieselbe Aufgabenliste für den ganzen Stapel durchreicht. **Bewusste Folge:** Der Warnhinweis „ohne Sandbox-Prüfung“ greift jetzt tatsächlich in allen Fällen, in denen er greifen sollte. Siehe Abschnitt 3.7.
 *   **`source` ist die alleinige Zuordnungsquelle für Bewertungskriterien:** Am 05.08.2026 wurde beschlossen, die Wortsuche über `id`/`label` aus Prompt-Aufbau und Punktevergabe zu entfernen. **Entscheidung:** Angenommen. Beide Stellen suchten nach *unterschiedlichen* Begriffen, wodurch das Modell zu einem Kriterium befragt werden konnte, dessen Antwort die Punktevergabe anschließend verwarf — Prompt und Ergebnis konnten auseinanderlaufen. Als Ersatz für den einzigen Fall, den das Vokabular nicht abbilden konnte, wurde `source: 'proofValues'` eingeführt (deterministische Prüfung der Werteeinsetzung über `hasCorrectValues`). Der Generator-Prompt vergibt diesen Wert jetzt direkt; die Heuristik bleibt nur als einmalige Reparatur beim Einlesen erhalten. **Bewusste Folge:** Kriterien, die ausdrücklich `source: 'llm'` tragen, aber nach Werteeinsetzung klingen, werden nun tatsächlich vom Modell bewertet statt stillschweigend von der Sandbox. Siehe Abschnitt 3.5.
 *   **Extraktionsfehler werden nicht in ein leeres Ergebnis übersetzt:** Am 05.08.2026 wurde beschlossen, dass `extractStudentAST` technische Ausfälle als `CalcTraceExtractionError` weiterreicht, statt sie wie bisher abzufangen und `[]` zurückzugeben. **Entscheidung:** Angenommen. Ein leerer AST und ein Ausfall sind bewertungsrelevant verschiedene Aussagen: Ersteres bedeutet „der Schüler hat nicht gerechnet" und rechtfertigt 0 Punkte, Letzteres bedeutet „nicht prüfbar" und muss in die manuelle Nachkontrolle laufen. Die Gleichbehandlung führte dazu, dass ein API-Timeout in der fertigen Korrektur als Schülerversagen erschien. Der bereits vorhandene Warnpfad (`isSandboxBypassed`) übernimmt diese Fälle nun automatisch, da ohne Ergebnis kein `calcTraceResult` gesetzt wird. Siehe Abschnitt 3.4.
 *   **Was die Sandbox nicht nachrechnen kann, belastet niemanden:** Am 06.08.2026 wurde entschieden, Parse-Fehler von Rechenfehlern zu trennen. **Entscheidung:** Angenommen. `sandboxErrors` mischte zwei grundverschiedene Aussagen: „die Rechnung ist widerlegt" und „wir konnten den Schritt nicht lesen". `bewerteRechenweg` wertete beides als Rechenfehler, und der Beweistext meldete beides als „Verrechner im Weg des Schülers" — das Modell übernahm diese Zuschreibung folgerichtig. Beobachteter Fall: Ein Schüler notierte die Formelzeile `E = A · η · H` und darunter die korrekte Einsetzung; die Formelzeile enthält keine Zahlen und ist deshalb naturgemäß nicht auswertbar, kostete ihn aber den Rechenweg-Punkt trotz fehlerfreier Rechnung. Punktevergabe und Beweistext filtern jetzt beide auf das Präfix `Rechenfehler`; nicht auswertbare Schritte werden ausdrücklich als „KEIN Schülerfehler" ausgewiesen und dem Modell zur fachlichen Würdigung überlassen. **Bewusste Folge:** Die Engine urteilt nur noch dort, wo sie tatsächlich gerechnet hat — im Zweifel zugunsten des Schülers, analog zur Entscheidung „Extraktionsfehler werden nicht in ein leeres Ergebnis übersetzt". Abgesichert in [calctrace-unparsable-steps.test.ts](../../tests/unit/lib/grading/calctrace-unparsable-steps.test.ts).

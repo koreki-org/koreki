@@ -69,6 +69,14 @@ export interface PerTargetResult {
   /** In der Rechenkette zu diesem Ziel steckt ein echter Rechenfehler */
   hasCalculationError: boolean;
   associatedStepIds: string[];
+  /**
+   * Der Zielwert wurde verfehlt, weil ein Wert aus einer frueheren, selbst
+   * verfehlten Aufgabe uebernommen wurde — der Name jener Aufgabe.
+   *
+   * Gesetzt nur, wenn die Rechnung hier IN SICH fehlerfrei ist. Ein eigener
+   * Rechenfehler bleibt ein eigener Rechenfehler.
+   */
+  folgefehlerAus?: string;
 }
 
 export interface CriterionClassification {
