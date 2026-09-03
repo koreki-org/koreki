@@ -38,7 +38,36 @@ try {
             // Steht dort 8.x, aktualisieren und DIESE DREI ZEILEN ENTFERNEN.
             'deepmerge-ts',
             '@prisma/config',
-            'prisma'
+            'prisma',
+
+            // --- mysql2, eingetragen am 03.09.2026 ---------------------------
+            // Zwei Meldungen: ein Auth-Downgrade auf mysql_clear_password, der
+            // Zugangsdaten im Klartext an einen boesartigen MySQL-Server
+            // schickt (HIGH), und eine Dekompressionsbombe im komprimierten
+            // MySQL-Protokoll (MODERATE). Kommt als Beipack von prisma@7.10.0.
+            //
+            // Warum vertretbar: Koreki spricht kein MySQL. Der Datenbank-
+            // Provider in prisma/schema.prisma ist `postgresql`, und im
+            // gesamten `src/` kommt MySQL nicht vor. Beide Schwachstellen
+            // sitzen im MySQL-Wire-Protokoll und setzen voraus, dass die
+            // Anwendung eine Verbindung zu einem MySQL-Server aufbaut. Der
+            // Treiber liegt in node_modules und wird nie geladen.
+            //
+            // Das ist eine ANDERE Begruendung als bei der deepmerge-ts-Kette
+            // darueber. Dort lautet sie "kein Anfragepfad" — der Code laeuft,
+            // ist aber schwer erreichbar. Hier ist der Code UNERREICHBAR,
+            // solange der Provider PostgreSQL ist. Am 17.08.2026 war die
+            // Entscheidung ausdruecklich "warten, statt die Ausnahmeliste zu
+            // erweitern"; sie wird hier bewusst anders getroffen, weil die
+            // Begruendung strenger ist.
+            //
+            // ABBAUBEDINGUNG — ZWEI, es genuegt eine:
+            //   1. `npm ls mysql2` meldet das Paket nicht mehr, weil Prisma es
+            //      nicht mehr mitbringt.
+            //   2. Der Provider in prisma/schema.prisma ist NICHT mehr
+            //      `postgresql`. Dann traegt die Begruendung nicht mehr und der
+            //      Eintrag MUSS sofort weg — nicht geprueft, sondern entfernt.
+            'mysql2'
         ];
 
         let hasBlocker = false;
