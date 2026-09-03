@@ -217,12 +217,34 @@ export function compareWithUnit(
 
 // ─── Target Value Parsing ────────────────────────────────────────────────────
 
+/**
+ * Wissenschaftliche Schreibweise in die E-Notation ueberfuehren.
+ *
+ * "1,2044 * 10^24" ist EIN Wert. Der Zahlen-Abgleich unten kennt aber nur
+ * `1.2044e24`; auf die ausgeschriebene Form angewandt findet er drei Zahlen —
+ * 1.2044, 10 und 24 — und macht daraus drei Zielwerte, die ein Schueler
+ * niemals alle treffen kann. Chemie und Physik schreiben Zehnerpotenzen genau
+ * so, und die Ziel-Erzeugung liefert sie ebenfalls in dieser Form zurueck.
+ *
+ * Erkannt werden `*`, `x`, `X` und das Malzeichen `×` als Multiplikator. Die
+ * Mantisse darf fehlen: `10^24` ist `1e24`. Das `^` ist dagegen Pflicht — ohne
+ * Exponentenzeichen liesse sich eine Zehnerpotenz nicht von zwei nebeneinander
+ * stehenden Zahlen unterscheiden.
+ */
+function alsENotation(text: string): string {
+  return text.replace(
+    /(?:(-?\d+(?:[.,]\d+)?)\s*[*x×]\s*)?10\s*\^\s*(-?\d+)/gi,
+    (_treffer, mantisse: string | undefined, exponent: string) =>
+      `${(mantisse ?? '1').replace(',', '.')}e${exponent}`
+  );
+}
+
 /** Parse target values into an array of numbers (no unit expansion, just raw values) */
 export function parseTargetValues(targetVal: number | number[] | string): number[] {
   if (typeof targetVal === 'number') return [targetVal];
   if (Array.isArray(targetVal)) return targetVal.map(Number).filter(n => !isNaN(n));
   if (typeof targetVal === 'string') {
-    const matches = targetVal.match(/-?\d+(?:[\.,]\d+)?(?:[eE][-+]?\d+)?/g);
+    const matches = alsENotation(targetVal).match(/-?\d+(?:[\.,]\d+)?(?:[eE][-+]?\d+)?/g);
     if (matches) {
       return matches.map(m => Number(m.replace(',', '.'))).filter(n => !isNaN(n));
     }

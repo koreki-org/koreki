@@ -277,6 +277,40 @@ describe('parseTargetValues', () => {
     it('liest die wissenschaftliche Schreibweise', () => {
         expect(parseTargetValues('1.846e-3')).toEqual([1.846e-3]);
     });
+
+    /**
+     * ANLASS (02.09.2026). Chemie und Physik schreiben Zehnerpotenzen als
+     * "1,2044 * 10^24", nicht als "1.2044e24" — und die Ziel-Erzeugung liefert
+     * genau diese Form zurueck. Der Zahlen-Abgleich kannte nur die E-Notation
+     * und fand darin DREI Zahlen: 1.2044, 10 und 24. Aus einem Zielwert wurden
+     * drei, von denen keiner erreichbar war; die Sandbox meldete dreimal "NICHT
+     * erreicht", und die Aufgabe bekam 0 Punkte. Aufgefallen bei der
+     * Genauigkeitsmessung an einer Chemie-Aufgabe (Teilchenzahl ueber N_A).
+     *
+     * Eine Zehnerpotenz ist EIN Wert. Wer hier eine Schreibweise ergaenzt,
+     * ergaenzt sie auch in `alsENotation`.
+     */
+    it('liest eine Zehnerpotenz als EINEN Wert, nicht als drei Zahlen', () => {
+        expect(parseTargetValues('1.2044 * 10^24')).toEqual([1.2044e24]);
+        expect(parseTargetValues('1,2044 * 10^24')).toEqual([1.2044e24]);
+        expect(parseTargetValues('1.2 x 10^3')).toEqual([1200]);
+        expect(parseTargetValues('2.5 × 10^-3')).toEqual([0.0025]);
+        expect(parseTargetValues('-4 * 10^8')).toEqual([-4e8]);
+        expect(parseTargetValues('3 * 10 ^ 5')).toEqual([300000]);
+    });
+
+    /** Ohne Mantisse ist "10^24" die Zehnerpotenz selbst, also 1e24. */
+    it('liest die Zehnerpotenz auch ohne Mantisse', () => {
+        expect(parseTargetValues('10^24')).toEqual([1e24]);
+    });
+
+    /**
+     * Die Gegenprobe: Zwei durch Komma getrennte Werte bleiben zwei Werte.
+     * Genau so beschreibt das Schema der Ziel-Erzeugung mehrere Zielwerte.
+     */
+    it('trennt mehrere Zielwerte weiterhin am Komma', () => {
+        expect(parseTargetValues('7.38, 4.62')).toEqual([7.38, 4.62]);
+    });
 });
 
 describe('parseUnitsPerValue', () => {
