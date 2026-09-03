@@ -5,10 +5,6 @@ import { Button } from '@/components/ui/Button';
 import { useRouter } from 'next/router';
 import ReactMarkdown from 'react-markdown';
 import { getLegalDocument } from '@/lib/legal';
-import { logtoClient } from '@/lib/logto';
-import prisma from '@/lib/prisma';
-import { logger } from '@/lib/logger';
-import type { GetServerSideProps } from 'next';
 
 interface ManualPageProps {
     content: string;
