@@ -6,8 +6,8 @@ Wir agieren als **einheitliches High-Performance Team**. Keine Aufgabe erfolgt i
 ## Hierarchy & Roles
 
 ### 1. Strategic Direction (The "Why")
-- **Lead:** `product-manager` ([.claude/agents/product-manager.md](.claude/agents/product-manager.md)) | Skills: `product-strategy`, `marketing-communication`
-- **Fokus:** Produktvision, User-Value, Roadmap, Aussendarstellung.
+- **Lead:** `product-manager` ([.claude/agents/product-manager.md](.claude/agents/product-manager.md)) | Skills: `product-strategy`, `marketing-communication`, `eu-ai-act`
+- **Fokus:** Produktvision, User-Value, Roadmap, Aussendarstellung, Einhaltung der KI-Verordnung.
 - **Entscheidungsgewalt:** Der PM hat das letzte Wort über den funktionalen Scope und die Priorisierung.
 
 ### 2. Technical Leadership (The "How")
