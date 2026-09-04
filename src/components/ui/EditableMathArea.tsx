@@ -4,6 +4,10 @@ import { MathMarkdown } from './MathMarkdown';
 import { HighlightableTextArea } from './HighlightableTextArea';
 import { Button } from './Button';
 import { cn } from '@/lib/utils';
+import { ENGINE_LABELS, ENGINE_BESCHREIBUNGEN } from './feedback-engine-labels';
+import { CalcTraceLegende } from './CalcTraceLegende';
+import type { FeedbackEngine } from './feedback-engine-labels';
+export type { FeedbackEngine };
 
 interface EditableMathAreaProps {
     value: string;
@@ -24,20 +28,6 @@ interface EditableMathAreaProps {
      */
     aiNotes?: string;
 }
-
-/** Welche Engine den technischen Block erzeugt hat — bestimmt seine Beschriftung. */
-export type FeedbackEngine = 'PANG' | 'AGS' | 'CalcTrace';
-
-/**
- * Anzeigename je Engine. Ohne diese Zuordnung trug jeder technische Block das Label
- * "PANG", auch wenn ihn die CalcTrace-Rechenkette erzeugt hatte — die beiden Engines
- * sind aber verschieden (Rechengraph vs. Rechenkette) und duerfen nicht gleich heissen.
- */
-const ENGINE_LABELS: Record<FeedbackEngine, string> = {
-    PANG: 'Technische PANG-Detailanalyse einblenden',
-    AGS: 'Technische AGS-Detailanalyse einblenden',
-    CalcTrace: 'Technische Rechenketten-Detailanalyse einblenden'
-};
 
 /**
  * Zwei Sorten Inhalt teilen sich den Aufklapper, und sie sind NICHT gleichwertig:
@@ -75,10 +65,11 @@ const TON: Record<AufklapperTon, { rahmen: string; flaeche: string; schrift: str
 
 const Aufklapper: React.FC<{
     titel: string;
+    beschreibung?: string;
     ton: AufklapperTon;
     icon: React.ReactNode;
     children: React.ReactNode;
-}> = ({ titel, ton, icon, children }) => {
+}> = ({ titel, beschreibung, ton, icon, children }) => {
     const t = TON[ton];
     return (
         <details className={cn('group rounded-xl border overflow-hidden transition-all duration-300 mb-4', t.rahmen, t.flaeche)}>
@@ -86,9 +77,14 @@ const Aufklapper: React.FC<{
                 'flex items-center justify-between p-3.5 cursor-pointer list-none select-none text-xs font-bold transition-all [&::-webkit-details-marker]:hidden',
                 t.schrift, t.anriss
             )}>
-                <div className="flex items-center gap-2.5">
-                    <div className={cn('flex items-center justify-center w-5 h-5 rounded-md', t.marke)}>{icon}</div>
-                    <span>{titel}</span>
+                <div className="flex items-start gap-2.5 min-w-0">
+                    <div className={cn('flex items-center justify-center w-5 h-5 rounded-md shrink-0', t.marke)}>{icon}</div>
+                    <div className="min-w-0">
+                        <span>{titel}</span>
+                        {beschreibung && (
+                            <p className="mt-0.5 font-normal text-muted-foreground">{beschreibung}</p>
+                        )}
+                    </div>
                 </div>
                 <ChevronDown size={14} className={cn('transition-transform duration-300 group-open:rotate-180', t.schrift)} />
             </summary>
@@ -235,9 +231,11 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
                                 {technical ? (
                                     <Aufklapper
                                         titel={engine ? ENGINE_LABELS[engine] : 'Technische Detailanalyse einblenden'}
+                                        beschreibung={engine ? ENGINE_BESCHREIBUNGEN[engine] : undefined}
                                         ton="engine"
                                         icon={<Settings size={12} className="transition-transform duration-500 group-open:rotate-90" />}
                                     >
+                                        {engine === 'CalcTrace' && <CalcTraceLegende />}
                                         <MathMarkdown content={technical} />
                                     </Aufklapper>
                                 ) : notizen ? (

@@ -41,6 +41,15 @@ const DETERMINISTISCHE_AKTIONEN: AIAction[] = [
     'generate-calc-trace',
     'variable-extraction'
 ];
+/**
+ * Top P fuer die Aktionen, die ein festes JSON-Schema fuellen.
+ *
+ * Derselbe Wert, den `calc-trace-extraction` bei Mistral und OpenAI seit jeher fest
+ * gesetzt bekommt (`calc-trace-extraction.ts`) und den der Prompt-Aufbau fuer diese
+ * Aktion selbst vorgibt. Eng, weil diese Aktionen abschreiben statt zu formulieren.
+ */
+export const DETERMINISTISCHER_TOP_P = 0.1;
+
 export interface ModellArt {
     isVision: boolean;
     isSystemAction: boolean;
@@ -156,12 +165,30 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
             // abgefragt. Da in Koreki immer ein Profil laeuft, war der kalte Zweig im
             // Betrieb nie aktiv — die Extraktion lief mit den Werten der Korrektur.
             //
-            // Bewusst DIESELBEN Werte wie die Aufbereitungs-Aktionen statt eigener:
-            // Abschreiben ist Abschreiben, und zwei Regeln fuer dieselbe Sache laufen
-            // auseinander. Die Werte tragen den Stabilitaetsboden lokaler Modelle in
-            // sich; kaelter liesse Qwen an Wiederholungen haengenbleiben.
-            targetTemp = defaultTemp;
-            targetTopP = defaultTopP;
+            // EINE Regel (Profil ignorieren), ZWEI Wertesaetze — und das ist kein
+            // Versehen, sondern am 04.09.2026 gemessen.
+            //
+            // Zuerst bekamen die deterministischen Aktionen dieselben Werte wie die
+            // Aufbereitung (0.3 / 0.9 bei Qwen). Die Rechenketten-Pruefung fiel danach
+            // im Demo-Szenario aus: "Schritt 1 der Extraktion hat keine Formel". Der
+            // Schueler schreibt dort als erste Zeile `Ich nutze die Formel E = A · η · H`
+            // — eine Formelzeile OHNE Zahlen. Bei 0.3 liess das Modell das Feld
+            // schlicht weg, und die Aufgabe fiel in die manuelle Nachkontrolle.
+            //
+            // Die beiden Aufgaben sind nicht dieselbe:
+            // * Aufbereitung schreibt eine ganze Seite als FLIESSTEXT ab. Zu kalt ist
+            //   dort gefaehrlich — lokale Modelle bleiben an Wiederholungen haengen,
+            //   bis der Puffer voll ist. Daher der Stabilitaetsaufschlag.
+            // * Die deterministischen Aktionen fuellen ein festes JSON-SCHEMA. Das
+            //   Schema beendet die Ausgabe von selbst; Schleifen sind hier nicht die
+            //   Gefahr. Zu warm ist es: dann fehlen Felder.
+            //
+            // Gemeinsam ist beiden nur, dass ein im Profil gesetzter Kulanzwert sie
+            // nicht erreichen darf. Die Zahlen daneben folgen der Arbeit, nicht der
+            // Symmetrie.
+            const istSchemaAktion = DETERMINISTISCHE_AKTIONEN.includes(action);
+            targetTemp = istSchemaAktion ? TEMPERATURE_MINIMUM : defaultTemp;
+            targetTopP = istSchemaAktion ? DETERMINISTISCHER_TOP_P : defaultTopP;
         } else {
             targetTemp = settings.temperature ?? defaultTemp;
             targetTopP = settings.topP ?? defaultTopP;

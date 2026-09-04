@@ -2,6 +2,7 @@ import { berechneSamplingParameter, bestimmeModellArt } from '../../../src/lib/a
 import type { AppSettings } from '../../../src/types';
 import type { AIAction } from '../../../src/lib/ai/prompt-dispatch';
 import { FREETEXT_TEMPERATURE_MINIMUM, TEMPERATURE_MINIMUM } from '@/lib/ai/temperature-guidance';
+import { DETERMINISTISCHER_TOP_P } from '@/lib/ai/ollama-sampling';
 
 /**
  * Sampling-Disziplin fuer lokale Modelle (Layer 1)
@@ -67,7 +68,7 @@ describe('Temperatur nach Aufgabenart', () => {
         'generate-calc-trace',
         'variable-extraction'
     ] as AIAction[])('%s rechnet ohne Spielraum', (action) => {
-        expect(rechne(action, 'llama3').temperature).toBe(0.2);
+        expect(rechne(action, 'llama3').temperature).toBe(TEMPERATURE_MINIMUM);
     });
 
     /**
@@ -85,12 +86,30 @@ describe('Temperatur nach Aufgabenart', () => {
         'calc-trace-extraction',
         'generate-calc-trace',
         'variable-extraction'
-    ] as AIAction[])('%s wird abgetastet wie clean-and-map', (action) => {
-        const mitProfil = rechne(action, 'qwen3.6:35b', { temperature: 0.7, topP: 0.95 });
-        const vorbild = rechne('clean-and-map', 'qwen3.6:35b', { temperature: 0.7, topP: 0.95 });
+    ] as AIAction[])('%s tastet kalt ab, nicht wie die Aufbereitung', (action) => {
+        const r = rechne(action, 'qwen3.6:35b', { temperature: 0.7, topP: 0.95 });
 
-        expect(mitProfil.temperature).toBe(vorbild.temperature);
-        expect(mitProfil.topP).toBe(vorbild.topP);
+        expect(r.temperature).toBe(TEMPERATURE_MINIMUM);
+        expect(r.topP).toBe(DETERMINISTISCHER_TOP_P);
+    });
+
+    /**
+     * GEMESSEN AM 04.09.2026. Zwischenzeitlich bekamen die Schema-Aktionen dieselben
+     * Werte wie `clean-and-map` (0.3 / 0.9 bei Qwen) — gleiche Regel, gleiche Zahlen.
+     * Daraufhin fiel die Rechenketten-Pruefung im Demo-Szenario aus: "Schritt 1 der
+     * Extraktion hat keine Formel". Die erste Zeile dort ist eine Formelzeile OHNE
+     * Zahlen; bei 0.3 liess das Modell das Feld weg.
+     *
+     * Die Aufbereitung braucht ihren Aufschlag gegen Wiederholungsschleifen im
+     * Fliesstext. Eine Schema-Aktion hat dieses Problem nicht — ihr Schema beendet die
+     * Ausgabe. Sie hat das umgekehrte: Zu warm heisst fehlende Felder.
+     */
+    it('taste Schema-Aktionen kaelter ab als die Aufbereitung', () => {
+        const schema = rechne('calc-trace-extraction', 'qwen3.6:35b');
+        const aufbereitung = rechne('clean-and-map', 'qwen3.6:35b');
+
+        expect(schema.temperature).toBeLessThan(aufbereitung.temperature);
+        expect(schema.topP).toBeLessThan(aufbereitung.topP);
     });
 
     it.each([
