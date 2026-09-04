@@ -25,6 +25,13 @@ export const ENGINE_LABELS: Record<FeedbackEngine, string> = {
  * "Rechenkette" sagen einer Lehrkraft nichts. Sie oeffnete den Block also entweder
  * gar nicht oder stand vor einem Sandbox-Protokoll ohne zu wissen, was sie da liest.
  *
+ * BENENNE DAS BAUTEIL, NICHT DAS PRODUKT. Hier stand zuerst "Koreki hat ... selbst
+ * nachgerechnet". Das ist irrefuehrend: "Koreki" ist das ganze System, das
+ * Sprachmodell eingeschlossen. Wer so schreibt, muss spaeter erklaeren, warum
+ * "Koreki nicht entscheidet, sondern die KI" — ein Widerspruch, der nur entsteht,
+ * weil der Teil den Namen des Ganzen traegt. Innerhalb dieser Bloecke heissen die
+ * Bauteile deshalb "die Rechenkette", "der Bewertungsgraph" und "die KI".
+ *
  * Deshalb IMMER sichtbar und nicht als Tooltip: Ein Hinweis, der erst beim Zeigen
  * erscheint, erreicht auf dem Tablet niemanden — und dort wird korrigiert.
  *
@@ -40,7 +47,7 @@ export const ENGINE_LABELS: Record<FeedbackEngine, string> = {
  * unterscheiden sich nur darin, WAS unten zu sehen ist.
  */
 export const ENGINE_BESCHREIBUNGEN: Record<FeedbackEngine, string> = {
-    PANG: 'Koreki hat jeden Rechenschritt selbst nachgerechnet. Folgefehler werden dabei erkannt.',
-    AGS: 'Koreki hat jedes Subnetz selbst nachgerechnet. Folgefehler werden dabei erkannt.',
-    CalcTrace: 'Koreki hat die Rechnung selbst nachgerechnet — hier steht, was dabei belegt ist.'
+    PANG: 'Der Bewertungsgraph hat jeden Rechenschritt nachgerechnet. Folgefehler werden dabei erkannt.',
+    AGS: 'Der Bewertungsgraph hat jedes Subnetz nachgerechnet. Folgefehler werden dabei erkannt.',
+    CalcTrace: 'Die Rechenkette hat die Aufgabe nachgerechnet — hier steht, was dabei belegt ist.'
 };

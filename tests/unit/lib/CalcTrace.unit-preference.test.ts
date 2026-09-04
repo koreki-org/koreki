@@ -31,12 +31,19 @@ describe('CalcTrace — Fundstelle bei gleichwertigen Zwischeneinheiten', () => 
         expect(detail?.isExactMatch).toBe(true);
     });
 
-    it('names that step in the proof handed to the grading model', () => {
+    /**
+     * Geprueft wird, WELCHER Schritt genannt wird — nicht, wie er ausgezeichnet ist.
+     * Seit dem 04.09.2026 stehen Schrittnamen im Anzeigetext in Backticks, damit sie
+     * in Monospace erscheinen, waehrend der Fliesstext daneben in Fliesschrift laeuft.
+     * Die alte woertliche Erwartung "Gefunden in step_3" fiel daran, obwohl sich an
+     * der Aussage nichts geaendert hatte.
+     */
+    it('names that step in the proof shown to the teacher', () => {
         const result = evaluateCalcTrace(bytesToMiB, targetMiB);
         const proof = formatCalcTraceFeedback(result, targetMiB);
 
-        expect(proof).toContain('Gefunden in step_3');
-        expect(proof).not.toContain('Gefunden in step_2');
+        expect(proof).toMatch(/Gefunden in \W?step_3\W/);
+        expect(proof).not.toMatch(/Gefunden in \W?step_2\W/);
     });
 
     it('still reports the equivalent step when the expected unit never appears', () => {

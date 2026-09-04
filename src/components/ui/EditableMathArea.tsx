@@ -88,7 +88,19 @@ const Aufklapper: React.FC<{
                 </div>
                 <ChevronDown size={14} className={cn('transition-transform duration-300 group-open:rotate-180', t.schrift)} />
             </summary>
-            <div className={cn('border-t p-4 bg-background/30 text-xs leading-relaxed font-mono', t.trenner)}>
+            {/*
+              * Fliesstext in Fliesschrift, Rechnungen in Monospace.
+              *
+              * Hier stand bis zum 04.09.2026 `font-mono` fuer den GANZEN Block. Damit
+              * sah ein Satz wie "Der extrahierte Rechenweg ist in sich fehlerfrei" aus
+              * wie ein Programmauszug, und die Lehrkraft las eine Wand aus
+              * Schreibmaschinenschrift. Monospace hat genau eine Aufgabe: Zeichen
+              * untereinander ausrichten. Das braucht eine Formel, kein Satz.
+              *
+              * Was Rechnung IST, entscheidet der Erzeuger, indem er es in
+              * Backtick-Zeichen setzt; `MathMarkdown` macht daraus Monospace.
+              */}
+            <div className={cn('border-t p-4 bg-background/30 text-xs leading-relaxed font-sans', t.trenner)}>
                 {children}
             </div>
         </details>

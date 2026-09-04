@@ -247,6 +247,13 @@ export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }
                     ol: ({ node, ...props }) => <ol className="list-decimal pl-5 mb-3 space-y-1" {...props} />,
                     li: ({ node, ...props }) => <li className="mb-1" {...props} />,
                     strong: ({ node, ...props }) => <strong className="font-bold text-foreground" {...props} />,
+                    // Monospace nur dort, wo Zeichen untereinander stehen muessen —
+                    // Formeln, Zahlenwerte, Schrittnamen. Der umgebende Block laeuft
+                    // seit dem 04.09.2026 in Fliesschrift; ohne diese Regel verloere
+                    // eine Rechnung ihre Ausrichtung.
+                    code: ({ node, ...props }) => (
+                        <code className="font-mono bg-muted/60 rounded px-1 py-0.5" {...props} />
+                    ),
                     table: ({ node, ...props }) => (
                         <div className="overflow-x-auto mb-4 rounded-lg border border-border shadow-sm">
                             <table className="min-w-full divide-y divide-border" {...props} />

@@ -28,7 +28,7 @@ const FOLGEN: { a: string; b: string; folge: string; betont?: boolean }[] = [
     {
         a: '✓',
         b: '✗',
-        folge: 'Koreki entscheidet nicht. Richtig gerechnet, Ziel verfehlt — das kann ein '
+        folge: 'Die Rechenkette entscheidet nicht. Richtig gerechnet, Ziel verfehlt — das kann ein '
             + 'Folgefehler aus einer früheren Teilaufgabe sein oder ein falscher Ansatz. '
             + 'Diese Frage geht mit ihrer Begründung an die KI; deren Punktzahl zählt dann.',
         betont: true
