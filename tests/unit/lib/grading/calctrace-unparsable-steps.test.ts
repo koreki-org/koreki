@@ -64,7 +64,11 @@ describe('CalcTrace: nicht auswertbare Schritte', () => {
             const result = evaluateCalcTrace(astMitFormelzeile, target);
             const prompt = formatCalcTraceFeedback(result, target);
 
-            expect(prompt).toContain('KEIN Schülerfehler');
+            // Die AUSSAGE, nicht der Wortlaut: Der Text muss den Schritt ausdruecklich
+            // NICHT der Schuelerin anlasten. Stand bis zum 04.09.2026 als "KEIN
+            // Schülerfehler" da — Maschinensprache, die beim Umbau auf einen Text fuer
+            // die Lehrkraft zu "kein Fehler der Schülerin" wurde.
+            expect(prompt).toMatch(/kein.{0,4}Fehler der Schülerin/i);
             expect(prompt).not.toMatch(/Verrechner im Weg des Schülers[\s\S]*Syntax-Fehler in step_1/);
         });
 

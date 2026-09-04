@@ -293,8 +293,8 @@ describe('CalcTrace Engine V7 — Unit-Aware Grading (3-Tier Model)', () => {
 
     const text = formatCalcTraceFeedback(evaluateCalcTrace(ast, target), target);
 
-    expect(text).toContain('OHNE EINHEIT');
-    expect(text).toContain('NICHT erreicht');
+    expect(text).toMatch(/ohne Einheit/i);
+    expect(text).toMatch(/nicht erreicht/i);
 
     // Geprueft wird die AUSSAGE, nicht der Wortlaut: Der Text muss festhalten, dass
     // gerechnet richtig wurde, und darf keinen Rechenfehler behaupten. Hier stand bis

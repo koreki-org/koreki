@@ -369,7 +369,10 @@ export function traceStepChain(targetStepId: string, ast: StudentASTStep[]): Set
  * das Modell gehoert nach `engine-report.ts`, nicht hierher.
  */
 export function formatCalcTraceFeedback(result: CalcTraceResult, target: TargetGoal): string {
-  const lines: string[] = ['--- DETERMINISTISCHER BEWEIS (SANDBOX) ---'];
+  const ast = result.ast || [];
+  const sandboxErrors = result.sandboxErrors || [];
+  const lines: string[] = [];
+
   let targetDisplay = `${target.targetValue} ${target.unit || ''}`;
   if (Array.isArray(target.targetValue) && target.unit && target.unit.includes(',')) {
     const units = target.unit.split(',').map(u => u.trim());
@@ -377,17 +380,32 @@ export function formatCalcTraceFeedback(result: CalcTraceResult, target: TargetG
       targetDisplay = target.targetValue.map((v, i) => `${v} ${units[i]}`).join(', ');
     }
   }
-  lines.push(`Muster-Zielwert: \`${targetDisplay}\``);
+  lines.push(`**Ihr Zielwert:** \`${targetDisplay.trim()}\``);
 
-  // ── Proof A ──
-  lines.push(`\n[Proof A: Logik & Folgefehler-Test]`);
-  const ast = result.ast || [];
-  const sandboxErrors = result.sandboxErrors || [];
+  // ── Der Rechenweg, wie die Sandbox ihn gelesen hat ──────────────────────────
+  //
+  // Frueher stand er nur als roher JSON-Auszug da (`[DEBUG-AST]`) oder gar nicht.
+  // Dabei ist er die interessanteste Auskunft des ganzen Blocks: Er zeigt, WAS die
+  // Sandbox nachgerechnet hat — und deckt damit auch Extraktionsfehler auf, die
+  // sonst niemandem auffallen.
+  if (ast.length > 0) {
+    lines.push(`\n**Gelesener Rechenweg**\n`);
+    lines.push(`| Schritt | Rechnung | Ergebnis | |`);
+    lines.push(`|---|---|---|---|`);
+    ast.forEach(step => {
+      const ergebnis = `${step.result}${step.unit ? ` ${step.unit}` : ''}`;
+      const status = stepHasSandboxError(step.id, sandboxErrors) ? '✗' : '✓';
+      lines.push(`| \`${step.id}\` | \`${step.formula}\` | \`${ergebnis}\` | ${status} |`);
+    });
+  }
+
+  // ── Proof A ────────────────────────────────────────────────────────────────
+  lines.push(`\n**Stimmt die Rechnung in sich? (Proof A)**\n`);
 
   if (ast.length === 0) {
-    lines.push(`✗ Die KI konnte keinen gültigen mathematischen Rechenweg aus der Schülerantwort extrahieren (AST leer).`);
+    lines.push(`✗ Aus der Schülerantwort liess sich kein Rechenweg lesen.`);
   } else if (sandboxErrors.length === 0) {
-    lines.push(`✓ Der extrahierte Schüler-AST ist mathematisch in sich vollkommen fehlerfrei.`);
+    lines.push(`✓ Ja — jeder Schritt ergibt genau das, was daneben steht.`);
   } else {
     // Ein Schritt, den die Sandbox nicht PARSEN konnte, ist kein Rechenfehler des Schuelers,
     // sondern eine Grenze unserer Auswertung (z. B. eine symbolische Formelzeile ohne Zahlen).
@@ -397,67 +415,54 @@ export function formatCalcTraceFeedback(result: CalcTraceResult, target: TargetG
     const nichtAuswertbar = sandboxErrors.filter(err => !err.startsWith('Rechenfehler'));
 
     if (rechenfehler.length > 0) {
-      lines.push(`✗ Die Sandbox hat interne Verrechner im Weg des Schülers gefunden:\n`);
+      lines.push(`✗ Nein — die Nachrechnung fand einen Verrechner:\n`);
       rechenfehler.forEach(err => lines.push(`* ${err}`));
     } else {
-      lines.push(`✓ In den auswertbaren Schritten hat die Sandbox keinen Rechenfehler gefunden.`);
+      lines.push(`✓ Ja — in allen nachrechenbaren Schritten geht die Rechnung auf.`);
     }
 
     if (nichtAuswertbar.length > 0) {
-      lines.push(`\nNicht maschinell auswertbare Schritte (KEIN Schülerfehler — die Sandbox konnte sie nur nicht nachrechnen, z. B. reine Formelzeilen ohne eingesetzte Zahlen):`);
+      lines.push(`\nNicht nachrechenbar (**kein** Fehler der Schülerin — die Sandbox konnte diese Schritte nur nicht auswerten, etwa reine Formelzeilen ohne eingesetzte Zahlen):\n`);
       nichtAuswertbar.forEach(err => lines.push(`* ${err}`));
-      lines.push(`→ Die Rechenkette konnte diese Schritte nicht nachrechnen. Bitte sehen Sie sie selbst durch.`);
+      lines.push(`\n→ Diese Schritte hat die Rechenkette nicht bewertet. Bitte sehen Sie sie selbst durch.`);
     }
   }
 
-  // ── Proof B ──
-  lines.push(`\n[Proof B: Ziel-Test & Einheiten-Abgleich]`);
+  // ── Proof B ────────────────────────────────────────────────────────────────
+  lines.push(`\n**Steht Ihr Zielwert da? (Proof B)**\n`);
   const naturalValues = parseTargetValues(target.targetValue);
   const unitsPerValue = parseUnitsPerValue(target.unit, naturalValues.length);
 
   naturalValues.forEach((expected, idx) => {
     const expectedUnit = unitsPerValue[idx] || '';
     const targetStr = `${expected} ${expectedUnit}`.trim();
-
-    // Find if we have unit comparison details for this target
     const detail = result.unitDetails ? result.unitDetails.find(d => d.targetValue === expected && d.expectedUnit === expectedUnit) : null;
-    
+
     if (detail) {
       const stepStr = detail.stepId ? ` in \`${detail.stepId}\`` : '';
-      const studentUnitStr = detail.studentUnit ? ` (Schüler notierte: ${detail.studentUnit})` : (detail.isExactMatch ? '' : ' (keine Einheit angegeben)');
-      
-      // Check if this specific step had a sandbox error
-      const hasErrorInStep = detail.stepId ? stepHasSandboxError(detail.stepId, sandboxErrors) : false;
-      const logicIndicator = hasErrorInStep ? `⚠ Rechenweg für diesen Schritt enthält Rechenfehler (siehe Proof A)` : `✓ Rechenweg für diesen Schritt fehlerfrei`;
+      const notiert = detail.studentUnit ? ` (notiert als \`${detail.studentUnit}\`)` : (detail.isExactMatch ? '' : ' (ohne Einheit)');
 
       if (detail.isExactMatch) {
-        lines.push(`* Zielwert \`${targetStr}\`: Gefunden${stepStr}${studentUnitStr} -> EXAKTER MATCH (Wert & Einheit physikalisch korrekt)`);
-        lines.push(`  → ${logicIndicator}`);
+        lines.push(`✓ \`${targetStr}\` gefunden${stepStr} — Wert und Einheit stimmen.`);
       } else if (detail.isMissingUnit) {
-        lines.push(`* Zielwert \`${targetStr}\`: Zahlenwert gefunden${stepStr}, aber OHNE EINHEIT notiert -> Zielwert gilt als NICHT erreicht`);
-        lines.push(`  → ${logicIndicator}`);
+        lines.push(`✗ \`${targetStr}\`: Die Zahl steht da${stepStr}, aber **ohne Einheit** — der Zielwert gilt als nicht erreicht.`);
         lines.push(`  → Gerechnet wurde richtig — nur die Einheit fehlt.`);
       } else if (detail.isPrefixError) {
-        lines.push(`* Zielwert \`${targetStr}\`: Zahlenwert gefunden${stepStr}${studentUnitStr}, aber FALSCHE GRÖSSENORDNUNG (SI-Präfix) -> Zielwert gilt als NICHT erreicht`);
-        lines.push(`  → ${logicIndicator}`);
+        lines.push(`✗ \`${targetStr}\`: Die Zahl steht da${stepStr}${notiert}, aber in **falscher Größenordnung** — der Zielwert gilt als nicht erreicht.`);
         lines.push(`  → Gerechnet wurde richtig — nur die Größenordnung der Einheit passt nicht.`);
       } else if (detail.isUnitMismatch) {
-        lines.push(`* Zielwert \`${targetStr}\`: Zahlenwert gefunden${stepStr}${studentUnitStr}, aber EINHEIT WEICHT AB -> Zielwert gilt als NICHT erreicht`);
-        lines.push(`  → ${logicIndicator}`);
+        lines.push(`✗ \`${targetStr}\`: Die Zahl steht da${stepStr}${notiert}, aber die **Einheit weicht ab** — der Zielwert gilt als nicht erreicht.`);
         lines.push(`  → Gerechnet wurde richtig — nur die Einheitsbezeichnung stimmt nicht.`);
       } else {
-        lines.push(`* Zielwert \`${targetStr}\`: NICHT erreicht oder übersprungen`);
+        lines.push(`✗ \`${targetStr}\`: nicht erreicht oder übersprungen.`);
       }
     } else {
-      // Pure numeric target (no unit expected)
+      // Reiner Zahlenwert, ohne erwartete Einheit.
       const matchingStep = ast.find(step => isWithinTolerance(step.result, expected, TOLERANCE));
       if (matchingStep) {
-        const hasErrorInStep = stepHasSandboxError(matchingStep.id, sandboxErrors);
-        const logicIndicator = hasErrorInStep ? `⚠ Rechenweg für diesen Schritt enthält Rechenfehler (siehe Proof A)` : `✓ Rechenweg für diesen Schritt fehlerfrei`;
-        lines.push(`* Zielwert \`${targetStr}\`: Gefunden in \`${matchingStep.id}\` -> MATCH (Reiner Zahlenwert-Abgleich)`);
-        lines.push(`  → ${logicIndicator}`);
+        lines.push(`✓ \`${targetStr}\` gefunden in \`${matchingStep.id}\`.`);
       } else {
-        lines.push(`* Zielwert \`${targetStr}\`: NICHT erreicht oder übersprungen`);
+        lines.push(`✗ \`${targetStr}\`: nicht erreicht oder übersprungen.`);
       }
     }
   });

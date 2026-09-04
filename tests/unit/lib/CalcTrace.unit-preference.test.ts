@@ -42,8 +42,8 @@ describe('CalcTrace — Fundstelle bei gleichwertigen Zwischeneinheiten', () => 
         const result = evaluateCalcTrace(bytesToMiB, targetMiB);
         const proof = formatCalcTraceFeedback(result, targetMiB);
 
-        expect(proof).toMatch(/Gefunden in \W?step_3\W/);
-        expect(proof).not.toMatch(/Gefunden in \W?step_2\W/);
+        expect(proof).toMatch(/gefunden in \W*step_3\W/i);
+        expect(proof).not.toMatch(/gefunden in \W*step_2\W/i);
     });
 
     it('still reports the equivalent step when the expected unit never appears', () => {
