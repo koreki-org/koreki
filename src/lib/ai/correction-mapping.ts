@@ -4,7 +4,7 @@ import { StepResult } from '../grading/types';
 import { TargetGoal, GradingCriterion } from '../grading/calc-trace-types';
 import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source';
 import { formatPluginFeedback } from '../grading/feedback-formatter';
-import { formatCalcTraceForPrompt } from '../grading/CalcTrace';
+import { formatCalcTraceFeedback } from '../grading/CalcTrace';
 import { shouldDisablePoints } from './prompt-builder';
 import { alsModellzahl } from '../zahlen';
 
@@ -235,7 +235,7 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
         };
     }
 
-    const stepFeedback = formatCalcTraceForPrompt(calcTraceResult, (layoutTask.targetGoal || {}) as TargetGoal);
+    const stepFeedback = formatCalcTraceFeedback(calcTraceResult, (layoutTask.targetGoal || {}) as TargetGoal);
     const aiFeedbackText = aiTask ? (aiTask.feedback || aiTask.content || '') : '';
 
     let finalFeedback = `${CALC_TRACE_MARKER}\n${stepFeedback}\n\n---\n\n`;

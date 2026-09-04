@@ -4,7 +4,7 @@ import React from 'react';
  * Was die beiden Sandbox-Beweise bedeuten — in der Sprache der Lehrkraft.
  *
  * Der technische Block darunter ist urspruenglich fuer das Sprachmodell geschrieben
- * (`formatCalcTraceForPrompt`) und benutzt dessen Vokabular: "Proof A", "Proof B",
+ * (`formatCalcTraceFeedback`) und benutzt dessen Vokabular: "Proof A", "Proof B",
  * "AST". Eine Lehrkraft sieht diese Woerter zum ersten Mal, wenn sie den Block
  * oeffnet — und findet nirgends, was sie heissen.
  *

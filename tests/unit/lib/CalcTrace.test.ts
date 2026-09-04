@@ -7,7 +7,7 @@
  * - 3-tier model: Perfect / Unit-Mismatch / Wrong
  */
 
-import { evaluateCalcTrace, formatCalcTraceForPrompt } from '@/lib/grading/CalcTrace';
+import { evaluateCalcTrace, formatCalcTraceFeedback } from '@/lib/grading/CalcTrace';
 import type { StudentASTStep, TargetGoal } from '@/lib/grading/calc-trace-types';
 
 describe('CalcTrace Engine V7 - Core (Proof A & B)', () => {
@@ -291,11 +291,19 @@ describe('CalcTrace Engine V7 — Unit-Aware Grading (3-Tier Model)', () => {
 
     const target: TargetGoal = { targetValue: 1.846, unit: 'mA', maxPoints: 3 };
 
-    const text = formatCalcTraceForPrompt(evaluateCalcTrace(ast, target), target);
+    const text = formatCalcTraceFeedback(evaluateCalcTrace(ast, target), target);
 
     expect(text).toContain('OHNE EINHEIT');
     expect(text).toContain('NICHT erreicht');
-    expect(text).toContain('richtig gerechnet');
+
+    // Geprueft wird die AUSSAGE, nicht der Wortlaut: Der Text muss festhalten, dass
+    // gerechnet richtig wurde, und darf keinen Rechenfehler behaupten. Hier stand bis
+    // zum 04.09.2026 die woertliche Wendung "richtig gerechnet" — sie fiel, als der
+    // Text von der Anweisung ans Modell ("Benenne im Feedback den fehlenden
+    // Einheiten-Zusatz") auf eine Aussage an die Lehrkraft umgestellt wurde, obwohl
+    // sich an der Bedeutung nichts geaendert hatte.
+    expect(text).toMatch(/richtig gerechnet|[Gg]erechnet wurde richtig/);
+    expect(text).not.toContain('Rechenfehler in step_1');
   });
 
   test('Ein gleichwertiger Zwischenschritt rettet keine einheitenlose Endantwort', () => {

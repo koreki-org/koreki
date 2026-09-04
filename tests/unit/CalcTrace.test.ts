@@ -1,4 +1,4 @@
-import { evaluateCalcTrace, formatCalcTraceForPrompt } from '../../src/lib/grading/CalcTrace';
+import { evaluateCalcTrace, formatCalcTraceFeedback } from '../../src/lib/grading/CalcTrace';
 import type { StudentASTStep, TargetGoal } from '../../src/lib/grading/calc-trace-types';
 
 describe('CalcTrace Sandbox V6', () => {

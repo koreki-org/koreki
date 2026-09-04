@@ -1,4 +1,4 @@
-import { evaluateCalcTrace, formatCalcTraceForPrompt } from '@/lib/grading/CalcTrace';
+import { evaluateCalcTrace, formatCalcTraceFeedback } from '@/lib/grading/CalcTrace';
 import { resolveEngineVerdict } from '@/lib/grading/criterion-source';
 import type { StudentASTStep, TargetGoal } from '@/lib/grading/calc-trace-types';
 
@@ -62,7 +62,7 @@ describe('CalcTrace: nicht auswertbare Schritte', () => {
 
         it('meldet den nicht auswertbaren Schritt nicht als Verrechner des Schuelers', () => {
             const result = evaluateCalcTrace(astMitFormelzeile, target);
-            const prompt = formatCalcTraceForPrompt(result, target);
+            const prompt = formatCalcTraceFeedback(result, target);
 
             expect(prompt).toContain('KEIN Schülerfehler');
             expect(prompt).not.toMatch(/Verrechner im Weg des Schülers[\s\S]*Syntax-Fehler in step_1/);

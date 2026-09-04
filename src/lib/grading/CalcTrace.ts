@@ -350,7 +350,25 @@ export function traceStepChain(targetStepId: string, ast: StudentASTStep[]): Set
 /**
  * Formatiert das Evaluierungsergebnis in einen robusten Prompt für das Hybrid-Grading LLM.
  */
-export function formatCalcTraceForPrompt(result: CalcTraceResult, target: TargetGoal): string {
+/**
+ * Der Nachweis der Sandbox, wie ihn die LEHRKRAFT liest.
+ *
+ * Hiess bis zum 04.09.2026 `formatCalcTraceForPrompt` — und der Name war falsch.
+ * Das Briefing fuer das Sprachmodell baut `engine-report.ts` vollstaendig selbst;
+ * diese Funktion wird ausschliesslich von `correction-mapping.ts` benutzt, um den
+ * aufklappbaren Block in der Korrekturansicht zu fuellen. Sie hat genau einen
+ * Adressaten, und das ist ein Mensch.
+ *
+ * Die Namensluege hatte Folgen: Weil "ForPrompt" dastand, schrieb hier jeder fuer
+ * die Maschine. Die Lehrkraft las deshalb einen rohen JSON-Auszug (`[DEBUG-AST]`),
+ * ihre eigene Rubrik zurueckgespiegelt (`--- LEHRER-ERWARTUNGSHORIZONT ---`) und
+ * Befehle, die nicht an sie gerichtet waren ("Werte diese Schritte fachlich selbst
+ * und ziehe dafuer keine Punkte ab").
+ *
+ * REGEL FUER SPAETER: Was hier hinzukommt, liest eine Lehrkraft. Eine Anweisung an
+ * das Modell gehoert nach `engine-report.ts`, nicht hierher.
+ */
+export function formatCalcTraceFeedback(result: CalcTraceResult, target: TargetGoal): string {
   const lines: string[] = ['--- DETERMINISTISCHER BEWEIS (SANDBOX) ---'];
   let targetDisplay = `${target.targetValue} ${target.unit || ''}`;
   if (Array.isArray(target.targetValue) && target.unit && target.unit.includes(',')) {
@@ -370,7 +388,6 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
     lines.push(`✗ Die KI konnte keinen gültigen mathematischen Rechenweg aus der Schülerantwort extrahieren (AST leer).`);
   } else if (sandboxErrors.length === 0) {
     lines.push(`✓ Der extrahierte Schüler-AST ist mathematisch in sich vollkommen fehlerfrei.`);
-    lines.push(`  [DEBUG-AST]: ${JSON.stringify(ast)}`);
   } else {
     // Ein Schritt, den die Sandbox nicht PARSEN konnte, ist kein Rechenfehler des Schuelers,
     // sondern eine Grenze unserer Auswertung (z. B. eine symbolische Formelzeile ohne Zahlen).
@@ -389,7 +406,7 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
     if (nichtAuswertbar.length > 0) {
       lines.push(`\nNicht maschinell auswertbare Schritte (KEIN Schülerfehler — die Sandbox konnte sie nur nicht nachrechnen, z. B. reine Formelzeilen ohne eingesetzte Zahlen):`);
       nichtAuswertbar.forEach(err => lines.push(`* ${err}`));
-      lines.push(`→ Werte diese Schritte fachlich selbst und ziehe dafür keine Punkte ab.`);
+      lines.push(`→ Diese Schritte hat Koreki nicht bewertet. Bitte sehen Sie sie selbst durch.`);
     }
   }
 
@@ -419,15 +436,15 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
       } else if (detail.isMissingUnit) {
         lines.push(`* Zielwert ${targetStr}: Zahlenwert gefunden${stepStr}, aber OHNE EINHEIT notiert -> Zielwert gilt als NICHT erreicht`);
         lines.push(`  → ${logicIndicator}`);
-        lines.push(`  → Der Schüler hat richtig gerechnet, die Angabe ist aber unvollständig. Benenne im Feedback den fehlenden Einheiten-Zusatz — nicht einen Rechenfehler.`);
+        lines.push(`  → Gerechnet wurde richtig — nur die Einheit fehlt.`);
       } else if (detail.isPrefixError) {
         lines.push(`* Zielwert ${targetStr}: Zahlenwert gefunden${stepStr}${studentUnitStr}, aber FALSCHE GRÖSSENORDNUNG (SI-Präfix) -> Zielwert gilt als NICHT erreicht`);
         lines.push(`  → ${logicIndicator}`);
-        lines.push(`  → Der Schüler hat richtig gerechnet, die Einheit passt aber nicht zum Wert. Benenne im Feedback den Einheitenfehler — nicht einen Rechenfehler.`);
+        lines.push(`  → Gerechnet wurde richtig — nur die Größenordnung der Einheit passt nicht.`);
       } else if (detail.isUnitMismatch) {
         lines.push(`* Zielwert ${targetStr}: Zahlenwert gefunden${stepStr}${studentUnitStr}, aber EINHEIT WEICHT AB -> Zielwert gilt als NICHT erreicht`);
         lines.push(`  → ${logicIndicator}`);
-        lines.push(`  → Der Schüler hat richtig gerechnet, die Einheitsbezeichnung stimmt aber nicht. Benenne im Feedback den Einheitenfehler — nicht einen Rechenfehler.`);
+        lines.push(`  → Gerechnet wurde richtig — nur die Einheitsbezeichnung stimmt nicht.`);
       } else {
         lines.push(`* Zielwert ${targetStr}: NICHT erreicht oder übersprungen`);
       }
@@ -445,11 +462,10 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
     }
   });
 
-  // ── Grading Rubric ──
-  if (target.gradingRubric && target.gradingRubric.trim().length > 0) {
-    lines.push(`\n--- LEHRER-ERWARTUNGSHORIZONT ---`);
-    lines.push(target.gradingRubric);
-  }
+  // Der Erwartungshorizont stand hier bis zum 04.09.2026. Er ist der Text, den die
+  // Lehrkraft SELBST in die Musterloesung geschrieben hat — ihn ihr zurueckzuspiegeln
+  // verlaengert den Block, ohne etwas mitzuteilen. Fuer das Modell steht er ohnehin
+  // im Kriterienblock von `engine-report.ts`.
 
   return lines.join('\n');
 }

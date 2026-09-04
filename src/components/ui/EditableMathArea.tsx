@@ -162,8 +162,15 @@ export function splitFeedback(text: string): SplitFeedback {
         pedagogical = prefix + "\n\n" + pedagogical;
     }
 
+    // Die Markerzeile selbst ("[📐 CalcTrace Engine - …]") faellt weg: Welche Engine
+    // gerechnet hat, steht als eigener Wert in `engine` — und die Oberflaeche macht
+    // daraus die Ueberschrift des Aufklappers. Sie ein zweites Mal als erste
+    // Textzeile zu zeigen, wiederholt nur die Zeile darueber. Im gespeicherten
+    // Feedback bleibt der Marker unberuehrt; er wird zum Erkennen gebraucht.
+    const technicalOhneMarker = technical.replace(/^\[[^\]\n]*Engine[^\]\n]*\]\s*\n?/, '');
+
     return {
-        technical: technical || undefined,
+        technical: technicalOhneMarker.trim() || undefined,
         engine: technical ? engine : undefined,
         pedagogical: pedagogical
     };

@@ -8,7 +8,7 @@
  * Endergebnis.
  */
 
-import { evaluateCalcTrace, formatCalcTraceForPrompt } from '@/lib/grading/CalcTrace';
+import { evaluateCalcTrace, formatCalcTraceFeedback } from '@/lib/grading/CalcTrace';
 import type { StudentASTStep, TargetGoal } from '@/lib/grading/calc-trace-types';
 
 const findDetail = (result: ReturnType<typeof evaluateCalcTrace>) => (result.unitDetails || [])[0];
@@ -33,7 +33,7 @@ describe('CalcTrace — Fundstelle bei gleichwertigen Zwischeneinheiten', () => 
 
     it('names that step in the proof handed to the grading model', () => {
         const result = evaluateCalcTrace(bytesToMiB, targetMiB);
-        const proof = formatCalcTraceForPrompt(result, targetMiB);
+        const proof = formatCalcTraceFeedback(result, targetMiB);
 
         expect(proof).toContain('Gefunden in step_3');
         expect(proof).not.toContain('Gefunden in step_2');
