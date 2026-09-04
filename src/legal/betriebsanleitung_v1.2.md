@@ -42,6 +42,7 @@ Trotz hoher technologischer Standards kann die KI fehlerhafte Ergebnisse liefern
 *   **Handschrift:** Sehr unleserliche oder ungewöhnliche Handschriften können zu Fehlinterpretationen führen.
 *   **Ironie & Nuancen:** Subtile sprachliche Mittel wie Ironie, Sarkasmus oder extrem spezifische Dialekte werden unter Umständen nicht korrekt erfasst.
 *   **Kontext:** Die KI bewertet semantisch. Bei fachspezifischen Abkürzungen, die nicht in der Musterlösung definiert sind, kann es zu Punktabzug kommen.
+*   **Umformungsschritte in Rechnungen:** Notiert eine Schülerin ihre Rechnung nicht ausgeschrieben, sondern als Umformung — etwa `3x = 18 | :3` und darunter `x = 9` —, muss Koreki die gemeinte Rechnung erst erschließen. Dabei kann es beim Einlesen versehentlich das RICHTIGE Ergebnis übernehmen statt des notierten; der Rechenfehler verschwindet dann aus der Prüfung, und die Aufgabe bekommt zu viele Punkte. Gemessen betraf das einen von 28 Rechenschritten. **Was Sie tun können:** In der Detailanalyse steht unter „Gelesener Rechenweg“, welche Zahlen Koreki gelesen hat. Weicht dort etwas vom Blatt ab, stimmt die Bewertung dieser Aufgabe nicht.
 
 ### 4.1 Was gemessen wurde
 Seit dem 02.09.2026 liegt eine erste Messung vor. Zwölf Referenzaufgaben aus zwölf Fächern — von Deutsch über Mathematik und Chemie bis Pflege und Kaufmännisches — wurden mit einer festgelegten Sollpunktzahl versehen und von einer Lehrkraft durchgesehen. Gemessen wurde, wie weit der Punktvorschlag davon abweicht.

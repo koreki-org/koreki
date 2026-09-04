@@ -283,7 +283,8 @@ Aufklappers. Ein Vertrag zwischen genau zwei Stellen — deshalb eine gemeinsame
 Literale.
 
 **Gemessen** (`qwen3.6:35b`, sechs Rechenaufgaben mit hinterlegtem Rechenziel): mittlere Abweichung von
-**0,83 über 0,50 auf 0,42 Punkte**. Gegenprobe: Der kaufmännische Fall „richtiges Ergebnis ohne
+**0,83 über 0,50 und 0,42 auf 0,33 Punkte** (die letzte Stufe zusammen mit dem laut denkenden
+Extraktionsschritt, siehe unten). Gegenprobe: Der kaufmännische Fall „richtiges Ergebnis ohne
 nachvollziehbaren Rechenweg“ trifft unverändert exakt — wo wirklich nicht gerechnet wurde, vergibt auch
 das Modell den Wegpunkt nicht. Die Physik-Aufgabe des Referenzsatzes — der Folgefehler-Fall — trifft seitdem
 exakt. Zum Vergleich: Die am 03.09.2026 gebaute und wieder verworfene Zahlen-Maschinerie erreichte 0,67.
@@ -345,6 +346,74 @@ Seit dem 03.09.2026 werden `calcTraceResult` und `gradingResult` zu Beginn **jed
 Bleibt ein Lauf ohne Ergebnis, greift wie vorgesehen der Hinweis „ohne Sandbox-Prüfung, bitte manuell
 gegenprüfen". Abgesichert durch
 [engine-zustand-je-arbeit.test.ts](../../tests/unit/ai/engine-zustand-je-arbeit.test.ts).
+
+### 3.8 Die Extraktion denkt laut
+
+Bevor die Sandbox rechnen kann, übersetzt ein Sprachmodell den Schülertext in Rechenschritte
+(`calc-trace-extraction.ts`). Dieser Schritt ist **nicht deterministisch** — und er kann den
+Fehler löschen, den die Sandbox finden soll.
+
+Beobachtet am 04.09.2026 an einer Gleichung:
+
+```
+3x = 18   | :3
+x = 9
+```
+
+Die Extraktion schrieb den `original_text` korrekt ab — mitsamt der 9 — und trug als `result`
+die **6** ein, also den richtigen Wert. Beide Beweise gingen daraufhin auf.
+
+Betroffen ist nur, wo das Modell die Formel erst **konstruieren** muss. Steht die Rechnung
+ausgeschrieben da (`v = s/t = 100/8 = 20 m/s`), bleibt auch ein falscher Wert erhalten; bei
+`| :3` muss `18 / 3` aus der Annotation erschlossen werden, und dabei rechnet das Modell mit.
+
+**Der Denkschritt ist der einzige wirksame Hebel.** Er war für alle Struktur-Aktionen hart
+abgeschaltet (`ollama-sampling.ts`), weil der Denktext sonst im JSON landet — für diese eine
+Aktion hat sich das nicht bestätigt: 24 von 24 Extraktionen erfolgreich, kein Denktext im JSON.
+Fünf andere Gegenmaßnahmen blieben wirkungslos (kalte Abtastung in drei Varianten,
+Prompt-Beispiele, Feldreihenfolge im Schema, Ergebnis als Textfeld, deterministischer Abgleich
+im Nachhinein). Das Phänomen ist als „over-correction“ beschrieben und gilt auf
+Instruktionsebene als ungelöst.
+
+**Allein hätte er nicht getragen.** Mit Denkschritt konstruiert das Modell insgesamt weniger —
+auch dort, wo es soll: Eine in Worten formulierte Rechnung bildete es nicht mehr als Formel ab.
+Solange die Sandbox daraus ein bindendes Null-Urteil machte, kostete das mehr als der Fix
+einbrachte (0,50 → 0,67). Erst mit dem Rücktritt aus 3.5 trägt er: **0,42 → 0,33 Punkte**.
+
+Der Antwortpuffer folgt mit (`shouldIncludeThink`): Wer laut denken lässt, ohne den Puffer
+mitzuziehen, verliert bei langen Rechenwegen das Ende der Antwort — und das fällt als
+„Extraktion gescheitert“ auf, nicht als Puffergrenze.
+
+**Offen:** Der `targetIndex` der Kriterien wird ebenfalls vom Modell vergeben. Zeigt es auf den
+Meilenstein, den ein Schritt BENUTZT, statt auf den, den er ERZEUGT, prüft die Sandbox den
+falschen Schritt und bestätigt ihn zu Recht. Eine geschärfte Anweisung half in einem von zwei
+Durchgängen und wurde mangels belegter Wirkung zurückgenommen. Geführt als R18.
+
+### 3.9 Was die Lehrkraft im Block sieht
+
+`formatCalcTraceFeedback` (`calc-trace-feedback.ts`) baut den aufklappbaren Nachweis. Die
+Funktion hieß bis zum 04.09.2026 `formatCalcTraceForPrompt` und lag in `CalcTrace.ts` — beides
+war irreführend: Das Briefing fürs Modell baut `engine-report.ts` vollständig selbst, diese
+Funktion hat genau einen Adressaten, und der ist ein Mensch. Wegen der Namenslüge las die
+Lehrkraft einen rohen JSON-Auszug, ihre eigene Rubrik zurückgespiegelt und Befehle, die an das
+Modell gerichtet waren.
+
+Der Block hat drei Abschnitte:
+
+1. **Gelesener Rechenweg** — was die Sandbox überhaupt nachgerechnet hat, je Schritt mit ✓/✗.
+   Deckt Extraktionsfehler auf, die sonst niemandem auffallen.
+2. **Befunde** — Verrechner, nicht auswertbare Schritte, oder der Hinweis, dass gar nichts
+   nachgerechnet werden konnte (`NICHT_NACHGERECHNET`, siehe unten).
+3. **Punktevergabe** — Kriterium, Punkte, und in der Spalte „Grundlage“ die Begründung samt
+   Quelle („… (Proof A)“). Ohne sie sah die Lehrkraft nur die Summe: Am 04.09.2026 trug ein
+   Kriterium einen Punkt für einen Schritt, in dem die Sandbox drei Zeilen darüber einen
+   Verrechner gemeldet hatte — der Widerspruch war nicht zu sehen.
+
+Konnte die Sandbox **nichts** nachrechnen, steht das auch in der Überschrift des Aufklappers.
+Erkannt wird das über die gemeinsame Konstante `NICHT_NACHGERECHNET`: Der Erzeuger schreibt sie,
+`splitFeedback` sucht sie. Zwei Literale würden auseinanderlaufen und der Hinweis stumm
+verschwinden.
+
 
 ## 4. Security & Compliance
 *   **Datenminimierung:** Es werden ausschließlich physikalische/mathematische Kennwerte und Zwischenschritte im LLM verarbeitet. 
