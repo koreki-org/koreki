@@ -43,10 +43,9 @@ export interface TargetGoal {
  *
  * - `proofB`      — Zielwert erreicht (Engine)
  * - `proofA`      — Rechenweg zum Ziel fehlerfrei (Engine)
- * - `proofValues` — Werte korrekt eingesetzt (Engine, prueft `hasCorrectValues`)
  * - `llm`         — Ermessensfrage, die nur das Modell beantworten kann (z. B. Formelstrenge)
  */
-export type CriterionSource = 'llm' | 'proofA' | 'proofB' | 'proofValues';
+export type CriterionSource = 'llm' | 'proofA' | 'proofB';
 
 /** Von der Engine entschiedene Quellen — das Modell wird dazu nicht befragt. */
 export type EngineCriterionSource = Exclude<CriterionSource, 'llm'>;
@@ -64,19 +63,9 @@ export interface PerTargetResult {
   targetIndex: number;
   /** Der Zielwert wurde im Rechenweg des Schuelers gefunden */
   reached: boolean;
-  /** Die Zahlen VOR dem Gleichheitszeichen wurden korrekt eingesetzt */
-  hasCorrectValues?: boolean;
   /** In der Rechenkette zu diesem Ziel steckt ein echter Rechenfehler */
   hasCalculationError: boolean;
   associatedStepIds: string[];
-  /**
-   * Der Zielwert wurde verfehlt, weil ein Wert aus einer frueheren, selbst
-   * verfehlten Aufgabe uebernommen wurde — der Name jener Aufgabe.
-   *
-   * Gesetzt nur, wenn die Rechnung hier IN SICH fehlerfrei ist. Ein eigener
-   * Rechenfehler bleibt ein eigener Rechenfehler.
-   */
-  folgefehlerAus?: string;
 }
 
 export interface CriterionClassification {

@@ -68,9 +68,13 @@ Bitte lesen Sie die Zahl mit ihren Grenzen:
 ### 4.3 Rechenaufgaben mit hinterlegter Rechenkette
 Für Rechenaufgaben können Sie in der Musterlösung ein Rechenziel hinterlegen; Koreki rechnet den Weg dann selbst nach.
 
-**Folgefehler werden dabei nicht doppelt bestraft.** Wer sich in Teilaufgabe a) verrechnet und in b) mit seinem eigenen falschen Wert korrekt weiterrechnet, erhält den Ergebnispunkt für b). Der Abzug bleibt dort, wo der Fehler entstanden ist. Ein in der **Aufgabe gegebener** Wert muss dagegen richtig eingesetzt werden — ein Fehler dort ist ein eigener Fehler und kostet Punkte.
+**Folgefehler soll Koreki nicht doppelt bestrafen.** Wer sich in Teilaufgabe a) verrechnet und in b) mit seinem eigenen falschen Wert korrekt weiterrechnet, soll den Ergebnispunkt für b) erhalten: Der Abzug bleibt dort, wo der Fehler entstanden ist. Ein in der **Aufgabe gegebener** Wert muss dagegen richtig eingesetzt werden — ein Fehler dort ist ein eigener Fehler und kostet Punkte.
 
-**Was Sie trotzdem beachten sollten:** In der Messung trafen alle sechs Rechenaufgaben **ohne** hinterlegtes Rechenziel die Sollpunktzahl exakt; **mit** Rechenziel lag die Abweichung bei 0,67 Punkten. Die Rechenkette liegt also weiterhin etwas höher; woran das liegt, ist nicht abschließend geklärt. Prüfen Sie mehrschrittige Rechenaufgaben deshalb weiterhin aufmerksam.
+**Wie verlässlich das ist.** Diese Regel ist eine Anweisung an das Sprachmodell (der Skill „Folgefehler-Tracking", im Standardprofil aktiv) — keine Rechenregel, die das Programm erzwingt. Das hat einen sachlichen Grund: Ob ein falscher Wert aus der eigenen Teilaufgabe a) stammt oder aus der Angabe falsch abgeschrieben wurde, ist eine fachliche Beurteilung. Die Nachrechnung sieht immer nur *eine* Teilaufgabe und kann beides nicht unterscheiden; sie steuert das Nachprüfbare bei und bestätigt, ob jemand seinen **eigenen** Rechenweg fehlerfrei ausgeführt hat.
+
+In der Messung hat die geprüfte Konfiguration diese Regel eingehalten. Verlassen sollten Sie sich darauf nicht.
+
+**Was Sie deshalb beachten sollten:** Prüfen Sie bei mehrschrittigen Rechenaufgaben, ob ein Abzug in einer späteren Teilaufgabe wirklich ein neuer Fehler ist — oder derselbe zum zweiten Mal. In der Messung trafen alle sechs Rechenaufgaben **ohne** hinterlegtes Rechenziel die Sollpunktzahl exakt; **mit** Rechenziel lag die Abweichung bei 0,83 Punkten. Die Rechenkette liegt also weiterhin höher als die rein sprachliche Bewertung. Der größere Teil dieser Lücke betrifft Folgefehler — genau den Fall aus dem Absatz oben.
 
 ### 4.4 Was das für Ihre Arbeit heißt
 Ein Punktvorschlag bleibt ein Entwurf. Die Zahl oben beschreibt, wie nah die Vorschläge im Mittel lagen — sie sagt nichts über den einzelnen Fall vor Ihnen. Die Prüfpflicht aus Abschnitt 6 wird durch sie nicht kleiner.

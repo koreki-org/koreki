@@ -79,32 +79,85 @@ export function splitTextByTasks(text: string, tasks: Task[]): string[] {
     // 3. Fallback: Regex Search for task names
     //
     // `taskNames` bleibt positionsgleich zu `tasks`, weil der Rueckgabewert
-    // index-weise zu den Aufgaben passen muss. Gesucht wird dagegen nur nach
-    // den nicht-leeren Namen: ein leerer Name im Regex-Alternativ ergaebe
-    // `(a|b|)` und wuerde ueberall die leere Zeichenkette treffen.
+    // index-weise zu den Aufgaben passen muss.
     const taskNames = tasks.map(t => t.name ?? '');
-    const searchableNames = taskNames.filter(name => name.length > 0);
 
-    if (searchableNames.length === 0) return tasks.map(() => "");
+    // Zu jeder Aufgabe die Zeichenfolgen, an denen ihr Abschnitt beginnen kann.
+    //
+    // ERGAENZT AM 03.09.2026 um die KURZFORM. Gesucht wurde bis dahin nur der
+    // vollstaendige Name. Heisst die Aufgabe "Aufgabe a)" und schreibt der Schueler
+    // "a)" — der Normalfall auf jedem Klassenarbeitsbogen —, fand die Suche nichts
+    // und lieferte fuer JEDE Aufgabe eine leere Zeichenfolge. Die Aufrufer fallen
+    // dann auf den GESAMTEN Text zurueck, und jede Aufgabe wird auf dem ganzen Blatt
+    // bewertet.
+    //
+    // Was das anrichtete: In der Rechenketten-Engine enthielt der Rechenweg einer
+    // Teilaufgabe die Schritte aller anderen. Bei einer Physik-Aufgabe fiel der
+    // Sandbox-Beweis in b) ueber einen Rechenfehler, den der Schueler in a) gemacht
+    // hatte — derselbe Fehler, zweimal bestraft.
+    //
+    // Die Kurzform gilt NUR am Zeilenanfang. "a)" steht sonst auch mitten im Satz
+    // ("wie in a) gezeigt") und wuerde dort einen Abschnitt aufreissen.
+    const markenJeAufgabe = taskNames.map(name => {
+        const voll = name.trim();
+        if (!voll) return { name, marken: [] as { text: string; nurZeilenanfang: boolean }[] };
 
-    // Sort names by length descending to match full names before prefixes (e.g. "Aufgabe 1a" before "Aufgabe 1")
-    const sortedNames = [...searchableNames].sort((a, b) => b.length - a.length);
-    const escapedNames = sortedNames.map(name => name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-    const pattern = new RegExp(`(${escapedNames.join('|')})`, 'gi');
+        const marken = [{ text: voll, nurZeilenanfang: false }];
+        const kurz = voll.replace(/^\s*(?:teilaufgabe|aufgabe|task|exercise|nr\.?|no\.?)\s*/i, '').trim();
+        if (kurz && kurz.toLowerCase() !== voll.toLowerCase()) {
+            marken.push({ text: kurz, nurZeilenanfang: true });
+        }
+        return { name, marken };
+    });
+
+    // Eine Kurzform, die auf mehrere Aufgaben passt, ordnet nichts zu, sondern raet.
+    // Sie faellt deshalb ersatzlos weg — lieber der bisherige Rueckfall als ein
+    // Abschnitt, der der falschen Aufgabe zugeschlagen wird.
+    const haeufigkeit = new Map<string, number>();
+    for (const eintrag of markenJeAufgabe) {
+        for (const marke of eintrag.marken) {
+            const k = marke.text.toLowerCase();
+            haeufigkeit.set(k, (haeufigkeit.get(k) ?? 0) + 1);
+        }
+    }
+    for (const eintrag of markenJeAufgabe) {
+        eintrag.marken = eintrag.marken.filter(m => haeufigkeit.get(m.text.toLowerCase()) === 1);
+    }
+
+    const alleMarken = markenJeAufgabe.flatMap(e => e.marken);
+    if (alleMarken.length === 0) return tasks.map(() => "");
+
+    // Laengste zuerst, damit "Aufgabe 1a" vor "Aufgabe 1" trifft.
+    const escape = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const alternativen = [...alleMarken]
+        .sort((x, y) => y.text.length - x.text.length)
+        .map(m => m.nurZeilenanfang
+            ? `(?<=^|\\n)[ \\t]*${escape(m.text)}`
+            : escape(m.text));
+    const pattern = new RegExp(`(${alternativen.join('|')})`, 'gi');
 
     const parts = text.split(pattern);
     const sections: Record<string, string> = {};
-    
+
+    /** Zu welcher Aufgabe gehoert die gefundene Marke? */
+    const aufgabeZu = (teil: string): string | undefined => {
+        const gesucht = teil.trim().toLowerCase();
+        return markenJeAufgabe.find(e =>
+            e.marken.some(m => m.text.toLowerCase() === gesucht)
+        )?.name;
+    };
+
     let currentTask = '';
     for (const part of parts) {
-        const foundName = sortedNames.find(n => n.toLowerCase() === part.toLowerCase());
-        if (foundName) {
-            currentTask = foundName;
+        if (part === undefined) continue;
+        const gehoertZu = aufgabeZu(part);
+        if (gehoertZu !== undefined) {
+            currentTask = gehoertZu;
         } else if (currentTask) {
             sections[currentTask] = (sections[currentTask] || '') + part;
         }
     }
-    
+
     return taskNames.map(name => sections[name]?.trim() || "");
 }
 

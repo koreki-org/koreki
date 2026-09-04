@@ -30,7 +30,7 @@ const beleg = (p: Partial<EngineEvidence> = {}): EngineEvidence => ({
     ],
     sandboxErrors: [],
     perTargetResult: [
-        { targetIndex: 0, reached: true, hasCalculationError: false, associatedStepIds: ['step_1', 'step_2'], hasCorrectValues: true }
+        { targetIndex: 0, reached: true, hasCalculationError: false, associatedStepIds: ['step_1', 'step_2'] }
     ],
     ...p
 } as unknown as EngineEvidence);
@@ -95,15 +95,6 @@ describe('Die drei Engine-Kriterien', () => {
         expect(urteil.begruendung).toMatch(/nicht erreicht/);
     });
 
-    it('urteilt ueber die Werteeinsetzung getrennt vom Ergebnis', () => {
-        const mitWerten = resolveEngineVerdict('proofValues', 0, beleg());
-        const ohneWerte = resolveEngineVerdict('proofValues', 0, beleg({
-            perTargetResult: [{ targetIndex: 0, reached: true, hasCalculationError: false, associatedStepIds: ['step_1'], hasCorrectValues: false }]
-        } as unknown as EngineEvidence));
-
-        expect(mitWerten.erfuellt).toBe(true);
-        expect(ohneWerte.erfuellt).toBe(false);
-    });
 
     /**
      * Ein nacktes Ergebnis („2.5 GHz") ist kein Rechenweg. Ohne eigene Rechnung
@@ -152,10 +143,14 @@ describe('Zustaendigkeit eines Kriteriums', () => {
         expect(normalizeCriterionSource({ id: 'irgendwas', label: 'x', source: 'proofA' })).toBe('proofA');
     });
 
-    /** Nur als Reparatur fuer Kriterien ohne gueltiges `source`. */
-    it('erkennt Einsetzungs-Kriterien ersatzweise am Namen', () => {
-        expect(normalizeCriterionSource({ id: 'einsetzen', label: '' })).toBe('proofValues');
-        expect(normalizeCriterionSource({ id: 'x', label: 'Werte korrekt eingesetzt' })).toBe('proofValues');
+    /**
+     * Ohne gueltiges `source` entscheidet das Modell — auch dann, wenn die
+     * Bezeichnung nach Werteeinsetzung klingt. Die frueher hier greifende
+     * Wortsuche ist mit `proofValues` entfallen (03.09.2026).
+     */
+    it('weist Einsetzungs-Kriterien nicht mehr am Namen der Engine zu', () => {
+        expect(normalizeCriterionSource({ id: 'einsetzen', label: '' })).toBe('llm');
+        expect(normalizeCriterionSource({ id: 'x', label: 'Werte korrekt eingesetzt' })).toBe('llm');
     });
 
     /** Im Zweifel entscheidet das Modell, nicht die Engine. */
@@ -166,6 +161,6 @@ describe('Zustaendigkeit eines Kriteriums', () => {
 
     it('trennt Engine-Kriterien von Modell-Kriterien', () => {
         expect(isEngineOwned('llm')).toBe(false);
-        (['proofA', 'proofB', 'proofValues'] as const).forEach(s => expect(isEngineOwned(s)).toBe(true));
+        (['proofA', 'proofB'] as const).forEach(s => expect(isEngineOwned(s)).toBe(true));
     });
 });

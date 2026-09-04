@@ -20,7 +20,7 @@ const layout = (): Task[] => ([{
     calcTraceResult: {
         ast: [{ id: 'step_3', formula: '750000 / 1024', result: 732.42, unit: 'MiB' }],
         sandboxErrors: [],
-        perTargetResult: [{ targetIndex: 0, reached: true, hasCorrectValues: true, hasCalculationError: false, associatedStepIds: ['step_3'] }]
+        perTargetResult: [{ targetIndex: 0, reached: true, hasCalculationError: false, associatedStepIds: ['step_3'] }]
     },
     targetGoal: {
         targetValue: 732.422,

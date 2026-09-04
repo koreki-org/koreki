@@ -83,6 +83,29 @@ function normalizeSuperscripts(text: string): string {
 }
 
 /** Normalize unit symbols inside a formula string using UNIT_ALIASES */
+/**
+ * Einheitenkuerzel, die in mathjs von einer gleichnamigen FUNKTION verdeckt werden.
+ *
+ * `min` und `sec` sind mathjs beide als Einheit bekannt — `createUnit('min')`
+ * scheitert mit "a unit with that name already exists". Beim Auswerten eines
+ * Ausdrucks gewinnt aber die Funktion: `min()` (Minimum) und `sec()` (Sekans).
+ * `30 min` wird deshalb nicht zu dreissig Minuten, sondern zu einem Typfehler
+ * ("Unexpected type of argument in function multiplyScalar").
+ *
+ * GEFUNDEN AM 03.09.2026 an einer Pflege-Aufgabe zur Infusionsrate ("2 ml in
+ * 30 min"). Die Sandbox konnte den Schritt nicht nachrechnen und meldete ihn als
+ * nicht auswertbar. Betroffen ist jede Aufgabe mit Minuten oder Sekunden in
+ * Kurzschreibweise — Infusionsraten, Geschwindigkeiten, Leistung ueber Zeit.
+ *
+ * Ersetzt wird nur, wo KEINE Klammer folgt: `min(3, 5)` bleibt der
+ * Funktionsaufruf, `30 min` wird zur Zeitangabe.
+ */
+function entschaerfeFunktionsnamen(formel: string): string {
+  return formel
+    .replace(/\bmin\b(?!\s*\()/g, 'minute')
+    .replace(/\bsec\b(?!\s*\()/g, 'second');
+}
+
 export function normalizeExpressionFormula(formula: string): string {
   let f = formula;
   const keys = Object.keys(UNIT_ALIASES).sort((a, b) => b.length - a.length);
@@ -97,6 +120,7 @@ export function normalizeExpressionFormula(formula: string): string {
   f = f.replace(/[ΩΩ]/g, 'ohm');
   f = f.replace(/\bOhm\b/g, 'ohm');
   f = f.replace(/\bVolt\b/g, 'volt');
+  f = entschaerfeFunktionsnamen(f);
   f = f.replace(/€/g, 'EUR');
   f = f.replace(/\$/g, 'USD');
   return f;

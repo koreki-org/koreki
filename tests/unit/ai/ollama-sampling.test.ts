@@ -53,16 +53,71 @@ describe('Temperatur nach Aufgabenart', () => {
     );
 
     /**
-     * Rechenketten und Variablen bilden eine Rechnung ab. Dort ist jede
-     * Abweichung ein Fehler, kein Stil — also so kalt wie das Modell erlaubt.
+     * Rechenketten und Variablen bilden eine Rechnung ab. Dort ist jede Abweichung
+     * ein Fehler, kein Stil.
+     *
+     * GEAENDERT AM 03.09.2026 von 0.1 auf den Wert der Aufbereitungs-Aktionen.
+     * Vorher stand hier "so kalt wie das Modell erlaubt" — eine eigene Regel neben
+     * der von `clean-and-map`, obwohl beide dasselbe tun: abschreiben. Zwei Regeln
+     * fuer dieselbe Sache laufen auseinander, und die kaeltere war ohnehin wirkungslos,
+     * weil im Betrieb immer ein Profil geladen ist und sich durchsetzte.
      */
     it.each([
         'calc-trace-extraction',
         'generate-calc-trace',
         'variable-extraction'
     ] as AIAction[])('%s rechnet ohne Spielraum', (action) => {
-        // llama hat keinen Stabilitaetsboden ausser der 0-Anhebung auf 0.1.
-        expect(rechne(action, 'llama3').temperature).toBe(0.1);
+        expect(rechne(action, 'llama3').temperature).toBe(0.2);
+    });
+
+    /**
+     * Die Gegenprobe zum Test darueber — und die Luecke, durch die der Fehler kam.
+     * Bis zum 03.09.2026 pruefte hier nur der Aufruf OHNE Profil. Genau dann griff
+     * der kalte Wert; mit geladenem Profil gewann dagegen `settings`, und bei `topP`
+     * wurde die Aktionsart nie abgefragt. Da in Koreki immer ein Profil laeuft, war
+     * der gepruefte Zweig im Betrieb nie aktiv.
+     *
+     * Geprueft wird die REGEL, nicht die Zahl: Abschreibende Aktionen bekommen alle
+     * dieselbe Behandlung wie `clean-and-map`. Stuende hier ein fester Wert, waere
+     * beim naechsten Anheben des Stabilitaetsbodens genau eine Aktion vergessen.
+     */
+    it.each([
+        'calc-trace-extraction',
+        'generate-calc-trace',
+        'variable-extraction'
+    ] as AIAction[])('%s wird abgetastet wie clean-and-map', (action) => {
+        const mitProfil = rechne(action, 'qwen3.6:35b', { temperature: 0.7, topP: 0.95 });
+        const vorbild = rechne('clean-and-map', 'qwen3.6:35b', { temperature: 0.7, topP: 0.95 });
+
+        expect(mitProfil.temperature).toBe(vorbild.temperature);
+        expect(mitProfil.topP).toBe(vorbild.topP);
+    });
+
+    it.each([
+        'calc-trace-extraction',
+        'generate-calc-trace',
+        'variable-extraction'
+    ] as AIAction[])('%s laesst ein Profil nicht durchschlagen', (action) => {
+        const heiss = rechne(action, 'qwen3.6:35b', { temperature: 0.7, topP: 0.95 });
+        const ohne = rechne(action, 'qwen3.6:35b');
+
+        expect(heiss.temperature).toBe(ohne.temperature);
+        expect(heiss.topP).toBe(ohne.topP);
+    });
+
+    /**
+     * Abschreiben ohne lautes Denken. Ein Denkschritt vor dem Abschreiben verleitet
+     * das Modell dazu, das Ergebnis selbst auszurechnen, statt es abzulesen — und
+     * genau das war am 03.09.2026 an einer Mathematik-Aufgabe zu sehen: Der Schueler
+     * notierte `x = 9`, die Extraktion trug den richtigen Wert `6` ein.
+     */
+    it.each([
+        'calc-trace-extraction',
+        'generate-calc-trace',
+        'variable-extraction',
+        'clean-and-map'
+    ] as AIAction[])('%s denkt nicht laut, auch wenn eingeschaltet', (action) => {
+        expect(rechne(action, 'qwen3.6:35b', { enableThinking: true }).think).toBe(false);
     });
 
     it('laesst beim Bewerten Spielraum fuer gleichbedeutende Formulierungen', () => {

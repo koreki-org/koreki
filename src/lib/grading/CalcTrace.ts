@@ -34,7 +34,6 @@ import type {
   UnitComparisonDetail
 } from './calc-trace-types';
 import { toErrorMessage } from '../error-message';
-import { findeUebernahme, type FruehererWert } from './consecutive-values';
 
 const ALLOWED_NODE_TYPES = new Set([
   'SymbolNode',
@@ -82,13 +81,6 @@ function validateAST(formula: string): void {
 export function evaluateCalcTrace(
   ast: StudentASTStep[],
   target: TargetGoal,
-  /**
-   * Werte, die der Schueler in FRUEHEREN Aufgaben erzeugt hat, deren Ziel er
-   * dort verfehlt hat. Ohne Angabe verhaelt sich die Auswertung wie zuvor.
-   * Gefuellt wird die Liste in `local-grading-pass`, dem einzigen Ort, der die
-   * Aufgaben in Reihenfolge sieht.
-   */
-  fruehereWerte: FruehererWert[] = []
 ): CalcTraceResult {
   const sandboxErrors: string[] = [];
   const context: Record<string, number> = {};
@@ -306,23 +298,11 @@ export function evaluateCalcTrace(
         missedTargets.push(roundSig(expected));
       }
 
-      // Folgefehler: Ziel verfehlt, aber in sich sauber gerechnet — und in der
-      // Rechnung steckt ein Wert, den der Schueler in einer frueheren, selbst
-      // verfehlten Aufgabe erzeugt hat.
-      const betrachteteSchritte = associatedStepIds.length > 0
-        ? ast.filter(s2 => associatedStepIds.includes(s2.id))
-        : ast;
-      const uebernahme = (!reached && !hasCalculationError)
-        ? findeUebernahme(betrachteteSchritte, fruehereWerte)
-        : undefined;
-
       perTargetResult.push({
         targetIndex: i,
         reached,
-        hasCorrectValues: !!targetStepId,
         hasCalculationError,
-        associatedStepIds,
-        folgefehlerAus: uebernahme?.aufgabe
+        associatedStepIds
       });
     });
 
@@ -422,18 +402,6 @@ export function formatCalcTraceForPrompt(result: CalcTraceResult, target: Target
     const expectedUnit = unitsPerValue[idx] || '';
     const targetStr = `${expected} ${expectedUnit}`.trim();
 
-    // Folgefehler zuerst: Der Zielwert IST verfehlt, aber er war fuer diesen
-    // Schueler nicht mehr erreichbar. Dieser Text ist nicht nur Prompt — er
-    // steht spaeter als Begruendung unter der Punktzahl. Ohne diesen Zweig
-    // laese die Lehrkraft "NICHT erreicht" ueber vollen Punkten.
-    const folgefehlerAus = result.perTargetResult?.find(t => t.targetIndex === idx)?.folgefehlerAus;
-    if (folgefehlerAus) {
-      lines.push(`* Zielwert ${targetStr}: nicht erreicht — FOLGEFEHLER aus ${folgefehlerAus}`);
-      lines.push(`  → Der Schüler hat mit seinem eigenen (dort bereits abgezogenen) Wert fehlerfrei weitergerechnet.`);
-      lines.push(`  → Der Ergebnispunkt ist damit ERREICHT. Ziehe hier nicht erneut ab und benenne im Feedback den Folgefehler, keinen neuen Rechenfehler.`);
-      return;
-    }
-    
     // Find if we have unit comparison details for this target
     const detail = result.unitDetails ? result.unitDetails.find(d => d.targetValue === expected && d.expectedUnit === expectedUnit) : null;
     

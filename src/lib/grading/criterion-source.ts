@@ -24,7 +24,36 @@ import type {
 } from './calc-trace-types';
 import { variableReferencePattern } from './variable-references';
 
-const VALID_SOURCES: readonly CriterionSource[] = ['llm', 'proofA', 'proofB', 'proofValues'];
+const VALID_SOURCES: readonly CriterionSource[] = ['llm', 'proofA', 'proofB'];
+
+/**
+ * Zustaendigkeiten, die es einmal gab und die beim Einlesen auf ihren Nachfolger
+ * abgebildet werden.
+ *
+ * `proofValues` versprach "die Zahlen wurden richtig eingesetzt" und stuetzte sich
+ * dafuer auf `hasCorrectValues`. Dieses Feld war aber `!!targetStepId` — und
+ * `targetStepId` entstand ausschliesslich dort, wo ein Schritt den ZIELWERT traf.
+ * Gemessen wurde damit dasselbe wie bei `proofB`, nur schwaecher: Verfehlte der
+ * Schueler das Ziel, fiel `proofValues` zwangslaeufig mit. Ein Einsetzfehler bei
+ * getroffenem Ziel blieb umgekehrt unsichtbar.
+ *
+ * Weil Engine-Urteile BINDEND sind (`isEngineOwned`), war das schlechter als gar
+ * kein Beweis: eine unumstoessliche Null auf einer Messung, die etwas anderes
+ * misst als ihr Name sagt. Aufgefallen am 03.09.2026 bei der Diagnose einer
+ * Pflege-Aufgabe.
+ *
+ * Ob die GEGEBENEN Werte richtig eingesetzt wurden, laesst sich nicht aus dem
+ * Ergebnis erschliessen — dazu braeuchte die Sandbox den Rechenweg der
+ * Musterloesung, den ein `TargetGoal` nicht enthaelt. Solange er fehlt, ist das
+ * eine fachliche Frage und gehoert dem Modell.
+ *
+ * Der Eintrag bleibt stehen, damit gespeicherte Skills von Lehrkraeften weiter
+ * lesbar sind. Er darf nicht entfernt werden, solange solche Daten existieren
+ * koennen.
+ */
+const VERALTETE_QUELLEN: Record<string, CriterionSource> = {
+  proofValues: 'llm',
+};
 
 export function isValidCriterionSource(value: unknown): value is CriterionSource {
   return typeof value === 'string' && (VALID_SOURCES as readonly string[]).includes(value);
@@ -160,13 +189,6 @@ export function resolveEngineVerdict(
     return bewerteRechenweg(targetIndex, evidence);
   }
 
-  // Werteeinsetzung: hat der Schueler die richtigen Zahlen verwendet?
-  if (source === 'proofValues') {
-    return pt?.hasCorrectValues
-      ? { erfuellt: true, begruendung: 'Sandbox-bestätigt: Werte korrekt eingesetzt', stepIds: associated }
-      : { erfuellt: false, begruendung: 'Keine korrekte Werteeinsetzung für diesen Zielwert gefunden', stepIds: associated };
-  }
-
   // Ergebnis: gegen die Musterloesung.
   if (pt?.reached && !pt.hasCalculationError) {
     return { erfuellt: true, begruendung: 'Sandbox-bestätigt: Zielwert erreicht', stepIds: associated };
@@ -182,48 +204,19 @@ export function resolveEngineVerdict(
     };
   }
 
-  // Folgefehler: Der Musterwert ist verfehlt, aber nur, weil ein selbst
-  // erzeugter falscher Wert aus einer frueheren Aufgabe weiterverwendet wurde.
-  // Die Rechnung hier ist fehlerfrei — der Fehler steckt in der frueheren
-  // Aufgabe und ist dort bereits abgezogen.
-  //
-  // ABSICHTLICH NUR HIER, nicht bei `proofValues`: Wer zusaetzlich einen in der
-  // Aufgabe GEGEBENEN Wert falsch einsetzt, macht einen zweiten, eigenen
-  // Fehler. Wuerde die Kulanz auch dort greifen, bliebe der straffrei.
-  if (pt?.folgefehlerAus) {
-    return {
-      erfuellt: true,
-      begruendung: `Folgefehler aus ${pt.folgefehlerAus}: mit dem eigenen Wert korrekt weitergerechnet`,
-      stepIds: associated,
-    };
-  }
-
   return { erfuellt: false, begruendung: 'Zielwert nicht erreicht/nicht notiert', stepIds: associated };
-}
-
-/**
- * Erkennt Einsetzungs-Kriterien an Bezeichnung oder ID.
- *
- * REPARATUR-HEURISTIK, kein Routing: Sie greift ausschliesslich fuer Kriterien, deren `source`
- * fehlt oder unbekannt ist. Ein ausdruecklich gesetztes gueltiges `source` wird immer respektiert,
- * auch wenn die Bezeichnung anders klingt.
- */
-function siehtNachEinsetzungAus(crit: Pick<GradingCriterion, 'id' | 'label'>): boolean {
-  const id = (crit.id || '').toLowerCase();
-  const label = (crit.label || '').toLowerCase();
-  return id === 'einsetzen'
-    || id.endsWith('_werte')
-    || id.endsWith('_einsetzen')
-    || id.includes('werte')
-    || label.includes('einsetzen')
-    || label.includes('eingesetzt')
-    || label.includes('werte');
 }
 
 /**
  * Liefert die verbindliche Zustaendigkeit eines Kriteriums.
  * Wird einmalig beim Einlesen der Musterloesung angewendet und ins Feld `source` geschrieben —
  * danach lesen alle Verbraucher nur noch dieses Feld.
+ *
+ * Ein unbekanntes oder fehlendes `source` faellt auf `llm`. Frueher stand hier eine
+ * Wortsuche ueber `id`/`label`, die Kriterien nach Bezeichnung der Engine zuwies. Sie
+ * ist entfallen: Ihr einziges Ziel war `proofValues`, und wo die Engine nichts beweisen
+ * kann, ist die Rueckfrage ans Modell die richtige Vorgabe — nicht ein Urteil, das
+ * niemand mehr korrigieren kann.
  */
 // Das `source` ist hier ABSICHTLICH unbekannt: die Funktion existiert genau
 // dafuer, Kriterien ohne gueltige Zustaendigkeit zu reparieren. Ein Parameter
@@ -234,5 +227,8 @@ export function normalizeCriterionSource(
   crit: Pick<GradingCriterion, 'id' | 'label'> & { source?: unknown }
 ): CriterionSource {
   if (isValidCriterionSource(crit.source)) return crit.source;
-  return siehtNachEinsetzungAus(crit) ? 'proofValues' : 'llm';
+  if (typeof crit.source === 'string' && crit.source in VERALTETE_QUELLEN) {
+    return VERALTETE_QUELLEN[crit.source];
+  }
+  return 'llm';
 }

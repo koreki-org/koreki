@@ -66,7 +66,7 @@ describe('Die Anweisung erreicht beide CalcTrace-Pfade', () => {
         maxPoints: 2,
         reachedTargets: [6],
         missedTargets: [],
-        perTargetResult: [{ targetIndex: 0, reached: true, hasCorrectValues: true, hasCalculationError: false, associatedStepIds: ['step_1'] }]
+        perTargetResult: [{ targetIndex: 0, reached: true, hasCalculationError: false, associatedStepIds: ['step_1'] }]
     };
 
     const buildSystem = (targetGoal: Record<string, unknown>) => {

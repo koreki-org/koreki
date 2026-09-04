@@ -40,7 +40,6 @@ describe('parseCorrectionResult Isomorphic Contract Test', () => {
                         targetIndex: 0,
                         reached: true,
                         hasCalculationError: false,
-                        hasCorrectValues: true,
                         associatedStepIds: ['step_1']
                     }
                 ]

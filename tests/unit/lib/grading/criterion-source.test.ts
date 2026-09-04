@@ -11,7 +11,6 @@ import type { PerTargetResult, StudentASTStep } from '@/lib/grading/calc-trace-t
 const pt = (over: Partial<PerTargetResult> = {}): PerTargetResult => ({
     targetIndex: 0,
     reached: true,
-    hasCorrectValues: true,
     hasCalculationError: false,
     associatedStepIds: ['step_1'],
     ...over,
@@ -31,12 +30,11 @@ describe('criterion-source: Zustaendigkeit', () => {
     it('erkennt Engine-Kriterien und Ermessens-Kriterien', () => {
         expect(isEngineOwned('proofA')).toBe(true);
         expect(isEngineOwned('proofB')).toBe(true);
-        expect(isEngineOwned('proofValues')).toBe(true);
         expect(isEngineOwned('llm')).toBe(false);
     });
 
-    it('akzeptiert nur die vier bekannten Werte', () => {
-        expect(isValidCriterionSource('proofValues')).toBe(true);
+    it('akzeptiert nur die drei bekannten Werte', () => {
+        expect(isValidCriterionSource('proofValues')).toBe(false);
         expect(isValidCriterionSource('proofC')).toBe(false);
         expect(isValidCriterionSource(undefined)).toBe(false);
     });
@@ -49,10 +47,34 @@ describe('criterion-source: Zustaendigkeit', () => {
             expect(normalizeCriterionSource(crit)).toBe('llm');
         });
 
-        it('repariert ein fehlendes source anhand der Bezeichnung', () => {
+        /**
+         * WAECHTER, 03.09.2026. `proofValues` ist entfallen: Es versprach "Werte
+         * korrekt eingesetzt", stuetzte sich aber auf `hasCorrectValues` — und das
+         * war `!!targetStepId`, also dieselbe Messung wie `proofB`, nur schwaecher.
+         * Weil Engine-Urteile bindend sind, war das eine unumstoessliche Null auf
+         * einer Messung, die etwas anderes misst als ihr Name sagt.
+         *
+         * Gespeicherte Skills von Lehrkraeften koennen den Wert weiter enthalten.
+         * Sie muessen lesbar bleiben und beim Einlesen dem Modell zufallen —
+         * NICHT einem Engine-Urteil und nicht einem Absturz. Wer den Eintrag in
+         * `VERALTETE_QUELLEN` entfernt, macht diese Skills stillschweigend kaputt.
+         */
+        it('bildet das entfallene proofValues auf das Modell ab', () => {
+            const crit = { id: 'q1_einsetzung', label: 'Werte eingesetzt', source: 'proofValues' } as never;
+
+            expect(normalizeCriterionSource(crit)).toBe('llm');
+        });
+
+        /**
+         * Die Wortsuche ueber id/label ist mit `proofValues` entfallen. Ein
+         * Kriterium ohne `source` darf NICHT mehr wegen seiner Bezeichnung bei der
+         * Engine landen: Wo die Engine nichts beweisen kann, ist die Rueckfrage ans
+         * Modell die richtige Vorgabe.
+         */
+        it('weist ein Kriterium nicht mehr wegen seiner Bezeichnung der Engine zu', () => {
             const crit = { id: 'q1_einsetzung', label: 'Werte eingesetzt' } as never;
 
-            expect(normalizeCriterionSource(crit)).toBe('proofValues');
+            expect(normalizeCriterionSource(crit)).toBe('llm');
         });
 
         it('faellt bei fehlendem source auf das Modell zurueck, wenn nichts darauf hindeutet', () => {
@@ -102,26 +124,6 @@ describe('criterion-source: Zustaendigkeit', () => {
         });
     });
 
-    describe('proofValues — Werteeinsetzung', () => {
-        it('bewertet ueber hasCorrectValues, nicht ueber reached', () => {
-            // Fall 1 der Doku: richtig eingesetzt, falsch ausgerechnet.
-            const verdict = resolveEngineVerdict('proofValues', 0, evidence({
-                perTargetResult: [pt({ reached: false, hasCorrectValues: true, hasCalculationError: true })],
-            }));
-
-            expect(verdict.erfuellt).toBe(true);
-        });
-
-        it('verweigert den Punkt bei falscher Einsetzung, auch wenn das Ziel erreicht wurde', () => {
-            // Fall 2 der Doku: falsch eingesetzt, richtiges Ergebnis abgeschrieben.
-            const verdict = resolveEngineVerdict('proofValues', 0, evidence({
-                perTargetResult: [pt({ reached: true, hasCorrectValues: false })],
-            }));
-
-            expect(verdict.erfuellt).toBe(false);
-        });
-    });
-
     describe('proofA — eigener Rechenweg gegen sich selbst', () => {
         it('vergibt den Punkt, wenn der Schueler seinen eigenen Weg korrekt gerechnet hat', () => {
             // Der Kernfall: falsche Ausgangszahl (4000 statt 6500), aber korrekt dividiert.
@@ -129,7 +131,7 @@ describe('criterion-source: Zustaendigkeit', () => {
             const verdict = resolveEngineVerdict('proofA', 0, {
                 ast: [step('step_1', '12 / 4000', 0.003)],
                 sandboxErrors: [],
-                perTargetResult: [pt({ reached: false, hasCorrectValues: false, associatedStepIds: [] })],
+                perTargetResult: [pt({ reached: false, associatedStepIds: [] })],
             });
 
             expect(verdict.erfuellt).toBe(true);

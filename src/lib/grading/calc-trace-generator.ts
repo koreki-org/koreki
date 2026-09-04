@@ -12,14 +12,14 @@ export const TARGET_GOAL_SCHEMA = {
     gradingRubric: { type: "string", description: "Ein kurzer Text für die KI-Bewertung, der festlegt, wofür es Teilpunkte gibt (z.B. '1P für Formel, 1P fürs Einsetzen, 1P für Ergebnis')." },
     criteria: {
       type: "array",
-      description: "Eine strukturierte Kriterienliste für die Teilpunktebewertung. Jedes Kriterium hat id, label, punktwert, source ('llm' | 'proofA' | 'proofB' | 'proofValues') und optional targetIndex. Die Summe der punktwert-Felder MUSS exakt maxPoints entsprechen.",
+      description: "Eine strukturierte Kriterienliste für die Teilpunktebewertung. Jedes Kriterium hat id, label, punktwert, source ('llm' | 'proofA' | 'proofB') und optional targetIndex. Die Summe der punktwert-Felder MUSS exakt maxPoints entsprechen.",
       items: {
         type: "object",
         properties: {
           id: { type: "string" },
           label: { type: "string" },
           punktwert: { type: "number" },
-          source: { type: "string", enum: ["llm", "proofA", "proofB", "proofValues"] },
+          source: { type: "string", enum: ["llm", "proofA", "proofB"] },
           targetIndex: { type: "number", description: "Der 0-basierte Index im targetValue-Array, auf das sich dieses Kriterium bezieht. Jedes Kriterium muss zwingend einem Zielwert zugeordnet sein." }
         },
         required: ["id", "label", "punktwert", "source"]
@@ -96,8 +96,9 @@ export function compileRubricRegex(rubric: string, target: Omit<TargetGoal, 'cri
       if (fPts + ePts + resPts === target.maxPoints) {
         return [
           { id: 'formel', label: 'Formel fachlich korrekt', punktwert: fPts, source: 'llm', targetIndex: 0 },
-          // Ob die richtigen Zahlen eingesetzt wurden, weiss die Sandbox (hasCorrectValues).
-          { id: 'einsetzen', label: 'Einsetzen der Werte korrekt', punktwert: ePts, source: 'proofValues', targetIndex: 0 },
+          // Ob die richtigen Zahlen eingesetzt wurden, kann die Sandbox nicht belegen
+          // (siehe criterion-source.ts, VERALTETE_QUELLEN) — das beurteilt das Modell.
+          { id: 'einsetzen', label: 'Einsetzen der Werte korrekt', punktwert: ePts, source: 'llm', targetIndex: 0 },
           { id: 'ergebnis', label: 'Endergebnis erreicht', punktwert: resPts, source: 'proofB', targetIndex: 0 }
         ];
       }

@@ -41,7 +41,6 @@ const DETERMINISTISCHE_AKTIONEN: AIAction[] = [
     'generate-calc-trace',
     'variable-extraction'
 ];
-
 export interface ModellArt {
     isVision: boolean;
     isSystemAction: boolean;
@@ -142,17 +141,29 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
         const defaultTemp = isGemmaOrMoE ? 0.5 : (isQwen ? 0.3 : 0.2);
         const defaultTopP = 0.9;
 
-        if (action === 'clean-and-map' || action === 'clean-and-analyze') {
-            // Die beiden Aufbereitungs-Aktionen ignorieren die Profileinstellung
-            // bewusst vollstaendig: sie schreiben ab, was dasteht. Waere hier ein
-            // im Profil gesetzter Kulanzwert wirksam, erfaende das Modell beim
-            // Abschreiben — und der Fehler faende sich nie wieder, weil danach
-            // alles auf dem erfundenen Text aufbaut.
+        if (action === 'clean-and-map' || action === 'clean-and-analyze'
+            || DETERMINISTISCHE_AKTIONEN.includes(action)) {
+            // Diese Aktionen ignorieren die Profileinstellung bewusst vollstaendig:
+            // sie schreiben ab, was dasteht. Waere hier ein im Profil gesetzter
+            // Kulanzwert wirksam, erfaende das Modell beim Abschreiben — und der
+            // Fehler faende sich nie wieder, weil danach alles auf dem erfundenen
+            // Text aufbaut.
+            //
+            // ERWEITERT AM 03.09.2026 um die deterministischen Aktionen. Fuer sie
+            // stand die Absicht laengst in `DETERMINISTISCHE_AKTIONEN` — nur war sie
+            // wirkungslos: `settings.temperature ?? (isDeterministisch ? 0.0 : ...)`
+            // liess das PROFIL gewinnen, und bei `topP` wurde die Aktionsart nie
+            // abgefragt. Da in Koreki immer ein Profil laeuft, war der kalte Zweig im
+            // Betrieb nie aktiv — die Extraktion lief mit den Werten der Korrektur.
+            //
+            // Bewusst DIESELBEN Werte wie die Aufbereitungs-Aktionen statt eigener:
+            // Abschreiben ist Abschreiben, und zwei Regeln fuer dieselbe Sache laufen
+            // auseinander. Die Werte tragen den Stabilitaetsboden lokaler Modelle in
+            // sich; kaelter liesse Qwen an Wiederholungen haengenbleiben.
             targetTemp = defaultTemp;
             targetTopP = defaultTopP;
         } else {
-            const isDeterministicAction = DETERMINISTISCHE_AKTIONEN.includes(action);
-            targetTemp = settings.temperature ?? (isDeterministicAction ? 0.0 : defaultTemp);
+            targetTemp = settings.temperature ?? defaultTemp;
             targetTopP = settings.topP ?? defaultTopP;
         }
     } else {

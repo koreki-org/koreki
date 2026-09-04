@@ -4,7 +4,6 @@ import { GraphRunner } from '../grading/GraphRunner';
 import type { GradingGraph } from '../grading/types';
 import { TargetGoal } from '../grading/calc-trace-types';
 import { evaluateCalcTrace } from '../grading/CalcTrace';
-import { falscheWerteAus, type FruehererWert } from '../grading/consecutive-values';
 import { extractStudentAST } from '../grading/calc-trace-extraction';
 import { splitTextByTasks } from '../task-utils';
 import { shouldDisablePoints } from './prompt-builder';
@@ -66,9 +65,48 @@ export interface LocalGradingPassParams {
 const maxRetriesFuer = (settings: AppSettings): number =>
     settings?.provider === 'ollama' ? 1 : 2;
 
-const textFuerAufgabe = (rawSplit: string[], index: number, gesamttext: string): string => {
-    const teil = rawSplit[index] || '';
-    return teil.trim().length > 0 ? teil : gesamttext;
+/**
+ * Der Schuelertext, der zu EINER Aufgabe gehoert.
+ *
+ * GEFUNDEN AM 03.09.2026. `splitTextByTasks` bezeichnet sich selbst als
+ * `@deprecated ... LEGACY FALLBACK ... degraded safety net` und verweist auf
+ * `task.content`. Dieser Weg ist trotzdem der einzige, den die Engine hat — und
+ * `task.content` ist hier NICHT die Antwort des Schuelers, sondern der Abschnitt der
+ * MUSTERLOESUNG: `ModelSolutionCard.handleSectionChange` schreibt ihn dort hinein.
+ * Ihn zu verwenden hiesse, jedem Schueler die Loesung als seine eigene Antwort
+ * unterzuschieben. `useCorrectionRun` loescht das Feld deshalb ausdruecklich, bevor
+ * es den Schuelertext aufteilt — diese Zeile ist ein Warnschild, kein Beiwerk.
+ *
+ * Die Namenssuche verlangt, dass der Schueler den VOLLEN Aufgabennamen notiert.
+ * Heisst die Aufgabe "Aufgabe a)" und schreibt der Schueler "a)", findet sie nichts
+ * und liefert eine leere Zeichenkette — woraufhin JEDE Aufgabe das GANZE Blatt
+ * bekommt.
+ *
+ * Was das anrichtet: Der Rechenweg einer Aufgabe enthaelt dann die Schritte aller
+ * anderen. Bei einer Physik-Aufgabe des Pruefsatzes fiel Proof A in Teilaufgabe b)
+ * ueber einen Rechenfehler, den der Schueler in a) gemacht hatte — derselbe Fehler,
+ * zweimal bestraft.
+ *
+ * Das ganze Blatt bleibt der letzte Rueckfall: auf gar keinem Text zu bewerten waere
+ * schlimmer. Aber es wird gemeldet, statt still zu geschehen.
+ */
+const textFuerAufgabe = (
+    task: Task,
+    rawSplit: string[],
+    index: number,
+    gesamttext: string,
+    herkunft: string
+): string => {
+    const teil = (rawSplit[index] || '').trim();
+    if (teil.length > 0) return teil;
+
+    logger.warn(
+        `[${herkunft}] Kein eigener Textabschnitt fuer die Aufgabe gefunden — die Engine `
+        + `rechnet auf dem GESAMTEN Schuelertext. Rechenschritte anderer Teilaufgaben `
+        + `koennen dieser angelastet werden.`,
+        { taskName: task.name }
+    );
+    return gesamttext;
 };
 
 /*
@@ -103,8 +141,7 @@ async function bewerteMitGraph(task: Task, graph: GradingGraph, aufgabenText: st
 async function bewerteMitRechenkette(
     task: Task,
     aufgabenText: string,
-    p: LocalGradingPassParams,
-    fruehereWerte: FruehererWert[] = []
+    p: LocalGradingPassParams
 ): Promise<void> {
     const customSkills = p.settings?.customSkills || {};
     const targetGoal: TargetGoal = task.targetGoal
@@ -128,7 +165,7 @@ async function bewerteMitRechenkette(
     }
 
     let astResult = await extractStudentAST(aufgabenText, p.appMode, p.settings, task.name);
-    let calcTraceResult = evaluateCalcTrace(astResult, targetGoal, fruehereWerte);
+    let calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
 
     const maxRetries = maxRetriesFuer(p.settings);
     let retryCount = 0;
@@ -156,7 +193,7 @@ async function bewerteMitRechenkette(
             });
             break;
         }
-        calcTraceResult = evaluateCalcTrace(astResult, targetGoal, fruehereWerte);
+        calcTraceResult = evaluateCalcTrace(astResult, targetGoal);
         retryCount++;
     }
 
@@ -178,20 +215,9 @@ export async function runLocalGradingEngines(p: LocalGradingPassParams): Promise
     const customSkills = settings?.customSkills || {};
     const rawSplit = splitTextByTasks(studentText, tasksLayout);
 
-    /**
-     * Das Gedaechtnis ueber Aufgabengrenzen: Werte, die der Schueler in bereits
-     * bewerteten Aufgaben erzeugt hat, deren Ziel er dort VERFEHLT hat.
-     *
-     * Bewusst eine lokale Variable und KEIN Feld auf `Task`: Die Aufgabenliste
-     * wird auf dem Client fuer jede Arbeit des Stapels wiederverwendet: ein
-     * Feld darauf waere ein zweiter klebriger Zustand — genau die Fehlerklasse,
-     * die zwei Bildschirme weiter oben gerade behoben wurde.
-     */
-    const fruehereWerte: FruehererWert[] = [];
-
     for (let i = 0; i < tasksLayout.length; i++) {
         const task = tasksLayout[i];
-        const aufgabenText = textFuerAufgabe(rawSplit, i, studentText);
+        const aufgabenText = textFuerAufgabe(task, rawSplit, i, studentText, p.herkunft);
 
         // Das Urteil der vorigen Arbeit loeschen, BEVOR gerechnet wird.
         //
@@ -226,7 +252,7 @@ export async function runLocalGradingEngines(p: LocalGradingPassParams): Promise
             }
         } else if (istRechenkettenAufgabe(task, customSkills)) {
             try {
-                await bewerteMitRechenkette(task, aufgabenText, p, fruehereWerte);
+                await bewerteMitRechenkette(task, aufgabenText, p);
             } catch (err) {
                 // Kein calcTraceResult -> die Aufgabe laeuft in den Warnhinweis "ohne
                 // Sandbox-Pruefung, bitte manuell gegenpruefen" statt in 0 Punkte.
@@ -235,9 +261,5 @@ export async function runLocalGradingEngines(p: LocalGradingPassParams): Promise
                 });
             }
         }
-
-        // Was diese Aufgabe an die naechste weitergibt. Nur bei verfehltem Ziel:
-        // Wer sein Ziel getroffen hat, gibt keinen Fehler weiter.
-        fruehereWerte.push(...falscheWerteAus(task.name ?? `Aufgabe ${i + 1}`, task.calcTraceResult));
     }
 }

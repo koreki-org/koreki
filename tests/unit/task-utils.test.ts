@@ -67,6 +67,70 @@ describe('Task Utils tests', () => {
             expect(result).toEqual(['antwort 1']);
         });
 
+        /**
+         * Der Normalfall auf einem Klassenarbeitsbogen: Die Aufgabe heisst
+         * "Aufgabe a)", der Schueler schreibt "a)".
+         *
+         * ANLASS (03.09.2026). Bis dahin wurde nur der VOLLE Name gesucht. Fand er
+         * sich nicht, kam fuer jede Aufgabe eine leere Zeichenfolge zurueck — und
+         * alle Aufrufer fallen dann auf den GESAMTEN Text zurueck. Jede Aufgabe wurde
+         * also auf dem ganzen Blatt bewertet.
+         *
+         * In der Rechenketten-Engine hiess das: Der Rechenweg einer Teilaufgabe
+         * enthielt die Schritte aller anderen. Bei einer Physik-Aufgabe fiel der
+         * Sandbox-Beweis in b) ueber einen Rechenfehler aus a) — derselbe Fehler,
+         * zweimal bestraft. Der Defekt sah aus wie ein Fehler der Folgefehler-Regel
+         * und war in Wahrheit ein zu grosser Textausschnitt.
+         */
+        it('erkennt die Kurzform, wenn der Schueler den Namen abkuerzt', () => {
+            const text = 'a) 3x = 18\n   x = 9\nb) Probe: 3 * 9 + 7 = 34';
+            const tasks = [createTask({ name: 'Aufgabe a)' }), createTask({ name: 'Aufgabe b)' })];
+
+            expect(splitTextByTasks(text, tasks)).toEqual([
+                '3x = 18\n   x = 9',
+                'Probe: 3 * 9 + 7 = 34'
+            ]);
+        });
+
+        /**
+         * Die Gegenrichtung, und der Grund fuer die Bindung an den Zeilenanfang:
+         * "b)" steht auch mitten im Satz. Ohne die Bindung risse ein Rueckverweis
+         * den Abschnitt der laufenden Aufgabe auseinander.
+         */
+        it('zerreisst keinen Abschnitt an einer Kurzform mitten im Satz', () => {
+            const text = 'a) wie in b) gezeigt ist x = 9\nb) Probe';
+            const tasks = [createTask({ name: 'Aufgabe a)' }), createTask({ name: 'Aufgabe b)' })];
+
+            expect(splitTextByTasks(text, tasks)).toEqual([
+                'wie in b) gezeigt ist x = 9',
+                'Probe'
+            ]);
+        });
+
+        /**
+         * Die Kurzform darf nicht raten. Waere "1" die Kurzform von "Aufgabe 1" und
+         * zugleich der Anfang von "11", bekaeme die eine Aufgabe den Abschnitt der
+         * anderen. Eine falsch zugeordnete Antwort ist schlimmer als eine fehlende.
+         */
+        it('haelt kurze und lange Nummern auseinander', () => {
+            const text = '1 erste\n11 elfte';
+            const tasks = [createTask({ name: 'Aufgabe 1' }), createTask({ name: 'Aufgabe 11' })];
+
+            expect(splitTextByTasks(text, tasks)).toEqual(['erste', 'elfte']);
+        });
+
+        /**
+         * Eine Kurzform, die auf MEHRERE Aufgaben passt, ordnet nicht zu, sondern
+         * raet — und faellt deshalb ersatzlos weg. Hier bleibt nur der volle Name.
+         */
+        it('verwirft eine mehrdeutige Kurzform, statt zu raten', () => {
+            const text = 'Aufgabe 1\nerste\n1\nzweite';
+            const tasks = [createTask({ name: 'Aufgabe 1' }), createTask({ name: 'Teilaufgabe 1' })];
+
+            const result = splitTextByTasks(text, tasks);
+            expect(result[0]).toContain('erste');
+        });
+
         it('should handle overlapping names (longer first)', () => {
             const text = 'Aufgabe 1a\nAntwort 1a\nAufgabe 1\nAntwort 1';
             const tasks = [createTask({ name: 'Aufgabe 1' }), createTask({ name: 'Aufgabe 1a' })];

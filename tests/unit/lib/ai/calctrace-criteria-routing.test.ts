@@ -21,7 +21,6 @@ const layout = (criteria: GradingCriterion[]): Task[] => ([{
         perTargetResult: [{
             targetIndex: 0,
             reached: true,
-            hasCorrectValues: true,
             hasCalculationError: false,
             associatedStepIds: ['step_1'],
         }],
@@ -51,13 +50,13 @@ const analysis = (criteriaScores: { id: string; points: number }[], pointsObtain
 
 describe('CalcTrace-Kriterien: Zustaendigkeit richtet sich nach `source`', () => {
     describe('Punktevergabe', () => {
-        it('entscheidet proofValues ueber die Sandbox, nicht ueber das Modell', () => {
+        it('entscheidet ein Engine-Kriterium ueber die Sandbox, nicht ueber das Modell', () => {
             const criteria: GradingCriterion[] = [
-                { id: 'einsetzen', label: 'Werte eingesetzt', punktwert: 1, source: 'proofValues', targetIndex: 0 },
+                { id: 'ergebnis', label: 'Endergebnis erreicht', punktwert: 1, source: 'proofB', targetIndex: 0 },
             ];
 
-            // Das Modell vergibt 0 — die Sandbox hat die Einsetzung aber bestaetigt.
-            const task = parseCorrectionResult(analysis([{ id: 'einsetzen', points: 0 }], 0), layout(criteria)).tasks[0];
+            // Das Modell vergibt 0 — die Sandbox hat den Zielwert aber bestaetigt.
+            const task = parseCorrectionResult(analysis([{ id: 'ergebnis', points: 0 }], 0), layout(criteria)).tasks[0];
 
             expect(task.pointsObtained).toBe(1);
         });
@@ -77,11 +76,14 @@ describe('CalcTrace-Kriterien: Zustaendigkeit richtet sich nach `source`', () =>
         it('mischt Engine- und Modell-Kriterien korrekt', () => {
             const criteria: GradingCriterion[] = [
                 { id: 'formel', label: 'Formel fachlich korrekt', punktwert: 1, source: 'llm', targetIndex: 0 },
-                { id: 'einsetzen', label: 'Werte eingesetzt', punktwert: 1, source: 'proofValues', targetIndex: 0 },
+                { id: 'einsetzen', label: 'Werte eingesetzt', punktwert: 1, source: 'llm', targetIndex: 0 },
                 { id: 'ergebnis', label: 'Endergebnis erreicht', punktwert: 1, source: 'proofB', targetIndex: 0 },
             ];
 
-            const task = parseCorrectionResult(analysis([{ id: 'formel', points: 1 }], 3), layout(criteria)).tasks[0];
+            const task = parseCorrectionResult(
+                analysis([{ id: 'formel', points: 1 }, { id: 'einsetzen', points: 1 }], 3),
+                layout(criteria)
+            ).tasks[0];
 
             expect(task.pointsObtained).toBe(3);
         });
@@ -127,7 +129,7 @@ describe('CalcTrace-Kriterien: Zustaendigkeit richtet sich nach `source`', () =>
 
         it('verlangt keine criteriaScores, wenn alles bereits entschieden ist', () => {
             const criteria: GradingCriterion[] = [
-                { id: 'einsetzen', label: 'Werte eingesetzt', punktwert: 1, source: 'proofValues', targetIndex: 0 },
+                { id: 'rechenweg', label: 'Fehlerfrei gerechnet', punktwert: 1, source: 'proofA', targetIndex: 0 },
                 { id: 'ergebnis', label: 'Endergebnis erreicht', punktwert: 1, source: 'proofB', targetIndex: 0 },
             ];
 
