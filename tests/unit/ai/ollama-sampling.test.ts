@@ -131,12 +131,48 @@ describe('Temperatur nach Aufgabenart', () => {
      * notierte `x = 9`, die Extraktion trug den richtigen Wert `6` ein.
      */
     it.each([
-        'calc-trace-extraction',
         'generate-calc-trace',
         'variable-extraction',
         'clean-and-map'
     ] as AIAction[])('%s denkt nicht laut, auch wenn eingeschaltet', (action) => {
         expect(rechne(action, 'qwen3.6:35b', { enableThinking: true }).think).toBe(false);
+    });
+
+    /**
+     * Die Ausnahme — gemessen, nicht gemeint.
+     *
+     * Die Rechenweg-Extraktion muss aus einer Umformungs-Annotation erst erschliessen,
+     * WELCHE Rechnung gemeint ist ("3x = 18 | :3"). Ohne Denkschritt geschieht das
+     * mitten in der Ausgabe: Das Modell schreibt die Formel hin und traegt deren Wert
+     * als Ergebnis ein statt den des Schuelers — notiert war "x = 9", eingetragen die 6.
+     *
+     * Fuenf andere Gegenmassnahmen blieben am 04.09.2026 wirkungslos. Der Denkschritt
+     * wirkte über alle sechs Rechenaufgaben, 24 von 24 Extraktionen erfolgreich.
+     *
+     * Unabhaengig vom Profil: Die Extraktion braucht ihn nicht, weil die Lehrkraft ihn
+     * eingeschaltet hat.
+     */
+    it('laesst die Rechenweg-Extraktion laut denken, unabhaengig vom Profil', () => {
+        expect(rechne('calc-trace-extraction', 'qwen3.6:35b', { enableThinking: false }).think).toBe(true);
+        expect(rechne('calc-trace-extraction', 'qwen3.6:35b', { enableThinking: true }).think).toBe(true);
+    });
+
+    /**
+     * Und der Antwortpuffer muss mitwachsen. Er haengt am TATSAECHLICHEN Denkschritt,
+     * nicht am Profil — sonst verliert eine lange Extraktion das Ende ihrer Antwort,
+     * und das faellt als "Extraktion gescheitert" auf statt als Puffergrenze.
+     */
+    it('gibt der laut denkenden Extraktion auch den groesseren Puffer', () => {
+        // Bei kurzen Prompts verdeckt das Mindestfenster von 16k den Unterschied —
+        // deshalb an einer langen Schuelerarbeit gemessen, wo der Puffer wirklich rechnet.
+        // 20.000 Zeichen: gross genug, dass der Denkschritt-Zuschlag ueber das
+        // Mindestfenster von 16k hebt, klein genug, dass die Obergrenze noch nicht
+        // beide deckelt. Darunter und darueber ist der Unterschied unsichtbar.
+        const lang = { promptCharCount: 20000 };
+        const mitDenken = rechne('calc-trace-extraction', 'qwen3.6:35b', { enableThinking: false }, lang);
+        const ohneDenken = rechne('generate-calc-trace', 'qwen3.6:35b', { enableThinking: false }, lang);
+
+        expect(mitDenken.numCtx).toBeGreaterThan(ohneDenken.numCtx ?? 0);
     });
 
     it('laesst beim Bewerten Spielraum fuer gleichbedeutende Formulierungen', () => {

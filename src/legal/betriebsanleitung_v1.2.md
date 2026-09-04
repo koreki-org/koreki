@@ -82,7 +82,7 @@ Sie sehen das direkt in der Korrekturansicht: Über dem aufklappbaren Nachweis s
 
 Wichtig: „Nicht nachgerechnet“ heißt **nicht** „nicht gerechnet“. Es ist eine Grenze unserer Auswertung, kein Vorwurf an die Schülerin — und Koreki zieht dafür auch keine Punkte ab.
 
-**Was Sie deshalb beachten sollten:** Prüfen Sie bei mehrschrittigen Rechenaufgaben, ob ein Abzug in einer späteren Teilaufgabe wirklich ein neuer Fehler ist — oder derselbe zum zweiten Mal. In der Messung lag die Abweichung bei Rechenaufgaben **ohne** hinterlegtes Rechenziel bei 0,00 bis 0,17 Punkten, **mit** Rechenziel bei 0,42 Punkten. Die Rechenkette liegt also weiterhin höher als die rein sprachliche Bewertung.
+**Was Sie deshalb beachten sollten:** Prüfen Sie bei mehrschrittigen Rechenaufgaben, ob ein Abzug in einer späteren Teilaufgabe wirklich ein neuer Fehler ist — oder derselbe zum zweiten Mal. In der Messung lag die Abweichung bei Rechenaufgaben **ohne** hinterlegtes Rechenziel bei 0,00 bis 0,17 Punkten, **mit** Rechenziel bei 0,33 Punkten. Die Rechenkette liegt also weiterhin höher als die rein sprachliche Bewertung.
 
 ### 4.4 Was das für Ihre Arbeit heißt
 Ein Punktvorschlag bleibt ein Entwurf. Die Zahl oben beschreibt, wie nah die Vorschläge im Mittel lagen — sie sagt nichts über den einzelnen Fall vor Ihnen. Die Prüfpflicht aus Abschnitt 6 wird durch sie nicht kleiner.

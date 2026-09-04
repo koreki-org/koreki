@@ -129,15 +129,51 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
         targetMaxTokens = Math.min(targetMaxTokens, 8192);
     }
 
-    const shouldIncludeThink = settings.enableThinking === true || isReasoningModel;
-    // Bilderkennung und Struktur-Aktionen denken nicht laut: der Denktext
-    // landete sonst im JSON, das sie erzeugen sollen.
+    // Bilderkennung und Struktur-Aktionen denken nicht laut: der Denktext landete
+    // sonst im JSON, das sie erzeugen sollen.
     // Rueckfall `true`, wie ihn ADR 001, das Standardprofil und die
     // Thinking-Governance in ai-provider-infrastructure.md vorsehen. Stand hier bis
     // zum 25.08.2026 auf `false` — ohne geladenes Profil lief die Korrektur damit
     // ohne Denkschritt, obwohl jede andere Stelle das Gegenteil sagte. Gemessen am
     // 24.08.2026 ist es der Schalter mit dem groessten Einfluss auf die Genauigkeit.
-    const think = (isVision || isSystemAction) ? false : (settings.enableThinking ?? true);
+    //
+    // AUSNAHME: die Rechenweg-Extraktion denkt doch laut — gemessen am 04.09.2026.
+    //
+    // Sie muss aus einer Umformungs-Annotation erst erschliessen, WELCHE Rechnung
+    // gemeint ist ("3x = 18 | :3" → 18 geteilt durch 3). Ohne Denkschritt geschieht
+    // das mitten in der Ausgabe: Das Modell schreibt die Formel hin und traegt als
+    // Ergebnis deren Wert ein statt den des Schuelers. Notiert war "x = 9",
+    // eingetragen wurde die 6 — der Fehler war geloescht, bevor die Sandbox ihn
+    // sehen konnte.
+    //
+    // Fuenf andere Gegenmassnahmen blieben wirkungslos: kalte Abtastung,
+    // Prompt-Beispiele, Feldreihenfolge, Ergebnis als Textfeld, Vergleich im
+    // Nachhinein. Der Denkschritt wirkte in zwei Durchgaengen ueber alle sechs
+    // Rechenaufgaben, 24 von 24 Extraktionen erfolgreich, kein Denktext im JSON —
+    // die Sorge oben hat sich fuer diese Aktion nicht bestaetigt.
+    //
+    // Bewusst NUR diese eine Aktion: Fuer die uebrigen Struktur-Aktionen ist der
+    // Nutzen nicht gemessen, und die Sorge gilt dort unwiderlegt fort. Und bewusst
+    // unabhaengig vom Profil: Die Extraktion braucht den Denkschritt nicht, weil die
+    // Lehrkraft ihn eingeschaltet hat, sondern weil sie ohne ihn falsch abschreibt.
+    const think = isVision ? false
+        : action === 'calc-trace-extraction' ? true
+        : isSystemAction ? false
+        : (settings.enableThinking ?? true);
+
+    // Wer laut denkt, braucht Platz dafuer — sonst verliert eine lange Extraktion das
+    // Ende ihrer Antwort, und das faellt als "Extraktion gescheitert" auf statt als
+    // Puffergrenze.
+    //
+    // Bewusst nur um die Extraktion erweitert und NICHT auf `think` umgestellt:
+    // `think` faellt fuer die Korrektur ohne geladenes Profil auf `true` zurueck,
+    // `shouldIncludeThink` verlangt dagegen ein ausdrueckliches `true`. Die beiden
+    // laufen dort seit dem 25.08.2026 auseinander — das ist eine eigene Frage mit
+    // eigener Messung, und sie hier mitzuerledigen hiesse, zwei Dinge auf einmal zu
+    // aendern und hinterher nicht zu wissen, welches gewirkt hat.
+    const shouldIncludeThink = settings.enableThinking === true
+        || isReasoningModel
+        || action === 'calc-trace-extraction';
 
     // ─── Temperatur und top_p ────────────────────────────────────────────────
     let targetTemp: number;
