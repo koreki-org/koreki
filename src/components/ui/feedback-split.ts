@@ -7,7 +7,7 @@
  * den paedagogischen Teil zu bekommen.
  */
 import type { FeedbackEngine } from './feedback-engine-labels';
-import { NICHT_NACHGERECHNET } from '@/lib/grading/CalcTrace';
+import { NICHT_NACHGERECHNET } from '@/lib/grading/calc-trace-feedback';
 
 interface SplitFeedback {
     technical?: string;

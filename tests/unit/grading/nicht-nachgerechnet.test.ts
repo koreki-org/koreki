@@ -23,7 +23,8 @@
  * `formatCalcTraceFeedback` schreibt sie, `splitFeedback` sucht sie. Zwei Literale
  * wuerden auseinanderlaufen, und der Indikator verschwaende stumm.
  */
-import { evaluateCalcTrace, formatCalcTraceFeedback, NICHT_NACHGERECHNET } from '@/lib/grading/CalcTrace';
+import { evaluateCalcTrace } from '@/lib/grading/CalcTrace';
+import { formatCalcTraceFeedback, NICHT_NACHGERECHNET } from '@/lib/grading/calc-trace-feedback';
 import { splitFeedback } from '@/components/ui/feedback-split';
 import type { StudentASTStep, TargetGoal } from '@/lib/grading/calc-trace-types';
 
@@ -70,11 +71,20 @@ describe('Rechenweg mit nachrechenbarem Ausdruck', () => {
         { id: 'step_1', original_text: '2 / 30 * 60 = 4', formula: '(2 / 30) * 60', result: 4, unit: 'ml/h' }
     ];
 
-    it('bestaetigt den Rechenweg wie bisher', () => {
+    /**
+     * GEAENDERT AM 04.09.2026. Hier stand die Erwartung "jeder Schritt ergibt genau das,
+     * was daneben steht" — ein Bestaetigungssatz in Prosa. Er ist entfallen: Dieselbe
+     * Aussage steht als Haken in der Tabelle "Gelesener Rechenweg", und dreimal
+     * dasselbe (Tabelle, Prosa, Punktevergabe) machte den Block zum Buch.
+     *
+     * Geprueft wird deshalb, was die Sandbox NICHT meldet: keinen Verrechner und kein
+     * "nicht nachgerechnet".
+     */
+    it('meldet weder Verrechner noch fehlende Nachrechnung', () => {
         const text = beweis(echteRechnung);
 
         expect(text).not.toContain(NICHT_NACHGERECHNET);
-        expect(text).toMatch(/jeder Schritt ergibt genau das/);
+        expect(text).not.toMatch(/Verrechner/);
     });
 
     it('setzt die Ueberschrift nicht auf den Warnzustand', () => {

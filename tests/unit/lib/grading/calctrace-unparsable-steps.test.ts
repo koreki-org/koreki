@@ -1,4 +1,5 @@
-import { evaluateCalcTrace, formatCalcTraceFeedback } from '@/lib/grading/CalcTrace';
+import { evaluateCalcTrace } from '@/lib/grading/CalcTrace';
+import { formatCalcTraceFeedback } from '@/lib/grading/calc-trace-feedback';
 import { resolveEngineVerdict } from '@/lib/grading/criterion-source';
 import type { StudentASTStep, TargetGoal } from '@/lib/grading/calc-trace-types';
 

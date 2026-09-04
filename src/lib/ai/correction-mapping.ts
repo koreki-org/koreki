@@ -4,7 +4,8 @@ import { StepResult } from '../grading/types';
 import { TargetGoal, GradingCriterion } from '../grading/calc-trace-types';
 import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source';
 import { formatPluginFeedback } from '../grading/feedback-formatter';
-import { formatCalcTraceFeedback } from '../grading/CalcTrace';
+import { formatCalcTraceFeedback } from '../grading/calc-trace-feedback';
+import type { KriteriumErgebnis } from '../grading/calc-trace-feedback';
 import { shouldDisablePoints } from './prompt-builder';
 import { alsModellzahl } from '../zahlen';
 
@@ -111,6 +112,13 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
     const calcTraceResult = layoutTask.calcTraceResult!;
     let enginePoints: number;
 
+    // Dieselben Zahlen wie die Korrekturnotizen — nur strukturiert, fuer die Anzeige
+    // im Engine-Block. Steht hier draussen, weil der Block weiter unten gebaut wird:
+    // Die Kriterien-Schleife laeuft nur im Zweig mit strukturierten Kriterien, der
+    // Block dagegen immer. Ohne Kriterien bleibt die Liste leer, und die Tabelle
+    // entfaellt.
+    const kriterienFuerAnzeige: KriteriumErgebnis[] = [];
+
     const targetGoal: Partial<TargetGoal> = layoutTask.targetGoal || {};
     const criteria = targetGoal.criteria;
 
@@ -191,6 +199,13 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
 
             computedSum += pts;
             finalCriteriaNotes.push(`- ${crit.id}: ${pts} / ${crit.punktwert} (${justification})`);
+            kriterienFuerAnzeige.push({
+                label: crit.label || crit.id,
+                punkte: pts,
+                max: crit.punktwert,
+                quelle: crit.source,
+                begruendung: justification
+            });
         });
 
         enginePoints = computedSum;
@@ -235,7 +250,7 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
         };
     }
 
-    const stepFeedback = formatCalcTraceFeedback(calcTraceResult, (layoutTask.targetGoal || {}) as TargetGoal);
+    const stepFeedback = formatCalcTraceFeedback(calcTraceResult, (layoutTask.targetGoal || {}) as TargetGoal, kriterienFuerAnzeige);
     const aiFeedbackText = aiTask ? (aiTask.feedback || aiTask.content || '') : '';
 
     let finalFeedback = `${CALC_TRACE_MARKER}\n${stepFeedback}\n\n---\n\n`;

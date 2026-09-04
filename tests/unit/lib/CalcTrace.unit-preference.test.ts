@@ -8,7 +8,8 @@
  * Endergebnis.
  */
 
-import { evaluateCalcTrace, formatCalcTraceFeedback } from '@/lib/grading/CalcTrace';
+import { evaluateCalcTrace } from '@/lib/grading/CalcTrace';
+import { formatCalcTraceFeedback } from '@/lib/grading/calc-trace-feedback';
 import type { StudentASTStep, TargetGoal } from '@/lib/grading/calc-trace-types';
 
 const findDetail = (result: ReturnType<typeof evaluateCalcTrace>) => (result.unitDetails || [])[0];

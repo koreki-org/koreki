@@ -7,7 +7,8 @@
  * - 3-tier model: Perfect / Unit-Mismatch / Wrong
  */
 
-import { evaluateCalcTrace, formatCalcTraceFeedback } from '@/lib/grading/CalcTrace';
+import { evaluateCalcTrace } from '@/lib/grading/CalcTrace';
+import { formatCalcTraceFeedback } from '@/lib/grading/calc-trace-feedback';
 import type { StudentASTStep, TargetGoal } from '@/lib/grading/calc-trace-types';
 
 describe('CalcTrace Engine V7 - Core (Proof A & B)', () => {
