@@ -253,8 +253,9 @@ Er gilt für genau eine Lage — **Zielwert verfehlt, eigener Rechenweg fehlerfr
 | :--- | :--- |
 | Zielwert erreicht, kein Verrechner | **erfüllt**, bindend |
 | Verrechner im eigenen Rechenweg | **nicht erfüllt**, bindend |
-| kein nachvollziehbarer Rechenweg | **nicht erfüllt**, bindend |
+
 | Zielwert verfehlt, eigener Weg sauber | **unentschieden** — das Modell entscheidet |
+| Rechenweg nicht LESBAR (kein Rechenausdruck) | **unentschieden** — das Modell entscheidet |
 
 Diese Lage ist die Signatur eines **Folgefehlers**: Wer sich in a) verrechnet und in b) mit dem eigenen
 falschen Wert sauber weiterrechnet, verfehlt den Musterwert zwangsläufig. Sie ist aber auch die Signatur
@@ -269,8 +270,22 @@ Statt zu raten reicht die Engine ihre Tatsachen weiter: Das Kriterium erscheint 
 `erfuellt` bleibt dabei `false`. Ein Aufrufer, der das Feld nicht kennt, verhält sich wie zuvor und
 verschenkt keine Punkte.
 
+**Erweitert am 04.09.2026 um die zweite Zeile.** Der Rücktritt prüfte zuerst nur, ob der eigene Weg
+fehlerfrei IST. War er gar nicht auswertbar — etwa weil die Schülerin die Rechnung in Worten formuliert
+hat („2 ml in 30 min, das sind 4 ml/h“) und die Extraktion daraus keinen Rechenausdruck gemacht hat —,
+fiel das mit „nicht erfüllt“ zusammen. Beide Kriterien wurden bindend auf null gesetzt, obwohl die
+Sandbox nichts belegt hatte. „Kein nachvollziehbarer Rechenweg notiert“ ist eine Aussage über die
+AUSWERTUNG, nicht über die Schülerin.
+
+Sichtbar ist der Zustand auch in der Oberfläche: `formatCalcTraceFeedback` schreibt dann die Konstante
+`NICHT_NACHGERECHNET`, `splitFeedback` erkennt sie und setzt einen Warnhinweis in die Überschrift des
+Aufklappers. Ein Vertrag zwischen genau zwei Stellen — deshalb eine gemeinsame Konstante und nicht zwei
+Literale.
+
 **Gemessen** (`qwen3.6:35b`, sechs Rechenaufgaben mit hinterlegtem Rechenziel): mittlere Abweichung von
-**0,83 auf 0,50 Punkte**. Die Physik-Aufgabe des Referenzsatzes — der Folgefehler-Fall — trifft seitdem
+**0,83 über 0,50 auf 0,42 Punkte**. Gegenprobe: Der kaufmännische Fall „richtiges Ergebnis ohne
+nachvollziehbaren Rechenweg“ trifft unverändert exakt — wo wirklich nicht gerechnet wurde, vergibt auch
+das Modell den Wegpunkt nicht. Die Physik-Aufgabe des Referenzsatzes — der Folgefehler-Fall — trifft seitdem
 exakt. Zum Vergleich: Die am 03.09.2026 gebaute und wieder verworfene Zahlen-Maschinerie erreichte 0,67.
 
 Die Übersetzung von Sandbox-Tatsachen in ein Erfüllt/Nicht-erfüllt passiert ausschließlich in

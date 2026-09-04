@@ -25,7 +25,7 @@ import {
   parseUnitsPerValue
 } from './units';
 import { logger } from '@/lib/logger';
-import { stepHasSandboxError } from './criterion-source';
+import { stepHasSandboxError, istRechenschritt } from './criterion-source';
 import type {
   StudentASTStep,
   TargetGoal,
@@ -351,6 +351,16 @@ export function traceStepChain(targetStepId: string, ast: StudentASTStep[]): Set
  * Formatiert das Evaluierungsergebnis in einen robusten Prompt für das Hybrid-Grading LLM.
  */
 /**
+ * Die Zeichenkette, an der die Oberflaeche erkennt, dass die Sandbox NICHTS
+ * nachgerechnet hat.
+ *
+ * Ein Vertrag zwischen genau zwei Stellen: `formatCalcTraceFeedback` schreibt sie,
+ * `splitFeedback` sucht sie. Deshalb steht sie hier als Konstante und nicht zweimal
+ * als Literal — sonst laufen Erzeuger und Leser auseinander.
+ */
+export const NICHT_NACHGERECHNET = '— **Nicht nachgerechnet.**';
+
+/**
  * Der Nachweis der Sandbox, wie ihn die LEHRKRAFT liest.
  *
  * Hiess bis zum 04.09.2026 `formatCalcTraceForPrompt` — und der Name war falsch.
@@ -404,6 +414,16 @@ export function formatCalcTraceFeedback(result: CalcTraceResult, target: TargetG
 
   if (ast.length === 0) {
     lines.push(`✗ Aus der Schülerantwort liess sich kein Rechenweg lesen.`);
+  } else if (!ast.some(step => istRechenschritt(step.formula))) {
+    // Kein einziger Schritt traegt einen Rechenausdruck — die Sandbox hat nichts
+    // nachgerechnet. Hier stand bis zum 04.09.2026 der Satz "jeder Schritt ergibt
+    // genau das, was daneben steht": Wo nichts gerechnet wurde, entsteht auch kein
+    // Widerspruch, und das Ausbleiben eines Fehlers las sich als Bestaetigung. Die
+    // Lehrkraft bekam eine Zusicherung, die niemand geprueft hatte.
+    lines.push(`${NICHT_NACHGERECHNET} Kein Schritt enthält einen Rechenausdruck, den die `
+      + `Sandbox nachvollziehen könnte. Das heißt NICHT, dass nicht gerechnet wurde — eine `
+      + `Rechnung kann auch in Worten dastehen ("2 ml in 30 min, das sind 4 ml/h"). Die Punkte `
+      + `dieser Aufgabe hat das Sprachmodell vergeben, nicht die Nachrechnung.`);
   } else if (sandboxErrors.length === 0) {
     lines.push(`✓ Ja — jeder Schritt ergibt genau das, was daneben steht.`);
   } else {

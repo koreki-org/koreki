@@ -127,8 +127,10 @@ describe('criterion-source: Zustaendigkeit', () => {
                 perTargetResult: [pt({ reached: false, associatedStepIds: [] })],
             }));
 
+            // Seit dem 04.09.2026 unentschieden statt bindend: ohne lesbaren
+            // Rechenausdruck kann die Sandbox nichts belegen (siehe proofA-Block).
             expect(verdict.erfuellt).toBe(false);
-            expect(verdict.begruendung).toContain('nicht erreicht');
+            expect(verdict.unentschieden).toBe(true);
         });
 
         /**
@@ -169,6 +171,18 @@ describe('criterion-source: Zustaendigkeit', () => {
             expect(verdict.begruendung).toContain('step_1');
         });
 
+        /**
+     * GEAENDERT AM 04.09.2026. Bindend war das Urteil bis dahin — jetzt tritt die
+     * Sandbox zurueck und legt den Fall dem Modell vor. Grund: Sie sieht nur
+     * `formula: "2.5"` und kann NICHT unterscheiden zwischen
+     *   • "720 EUR" — gar keine Rechnung, der Punkt gehoert verweigert, und
+     *   • "2 ml in 30 min, das sind 4 ml/h" — eine Rechnung in Worten.
+     * Beide erzeugen denselben Befund. Das Modell sieht den Text und kann es
+     * unterscheiden; die Sandbox kann es nicht und darf deshalb nicht urteilen.
+     *
+     * Die Engine vergibt den Punkt weiterhin NICHT von sich aus (`erfuellt` bleibt
+     * false) — sie verweigert ihn nur nicht mehr bindend.
+         */
         it('verweigert den Punkt bei einem nackten Ergebnis ohne Rechnung', () => {
             const verdict = resolveEngineVerdict('proofA', 0, {
                 ast: [step('step_1', '2.5', 2.5)],
@@ -177,7 +191,7 @@ describe('criterion-source: Zustaendigkeit', () => {
             });
 
             expect(verdict.erfuellt).toBe(false);
-            expect(verdict.begruendung).toContain('Kein nachvollziehbarer Rechenweg');
+            expect(verdict.unentschieden).toBe(true);
         });
 
         it('laesst einen Fehler bei einem ANDEREN Zielwert nicht durchschlagen', () => {

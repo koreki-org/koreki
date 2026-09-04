@@ -7,7 +7,9 @@ import { cn } from '@/lib/utils';
 import { ENGINE_LABELS, ENGINE_BESCHREIBUNGEN } from './feedback-engine-labels';
 import { CalcTraceLegende } from './CalcTraceLegende';
 import type { FeedbackEngine } from './feedback-engine-labels';
+import { splitFeedback } from './feedback-split';
 export type { FeedbackEngine };
+export { splitFeedback };
 
 interface EditableMathAreaProps {
     value: string;
@@ -66,10 +68,12 @@ const TON: Record<AufklapperTon, { rahmen: string; flaeche: string; schrift: str
 const Aufklapper: React.FC<{
     titel: string;
     beschreibung?: string;
+    /** Tritt an die Stelle der Beschreibung, wenn die Engine nichts belegen konnte. */
+    warnung?: string;
     ton: AufklapperTon;
     icon: React.ReactNode;
     children: React.ReactNode;
-}> = ({ titel, beschreibung, ton, icon, children }) => {
+}> = ({ titel, beschreibung, warnung, ton, icon, children }) => {
     const t = TON[ton];
     return (
         <details className={cn('group rounded-xl border overflow-hidden transition-all duration-300 mb-4', t.rahmen, t.flaeche)}>
@@ -81,7 +85,9 @@ const Aufklapper: React.FC<{
                     <div className={cn('flex items-center justify-center w-5 h-5 rounded-md shrink-0', t.marke)}>{icon}</div>
                     <div className="min-w-0">
                         <span>{titel}</span>
-                        {beschreibung && (
+                        {warnung ? (
+                            <p className="mt-0.5 font-normal text-warning">{warnung}</p>
+                        ) : beschreibung && (
                             <p className="mt-0.5 font-normal text-muted-foreground">{beschreibung}</p>
                         )}
                     </div>
@@ -107,87 +113,6 @@ const Aufklapper: React.FC<{
     );
 };
 
-interface SplitFeedback {
-    technical?: string;
-    /** Nur gesetzt, wenn `technical` vorhanden ist. */
-    engine?: FeedbackEngine;
-    pedagogical: string;
-}
-
-/**
- * Parses and splits raw feedback text into technical engine blocks (PANG/AGS)
- * and didactical/pedagogical feedback.
- */
-export function splitFeedback(text: string): SplitFeedback {
-    if (!text) return { pedagogical: "" };
-
-    const pangIndex = text.indexOf('[⚙️ PANG Engine');
-    const agsIndex = text.indexOf('[⚙️ AGS Engine');
-    const calcIndex = text.indexOf('[📐 CalcTrace Engine');
-    
-    let engineIndex = -1;
-    let engine: FeedbackEngine | undefined;
-    if (pangIndex !== -1) {
-        engineIndex = pangIndex;
-        engine = 'PANG';
-    } else if (agsIndex !== -1) {
-        engineIndex = agsIndex;
-        engine = 'AGS';
-    } else if (calcIndex !== -1) {
-        engineIndex = calcIndex;
-        engine = 'CalcTrace';
-    }
-
-    if (engineIndex === -1) {
-        return { pedagogical: text };
-    }
-
-    const remainingText = text.slice(engineIndex);
-    
-    // Look for a standalone divider to split technical from pedagogical feedback
-    // We must include newlines so we don't accidentally split markdown tables (|:---|)
-    const dividerIndex = remainingText.indexOf('\n---\n');
-    
-    let technical = "";
-    let pedagogical = "";
-
-    if (dividerIndex !== -1) {
-        technical = remainingText.slice(0, dividerIndex).trim();
-        let afterDivider = remainingText.slice(dividerIndex + 5).trim();
-        if (afterDivider.startsWith('[KI-Pädagogische Einschätzung]')) {
-            afterDivider = afterDivider.slice('[KI-Pädagogische Einschätzung]'.length).trim();
-        }
-        pedagogical = afterDivider;
-    } else {
-        const kiIndex = remainingText.indexOf('[KI-Pädagogische Einschätzung]');
-        if (kiIndex !== -1) {
-            technical = remainingText.slice(0, kiIndex).trim();
-            pedagogical = remainingText.slice(kiIndex + '[KI-Pädagogische Einschätzung]'.length).trim();
-        } else {
-            technical = remainingText.trim();
-            pedagogical = "";
-        }
-    }
-
-    const prefix = text.slice(0, engineIndex).trim();
-    if (prefix) {
-        pedagogical = prefix + "\n\n" + pedagogical;
-    }
-
-    // Die Markerzeile selbst ("[📐 CalcTrace Engine - …]") faellt weg: Welche Engine
-    // gerechnet hat, steht als eigener Wert in `engine` — und die Oberflaeche macht
-    // daraus die Ueberschrift des Aufklappers. Sie ein zweites Mal als erste
-    // Textzeile zu zeigen, wiederholt nur die Zeile darueber. Im gespeicherten
-    // Feedback bleibt der Marker unberuehrt; er wird zum Erkennen gebraucht.
-    const technicalOhneMarker = technical.replace(/^\[[^\]\n]*Engine[^\]\n]*\]\s*\n?/, '');
-
-    return {
-        technical: technicalOhneMarker.trim() || undefined,
-        engine: technical ? engine : undefined,
-        pedagogical: pedagogical
-    };
-}
-
 /**
  * EditableMathArea
  * 🎭 A dual-mode component that toggles between high-fidelity math rendering and raw text editing.
@@ -205,7 +130,7 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
 }) => {
     const [isEditing, setIsEditing] = useState(initialEditMode);
 
-    const { technical, engine, pedagogical } = splitFeedback(value);
+    const { technical, engine, nichtNachgerechnet, pedagogical } = splitFeedback(value);
     const notizen = (aiNotes || '').trim();
 
     return (
@@ -251,6 +176,9 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
                                     <Aufklapper
                                         titel={engine ? ENGINE_LABELS[engine] : 'Technische Detailanalyse einblenden'}
                                         beschreibung={engine ? ENGINE_BESCHREIBUNGEN[engine] : undefined}
+                                        warnung={nichtNachgerechnet
+                                            ? 'Nicht nachgerechnet — die Sandbox fand keinen Rechenausdruck. Die Punkte hat das Sprachmodell vergeben.'
+                                            : undefined}
                                         ton="engine"
                                         icon={<Settings size={12} className="transition-transform duration-500 group-open:rotate-90" />}
                                     >

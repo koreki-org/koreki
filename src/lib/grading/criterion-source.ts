@@ -133,7 +133,7 @@ function nurEchteRechenfehler(sandboxErrors: string[]): string[] {
  * Enthaelt die Formel eine echte Rechnung — oder nur eine abgeschriebene Zahl?
  * Ein nacktes Ergebnis ("2.5 GHz") ist kein Rechenweg und kann keinen Rechenweg-Punkt tragen.
  */
-function istRechenschritt(formula: string): boolean {
+export function istRechenschritt(formula: string): boolean {
   const f = (formula || '').trim().replace(/^[+-]/, '');
   return /[+\-*/^]/.test(f) || /\w\s*\(/.test(f);
 }
@@ -170,7 +170,30 @@ function bewerteRechenweg(targetIndex: number, evidence: EngineEvidence): Engine
   });
 
   if (gerechnet.length === 0) {
-    return { erfuellt: false, begruendung: 'Kein nachvollziehbarer Rechenweg notiert', stepIds: [] };
+    // "Kein nachvollziehbarer Rechenweg" ist eine Aussage ueber UNSERE Auswertung,
+    // nicht ueber die Schuelerin. Sie kann sehr wohl gerechnet haben — in Worten
+    // ("2 ml in 30 min, das sind 4 ml/h"), oder in einer Notation, aus der die
+    // Extraktion keinen Rechenausdruck gemacht hat.
+    //
+    // Bis zum 04.09.2026 stand hier ein bindendes `false`. Damit lastete die Sandbox
+    // der Schuelerin die Grenze unserer Auswertung an — dieselbe Verwechslung, die
+    // diese Datei schon zweimal repariert hat (`nurEchteRechenfehler` fuer
+    // Syntaxfehler, `unentschieden` fuer den verfehlten Zielwert). Hier fehlte sie
+    // noch.
+    //
+    // Die Wirkung reicht weiter als dieses eine Kriterium: `resolveEngineVerdict`
+    // benutzt diese Funktion auch als RUECKTRITTS-PRUEFUNG fuer `proofB`. Ein
+    // bindendes `false` hier liess dort den Rueckzug nicht zu, und beide Kriterien
+    // fielen auf null.
+    return {
+      erfuellt: false,
+      unentschieden: true,
+      begruendung:
+        'Sandbox unentschieden: In den gelesenen Schritten steht kein nachrechenbarer '
+        + 'Ausdruck. Das heisst nicht, dass nicht gerechnet wurde — eine Rechnung kann '
+        + 'auch in Worten dastehen. Bitte selbst beurteilen.',
+      stepIds: [],
+    };
   }
 
   const fehlerhaft = gerechnet.filter(id => stepHasSandboxError(id, nurEchteRechenfehler(sandboxErrors)));
@@ -240,6 +263,21 @@ export function resolveEngineVerdict(
         + '(dann kein erneuter Abzug) oder ein falscher Ansatz (dann kein Punkt).',
       stepIds: eigenerWeg.stepIds,
     };
+  }
+
+  // Konnte die Sandbox den Weg gar nicht LESEN, tritt sie erst recht zurueck.
+  //
+  // ERGAENZT AM 04.09.2026. Der Rueckzug oben pruefte nur, ob der eigene Weg
+  // fehlerfrei IST. War er nicht auswertbar, fiel das mit "nicht erfuellt"
+  // zusammen — und das Ergebnis-Kriterium wurde bindend auf null gesetzt, obwohl
+  // die Sandbox nichts belegt hatte.
+  //
+  // Beobachtet an einer Pflege-Aufgabe: Die Schuelerin schrieb "2 ml in 30 min,
+  // das sind 4 ml/h" — die Rechnung steht in Worten. Lieferte die Extraktion dafuer
+  // `formula: "4"` statt "(2 / 30) * 60", verlor die Aufgabe beide Kriterien. Ohne
+  // gelesenen Rechenausdruck kann die Sandbox weder "richtig" noch "falsch" sagen.
+  if (eigenerWeg.unentschieden) {
+    return { ...eigenerWeg, stepIds: associated };
   }
 
   return { erfuellt: false, begruendung: 'Zielwert nicht erreicht/nicht notiert', stepIds: associated };

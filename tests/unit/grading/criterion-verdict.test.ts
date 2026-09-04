@@ -102,8 +102,10 @@ describe('Die drei Engine-Kriterien', () => {
             perTargetResult: [{ targetIndex: 0, reached: false, hasCalculationError: false, associatedStepIds: [] }]
         } as unknown as EngineEvidence));
 
+        // Seit dem 04.09.2026 auch hier kein bindendes Nein: Ohne lesbaren
+        // Rechenausdruck kann die Sandbox weder "richtig" noch "falsch" belegen.
         expect(urteil.erfuellt).toBe(false);
-        expect(urteil.begruendung).toMatch(/nicht erreicht/);
+        expect(urteil.unentschieden).toBe(true);
     });
 
 
@@ -111,13 +113,26 @@ describe('Die drei Engine-Kriterien', () => {
      * Ein nacktes Ergebnis („2.5 GHz") ist kein Rechenweg. Ohne eigene Rechnung
      * kann der Rechenweg-Punkt nicht vergeben werden.
      */
+    /**
+     * GEAENDERT AM 04.09.2026. Bindend war das Urteil bis dahin — jetzt tritt die
+     * Sandbox zurueck und legt den Fall dem Modell vor. Grund: Sie sieht nur
+     * `formula: "2.5"` und kann NICHT unterscheiden zwischen
+     *   • "720 EUR" — gar keine Rechnung, der Punkt gehoert verweigert, und
+     *   • "2 ml in 30 min, das sind 4 ml/h" — eine Rechnung in Worten.
+     * Beide erzeugen denselben Befund. Das Modell sieht den Text und kann es
+     * unterscheiden; die Sandbox kann es nicht und darf deshalb nicht urteilen.
+     *
+     * Die Engine vergibt den Punkt weiterhin NICHT von sich aus (`erfuellt` bleibt
+     * false) — sie verweigert ihn nur nicht mehr bindend.
+     */
     it('vergibt den Rechenweg-Punkt nicht fuer abgeschriebene Zahlen', () => {
         const urteil = resolveEngineVerdict('proofA', 0, beleg({
             ast: [{ id: 'step_1', original_text: '2.5 GHz', formula: '2.5', result: 2.5 }]
         } as unknown as EngineEvidence));
 
         expect(urteil.erfuellt).toBe(false);
-        expect(urteil.begruendung).toMatch(/Kein nachvollziehbarer Rechenweg/);
+        expect(urteil.unentschieden).toBe(true);
+        expect(urteil.begruendung).toMatch(/kein nachrechenbarer Ausdruck/);
     });
 
     /**
@@ -243,7 +258,19 @@ describe('Zielwert verfehlt, eigener Rechenweg sauber', () => {
      * "moeglicher Folgefehler" durchgehen. `bewerteRechenweg` verlangt einen
      * nachvollziehbaren Rechenschritt — ohne den gibt es nichts zurueckzutreten.
      */
-    it('tritt bei einem leeren Rechenweg nicht zurueck', () => {
+    /**
+     * GEAENDERT AM 04.09.2026 in ihr Gegenteil — und das ist der Kern der Aenderung.
+     *
+     * Bis dahin galt: Ohne lesbaren Rechenweg urteilt die Sandbox bindend "kein Punkt".
+     * Das lastete der Schuelerin eine Grenze UNSERER Auswertung an. Beobachtet an einer
+     * Pflege-Aufgabe: "2 ml in 30 min, das sind 4 ml/h" — die Rechnung steht in Worten.
+     * Lieferte die Extraktion dafuer `formula: "4"`, verlor die Aufgabe beide Kriterien.
+     *
+     * Ein leeres Blatt bleibt trotzdem ein leeres Blatt: `erfuellt` ist weiterhin false,
+     * die Engine verschenkt nichts. Sie ueberlaesst die Entscheidung dem Modell, das den
+     * Schuelertext sieht.
+     */
+    it('tritt auch bei einem leeren Rechenweg zurueck', () => {
         const urteil = resolveEngineVerdict('proofB', 0, beleg({
             ast: [],
             sandboxErrors: [],
@@ -252,7 +279,7 @@ describe('Zielwert verfehlt, eigener Rechenweg sauber', () => {
             ]
         } as unknown as EngineEvidence));
 
-        expect(urteil.unentschieden).toBeFalsy();
+        expect(urteil.unentschieden).toBe(true);
         expect(urteil.erfuellt).toBe(false);
     });
 
