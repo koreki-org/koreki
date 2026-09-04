@@ -48,18 +48,20 @@ Seit dem 02.09.2026 liegt eine erste Messung vor. Zwölf Referenzaufgaben aus zw
 
 | Kennzahl | Wert |
 |---|---|
-| Mittlere Abweichung | **0,08 Punkte je Aufgabe** (2,1 % der erreichbaren Punkte) |
-| Aufgaben ohne jede Abweichung | 11 von 12 |
+| Mittlere Abweichung | **0,08 bis 0,17 Punkte je Aufgabe** (2,1 % bis 4,2 % der erreichbaren Punkte) |
+| Aufgaben ohne jede Abweichung | 10 bis 11 von 12 |
 | Wiederholter Lauf, gleiche Sitzung | dreimal dieselbe Punktzahl, in allen zwölf Fällen |
 | Wiederholter Lauf, andere Sitzung | in zwei bis drei von zwölf Fällen 1 bis 2 Punkte Unterschied |
 
-Im einen abweichenden Fall bewertete Koreki **strenger** als die Referenz, nicht großzügiger.
+**Warum eine Spanne und keine einzelne Zahl.** Dieselbe Konfiguration wurde an zwei Tagen gemessen und ergab einmal 0,08 und einmal 0,17 Punkte. Innerhalb einer Sitzung war das Ergebnis jedes Mal stabil; die Streuung liegt zwischen Sitzungen. Eine einzelne Zahl würde eine Genauigkeit vortäuschen, die die Messung nicht hergibt.
+
+In den abweichenden Fällen bewertete Koreki **strenger** als die Referenz, nicht großzügiger.
 
 **Zur Wiederholbarkeit.** Koreki sendet an alle KI-Anbieter einen festen Startwert, damit derselbe Stapel beim zweiten Durchlauf dieselben Zahlen ergibt und nicht neue. Das wirkt zuverlässig, solange Sie innerhalb einer Sitzung arbeiten. Über längere Zeiträume hinweg — etwa wenn der Modellserver zwischendurch neu geladen hat — können einzelne Punktzahlen dennoch um ein bis zwei Punkte abweichen. Verlassen Sie sich daher nicht darauf, eine einmal erzeugte Bewertung Wochen später zeichengenau reproduzieren zu können; **speichern oder exportieren Sie das Protokoll**, wenn Sie eine Bewertung später belegen müssen.
 
 ### 4.2 Wofür diese Zahl gilt — und wofür nicht
 Bitte lesen Sie die Zahl mit ihren Grenzen:
-*   Sie gilt **ausschließlich** für die Konfiguration `qwen3.6:35b` über lokales Ollama (Temperatur 0.2, Standardprofil „MINT Standard"). **Jedes andere Modell — auch Mistral — ist ungeprüft.** Da Sie das Modell selbst wählen, kann Ihre Konfiguration abweichen.
+*   Sie gilt **ausschließlich** für die Konfiguration `qwen3.6:35b` über lokales Ollama mit dem KI-Profil „Standard" (Temperatur 0.1, topP 0.95, Denkschritte eingeschaltet) und dem Standard-Skillprofil. **Jedes andere Modell — auch Mistral — ist ungeprüft.** Da Sie das Modell selbst wählen, kann Ihre Konfiguration abweichen.
 *   Als auffällig gilt eine Abweichung von mehr als **10 %** im Mittel oder mehr als **25 %** in einem einzelnen Fall. Diese Grenzen hat der Anbieter vorab festgelegt; die oben genannte Messung hält beide ein.
 *   Zwölf Aufgaben sind eine erste Messung, kein Nachweis über alle Fächer. Der Prüfsatz enthält gezielt schwierige Grenzfälle und entspricht nicht einer durchschnittlichen Klassenarbeit.
 *   Die Eingabe war durchweg **getippter** Text. Fehler der Handschrifterkennung sind darin **nicht** enthalten und kommen hinzu.
@@ -74,7 +76,7 @@ Für Rechenaufgaben können Sie in der Musterlösung ein Rechenziel hinterlegen;
 
 In der Messung hat die geprüfte Konfiguration diese Regel eingehalten. Verlassen sollten Sie sich darauf nicht.
 
-**Was Sie deshalb beachten sollten:** Prüfen Sie bei mehrschrittigen Rechenaufgaben, ob ein Abzug in einer späteren Teilaufgabe wirklich ein neuer Fehler ist — oder derselbe zum zweiten Mal. In der Messung trafen alle sechs Rechenaufgaben **ohne** hinterlegtes Rechenziel die Sollpunktzahl exakt; **mit** Rechenziel lag die Abweichung bei 0,83 Punkten. Die Rechenkette liegt also weiterhin höher als die rein sprachliche Bewertung. Der größere Teil dieser Lücke betrifft Folgefehler — genau den Fall aus dem Absatz oben.
+**Was Sie deshalb beachten sollten:** Prüfen Sie bei mehrschrittigen Rechenaufgaben, ob ein Abzug in einer späteren Teilaufgabe wirklich ein neuer Fehler ist — oder derselbe zum zweiten Mal. In der Messung lag die Abweichung bei Rechenaufgaben **ohne** hinterlegtes Rechenziel bei 0,17 Punkten, **mit** Rechenziel bei 0,50 Punkten. Die Rechenkette liegt also weiterhin höher als die rein sprachliche Bewertung.
 
 ### 4.4 Was das für Ihre Arbeit heißt
 Ein Punktvorschlag bleibt ein Entwurf. Die Zahl oben beschreibt, wie nah die Vorschläge im Mittel lagen — sie sagt nichts über den einzelnen Fall vor Ihnen. Die Prüfpflicht aus Abschnitt 6 wird durch sie nicht kleiner.

@@ -95,11 +95,20 @@ export function buildCalcTraceEngineReport(tasksLayout: Task[]): string {
                     const pt = calcTraceResult.perTargetResult?.find((r: PerTargetResult) => r.targetIndex === idx);
                     let statusText = '';
 
-                    if (isEngineOwned(crit.source)) {
-                        const verdict = resolveEngineVerdict(crit.source, idx, calcTraceResult);
-                        statusText = verdict.erfuellt
-                            ? `✓ ERFÜLLT — ${crit.punktwert} Punkte, bereits von der Sandbox entschieden (${verdict.begruendung})`
-                            : `✗ NICHT ERFÜLLT — 0 Punkte, bereits von der Sandbox entschieden (${verdict.begruendung})`;
+                    const engineVerdict = isEngineOwned(crit.source)
+                        ? resolveEngineVerdict(crit.source, idx, calcTraceResult)
+                        : undefined;
+
+                    if (engineVerdict?.unentschieden) {
+                        // Die Sandbox legt sich nicht fest (siehe `EngineVerdict.unentschieden`).
+                        // Das Kriterium wandert zu den zu beurteilenden — sonst bliebe es ohne
+                        // Punktzahl: Das Modell liefert nur fuer angeforderte Kriterien eine.
+                        zuBeurteilendeIds.push(crit.id);
+                        statusText = `[von dir zu beurteilen — ${engineVerdict.begruendung}]`;
+                    } else if (engineVerdict) {
+                        statusText = engineVerdict.erfuellt
+                            ? `✓ ERFÜLLT — ${crit.punktwert} Punkte, bereits von der Sandbox entschieden (${engineVerdict.begruendung})`
+                            : `✗ NICHT ERFÜLLT — 0 Punkte, bereits von der Sandbox entschieden (${engineVerdict.begruendung})`;
                     } else {
                         zuBeurteilendeIds.push(crit.id);
 

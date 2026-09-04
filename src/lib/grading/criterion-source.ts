@@ -71,6 +71,28 @@ export interface EngineVerdict {
   begruendung: string;
   /** Schritte, auf die sich das Urteil stuetzt (bei Fehlern: die fehlerhaften Schritte) */
   stepIds: string[];
+  /**
+   * Die Sandbox legt sich NICHT fest — das Kriterium geht ans Modell.
+   *
+   * Der dritte Zustand neben erfuellt und nicht erfuellt. Er gilt fuer genau eine
+   * Lage: Der Zielwert der Musterloesung ist verfehlt, der Schueler hat seinen
+   * EIGENEN Rechenweg aber fehlerfrei ausgefuehrt.
+   *
+   * Das ist die Signatur eines Folgefehlers — wer sich in a) verrechnet und in b)
+   * mit seinem falschen Wert sauber weiterrechnet, verfehlt das Ziel zwangslaeufig.
+   * Es ist aber auch die Signatur einer falschen METHODE, die sauber gerechnet
+   * wurde. Beides zu unterscheiden setzt den Rechenweg der Musterloesung voraus,
+   * den ein Rechenziel nicht enthaelt.
+   *
+   * Deshalb urteilt die Sandbox hier gar nicht, statt zu raten: Sie reicht ihre
+   * Tatsachen weiter und laesst das Modell entscheiden — dieselbe Regel, nach der
+   * `proofValues` entfallen ist. Ein bindendes Urteil, das die Sandbox nicht
+   * belegen kann, ist schlechter als gar keines.
+   *
+   * `erfuellt` ist dabei `false`. Wer dieses Feld nicht kennt, verhaelt sich also
+   * wie bisher — kein Aufrufer verschenkt versehentlich Punkte.
+   */
+  unentschieden?: boolean;
 }
 
 /** Die Teile des Sandbox-Ergebnisses, aus denen sich ein Kriterien-Urteil ableiten laesst. */
@@ -201,6 +223,22 @@ export function resolveEngineVerdict(
       erfuellt: false,
       begruendung: `Rechenfehler im Rechenweg${schritte.length > 0 ? ` (Schritte: ${schritte.join(', ')})` : ''}`,
       stepIds: schritte,
+    };
+  }
+
+  // Zielwert verfehlt. Bevor das als "nicht erfuellt" bindend wird: Hat der Schueler
+  // seinen EIGENEN Rechenweg fehlerfrei ausgefuehrt? Dann ist dies die Lage, in der
+  // die Sandbox nicht entscheiden darf — siehe `unentschieden`.
+  const eigenerWeg = bewerteRechenweg(targetIndex, evidence);
+  if (eigenerWeg.erfuellt) {
+    return {
+      erfuellt: false,
+      unentschieden: true,
+      begruendung:
+        'Sandbox unentschieden: Zielwert der Musterloesung verfehlt, der eigene Rechenweg '
+        + 'ist aber fehlerfrei. Das kann ein Folgefehler aus einer frueheren Teilaufgabe sein '
+        + '(dann kein erneuter Abzug) oder ein falscher Ansatz (dann kein Punkt).',
+      stepIds: eigenerWeg.stepIds,
     };
   }
 

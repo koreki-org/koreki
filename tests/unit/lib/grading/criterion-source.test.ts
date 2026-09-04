@@ -114,13 +114,34 @@ describe('criterion-source: Zustaendigkeit', () => {
             expect(verdict.begruendung).toContain('step_1');
         });
 
-        it('verweigert den Punkt, wenn das Ziel gar nicht erreicht wurde', () => {
+        /**
+         * GEAENDERT AM 04.09.2026 um den fehlenden Rechenweg erweitert. Ein verfehltes
+         * Ziel allein traegt dieses Urteil nicht mehr: Hat die Schuelerin ihren eigenen
+         * Weg fehlerfrei gerechnet, tritt die Sandbox zurueck und legt das Kriterium dem
+         * Modell vor (moeglicher Folgefehler). Bindend verweigert wird nur, was die
+         * Sandbox auch belegen kann.
+         */
+        it('verweigert den Punkt, wenn das Ziel ohne tragfaehigen Rechenweg verfehlt wurde', () => {
             const verdict = resolveEngineVerdict('proofB', 0, evidence({
+                ast: [{ id: 'step_1', original_text: 'x = 5', formula: 'x', result: 5 }],
                 perTargetResult: [pt({ reached: false, associatedStepIds: [] })],
             }));
 
             expect(verdict.erfuellt).toBe(false);
             expect(verdict.begruendung).toContain('nicht erreicht');
+        });
+
+        /**
+         * Die Gegenprobe im selben Modul: dieselbe Lage MIT tragfaehigem Rechenweg.
+         * Hier darf kein bindendes Urteil mehr entstehen.
+         */
+        it('tritt zurueck, wenn das Ziel bei fehlerfreiem eigenem Rechenweg verfehlt wurde', () => {
+            const verdict = resolveEngineVerdict('proofB', 0, evidence({
+                perTargetResult: [pt({ reached: false, associatedStepIds: [] })],
+            }));
+
+            expect(verdict.unentschieden).toBe(true);
+            expect(verdict.erfuellt).toBe(false);
         });
     });
 

@@ -86,8 +86,19 @@ describe('Die drei Engine-Kriterien', () => {
         expect(urteil.begruendung).toMatch(/Zielwert erreicht/);
     });
 
-    it('lehnt ein nicht erreichtes Ziel ab', () => {
+    /**
+     * GEAENDERT AM 04.09.2026. Hier stand "lehnt ein nicht erreichtes Ziel ab" mit
+     * derselben Lage, aber der Erwartung `begruendung: /nicht erreicht/`.
+     *
+     * Ein verfehltes Ziel allein traegt dieses Urteil nicht mehr: Hat die Schuelerin
+     * ihren eigenen Rechenweg fehlerfrei ausgefuehrt, tritt die Sandbox zurueck
+     * (siehe den Block "Zielwert verfehlt, eigener Rechenweg sauber" weiter unten).
+     * Bindend abgelehnt wird nur noch, was sie auch belegen kann — ein Verrechner
+     * im eigenen Weg oder gar kein nachvollziehbarer Rechenweg.
+     */
+    it('lehnt ein nicht erreichtes Ziel ohne tragfaehigen Rechenweg ab', () => {
         const urteil = resolveEngineVerdict('proofB', 0, beleg({
+            ast: [{ id: 'step_1', original_text: 'x = 5', formula: 'x', result: 5 }],
             perTargetResult: [{ targetIndex: 0, reached: false, hasCalculationError: false, associatedStepIds: [] }]
         } as unknown as EngineEvidence));
 
@@ -162,5 +173,94 @@ describe('Zustaendigkeit eines Kriteriums', () => {
     it('trennt Engine-Kriterien von Modell-Kriterien', () => {
         expect(isEngineOwned('llm')).toBe(false);
         (['proofA', 'proofB'] as const).forEach(s => expect(isEngineOwned(s)).toBe(true));
+    });
+});
+
+/**
+ * Der dritte Zustand: die Sandbox tritt zurueck.
+ * ⚖️🤷
+ *
+ * ANLASS (04.09.2026). Verfehlt eine Schuelerin den Zielwert der Musterloesung,
+ * hat aber ihren EIGENEN Rechenweg fehlerfrei ausgefuehrt, ist das die Signatur
+ * eines Folgefehlers: Wer sich in a) verrechnet und in b) mit dem falschen Wert
+ * sauber weiterrechnet, verfehlt das Ziel zwangslaeufig.
+ *
+ * Es ist aber auch die Signatur einer falschen METHODE, die sauber gerechnet
+ * wurde. Beides auseinanderzuhalten setzt den Rechenweg der Musterloesung
+ * voraus, den ein Rechenziel nicht enthaelt.
+ *
+ * Bis zum 04.09.2026 urteilte die Sandbox hier bindend "nicht erfuellt" — und
+ * kein Modell konnte das korrigieren, auch der Skill "Folgefehler-Tracking"
+ * nicht. Gemessen an einer Physik-Aufgabe: Die Schuelerin rechnete in b) mit
+ * ihrem eigenen falschen v fehlerfrei weiter und verlor den Punkt trotzdem.
+ *
+ * DIE REGEL. Ein bindendes Urteil, das die Sandbox nicht belegen kann, ist
+ * schlechter als gar keines. Sie reicht ihre Tatsachen weiter und laesst das
+ * Modell entscheiden — dieselbe Regel, nach der `proofValues` entfallen ist.
+ */
+describe('Zielwert verfehlt, eigener Rechenweg sauber', () => {
+    /** Kein Rechenfehler in den eigenen Schritten, Ziel trotzdem nicht erreicht. */
+    const folgefehlerLage = beleg({
+        sandboxErrors: [],
+        perTargetResult: [
+            { targetIndex: 0, reached: false, hasCalculationError: false, associatedStepIds: ['step_1', 'step_2'] }
+        ]
+    } as unknown as EngineEvidence);
+
+    it('entscheidet nicht, sondern legt es dem Modell vor', () => {
+        const urteil = resolveEngineVerdict('proofB', 0, folgefehlerLage);
+
+        expect(urteil.unentschieden).toBe(true);
+        expect(urteil.begruendung).toContain('Folgefehler');
+    });
+
+    /**
+     * `erfuellt` bleibt `false`. Ein Aufrufer, der das neue Feld nicht kennt,
+     * verhaelt sich wie bisher und verschenkt keine Punkte.
+     */
+    it('verschenkt keine Punkte an Aufrufer, die den Zustand nicht kennen', () => {
+        expect(resolveEngineVerdict('proofB', 0, folgefehlerLage).erfuellt).toBe(false);
+    });
+
+    /**
+     * Die Gegenprobe. Wer sich in der EIGENEN Rechnung verrechnet hat, faellt
+     * bindend durch — dort ist die Sandbox im Recht und tritt nicht zurueck.
+     */
+    it('bleibt bindend, wenn der eigene Rechenweg einen Verrechner enthaelt', () => {
+        const urteil = resolveEngineVerdict('proofB', 0, beleg({
+            sandboxErrors: [rechenFehler],
+            perTargetResult: [
+                { targetIndex: 0, reached: false, hasCalculationError: false, associatedStepIds: ['step_1', 'step_2'] }
+            ]
+        } as unknown as EngineEvidence));
+
+        expect(urteil.unentschieden).toBeFalsy();
+        expect(urteil.erfuellt).toBe(false);
+    });
+
+    /**
+     * Die zweite Gegenprobe, und die wichtigere: Ein leeres Blatt darf nicht als
+     * "moeglicher Folgefehler" durchgehen. `bewerteRechenweg` verlangt einen
+     * nachvollziehbaren Rechenschritt — ohne den gibt es nichts zurueckzutreten.
+     */
+    it('tritt bei einem leeren Rechenweg nicht zurueck', () => {
+        const urteil = resolveEngineVerdict('proofB', 0, beleg({
+            ast: [],
+            sandboxErrors: [],
+            perTargetResult: [
+                { targetIndex: 0, reached: false, hasCalculationError: false, associatedStepIds: [] }
+            ]
+        } as unknown as EngineEvidence));
+
+        expect(urteil.unentschieden).toBeFalsy();
+        expect(urteil.erfuellt).toBe(false);
+    });
+
+    /** Ein erreichter Zielwert bleibt erfuellt — der neue Zweig darf ihn nicht abfangen. */
+    it('laesst einen erreichten Zielwert unberuehrt', () => {
+        const urteil = resolveEngineVerdict('proofB', 0, beleg());
+
+        expect(urteil.erfuellt).toBe(true);
+        expect(urteil.unentschieden).toBeFalsy();
     });
 });

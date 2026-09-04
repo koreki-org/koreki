@@ -241,6 +241,38 @@ ihn verfehlt hat —, weicht die Prüfung auf die übrigen Schritte des Rechenwe
 **anderen** Zielwert zugeordnet sind, bleiben dabei außen vor (Zielgrößen-Isolation). Ein nacktes
 Ergebnis ohne Rechenausdruck trägt keinen Rechenweg-Punkt.
 
+#### Der dritte Zustand: die Engine tritt zurück
+
+Ein Engine-Urteil ist bindend — kein Modell kann es korrigieren. Genau deshalb darf es nur dort fallen,
+wo die Sandbox tatsächlich etwas belegt. Seit dem 04.09.2026 gibt es neben *erfüllt* und *nicht erfüllt*
+einen dritten Ausgang: **unentschieden** (`EngineVerdict.unentschieden`).
+
+Er gilt für genau eine Lage — **Zielwert verfehlt, eigener Rechenweg fehlerfrei**:
+
+| Lage | Urteil |
+| :--- | :--- |
+| Zielwert erreicht, kein Verrechner | **erfüllt**, bindend |
+| Verrechner im eigenen Rechenweg | **nicht erfüllt**, bindend |
+| kein nachvollziehbarer Rechenweg | **nicht erfüllt**, bindend |
+| Zielwert verfehlt, eigener Weg sauber | **unentschieden** — das Modell entscheidet |
+
+Diese Lage ist die Signatur eines **Folgefehlers**: Wer sich in a) verrechnet und in b) mit dem eigenen
+falschen Wert sauber weiterrechnet, verfehlt den Musterwert zwangsläufig. Sie ist aber auch die Signatur
+einer **falschen Methode**, die sauber gerechnet wurde. Beides auseinanderzuhalten setzt den Rechenweg der
+Musterlösung voraus, den ein `TargetGoal` nicht enthält — dieselbe Grenze, an der `proofValues`
+gescheitert ist.
+
+Statt zu raten reicht die Engine ihre Tatsachen weiter: Das Kriterium erscheint im Prompt als
+*"von dir zu beurteilen"* samt Begründung, die Punktzahl des Modells zählt, und der Skill
+`skill-consecutive-errors` kann endlich greifen — vorher lief er gegen ein bindendes Urteil an.
+
+`erfuellt` bleibt dabei `false`. Ein Aufrufer, der das Feld nicht kennt, verhält sich wie zuvor und
+verschenkt keine Punkte.
+
+**Gemessen** (`qwen3.6:35b`, sechs Rechenaufgaben mit hinterlegtem Rechenziel): mittlere Abweichung von
+**0,83 auf 0,50 Punkte**. Die Physik-Aufgabe des Referenzsatzes — der Folgefehler-Fall — trifft seitdem
+exakt. Zum Vergleich: Die am 03.09.2026 gebaute und wieder verworfene Zahlen-Maschinerie erreichte 0,67.
+
 Die Übersetzung von Sandbox-Tatsachen in ein Erfüllt/Nicht-erfüllt passiert ausschließlich in
 `resolveEngineVerdict()` ([criterion-source.ts](../../src/lib/grading/criterion-source.ts)). Prompt-Aufbau
 und Punktevergabe rufen dieselbe Funktion auf — damit kann das, was der Prompt als bindend ankündigt,
@@ -323,7 +355,7 @@ gegenprüfen". Abgesichert durch
 *   **Die Engine beweist nur noch, was sie beweisen kann (Proof A und Proof B):** Am 03.09.2026 wurden am selben Tag zwei Mechanismen wieder entfernt, die über diese beiden Beweise hinausgingen. **Entscheidung:** Angenommen, auf Weisung des Anbieters nach Architektur-Review.
     *   **`source: 'proofValues'` entfällt.** Es versprach eine deterministische Prüfung der Werteeinsetzung, stützte sich dafür aber auf `hasCorrectValues = !!targetStepId` — und `targetStepId` entstand ausschließlich dort, wo ein Schritt den ZIELWERT traf. Gemessen wurde damit dasselbe wie bei `proofB`, nur schwächer: Verfehlte der Schüler das Ziel, fiel `proofValues` zwangsläufig mit; ein Einsetzfehler bei getroffenem Ziel blieb unsichtbar. Weil Engine-Urteile bindend sind, war das schlechter als gar kein Beweis. Die Dokumentation in Abschnitt 3.3 beschrieb dabei seit jeher das beabsichtigte, nie implementierte Verhalten — die Fehlmessung überlebte vier Wochen Betrieb (05.08. bis 03.09.2026), weil die Beschreibung überzeugender war als der Code.
     *   **Das Gedächtnis über Aufgabengrenzen entfällt** (eingeführt am Vormittag desselben Tages, `consecutive-values.ts`). Es verglich bloße **Zahlenwerte**: Jedes Zwischenergebnis einer verfehlten Aufgabe wurde gegen jeden Operanden der nächsten geprüft, ein einziger Treffer kippte das Ergebnis-Kriterium bindend auf „erfüllt". Trennscharf wäre das nur mit dem Rechenweg der Musterlösung, den ein `TargetGoal` nicht enthält. Der zum Ausgleich eingebaute Trivialfilter (0, 1, 2, 10, 100, 1000) verfehlte prompt den Anlassfall (übernommener Wert: 2) und verdeckte zugleich, dass die Zahlensuche auch Ziffern aus Schritt-Bezeichnern (`step_24`) und Zehnerpotenzen las.
-    **Erwogen und verworfen** wurde eine „Ersetzungsprobe" (den falschen Wert durch den richtigen ersetzen und nachrechnen) sowie eine Liste der in der Aufgabe gegebenen Werte — beides hätte funktioniert, aber der Anlass trug es nicht: Die als geprüft dokumentierte Konfiguration `qwen3.6:35b` löst den Fall ohne jede dieser Mechaniken fehlerfrei (Abweichung 0,0 Punkte); nur `mistral-medium-2604` scheiterte daran, und diese Konfiguration verfehlt ohnehin beide Genauigkeitsschwellen. **Bewusste Folge:** Die Folgefehler-Kulanz liegt wieder vollständig beim Modell und beim Skill `skill-consecutive-errors`; ein `proofB`-Kriterium fällt bei einem Folgefehler. Die Engine behält drei Zuständigkeiten (`proofA`, `proofB`, `llm`) statt vier. Gespeicherte Skills mit `proofValues` bleiben lesbar und fallen beim Einlesen auf `llm` (`VERALTETE_QUELLEN`).
+    **Erwogen und verworfen** wurde eine „Ersetzungsprobe" (den falschen Wert durch den richtigen ersetzen und nachrechnen) sowie eine Liste der in der Aufgabe gegebenen Werte — beides hätte funktioniert, aber der Anlass trug es nicht: Die als geprüft dokumentierte Konfiguration `qwen3.6:35b` löst den Fall ohne jede dieser Mechaniken fehlerfrei (Abweichung 0,0 Punkte); nur `mistral-medium-2604` scheiterte daran, und diese Konfiguration verfehlt ohnehin beide Genauigkeitsschwellen. **Bewusste Folge:** Die Folgefehler-Kulanz liegt wieder vollständig beim Modell und beim Skill `skill-consecutive-errors`. **Nachtrag 04.09.2026:** Der Halbsatz „ein `proofB`-Kriterium fällt bei einem Folgefehler“ gilt nicht mehr — die Engine fällt dort seitdem gar kein Urteil, sondern legt das Kriterium dem Modell vor (siehe 3.5, „Der dritte Zustand“). Ohne das lief der Skill gegen ein bindendes Nein an und konnte die Kulanz nicht anwenden. Die Engine behält drei Zuständigkeiten (`proofA`, `proofB`, `llm`) statt vier. Gespeicherte Skills mit `proofValues` bleiben lesbar und fallen beim Einlesen auf `llm` (`VERALTETE_QUELLEN`).
 *   **Engine-Ergebnisse werden je Aufgabe zurückgesetzt:** Ebenfalls am 03.09.2026, gefunden beim Architektur-Review zur Maßnahme oben. **Entscheidung:** Angenommen. Ein gescheiterter Engine-Lauf ließ das Urteil der vorigen Arbeit stehen, weil die Oberfläche dieselbe Aufgabenliste für den ganzen Stapel durchreicht. **Bewusste Folge:** Der Warnhinweis „ohne Sandbox-Prüfung“ greift jetzt tatsächlich in allen Fällen, in denen er greifen sollte. Siehe Abschnitt 3.7.
 *   **`source` ist die alleinige Zuordnungsquelle für Bewertungskriterien:** Am 05.08.2026 wurde beschlossen, die Wortsuche über `id`/`label` aus Prompt-Aufbau und Punktevergabe zu entfernen. **Entscheidung:** Angenommen. Beide Stellen suchten nach *unterschiedlichen* Begriffen, wodurch das Modell zu einem Kriterium befragt werden konnte, dessen Antwort die Punktevergabe anschließend verwarf — Prompt und Ergebnis konnten auseinanderlaufen. Als Ersatz für den einzigen Fall, den das Vokabular nicht abbilden konnte, wurde `source: 'proofValues'` eingeführt (deterministische Prüfung der Werteeinsetzung über `hasCorrectValues`). Der Generator-Prompt vergibt diesen Wert jetzt direkt; die Heuristik bleibt nur als einmalige Reparatur beim Einlesen erhalten. **Bewusste Folge:** Kriterien, die ausdrücklich `source: 'llm'` tragen, aber nach Werteeinsetzung klingen, werden nun tatsächlich vom Modell bewertet statt stillschweigend von der Sandbox. Siehe Abschnitt 3.5. **Nachtrag 03.09.2026:** Der Kern dieser Entscheidung — `source` als alleinige Zuordnungsquelle — gilt unverändert und ist die Grundlage dafür, dass die Rücknahme unten überhaupt gefahrlos möglich war. Entfallen ist nur der damals eingeführte Wert `proofValues` selbst; die betroffenen Kriterien tragen jetzt `llm`, die Zuständigkeit hängt weiterhin ausschließlich am Feld.
 *   **Extraktionsfehler werden nicht in ein leeres Ergebnis übersetzt:** Am 05.08.2026 wurde beschlossen, dass `extractStudentAST` technische Ausfälle als `CalcTraceExtractionError` weiterreicht, statt sie wie bisher abzufangen und `[]` zurückzugeben. **Entscheidung:** Angenommen. Ein leerer AST und ein Ausfall sind bewertungsrelevant verschiedene Aussagen: Ersteres bedeutet „der Schüler hat nicht gerechnet" und rechtfertigt 0 Punkte, Letzteres bedeutet „nicht prüfbar" und muss in die manuelle Nachkontrolle laufen. Die Gleichbehandlung führte dazu, dass ein API-Timeout in der fertigen Korrektur als Schülerversagen erschien. Der bereits vorhandene Warnpfad (`isSandboxBypassed`) übernimmt diese Fälle nun automatisch, da ohne Ergebnis kein `calcTraceResult` gesetzt wird. Siehe Abschnitt 3.4.

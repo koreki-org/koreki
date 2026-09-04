@@ -147,10 +147,17 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
             let pts = 0;
             let justification = '';
 
-            if (isEngineOwned(crit.source)) {
-                // Exakt dasselbe Urteil, das der Prompt als bereits entschieden
-                // angekuendigt hat — beide Seiten lesen dieselbe Funktion.
-                const verdict = resolveEngineVerdict(crit.source, idx, calcTraceResult);
+            // Exakt dasselbe Urteil, das der Prompt als bereits entschieden angekuendigt
+            // hat — beide Seiten lesen dieselbe Funktion.
+            const verdict = isEngineOwned(crit.source)
+                ? resolveEngineVerdict(crit.source, idx, calcTraceResult)
+                : undefined;
+
+            // Ein unentschiedenes Urteil ist KEIN Urteil: Die Sandbox konnte den Fall
+            // nicht belegen und hat ihn im Prompt dem Modell vorgelegt (siehe
+            // `EngineVerdict.unentschieden`). Hier zaehlt deshalb die Punktzahl des
+            // Modells — sonst waere die Frage gestellt und die Antwort verworfen.
+            if (verdict && !verdict.unentschieden) {
                 pts = verdict.erfuellt ? crit.punktwert : 0;
                 justification = verdict.begruendung;
                 sandboxFloor += pts;
@@ -173,7 +180,12 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
                     justification = 'KI-Einschätzung nicht auswertbar';
                 } else {
                     pts = Math.min(crit.punktwert, Math.max(0, parsed));
-                    justification = 'KI-Einschätzung';
+                    // Wo die Sandbox zurueckgetreten ist, soll das in den Notizen stehen:
+                    // Sonst sieht die Lehrkraft eine reine KI-Einschaetzung und weiss nicht,
+                    // dass ein Rechenbeweis vorlag, der bewusst nicht entschieden hat.
+                    justification = verdict?.unentschieden
+                        ? 'KI-Einschätzung (Sandbox unentschieden: möglicher Folgefehler)'
+                        : 'KI-Einschätzung';
                 }
             }
 
