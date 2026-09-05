@@ -118,7 +118,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                               * Modell ungeprueft — siehe `lib/ai/gepruefte-konfiguration.ts`.
                               */}
                             {p.id !== GEPRUEFTER_ANBIETER && (
-                                <span className="px-1.5 py-0.5 rounded-md bg-warning/10 text-[9px] font-bold text-warning uppercase tracking-tight leading-none">
+                                <span className="px-1.5 py-0.5 rounded-md bg-warning/10 text-xxs font-bold text-warning uppercase tracking-tight leading-none">
                                     {EXPERIMENTELL_KENNZEICHEN}
                                 </span>
                             )}
