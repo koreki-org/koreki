@@ -34,3 +34,24 @@ npx tsc --noEmit
 npx jest --silent
 
 echo "✅ Pre-push checks passed!"
+
+# Erinnerung an das zweite Repository.
+#
+# `compliance/` ist im Hauptrepo gitignoriert und enthaelt ein EIGENSTAENDIGES,
+# privates Repository (koreki-org/koreki-compliance). Wer Code und Akte
+# zusammen aendert — was regelmaessig vorkommt, weil eine Messung beides
+# beruehrt — braucht zwei Commits und zwei Pushes. Der zweite wird vergessen.
+#
+# Bewusst nur ein HINWEIS und kein Abbruch, aus demselben Grund, aus dem die
+# E2E-Kette oben nicht hier steht: Ein Push, den ein Dokument aufhaelt, macht
+# `--no-verify` zur Gewohnheit — und dann schuetzt auch der Rest nicht mehr.
+if [ -d compliance/.git ]; then
+  offen=$(git -C compliance status --porcelain 2>/dev/null | wc -l | tr -d " ")
+  ungepusht=$(git -C compliance log --oneline @{u}.. 2>/dev/null | wc -l | tr -d " ")
+  if [ "$offen" != "0" ] || [ "$ungepusht" != "0" ]; then
+    echo ""
+    echo "📓 Die Akte in compliance/ ist nicht auf dem Stand:"
+    echo "   $offen ungespeicherte Aenderung(en), $ungepusht ungepushte(r) Commit(s)."
+    echo "   Eigenes Repository — dort getrennt committen und pushen."
+  fi
+fi

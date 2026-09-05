@@ -66,5 +66,13 @@ Professionell, hierarchie-bewusst und hochgradig synchronisiert.
 - **Responsibility:** Der `principal-architect` stellt sicher, dass Dokumente die korrekten Metadaten (Status, Domain, Security Classification) enthalten.
 - **Living Docs:** Dokumentationen sind "Living Documents" und müssen bei Architekturänderungen unmittelbar vom jeweiligen Experten (`ui-expert`, `database-expert`, `prompt-engineer`) aktualisiert werden.
 
+## Zwei Repositories
+
+Die Compliance-Akte liegt **nicht** im Hauptrepo. `compliance/` ist dort gitignoriert — oeffentlich ist allein die Landkarte [compliance/README.md](compliance/README.md) — und enthaelt ein eigenstaendiges, privates Repository (`koreki-org/koreki-compliance`).
+
+**Wer Code und Akte zusammen aendert, braucht zwei Commits und zwei Pushes.** Das kommt regelmaessig vor: Eine Messung beruehrt Code, Nachweis und Risikoregister zugleich. Der Pre-Push-Hook erinnert daran, haelt aber nichts auf.
+
+Warum getrennt und kein Submodul: Artikel 11 und 18 verlangen, die Dokumentation zu erstellen und zehn Jahre verfuegbar zu halten — nicht, sie zu veroeffentlichen. Ein vergessener zweiter Commit ist dann einfach ein fehlender Commit; bei einem Submodul waere es ein Zeiger auf einen veralteten Stand, und das faellt niemandem auf.
+
 ## Weitere Referenzen
 - [Shared References (Architektur, KI, Operations)](.claude/shared-references.md)
