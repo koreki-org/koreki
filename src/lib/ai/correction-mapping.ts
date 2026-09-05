@@ -1,5 +1,5 @@
 import { Task, AITask } from '../../types';
-import { findeVeraenderteAufgabe } from './aufgabenname-zuordnung';
+import { findeKiAufgabe } from './aufgabenname-zuordnung';
 import { StepResult } from '../grading/types';
 import { TargetGoal, GradingCriterion } from '../grading/calc-trace-types';
 import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source';
@@ -107,8 +107,11 @@ const istBereitsFormatiert = (aiTask: AITask | undefined, marker: string[]): boo
  * Die Sandbox liefert die Punkte fuer alles Rechnerische; das Modell steuert
  * nur dort etwas bei, wo Ermessen gefragt ist. Sandbox-belegte Kriterien sind
  * bindend und bilden die Untergrenze.
+ *
+ * Nimmt seit dem 05.09.2026 KEIN `undefined` fuer `aiTask` mehr entgegen — der
+ * Compiler haelt damit fest, was der Kommentar an `mapLayoutTask` erzaehlt.
  */
-export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): TaskMappingResult {
+export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask): TaskMappingResult {
     const calcTraceResult = layoutTask.calcTraceResult!;
     let enginePoints: number;
 
@@ -122,7 +125,7 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
     const targetGoal: Partial<TargetGoal> = layoutTask.targetGoal || {};
     const criteria = targetGoal.criteria;
 
-    if (aiTask && criteria && Array.isArray(criteria) && criteria.length > 0) {
+    if (criteria && Array.isArray(criteria) && criteria.length > 0) {
         // Primaerquelle ist das strukturierte Feld. Die correctionNotes bleiben nur
         // Rueckfallebene: Sie sind Freitext, und aktive Skills schreiben ihnen ein
         // eigenes Format vor — als Datenkanal sind sie unzuverlaessig.
@@ -234,7 +237,7 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
         // Ohne Kriterien zaehlt die Gesamtpunktzahl des Modells — sofern sie eine
         // Zahl ist. Ein NaN hier faerbte die gesamte Arbeit ein: die Note
         // rechnet sich aus der Summe aller Aufgaben.
-        enginePoints = alsModellzahl(aiTask?.pointsObtained, 0);
+        enginePoints = alsModellzahl(aiTask.pointsObtained, 0);
     }
 
     if (istBereitsFormatiert(aiTask, [CALC_TRACE_MARKER, SANDBOX_PROOF_MARKER])) {
@@ -242,16 +245,16 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
             task: {
                 ...kopfAusLayout(layoutTask),
                 pointsObtained: enginePoints,
-                feedback: aiTask!.feedback,
-                correctionNotes: aiTask!.correctionNotes || '',
+                feedback: aiTask.feedback,
+                correctionNotes: aiTask.correctionNotes || '',
                 confidence: 95,
-                content: aiTask!.content || ''
+                content: aiTask.content || ''
             }
         };
     }
 
     const stepFeedback = formatCalcTraceFeedback(calcTraceResult, (layoutTask.targetGoal || {}) as TargetGoal, kriterienFuerAnzeige);
-    const aiFeedbackText = aiTask ? (aiTask.feedback || aiTask.content || '') : '';
+    const aiFeedbackText = aiTask.feedback || aiTask.content || '';
 
     let finalFeedback = `${CALC_TRACE_MARKER}\n${stepFeedback}\n\n---\n\n`;
     finalFeedback += `[KI-Pädagogische Einschätzung]\n${aiFeedbackText || 'Die mathematische Prüfung wurde vollautomatisch durch die CalcTrace-Engine validiert.'}`;
@@ -261,9 +264,9 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
             ...kopfAusLayout(layoutTask),
             pointsObtained: enginePoints,
             feedback: finalFeedback,
-            correctionNotes: aiTask ? (aiTask.correctionNotes || '') : '',
+            correctionNotes: aiTask.correctionNotes || '',
             confidence: 95,
-            content: aiTask ? (aiTask.content || '') : ''
+            content: aiTask.content || ''
         }
     };
 }
@@ -274,7 +277,7 @@ export function mapCalcTraceTask(layoutTask: Task, aiTask: AITask | undefined): 
  * Ist die Punktvergabe im Graphen abgeschaltet, entscheidet das Modell und der
  * Graph dient nur als Rueckfall — sonst sind die Graph-Punkte absolut.
  */
-export function mapGraphTask(layoutTask: Task, aiTask: AITask | undefined): TaskMappingResult {
+export function mapGraphTask(layoutTask: Task, aiTask: AITask): TaskMappingResult {
     const gradingResult = layoutTask.gradingResult!;
     const disablePointsActive = shouldDisablePoints(layoutTask.taskType, layoutTask.gradingGraph);
     const isServerResponse = istBereitsFormatiert(aiTask, [PANG_MARKER, AGS_MARKER]);
@@ -289,13 +292,13 @@ export function mapGraphTask(layoutTask: Task, aiTask: AITask | undefined): Task
         // Die `typeof`-Pruefung bleibt bewusst erhalten — eine Zeichenkette soll
         // wie bisher auf den Graphen zurueckfallen. Neu ist nur, dass ein NaN
         // dasselbe tut, statt als gueltige Punktzahl durchzugehen.
-        enginePoints = typeof aiTask?.pointsObtained === 'number' && Number.isFinite(aiTask.pointsObtained)
+        enginePoints = typeof aiTask.pointsObtained === 'number' && Number.isFinite(aiTask.pointsObtained)
             ? aiTask.pointsObtained
             : graphPunkte;
     } else {
         // Rigid grading: PANG points are absolute.
         enginePoints = isServerResponse
-            ? alsModellzahl(aiTask!.pointsObtained, graphPunkte)
+            ? alsModellzahl(aiTask.pointsObtained, graphPunkte)
             : alsModellzahl(gradingResult.totalPoints, alsModellzahl(layoutTask.pointsObtained, 0));
     }
 
@@ -338,15 +341,15 @@ export function mapGraphTask(layoutTask: Task, aiTask: AITask | undefined): Task
             task: {
                 ...kopfAusLayout(layoutTask),
                 pointsObtained: enginePoints,
-                feedback: aiTask!.feedback,
-                correctionNotes: aiTask!.correctionNotes || '',
+                feedback: aiTask.feedback,
+                correctionNotes: aiTask.correctionNotes || '',
                 confidence: 95,
-                content: aiTask!.content || ''
+                content: aiTask.content || ''
             }
         };
     }
 
-    const aiFeedbackText = aiTask ? (aiTask.feedback || aiTask.content || '') : '';
+    const aiFeedbackText = aiTask.feedback || aiTask.content || '';
 
     let finalFeedback = '';
     if (shownStepsCount > 0) {
@@ -359,9 +362,9 @@ export function mapGraphTask(layoutTask: Task, aiTask: AITask | undefined): Task
             ...kopfAusLayout(layoutTask),
             pointsObtained: enginePoints,
             feedback: finalFeedback,
-            correctionNotes: aiTask ? (aiTask.correctionNotes || '') : '',
+            correctionNotes: aiTask.correctionNotes || '',
             confidence: 95,
-            content: aiTask ? (aiTask.content || '') : ''
+            content: aiTask.content || ''
         }
     };
 }
@@ -411,40 +414,17 @@ export function mapModelTask(layoutTask: Task, aiTask: AITask): TaskMappingResul
 }
 
 /**
- * Aufgabe, die das Modell nicht unter diesem Namen geliefert hat.
+ * Die Aufgabe fehlt in der Antwort des Modells vollstaendig.
  *
- * Unterschieden wird bewusst zwischen einem blossen Schreibfehler im Namen
- * (Gross-/Kleinschreibung, Leerzeichen) und einer wirklich fehlenden Aufgabe:
- * im ersten Fall ist die Bewertung brauchbar und nur der Name schief, im
- * zweiten fehlt sie ganz und das ganze Dokument braucht einen Blick.
+ * Die Rettung eines veraenderten Namens steckte bis zum 05.09.2026 hier drin und
+ * war damit fuer Engine-Aufgaben unerreichbar; sie sitzt jetzt in `findeKiAufgabe`.
+ * Diese Funktion beschreibt nur noch den harten Fall.
+ *
+ * HARTER FEHLER: 0 Punkte, Vertrauenswert 0 und ein sichtbarer Hinweis. Die Null ist
+ * hier eine Aussage ueber die Auswertung, nicht ueber die Schuelerin — deshalb darf sie
+ * nicht wie eine gewoehnliche Bewertung aussehen.
  */
-export function mapMissingTask(
-    layoutTask: Task,
-    aiTasks: AITask[],
-    allesLayout: Task[] = [layoutTask]
-): TaskMappingResult {
-    const gerettet = findeVeraenderteAufgabe(layoutTask, aiTasks, allesLayout);
-
-    if (gerettet) {
-        const nearMiss = gerettet.treffer;
-        const hinweis = gerettet.art === 'kern'
-            ? `[KI-FEHLER?] Name nicht exakt ("${nearMiss.name}" statt "${layoutTask.name}")`
-            : `[KI-FEHLER?] Name gekuerzt oder erweitert ("${nearMiss.name}" statt "${layoutTask.name}") — Zuordnung war eindeutig, bitte pruefen`;
-        // SOFT ERROR: Die Bewertung ist brauchbar, nur der Name war schief.
-        // Punkte und Vertrauenswert bleiben, der Hinweis macht es sichtbar.
-        return {
-            task: {
-                ...kopfAusLayout(layoutTask),
-                pointsObtained: alsModellzahl(nearMiss.pointsObtained, 0),
-                feedback: `${hinweis}\n\n${nearMiss.feedback || ''}`,
-                correctionNotes: nearMiss.correctionNotes || '',
-                confidence: alsModellzahl(nearMiss.confidence, 0),
-                content: nearMiss.content || ''
-            }
-        };
-    }
-
-    // HARD ERROR: Task completely missing in AI response
+export function mapMissingTask(layoutTask: Task): TaskMappingResult {
     return {
         task: {
             ...kopfAusLayout(layoutTask),
@@ -461,11 +441,38 @@ export function mapMissingTask(
     };
 }
 
+/** Den Rettungs-Hinweis vor die Rueckmeldung setzen, ohne sie sonst anzutasten. */
+function mitHinweis(ergebnis: TaskMappingResult, hinweis: string): TaskMappingResult {
+    return {
+        ...ergebnis,
+        task: { ...ergebnis.task, feedback: `${hinweis}
+
+${ergebnis.task.feedback || ''}` }
+    };
+}
+
 /**
  * Waehlt den zustaendigen Zweig.
  *
- * Die Reihenfolge ist bedeutsam: Wo eine Engine gerechnet hat, gilt deren
- * Ergebnis — das Modell darf es nicht ueberschreiben.
+ * ERST ZUORDNEN, DANN BEWERTEN. Bis zum 05.09.2026 stand es umgekehrt:
+ *
+ * ```
+ * const aiTask = aiTasks.find(t => t.name === layoutTask.name);
+ * if (layoutTask.calcTraceResult) return mapCalcTraceTask(layoutTask, aiTask);  // auch ohne Treffer
+ * ...
+ * return mapMissingTask(layoutTask, aiTasks, allesLayout);                      // Rettung erst hier
+ * ```
+ *
+ * Fand die Suche nichts, lief eine Rechenketten-Aufgabe trotzdem in ihren Zweig — nur
+ * ohne KI-Ergebnis. Die Folge war eine Null, die aussah wie ein Urteil: keine
+ * Namensrettung, kein Hinweis, keine Punktevergabe-Tabelle (die Kriterien-Schleife
+ * braucht die KI-Aufgabe), aber Vertrauenswert 95 und der Satz "Die mathematische
+ * Pruefung wurde vollautomatisch durch die CalcTrace-Engine validiert". Gemeldet am
+ * 05.09.2026 aus der Desktop-Fassung: 0 von 3 Punkten fuer eine Aufgabe, die das Modell
+ * schlicht nicht zurueckgegeben hatte. Fuer Graph-Aufgaben galt dasselbe.
+ *
+ * Die Reihenfolge der Zweige DANACH bleibt bedeutsam: Wo eine Engine gerechnet hat,
+ * gilt deren Ergebnis — das Modell darf es nicht ueberschreiben.
  */
 export function mapLayoutTask(
     layoutTask: Task,
@@ -479,10 +486,13 @@ export function mapLayoutTask(
      */
     allesLayout: Task[] = [layoutTask]
 ): TaskMappingResult {
-    const aiTask = aiTasks.find((t: AITask) => t.name === layoutTask.name);
+    const { aiTask, hinweis } = findeKiAufgabe(layoutTask, aiTasks, allesLayout);
 
-    if (layoutTask.calcTraceResult) return mapCalcTraceTask(layoutTask, aiTask);
-    if (layoutTask.gradingResult) return mapGraphTask(layoutTask, aiTask);
-    if (aiTask) return mapModelTask(layoutTask, aiTask);
-    return mapMissingTask(layoutTask, aiTasks, allesLayout);
+    if (!aiTask) return mapMissingTask(layoutTask);
+
+    const ergebnis = layoutTask.calcTraceResult ? mapCalcTraceTask(layoutTask, aiTask)
+        : layoutTask.gradingResult ? mapGraphTask(layoutTask, aiTask)
+        : mapModelTask(layoutTask, aiTask);
+
+    return hinweis ? mitHinweis(ergebnis, hinweis) : ergebnis;
 }

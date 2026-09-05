@@ -71,3 +71,36 @@ export function findeVeraenderteAufgabe(
     return { treffer: kandidaten[0], art: 'anfang' };
 }
 
+/**
+ * Welche KI-Aufgabe gehoert zu dieser Aufgabe der Musterloesung?
+ *
+ * Zuerst der exakte Name, dann die Rettung eines veraenderten Namens. Unterschieden
+ * wird bewusst zwischen einem blossen Schreibfehler im Namen (Gross-/Kleinschreibung,
+ * Leerzeichen, gekuerzte Kennung) und einer wirklich fehlenden Aufgabe: im ersten Fall
+ * ist die Bewertung brauchbar und nur der Name schief, im zweiten fehlt sie ganz und
+ * das ganze Dokument braucht einen Blick.
+ *
+ * EIGENE FUNKTION SEIT DEM 05.09.2026 — und das ist der Kern der Reparatur. Die
+ * Rettung steckte vorher in `mapMissingTask`, und `mapLayoutTask` erreichte die erst
+ * NACH den Engine-Zweigen. Eine Rechenketten- oder Graph-Aufgabe lief deshalb auch
+ * dann in ihren Zweig, wenn gar keine KI-Aufgabe dazu vorlag: Die Zuordnung wurde nie
+ * gerettet, der Fehlbefund nie gemeldet. Siehe den Kommentar an `mapLayoutTask`.
+ */
+export function findeKiAufgabe(
+    layoutTask: Task,
+    aiTasks: AITask[],
+    allesLayout: Task[]
+): { aiTask?: AITask; hinweis?: string } {
+    const exakt = aiTasks.find((t: AITask) => t.name === layoutTask.name);
+    if (exakt) return { aiTask: exakt };
+
+    const gerettet = findeVeraenderteAufgabe(layoutTask, aiTasks, allesLayout);
+    if (!gerettet) return {};
+
+    const treffer = gerettet.treffer;
+    const hinweis = gerettet.art === 'kern'
+        ? `[KI-FEHLER?] Name nicht exakt ("${treffer.name}" statt "${layoutTask.name}")`
+        : `[KI-FEHLER?] Name gekuerzt oder erweitert ("${treffer.name}" statt "${layoutTask.name}") — Zuordnung war eindeutig, bitte pruefen`;
+
+    return { aiTask: treffer, hinweis };
+}

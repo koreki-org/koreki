@@ -3,7 +3,7 @@ import {
     mapCalcTraceTask,
     mapGraphTask,
     mapModelTask,
-    mapMissingTask
+    mapLayoutTask
 } from '../../../src/lib/ai/correction-mapping';
 import type { Task, AITask } from '../../../src/types';
 
@@ -177,7 +177,7 @@ describe('Kein NaN in der Punktevergabe — alle vier Zweige', () => {
     });
 
     it('Fehlende Aufgabe: der Beinahe-Treffer bringt kein NaN mit', () => {
-        const { task } = mapMissingTask(
+        const { task } = mapLayoutTask(
             { id: 't4', name: 'Aufgabe 4', maxPoints: 2 } as unknown as Task,
             [kiAufgabe({ name: 'aufgabe 4', pointsObtained: 'zwei' as unknown as number })]
         );

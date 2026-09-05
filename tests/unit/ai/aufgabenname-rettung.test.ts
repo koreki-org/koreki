@@ -15,7 +15,7 @@
  *
  * Die Haelfte dieser Tests prueft deshalb, dass NICHT zugeordnet wird.
  */
-import { mapLayoutTask, mapMissingTask } from '../../../src/lib/ai/correction-mapping';
+import { mapLayoutTask } from '../../../src/lib/ai/correction-mapping';
 import type { Task } from '../../../src/types';
 
 /** Eine Aufgabe der Musterloesung. */
@@ -139,7 +139,7 @@ describe('Rettung eines veraenderten Aufgabennamens', () => {
 
     /** Ohne die Liste aller Aufgaben verhaelt sich die Funktion wie zuvor. */
     it('bleibt ohne Layout-Liste abwaertskompatibel', () => {
-        const { task } = mapMissingTask(layout('Aufgabe a)'), [kiAufgabe('a)', 2)]);
+        const { task } = mapLayoutTask(layout('Aufgabe a)'), [kiAufgabe('a)', 2)]);
 
         expect(task.pointsObtained).toBe(2);
     });
