@@ -88,6 +88,30 @@ export function isLocalInstance(): boolean {
 }
 
 /**
+ * Einzelbenutzer-Betrieb: eine Community-Instanz, die genau einer Person gehört.
+ *
+ * ANLASS (05.09.2026). Die Anbieter-Panels für Mistral und OpenAI-kompatibel blendeten
+ * ihre Eingabefelder in JEDER Community-Instanz aus, mit dem Hinweis, das Institut
+ * konfiguriere den Dienst zentral. Für den Mehrbenutzer-Betrieb ist das richtig — nicht
+ * jede Lehrkraft soll den Endpunkt der Instanz umstellen können. Im Einzelbenutzer-
+ * Betrieb gibt es aber niemanden sonst: Dort war die eigene Konfiguration schlicht
+ * unerreichbar.
+ *
+ * `NEXT_PUBLIC_SINGLE_USER_MODE` stand dafür längst bereit — in `.env.example`, im
+ * Dockerfile und in allen Compose-Dateien —, wurde aber von keiner Zeile Anwendungscode
+ * gelesen. Diese Funktion ist die erste Stelle, die es tut.
+ *
+ * Bewusst NICHT in `isLocalInstance` eingebaut: Das prüft, ob die Instanz lokal läuft,
+ * und gilt für beide Community-Varianten gleichermaßen (siehe
+ * `docs/technical/deployment-tiers-comparison.md`). Hier geht es um eine andere Frage —
+ * wie viele Menschen sich diese Instanz teilen.
+ */
+export function isSingleUserInstance(): boolean {
+    return getKorekiMode() === 'community'
+        && process.env.NEXT_PUBLIC_SINGLE_USER_MODE === 'true';
+}
+
+/**
  * Prüft, ob bezahlte Modi (Standard, Pure) in der aktuellen UI aktiviert sind.
  * Lokale Instanzen erlauben IMMER alle Features.
  */

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from './ui/Button';
 import { AppSettings } from '@/types';
+import { denkschrittAktiv } from '@/lib/ai/temperature-guidance';
 import { UnifiedAiConfig } from './settings/UnifiedAiConfig';
 
 interface AiConfigurationContentProps {
@@ -32,7 +33,7 @@ const AiConfigurationContent: React.FC<AiConfigurationContentProps> = ({
                     settings.openaiUrl || '', 
                     settings.openaiKey || '', 
                     settings.openaiModel || '', 
-                    settings.enableThinking || false
+                    denkschrittAktiv(settings.enableThinking)
                 );
             } else {
                 // Fallback for generic save

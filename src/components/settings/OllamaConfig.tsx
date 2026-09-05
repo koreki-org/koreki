@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { AppSettings } from '@/types';
 import { pingOllama, fetchOllamaModels, resolveOllamaModel } from '@/lib/ai/ollama-logic';
+import { istGepruefteKonfiguration, EXPERIMENTELL_KENNZEICHEN } from '@/lib/ai/gepruefte-konfiguration';
 
 interface OllamaConfigProps {
     settings: Partial<AppSettings>;
@@ -175,7 +176,14 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                                 }`}
                             >
                                 <div className="text-left">
-                                    <div className="text-xs font-bold text-foreground">{p.name}</div>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-xs font-bold text-foreground">{p.name}</span>
+                                        {!istGepruefteKonfiguration('ollama', p.id) && (
+                                            <span className="px-1.5 py-0.5 rounded-md bg-warning/10 text-xxs font-bold text-warning uppercase tracking-tight">
+                                                {EXPERIMENTELL_KENNZEICHEN}
+                                            </span>
+                                        )}
+                                    </div>
                                     <div className="text-xxs text-muted-foreground font-medium">{p.desc}</div>
                                 </div>
                                 {isSelected && <CheckCircle2 size={18} className="text-primary animate-in zoom-in duration-300" />}
@@ -205,7 +213,20 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                         <div className="text-left flex items-center gap-3">
                             <Cpu size={18} className={isCustomMode ? 'text-primary' : 'text-muted-foreground'} />
                             <div>
-                                <div className="text-xs font-bold text-foreground">Eigene Modell-Konfiguration</div>
+                                <div className="flex items-center gap-1.5">
+                                    <span className="text-xs font-bold text-foreground">Eigene Modell-Konfiguration</span>
+                                    {/*
+                                      * Von Hand kann auch das gemessene Modell eingetragen werden.
+                                      * Das Kennzeichen richtet sich deshalb nach dem tatsaechlich
+                                      * eingetragenen Tag, nicht nach der Karte — sonst stuende
+                                      * "experimentell" ueber der geprueften Konfiguration.
+                                      */}
+                                    {!istGepruefteKonfiguration('ollama', settings.ollamaModel) && (
+                                        <span className="px-1.5 py-0.5 rounded-md bg-warning/10 text-xxs font-bold text-warning uppercase tracking-tight">
+                                            {EXPERIMENTELL_KENNZEICHEN}
+                                        </span>
+                                    )}
+                                </div>
                                 <div className="text-xxs text-muted-foreground font-medium">Manuelle Eingabe eines beliebigen Modell-Tags</div>
                             </div>
                         </div>

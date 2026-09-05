@@ -1,9 +1,9 @@
 import React from 'react';
-import { Server, ShieldCheck, Trash2, Info, Zap } from 'lucide-react';
+import { Server, ShieldCheck, Trash2, Info } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { AppSettings } from '@/types';
-import { getKorekiMode } from '@/lib/env-context';
+import { anbieterPanelModus } from './anbieter-panel-modus';
 import { askConfirmation } from '@/lib/confirm-dialog';
 
 interface OpenAICompatibleConfigProps {
@@ -17,11 +17,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
     const [saveStatus, setSaveStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
     const [localKey, setLocalKey] = React.useState(settings.openaiKey || '');
     
-    const mode = getKorekiMode();
-    const isDesktop = mode === 'desktop';
-    const isCommunity = mode === 'community';
-    const isSaaS = mode === 'saas';
-    const isPure = appMode === 'PURE';
+    const { isDesktop, isCommunity, isSaaS, isPure, istEigenverwaltet } = anbieterPanelModus(appMode);
 
     const handleClearKey = async () => {
         if (await askConfirmation({ title: 'Zugangsdaten löschen', message: 'Möchtest du die Zugangsdaten wirklich sicher vom Rechner löschen?' })) {
@@ -58,7 +54,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
             {/* Case 1: Community / SaaS Standard (Server Managed) */}
-            {(isCommunity || (isSaaS && !isPure)) && (
+            {((isCommunity && !istEigenverwaltet) || (isSaaS && !isPure)) && (
                 <div className="space-y-4">
                     <div className="p-5 bg-primary/5 rounded-3xl border-2 border-primary/10 flex flex-col items-center text-center gap-3">
                         <div className="p-3 bg-primary text-primary-foreground rounded-2xl shadow-lg shadow-primary/20">
@@ -75,7 +71,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
             )}
 
             {/* Case 2: Desktop or SaaS Pure (Local Vault / Manual) */}
-            {(isDesktop || (isSaaS && isPure)) && (
+            {(isDesktop || istEigenverwaltet || (isSaaS && isPure)) && (
                 <div className="p-4 bg-muted/30 rounded-2xl border border-border space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -142,38 +138,13 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                             />
                         </div>
 
-                        {/* Thinking Mode Toggle */}
-                        <div className="pt-2">
-                            <button
-                                onClick={() => onSave({ enableThinking: !settings.enableThinking })}
-                                className={`w-full p-3 rounded-xl border-2 transition-all flex items-center justify-between group ${
-                                settings.enableThinking 
-                                    ? 'border-primary bg-primary/5' 
-                                    : 'border-border bg-background hover:border-border/80'
-                            }`}
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg transition-colors ${
-                                    settings.enableThinking ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
-                                }`}>
-                                    <Zap size={14} className={settings.enableThinking ? 'animate-pulse' : ''} />
-                                </div>
-                                <div className="text-left">
-                                    <p className={`text-xxs font-black uppercase tracking-tight ${
-                                        settings.enableThinking ? 'text-primary' : 'text-muted-foreground'
-                                    }`}>Deep Reasoning</p>
-                                    <p className="text-xxs text-muted-foreground font-medium">Aktiviert den &quot;Thinking&quot;-Modus (z.B. für Qwen)</p>
-                                </div>
-                            </div>
-                            <div className={`w-10 h-5 rounded-full relative transition-colors ${
-                                settings.enableThinking ? 'bg-primary' : 'bg-muted'
-                            }`}>
-                                <div className={`absolute top-1 w-3 h-3 rounded-full bg-white transition-all ${
-                                    settings.enableThinking ? 'left-6' : 'left-1'
-                                }`} />
-                                </div>
-                            </button>
-                        </div>
+                        {/*
+                          * KEIN Denkschritt-Schalter hier (05.09.2026). Er stand schon im
+                          * KI-Intelligenz-Modal, gespeist aus demselben Feld — nur las die
+                          * Kopie ein ungesetztes Feld als AUS und das Original als AN. Zwei
+                          * Schalter fuer einen Wert brauchen keine Abstimmung, sondern einen
+                          * Schalter. Erzwungen durch `tests/unit/ai/denkschritt-standard.test.ts`.
+                          */}
                     </div>
 
                 <div className="p-3 bg-primary/5 rounded-xl border border-primary/10 flex items-start gap-2">
@@ -182,9 +153,12 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                         <p className="text-xxs text-primary font-medium leading-tight">
                             {isDesktop 
                                 ? "Deine Zugangsdaten werden sicher im Tresor deines Betriebssystems verwaltet."
+                                : istEigenverwaltet
+                                ? "Der Schlüssel gilt für diese Koreki-Instanz und wird in ihrer Konfiguration gespeichert. Die Anfragen laufen über deinen eigenen Server."
                                 : "Direkte Browser-Verbindung (Pure Mode). Aus DSGVO-Gründen werden Daten nicht über Koreki-Server geproxt."}
                         </p>
-                        {!isDesktop && (
+                        {/* Der CORS-Hinweis gilt nur, wo der Browser selbst beim Anbieter anfragt. */}
+                        {!isDesktop && !istEigenverwaltet && (
                             <p className="text-xxs text-primary italic leading-tight">
                                 Hinweis: Ihr Provider muss CORS für koreki.org unterstützen.
                             </p>

@@ -89,6 +89,7 @@ export function isDesktopTarget(): boolean {
 > [!WARNING]
 > Zwei Punkte, an denen eine frühere Fassung dieses Dokuments danebenlag:
 > * `isLocalInstance` prüft **nicht** auf Einzelbenutzerbetrieb. Jede Community-Instanz gilt als lokal, unabhängig von `NEXT_PUBLIC_SINGLE_USER_MODE`.
+> * Dafür gibt es seit dem 05.09.2026 `isSingleUserInstance()` — die erste Stelle im Anwendungscode, die `NEXT_PUBLIC_SINGLE_USER_MODE` überhaupt liest. Beide Fragen bleiben getrennt: `isLocalInstance` fragt, **wo** die Instanz läuft, `isSingleUserInstance`, **wie viele Menschen** sie sich teilen.
 > * Die beiden Schutzmechanismen — Vorrang von `LOGTO` und die Domain-Sperre — fehlten im Beispiel. Sie sind der Grund, warum gesetzte Lokal-Flags auf der Produktivdomain nichts bewirken.
 
 ### Die Unified Export Bridge (`downloadFile`)

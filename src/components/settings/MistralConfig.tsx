@@ -3,7 +3,7 @@ import { Globe, ShieldCheck, Trash2, Info, Save, CheckCircle2, Loader2, AlertCir
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { AppSettings } from '@/types';
-import { getKorekiMode } from '@/lib/env-context';
+import { anbieterPanelModus } from './anbieter-panel-modus';
 import { vaultService } from '@/lib/ai/vault-service';
 import { askConfirmation } from '@/lib/confirm-dialog';
 
@@ -17,11 +17,7 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
     const [isSaving, setIsSaving] = React.useState(false);
     const [saveStatus, setSaveStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
     const [localKey, setLocalKey] = React.useState(settings.mistralKey || '');
-    const mode = getKorekiMode();
-    const isDesktop = mode === 'desktop';
-    const isCommunity = mode === 'community';
-    const isSaaS = mode === 'saas';
-    const isPure = appMode === 'PURE';
+    const { isDesktop, isCommunity, isSaaS, isPure, istEigenverwaltet } = anbieterPanelModus(appMode);
 
     const handleClearKey = async () => {
         if (await askConfirmation({ title: 'Schlüssel löschen', message: 'Möchtest du den Key wirklich sicher vom Rechner löschen?' })) {
@@ -63,7 +59,7 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
     return (
         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
             {/* Case 1: Community / SaaS Standard (Server Managed) */}
-            {(isCommunity || (isSaaS && !isPure)) && (
+            {((isCommunity && !istEigenverwaltet) || (isSaaS && !isPure)) && (
                 <div className="p-5 bg-success/5 rounded-3xl border-2 border-success/20 flex flex-col items-center text-center gap-3">
                     <div className="p-3 bg-success text-success-foreground rounded-2xl shadow-lg shadow-success/20">
                         <ShieldCheck size={24} />
@@ -78,7 +74,7 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
             )}
 
             {/* Case 2: Desktop or SaaS Pure (Local Vault / Manual) */}
-            {(isDesktop || (isSaaS && isPure)) && (
+            {(isDesktop || istEigenverwaltet || (isSaaS && isPure)) && (
                 <div className="p-4 bg-muted/20 rounded-2xl border border-border space-y-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -146,9 +142,12 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
                             <p className="text-xxs text-primary font-medium leading-tight">
                                 {isDesktop 
                                     ? "Dieser Key wird verschlüsselt im Tresor deines Betriebssystems (Windows Credential Manager / Keychain / GNOME Keyring) gespeichert."
+                                    : istEigenverwaltet
+                                    ? "Der Schlüssel gilt für diese Koreki-Instanz und wird in ihrer Konfiguration gespeichert. Die Anfragen laufen über deinen eigenen Server."
                                     : "Direkte Browser-Verbindung (Pure Mode). Aus DSGVO-Gründen werden Daten nicht über Koreki-Server geproxt."}
                             </p>
-                            {!isDesktop && (
+                            {/* Der CORS-Hinweis gilt nur, wo der Browser selbst beim Anbieter anfragt. */}
+                            {!isDesktop && !istEigenverwaltet && (
                                 <p className="text-xxs text-primary/70 italic leading-tight">
                                     Hinweis: Ihr Provider muss CORS für koreki.org unterstützen.
                                 </p>

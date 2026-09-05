@@ -132,3 +132,25 @@ export const SAMPLING_SEED = 42;
 export function nutztFestenStartwert(action: string): boolean {
     return action !== 'student-simulator';
 }
+
+/**
+ * Was ein NICHT gesetzter Denkschritt bedeutet: an.
+ *
+ * ANLASS (05.09.2026). Derselbe Wert bedeutete an vier Stellen etwas Verschiedenes.
+ * `useAiProfiles` las `settings.enableThinking ?? true`, der Ollama-Pfad ebenso, der
+ * OpenAI-Pfad fuer die Korrektur ebenso — der Schalter im Anbieter-Panel dagegen zeigte
+ * bei `undefined` AUS, und der Speicherweg in `AiConfigurationContent` schrieb das
+ * ungesetzte Feld als hartes `false` in die Konfiguration.
+ *
+ * Zwei Fehler kamen dadurch zusammen: Die Anzeige log ueber den laufenden Betrieb, und
+ * wer den Einrichtungsdialog einmal durchlief, schaltete den Denkschritt ungewollt ab.
+ * Am 24.08.2026 wurde er als der Schalter mit dem groessten Einfluss auf die Genauigkeit
+ * gemessen; das Standardprofil, die Datenbankspalte und der Rueckfall beim Laden setzen
+ * ihn deshalb alle auf `true`.
+ *
+ * Diese Funktion ist die eine Stelle, die die Frage beantwortet. Erzwungen durch
+ * `tests/unit/ai/denkschritt-standard.test.ts`.
+ */
+export function denkschrittAktiv(enableThinking?: boolean | null): boolean {
+    return enableThinking ?? true;
+}

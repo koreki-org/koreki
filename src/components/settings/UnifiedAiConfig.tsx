@@ -3,6 +3,7 @@ import { Cpu, Globe, Zap, Server } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { AppSettings } from '@/types';
 import { getKorekiMode } from '@/lib/env-context';
+import { GEPRUEFTER_ANBIETER, EXPERIMENTELL_KENNZEICHEN } from '@/lib/ai/gepruefte-konfiguration';
 
 // Sub-Components
 import { MistralConfig } from './MistralConfig';
@@ -110,6 +111,17 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                         >
                             <p.icon size={16} className={settings.provider === p.id ? 'text-primary' : 'text-muted-foreground/50'} />
                             <span className={`text-xxs font-bold ${settings.provider === p.id ? 'text-primary' : 'text-muted-foreground'}`}>{p.label}</span>
+                            {/*
+                              * Nur ueber lokales Ollama gibt es ueberhaupt eine gemessene
+                              * Kombination; WELCHES Modell es sein muss, steht dort in der
+                              * Modell-Liste. Die beiden anderen Wege sind unabhaengig vom
+                              * Modell ungeprueft — siehe `lib/ai/gepruefte-konfiguration.ts`.
+                              */}
+                            {p.id !== GEPRUEFTER_ANBIETER && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-warning/10 text-[9px] font-bold text-warning uppercase tracking-tight leading-none">
+                                    {EXPERIMENTELL_KENNZEICHEN}
+                                </span>
+                            )}
                         </Button>
                     ))}
                 </div>
