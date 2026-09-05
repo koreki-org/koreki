@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { Shield, ArrowLeft, CheckCircle, Printer, Lock, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { useRouter } from 'next/router';
-import ReactMarkdown from 'react-markdown';
+import { LegalMarkdown } from '@/components/ui/LegalMarkdown';
 import { getLegalDocument } from '@/lib/legal';
 import { logtoClient } from '@/lib/logto';
 import prisma from '@/lib/prisma';
@@ -108,7 +108,7 @@ export default function TOMPage({ content, version, isAcceptedVersion }: TOMPage
                         )}
                     </div>
 
-                    <div className="bg-card rounded-3xl p-10 md:p-16 shadow-xl shadow-border/50 border border-border prose prose-slate max-w-none prose-headings:font-outfit prose-headings:font-extrabold prose-headings:tracking-tight prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-6 prose-p:text-muted-foreground prose-li:text-muted-foreground print-container">
+                    <div className="bg-background rounded-hero p-6 md:p-card-padding shadow-xl shadow-border/50 border border-border max-w-none print-container">
                         <div className="mb-10 p-6 bg-muted rounded-2xl border border-border text-xs flex items-center gap-3 no-print">
                             <Lock size={20} className="text-muted-foreground" />
                             <p className="m-0 leading-relaxed font-medium">
@@ -116,14 +116,7 @@ export default function TOMPage({ content, version, isAcceptedVersion }: TOMPage
                             </p>
                         </div>
 
-                        <ReactMarkdown 
-                            components={{
-                                h1: ({node, ...props}) => <h1 className="hidden" {...props} />, // Hide MD title
-                                hr: ({node, ...props}) => <hr className="my-12 border-border" {...props} />,
-                            }}
-                        >
-                            {content}
-                        </ReactMarkdown>
+                        <LegalMarkdown content={content} />
 
                         <div className="mt-20 pt-10 border-t border-border flex flex-col md:flex-row md:items-center justify-between gap-8 no-print">
                             <div className="text-xs text-muted-foreground font-bold uppercase tracking-widest">

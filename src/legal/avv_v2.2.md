@@ -1,0 +1,54 @@
+# Auftragsverarbeitungsvertrag (AVV)
+gemäß Art. 28 DSGVO unter Berücksichtigung der EU-Verordnung 2024/1689 (AI Act)
+
+## 1. Vertragsparteien
+Der Nutzer des Web-Tools (Lehrkraft / Schule / Schulträger) – im Folgenden: **Verantwortlicher** –
+und
+**[FIRMIERUNG BITTE HIER EINTRAGEN]**, [ADRESSE BITTE HIER EINTRAGEN] – im Folgenden: **Auftragsverarbeiter** –
+
+## 2. Gegenstand, Art und Zweck der Verarbeitung
+Der Auftragsverarbeiter stellt ein Tool zur KI-gestützten Korrekturhilfe von Klassenarbeiten bereit.
+
+**Art der Verarbeitung:** Kurzzeitige Verarbeitung von Texten/Scans zur Analyse durch eine KI.
+
+**Datenminimierung.** Inhaltsdaten (Scans und Texte) werden im Arbeitsspeicher des Endgeräts sowie kurzzeitig im Arbeitsspeicher der beteiligten Server gehalten. Mit dem Schließen oder Neuladen der Seite werden sie dort gelöscht. Eine dauerhafte Speicherung auf den Servern des Auftragsverarbeiters findet nicht statt — **mit einer Ausnahme**: Übernimmt die Lehrkraft einen Fall ausdrücklich in einen Erfahrungsschatz, wird dieser Fall mit Schülertext und erwarteter Korrektur gespeichert, bis sie ihn löscht. Der Schritt erfolgt nie automatisch. Einzelheiten in den TOM, Abschnitt 5.
+
+**Geltungsbereich:** Dieser Vertrag gilt für den vom Auftragsverarbeiter **gehosteten Betrieb**. Beim Selbstbetrieb (Community Edition) und bei der lokalen Desktop-Anwendung erhält der Auftragsverarbeiter keinen Zugriff auf Inhaltsdaten; eine Auftragsverarbeitung findet dort nicht statt. Der Betreiber ist in diesen Fällen selbst für den datenschutzkonformen Betrieb und für Verträge mit eingesetzten Drittanbietern verantwortlich.
+
+## 3. Kategorien betroffener Personen und Daten
+**Personen:** Schülerinnen und Schüler, Lehrkräfte.
+
+**Daten:** Vor- und Nachnamen (sofern nicht lokal anonymisiert), handschriftliche oder getippte Prüfungsleistungen, Bewertungsvorschläge.
+
+## 4. Unterauftragsverarbeiter
+Der Verantwortliche genehmigt folgende Unterauftragsverarbeiter:
+
+*   **Infrastruktur/Hosting:** IONOS SE, Elgendorfer Str. 57, 56410 Montabaur, Deutschland (Serverstandort: Deutschland).
+*   **Anmeldung und Kontoverwaltung:** Logto (Silverhand Ltd.). Verarbeitet werden Anmeldedaten der Lehrkraft, keine Inhaltsdaten.
+*   **Zahlungsabwicklung:** Stripe Payments Europe Ltd., Dublin, Irland. Verarbeitet werden Zahlungs- und Rechnungsdaten, keine Inhaltsdaten.
+*   **KI-Modell-Provider.** Welcher Anbieter Inhaltsdaten erhält, hängt von der eingestellten Konfiguration ab:
+    *   **Mistral AI** (Mistral AI SAS, 5 rue de la Trémoille, 75008 Paris, Frankreich). Verarbeitung auf Servern in der EU.
+    *   **Mittwald CM Service GmbH & Co. KG**, Königsberger Str. 4–6, 32339 Espelkamp, Deutschland — Standardvorbelegung für den OpenAI-kompatiblen Weg (Serverstandort Deutschland).
+    *   Wird stattdessen ein eigener Ollama-Server eingesetzt, verlassen die Inhaltsdaten die Infrastruktur des Verantwortlichen nicht; ein Modell-Provider tritt dann nicht hinzu.
+
+## 5. Zusicherungen zum Einsatz des KI-Systems
+Unabhängig von der aufsichtsrechtlichen Einordnung des Systems stellt der Auftragsverarbeiter sicher:
+
+*   Dass das System eine menschliche Aufsicht durch die Lehrkraft ermöglicht (**Human-in-the-loop**) und keinen automatisierten Pfad zur Notenvergabe enthält.
+*   Dass eine Betriebsanleitung mit Zweckbestimmung, Grenzen und bekannten Fehlerquellen bereitgestellt wird.
+*   Dass jede Einschätzung einen Vertrauenswert trägt und unsichere Ergebnisse zur Prüfung markiert werden.
+*   Dass maschinell erzeugte Texte in exportierten Dateien als solche gekennzeichnet sind.
+*   Dass die Genauigkeit und Robustheit des Systems regelmäßig überwacht werden.
+
+## 6. Technische und organisatorische Maßnahmen (TOM)
+*   **Vertraulichkeit:** TLS-Verschlüsselung (HTTPS). Keine persistente Speicherung von Inhaltsdaten außer im Erfahrungsschatz (Abschnitt 2).
+*   **Verfügbarkeit:** Hosting bei IONOS mit ISO 27001 zertifizierten Rechenzentren.
+*   **Löschkonzept:** Löschung der Inhaltsdaten im Arbeitsspeicher nach Sitzungsende. Fälle in einem Erfahrungsschatz löscht die Lehrkraft selbst; sie sind jederzeit einzeln oder als Ganzes entfernbar.
+*   **Datenminimierung:** Koreki stellt eine Anonymisierung bereit, mit der Schülernamen aus dem Text entfernt werden können. Sie ist ein **vom Nutzer ausgelöster Schritt**, keine automatische Vorstufe jeder Übergabe an das Modell. Wo Namen nicht entfernt werden, gelangen sie mit dem Text an den eingestellten Modell-Provider.
+
+Die ausführliche Fassung steht im Dokument „Technische und organisatorische Maßnahmen (TOM)".
+
+***
+
+**Stand: 05. September 2026 (v2.2)**
+*Koreki Industrial Grade AI Compliance*
