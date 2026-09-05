@@ -18,20 +18,20 @@ Wer wissen will, was noch fehlt, liest diese Seite. Wer wissen will, warum etwas
 
 | Artikel | Was verlangt wird | Wo die Antwort steht | Stand |
 |---|---|---|---|
-| **Art. 4** | KI-Kompetenz bei Anbieter und Betreiber | [betriebsanleitung_v1.2.md](../src/legal/betriebsanleitung_v1.2.md) §5 | erfüllt |
+| **Art. 4** | KI-Kompetenz bei Anbieter und Betreiber | [betriebsanleitung_v1.3.md](../src/legal/betriebsanleitung_v1.3.md) §5 | erfüllt |
 | **Art. 5** | Verbotene Praktiken | `selbsteinschaetzung.md` | erfüllt — keine Emotionserkennung, kein Social Scoring |
 | **Art. 6 Abs. 3** | Einstufung als Hochrisiko | `selbsteinschaetzung.md` | Entwurf |
 | **Art. 9** | Risikomanagement | `risikomanagement.md` | erfüllt — 16 Risiken, 3 offene Punkte |
 | **Art. 10 Abs. 6** | Daten-Governance (nur Testdaten) | `anhang-iv.md` §2.4 | Entwurf — Referenzsatz vorhanden, aber dünn |
 | **Art. 11 + Anhang IV** | Technische Dokumentation | `anhang-iv.md` | Entwurf — 22 offene Punkte |
 | **Art. 12** | Protokollierung der Läufe | [ai-protocol.ts](../src/lib/ai-protocol.ts) · `anhang-iv.md` §3.4 | erfüllt |
-| **Art. 13** | Betriebsanleitung | [betriebsanleitung_v1.2.md](../src/legal/betriebsanleitung_v1.2.md) | erfüllt |
+| **Art. 13** | Betriebsanleitung | [betriebsanleitung_v1.3.md](../src/legal/betriebsanleitung_v1.3.md) | erfüllt |
 | **Art. 14** | Menschliche Aufsicht | `anhang-iv.md` §3.3 | erfüllt — Bestätigung vor Export |
 | **Art. 15** | Genauigkeit, Robustheit, Sicherheit | `anhang-iv.md` §4 | erfüllt — gemessen, Schwellen festgelegt |
 | **Art. 16** | Pflichten des Anbieters | `anhang-iv.md` §1.2 | **blockiert** — Anbieter nicht benannt |
 | **Art. 17** | Qualitätsmanagementsystem | `qualitaetsmanagement.md` | Entwurf — zwölf von dreizehn Punkten belegt |
 | **Art. 25** | Rollenverteilung in der Wertschöpfungskette | `anhang-iv.md` §1.2 | erfüllt |
-| **Art. 26** | Pflichten der Betreiber | [betriebsanleitung_v1.2.md](../src/legal/betriebsanleitung_v1.2.md) | erfüllt |
+| **Art. 26** | Pflichten der Betreiber | [betriebsanleitung_v1.3.md](../src/legal/betriebsanleitung_v1.3.md) | erfüllt |
 | **Art. 43 + Anhang VI** | Konformitätsbewertung (interne Kontrolle) | `anhang-iv.md` §8 | **blockiert** — braucht Anbieter |
 | **Art. 47** | EU-Konformitätserklärung | — | **blockiert** — braucht Anbieter |
 | **Art. 49** | Registrierung in der EU-Datenbank | `selbsteinschaetzung.md` | **blockiert** — braucht Anbieter |

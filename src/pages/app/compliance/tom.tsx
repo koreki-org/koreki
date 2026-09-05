@@ -144,7 +144,7 @@ export default function TOMPage({ content, version, isAcceptedVersion }: TOMPage
             <footer className="bg-foreground text-white py-12 md:py-20 mt-20 text-center no-print">
                 <div className="max-w-4xl mx-auto px-6">
                     <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
-                        &copy; {new Date().getFullYear()} {LEGAL_CONFIG.controller.name} - Koreki<span className="text-primary">.</span> Alle Rechte vorbehalten.
+                        &copy; {new Date().getFullYear()} {LEGAL_CONFIG.provider.name}<span className="text-primary">.</span> Alle Rechte vorbehalten.
                     </p>
                 </div>
             </footer>

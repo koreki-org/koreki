@@ -20,7 +20,7 @@ Lösung: Es gibt keinen, außer Korrigieren."
     
     # Schülerlösung
     $Doc = $Word.Documents.Add()
-    $Doc.Content.Text = "Name: Andreas Heid
+    $Doc.Content.Text = "Name: Max Mustermann
 Klasse: 10a
 Datum: 30.03.2026
 

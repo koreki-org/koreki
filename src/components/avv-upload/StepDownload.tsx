@@ -30,8 +30,8 @@ export const StepDownload: React.FC<StepDownloadProps> = ({ isOrganization, onNe
                     <FileText size={24} />
                 </div>
                 <div className="flex-1 text-left">
-                    <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">AVV_Muster_Koreki.pdf</h3>
-                    <span className="text-xs font-medium text-muted-foreground group-hover:text-primary/70">Herunterladen & Signieren</span>
+                    <h3 className="font-bold text-foreground group-hover:text-primary transition-colors">Auftragsverarbeitungsvertrag (AVV)</h3>
+                    <span className="text-xs font-medium text-muted-foreground group-hover:text-primary/70">Ansehen, ausdrucken und unterzeichnen</span>
                 </div>
                 <ExternalLink size={20} className="text-muted-foreground group-hover:text-primary transition-colors" />
             </a>

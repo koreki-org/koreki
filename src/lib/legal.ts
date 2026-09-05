@@ -37,7 +37,12 @@ function setzeAnbieterEin(text: string): string {
         ergebnis = setzeEin(ergebnis, platzhalter, LEGAL_CONFIG.controller.name);
     }
     ergebnis = setzeEin(ergebnis, '[ADRESSE BITTE HIER EINTRAGEN]', LEGAL_CONFIG.controller.address);
-    return setzeEin(ergebnis, '[KONTAKT BITTE HIER EINTRAGEN]', LEGAL_CONFIG.contact.email);
+    ergebnis = setzeEin(ergebnis, '[KONTAKT BITTE HIER EINTRAGEN]', LEGAL_CONFIG.contact.email);
+
+    // Der Anbieter des Systems — eine ANDERE Rolle als der Betreiber darueber.
+    ergebnis = setzeEin(ergebnis, '[ANBIETER BITTE HIER EINTRAGEN]', LEGAL_CONFIG.provider.name);
+    ergebnis = setzeEin(ergebnis, '[ANBIETER-KONTAKT BITTE HIER EINTRAGEN]', LEGAL_CONFIG.provider.email);
+    return setzeEin(ergebnis, '[ANBIETER-IMPRESSUM BITTE HIER EINTRAGEN]', LEGAL_CONFIG.provider.imprint);
 }
 
 export function getLegalDocument(type: 'avv' | 'tom' | 'betriebsanleitung'| 'agb', version?: string | null): LegalDocument | null {

@@ -31,7 +31,7 @@ Wir unterscheiden zwischen **System-Rollen** (Plattform-Ebene) und **Mandanten-R
 
 | Rolle | Icon | Ebene | Beschreibung | Modi | Credits kaufen | Prompts editieren | Admin-Board | Org-Verwalt-Board |
 | :--- | :--- | :--- | :--- | :--- | :---: | :---: | :---: | :---: |
-| **System-Admin** | 👑 | Plattform | Andreas Heid (Besitzer) | `STANDARD` | Ja | Ja | Ja | Ja |
+| **System-Admin** | 👑 | Plattform | Projektinhaber | `STANDARD` | Ja | Ja | Ja | Ja |
 | **Org-Verwalter** | 🏢⚙️ | Institut | Schulleiter / IT-Admin | `STANDARD`, `PURE` | Ja | Ja | Nein | Ja |
 | **Lehrkraft** | 🏫 | Institut | Lehrer / Kollegium | `STANDARD`, `PURE` | Nein | Ja (Auto) | Nein | Nein |
 | **Privat-Experte** | 💎 | Privat | Premium B2C Nutzer | `STANDARD`, `PURE` | Ja | Ja | Nein | Nein |

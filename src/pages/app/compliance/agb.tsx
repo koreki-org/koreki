@@ -135,7 +135,7 @@ export default function AGBPage({ content, version }: AGBPageProps) {
                 <div className="max-w-4xl mx-auto px-6">
                     <p className="text-muted-foreground text-sm mb-4">Professionelle Nutzungsbedingungen für Koreki.</p>
                     <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
-                        &copy; {new Date().getFullYear()} {LEGAL_CONFIG.controller.name} - Koreki<span className="text-primary">.</span> Alle Rechte vorbehalten.
+                        &copy; {new Date().getFullYear()} {LEGAL_CONFIG.provider.name}<span className="text-primary">.</span> Alle Rechte vorbehalten.
                     </p>
                 </div>
             </footer>
