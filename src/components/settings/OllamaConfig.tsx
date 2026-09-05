@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { AppSettings } from '@/types';
 import { pingOllama, fetchOllamaModels, resolveOllamaModel } from '@/lib/ai/ollama-logic';
+import { OLLAMA_VORSCHLAEGE, VORSCHLAG_IDS } from './ollama-vorschlaege';
 import { istGepruefteKonfiguration, EXPERIMENTELL_KENNZEICHEN } from '@/lib/ai/gepruefte-konfiguration';
 
 interface OllamaConfigProps {
@@ -19,10 +20,9 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
     const [ollamaVersion, setOllamaVersion] = useState('');
     const [hasAttempted, setHasAttempted] = useState(false);
 
-    const presets = ['qwen3.6:35b', 'mistral-small3.2:latest', 'gemma4:31b'];
     const [isCustomMode, setIsCustomMode] = useState(() => {
         if (!settings.ollamaModel) return false;
-        return !presets.includes(settings.ollamaModel);
+        return !VORSCHLAG_IDS.includes(settings.ollamaModel);
     });
     const hasInitializedRef = React.useRef(false);
 
@@ -30,7 +30,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
     useEffect(() => {
         if (hasInitializedRef.current || availableModels.length === 0 || !settings.ollamaModel) return;
         
-        const isPresetMatched = presets.some(pid => resolveOllamaModel(pid, availableModels) === settings.ollamaModel);
+        const isPresetMatched = VORSCHLAG_IDS.some(pid => resolveOllamaModel(pid, availableModels) === settings.ollamaModel);
         if (isPresetMatched) {
             setIsCustomMode(false);
         } else {
@@ -53,8 +53,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                 setAvailableModels(models);
 
                 // Auto-resolve preset if it is not explicitly installed but has a matching local mapped tag
-                const presets = ['qwen3.6:35b', 'mistral-small3.2:latest', 'gemma4:31b'];
-                const isPreset = presets.includes(settings.ollamaModel || '');
+                const isPreset = VORSCHLAG_IDS.includes(settings.ollamaModel || '');
                 if (isPreset && settings.ollamaModel && models.length > 0 && !models.includes(settings.ollamaModel)) {
                     const resolved = resolveOllamaModel(settings.ollamaModel, models);
                     if (resolved !== settings.ollamaModel) {
@@ -151,11 +150,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
             <div className="space-y-3">
                 <label className="block text-xxs font-black uppercase text-muted-foreground tracking-widest ml-1">Modell wählen</label>
                 <div className="grid grid-cols-1 gap-2">
-                    {[
-                        { id: 'qwen3.6:35b', name: 'Qwen 3.6', desc: 'Empfohlen (High Reasoning)' },
-                        { id: 'mistral-small3.2:latest', name: 'Mistral Small 3.2', desc: 'Schnell & Effizient' },
-                        { id: 'gemma4:31b', name: 'Gemma 31B', desc: 'Spezialist für Inhaltsanalyse' }
-                    ].map(p => {
+                    {OLLAMA_VORSCHLAEGE.map(p => {
                         const resolvedForCard = resolveOllamaModel(p.id, availableModels);
                         const isSelected = !isCustomMode && (
                             settings.ollamaModel === p.id || 
@@ -197,10 +192,9 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                         onClick={() => {
                             setIsCustomMode(true);
                             // Fallback to llama3:latest only if current model is empty or a preset
-                            const presets = ['qwen3.6:35b', 'mistral-small3.2:latest', 'gemma4:31b'];
                             const isCurrentPreset = settings.ollamaModel && (
-                                presets.includes(settings.ollamaModel) || 
-                                (availableModels.length > 0 && presets.some(pid => resolveOllamaModel(pid, availableModels) === settings.ollamaModel))
+                                VORSCHLAG_IDS.includes(settings.ollamaModel) || 
+                                (availableModels.length > 0 && VORSCHLAG_IDS.some(pid => resolveOllamaModel(pid, availableModels) === settings.ollamaModel))
                             );
                             if (!settings.ollamaModel || isCurrentPreset) {
                                 onSave({ ollamaModel: 'llama3:latest' });
