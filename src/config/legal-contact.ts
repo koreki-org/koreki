@@ -25,9 +25,11 @@ export const LEGAL_CONFIG = {
      * Zeilen — er veraendert den Quellcode ohnehin.
      */
     provider: {
-        name: "Koreki",
+        // Die Domain statt des blossen Produktnamens: "Koreki" ist der Titel dieses
+        // Dokuments und sagt einer Lehrkraft nichts darueber, wo sie den Anbieter
+        // findet. "koreki.org" ist eindeutig und fuehrt irgendwohin.
+        name: "koreki.org",
         email: "info@koreki.org",
-        web: "https://koreki.org",
         imprint: "https://koreki.org/impressum",
     },
 
