@@ -22,6 +22,7 @@ import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
 import { alsText } from './chat-types';
 import type { ChatNachricht, ChatAnfrage, ChatAntwort, TokenVerbrauch } from './chat-types';
 import { pruefeWerkzeugAufruf } from './tool-validation';
+import { denktBeiAktion } from './denkschritt';
 
 /**
  * Leer ist auch der leere String.
@@ -112,11 +113,14 @@ export async function executeOpenAIRequest(
     }
 
     // 2. Parameter Hardening (Qwen 3.6 Recommendations)
-    // Thinking mode is only useful for reasoning/pedagogical tasks (correction, second-opinion, graph generation/refinement)
-    // For extraction/cleaning tasks (clean-and-map, clean-and-analyze, variable-extraction, vision, anonymize),
-    // thinking mode is unnecessary, slower, and can lead to unwanted "corrections" or hallucinations.
-    const reasoningActions: AIAction[] = ['correction', 'second-opinion'];
-    const isThinking = options.enableThinking ?? (reasoningActions.includes(action) ? true : false);
+    //
+    // Die Entscheidung, ob laut gedacht wird, faellt in `denkschritt.ts` — dieselbe
+    // Leiter wie beim Ollama-Weg. Hier stand bis zum 07.09.2026 eine ZWEITE, andere
+    // Fassung davon: Sie zaehlte `vision`, `anonymize` und die Struktur-Aktionen
+    // richtig auf, wurde aber nirgends gesendet und war damit wirkungslos. Das Modell
+    // entschied selbst, und Qwen 3.6 denkt von sich aus — auch beim Abschreiben einer
+    // Seite, wo es die gesamte Antwortlaenge aufbraucht und leeren Text liefert.
+    const isThinking = denktBeiAktion(action, options.enableThinking);
     
     // System-level cleaning/mapping actions where we want to enforce prompt-defined temperature (0.0) 
     // to guarantee verbatim/structural integrity and prevent any user-configured correction temperature from inducing hallucinations.
@@ -221,11 +225,33 @@ export async function executeOpenAIRequest(
         body.response_format = { type: 'json_object' };
     }
 
-    // Specific Qwen/OpenAI-compat Extra Params
-    // [Industrial Alert] 🛡️
-    // LiteLLM (Mittwald's proxy) crashes if we pass custom non-standard fields like chat_template_kwargs or enable_thinking,
-    // because it falsely assumes this is an Anthropic/Custom-specific request and searches the wrong catalog.
-    // We rely on the system prompt or native model behavior for reasoning instead.
+    /**
+     * Der Denkschritt — und warum er VERSCHACHTELT stehen muss.
+     *
+     * Hier stand die Warnung, der Vermittler (LiteLLM bei Mittwald) stuerze bei
+     * `chat_template_kwargs` ab, weshalb man sich auf das Eigenverhalten des Modells
+     * verlasse. Am 07.09.2026 gegen den Endpunkt nachgemessen: Er stuerzt nicht. Er
+     * nimmt das Feld an und befolgt es.
+     *
+     * Was WIRKLICH gilt, gemessen mit je drei Laeufen und eindeutigen Prompts:
+     *
+     * | Form                                          | Qwen 3.6 | Qwen 3.8 |
+     * |-----------------------------------------------|----------|----------|
+     * | `enable_thinking: false` auf oberster Ebene   | ignoriert | ignoriert |
+     * | `chat_template_kwargs.enable_thinking: false` | **wirkt** | **wirkt** |
+     * | `reasoning_effort: 'low'`                     | wirkungslos | wirkt |
+     *
+     * Die oberste Ebene wird STILL verworfen — kein Fehler, keine Warnung, das Denken
+     * laeuft weiter. Genau davor warnt auch Mittwalds eigene Modell-Dokumentation.
+     * Deshalb steht das Feld hier verschachtelt, und deshalb ist `reasoning_effort`
+     * kein Ersatz dafuer: Bei Qwen 3.6 — dem Modell hinter "Hohe Genauigkeit" im
+     * SaaS — aendern die Denktiefen-Stufen nachweislich nichts.
+     *
+     * Damit unterscheidet sich diese Familie von Ollama nur im FELD (`think` dort,
+     * `chat_template_kwargs.enable_thinking` hier), nicht mehr in der Entscheidung.
+     */
+    body.chat_template_kwargs = { enable_thinking: isThinking };
+
     
     const isGraphAction = action === 'generate-graph' || action === 'refine-graph';
     if (isGraphAction) {

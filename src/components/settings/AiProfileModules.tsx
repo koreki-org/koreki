@@ -281,7 +281,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             <ParameterSlider
                                 label="Vision Max Tokens (num_predict)"
                                 tooltipTitle="Vision Max Tokens"
-                                tooltipContent="Die maximale Token-Länge für die OCR-Erkennung pro Seite. Standardmäßig auf 16.000 begrenzt."
+                                tooltipContent="Die maximale Token-Länge für die OCR-Erkennung pro Seite. Standardmäßig auf 32.768 begrenzt."
                                 value={visionMaxTokens}
                                 onChange={setVisionMaxTokens}
                                 min="1024"

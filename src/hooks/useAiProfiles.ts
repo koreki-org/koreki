@@ -29,7 +29,7 @@ export const STANDARD_AI_PROFILE: AiProfile & { isSystem: boolean } = {
     enableThinking: true,
     visionTemperature: 0.0,
     visionTopP: 0.8,
-    visionMaxTokens: 16000,
+    visionMaxTokens: 32768,
     visionPresencePenalty: 0.0,
     ollamaNumCtx: 0,
     isSystem: true
@@ -45,7 +45,7 @@ export const MATH_AI_PROFILE: AiProfile & { isSystem: boolean } = {
     enableThinking: true,
     visionTemperature: 0.0,
     visionTopP: 0.5,
-    visionMaxTokens: 16000,
+    visionMaxTokens: 32768,
     visionPresencePenalty: 0.0,
     ollamaNumCtx: 0,
     isSystem: true
@@ -82,7 +82,7 @@ export const useAiProfiles = (
 
     const [visionTemperature, setVisionTemperature] = useState(settings.visionTemperature ?? 0.0);
     const [visionTopP, setVisionTopP] = useState(settings.visionTopP ?? 0.8);
-    const [visionMaxTokens, setVisionMaxTokensState] = useState(settings.visionMaxTokens ?? 16000);
+    const [visionMaxTokens, setVisionMaxTokensState] = useState(settings.visionMaxTokens ?? 32768);
     const [visionPresencePenalty, setVisionPresencePenalty] = useState(settings.visionPresencePenalty ?? 0.0);
     
     const [ollamaNumCtx, setOllamaNumCtxState] = useState(settings.ollamaNumCtx ?? 0);
@@ -224,7 +224,7 @@ export const useAiProfiles = (
 
             setVisionTemperature(template.visionTemperature ?? 0.0);
             setVisionTopP(template.visionTopP ?? 0.8);
-            setVisionMaxTokensState(template.visionMaxTokens ?? 16000);
+            setVisionMaxTokensState(template.visionMaxTokens ?? 32768);
             setVisionPresencePenalty(template.visionPresencePenalty ?? 0.0);
             setOllamaNumCtxState(template.ollamaNumCtx ?? 0);
         } else {
@@ -238,7 +238,7 @@ export const useAiProfiles = (
 
             setVisionTemperature(0.0);
             setVisionTopP(0.8);
-            setVisionMaxTokensState(16000);
+            setVisionMaxTokensState(32768);
             setVisionPresencePenalty(0.0);
             setOllamaNumCtxState(0);
         }

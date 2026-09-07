@@ -2,6 +2,7 @@ import { AIConfigError, resolveAiHttpError } from '@/lib/ai/provider-error';
 import prisma from '@/lib/prisma';
 import type { NextApiResponse } from 'next';
 import { z } from 'zod';
+import { anbieterEinstellungenSchema } from '@/lib/ai/settings-schema';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
@@ -26,21 +27,15 @@ const extractImageSchema = z.object({
     buffer: z.string().optional(),
     buffers: z.array(z.string()).optional(),
     mimeType: z.string().optional(),
-    settings: z.object({
+    // Die Bilderkennung braucht ueber die gemeinsame Basis hinaus ihre eigenen
+    // Vision-Abtastwerte, und `provider` darf hier fehlen (dann entscheidet der Server).
+    settings: anbieterEinstellungenSchema.extend({
         provider: z.enum(['mistral', 'ollama', 'openai-compatible']).optional(),
-        mistralKey: z.string().optional(),
-        openaiUrl: z.string().optional(),
-        openaiKey: z.string().optional(),
-        openaiModel: z.string().optional(),
-        model: z.string().optional(),
-        ollamaUrl: z.string().optional(),
-        ollamaModel: z.string().optional(),
-        ollamaNumCtx: z.number().optional(),
         visionTemperature: z.number().optional(),
         visionTopP: z.number().optional(),
         visionMaxTokens: z.number().optional(),
         visionPresencePenalty: z.number().optional()
-    }).passthrough().optional(),
+    }).optional(),
     pageCount: z.number().optional(),
     pageRange: z.tuple([z.number(), z.number()]).optional(),
     isComplex: z.boolean().optional()

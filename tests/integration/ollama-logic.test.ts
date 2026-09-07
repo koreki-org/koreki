@@ -72,11 +72,18 @@ describe('Ollama Provider - Layer 2 Integration Tests', () => {
 
         const payload = { buffer: 'base64_data', action: 'vision' };
         
-        // 1. Default visionMaxTokens
+        // 1. Default visionMaxTokens — seit 07.09.2026 32768 statt 16000, damit die
+        // Vorgabe in allen Familien dieselbe Zahl ist (Profil, Zod-Schema, Regler).
+        //
+        // Bei Ollama kommt sie nicht ungekuerzt an, und das ist richtig so: Das
+        // Kontextfenster von 32768 traegt das Seitenbild (8000 Token) und den
+        // Vision-Prompt mit; was uebrig bleibt, ist die Obergrenze der Antwort.
+        // 32768 - 8000 - ceil(2666 Zeichen / 2.8) = 23816. Der Regler kann die Zahl
+        // also anheben, das Kontextfenster bleibt die harte Grenze.
         const defaultSettings = { ollamaUrl: 'http://localhost:11434', ollamaModel: 'gemma4:latest', ollamaNumCtx: 32768 };
         await executeOllamaRequest('vision', payload as any, defaultSettings as any);
         expect(mockInvoke).toHaveBeenLastCalledWith('execute_ollama_command', expect.objectContaining({
-            numPredict: 16000
+            numPredict: 23816
         }));
 
         // 2. Custom visionMaxTokens

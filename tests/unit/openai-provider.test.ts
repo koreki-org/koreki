@@ -44,7 +44,22 @@ describe('OpenAI Provider (Bridge) - Unit Tests', () => {
             expect(body.messages[0].role).toBe('system');
         });
 
-        it('should NOT include non-standard fields like chat_template_kwargs in payload body', async () => {
+        /**
+         * UMGEDREHT AM 07.09.2026. Hier stand die Erwartung, `chat_template_kwargs`
+         * duerfe NICHT im Rumpf stehen — begruendet mit einem Absturz des Vermittlers
+         * (LiteLLM bei Mittwald), den es nicht gibt. Gegen den Endpunkt nachgemessen:
+         * Er nimmt das Feld an und befolgt es; ignoriert wird nur `enable_thinking`
+         * auf oberster Ebene.
+         *
+         * Der Test war damit ein Waechter fuer den Fehler statt gegen ihn: Er hielt
+         * die einzige wirksame Form des Schalters aus dem Rumpf heraus, und der
+         * Denkschritt lief bei jeder Aktion mit — auch bei der Bilderkennung, wo er
+         * die Antwort vollstaendig auffrisst.
+         *
+         * Die Leiter dahinter steht in `denkschritt.ts`, geprueft in
+         * `tests/unit/ai/denkschritt-leiter.test.ts`.
+         */
+        it('sendet den Denkschritt verschachtelt, nicht auf oberster Ebene', async () => {
             mockFetchWithRetry.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({ choices: [{ message: { content: '{}' } }] })
@@ -54,9 +69,9 @@ describe('OpenAI Provider (Bridge) - Unit Tests', () => {
                 model: MODEL,
                 enableThinking: true
             });
-            
+
             const body = JSON.parse(mockFetchWithRetry.mock.calls[0][1].body);
-            expect(body).not.toHaveProperty('chat_template_kwargs');
+            expect(body.chat_template_kwargs).toEqual({ enable_thinking: true });
             expect(body).not.toHaveProperty('enable_thinking');
         });
 

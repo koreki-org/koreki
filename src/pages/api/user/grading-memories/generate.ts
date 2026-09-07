@@ -1,6 +1,7 @@
 import { AIConfigError, resolveAiHttpError } from '@/lib/ai/provider-error';
 import type { NextApiResponse } from 'next';
 import { z } from 'zod';
+import { anbieterEinstellungenSchema } from '@/lib/ai/settings-schema';
 import { executeMistralRequest } from '../../../../lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '../../../../lib/ai/openai-provider';
 import { executeOllamaRequest } from '../../../../lib/ai/ollama-logic';
@@ -23,17 +24,7 @@ const generateSchema = z.object({
     modelSolution: z.string().min(1, 'Musterlösung ist erforderlich'),
     tasksLayout: z.array(z.any()).optional(),
     selectedTasks: z.array(z.string()).optional(),
-    settings: z.object({
-        provider: z.enum(['mistral', 'ollama', 'openai-compatible']),
-        mistralKey: z.string().optional(),
-        openaiUrl: z.string().optional(),
-        openaiKey: z.string().optional(),
-        openaiModel: z.string().optional(),
-        model: z.string().optional(),
-        ollamaUrl: z.string().optional(),
-        ollamaModel: z.string().optional(),
-        ollamaNumCtx: z.number().optional()
-    }).passthrough()
+    settings: anbieterEinstellungenSchema
 });
 
 export default withSecurity(async (req: AuthenticatedRequest, res: NextApiResponse) => {
@@ -83,7 +74,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 { modelSolution, tasksLayout, selectedTasks },
                 baseUrl,
                 apiKey,
-                { model }
+                { model, enableThinking: settings.enableThinking }
             );
         } else {
             const apiKey = settings.mistralKey || process.env.MISTRAL_API_KEY;

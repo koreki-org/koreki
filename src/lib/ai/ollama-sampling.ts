@@ -1,6 +1,7 @@
 import type { AppSettings } from '../../types';
 import type { AIAction } from './prompt-dispatch';
 import { FREETEXT_TEMPERATURE_MINIMUM, TEMPERATURE_MINIMUM, TOP_P_DEFAULT, VISION_TEMPERATURE_MINIMUM } from './temperature-guidance';
+import { denktBeiAktion, STRUKTUR_AKTIONEN } from './denkschritt';
 
 /**
  * Wie heiss das lokale Modell rechnen darf.
@@ -21,16 +22,15 @@ import { FREETEXT_TEMPERATURE_MINIMUM, TEMPERATURE_MINIMUM, TOP_P_DEFAULT, VISIO
  * gleiche Ausgabe, kein Netz — und war dort 135 Zeilen lang ungeprueft.
  */
 
-/** Aktionen, bei denen das Modell Struktur erzeugt statt zu formulieren. */
-const SYSTEM_AKTIONEN: AIAction[] = [
-    'clean-and-analyze',
-    'clean-and-map',
-    'variable-extraction',
-    'generate-graph',
-    'refine-graph',
-    'generate-calc-trace',
-    'calc-trace-extraction'
-];
+/**
+ * Aktionen, bei denen das Modell Struktur erzeugt statt zu formulieren.
+ *
+ * Steht seit dem 07.09.2026 in `denkschritt.ts`, weil sie dort UND hier gilt: Die
+ * Liste beantwortet die Frage nach dem Denkschritt fuer alle Anbieter-Familien, hier
+ * zusaetzlich die nach Temperatur und Antwortlaenge. Zwei Kopien haetten auseinander
+ * laufen koennen — genau das war der Fehler, der den Umbau ausgeloest hat.
+ */
+const SYSTEM_AKTIONEN = STRUKTUR_AKTIONEN;
 
 /**
  * Aktionen, die eine Rechnung abbilden. Hier ist jede Abweichung ein Fehler,
@@ -123,43 +123,21 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
     const modelLower = e.model.toLowerCase();
 
     let targetMaxTokens = isVision
-        ? (settings.visionMaxTokens ?? 16000)
+        ? (settings.visionMaxTokens ?? 32768)
         : (settings.maxTokens ?? 32768);
     if (isSystemAction) {
         targetMaxTokens = Math.min(targetMaxTokens, 8192);
     }
 
-    // Bilderkennung und Struktur-Aktionen denken nicht laut: der Denktext landete
-    // sonst im JSON, das sie erzeugen sollen.
-    // Rueckfall `true`, wie ihn ADR 001, das Standardprofil und die
-    // Thinking-Governance in ai-provider-infrastructure.md vorsehen. Stand hier bis
-    // zum 25.08.2026 auf `false` — ohne geladenes Profil lief die Korrektur damit
-    // ohne Denkschritt, obwohl jede andere Stelle das Gegenteil sagte. Gemessen am
-    // 24.08.2026 ist es der Schalter mit dem groessten Einfluss auf die Genauigkeit.
+    // Wer denkt bei welcher Aktion laut mit? Die Leiter steht seit dem 07.09.2026 in
+    // `denkschritt.ts` und gilt fuer ALLE Anbieter-Familien — samt der Begruendungen,
+    // die frueher hier standen (Rueckfall `true` seit 25.08.2026, die gemessene
+    // Ausnahme der Rechenweg-Extraktion vom 04.09.2026).
     //
-    // AUSNAHME: die Rechenweg-Extraktion denkt doch laut — gemessen am 04.09.2026.
-    //
-    // Sie muss aus einer Umformungs-Annotation erst erschliessen, WELCHE Rechnung
-    // gemeint ist ("3x = 18 | :3" → 18 geteilt durch 3). Ohne Denkschritt geschieht
-    // das mitten in der Ausgabe: Das Modell schreibt die Formel hin und traegt als
-    // Ergebnis deren Wert ein statt den des Schuelers. Notiert war "x = 9",
-    // eingetragen wurde die 6 — der Fehler war geloescht, bevor die Sandbox ihn
-    // sehen konnte.
-    //
-    // Fuenf andere Gegenmassnahmen blieben wirkungslos: kalte Abtastung,
-    // Prompt-Beispiele, Feldreihenfolge, Ergebnis als Textfeld, Vergleich im
-    // Nachhinein. Der Denkschritt wirkte in zwei Durchgaengen ueber alle sechs
-    // Rechenaufgaben, 24 von 24 Extraktionen erfolgreich, kein Denktext im JSON —
-    // die Sorge oben hat sich fuer diese Aktion nicht bestaetigt.
-    //
-    // Bewusst NUR diese eine Aktion: Fuer die uebrigen Struktur-Aktionen ist der
-    // Nutzen nicht gemessen, und die Sorge gilt dort unwiderlegt fort. Und bewusst
-    // unabhaengig vom Profil: Die Extraktion braucht den Denkschritt nicht, weil die
-    // Lehrkraft ihn eingeschaltet hat, sondern weil sie ohne ihn falsch abschreibt.
-    const think = isVision ? false
-        : action === 'calc-trace-extraction' ? true
-        : isSystemAction ? false
-        : (settings.enableThinking ?? true);
+    // Ollama nimmt das Ergebnis in seinem eigenen Feld `think` entgegen; der
+    // OpenAI-kompatible Weg braucht `chat_template_kwargs.enable_thinking`. Nur das
+    // Feld unterscheidet sich, die Entscheidung nicht mehr.
+    const think = denktBeiAktion(action, settings.enableThinking);
 
     // Wer laut denkt, braucht Platz dafuer — sonst verliert eine lange Extraktion das
     // Ende ihrer Antwort, und das faellt als "Extraktion gescheitert" auf statt als

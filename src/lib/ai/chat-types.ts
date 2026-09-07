@@ -79,13 +79,22 @@ export interface ChatAnfrage {
     random_seed?: number;
     seed?: number;
     /**
-     * Wie viel das Modell vor der Antwort nachdenkt: `none`, `low`, `medium`, `high`.
+     * Denktiefe. Wirkt nur bei Modellen, die Stufen kennen — Qwen 3.8 tut das,
+     * Qwen 3.6 nicht (dort aendern die Stufen nachweislich nichts, 07.09.2026).
      *
-     * Der einzige Schalter, der den Denkschritt auf dem OpenAI-kompatiblen Weg
-     * tatsaechlich beeinflusst (gemessen am 07.09.2026). Die naheliegenden Felder
-     * `chat_template_kwargs` und `enable_thinking` werden angenommen und ignoriert.
+     * Hier stand, dies sei der einzige Schalter, der den Denkschritt beeinflusse, und
+     * `chat_template_kwargs` werde ignoriert. Beides gilt so nicht: Ignoriert wird nur
+     * die OBERSTE Ebene von `enable_thinking`. Verschachtelt wirkt es, bei beiden
+     * Modellen. Der An/Aus-Schalter ist deshalb `chat_template_kwargs`, nicht dieses
+     * Feld — siehe den Block dazu in `openai-provider.ts`.
      */
     reasoning_effort?: 'none' | 'low' | 'medium' | 'high';
+    /**
+     * vLLM-Erweiterung. Traegt den An/Aus-Schalter des Denkschritts
+     * (`enable_thinking`) fuer OpenAI-kompatible Endpunkte. Muss verschachtelt
+     * stehen — auf oberster Ebene verwirft der Vermittler das Feld stillschweigend.
+     */
+    chat_template_kwargs?: { enable_thinking?: boolean; reasoning_effort?: string };
     [key: string]: unknown;
 }
 

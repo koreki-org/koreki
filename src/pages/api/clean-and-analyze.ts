@@ -1,6 +1,7 @@
 import { AIConfigError, resolveAiHttpError } from '@/lib/ai/provider-error';
 import type { NextApiResponse } from 'next';
 import { z } from 'zod';
+import { anbieterEinstellungenSchema } from '@/lib/ai/settings-schema';
 import prisma from '../../lib/prisma';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
@@ -15,17 +16,7 @@ import { toErrorMessage } from '@/lib/error-message';
 
 const cleanAndAnalyzeSchema = z.object({
     modelSolution: z.string().min(1, 'Musterlösung fehlt.'),
-    settings: z.object({
-        provider: z.enum(['mistral', 'ollama', 'openai-compatible']),
-        mistralKey: z.string().optional(),
-        openaiUrl: z.string().optional(),
-        openaiKey: z.string().optional(),
-        openaiModel: z.string().optional(),
-        model: z.string().optional(),
-        ollamaUrl: z.string().optional(),
-        ollamaModel: z.string().optional(),
-        ollamaNumCtx: z.number().optional()
-    }).passthrough(),
+    settings: anbieterEinstellungenSchema,
     isInclusive: z.boolean().optional(),
     pageCount: z.number().optional(),
     isScan: z.boolean().optional()

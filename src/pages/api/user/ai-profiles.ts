@@ -26,7 +26,7 @@ const aiProfileSchema = z.object({
     enableThinking: z.boolean().default(true),
     visionTemperature: z.number().default(0.0),
     visionTopP: z.number().default(0.8),
-    visionMaxTokens: z.number().default(16000),
+    visionMaxTokens: z.number().default(32768),
     visionPresencePenalty: z.number().default(0.0),
     ollamaNumCtx: z.number().optional(),
 });

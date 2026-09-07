@@ -3,7 +3,7 @@ title: "Unified AI Provider Infrastructure & Reasoning Mode"
 description: "Dokumentation der provider-agnostischen KI-Architektur, des Qwen 3.6 'Thinking Mode' und der tier-spezifischen Konfigurationslogik."
 author: "@principal_architect"
 date: "2026-04-30"
-last_updated: "2026-08-25"
+last_updated: "2026-09-07"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -77,9 +77,42 @@ Koreki optimiert die Inferenz-Parameter automatisch, sobald der **Thinking Mode*
 2.  **Context Escalation:** Setzt `max_tokens` automatisch auf bis zu `32.768`, um Raum für die Reasoning-Kette zu schaffen.
 3.  **Response Sanitizing:** Der Provider bereinigt die Antwort chirurgisch von `<thinking>` Blöcken und Markdown-Fences, um die Datenintegrität für den nachgelagerten JSON-Parser zu gewährleisten.
 
+### Der Denkschritt: eine Leiter, zwei Felder (07.09.2026)
+
+Wer bei welcher Aktion laut mitdenkt, entscheidet **eine** Funktion für alle Anbieter-Familien: `denktBeiAktion` in [denkschritt.ts](../../src/lib/ai/denkschritt.ts). Nur das Feld, in dem die Antwort beim Anbieter ankommt, unterscheidet sich:
+
+| Familie | Feld |
+| :--- | :--- |
+| Ollama (Desktop / Community) | `think: boolean`, oberste Ebene |
+| OpenAI-kompatibel (SaaS „Hohe Genauigkeit", BYOK) | `chat_template_kwargs: { enable_thinking: boolean }` — **verschachtelt** |
+| Mistral | kein Feld; `enableThinking` hebt dort nur `max_tokens` an |
+
+Die Leiter von oben nach unten: `vision` nie · `anonymize` nie · `calc-trace-extraction` immer · übrige Struktur-Aktionen nie · alles andere (`correction`, `second-opinion`, `student-simulator`) nach KI-Intelligenz-Modal, ungesetzt heißt an.
+
 > [!WARNING]
-> **Known Issue: Mittwald & Qwen 3.6 (4k Context / enable_thinking Problem)**
-> Beim Einsatz des LiteLLM Proxys (Mittwald) in Verbindung mit Qwen 3.6 kam es bei der Aktivierung von `enable_thinking: true` historisch zu Abstürzen oder Fehlern ("Unknown model name"). **In der Praxis handelt es sich hierbei jedoch höchstwahrscheinlich um ein 4k-Kontext-Limit-Problem**, da der extensive Reasoning-Output den Puffer sprengt und der Fehler unsauber maskiert wird. Das `enable_thinking` Flag wird daher nun explizit an das Backend durchgeleitet, um das KI-Intelligenz-Modal zu bedienen. Es muss jedoch infrastrukturseitig sichergestellt werden, dass die Kontextgrenzen (bis zu 32k) korrekt unterstützt werden.
+> **Die oberste Ebene wird stillschweigend verworfen.** `enable_thinking` als normales Feld im Anfragerumpf nimmt Mittwalds Vermittler an, befolgt es aber nicht — ohne Fehler, ohne Warnung, das Denken läuft weiter. Nur die verschachtelte Form wirkt. Ein Test, der `body.enable_thinking` prüft, ist deshalb grün, während das Modell denkt; [tests/unit/ai/denkschritt-leiter.test.ts](../../tests/unit/ai/denkschritt-leiter.test.ts) prüft ausdrücklich die verschachtelte Form.
+
+**Gemessen am 07.09.2026** gegen `Qwen3.6-35B-A3B-FP8` über `llm.aihosting.mittwald.de`, je drei Läufe mit eindeutigen Prompts (identische Anfragen beantwortet der Endpunkt aus einem Cache — wer das übersieht, misst den Cache):
+
+| Form | Qwen 3.6 | Qwen 3.8 |
+| :--- | :--- | :--- |
+| `enable_thinking: false` oberste Ebene | ignoriert | ignoriert |
+| `chat_template_kwargs.enable_thinking: false` | **wirkt** | **wirkt** |
+| `reasoning_effort: 'low' / 'high' / 'xhigh'` | wirkungslos | wirkt |
+| `reasoning_effort: 'none'` | wirkt | wirkt |
+
+`reasoning_effort` ist damit **kein Ersatz** für den An/Aus-Schalter: Bei Qwen 3.6 — dem Modell hinter „Hohe Genauigkeit" im SaaS — ändern die Denktiefen-Stufen nachweislich nichts.
+
+#### Was der fehlende Schalter gekostet hat
+
+Bis zum 07.09.2026 sendete der OpenAI-kompatible Weg **gar kein** Feld für den Denkschritt. Die Regel „bei Bilderkennung wird nicht gedacht" stand dort nur als Kommentar. Qwen 3.6 denkt von sich aus — also auch beim Abschreiben einer Seite. Gemessen an einer echten Schülerseite (2304×3264) mit den Parametern aus dem Betrieb:
+
+| Bilderkennung | Dauer je Seite | Denktext | Ergebnis |
+| :--- | :--- | :--- | :--- |
+| Denkschritt offen (Zustand bis 07.09.2026) | 60,6 / 112,5 s | ~46.000 Zeichen | `content` **leer**, `finish_reason: length` |
+| Denkschritt aus | 0,8 / 0,9 s | 0 | Text vollständig |
+
+Das war kein Geschwindigkeitsproblem, sondern ein Ausfall: Das Modell verbrauchte die gesamte Antwortlänge mit Abwägen und lieferte keinen Text. Gegenprobe durch den Produktionscode nach der Änderung: **0,9 s, 169 Zeichen, vollständig.**
 
 ---
 
@@ -111,9 +144,11 @@ Um die absolute Integrität von Schülerabgaben zu schützen und unerwünschte �
     > **Der Preis ist Rechenzeit: Faktor 4,4** (14,8 s → 64,7 s je Aufgabe). Bei 25 Schülern ist das der Unterschied zwischen etwa 6 und etwa 27 Minuten. Auf einem Rechner ohne GPU, wo bereits ohne Thinking 290–500 s je Korrektur anfallen, ist das nicht zumutbar — die Voreinstellung gehört deshalb an die verfügbare Rechenleistung gebunden, nicht global gesetzt. Gegen Mistral ist der Effekt ungemessen.
     >
     > Der Rückfallwert im Ollama-Pfad stand bis zum 25.08.2026 auf `false` und widersprach damit dieser Governance, dem Standardprofil und ADR 001. Ohne geladenes Profil lief die Korrektur also ohne Denkschritt.
-  * **Strukturelle Systemaktionen & Tool-Calling (Thinking AUS):** Um massive Latenz-Verzögerungen (z. B. bei Mittwald) und unvollständige JSON-Generierungen zu unterbinden, ist Thinking für alle rein strukturellen Aktionen standardmäßig global **deaktiviert** (sowohl bei Ollama als auch beim OpenAI-Provider). Dies betrifft `generate-graph`, `refine-graph`, `generate-calc-trace`, `refine-calc-trace`, `calc-trace-extraction` und `variable-extraction`. Diese Aktionen erzeugen direkt kompakte JSONs oder Tool-Calls in wenigen Sekunden.
-  * **vLLM-Konformität (Mittwald) — überholt:** Frühere Revisionen dieses Dokuments beschrieben, der Thinking-Modus werde über das vLLM-spezifische `chat_template_kwargs`-Objekt gesteuert. **Das ist nicht mehr der Fall.** Mittwalds LiteLLM-Proxy stürzt bei nicht-standardisierten Zusatzfeldern (`chat_template_kwargs`, `enable_thinking`) ab, weil er die Anfrage fälschlich einem Anthropic-/Custom-Katalog zuordnet. `openai-provider.ts` sendet diese Felder deshalb bewusst **nicht** mehr; das Reasoning-Verhalten ergibt sich aus dem System-Prompt und dem nativen Modellverhalten.
-  * `enableThinking` steuert damit beim OpenAI-kompatiblen Provider ausschließlich die Inferenz-Parameter (Temperatur, `top_p`, `max_tokens`), nicht mehr ein eigenes Request-Feld.
+  * **Strukturelle Systemaktionen & Tool-Calling (Thinking AUS):** Für rein strukturelle Aktionen ist Thinking abgeschaltet — der Denktext landete sonst in genau dem JSON, das sie erzeugen sollen. Dies betrifft `generate-graph`, `refine-graph`, `generate-calc-trace`, `clean-and-map`, `clean-and-analyze` und `variable-extraction`, dazu `vision` und `anonymize`.
+    **Ausnahme `calc-trace-extraction`:** denkt immer, unabhängig vom Modal (gemessen 04.09.2026 — ohne Denkschritt trägt das Modell den Wert der Formel statt den des Schülers ein). Diese Ausnahme galt bis zum 07.09.2026 nur bei Ollama; auf dem OpenAI-kompatiblen Weg wurde sie nicht gesendet, was Anhang IV Nummer 4 als offene Lücke führte.
+    **Nachtrag 07.09.2026:** „standardmäßig global deaktiviert (sowohl bei Ollama als auch beim OpenAI-Provider)" beschrieb bis dahin eine Absicht, keinen Zustand. Beim OpenAI-Provider stand die Liste als Kommentar und wurde an keiner Stelle gesendet.
+  * **vLLM-Konformität (Mittwald) — korrigiert am 07.09.2026:** Hier stand, der LiteLLM-Proxy stürze bei `chat_template_kwargs` ab, weshalb `openai-provider.ts` das Feld bewusst nicht mehr sende und sich auf das native Modellverhalten verlasse. **Nachgemessen widerlegt:** Er stürzt nicht, er befolgt das Feld. Der Satz hatte eine Folge, die niemand beabsichtigt hatte — „das native Modellverhalten" heißt bei Qwen 3.6 schlicht *immer denken*, auch dort, wo dieses Dokument zwei Zeilen weiter oben das Gegenteil vorschreibt. Das Feld wird seitdem verschachtelt gesendet, siehe Abschnitt 3.
+  * **Wo `enableThinking` wirkt:** beim Ollama- und beim OpenAI-kompatiblen Weg als echter Schalter am Anbieter, zusätzlich überall bei den Inferenz-Parametern (`max_tokens`). Bei Mistral nur Letzteres — dort kennt der Code kein Denkschritt-Feld.
 
 ---
 

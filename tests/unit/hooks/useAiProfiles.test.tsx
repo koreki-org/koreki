@@ -35,7 +35,7 @@ describe('useAiProfiles Hook 🧪🛡️', () => {
             enableThinking: true,
             visionTemperature: 0.0,
             visionTopP: 0.8,
-            visionMaxTokens: 16000,
+            visionMaxTokens: 32768,
             visionPresencePenalty: 0.0,
             ollamaNumCtx: 0,
             activeAiProfileId: 'system-standard'
