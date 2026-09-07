@@ -106,7 +106,7 @@ export interface SamplingParameter {
 }
 
 /** Ein Seitenbild kostet ungefaehr so viel Kontext wie 8000 Textzeichen-Token. */
-const TOKEN_PRO_BILD = 8000;
+export const TOKEN_PRO_BILD = 8000;
 
 /**
  * Deutscher Text und Formeln brauchen mehr Token pro Zeichen als englische
@@ -114,7 +114,7 @@ const TOKEN_PRO_BILD = 8000;
  * schneidet Ollama den Prompt still ab, und die Bewertung laeuft auf einer
  * halben Schuelerarbeit.
  */
-const ZEICHEN_PRO_TOKEN = 2.8;
+export const ZEICHEN_PRO_TOKEN = 2.8;
 
 export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter {
     const { action, settings, promptOptions, promptCharCount, imageCount, hasResponseSchema } = e;

@@ -1,6 +1,8 @@
 import { executeOllamaRequest } from '../../src/lib/ai/ollama-logic';
 import { invoke } from '@tauri-apps/api/core';
 import { isDesktopTarget } from '../../src/lib/env-context';
+import { buildVisionPrompt } from '../../src/lib/ai/prompt-builder';
+import { TOKEN_PRO_BILD, ZEICHEN_PRO_TOKEN } from '../../src/lib/ai/ollama-sampling';
 
 // Mock Tauri invoke
 jest.mock('@tauri-apps/api/core', () => ({
@@ -76,14 +78,23 @@ describe('Ollama Provider - Layer 2 Integration Tests', () => {
         // Vorgabe in allen Familien dieselbe Zahl ist (Profil, Zod-Schema, Regler).
         //
         // Bei Ollama kommt sie nicht ungekuerzt an, und das ist richtig so: Das
-        // Kontextfenster von 32768 traegt das Seitenbild (8000 Token) und den
-        // Vision-Prompt mit; was uebrig bleibt, ist die Obergrenze der Antwort.
-        // 32768 - 8000 - ceil(2666 Zeichen / 2.8) = 23816. Der Regler kann die Zahl
-        // also anheben, das Kontextfenster bleibt die harte Grenze.
+        // Kontextfenster traegt das Seitenbild und den Vision-Prompt mit; was uebrig
+        // bleibt, ist die Obergrenze der Antwort.
+        //
+        // Die Laenge wird aus der Quelle GERECHNET, nicht hingeschrieben. Eine feste
+        // Zahl war genau einen Build lang gruen: Auf Windows liegen die Prompt-Dateien
+        // mit CRLF auf der Platte, im CI mit LF — 2665 gegen 2637 Zeichen und damit
+        // 23816 gegen 23826. `.gitattributes` erzwingt LF nur fuer Shell- und
+        // Docker-Dateien, fuer `.md` gilt `core.autocrlf`.
+        const vision = buildVisionPrompt();
+        const promptTokens = Math.ceil((vision.system.length + vision.user.length) / ZEICHEN_PRO_TOKEN);
+        const erwartet = 32768 - TOKEN_PRO_BILD - promptTokens;
+
         const defaultSettings = { ollamaUrl: 'http://localhost:11434', ollamaModel: 'gemma4:latest', ollamaNumCtx: 32768 };
         await executeOllamaRequest('vision', payload as any, defaultSettings as any);
+        expect(erwartet).toBeLessThan(32768); // die Vorgabe wird tatsaechlich gekuerzt
         expect(mockInvoke).toHaveBeenLastCalledWith('execute_ollama_command', expect.objectContaining({
-            numPredict: 23816
+            numPredict: erwartet
         }));
 
         // 2. Custom visionMaxTokens
