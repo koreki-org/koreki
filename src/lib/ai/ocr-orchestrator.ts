@@ -5,6 +5,7 @@ import { promisePool } from './promise-pool';
 import { AppSettings } from '../../types';
 import { istAbrechenbar } from './billing-gate';
 import { logger } from '../logger';
+import { DEFAULT_OPENAI_COMPATIBLE_MODEL } from './provider-connection';
 
 /**
  * Orchestrates OCR requests, choosing between direct Mistral API (PURE) or Koreki Backend (STANDARD).
@@ -48,7 +49,7 @@ export async function performOCRRequest(
             } else if (settings?.provider === 'openai-compatible') {
                 const baseUrl = settings.openaiUrl || '';
                 const apiKey = settings.openaiKey || '';
-                const model = settings.openaiModel || 'Qwen3.6-35B-A3B-FP8';
+                const model = settings.openaiModel || DEFAULT_OPENAI_COMPATIBLE_MODEL;
                 const data = await executeOpenAIRequest(
                     'vision',
                     { buffer: b64, mimeType },

@@ -373,6 +373,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                 result = await executeOpenAIRequest(action, payload, baseUrl, apiKey, {
                     model: settings.openaiModel,
                     enableThinking: settings.enableThinking,
+                    reasoningEffort: settings.reasoningEffort,
                     temperature: settings.temperature,
                     topP: settings.topP,
                     maxTokens: settings.maxTokens,

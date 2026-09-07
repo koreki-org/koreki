@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { AppSettings } from '@/types';
 import { anbieterPanelModus } from './anbieter-panel-modus';
 import { askConfirmation } from '@/lib/confirm-dialog';
+import { DEFAULT_OPENAI_COMPATIBLE_MODEL } from '@/lib/ai/provider-connection';
 
 interface OpenAICompatibleConfigProps {
     settings: Partial<AppSettings>;
@@ -131,7 +132,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                             <label htmlFor="openai-model" className="block text-xxs font-black text-muted-foreground uppercase tracking-widest ml-1 mb-1.5">Modell</label>
                             <Input 
                                 id="openai-model"
-                                placeholder="Qwen3.6-35B-A3B-FP8" 
+                                placeholder={DEFAULT_OPENAI_COMPATIBLE_MODEL} 
                                 value={settings.openaiModel || ''} 
                                 onChange={e => onSave({ openaiModel: e.target.value })}
                                 className="rounded-xl border-2 focus:border-primary/50 transition-all"

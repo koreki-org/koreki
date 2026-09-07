@@ -78,6 +78,14 @@ export interface ChatAnfrage {
     /** Fester Startwert. Mistral nennt ihn `random_seed`, die OpenAI-Schnittstelle `seed`. */
     random_seed?: number;
     seed?: number;
+    /**
+     * Wie viel das Modell vor der Antwort nachdenkt: `none`, `low`, `medium`, `high`.
+     *
+     * Der einzige Schalter, der den Denkschritt auf dem OpenAI-kompatiblen Weg
+     * tatsaechlich beeinflusst (gemessen am 07.09.2026). Die naheliegenden Felder
+     * `chat_template_kwargs` und `enable_thinking` werden angenommen und ignoriert.
+     */
+    reasoning_effort?: 'none' | 'low' | 'medium' | 'high';
     [key: string]: unknown;
 }
 

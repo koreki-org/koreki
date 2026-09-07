@@ -1,6 +1,7 @@
 import { executeOpenAIRequest } from '../../src/lib/ai/openai-provider';
 import * as constants from '../../src/lib/ai/constants';
 import { TEMPERATURE_MINIMUM } from '@/lib/ai/temperature-guidance';
+import { isDesktopTarget } from '../../src/lib/env-context';
 
 // Mock fetchWithRetry
 jest.mock('../../src/lib/ai/constants', () => ({
@@ -169,5 +170,116 @@ describe('OpenAI Provider (Bridge) - Unit Tests', () => {
             expect(body.model).toBe(MODEL);
             expect(mockFetchWithRetry).not.toHaveBeenCalled();
         });
+    });
+});
+
+/**
+ * Waechter: Eine leere Antwort wird einmal wiederholt — und dann erklaert. 🫙
+ *
+ * ANLASS (07.09.2026). Bei der Genauigkeitsmessung gegen `Qwen3.8-27B-NVFP4` ueber
+ * Mittwald fiel der ZWOELFTE von zwoelf Faellen in beiden Durchgaengen mit einer
+ * leeren Antwort aus. Derselbe Fall allein gemessen lief fehlerfrei durch — es lag
+ * nicht an ihm, sondern an der Stelle am Ende einer langen Aufruffolge.
+ *
+ * Zwei Luecken kamen zusammen:
+ *
+ * 1. Eine 200er-Antwort ohne Inhalt ist kein HTTP-Fehler. `fetchWithRetry` sieht sie
+ *    nicht und wiederholt sie nicht.
+ * 2. Die Fehlermeldung nannte den Abbruchgrund nicht. Man sah nur, DASS nichts kam —
+ *    nicht, ob das Modell blockiert hat oder ob der Denktext den Antwortplatz
+ *    aufgebraucht hat. Bei einem Modell, das 1135 von 1146 Tokens verdenkt, ist das
+ *    der Unterschied zwischen zwei ganz verschiedenen Ursachen.
+ *
+ * Die Folge war keine Fehlermeldung, sondern eine falsche ZAHL: Der Fall ging mit 0
+ * statt 3 Punkten in die Messung und trieb die ausgewiesene Abweichung von 0,09 auf
+ * 0,42 Punkte — ueber beide Schwellen der KI-Verordnung.
+ */
+describe('Leere Antwort', () => {
+    const API_KEY = 'k';
+    const URL = 'https://example.test/v1';
+    const leer = { ok: true, json: async () => ({ choices: [{ message: { content: null, reasoning_content: 'x'.repeat(13631) }, finish_reason: 'stop' }], usage: { completion_tokens: 4415 } }) };
+
+    /**
+     * `jest.clearAllMocks()` loescht Aufrufe, nicht Rueckgabewerte. Der Desktop-Test
+     * weiter oben setzt `isDesktopTarget` auf `true`, und das wirkt hier fort.
+     */
+    beforeEach(() => {
+        jest.clearAllMocks();
+        (isDesktopTarget as jest.Mock).mockReturnValue(false);
+    });
+
+    const anfragen = () => executeOpenAIRequest(
+        'correction', { modelSolution: '', studentText: '' }, URL, API_KEY, { model: 'm' }
+    );
+
+    /**
+     * KEIN WIEDERHOLUNGSVERSUCH — und das ist eine Entscheidung, keine Luecke.
+     *
+     * Am 07.09.2026 stand hier kurzzeitig einer. Der Einspruch des Anbieters hat ihn
+     * gekippt: Er haette den Fehler unsichtbar gemacht. Eine Aufgabe waere nach einem
+     * Aussetzer anders zustande gekommen als die daneben, und der Punktzahl saehe man
+     * das nicht an. Ein sichtbarer Fehlschlag ist einer Bewertung vorzuziehen, die
+     * niemand einordnen kann.
+     */
+    it('wiederholt nicht, sondern meldet', async () => {
+        mockFetchWithRetry.mockResolvedValue(leer);
+
+        await expect(anfragen()).rejects.toThrow(/leere Antwort/);
+        expect(mockFetchWithRetry).toHaveBeenCalledTimes(1);
+    });
+
+    /**
+     * Ohne den Abbruchgrund sieht man nur, DASS nichts kam. `stop` heisst: Das Modell
+     * war fertig und hat nichts gesagt — eine ganz andere Ursache als `length`
+     * (Platz aufgebraucht) oder `content_filter` (blockiert).
+     */
+    it('nennt Abbruchgrund und Umfang in der Meldung', async () => {
+        mockFetchWithRetry.mockResolvedValue(leer);
+
+        await expect(anfragen()).rejects.toThrow(/Abbruchgrund: stop \(4415 Antwort-Tokens\)/);
+    });
+
+    /** Der leere String lief frueher weiter und scheiterte erst beim JSON-Lesen. */
+    it('behandelt den leeren String wie eine fehlende Antwort', async () => {
+        mockFetchWithRetry.mockResolvedValue({
+            ok: true,
+            json: async () => ({ choices: [{ message: { content: '' }, finish_reason: 'stop' }] })
+        });
+
+        await expect(anfragen()).rejects.toThrow(/leere Antwort/);
+    });
+
+    /**
+     * Die Denktiefe ist eine Einstellung, die fuer jeden Aufruf gleich gilt — kein
+     * Rueckfall im Fehlerfall. Eine Bewertung, die je nach Zufall mit oder ohne
+     * Denkschritt zustande kommt, waere keine gleiche Bewertung.
+     */
+    it('sendet eine eingestellte Denktiefe mit', async () => {
+        mockFetchWithRetry.mockResolvedValue({
+            ok: true,
+            json: async () => ({ choices: [{ message: { content: '{"ok":1}' }, finish_reason: 'stop' }] })
+        });
+
+        await executeOpenAIRequest('correction', { modelSolution: '', studentText: '' }, URL, API_KEY,
+            { model: 'm', reasoningEffort: 'medium' });
+
+        expect(JSON.parse(mockFetchWithRetry.mock.calls[0][1].body).reasoning_effort).toBe('medium');
+    });
+
+    /**
+     * Ohne Angabe bleibt das Feld weg — dann entscheidet das Modell.
+     *
+     * Am 07.09.2026 stand hier kurz `medium` als Vorgabe. Der Referenzsatz hat sie
+     * gekippt: 0,88 statt 0,17 Punkte Abweichung, beide Schwellen gerissen.
+     */
+    it('sendet ohne Angabe kein Denktiefe-Feld', async () => {
+        mockFetchWithRetry.mockResolvedValue({
+            ok: true,
+            json: async () => ({ choices: [{ message: { content: '{"ok":1}' }, finish_reason: 'stop' }] })
+        });
+
+        await executeOpenAIRequest('correction', { modelSolution: '', studentText: '' }, URL, API_KEY, { model: 'm' });
+
+        expect(JSON.parse(mockFetchWithRetry.mock.calls[0][1].body).reasoning_effort).toBeUndefined();
     });
 });

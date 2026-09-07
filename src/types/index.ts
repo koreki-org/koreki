@@ -159,6 +159,14 @@ export interface AppSettings {
     openaiKey?: string;
     openaiModel?: string;
     enableThinking?: boolean;
+    /**
+     * Denktiefe fuer OpenAI-kompatible Anbieter: `none`, `low`, `medium`, `high`.
+     *
+     * Ohne Angabe entscheidet das Modell. Der Wert gilt fuer JEDEN Aufruf gleich —
+     * eine Bewertung, die je nach Zufall mit oder ohne Denkschritt zustande kommt,
+     * waere keine gleiche Bewertung (07.09.2026).
+     */
+    reasoningEffort?: 'none' | 'low' | 'medium' | 'high';
     temperature?: number;
     topP?: number;
     maxTokens?: number;

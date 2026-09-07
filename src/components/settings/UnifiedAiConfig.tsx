@@ -9,6 +9,7 @@ import { GEPRUEFTER_ANBIETER, EXPERIMENTELL_KENNZEICHEN } from '@/lib/ai/gepruef
 import { MistralConfig } from './MistralConfig';
 import { OllamaConfig } from './OllamaConfig';
 import { OpenAICompatibleConfig } from './OpenAICompatibleConfig';
+import { DEFAULT_OPENAI_COMPATIBLE_MODEL } from '@/lib/ai/provider-connection';
 
 interface UnifiedAiConfigProps {
     settings: Partial<AppSettings>;
@@ -65,7 +66,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                     <button
                         onClick={() => updateSettings({ 
                             provider: 'openai-compatible', 
-                            openaiModel: 'Qwen3.6-35B-A3B-FP8',
+                            openaiModel: DEFAULT_OPENAI_COMPATIBLE_MODEL,
                             openaiUrl: 'https://llm.aihosting.mittwald.de/v1',
                             enableThinking: true
                         })}

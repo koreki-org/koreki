@@ -22,11 +22,23 @@ import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
 import { alsText } from './chat-types';
 import type { ChatNachricht, ChatAnfrage, ChatAntwort, TokenVerbrauch } from './chat-types';
 import { pruefeWerkzeugAufruf } from './tool-validation';
+
+/**
+ * Leer ist auch der leere String.
+ *
+ * Die Pruefung hier fragte bis zum 07.09.2026 nur auf `null`/`undefined` — eine
+ * Antwort mit `""` lief weiter und scheiterte erst beim JSON-Lesen, mit einer
+ * Meldung ueber Formatierung statt ueber die leere Antwort. Der Mistral-Pfad
+ * pruefte an derselben Stelle laengst auf alle drei.
+ */
+const istLeer = (wert: string | null | undefined): boolean =>
+    wert === null || wert === undefined || wert === '';
 import { ueberDesktopProxy } from './desktop-proxy';
 import type { GradingMemoryCase, CustomSkillDefinition } from '@/types';
 import type { PromptLibraryEntry } from './prompt-library';
 
 import type { AIAction } from './prompt-dispatch';
+import { DEFAULT_OPENAI_COMPATIBLE_MODEL } from './provider-connection';
 export type { AIAction };
 
 export interface OpenAIRequestOptions {
@@ -37,6 +49,8 @@ export interface OpenAIRequestOptions {
     customPrompt?: string;
     model?: string;
     enableThinking?: boolean;
+    /** Denktiefe fuer diesen Aufruf; ohne Angabe entscheidet das Modell. */
+    reasoningEffort?: 'none' | 'low' | 'medium' | 'high';
     gradingMemory?: GradingMemoryCase[] | null;
     activeSkillIds?: string[];
     customSkills?: Record<string, CustomSkillDefinition | PromptLibraryEntry>;
@@ -61,7 +75,7 @@ export async function executeOpenAIRequest(
 // (GradingGraph, TargetGoal, geparstes JSON oder { text }). Ein Union
 // zwaenge jeden Aufrufer in eine Fallunterscheidung, die er nicht braucht.
 ): Promise<any> {
-    const targetModel = options.model || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || 'Qwen3.6-35B-A3B-FP8';
+    const targetModel = options.model || process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || DEFAULT_OPENAI_COMPATIBLE_MODEL;
     
     // 1. Prompt Building
     let promptObj: StructuredPrompt;
@@ -137,6 +151,24 @@ export async function executeOpenAIRequest(
     // to skip repeated tokens (e.g. circled task numbers ②) and was never aligned with the UI.
     const presencePenalty = options.presencePenalty ?? 0.0;
 
+    /**
+     * Wie tief das Modell vor der Antwort nachdenkt.
+     *
+     * GEMESSEN AM 07.09.2026. `reasoning_effort` ist der einzige Schalter, der den
+     * Denkschritt auf diesem Weg beeinflusst — `chat_template_kwargs` und
+     * `enable_thinking` werden angenommen und ignoriert. Der Kommentar weiter unten,
+     * der Vermittler stuerze bei diesen Feldern ab, war ueberholt.
+     *
+     * Bewusst EINE Einstellung fuer alle Aufrufe und kein Rueckfall im Fehlerfall:
+     * Wuerde eine Aufgabe nach einem Aussetzer ohne Denkschritt bewertet und die
+     * naechste mit, entschiede der Zufall ueber die Konfiguration, unter der eine
+     * Schuelerin beurteilt wird. Ungleiche Bewertung ist teurer als ein sichtbarer
+     * Fehlschlag.
+     *
+     * Ohne Angabe entscheidet das Modell selbst — der bisherige Zustand.
+     */
+    const denktiefe = options.reasoningEffort;
+
     // 3. API Execution
     const url = `${baseUrl.replace(/\/$/, '')}/chat/completions`;
     
@@ -160,7 +192,8 @@ export async function executeOpenAIRequest(
         temperature: targetTemp,
         top_p: targetTopP,
         presence_penalty: presencePenalty,
-        max_tokens: calculatedMaxTokens
+        max_tokens: calculatedMaxTokens,
+        ...(denktiefe ? { reasoning_effort: denktiefe } : {})
     };
 
     // Gleiche Eingabe, gleiche Ausgabe — siehe SAMPLING_SEED.
@@ -204,6 +237,26 @@ export async function executeOpenAIRequest(
     let responseUsage: TokenVerbrauch | undefined = undefined;
     let toolRetryCount = 0;
     const maxToolRetries = 3;
+
+    /**
+     * Eine 200er-Antwort ohne Inhalt ist kein HTTP-Fehler — `fetchWithRetry` sieht sie
+     * nicht. Sie wird deshalb hier abgefangen und BEWUSST NICHT wiederholt.
+     *
+     * ANLASS (07.09.2026). `Qwen3.8-27B-NVFP4` erzeugte fuer einen Rubrik-Grenzfall
+     * 13631 Zeichen Denktext, waegte darin endlos ab und schloss ohne Antwort ab —
+     * `finish_reason: stop`, `content` leer. Kein Abbruch, kein Filter: Das Modell
+     * zerdenkt sich.
+     *
+     * Ein Wiederholungsversuch stand hier kurzzeitig und ist auf Einspruch des
+     * Anbieters entfallen. Er haette den Fehler unsichtbar gemacht: Eine Aufgabe waere
+     * nach einem Aussetzer anders zustande gekommen als die daneben, und die Lehrkraft
+     * saehe der Punktzahl nicht an, dass etwas schiefging. Ein sichtbarer Fehlschlag
+     * ist einer Bewertung vorzuziehen, die niemand einordnen kann.
+     *
+     * Der Abbruchgrund gehoert deshalb in die Meldung: Ohne ihn sieht man nur, DASS
+     * nichts kam.
+     */
+    let abbruchgrund: string | undefined;
 
     while (toolRetryCount <= maxToolRetries) {
         let currentData: ChatAntwort;
@@ -262,6 +315,8 @@ export async function executeOpenAIRequest(
 
         // No tool calls or unknown tool, we have our final content
         responseContent = alsText(message?.content ?? null);
+        abbruchgrund = currentData.choices?.[0]?.finish_reason;
+
         break;
     }
 
@@ -269,8 +324,21 @@ export async function executeOpenAIRequest(
         throw new Error('Die KI konnte nach mehreren Versuchen keinen mathematisch validen Graphen generieren. Bitte passe den Aufgabentext an oder nutze ein leistungsstärkeres Modell.');
     }
 
-    if (responseContent === null || responseContent === undefined) {
-        throw new Error('Die KI hat eine leere Antwort (null) zurückgegeben. Dies kann passieren, wenn das Modell überlastet ist oder die Eingabe blockiert wurde.');
+    // Ausgeschrieben statt ueber `istLeer`: Nur so verengt der Compiler den Typ fuer
+    // alles danach. Eine Hilfsfunktion braeuchte dafuer eine Typzusicherung, und die
+    // waere hier eine Behauptung ueber etwas, das der Compiler selbst sehen kann.
+    if (responseContent === null || responseContent === undefined || responseContent === '') {
+        // Der Abbruchgrund gehoert in die Meldung: "length" heisst, der Denktext hat den
+        // Platz aufgebraucht — eine ganz andere Ursache als "content_filter" oder "stop".
+        // Ohne ihn sieht man nur, DASS nichts kam.
+        const verbrauch = responseUsage
+            ? ` (${responseUsage.completion_tokens ?? '?'} Antwort-Tokens)`
+            : '';
+        throw new Error(
+            `Die KI hat eine leere Antwort zurückgegeben. Abbruchgrund: `
+            + `${abbruchgrund ?? 'unbekannt'}${verbrauch}. Das Modell kann überlastet sein, `
+            + `die Eingabe blockiert, oder der Denktext hat den Antwortplatz aufgebraucht.`
+        );
     }
 
     let content = responseContent;
