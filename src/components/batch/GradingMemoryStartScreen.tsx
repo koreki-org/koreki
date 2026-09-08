@@ -40,7 +40,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                             
                             {/* Left Column: List of available memories */}
                             <div
-                                className={`w-full md:w-1/3 flex flex-col border-b md:border-b-0 md:border-r border-border pb-6 md:pb-0 md:pr-6 overflow-hidden relative transition-all duration-200 ${isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
+                                className={`w-full md:w-1/3 flex flex-col border-b md:border-b-0 md:border-r border-border pb-6 md:pb-0 md:pr-6 overflow-hidden relative bg-muted transition-all duration-200 ${isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
                                 {...dragProps}
                             >
                                 {isDragging && (

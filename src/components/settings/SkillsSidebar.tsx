@@ -70,7 +70,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
 
     return (
         <div 
-            className={`flex-1 flex flex-col overflow-hidden relative transition-all duration-200 h-full ${isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
+            className={`flex-1 flex flex-col overflow-hidden relative bg-muted transition-all duration-200 h-full ${isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
             {...dragProps}
         >
             {isDragging && (
