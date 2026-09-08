@@ -74,7 +74,7 @@ export default function Privacy() {
                     </header>
 
                     <div className="flex flex-col gap-8">
-                        <section id="intro" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="intro" className="bg-white rounded-hero p-10 border border-border shadow-sm relative scroll-mt-24">
                             <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><Shield size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§1 Einleitung & Transparenz</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Koreki ist ein <strong>privates Open-Source-Projekt</strong>. Diese Website (koreki.org) dient ausschließlich als technische Demonstration. Es gibt keine kommerziellen Absichten und keine Gewinnerzielungsabsicht.</p>
@@ -87,7 +87,7 @@ export default function Privacy() {
                             <p className="leading-relaxed text-muted-foreground mb-4">Verantwortlicher im Sinne der DSGVO: {LEGAL_CONFIG.controller.name}, {LEGAL_CONFIG.controller.address}.</p>
                         </section>
 
-                        <section id="data" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="data" className="bg-white rounded-hero p-10 border border-border shadow-sm relative scroll-mt-24">
                             <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><Database size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§2 Welche Daten fallen an?</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Da dies ein privates Projekt ist, sammeln wir nur das absolute Minimum:</p>
@@ -103,7 +103,7 @@ export default function Privacy() {
                             </ul>
                         </section>
 
-                        <section id="retention" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="retention" className="bg-white rounded-hero p-10 border border-border shadow-sm relative scroll-mt-24">
                             <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><RefreshCw size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§3 Automatische Löschung (Pillar 6)</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">
@@ -118,7 +118,7 @@ export default function Privacy() {
                             </div>
                         </section>
 
-                         <section id="privacy" className="bg-white rounded-3xl p-10 border border-accent-3/20 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-accent-3/5 to-white">
+                         <section id="privacy" className="bg-white rounded-hero p-10 border border-accent-3/20 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-accent-3/5 to-white">
                             <div className="inline-flex p-3 bg-accent-3/10 text-accent-3 rounded-xl mb-6"><Lock size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§4 Empfehlung für maximale Privatsphäre</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Wenn Sie Koreki mit echten Daten nutzen möchten, empfehlen wir:</p>
@@ -128,7 +128,7 @@ export default function Privacy() {
                             </div>
                         </section>
 
-                        <section id="rights" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="rights" className="bg-white rounded-hero p-10 border border-border shadow-sm relative scroll-mt-24">
                             <h2 className="text-2xl font-bold text-foreground mb-6">§5 Ihre Rechte</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Sie haben jederzeit das Recht auf Auskunft über Ihre gespeicherten Daten (E-Mail) oder deren Löschung. Schreiben Sie mir dazu einfach eine E-Mail an {LEGAL_CONFIG.contact.email}.</p>
                         </section>

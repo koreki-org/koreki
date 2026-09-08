@@ -79,7 +79,7 @@ export default function OrgAdminDashboard() {
                     <TabsContent value="info">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {/* Info Card 1: Verwaltung */}
-                            <Card className="bg-card rounded-3xl p-8 border-none shadow-sm">
+                            <Card className="bg-card rounded-hero p-8 border-none shadow-sm">
                                 <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
                                     <Info size={20} className="text-primary" />
                                     Hinweise zur Verwaltung
@@ -110,7 +110,7 @@ export default function OrgAdminDashboard() {
                             </Card>
 
                             {/* Info Card 2: Beitritts-Regeln */}
-                            <Card className="bg-card rounded-3xl p-8 border-none shadow-sm">
+                            <Card className="bg-card rounded-hero p-8 border-none shadow-sm">
                                 <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
                                     <KeyRound size={20} className="text-primary" />
                                     Beitritts-Regeln
@@ -138,7 +138,7 @@ export default function OrgAdminDashboard() {
                                 </div>
                             </Card>
                             {/* Info Card 3: Rechtliches & AVV */}
-                            <Card className="bg-card rounded-3xl p-8 border-none shadow-sm md:col-span-2">
+                            <Card className="bg-card rounded-hero p-8 border-none shadow-sm md:col-span-2">
                                 <h3 className="text-lg font-bold text-foreground mb-6 flex items-center gap-2">
                                     <Shield size={20} className="text-primary" />
                                     Rechtssicherheit & AVV

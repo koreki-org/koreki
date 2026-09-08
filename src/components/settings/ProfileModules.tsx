@@ -101,7 +101,7 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
                         <div
                             key={p.id}
                             onClick={() => onSelectProfile(p)}
-                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfileId === p.id ? 'bg-card border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-card/50'}`}
+                            className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfileId === p.id ? 'bg-card border-primary/20 shadow-sm' : 'bg-transparent border-border hover:bg-muted'}`}
                         >
                             <div className="flex items-center gap-3 flex-1 min-w-0 relative pr-2">
                                 <FileText size={18} className={selectedProfileId === p.id ? 'text-primary' : 'text-muted-foreground'} />
@@ -165,7 +165,7 @@ ${p.correctionPrompt || p.prompt}`;
                     <div
                         key={p.name}
                         onClick={() => onSelectProfile(p)}
-                        className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfileId === p.id ? 'bg-card border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-card/50'}`}
+                        className={`w-full h-auto p-4 rounded-2xl border transition-all text-left flex justify-between items-center group cursor-pointer ${selectedProfileId === p.id ? 'bg-card border-primary/20 shadow-sm' : 'bg-transparent border-border hover:bg-muted'}`}
                     >
                         <div className="flex items-center gap-3 flex-1 min-w-0 relative pr-2">
                             <FileText size={18} className={selectedProfileId === p.id ? 'text-primary' : 'text-muted-foreground'} />
@@ -332,7 +332,7 @@ ${correctionPrompt}`;
             <Textarea
                 value={correctionPrompt} onChange={e => setCorrectionPrompt(e.target.value)}
                 placeholder="Hier deine fachliche Expertise eingeben..."
-                className="flex-1 w-full p-6 rounded-3xl border-border bg-muted/30 text-sm sm:text-base leading-relaxed focus:ring-4 focus:ring-primary/10 resize-none font-medium"
+                className="flex-1 w-full p-6 rounded-xl border-border bg-muted/30 text-sm sm:text-base leading-relaxed focus:ring-4 focus:ring-primary/10 resize-none font-medium"
             />
         </div>
     </div>

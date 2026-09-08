@@ -27,7 +27,7 @@ const WorkspaceManager: React.FC<WorkspaceManagerProps> = ({
     const router = useRouter();
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 p-8">
-            <Card className="bg-secondary/30 border-border/50 shadow-none p-6 rounded-3xl">
+            <Card className="bg-secondary/30 border-border/50 shadow-none p-6 rounded-hero">
                 <CardHeader className="p-0 mb-6">
                     <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-4">
                         <School size={24} />
@@ -59,7 +59,7 @@ const WorkspaceManager: React.FC<WorkspaceManagerProps> = ({
                 </CardContent>
             </Card>
 
-            <Card className="border-border/50 shadow-none bg-card rounded-3xl overflow-hidden">
+            <Card className="border-border/50 shadow-none bg-card rounded-hero overflow-hidden">
                 <CardHeader className="p-6 border-b border-border/50">
                     <CardTitle className="text-lg font-semibold">Bestehende Institute</CardTitle>
                 </CardHeader>

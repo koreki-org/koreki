@@ -404,7 +404,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         setActiveSkillIds([...activeSkillIds, skill.id]);
                                                     }
                                                 }}
-                                                className={`p-5 rounded-3xl border-2 transition-all flex items-start gap-4 select-none relative group ${isDisabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'} ${isChecked ? 'bg-gradient-to-br from-primary/5 to-primary/3 border-primary/20 shadow-md shadow-primary/5 ring-1 ring-primary/10' : 'bg-muted/10 border-border hover:border-border/80 hover:bg-muted/20'}`}
+                                                className={`p-5 rounded-xl border-2 transition-all flex items-start gap-4 select-none relative group ${isDisabled ? 'cursor-not-allowed opacity-80' : 'cursor-pointer'} ${isChecked ? 'bg-gradient-to-br from-primary/5 to-primary/3 border-primary/20 shadow-md shadow-primary/5 ring-1 ring-primary/10' : 'bg-muted/10 border-border hover:border-border/80 hover:bg-muted/20'}`}
                                             >
                                                 <div className="pt-0.5 shrink-0">
                                                     <input 

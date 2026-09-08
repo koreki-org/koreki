@@ -57,7 +57,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
             {/* Case 1: Community / SaaS Standard (Server Managed) */}
             {((isCommunity && !istEigenverwaltet) || (isSaaS && !isPure)) && (
                 <div className="space-y-4">
-                    <div className="p-5 bg-primary/5 rounded-3xl border-2 border-primary/10 flex flex-col items-center text-center gap-3">
+                    <div className="p-5 bg-primary/5 rounded-xl border-2 border-primary/10 flex flex-col items-center text-center gap-3">
                         <div className="p-3 bg-primary text-primary-foreground rounded-2xl shadow-lg shadow-primary/20">
                             <ShieldCheck size={24} />
                         </div>

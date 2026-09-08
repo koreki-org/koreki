@@ -63,7 +63,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                             {/* Left part: Variables visual list */}
                             <div className="flex-1 overflow-y-auto p-4 sm:p-8 min-h-0">
                                 <div className="space-y-8 pb-12">
-                                    <div className="bg-primary/5 border border-primary/20 rounded-3xl p-5 flex gap-4 text-xs text-primary items-start shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="bg-primary/5 border border-primary/20 rounded-xl p-5 flex gap-4 text-xs text-primary items-start shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
                                         <span className="text-xl">💡</span>
                                         <div className="space-y-1">
                                             <p className="font-extrabold text-primary leading-none">Manuelle Knotengestaltung</p>
@@ -75,7 +75,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
 
                                     {graph.validation?.dryRunChecked && (
                                         <div className={cn(
-                                            "rounded-3xl p-5 text-xs leading-normal flex items-start gap-3 border shadow-xs animate-in fade-in slide-in-from-top-2 duration-300 mt-4",
+                                            "rounded-xl p-5 text-xs leading-normal flex items-start gap-3 border shadow-xs animate-in fade-in slide-in-from-top-2 duration-300 mt-4",
                                             graph.validation.isValid
                                                 ? "bg-success/10 border-success/20 text-success"
                                                 : "bg-destructive/10 border-destructive/20 text-destructive"

@@ -81,7 +81,7 @@ export default function AGB() {
                     </header>
 
                     <div className="flex flex-col gap-8">
-                        <section id="scope" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="scope" className="bg-white rounded-hero p-10 border border-border shadow-sm relative scroll-mt-24">
                             <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><Book size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§1 Geltungsbereich und Zweck</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Diese Allgemeinen Geschäftsbedingungen (AGB) gelten für die Nutzung der unter koreki.org bereitgestellten Instanz der Koreki-Software. Davon unberührt bleibt die Lizenzierung des Quellcodes der Software, welcher als Open-Source-Projekt separat lizenziert wird.</p>
@@ -92,7 +92,7 @@ export default function AGB() {
                             <p className="leading-relaxed text-muted-foreground">Koreki richtet sich an Lehrkräfte und Bildungseinrichtungen als Open-Source-Hilfsmittel zur KI-gestützten Korrektur und Einschätzung von Aufgaben.</p>
                         </section>
 
-                        <section id="liability" className="bg-white rounded-3xl p-10 border border-warning/20 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-warning/5 to-white">
+                        <section id="liability" className="bg-white rounded-hero p-10 border border-warning/20 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-warning/5 to-white">
                             <div className="inline-flex p-3 bg-warning/10 text-warning rounded-xl mb-6"><Scale size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§2 Leistungsumfang und KI-Haftungsausschluss</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Koreki bietet Werkzeuge zur Textextraktion (OCR) und Analyse mittels Künstlicher Intelligenz (KI). Die KI generiert Einschätzungen und Bepunktungsvorschläge basierend auf den von der Lehrkraft bereitgestellten Musterlösungen.</p>
@@ -103,7 +103,7 @@ export default function AGB() {
                             <p className="leading-relaxed text-muted-foreground">Koreki übernimmt keine Haftung für fehlerhafte Textauslesungen, inkorrekte KI-Bewertungen, &quot;Halluzinationen&quot; der KI oder daraus resultierende ungerechtfertigte Benotungen. Der Nutzer ist verpflichtet, die generierten Vorschläge vor der Übernahme kritisch zu prüfen.</p>
                         </section>
 
-                        <section id="credits" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="credits" className="bg-white rounded-hero p-10 border border-border shadow-sm relative scroll-mt-24">
                             <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><CreditCard size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§3 Credit-System und Zahlungen</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Die Nutzung kostenpflichtiger KI-Dienste (wie OCR und Textanalyse) erfolgt über ein Prepaid-Credit-System.</p>
@@ -115,7 +115,7 @@ export default function AGB() {
                             </ul>
                         </section>
 
-                        <section id="privacy" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="privacy" className="bg-white rounded-hero p-10 border border-border shadow-sm relative scroll-mt-24">
                             <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><Shield size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§4 Datenschutz (AVV und &quot;PURE Mode&quot;)</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Der Schutz sensibler Schülerdaten hat höchste Priorität.</p>
@@ -127,19 +127,19 @@ export default function AGB() {
                             <p className="leading-relaxed text-muted-foreground">Weitere Details regelt die <Link href="/privacy" className="text-accent-1 hover:underline">Datenschutzerklärung</Link>.</p>
                         </section>
 
-                        <section id="duties" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="duties" className="bg-white rounded-hero p-10 border border-border shadow-sm relative scroll-mt-24">
                             <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><CheckCircle size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§5 Pflichten des Nutzers</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Der Nutzer sichert zu, dass er berechtigt ist, die hochgeladenen Dokumente (Schülerarbeiten) im Rahmen der KI-gestützten Analyse zu verarbeiten. Er holt notwendige Einwilligungen gemäß den Vorgaben seiner Bildungseinrichtung bzw. des geltenden Schulrechts selbstständig ein.</p>
                             <p className="leading-relaxed text-muted-foreground">Eine missbräuchliche Nutzung der Plattform (z.B. automatisierte Massenabfragen per Bot, Reverse-Engineering der API) ist untersagt und führt zur Sperrung des Kontos.</p>
                         </section>
 
-                        <section id="revocation" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="revocation" className="bg-white rounded-hero p-10 border border-border shadow-sm relative scroll-mt-24">
                             <h2 className="text-2xl font-bold text-foreground mb-6">§6 Widerrufsrecht</h2>
                             <p className="leading-relaxed text-muted-foreground">Nutzer, die als Verbraucher handeln, haben grundsätzlich ein Widerrufsrecht für den Kauf von Credits. Dieses Recht erlischt jedoch vorzeitig, sobald der Nutzer nach dem Kauf aktiv eine KI-Analyse startet und damit in die unmittelbare Ausführung der Dienstleistung einwilligt.</p>
                         </section>
 
-                        <section id="final" className="bg-white rounded-3xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="final" className="bg-white rounded-hero p-10 border border-border shadow-sm relative scroll-mt-24">
                             <h2 className="text-2xl font-bold text-foreground mb-6">§7 Schlussbestimmungen</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Es gilt das Recht der Bundesrepublik Deutschland.</p>
                             <p className="leading-relaxed text-muted-foreground">Sollten einzelne Bestimmungen dieser AGB unwirksam sein, bleibt der Vertrag im Übrigen wirksam. An die Stelle der unwirksamen Bestimmung treten die gesetzlichen Vorschriften.</p>

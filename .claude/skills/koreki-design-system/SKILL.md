@@ -155,6 +155,13 @@ Nutze ausschließlich die standardisierten Radien-Klassen. Willkürliche Eckenru
 - **`rounded-xl` (12px):** Für verschachtelte Kind-Elemente innerhalb von `rounded-hero`-Karten (z.B. Listenzeilen/Schülerzeilen in der Stapelverarbeitung), um eine harmonische Ecken-Nestung zu gewährleisten ($R_{outer} > R_{inner}$).
 - **`rounded-lg` (8px / `0.5rem` via `--radius`):** Standard für normale App-Karten, Widgets und Infoboxen.
 - **`rounded-md` (~6px):** Standard-Radius für interaktive Kontrollelemente (Buttons, Inputs). Wird direkt aus den UI-Kit-Komponenten (`Button`, `Input`) vererbt.
+- **`rounded-full`** für Kreise und Pillen, **`rounded-sm`/`rounded-none`** für Sonderfälle.
+
+> **`rounded-2xl` ist erlaubt und identisch mit `rounded-hero`** — beide ergeben 16px. Bevorzuge `rounded-hero`, weil der Name die Absicht trägt; `rounded-2xl` steht an 152 Stellen und wird nicht verfolgt.
+>
+> **Wächter:** [tests/unit/surface-governance.test.ts](../../../tests/unit/surface-governance.test.ts) prüft jede `rounded-*`-Klasse gegen die Tailwind-Skala **und** die Konfiguration. Er fängt zwei Fehlerarten:
+> - **Verbotene Stufen.** `rounded-3xl` stand am 08.09.2026 an 28 Stellen in 13 Dateien — verboten seit jeher, nie geprüft. Ersetzt durch `rounded-hero` (Seiten-, Dialog- und Tabellenkarten) bzw. `rounded-xl` (eingebettete Kästen und Kacheln).
+> - **Radien, die es gar nicht gibt.** `rounded-1.5xl` in `CreditsModal` war weder in Tailwind noch in der Konfiguration definiert — die Schaltfläche war schlicht eckig, ohne dass jemand etwas gemerkt hätte. Dieselbe Fehlerart wie das tote `bg-card`.
 
 ---
 

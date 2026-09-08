@@ -159,7 +159,7 @@ export const GraphTestingPanel: React.FC<GraphTestingPanelProps> = ({
                                     </div>
                                 ) : (
                                     <div className="flex-grow lg:flex-1 flex flex-col items-center justify-center p-8 text-center text-muted-foreground gap-4 select-none min-h-[250px] lg:min-h-0">
-                                        <div className="w-16 h-16 bg-primary/5 border border-primary/20 rounded-3xl flex items-center justify-center text-primary mb-2">
+                                        <div className="w-16 h-16 bg-primary/5 border border-primary/20 rounded-xl flex items-center justify-center text-primary mb-2">
                                             <Eye size={28} className="animate-pulse" />
                                         </div>
                                         <div className="max-w-xs space-y-1.5">

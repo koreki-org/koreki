@@ -260,6 +260,66 @@ describe('Flächen-Governance (koreki-design-system)', () => {
         }
     });
 
+    /**
+     * Radien haben dasselbe Problem wie Flaechen: `rounded-1.5xl` gibt es weder in
+     * Tailwind noch in der Konfiguration und tat deshalb nichts — die Schaltflaeche
+     * war schlicht eckig. Und `rounded-3xl` ist im Style Guide namentlich verboten,
+     * stand aber an 28 Stellen (08.09.2026).
+     *
+     * Ohne Baseline: Beides ist am selben Tag repariert worden.
+     */
+    it('laesst nur Radien zu, die es gibt und die der Style Guide erlaubt', () => {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const config = require(join(process.cwd(), 'tailwind.config.js'));
+        const erlaubt = new Set<string>([
+            '', 'none', 'sm', 'md', 'lg', 'xl', '2xl', 'full',
+            ...Object.keys(config?.theme?.extend?.borderRadius ?? {}),
+        ]);
+        // `rounded-3xl` und groesser sind bewusst NICHT dabei: Der Style Guide nennt
+        // sie unter "Verbotene Tailwind-Klassen" ausdruecklich.
+        const seiten = /^(t|r|b|l|tl|tr|br|bl|s|e|ss|se|es|ee)$/;
+        const treffer: string[] = [];
+
+        for (const datei of alleDateien) {
+            const zeilen = readFileSync(datei, 'utf8').split(/\r?\n/);
+            zeilen.forEach((zeile, index) => {
+                for (const kette of ketten(zeile)) {
+                    for (const teil of kette.split(/\s+/)) {
+                        if (teil.includes('${') || teil.includes('{')) continue;
+                        const roh = saeubern(teil);
+                        const klasse = reineKlasse(roh);
+                        if (!/^rounded(-|$)/.test(klasse)) continue;
+                        let wert = klasse.replace(/^rounded-?/, '');
+                        // Richtungsvariante abtrennen: rounded-b-hero -> hero
+                        const teile = wert.split('-');
+                        if (teile.length > 1 && seiten.test(teile[0])) wert = teile.slice(1).join('-');
+                        else if (teile.length === 1 && seiten.test(teile[0])) wert = '';
+                        if (wert.startsWith('[')) {
+                            // Der Style Guide erlaubt genau diese eine freie Form.
+                            if (wert !== '[var(--radius)]') {
+                                treffer.push(`${relativ(datei)}:${index + 1} — rounded-${wert}`);
+                            }
+                            continue;
+                        }
+                        if (!erlaubt.has(wert)) {
+                            treffer.push(`${relativ(datei)}:${index + 1} — ${klasse}`);
+                        }
+                    }
+                }
+            });
+        }
+
+        if (treffer.length > 0) {
+            throw new Error(
+                'UNERLAUBTER RADIUS — diese Klassen gibt es nicht oder der Style Guide\n' +
+                'verbietet sie:\n  - ' + treffer.join('\n  - ') +
+                '\n\nErlaubt sind rounded-hero (16px, Modals und Sektionskarten),\n' +
+                'rounded-xl (12px, verschachtelte Kinder), rounded-lg (8px, normale\n' +
+                'Karten und Infoboxen) und rounded-md (Bedienelemente).'
+            );
+        }
+    });
+
     it('verlangt, dass reparierte Dateien die Baselines verlassen', () => {
         const veraltetHart = HARTE_FARBEN_BASELINE.filter(pfad => {
             const inhalt = readFileSync(join(SRC_DIR, pfad), 'utf8');

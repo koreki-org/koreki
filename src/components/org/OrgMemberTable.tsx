@@ -22,7 +22,7 @@ export const OrgMemberTable: React.FC<OrgMemberTableProps> = ({
     onRemoveMember
 }) => {
     return (
-        <Card className="shadow-sm bg-card rounded-3xl overflow-hidden border-none text-foreground">
+        <Card className="shadow-sm bg-card rounded-hero overflow-hidden border-none text-foreground">
             <div className="overflow-x-auto">
                 <table className="w-full text-left">
                     <thead>

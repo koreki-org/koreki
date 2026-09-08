@@ -60,7 +60,7 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
         <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
             {/* Case 1: Community / SaaS Standard (Server Managed) */}
             {((isCommunity && !istEigenverwaltet) || (isSaaS && !isPure)) && (
-                <div className="p-5 bg-success/5 rounded-3xl border-2 border-success/20 flex flex-col items-center text-center gap-3">
+                <div className="p-5 bg-success/5 rounded-xl border-2 border-success/20 flex flex-col items-center text-center gap-3">
                     <div className="p-3 bg-success text-success-foreground rounded-2xl shadow-lg shadow-success/20">
                         <ShieldCheck size={24} />
                     </div>

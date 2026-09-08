@@ -49,7 +49,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                 <div className="grid grid-cols-1 gap-3">
                     <button
                         onClick={() => updateSettings({ provider: 'mistral' })}
-                        className={`group relative p-5 rounded-3xl border-2 transition-all duration-300 text-left ${
+                        className={`group relative p-5 rounded-xl border-2 transition-all duration-300 text-left ${
                             settings.provider === 'mistral' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-border bg-background'
                         }`}
                     >
@@ -70,7 +70,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                             openaiUrl: 'https://llm.aihosting.mittwald.de/v1',
                             enableThinking: true
                         })}
-                        className={`group relative p-5 rounded-3xl border-2 transition-all duration-300 text-left ${
+                        className={`group relative p-5 rounded-xl border-2 transition-all duration-300 text-left ${
                             settings.provider === 'openai-compatible' ? 'border-primary bg-primary/5 ring-4 ring-primary/10' : 'border-border bg-background'
                         }`}
                     >
