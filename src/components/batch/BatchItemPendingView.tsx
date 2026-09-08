@@ -86,7 +86,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                             const sectionHasUncertainty = hasOcrWarnings(sectionText);
 
                             return (
-                                <div key={task.name} className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm group pt-3">
+                                <div key={task.name} className="group">
                                     <EditableMathArea
                                         leftAction={
                                             <>
