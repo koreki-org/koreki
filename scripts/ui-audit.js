@@ -145,7 +145,7 @@ const perFileRatchets = [
         'src/components/marketing/FeatureSubNav.tsx': 3,
         'src/components/marketing/ImageLightbox.tsx': 3,
         'src/components/ModelTypeModal.tsx': 3,
-        'src/components/ui/Dropdown.tsx': 3,
+        'src/components/ui/Dropdown.tsx': 2,
         'src/pages/app/compliance/agb.tsx': 3,
         'src/pages/app/compliance/avv.tsx': 3,
         'src/pages/app/compliance/manual.tsx': 3,

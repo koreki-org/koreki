@@ -104,7 +104,7 @@ const UserTable: React.FC<UserTableProps> = ({
                                                 onValueChange={(val) => onAssignWorkspace(u.id, val)}
                                                 options={userWorkspaceOptions}
                                                 disabled={actionLoading === u.id || hasOrgMembership}
-                                                className="max-w-[240px] bg-card"
+                                                className="max-w-[240px]"
                                             />
                                         </div>
                                     )}
