@@ -89,7 +89,6 @@ const ANY_BASELINE: Record<string, number> = {
     'components/AiParamsModal.tsx': 2,
     'components/batch/AnalyticsModal.tsx': 2,
     'components/batch/BatchFileListItem.tsx': 2,
-    'components/batch/BatchItemDoneView.tsx': 2,
     'components/batch/BatchItemPendingView.tsx': 2,
     'components/batch/GradingMemoryModal.tsx': 2,
     'components/batch/parts/SecondOpinionDrawer.tsx': 1,
