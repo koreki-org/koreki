@@ -108,8 +108,14 @@ describe('ModelSolutionCard Integration (Layer 2)', () => {
         expect(taskBadges[0]).toBeInTheDocument();
 
         // 2. Switch EditableMathArea to Edit Mode
-        const pencil = screen.getByTestId('pencil-icon').closest('button');
-        fireEvent.click(pencil!);
+        //
+        // Seit dem 08.09.2026 gibt es ZWEI Stifte in dieser Karte: Der erste
+        // gehoert zum gemeinsamen Rahmen, der zweite zur Aufgabe. Die Anzahl wird
+        // mitgeprueft — sonst testete diese Zeile bei einer Umstellung stillschweigend
+        // das falsche Feld.
+        const stifte = screen.getAllByTestId('pencil-icon');
+        expect(stifte).toHaveLength(2);
+        fireEvent.click(stifte[1].closest('button')!);
 
         // 3. Type in the Textarea
         const textarea = screen.getByPlaceholderText('Musterlösung hier eingeben...');
@@ -125,8 +131,10 @@ describe('ModelSolutionCard Integration (Layer 2)', () => {
     it('should maintain content when toggling preview', () => {
         render(<TestWrapper initialModelSolution="Initial" initialTasks={[{ name: 'Task', maxPoints: 5 }]} />);
 
-        // 1. Switch to edit
-        fireEvent.click(screen.getByTestId('pencil-icon').closest('button')!);
+        // 1. Switch to edit — Stift der Aufgabe, nicht der des gemeinsamen Rahmens.
+        const stifte = screen.getAllByTestId('pencil-icon');
+        expect(stifte).toHaveLength(2);
+        fireEvent.click(stifte[1].closest('button')!);
         
         // 2. Change text
         const textarea = screen.getByPlaceholderText('Musterlösung hier eingeben...');
