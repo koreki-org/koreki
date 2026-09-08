@@ -43,7 +43,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
     return (
         <div className={cn("grid grid-cols-1 gap-4 sm:gap-8 h-fit", item.documentType === 'scanned' && "md:grid-cols-2")}>
             {/* OCR Verification View */}
-            <div className={cn("flex flex-col gap-4 min-h-[300px] md:min-h-[400px] md:h-[600px]", (mobileViewMode === 'image' && item.documentType === 'scanned') ? "hidden md:flex" : "flex", "md:flex")}>
+            <div className={cn("flex flex-col gap-4 min-h-[300px] md:min-h-[400px] md:max-h-[600px]", (mobileViewMode === 'image' && item.documentType === 'scanned') ? "hidden md:flex" : "flex", "md:flex")}>
                 <div className="flex-1 space-y-4 w-full flex flex-col min-h-0">
                     {/* RESTORATION: Image 2 Header Title */}
                     <div className="flex items-center gap-2 mb-3 px-1 pt-4 shrink-0">

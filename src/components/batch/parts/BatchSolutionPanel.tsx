@@ -86,7 +86,7 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
                     </div>
                 </div>
             ) : (
-                <div className="flex-1 space-y-6 h-[80vh] md:h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                <div className="flex-1 space-y-6 max-h-[80vh] md:max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
                     {(activeGroupName && groupedTasks[activeGroupName] ? groupedTasks[activeGroupName] : (item.result?.tasks || [])).map((task) => {
                         const sIdx = tasksLayout.findIndex(t => t.name === task.name);
                         let sectionText = '';
