@@ -2,7 +2,7 @@ import React from 'react';
 import { FileText, Maximize2, Minimize2 } from 'lucide-react';
 import { BatchFile, Task } from '../../../types';
 import { cn } from '@/lib/utils';
-import { EditableMathArea } from '../../ui/EditableMathArea';
+import { BatchSolutionTaskCell } from './BatchSolutionTaskCell';
 
 interface BatchSolutionPanelProps {
     item: BatchFile;
@@ -10,8 +10,8 @@ interface BatchSolutionPanelProps {
     mobileViewMode: 'text' | 'image';
     previewUrl: string | null;
     activeGroupName: string;
-    groupedTasks: Record<string, any[]>;
-    tasksLayout: any[];
+    groupedTasks: Record<string, Task[]>;
+    tasksLayout: Task[];
     studentSections: string[];
     onUpdateText?: (idx: number, text: string, tasks?: Task[]) => void;
     idx: number;
@@ -87,46 +87,17 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
                 </div>
             ) : (
                 <div className="flex-1 space-y-6 max-h-[80vh] md:max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                    {(activeGroupName && groupedTasks[activeGroupName] ? groupedTasks[activeGroupName] : (item.result?.tasks || [])).map((task) => {
-                        const sIdx = tasksLayout.findIndex(t => t.name === task.name);
-                        let sectionText = '';
-                        
-                        // Priority 1: Edited text stored in the AI Result (item.result.tasks)
-                        if (item.status === 'done' && item.result) {
-                            const aiTask = item.result?.tasks?.find(t => t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
-                            if (aiTask && aiTask.content) {
-                                sectionText = aiTask.content;
-                            }
-                        }
-                        
-                        // Priority 2: Original OCR split from studentSections
-                        if (!sectionText) {
-                            sectionText = sIdx !== -1 ? (studentSections[sIdx] || '') : '';
-                        }
-                        return (
-                            <div key={task.id || task.name || task.idx}>
-                                <EditableMathArea
-                                    leftAction={<span className="text-xs font-bold text-foreground truncate font-outfit">{task.name}</span>}
-                                    value={sectionText}
-                                    onChange={(newText) => {
-                                        if (onUpdateText) {
-                                            const baseTasks = (item.status === 'done' && item.result) ? (item.result.tasks || []) : (item.tasks || []);
-                                            const updatedTasks = [...baseTasks];
-                                            const taskIdxInItem = updatedTasks.findIndex(t => t.name === task.name);
-                                            if (taskIdxInItem !== -1) {
-                                                updatedTasks[taskIdxInItem] = { ...updatedTasks[taskIdxInItem], content: newText };
-                                            } else {
-                                                updatedTasks.push({ name: task.name, content: newText, maxPoints: task.maxPoints });
-                                            }
-                                            onUpdateText(idx, "", updatedTasks);
-                                        }
-                                    }}
-                                    placeholder="Schülerantwort..."
-                                    className="w-full"
-                                />
-                            </div>
-                        );
-                    })}
+                    {(activeGroupName && groupedTasks[activeGroupName] ? groupedTasks[activeGroupName] : (item.result?.tasks || [])).map((task) => (
+                        <BatchSolutionTaskCell
+                            key={task.name}
+                            item={item}
+                            idx={idx}
+                            task={task}
+                            tasksLayout={tasksLayout}
+                            studentSections={studentSections}
+                            onUpdateText={onUpdateText}
+                        />
+                    ))}
                 </div>
             )}
         </div>

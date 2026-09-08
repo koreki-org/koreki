@@ -9,6 +9,7 @@ import { BatchFile, Task } from '../../../types';
 import { VertrauensChip } from './VertrauensChip';
 import { useTaskReviewActions } from '@/hooks/useTaskReviewActions';
 import { useSecondOpinion } from '@/hooks/useSecondOpinion';
+import { schuelerAntwort } from '@/lib/schueler-antwort';
 
 /**
  * Die Einschaetzung ZU EINER Aufgabe.
@@ -37,24 +38,6 @@ interface BatchTaskAnalysisCellProps {
     /** Zustand aus dem gemeinsamen Hook — nicht je Zelle neu aufgebaut. */
     aktionen: ReturnType<typeof useTaskReviewActions>;
     zweitmeinung: ReturnType<typeof useSecondOpinion>;
-}
-
-/**
- * Der Text, den der Schueler zu dieser Aufgabe abgegeben hat.
- *
- * Stand vorher zweimal wortgleich im Rumpf — einmal fuer das Anlernen, einmal
- * fuer die Zweitmeinung. Die Reihenfolge ist dabei nicht beliebig: Das Ergebnis
- * der KI gewinnt, weil die Lehrkraft den erkannten Text dort korrigiert haben
- * kann; erst wenn dort nichts steht, greift der urspruengliche OCR-Abschnitt.
- */
-function schuelerAntwort(item: BatchFile, task: Task, tasksLayout: Task[], studentSections: string[]): string {
-    if (item.status === 'done' && item.result) {
-        const aiTask = item.result.tasks?.find(t =>
-            t.name === task.name || t.name?.toLowerCase() === task.name?.toLowerCase());
-        if (aiTask?.content) return aiTask.content;
-    }
-    const sIdx = tasksLayout.findIndex(t => t.name === task.name);
-    return sIdx !== -1 ? (studentSections[sIdx] || '') : '';
 }
 
 export const BatchTaskAnalysisCell: React.FC<BatchTaskAnalysisCellProps> = ({

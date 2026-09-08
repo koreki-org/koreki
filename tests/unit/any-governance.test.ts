@@ -92,7 +92,6 @@ const ANY_BASELINE: Record<string, number> = {
     'components/batch/BatchItemDoneView.tsx': 2,
     'components/batch/BatchItemPendingView.tsx': 2,
     'components/batch/GradingMemoryModal.tsx': 2,
-    'components/batch/parts/BatchSolutionPanel.tsx': 2,
     'components/batch/parts/SecondOpinionDrawer.tsx': 1,
     'components/UploadGrid.tsx': 2,
     'hooks/useAuth.ts': 2,
