@@ -187,7 +187,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
         delete analysis.usage;
 
         // Apply task mapping
-        analysis = parseCorrectionResult(analysis, tasksLayout);
+        analysis = parseCorrectionResult(analysis, tasksLayout, studentText);
         if (expertProfileName) {
             analysis.expertProfile = expertProfileName;
         }

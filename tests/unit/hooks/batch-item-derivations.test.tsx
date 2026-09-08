@@ -88,6 +88,43 @@ describe('useBatchItemDerivations', () => {
     });
 
 
+    // GEMELDET 08.09.2026: Die Lehrkraft repariert einen OCR-Fehler, der rote
+    // Hinweis am Aufgabenfeld verschwindet — der an der Datei bleibt stehen.
+    // Grund: Beim Speichern einer Aufgaben-Korrektur wird nur `tasks`
+    // geschrieben, `fileText` behaelt den rohen Text der Texterkennung samt
+    // "(?)". Wer beide Quellen mit ODER verknuepft, warnt fuer immer.
+    describe('OCR-Marker: die reparierte Fassung zaehlt, nicht der Rohtext', () => {
+        const mitMarker: BatchFile = {
+            ...mockItem,
+            fileText: '=== TASK: Aufgabe 1 ===\nDer Wid(?)erstand betraegt 5 Ohm',
+            tasks: [{ name: 'Aufgabe 1', content: 'Der Wid(?)erstand betraegt 5 Ohm', maxPoints: 5 }]
+        };
+
+        const warnung = (item: BatchFile) => renderHook(() => useBatchItemDerivations({
+            item,
+            idx: 0,
+            tasksLayout: mockLayout,
+            currentProcessingIndex: null,
+            loading: false
+        })).result.current.itemHasWarnings;
+
+        it('warnt, solange der Marker in der Aufgabe steht', () => {
+            expect(warnung(mitMarker)).toBe(true);
+        });
+
+        it('schweigt, sobald die Aufgabe repariert ist — auch bei altem fileText', () => {
+            const repariert: BatchFile = {
+                ...mitMarker,
+                tasks: [{ name: 'Aufgabe 1', content: 'Der Widerstand betraegt 5 Ohm', maxPoints: 5 }]
+            };
+            expect(warnung(repariert)).toBe(false);
+        });
+
+        it('liest fileText weiter, solange keine Aufgaben zugeordnet sind', () => {
+            expect(warnung({ ...mitMarker, tasks: [] })).toBe(true);
+        });
+    });
+
     it('should issue a privacy warning for unredacted scans', () => {
         const unredactedScan: BatchFile = {
             ...mockItem,

@@ -8,6 +8,8 @@ import { formatCalcTraceFeedback } from '../grading/calc-trace-feedback';
 import type { KriteriumErgebnis } from '../grading/calc-trace-feedback';
 import { shouldDisablePoints } from './prompt-builder';
 import { alsModellzahl } from '../zahlen';
+import { alsVertrauen, mitMarkerDeckelung } from '../vertrauen';
+import { hatOcrMarkerFuerAufgabe } from '../schuelertext';
 
 // Die Regel wohnt jetzt in `lib/zahlen` — sie wird auch beim Nachrechnen
 // nach einer manuellen Punktekorrektur gebraucht. Hier weiterhin sichtbar,
@@ -376,7 +378,7 @@ export function mapGraphTask(layoutTask: Task, aiTask: AITask): TaskMappingResul
  * mathematische Sandbox durchgelaufen ist — der Lehrer muss wissen, dass diese
  * Punkte ungeprueft sind.
  */
-export function mapModelTask(layoutTask: Task, aiTask: AITask): TaskMappingResult {
+export function mapModelTask(layoutTask: Task, aiTask: AITask, schuelertext?: string): TaskMappingResult {
     const hasAttachedCalcTrace = !!layoutTask.calcTrace;
     const hasTargetGoal = !!layoutTask.targetGoal;
     const isCalcTraceTask = hasAttachedCalcTrace || hasTargetGoal || layoutTask.taskType === 'calc-trace';
@@ -387,12 +389,9 @@ export function mapModelTask(layoutTask: Task, aiTask: AITask): TaskMappingResul
         aiTask.feedback?.includes(SANDBOX_PROOF_MARKER));
     const isSandboxBypassed = isCalcTraceTask && !calcTraceAlreadyFormatted;
 
-    let confidence = alsModellzahl(aiTask.confidence, 0);
-
-    // --- MARKER PENALTY ---
-    // If the cleaned text contains (?) markers, confidence MUST be < 90
-    const markerIssue = !!aiTask.content?.includes('(?)');
-    if (markerIssue && confidence >= 90) confidence = 89;
+    // Der Marker steht im ABGESCHICKTEN Text, nicht in der Antwort — `lib/schuelertext`.
+    const markerIssue = hatOcrMarkerFuerAufgabe(schuelertext, layoutTask.name) || !!aiTask.content?.includes('(?)');
+    const confidence = mitMarkerDeckelung(alsVertrauen(aiTask.confidence), markerIssue);
 
     let feedback = aiTask.feedback || '';
     if (isSandboxBypassed) {
@@ -484,7 +483,9 @@ export function mapLayoutTask(
      * uebrigen Aufgaben laesst sich nicht feststellen, ob ein Treffer eindeutig
      * ist. Ohne Angabe verhaelt sich die Funktion wie zuvor.
      */
-    allesLayout: Task[] = [layoutTask]
+    allesLayout: Task[] = [layoutTask],
+    /** Der Text, der zur Bewertung ging — die einzige verlaessliche Marker-Quelle. */
+    schuelertext?: string
 ): TaskMappingResult {
     const { aiTask, hinweis } = findeKiAufgabe(layoutTask, aiTasks, allesLayout);
 
@@ -492,7 +493,7 @@ export function mapLayoutTask(
 
     const ergebnis = layoutTask.calcTraceResult ? mapCalcTraceTask(layoutTask, aiTask)
         : layoutTask.gradingResult ? mapGraphTask(layoutTask, aiTask)
-        : mapModelTask(layoutTask, aiTask);
+        : mapModelTask(layoutTask, aiTask, schuelertext);
 
     return hinweis ? mitHinweis(ergebnis, hinweis) : ergebnis;
 }

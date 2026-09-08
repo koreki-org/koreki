@@ -19,6 +19,7 @@ import { extractStudentAST } from '../grading/calc-trace-extraction';
 import { shouldDisablePoints } from './prompt-builder';
 import { requireOpenAiConnection } from './provider-connection';
 import { mapLayoutTask, alsModellzahl } from './correction-mapping';
+import { alsVertrauen } from '../vertrauen';
 import { istAbrechenbar } from './billing-gate';
 import { runLocalGradingEngines } from './local-grading-pass';
 
@@ -31,7 +32,12 @@ export { shouldDisablePoints };
  * Aufgabe entscheidet `mapLayoutTask`, wer die Punkte vergibt (Sandbox, Graph
  * oder Modell); die vier Faelle stehen in `correction-mapping.ts`.
  */
-export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: Task[] | null): AIAnalysisResult {
+export function parseCorrectionResult(
+    analysis: AIAnalysisResult,
+    tasksLayout?: Task[] | null,
+    /** Der abgeschickte Schuelertext — daraus stammen die OCR-Marker. */
+    schuelertext?: string
+): AIAnalysisResult {
     const parsed = AIAnalysisResultSchema.safeParse(analysis);
     if (parsed.success) {
         analysis = parsed.data as AIAnalysisResult;
@@ -39,7 +45,7 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
 
     if (tasksLayout && Array.isArray(tasksLayout) && tasksLayout.length > 0) {
         const aiTasks = analysis.tasks || [];
-        const ergebnisse = tasksLayout.map((layoutTask: Task) => mapLayoutTask(layoutTask, aiTasks, tasksLayout));
+        const ergebnisse = tasksLayout.map((layoutTask: Task) => mapLayoutTask(layoutTask, aiTasks, tasksLayout, schuelertext));
         const mappedTasks = ergebnisse.map(e => e.task);
 
         // Zaehler und Nenner muessen DIESELBEN Aufgaben umfassen.
@@ -75,7 +81,10 @@ export function parseCorrectionResult(analysis: AIAnalysisResult, tasksLayout?: 
         // If the structure is broken (naming mismatch) or too many OCR problems, the entire document requires review.
         const hasMappingError = ergebnisse.some(e => e.mappingError);
         const hasMarkerIssue = ergebnisse.some(e => e.markerIssue);
-        analysis.confidence = (hasMappingError || hasMarkerIssue) ? 0 : alsModellzahl(analysis.confidence, 0);
+        // Die 0 der Bremse ist eine Aussage von Koreki ueber diesen Lauf und bleibt.
+        // Nennt das Modell dagegen gar keinen Wert, bleibt es leer statt 0 —
+        // dieselbe Regel wie je Aufgabe, siehe `lib/vertrauen`.
+        analysis.confidence = (hasMappingError || hasMarkerIssue) ? 0 : alsVertrauen(analysis.confidence);
     } else if (analysis.tasks && Array.isArray(analysis.tasks)) {
         let totalObtained = 0;
         let totalMax = 0;
@@ -400,7 +409,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
             }
 
             if (action === 'correction') {
-                result = parseCorrectionResult(result, payload.tasksLayout);
+                result = parseCorrectionResult(result, payload.tasksLayout, payload.studentText);
                 if (payload.expertProfileName) {
                     result.expertProfile = payload.expertProfileName;
                 }

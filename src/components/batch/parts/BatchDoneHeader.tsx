@@ -5,6 +5,7 @@ import { Badge } from '../../ui/Badge';
 import { PopoverMenu } from '../../ui/PopoverMenu';
 import { BatchFile, Task } from '../../../types';
 import { cn } from '@/lib/utils';
+import { brauchtPruefung } from '@/lib/vertrauen';
 
 interface BatchDoneHeaderProps {
     item: BatchFile;
@@ -29,7 +30,7 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
     activeGroupName,
     onSetActiveGroupName
 }) => {
-    const lowConfidenceTasks = item.result?.tasks?.filter(t => (t.confidence || 0) < 90) || [];
+    const lowConfidenceTasks = item.result?.tasks?.filter(t => brauchtPruefung(t.confidence)) || [];
 
     // 🏮 INDUSTRIAL LOGIC: Springt zur passenden Task-Gruppe und scrollt zur Task-Card.
     // Extrahiert, da sowohl der Single-Treffer-Button als auch jedes Popover-Item

@@ -163,7 +163,11 @@ describe('Kein NaN in der Punktevergabe — alle vier Zweige', () => {
         expect(task.pointsObtained).toBe(4);
     });
 
-    it('Modell: unsinnige Punktzahl und Confidence werden zu 0', () => {
+    // Der Vertrauenswert ist seit dem 08.09.2026 die Ausnahme in dieser Datei:
+    // Punkte MUESSEN eine Zahl sein, ein Vertrauenswert nicht. Eine untippbare
+    // Angabe wird deshalb verworfen statt auf 0 abgebildet — dieselbe Regel wie
+    // fuer eine fehlende, siehe `lib/vertrauen`.
+    it('Modell: unsinnige Punktzahl wird zu 0, unsinniges Confidence verworfen', () => {
         const { task } = mapModelTask(
             { id: 't3', name: 'Aufgabe 3', maxPoints: 2 } as unknown as Task,
             kiAufgabe({
@@ -173,7 +177,7 @@ describe('Kein NaN in der Punktevergabe — alle vier Zweige', () => {
         );
 
         expect(task.pointsObtained).toBe(0);
-        expect(task.confidence).toBe(0);
+        expect(task.confidence).toBeUndefined();
     });
 
     it('Fehlende Aufgabe: der Beinahe-Treffer bringt kein NaN mit', () => {

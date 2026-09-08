@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/Button';
 import { EditableMathArea } from '@/components/ui/EditableMathArea';
 import { BatchFile, AppSettings, GradingMemory } from '../../../types';
 import { cn } from '@/lib/utils';
+import { VertrauensChip } from './VertrauensChip';
 import { useGradingMemories } from '@/hooks/useGradingMemories';
 import { apiClient } from '@/lib/api-client';
 import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
@@ -367,7 +368,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                     task.name?.toLowerCase().includes(t.name?.toLowerCase() || '') ||
                     t.name?.toLowerCase().includes(task.name?.toLowerCase() || '')
                 );
-                const confidence = aiResult?.confidence || 0;
+                const confidence = aiResult?.confidence;
                 const safeTaskName = task.name.replace(/\s+/g, '-').toLowerCase();
                 
                 return (
@@ -382,16 +383,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                                     <span className="inline sm:hidden">{task.name.replace(/Aufgabe\s*/i, 'A.')}</span>
                                     <span className="hidden sm:inline">{task.name}</span>
                                 </span>
-                                <div className={cn(
-                                    "flex items-center gap-1.5 px-2 py-1 rounded-full border text-xs font-black uppercase tracking-tight whitespace-nowrap",
-                                    confidence >= 90 ? "bg-success/10 text-success border-success/20" :
-                                    confidence >= 50 ? "bg-warning/10 text-warning border-warning/20" :
-                                    "bg-destructive/10 text-destructive border-destructive/20"
-                                )}>
-                                    <div className={cn("w-2 h-2 rounded-full", getConfidenceColor(confidence))}></div>
-                                    <span className="hidden sm:inline">Ki-Vertrauen: {confidence}%</span>
-                                    <span className="sm:hidden">KI: {confidence}%</span>
-                                </div>
+                                <VertrauensChip vertrauen={confidence} getConfidenceColor={getConfidenceColor} />
                             </div>
                             <PointInput 
                                 value={Number(aiResult?.pointsObtained ?? 0)}

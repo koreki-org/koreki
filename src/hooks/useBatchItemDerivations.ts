@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { BatchFile, Task } from '../types';
 import { hasOcrWarnings, splitTextByTasks } from '../lib/task-utils';
+import { brauchtPruefung } from '../lib/vertrauen';
 
 interface UseBatchItemDerivationsProps {
     item: BatchFile;
@@ -28,9 +29,20 @@ export const useBatchItemDerivations = ({
     const itemHasWarnings = useMemo(() => {
         if (item.status === 'done') return false; // INDUSTRIAL: Evict status badges after completion
         
-        // Priority 1: Current text markers in tasks or fileText
-        const textHasMarkers = (item.tasks && item.tasks.some(t => hasOcrWarnings(t.content || ''))) || 
-                               hasOcrWarnings(item.fileText || '');
+        // Der Marker wird DORT gesucht, wo der Text steht, der auch zur Korrektur
+        // geht: in `tasks`, sobald es welche gibt — `useCorrectionRun` baut den
+        // Schuelertext aus genau diesem Feld. `fileText` ist der rohe Text der
+        // Texterkennung und bleibt beim Reparieren einer Aufgabe absichtlich
+        // unangetastet; er ist nur noch Rueckfallebene, solange keine Aufgaben
+        // zugeordnet sind.
+        //
+        // GEMELDET 08.09.2026: Eine reparierte Aufgabe loeschte das rote
+        // "OCR pruefen!" am Aufgabenfeld, aber nicht das an der Datei. Beide
+        // Zeichen meinen dasselbe — nur dieses hier las zusaetzlich `fileText`
+        // und stand damit fuer immer, egal wie sorgfaeltig korrigiert wurde.
+        const textHasMarkers = item.tasks && item.tasks.length > 0
+            ? item.tasks.some(t => hasOcrWarnings(t.content || ''))
+            : hasOcrWarnings(item.fileText || '');
         
         // Priority 2: If we have NO markers, even if initial OCR was low confidence, we consider it "cleared" by the user.
         // However, if we HAVE markers, or if no edit was made AND the flag is true, we show the badge.
@@ -58,9 +70,10 @@ export const useBatchItemDerivations = ({
         });
     }, [item.fileText, item.tasks, tasksLayout]);
 
-    // Check if correction review is recommended (Industrial logic: confidence < 90%)
+    // Nachsehen empfohlen? Nur bei einem GENANNTEN Wert unter der Schwelle —
+    // `(t.confidence || 0) < 90` haette jede Aufgabe ohne Angabe eingesammelt.
     const reviewRecommended = useMemo(() => {
-        return item.result?.tasks?.some(t => (t.confidence || 0) < 90) || false;
+        return item.result?.tasks?.some(t => brauchtPruefung(t.confidence)) || false;
     }, [item.result]);
 
     // Calculate result percentage (Industrial Logic: from overallMatchPercentage)

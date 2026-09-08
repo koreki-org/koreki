@@ -1,6 +1,7 @@
 import React from 'react';
 import { Info, Highlighter, AlertTriangle } from 'lucide-react';
 import { BatchFile, Task, AppSettings } from '../types';
+import { VERTRAUEN_SCHWELLE } from '../lib/vertrauen';
 import { Button } from './ui/Button';
 import { Card, CardContent } from './ui/Card';
 import ConfirmationModal from './ConfirmationModal';
@@ -108,8 +109,11 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     // Nachträgliches Schwärzen entwertet eine bereits gelaufene Bilderkennung.
     const redactionDiscardsOcr = batchFiles.some(f => f.documentType === 'scanned' && !f.isRedacted && f.ocrDone && f.selected !== false);
 
-    const getConfidenceColor = (conf: number = 0) => {
-        if (conf >= 90) return "bg-success text-white";
+    // Ohne genannten Wert bleibt der Punkt grau. Der Vorgabewert 0 faerbte ihn
+    // rot und behauptete damit dasselbe wie das frueher angezeigte "0 %".
+    const getConfidenceColor = (conf?: number) => {
+        if (conf === undefined) return "bg-muted-foreground/40";
+        if (conf >= VERTRAUEN_SCHWELLE) return "bg-success text-white";
         if (conf >= 50) return "bg-warning text-white";
         return "bg-destructive text-white";
     };

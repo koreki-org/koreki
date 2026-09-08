@@ -126,7 +126,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // 495 -> 488: die beiden .koreki-Exporte standen zweimal ausgeschrieben da,
     // unterschieden durch ein einziges `true`.
     'pages/app.tsx': 489,
-    'components/batch/parts/BatchTaskAnalysisCard.tsx': 578,
+    'components/batch/parts/BatchTaskAnalysisCard.tsx': 570,
     // +7: der Kommentar, warum beim Aktualisieren die bestehende Kennung
     // gewinnt. Ohne ihn wird die Zeile beim naechsten Aufraeumen entfernt.
     // 498 -> 468: Loeschen und Umbenennen gehen jetzt ueber den

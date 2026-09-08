@@ -9,6 +9,7 @@ import { promisePool } from '@/lib/ai/promise-pool';
 import { toErrorMessage, isAbortError, isRateLimitError } from '@/lib/error-message';
 import { logger } from '@/lib/logger';
 import { splitTextByTasks } from '@/lib/task-utils';
+import { baueSchuelertext } from '@/lib/schuelertext';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
 import { ensureActiveGradingMemorySynced } from '@/lib/grading-memory-sync';
 import { meldeHinweis } from '@/lib/notify';
@@ -72,7 +73,7 @@ export function useCorrectionRun({
                 : currentFile.tasks;
 
             const sectionText = activeTasks && activeTasks.length > 0
-                ? activeTasks.map((t: Task) => `### ${t.name} ###\n${t.content || ''}`).join('\n\n') 
+                ? baueSchuelertext(activeTasks)
                 : '';
             
             const finalStudentText = sectionText.trim().length > 0 
