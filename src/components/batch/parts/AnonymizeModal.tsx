@@ -52,7 +52,7 @@ export const AnonymizeModal: React.FC<AnonymizeModalProps> = ({
 
     return createPortal(
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300">
-            <div className="bg-background border border-border shadow-glass rounded-2xl max-w-xl w-full flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="bg-card border border-border shadow-glass rounded-2xl max-w-xl w-full flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-300">
                 
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-border px-5 py-4 bg-muted/20">
@@ -124,7 +124,7 @@ export const AnonymizeModal: React.FC<AnonymizeModalProps> = ({
                             <Textarea
                                 value={anonymizedText}
                                 onChange={(e) => setAnonymizedText(e.target.value)}
-                                className="w-full h-32 p-4 rounded-xl border border-primary/20 bg-background text-xs text-foreground/90 font-inter leading-relaxed focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-hidden resize-none"
+                                className="w-full h-32 p-4 rounded-xl border border-primary/20 bg-card text-xs text-foreground/90 font-inter leading-relaxed focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-hidden resize-none"
                                 placeholder="Geringfügige Anpassungen vor dem Speichern..."
                             />
                             <div className="bg-muted/30 p-3 rounded-lg border border-border text-xs text-muted-foreground leading-relaxed font-inter">

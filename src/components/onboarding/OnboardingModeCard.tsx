@@ -76,7 +76,7 @@ export const OnboardingModeCard: React.FC<OnboardingModeCardProps> = ({
 }) => (
     <section
         className={cn(
-            'relative flex flex-col rounded-xl border border-border bg-background p-4 text-left shadow-md transition-all duration-300 md:p-card-padding-sm',
+            'relative flex flex-col rounded-xl border border-border bg-card p-4 text-left shadow-md transition-all duration-300 md:p-card-padding-sm',
             !unavailable && 'hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 focus-within:border-primary/40'
         )}
     >

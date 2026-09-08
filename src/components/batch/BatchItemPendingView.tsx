@@ -86,7 +86,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                             const sectionHasUncertainty = hasOcrWarnings(sectionText);
 
                             return (
-                                <div key={task.name} className="rounded-2xl border border-border bg-background overflow-hidden shadow-sm group">
+                                <div key={task.name} className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm group">
                                     <div className="flex items-center justify-between px-3 py-2 bg-muted/30 group-focus-within:bg-primary/5 transition-colors">
                                         <div className="flex items-center gap-2 overflow-hidden">
                                             <span className="text-xs font-bold text-foreground truncate font-outfit">{task.name}</span>

@@ -93,7 +93,7 @@ export default function StudentFeedbackView() {
                                         value={pin}
                                         onChange={(e) => setPin(e.target.value)}
                                         placeholder="0000"
-                                        className={`w-full text-center text-4xl font-extrabold tracking-[0.5em] py-4 bg-background border-2 rounded-2xl focus:outline-none focus:ring-4 transition-all ${
+                                        className={`w-full text-center text-4xl font-extrabold tracking-[0.5em] py-4 bg-card border-2 rounded-2xl focus:outline-none focus:ring-4 transition-all ${
                                             pinError 
                                             ? 'border-destructive/30 focus:ring-destructive/10 text-destructive animate-shake' 
                                             : 'border-border/50 focus:ring-primary/10 focus:border-primary/20 text-foreground'
@@ -238,7 +238,7 @@ export default function StudentFeedbackView() {
                     <div className="flex flex-col items-center gap-6 mb-8 print:hidden">
                         <Button 
                             onClick={() => window.print()}
-                            className="flex items-center gap-2 bg-background hover:bg-muted text-foreground px-8 py-3 rounded-2xl font-bold shadow-xl border border-border hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            className="flex items-center gap-2 bg-card hover:bg-muted text-foreground px-8 py-3 rounded-2xl font-bold shadow-xl border border-border hover:scale-[1.02] active:scale-[0.98] transition-all"
                         >
                             <Printer size={18} /> Feedback drucken
                         </Button>

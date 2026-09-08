@@ -166,7 +166,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                             <p className="text-xxs opacity-70 italic font-normal">Hinweis: Bilderkennung (OCR) ist für dieses Dokument anschließend erforderlich.</p>
                         </div>
 
-                        <div className="flex bg-background p-1 rounded-xl border border-border shadow-sm shrink-0">
+                        <div className="flex bg-card p-1 rounded-xl border border-border shadow-sm shrink-0">
                             <Button
                                 variant="ghost"
                                 onClick={() => setTool('hand')}

@@ -364,7 +364,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                                 setOllamaNumCtx(Number(val));
                                             }
                                         }}
-                                        className="rounded-xl border-2 border-border focus:border-primary/50 bg-background px-3 py-2 text-xs font-bold text-foreground outline-none transition-all"
+                                        className="rounded-xl border-2 border-border focus:border-primary/50 bg-card px-3 py-2 text-xs font-bold text-foreground outline-none transition-all"
                                     >
                                         <option value={8192}>8k (8192)</option>
                                         <option value={16384}>16k (16384)</option>

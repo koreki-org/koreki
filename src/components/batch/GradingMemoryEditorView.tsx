@@ -137,7 +137,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                                     value={c.studentText}
                                                                     disabled={isImportedAndUnsaved}
                                                                     onChange={e => handleUpdateCaseField(c.id, 'studentText', e.target.value)}
-                                                                    className="w-full p-2.5 bg-background border border-border rounded-lg text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/50 shadow-sm resize-y disabled:bg-secondary/55 disabled:text-muted-foreground disabled:cursor-not-allowed"
+                                                                    className="w-full p-2.5 bg-card border border-border rounded-lg text-xs font-mono text-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/50 shadow-sm resize-y disabled:bg-secondary/55 disabled:text-muted-foreground disabled:cursor-not-allowed"
                                                                     placeholder="Simulierter Schülertext..."
                                                                 />
                                                             </div>
@@ -162,7 +162,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                                         value={c.expectedCorrection.feedback || ''}
                                                                         disabled={isImportedAndUnsaved}
                                                                         onChange={e => handleUpdateCaseField(c.id, 'feedback', e.target.value)}
-                                                                        className="w-full bg-background border border-border rounded-lg px-3 py-1.5 text-xs font-medium text-foreground shadow-sm disabled:bg-secondary/55 disabled:text-muted-foreground disabled:cursor-not-allowed"
+                                                                        className="w-full bg-card border border-border rounded-lg px-3 py-1.5 text-xs font-medium text-foreground shadow-sm disabled:bg-secondary/55 disabled:text-muted-foreground disabled:cursor-not-allowed"
                                                                         placeholder="Optionales Feedback..."
                                                                     />
                                                                 </div>
@@ -175,7 +175,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                                      value={c.expectedCorrection.correctionNotes}
                                                                      disabled={isImportedAndUnsaved}
                                                                      onChange={e => handleUpdateCaseField(c.id, 'correctionNotes', e.target.value)}
-                                                                     className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs font-medium text-foreground leading-relaxed shadow-sm resize-none disabled:bg-secondary/55 disabled:text-muted-foreground disabled:cursor-not-allowed"
+                                                                     className="w-full bg-card border border-border rounded-lg px-3 py-2 text-xs font-medium text-foreground leading-relaxed shadow-sm resize-none disabled:bg-secondary/55 disabled:text-muted-foreground disabled:cursor-not-allowed"
                                                                      placeholder="Korrekturbegründung..."
                                                                  />
                                                              </div>

@@ -20,7 +20,7 @@ const MarketingHeader: React.FC = () => {
 
     return (
         <>
-            <header className="relative my-4 left-0 right-0 mx-auto w-[90%] max-w-7xl flex justify-between items-center px-8 py-4 z-50 bg-background/85 backdrop-blur-xl border border-white/40 rounded-full shadow-lg transition-all duration-300 animate-fade-down">
+            <header className="relative my-4 left-0 right-0 mx-auto w-[90%] max-w-7xl flex justify-between items-center px-8 py-4 z-50 bg-card/85 backdrop-blur-xl border border-white/40 rounded-full shadow-lg transition-all duration-300 animate-fade-down">
                 <Link href="/">
                     <Logo showText size={40} className="relative z-10 cursor-pointer" />
                 </Link>

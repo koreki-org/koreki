@@ -63,7 +63,7 @@ export const SkillEditorPanel: React.FC<SkillEditorPanelProps> = ({
     return (
         <>
                 <div className="fixed inset-0 z-[2200] flex items-center justify-center bg-foreground/40 backdrop-blur-md p-4">
-                    <div className="bg-background w-full max-w-xl rounded-hero shadow-2xl border border-border p-6 sm:p-8 space-y-6 flex flex-col max-h-[90vh] overflow-hidden animate-fade-in text-foreground">
+                    <div className="bg-card w-full max-w-xl rounded-hero shadow-2xl border border-border p-6 sm:p-8 space-y-6 flex flex-col max-h-[90vh] overflow-hidden animate-fade-in text-foreground">
                         <div className="flex justify-between items-center pb-2 border-b border-border">
                             <h3 className="text-lg sm:text-xl font-black text-foreground flex items-center gap-2">
                                 <Sparkles className="text-primary animate-pulse" size={20} />
@@ -87,7 +87,7 @@ export const SkillEditorPanel: React.FC<SkillEditorPanelProps> = ({
                                 <select
                                     value={editingSkillData.category}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, category: e.target.value })}
-                                    className="w-full h-11 px-3 rounded-xl border border-border text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-background cursor-pointer"
+                                    className="w-full h-11 px-3 rounded-xl border border-border text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-card cursor-pointer"
                                 >
                                     <option value="math-science">MINT-Fächer</option>
                                     <option value="graph-skills">Graph-basierte Skills (PANG)</option>

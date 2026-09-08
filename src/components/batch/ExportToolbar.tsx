@@ -86,7 +86,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                 variant="outline" 
                 size="sm" 
                 onClick={mitBestaetigung(onExportTeacher)} 
-                className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-background border border-border hover:bg-muted/50 transition-all rounded-xl shadow-sm whitespace-nowrap"
+                className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted/50 transition-all rounded-xl shadow-sm whitespace-nowrap"
             >
                 <Download size={16} /> Einschätzungsliste
             </Button>
@@ -98,7 +98,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                     size="sm" 
                     onClick={() => setIsFeedbackOpen(!isFeedbackOpen)} 
                     className={cn(
-                        "h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-background border transition-all rounded-xl shadow-sm whitespace-nowrap",
+                        "h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-card border transition-all rounded-xl shadow-sm whitespace-nowrap",
                         isFeedbackOpen 
                             ? "border-primary ring-2 ring-primary/10" 
                             : "border-border hover:bg-muted/50"
@@ -109,7 +109,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                 </Button>
                 {isFeedbackOpen && (
                     <div className={cn(
-                        "absolute left-0 mt-1.5 rounded-xl border border-border/50 bg-background/95 p-1.5 shadow-xl backdrop-blur-md z-50 animate-in fade-in zoom-in-95 duration-200 origin-top transition-all",
+                        "absolute left-0 mt-1.5 rounded-xl border border-border/50 bg-card/95 p-1.5 shadow-xl backdrop-blur-md z-50 animate-in fade-in zoom-in-95 duration-200 origin-top transition-all",
                         pdfSettingsOpen ? "w-64 p-3" : "w-56"
                     )}>
                         {pdfSettingsOpen ? (
@@ -229,7 +229,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                 variant="outline" 
                 size="sm" 
                 onClick={mitBestaetigung(onExportDigitalSlips)} 
-                className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-background border border-border hover:bg-muted/50 transition-all rounded-xl shadow-sm whitespace-nowrap"
+                className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted/50 transition-all rounded-xl shadow-sm whitespace-nowrap"
             >
                 <QrCode size={16} /> Digitale Slips
             </Button>
@@ -240,7 +240,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                     size="sm"
                     onClick={onProtokollSpeichern}
                     title="Aufzeichnung der KI-Läufe speichern (Art. 12 KI-VO)"
-                    className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-background border border-border hover:bg-muted/50 transition-all rounded-xl shadow-sm whitespace-nowrap"
+                    className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted/50 transition-all rounded-xl shadow-sm whitespace-nowrap"
                 >
                     <ScrollText size={16} /> Protokoll
                 </Button>

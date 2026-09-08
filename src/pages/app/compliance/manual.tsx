@@ -104,7 +104,7 @@ export default function ManualPage({ content, version, isAcceptedVersion }: Manu
                         )}
                     </div>
 
-                    <div className="bg-background rounded-hero p-6 md:p-card-padding shadow-xl shadow-border/50 border border-border max-w-none print-container">
+                    <div className="bg-card rounded-hero p-6 md:p-card-padding shadow-xl shadow-border/50 border border-border max-w-none print-container">
                         <div className="mb-10 p-6 bg-muted rounded-2xl border border-border text-xs flex items-center gap-3 no-print">
                             <Lock size={20} className="text-muted-foreground" />
                             <p className="m-0 leading-relaxed font-medium">

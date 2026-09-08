@@ -66,7 +66,7 @@ export const Toast: React.FC<ToastProps> = ({ art, text, onSchliessen }) => {
             aria-live={art === 'fehler' ? 'assertive' : 'polite'}
             className={cn(
                 'pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden',
-                'rounded-lg border bg-background py-4 pl-5 pr-3 shadow-xl',
+                'rounded-lg border bg-card py-4 pl-5 pr-3 shadow-xl',
                 'animate-fade-in transition-all duration-300',
                 rahmen
             )}

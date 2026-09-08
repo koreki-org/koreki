@@ -63,7 +63,7 @@ export default function Impressum() {
 
             <div className="max-w-[1200px] mx-auto px-8 pt-0 pb-24 flex flex-col md:flex-row gap-12 items-start animate-fade-in">
                 <aside className="w-full md:w-[300px] flex-shrink-0 sticky top-24">
-                    <div className="bg-background rounded-2xl p-6 border border-border shadow-sm">
+                    <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
                         <h3 className="mt-0 mb-4 text-xs uppercase tracking-widest font-bold text-muted-foreground">Inhalt</h3>
                         <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
                             {tocSections.map((sec) => (
@@ -111,7 +111,7 @@ export default function Impressum() {
                             </p>
                         </section>
 
-                        <section id="contact" className="bg-background rounded-2xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="contact" className="bg-card rounded-2xl p-10 border border-border shadow-sm relative scroll-mt-24">
                             <div className="inline-flex p-3 bg-muted rounded-xl mb-6 text-muted-foreground"><Building2 className="w-6 h-6" /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6 font-outfit">Angaben gemäß § 5 TMG</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4"><strong>{LEGAL_CONFIG.controller.name}</strong><br />
@@ -133,7 +133,7 @@ export default function Impressum() {
                         </section>
 
                         {LEGAL_CONFIG.registration.number && (
-                            <section id="register" className="bg-background rounded-2xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                            <section id="register" className="bg-card rounded-2xl p-10 border border-border shadow-sm relative scroll-mt-24">
                                 <div className="inline-flex p-3 bg-muted rounded-xl mb-6 text-muted-foreground"><Info className="w-6 h-6" /></div>
                                 <h2 className="text-2xl font-bold text-foreground mb-6 font-outfit">Registereintrag</h2>
                                 <p className="leading-relaxed text-muted-foreground">Eintragung im Handelsregister.<br />
@@ -143,20 +143,20 @@ export default function Impressum() {
                         )}
 
                         {LEGAL_CONFIG.registration.taxId && (
-                            <section id="tax" className="bg-background rounded-2xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                            <section id="tax" className="bg-card rounded-2xl p-10 border border-border shadow-sm relative scroll-mt-24">
                                 <h2 className="text-2xl font-bold text-foreground mb-6 font-outfit">Umsatzsteuer-ID</h2>
                                 <p className="leading-relaxed text-muted-foreground">Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br />
                                     <strong className="text-foreground font-bold">{LEGAL_CONFIG.registration.taxId}</strong></p>
                             </section>
                         )}
 
-                        <section id="eu-dispute" className="bg-background rounded-2xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="eu-dispute" className="bg-card rounded-2xl p-10 border border-border shadow-sm relative scroll-mt-24">
                             <h2 className="text-2xl font-bold text-foreground mb-6 font-outfit">EU-Streitschlichtung</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit: <a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">https://ec.europa.eu/consumers/odr/</a>.<br /> Unsere E-Mail-Adresse finden Sie oben im Impressum.</p>
                             <p className="leading-relaxed text-muted-foreground">Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
                         </section>
 
-                        <section id="liability" className="bg-background rounded-2xl p-10 border border-border shadow-sm relative scroll-mt-24">
+                        <section id="liability" className="bg-card rounded-2xl p-10 border border-border shadow-sm relative scroll-mt-24">
                             <div className="inline-flex p-3 bg-muted rounded-xl mb-6 text-muted-foreground"><Scale className="w-6 h-6" /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6 font-outfit">Haftungsausschluss (Disclaimer)</h2>
 

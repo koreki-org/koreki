@@ -72,11 +72,34 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
 
 
     return (
+        /*
+          * EIN Mittel pro Aussage, nicht vier.
+          *
+          * Hier standen bis zum 07.09.2026 Rand UND Flaechentoenung UND Schatten UND
+          * Ring gleichzeitig — vier Wege, dasselbe zu sagen. Der Grund war, dass
+          * keiner davon allein sichtbar genug war: Der Rand lag bei 1,18:1, und die
+          * "Flaeche" war exakt die Farbe der Seite. Seit die Karte weiss auf grauer
+          * Seite liegt, traegt die FLAECHE die Abgrenzung.
+          *
+          * Damit bleibt dem Rand genau eine Aufgabe: den ZUSTAND sagen. Die Note und
+          * das Haken-Symbol sagen "fertig" ohnehin schon; eine gruene Flaeche war die
+          * dritte Wiederholung derselben Information.
+          */
         <div className={cn(
-            "group rounded-xl border transition-all duration-300",
-            idx === currentProcessingIndex ? "bg-primary/5 border-primary/20 ring-2 ring-primary/10 shadow-md" : (isDone ? "bg-success/5 border-success/20 hover:border-success/30 hover:shadow-md" : "bg-background/80 border-border hover:border-primary/20 hover:shadow-md"),
-            isExpanded ? "shadow-lg bg-background" : "",
-            (itemHasWarnings || (warnings && warnings.length > 0)) && "border-warning/30 bg-warning/10 ring-1 ring-warning/20 shadow-sm"
+            // Die Schuelerzeile ist ein BEHAELTER, kein Blatt: dauerhaft grau, in
+            // beiden Zustaenden gleich. Was darin liegt, ist hell.
+            //
+            // Die Toene wechseln sich ab — Seite grau, Stapelkarte weiss,
+            // Schuelerkarte grau, Aufgabenblock weiss. Ohne diesen Wechsel steht
+            // Weiss auf Weiss und nur ein 1,18:1-Rand dazwischen.
+            //
+            // Die Flaeche haengt bewusst NICHT an `isExpanded`: Ein Element, das
+            // beim Anklicken die Farbe wechselt, liest sich als Fehler, nicht als
+            // Struktur (gemeldet am 08.09.2026).
+            "group rounded-xl border bg-muted transition-all duration-300",
+            idx === currentProcessingIndex ? "border-primary/40" : (isDone ? "border-success/40" : "border-border hover:border-primary/30"),
+            isExpanded && "shadow-md",
+            (itemHasWarnings || (warnings && warnings.length > 0)) && "border-warning/50"
         )}>
             {/* ITEM HEADER */}
             <div className="flex items-center justify-between p-2 sm:p-3 gap-2 sm:gap-4 relative">
@@ -149,7 +172,16 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
 
             {/* EXPANDED CONTENT AREA */}
             {isExpanded && (item.fileText || item.tasks) && (
-                <div className="p-4 pt-0 border-t border-border bg-muted/5 animate-in slide-in-from-top-2">
+                /*
+                  * Zwei Toene mit Absicht: weisse Titelleiste, Behaelter im Seitenton.
+                  *
+                  * Das funktioniert nur, wenn der graue Bereich als BEHAELTER lesbar
+                  * ist — also Luft an allen Seiten hat und die Karten darin wirklich
+                  * darauf liegen. Ein knapper grauer Streifen direkt unter der
+                  * Kopfzeile sieht dagegen aus wie ein Darstellungsfehler; genau das
+                  * war am 07.09.2026 der erste Versuch.
+                  */
+                <div className="p-4 border-t border-border animate-in slide-in-from-top-2">
                     <MobileViewSelector mobileViewMode={mobileViewMode} onSetMobileViewMode={onSetMobileViewMode} isDone={isDone} />
                     
                     {isDone ? (

@@ -99,7 +99,7 @@ export const CorrectionAnalytics: React.FC<CorrectionAnalyticsProps> = ({ batchF
                     <CardContent className="space-y-3">
                         {stats.criticalTasks.map((task, idx) => (
                             <div key={task.name} className="flex items-center gap-3 p-2 rounded-xl bg-muted/30 border border-border/40">
-                                <div className="w-6 h-6 rounded-full bg-background border border-border/50 text-foreground flex items-center justify-center font-bold text-xs">
+                                <div className="w-6 h-6 rounded-full bg-card border border-border/50 text-foreground flex items-center justify-center font-bold text-xs">
                                     {idx + 1}
                                 </div>
                                 <div className="flex-1 min-w-0">

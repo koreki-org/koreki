@@ -165,7 +165,7 @@ const Header: React.FC<HeaderProps> = ({
                     variant="outline" 
                     size="icon" 
                     onClick={onShowHelp} 
-                    className="border-0 bg-transparent text-muted-foreground hover:bg-background hover:text-foreground rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
+                    className="border-0 bg-transparent text-muted-foreground hover:bg-card hover:text-foreground rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
                 >
                     <HelpCircle size={16} />
                 </Button>
@@ -177,7 +177,7 @@ const Header: React.FC<HeaderProps> = ({
                         variant="outline" 
                         size="icon" 
                         onClick={onShowSettings} 
-                        className="border-0 bg-transparent text-muted-foreground hover:bg-background hover:text-foreground rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
+                        className="border-0 bg-transparent text-muted-foreground hover:bg-card hover:text-foreground rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
                     >
                         <Settings size={16} />
                     </Button>
@@ -205,7 +205,7 @@ const Header: React.FC<HeaderProps> = ({
     return (
         <header className="mb-4 md:mb-5 flex flex-col gap-4 w-full animate-in fade-in duration-500">
             {/* Strictly Single-Row Navigation Bar */}
-            <div className="w-full bg-background/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 flex flex-row items-center justify-between gap-3 transition-all duration-300">
+            <div className="w-full bg-card/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 flex flex-row items-center justify-between gap-3 transition-all duration-300">
                 
                 {/* Left Side: Badges & Profile Config Buttons */}
                 <div 
@@ -225,7 +225,7 @@ const Header: React.FC<HeaderProps> = ({
                     <div className="h-4 w-px bg-border hidden lg:block shrink-0" />
 
                     {/* Classic Labeled Configuration Pill Row - strictly horizontal on desktop */}
-                    <div className="flex flex-row flex-nowrap shrink-0 items-center justify-start gap-1.5 sm:gap-2 w-auto bg-background/70 backdrop-blur-xl p-1.5 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 md:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none md:border-0 md:shadow-none md:ring-0">
+                    <div className="flex flex-row flex-nowrap shrink-0 items-center justify-start gap-1.5 sm:gap-2 w-auto bg-card/70 backdrop-blur-xl p-1.5 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 md:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none md:border-0 md:shadow-none md:ring-0">
                         <ProfileConfigButton 
                             icon={<GraduationCap size={14} />} 
                             label="Expertise"
@@ -280,7 +280,7 @@ const Header: React.FC<HeaderProps> = ({
                         variant="outline"
                         size="lg"
                         onClick={onLoadDemo}
-                        className="flex-1 rounded-full px-2 sm:px-4 bg-background/50 backdrop-blur-sm border-border text-muted-foreground hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-xxs sm:text-xs"
+                        className="flex-1 rounded-full px-2 sm:px-4 bg-card/50 backdrop-blur-sm border-border text-muted-foreground hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-xxs sm:text-xs"
                     >
                         <Sparkles size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Demo
                     </Button>
@@ -298,7 +298,7 @@ const Header: React.FC<HeaderProps> = ({
                         variant="outline"
                         size="lg"
                         onClick={actions.triggerImport}
-                        className="flex-1 rounded-full px-2 sm:px-4 bg-background/50 backdrop-blur-sm border-border text-muted-foreground hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-xxs sm:text-xs"
+                        className="flex-1 rounded-full px-2 sm:px-4 bg-card/50 backdrop-blur-sm border-border text-muted-foreground hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-xxs sm:text-xs"
                     >
                         <FileUp size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Importieren
                     </Button>
@@ -309,7 +309,7 @@ const Header: React.FC<HeaderProps> = ({
             {isImportedSession && hasMissingFiles && (
                 <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 p-4 bg-primary/5 border border-primary/10 rounded-2xl animate-in fade-in slide-in-from-top-2 shadow-sm max-w-[800px] mx-auto w-full">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-background rounded-xl shadow-sm">
+                        <div className="p-2 bg-card rounded-xl shadow-sm">
                             <Camera size={18} className="text-primary" />
                         </div>
                         <span className="text-xxs sm:text-sm font-semibold text-primary text-left">

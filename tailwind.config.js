@@ -13,6 +13,12 @@ module.exports = {
                 ring: "hsl(var(--ring) / <alpha-value>)",
                 background: "hsl(var(--background) / <alpha-value>)",
                 foreground: "hsl(var(--foreground) / <alpha-value>)",
+                // Ohne diesen Eintrag war `bg-card` ein No-Op: die Klasse existierte
+                // nicht, 16 Stellen im Baum setzten damit gar nichts (07.09.2026).
+                card: {
+                    DEFAULT: "hsl(var(--card) / <alpha-value>)",
+                    foreground: "hsl(var(--card-foreground) / <alpha-value>)",
+                },
                 primary: {
                     DEFAULT: "hsl(var(--primary) / <alpha-value>)",
                     foreground: "hsl(var(--primary-foreground) / <alpha-value>)",

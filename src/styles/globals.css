@@ -6,7 +6,24 @@
 
 :root {
   /* Premium Koreki Brand Palette (HSL) */
-  --background: 220 33% 98%;
+
+  /*
+   * Seite und Karte sind ZWEI Toene, nicht einer.
+   *
+   * Bis zum 07.09.2026 war --background 220 33% 98% und jede Karte benutzte
+   * denselben Token: gemessen rgb(248,249,252) fuer die Seite UND fuer die Karte
+   * darauf. Eine Karte hob sich also durch nichts ab ausser ihrem Rand, und der
+   * liegt bei 1,18:1 — praktisch unsichtbar. Wo Flaeche und Rand beide nichts
+   * trennen, wird staerker gestapelt statt klarer getrennt; genau daher kamen die
+   * vier Mittel (Rand + Toenung + Schatten + Ring) an einem einzigen Element.
+   *
+   * Jetzt: Seite 95%, Karte weiss. Fuenf Helligkeitspunkte Abstand — der uebliche
+   * Sprung fuer "Karte liegt auf Seite". Damit traegt die FLAECHE die Abgrenzung,
+   * und der Rand darf leise bleiben.
+   */
+  --background: 220 20% 95%;
+  --card: 0 0% 100%;
+  --card-foreground: 224 71% 4%;
   --foreground: 224 71% 4%;
 
   --primary: 239 84% 67%;

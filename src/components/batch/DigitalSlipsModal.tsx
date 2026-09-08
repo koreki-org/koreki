@@ -130,7 +130,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                 {/* Header */}
                 <div className="p-8 border-b border-border flex items-center justify-between bg-muted/30">
                     <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-background rounded-2xl shadow-sm flex items-center justify-center border border-border">
+                        <div className="w-12 h-12 bg-card rounded-2xl shadow-sm flex items-center justify-center border border-border">
                             <Logo size={24} />
                         </div>
                         <div>
@@ -194,7 +194,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                                 return (
                                     <div 
                                         key={idx}
-                                        className="slip-card bg-background border-2 border-dashed border-border rounded-2xl p-6 flex flex-col gap-4 relative hover:border-border/80 transition-colors"
+                                        className="slip-card bg-card border-2 border-dashed border-border rounded-2xl p-6 flex flex-col gap-4 relative hover:border-border/80 transition-colors"
                                     >
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1">
@@ -205,7 +205,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                                                     <span className="text-xxs font-bold uppercase tracking-widest">Feedback Slip</span>
                                                 </div>
                                             </div>
-                                            <div className="bg-background p-2 rounded-xl border border-border flex items-center justify-center min-w-[120px] min-h-[120px]">
+                                            <div className="bg-card p-2 rounded-xl border border-border flex items-center justify-center min-w-[120px] min-h-[120px]">
                                                 {isTooLong ? (
                                                     <div className="text-xxs text-destructive font-bold text-center leading-tight p-2">
                                                         <X className="mx-auto mb-1" size={16} />

@@ -57,7 +57,7 @@ const ComplianceAuditLog: React.FC<ComplianceAuditLogProps> = ({
                                             <Clock size={10} /> {new Date(log.createdAt).toLocaleString('de-DE')}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-foreground/80 leading-relaxed bg-background/50 border border-border/50 p-3 rounded-lg mb-2 italic">
+                                    <p className="text-sm text-foreground/80 leading-relaxed bg-card/50 border border-border/50 p-3 rounded-lg mb-2 italic">
                                         &quot;{log.confirmedText}&quot;
                                     </p>
                                     <div className="text-xxs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">

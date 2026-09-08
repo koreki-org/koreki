@@ -61,7 +61,10 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
             </div>
 
             {showScan ? (
-                <div className="flex-1 border border-border rounded-2xl bg-muted/30 overflow-hidden relative shadow-inner h-[80vh] md:h-[600px] transition-all duration-300">
+                /* Weiss wie die rechte Spalte: Beide Seiten liegen als Karten auf dem
+                    grauen Behaelter. Vorher war hier bg-muted/30 — auf weissem Grund
+                    eine leichte Toenung, auf dem neuen grauen Grund grau auf grau. */
+                <div className="flex-1 border border-border rounded-xl bg-card overflow-hidden relative shadow-sm h-[80vh] md:h-[600px] transition-all duration-300">
                     <div className="w-full h-full overflow-auto custom-scrollbar bg-background/50 flex flex-col items-center">
                         {item.isRedacted && item.redactedDataUrls && item.redactedDataUrls.length > 0 ? (
                             item.redactedDataUrls.map((url, pIdx) => (

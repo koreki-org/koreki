@@ -46,7 +46,7 @@ export const PointInput: React.FC<PointInputProps> = ({
                     value={value}
                     onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
                     disabled={disabled}
-                    className="w-12 h-8 px-1 bg-background border border-border rounded-lg text-center text-xs font-black text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 no-spinners leading-none transition-all shadow-inner"
+                    className="w-12 h-8 px-1 bg-card border border-border rounded-lg text-center text-xs font-black text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 no-spinners leading-none transition-all shadow-inner"
                 />
 
                 <div className="flex flex-col gap-0.5">

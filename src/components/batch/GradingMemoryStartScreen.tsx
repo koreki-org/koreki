@@ -117,7 +117,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                         <div 
                                             key={m.id}
                                             onClick={() => selectMemory(m.id || null)}
-                                            className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${activeMemoryId === m.id ? 'bg-background border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-background/50'}`}
+                                            className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${activeMemoryId === m.id ? 'bg-card border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-card/50'}`}
                                         >
                                             <div className="flex flex-col min-w-0 flex-1">
                                                 <span className={`text-xs font-extrabold truncate transition-all duration-300 ${activeMemoryId === m.id ? 'text-foreground' : 'text-foreground'} group-hover:pr-[120px]`}>
@@ -242,7 +242,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                                       value={profileName} 
                                                       onChange={e => setProfileName(e.target.value)}
                                                       placeholder="z.B. IT-Systeme USV & Logfiles"
-                                                      className="w-full bg-background border border-border rounded-xl px-4 py-3 text-xs md:text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/50 transition-all font-bold shadow-sm"
+                                                      className="w-full bg-card border border-border rounded-xl px-4 py-3 text-xs md:text-sm text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/50 transition-all font-bold shadow-sm"
                                                  />
                                              </div>
 
@@ -273,7 +273,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                                               <label className="block text-xs font-bold uppercase tracking-wider text-primary mb-1.5">
                                                                   Zu simulierende Aufgaben auswählen:
                                                               </label>
-                                                              <div className="bg-background border border-border rounded-xl p-3.5 max-h-36 overflow-y-auto space-y-2.5 shadow-sm">
+                                                              <div className="bg-card border border-border rounded-xl p-3.5 max-h-36 overflow-y-auto space-y-2.5 shadow-sm">
                                                                   {tasksLayout.map((task) => {
                                                                       const taskName = task.name ?? '';
                                                                       const isChecked = selectedTasks.includes(taskName);

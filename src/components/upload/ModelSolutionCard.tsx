@@ -155,7 +155,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
     };
 
     return (
-        <Card className="flex flex-col border-border/50 bg-background/60 backdrop-blur-xl shadow-xl shadow-foreground/5 rounded-hero overflow-hidden">
+        <Card className="flex flex-col border-border/50 bg-card/60 backdrop-blur-xl shadow-xl shadow-foreground/5 rounded-hero overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between gap-2 pb-3 border-b border-border/50">
                 <CardTitle className="text-lg sm:text-xl font-bold flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="p-2 bg-primary/10 rounded-xl text-primary shrink-0">
@@ -213,10 +213,10 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 {!hasModel ? (
                     <div 
                         onClick={() => modelInputRef.current?.click()}
-                        className="flex-1 border-2 border-dashed border-border/60 rounded-hero bg-muted/20 hover:bg-background/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
+                        className="flex-1 border-2 border-dashed border-border/60 rounded-hero bg-muted/20 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
                     >
                         <input data-testid="upload-musterloesung" type="file" accept=".pdf,.txt,.jpg,.jpeg,.png" ref={modelInputRef} onChange={onModelUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
-                        <div className="bg-background p-4 rounded-2xl shadow-sm border border-border mb-4 group-hover/dropzone:scale-110 group-hover/dropzone:-translate-y-1 group-hover/dropzone:shadow-md transition-all duration-300">
+                        <div className="bg-card p-4 rounded-2xl shadow-sm border border-border mb-4 group-hover/dropzone:scale-110 group-hover/dropzone:-translate-y-1 group-hover/dropzone:shadow-md transition-all duration-300">
                             <FileUp size={36} className="text-primary" />
                         </div>
                         <p className="font-semibold text-foreground group-hover/dropzone:text-primary transition-colors">Musterlösung laden (Text (.txt), PDF, Bilder)</p>
@@ -234,7 +234,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                 onChange={(e) => onModelSolutionContextChange?.(e.target.value)}
                                 disabled={isLocked}
                                 placeholder="Szenario, übergreifender Arbeitsauftrag oder gemeinsame Annahmen — leer lassen, wenn es keine gibt."
-                                className="min-h-[80px] p-4 rounded-2xl bg-background/50 border-border shadow-inner text-sm resize-y"
+                                className="min-h-[80px] p-4 rounded-2xl bg-card/50 border-border shadow-inner text-sm resize-y"
                             />
                         </div>
 
@@ -298,7 +298,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             </div>
                         </div>
 
-                        <div className="mt-8 pt-6 border-t border-border/40 flex items-center justify-between bg-background/40 p-4 rounded-2xl">
+                        <div className="mt-8 pt-6 border-t border-border/40 flex items-center justify-between bg-card/40 p-4 rounded-2xl">
                             <div className="flex items-center gap-6">
                                 <div className="flex flex-col">
                                     <span className="text-xxs font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">Aufgaben</span>
@@ -322,7 +322,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             value={modelSolution}
                             onChange={(e) => onModelSolutionChange && onModelSolutionChange(e.target.value)}
                             className={cn(
-                                "flex-1 min-h-[350px] p-5 rounded-2xl bg-background/50 border-border shadow-inner font-mono text-sm resize-none",
+                                "flex-1 min-h-[350px] p-5 rounded-2xl bg-card/50 border-border shadow-inner font-mono text-sm resize-none",
                                 extractingLayout && "opacity-50 pointer-events-none"
                             )}
                             placeholder={extractingLayout ? "Lese Inhalt..." : "Inhalt der Musterlösung hier bearbeiten..."}
@@ -458,7 +458,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                     onClick={() => setShowEngineSelectionTaskIdx(null)}
                 >
                     <div 
-                        className="bg-background border border-border shadow-2xl rounded-2xl w-full max-w-lg overflow-hidden animate-zoom-in flex flex-col p-6 sm:p-8"
+                        className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-lg overflow-hidden animate-zoom-in flex flex-col p-6 sm:p-8"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}

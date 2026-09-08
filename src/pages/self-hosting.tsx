@@ -44,7 +44,7 @@ export default function SelfHosting() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Single-User Card */}
-                        <div className="bg-background border border-border shadow-md p-6 md:p-card-padding rounded-hero transition-all hover:shadow-xl hover:-translate-y-1 group">
+                        <div className="bg-card border border-border shadow-md p-6 md:p-card-padding rounded-hero transition-all hover:shadow-xl hover:-translate-y-1 group">
                             <div className="flex items-center gap-5 mb-8">
                                 <div className="bg-accent-3/10 text-accent-3 p-5 rounded-xl shadow-sm border border-accent-3/10">
                                     <Monitor size={32} />
@@ -73,7 +73,7 @@ export default function SelfHosting() {
                         </div>
 
                         {/* Multi-User Card */}
-                        <div className="bg-background border border-border shadow-md p-6 md:p-card-padding rounded-hero relative overflow-hidden group hover:shadow-xl hover:-translate-y-2 transition-all">
+                        <div className="bg-card border border-border shadow-md p-6 md:p-card-padding rounded-hero relative overflow-hidden group hover:shadow-xl hover:-translate-y-2 transition-all">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-accent-2/5 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-accent-2/10 transition-all duration-1000" />
                             <div className="relative z-10">
                                 <div className="flex items-center gap-5 mb-8">
@@ -125,19 +125,19 @@ export default function SelfHosting() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-background border border-border shadow-md rounded-hero p-4 md:p-card-padding-sm hover:shadow-lg transition-all group">
+                            <div className="bg-card border border-border shadow-md rounded-hero p-4 md:p-card-padding-sm hover:shadow-lg transition-all group">
                                 <div className="bg-primary text-white p-4 rounded-xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><Terminal size={28} /></div>
                                 <h4 className="text-xl font-black text-foreground mb-3 tracking-tight">Docker Native</h4>
                                 <p className="text-muted-foreground font-medium leading-relaxed">Vorkonfigurierte Images für Koreki, Keycloak und PostgreSQL. Deployment via Docker-Compose in Sekunden.</p>
                             </div>
 
-                            <div className="bg-background border border-border shadow-md rounded-hero p-4 md:p-card-padding-sm hover:shadow-lg transition-all group">
+                            <div className="bg-card border border-border shadow-md rounded-hero p-4 md:p-card-padding-sm hover:shadow-lg transition-all group">
                                 <div className="bg-primary text-white p-4 rounded-xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><Cpu size={28} /></div>
                                 <h4 className="text-xl font-black text-foreground mb-3 tracking-tight">Local LLM Ready</h4>
                                 <p className="text-muted-foreground font-medium leading-relaxed">Nahtlose Integration von Ollama. Nutzen Sie Ihre eigene GPU-Power für eine 100% private KI-Inferenz ohne Internet-Zwang.</p>
                             </div>
 
-                            <div className="bg-background border border-border shadow-md rounded-hero p-4 md:p-card-padding-sm hover:shadow-lg transition-all group">
+                            <div className="bg-card border border-border shadow-md rounded-hero p-4 md:p-card-padding-sm hover:shadow-lg transition-all group">
                                 <div className="bg-primary text-white p-4 rounded-xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><Github size={28} /></div>
                                 <h4 className="text-xl font-black text-foreground mb-3 tracking-tight">Open Source</h4>
                                 <p className="text-muted-foreground font-medium leading-relaxed">Volle Transparenz unter der Polyform Shield Lizenz. Auditieren, modifizieren und erweitern Sie den Quellcode nach Ihren Wünschen.</p>

@@ -43,7 +43,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                 <div className="overflow-y-auto scrollbar-thin p-1">
 
                     <div className="space-y-2 mb-8">
-                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
+                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-card hover:border-primary/40 transition-all duration-300">
                             <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                                 <FileText size={18} />
                             </div>
@@ -55,7 +55,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                             </div>
                         </div>
 
-                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
+                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-card hover:border-primary/40 transition-all duration-300">
                             <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                                 <Wrench size={18} />
                             </div>
@@ -67,7 +67,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                             </div>
                         </div>
 
-                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
+                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-card hover:border-primary/40 transition-all duration-300">
                             <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                                 <FolderOpen size={18} />
                             </div>
@@ -79,7 +79,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                             </div>
                         </div>
 
-                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
+                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-card hover:border-primary/40 transition-all duration-300">
                             <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                                 <ShieldCheck size={18} />
                             </div>
@@ -91,7 +91,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                             </div>
                         </div>
 
-                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
+                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-card hover:border-primary/40 transition-all duration-300">
                             <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                                 <Languages size={18} />
                             </div>
@@ -103,7 +103,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                             </div>
                         </div>
 
-                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-background hover:border-primary/40 transition-all duration-300">
+                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-card hover:border-primary/40 transition-all duration-300">
                             <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
                                 <Sparkles size={18} />
                             </div>

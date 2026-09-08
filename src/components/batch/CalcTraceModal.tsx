@@ -172,7 +172,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
     return createPortal(
         <div className="fixed inset-0 z-[2300] flex items-center justify-center p-4 bg-foreground/60 backdrop-blur-md animate-fade-in font-inter text-foreground">
-            <div className="bg-background border border-border shadow-2xl rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
+            <div className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
                 
                 <div className="px-6 py-5 border-b border-border bg-muted/30 flex justify-between items-center">
                     <div className="flex items-center gap-3">
@@ -340,7 +340,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                     value={crit.source}
                                                     disabled={isLocked}
                                                     onChange={e => handleCriterionChange(cIdx, 'source', e.target.value)}
-                                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                    className="flex h-9 w-full rounded-md border border-input bg-card px-3 py-1 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                                 >
                                                     <option value="llm">🧠 KI-Bewertung (Sprache/Formelaufbau)</option>
                                                     <option value="proofA">📐 Rechenweg-Prüfung (Sandbox Proof A)</option>
@@ -355,7 +355,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                         value={crit.targetIndex ?? 0}
                                                         disabled={isLocked}
                                                         onChange={e => handleCriterionChange(cIdx, 'targetIndex', parseInt(e.target.value, 10))}
-                                                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                        className="flex h-9 w-full rounded-md border border-input bg-card px-3 py-1 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                                     >
                                                         {rows.map((row, rIdx) => {
                                                             const label = rows.length === 1 

@@ -29,7 +29,7 @@ export const PrivacySection: React.FC<PrivacySectionProps> = ({
                         return (
                             <div
                                 key={mode}
-                                className={`flex flex-col p-4 border-2 rounded-xl transition-all duration-200 relative overflow-hidden ${isDisabled ? 'opacity-40 grayscale cursor-not-allowed' : 'cursor-pointer'} ${appMode === mode ? 'border-primary bg-primary/5 shadow-sm' : isDisabled ? 'border-border bg-muted/20' : 'border-border hover:border-border/80 bg-background'}`}
+                                className={`flex flex-col p-4 border-2 rounded-xl transition-all duration-200 relative overflow-hidden ${isDisabled ? 'opacity-40 grayscale cursor-not-allowed' : 'cursor-pointer'} ${appMode === mode ? 'border-primary bg-primary/5 shadow-sm' : isDisabled ? 'border-border bg-muted/20' : 'border-border hover:border-border/80 bg-card'}`}
                                 onClick={() => !isDisabled && onModeChange(mode)}
                             >
                                 <span className={`font-bold text-sm mb-1 ${appMode === mode ? 'text-primary' : isDisabled ? 'text-muted-foreground/50' : 'text-foreground'}`}>
@@ -73,7 +73,7 @@ export const PrivacySection: React.FC<PrivacySectionProps> = ({
                             placeholder="sk-..."
                             defaultValue={settings.mistralKey || ''}
                             onBlur={(e) => onSave({ mistralKey: e.target.value })}
-                            className="h-10 w-full rounded-lg text-sm border-border bg-background px-3"
+                            className="h-10 w-full rounded-lg text-sm border-border bg-card px-3"
                         />
                     </div>
                 </div>

@@ -33,7 +33,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
     const hasStudents = batchFilesCount > 0;
 
     return (
-        <Card className="flex flex-col border-border/50 bg-background/60 backdrop-blur-xl shadow-xl shadow-foreground/5 rounded-hero overflow-hidden">
+        <Card className="flex flex-col border-border/50 bg-card/60 backdrop-blur-xl shadow-xl shadow-foreground/5 rounded-hero overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between gap-2 pb-3 border-b border-border/50">
                 <CardTitle className="text-lg sm:text-xl font-bold flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="p-2 bg-primary/10 rounded-xl text-primary shrink-0">
@@ -79,7 +79,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                 {!hasStudents ? (
                     <div 
                         onClick={() => studentInputRef.current?.click()}
-                        className="flex-1 border-2 border-dashed border-border/60 rounded-hero bg-muted/20 hover:bg-background/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
+                        className="flex-1 border-2 border-dashed border-border/60 rounded-hero bg-muted/20 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
                     >
                         <input
                             data-testid="upload-schuelerarbeit"
@@ -91,7 +91,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                             onClick={(e) => (e.target as HTMLInputElement).value = ''}
                             hidden
                         />
-                        <div className="bg-background p-4 rounded-2xl shadow-sm border border-border mb-4 group-hover/dropzone:scale-110 group-hover/dropzone:-translate-y-1 group-hover/dropzone:shadow-md transition-all duration-300">
+                        <div className="bg-card p-4 rounded-2xl shadow-sm border border-border mb-4 group-hover/dropzone:scale-110 group-hover/dropzone:-translate-y-1 group-hover/dropzone:shadow-md transition-all duration-300">
                             <Users size={36} className="text-primary" />
                         </div>
                         <p className="font-semibold text-foreground group-hover/dropzone:text-primary transition-colors">
@@ -101,7 +101,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                 ) : (
                     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="bg-primary/5 border border-primary/10 rounded-xl p-6 flex flex-col items-center justify-center text-center mb-6">
-                            <div className="w-12 h-12 bg-background rounded-full flex items-center justify-center text-primary shadow-sm mb-3">
+                            <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center text-primary shadow-sm mb-3">
                                 <Users size={24} />
                             </div>
                             <h4 className="font-black text-foreground leading-tight mb-1">{batchFilesCount} Schüler gefunden</h4>
@@ -146,7 +146,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {tasksLayout.map((t, i) => (
-                                        <Badge key={i} variant="outline" className="bg-background/50 border-border font-bold px-3 py-1.5 text-xs text-foreground shadow-sm rounded-lg hover:border-primary/40 transition-colors font-outfit">
+                                        <Badge key={i} variant="outline" className="bg-card/50 border-border font-bold px-3 py-1.5 text-xs text-foreground shadow-sm rounded-lg hover:border-primary/40 transition-colors font-outfit">
                                             {t.name} <span className="ml-1 opacity-40 font-medium">{t.maxPoints}P</span>
                                         </Badge>
                                     ))}

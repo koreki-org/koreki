@@ -46,21 +46,17 @@ interface EditableMathAreaProps {
  */
 type AufklapperTon = 'engine' | 'notizen';
 
-const TON: Record<AufklapperTon, { rahmen: string; flaeche: string; schrift: string; anriss: string; marke: string; trenner: string }> = {
+const TON: Record<AufklapperTon, { schrift: string; anriss: string; marke: string; trenner: string }> = {
     engine: {
-        rahmen: 'border-primary/20',
-        flaeche: 'bg-primary/5',
         schrift: 'text-primary',
-        anriss: 'hover:bg-primary/10',
-        marke: 'bg-primary/15 text-primary',
-        trenner: 'border-primary/10'
+        anriss: 'hover:bg-primary/5',
+        marke: 'text-primary/70',
+        trenner: 'border-primary/15'
     },
     notizen: {
-        rahmen: 'border-border',
-        flaeche: 'bg-muted/40',
         schrift: 'text-muted-foreground',
-        anriss: 'hover:bg-muted/60',
-        marke: 'bg-muted text-muted-foreground',
+        anriss: 'hover:bg-muted/50',
+        marke: 'text-muted-foreground/70',
         trenner: 'border-border'
     }
 };
@@ -76,13 +72,37 @@ const Aufklapper: React.FC<{
 }> = ({ titel, beschreibung, warnung, ton, icon, children }) => {
     const t = TON[ton];
     return (
-        <details className={cn('group rounded-xl border overflow-hidden transition-all duration-300 mb-4', t.rahmen, t.flaeche)}>
+        /*
+         * Kein Rahmen, keine Flaeche, keine senkrechte Schiene — nur zwei Haarlinien.
+         *
+         * Die Schiene stand hier einen Entwurf lang und fiel wieder heraus: Ueber
+         * einen kurzen Block liest sie als Gruppierung, ueber einen langen als
+         * sinnfreie senkrechte Linie neben dem Text (gemeldet am 07.09.2026). Ein
+         * aufgeklappter Block braucht eine Ober- und eine Unterkante, mehr nicht;
+         * offen oder zu sagt der Pfeil rechts.
+         *
+         * Nichts an der waagerechten Ausrichtung haengt an `open:`, damit beim Klick
+         * kein Text zur Seite springt.
+         */
+        <details className="group mb-4">
+            {/*
+              * Marke links, Pfeil rechts — beide gleich weit von der Kante.
+              *
+              * `px-2 -mx-2` ist der Trick dahinter: Die Hoverflaeche greift acht Pixel
+              * ueber den Inhalt hinaus, waehrend Zahnrad und Pfeil buendig mit den
+              * Kanten des Textbereichs stehen. Ohne den negativen Rand klebte der
+              * Pfeil entweder an der Kante oder der Text ruecke ein.
+              *
+              * Symmetrie ist hier nachgemessen, nicht geschaetzt: Am 07.09.2026 stand
+              * schon einmal 19,6px links gegen 6px rechts, weil ein `pl-3` ohne
+              * Gegenstueck gesetzt war.
+              */}
             <summary className={cn(
-                'flex items-center justify-between p-3.5 cursor-pointer list-none select-none text-xs font-bold transition-all [&::-webkit-details-marker]:hidden',
+                'flex items-start justify-between gap-3 py-2 px-2 -mx-2 rounded-lg cursor-pointer list-none select-none text-xs font-bold transition-colors [&::-webkit-details-marker]:hidden',
                 t.schrift, t.anriss
             )}>
                 <div className="flex items-start gap-2.5 min-w-0">
-                    <div className={cn('flex items-center justify-center w-5 h-5 rounded-md shrink-0', t.marke)}>{icon}</div>
+                    <div className={cn('flex items-center justify-center w-5 h-5 shrink-0', t.marke)}>{icon}</div>
                     <div className="min-w-0">
                         <span>{titel}</span>
                         {warnung ? (
@@ -92,7 +112,7 @@ const Aufklapper: React.FC<{
                         )}
                     </div>
                 </div>
-                <ChevronDown size={14} className={cn('transition-transform duration-300 group-open:rotate-180', t.schrift)} />
+                <ChevronDown size={14} className={cn('shrink-0 mt-0.5 transition-transform duration-300 group-open:rotate-180', t.schrift)} />
             </summary>
             {/*
               * Fliesstext in Fliesschrift, Rechnungen in Monospace.
@@ -106,7 +126,7 @@ const Aufklapper: React.FC<{
               * Was Rechnung IST, entscheidet der Erzeuger, indem er es in
               * Backtick-Zeichen setzt; `MathMarkdown` macht daraus Monospace.
               */}
-            <div className={cn('border-t p-4 bg-background/30 text-xs leading-relaxed font-sans', t.trenner)}>
+            <div className={cn('border-t border-b mt-2 pt-3 pb-4 text-xs leading-relaxed font-sans', t.trenner)}>
                 {children}
             </div>
         </details>
@@ -159,8 +179,46 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
                 </div>
             </div>
 
-            {/* Content Area */}
-            <div className="relative min-h-[100px] w-full rounded-xl overflow-hidden border border-border/50 bg-background hover:border-primary/20 transition-all shadow-sm">
+            {/*
+              * Rahmen und Innenabstand haengen NICHT am Bearbeitungsmodus.
+              *
+              * Genau das war hier kurzzeitig der Fall, und der Stift liess damit beim
+              * Umschalten die Umrahmung erscheinen und die Abstaende springen — es
+              * fuehlte sich an, als sei etwas kaputt (gemeldet am 08.09.2026). Ein
+              * Feld, das man bearbeiten kann, darf beim Bearbeiten nicht die Gestalt
+              * wechseln.
+              *
+              * Das `p-4` unten ist bewusst dasselbe Mass, das
+              * `HighlightableTextArea` intern verwendet. Sonst verschiebt sich der
+              * Text beim Umschalten um vier Pixel.
+              *
+              * Die Aufgabe, die dieser Rahmen frueher NICHT haben sollte — eine
+              * ueberfluessige Ebene zu sein — erledigt inzwischen die Farbleiter:
+              * grauer Behaelter, heller Block, Feld darin.
+              */}
+            <div className={cn(
+                'relative min-h-[100px] w-full rounded-xl overflow-hidden border shadow-sm transition-colors',
+                // Die Flaeche bleibt WEISS, auch beim Bearbeiten. Hier stand kurz
+                // `bg-muted`, und das Feld sah dadurch aus wie abgeschaltet
+                // (gemeldet am 08.09.2026): Eine graue Fuellung ist die uebliche
+                // Anzeige fuer "nicht bedienbar". Ein Feld, in das man gerade
+                // schreibt, muss heller sein als seine Umgebung, nicht dunkler.
+                //
+                // Den Modus sagen deshalb Rand und Ring — und der Ring liegt INNEN.
+                //
+                // Aussen lag er zuerst, und ein Scrollbehaelter mit nur rechtem
+                // Innenabstand schnitt ihn links ab (gemeldet am 08.09.2026). Statt
+                // an den Abstaenden jedes Behaelters zu drehen, in dem dieses Feld je
+                // vorkommen kann, liegt der Ring jetzt innerhalb der eigenen Kante:
+                // dort kann ihn per Konstruktion nichts beschneiden.
+                //
+                // Weder Rand noch Ring veraendern die Geometrie — Rahmenstaerke,
+                // Radius und Innenabstand bleiben in beiden Zustaenden gleich.
+                'bg-card',
+                isEditing
+                    ? 'border-primary/60 ring-2 ring-inset ring-primary/20'
+                    : 'border-border/50 hover:border-primary/20'
+            )}>
                 {isEditing ? (
                     <HighlightableTextArea 
                         value={value}
@@ -169,7 +227,7 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
                         className="min-h-[140px] border-none bg-transparent"
                     />
                 ) : (
-                    <div className="p-5 min-h-[140px] space-y-4">
+                    <div className="min-h-[140px] space-y-4 p-4">
                         {value.trim() || notizen ? (
                             <>
                                 {technical ? (

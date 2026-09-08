@@ -98,7 +98,7 @@ export default function AGBPage({ content, version }: AGBPageProps) {
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/80">für die Zukunft der Korrektur.</span>
                     </h1>
 
-                    <div className="bg-background rounded-hero p-6 md:p-card-padding shadow-xl shadow-border/50 border border-border max-w-none print-container">
+                    <div className="bg-card rounded-hero p-6 md:p-card-padding shadow-xl shadow-border/50 border border-border max-w-none print-container">
                         <div className="mb-10 p-6 bg-muted rounded-2xl border border-border text-xs flex items-center gap-3 no-print">
                             <Lock size={20} className="text-muted-foreground" />
                             <p className="m-0 leading-relaxed font-medium">

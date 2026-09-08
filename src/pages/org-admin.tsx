@@ -61,8 +61,8 @@ export default function OrgAdminDashboard() {
                 <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="members" className="space-y-6">
                     <div className="flex items-center justify-between">
                         <TabsList className="bg-secondary/50 border border-border p-1.5 rounded-2xl">
-                            <TabsTrigger value="members" className="rounded-xl px-6 py-2 font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">Mitglieder</TabsTrigger>
-                            <TabsTrigger value="info" className="rounded-xl px-6 py-2 font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm">Informationen</TabsTrigger>
+                            <TabsTrigger value="members" className="rounded-xl px-6 py-2 font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm">Mitglieder</TabsTrigger>
+                            <TabsTrigger value="info" className="rounded-xl px-6 py-2 font-bold data-[state=active]:bg-card data-[state=active]:shadow-sm">Informationen</TabsTrigger>
                         </TabsList>
                     </div>
 

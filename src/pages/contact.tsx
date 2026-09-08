@@ -100,7 +100,7 @@ export default function Contact() {
                 <div className="grid md:grid-cols-5 gap-12 items-start">
                     {/* Contact Form */}
                     <div className="md:col-span-3">
-                        <div className="bg-background rounded-2xl p-6 md:p-card-padding border border-border shadow-glass relative overflow-hidden transition-all duration-300">
+                        <div className="bg-card rounded-2xl p-6 md:p-card-padding border border-border shadow-glass relative overflow-hidden transition-all duration-300">
                             {/* Subtle Decoration */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-bl-full -mr-8 -mt-8 -z-0" />
                             

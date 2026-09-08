@@ -374,7 +374,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                     <div 
                         id={`task-card-${idx}-${safeTaskName}`} 
                         key={task.name} 
-                        className="bg-background rounded-xl border border-border shadow-sm hover:shadow-md p-4 sm:p-5 space-y-4 hover:border-primary/40 transition-all group/card"
+                        className="bg-card rounded-xl border border-border shadow-sm p-4 sm:p-5 space-y-4 hover:border-primary/40 transition-all group/card"
                     >
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-1.5 sm:gap-3">
@@ -442,7 +442,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                                                     <select
                                                         value={targetMemoryId}
                                                         onChange={(e) => setTargetMemoryId(e.target.value)}
-                                                        className="w-full text-xs bg-background border border-border rounded-lg p-1.5 focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-hidden transition-all text-foreground font-medium font-inter"
+                                                        className="w-full text-xs bg-card border border-border rounded-lg p-1.5 focus:border-primary focus:ring-1 focus:ring-primary/20 focus:outline-hidden transition-all text-foreground font-medium font-inter"
                                                         disabled={isPending}
                                                     >
                                                         {memories.map((m) => (

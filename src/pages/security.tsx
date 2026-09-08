@@ -42,7 +42,7 @@ export default function Security() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {/* Desktop Edition Card */}
-                        <div className="bg-background border border-border shadow-md p-6 md:p-card-padding rounded-hero relative overflow-hidden group hover:shadow-xl hover:-translate-y-2 transition-all">
+                        <div className="bg-card border border-border shadow-md p-6 md:p-card-padding rounded-hero relative overflow-hidden group hover:shadow-xl hover:-translate-y-2 transition-all">
                             <div className="absolute top-0 right-0 w-64 h-64 bg-accent-1/5 rounded-full blur-[80px] -mr-20 -mt-20 group-hover:bg-accent-1/10 transition-all duration-1000" />
                             <div className="relative z-10">
                                 <div className="flex items-center gap-5 mb-8">
@@ -80,7 +80,7 @@ export default function Security() {
                         </div>
 
                         {/* Community Edition Card */}
-                        <div className="bg-background border border-border shadow-md p-6 md:p-card-padding rounded-hero transition-all hover:shadow-xl hover:-translate-y-1 group">
+                        <div className="bg-card border border-border shadow-md p-6 md:p-card-padding rounded-hero transition-all hover:shadow-xl hover:-translate-y-1 group">
                             <div className="flex items-center gap-5 mb-8">
                                 <div className="bg-accent-2/10 text-accent-2 p-5 rounded-xl shadow-sm border border-accent-2/10">
                                     <LayoutGrid size={32} />
@@ -119,19 +119,19 @@ export default function Security() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="bg-background border border-border shadow-md rounded-hero p-4 md:p-card-padding-sm hover:shadow-lg transition-all group">
+                            <div className="bg-card border border-border shadow-md rounded-hero p-4 md:p-card-padding-sm hover:shadow-lg transition-all group">
                                 <div className="bg-primary text-white p-4 rounded-xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><EyeOff size={28} /></div>
                                 <h4 className="text-xl font-black text-foreground mb-3 tracking-tight">Manuelle Schwärzung</h4>
                                 <p className="text-muted-foreground font-medium leading-relaxed">Namen auf eingescannten Bildern lassen sich direkt im Browser unkenntlich machen (&quot;Pixel einbrennen&quot;). Erst das anonymisierte Bild verlässt Ihren Rechner.</p>
                             </div>
 
-                            <div className="bg-background border border-border shadow-md rounded-hero p-4 md:p-card-padding-sm hover:shadow-lg transition-all group">
+                            <div className="bg-card border border-border shadow-md rounded-hero p-4 md:p-card-padding-sm hover:shadow-lg transition-all group">
                                 <div className="bg-primary text-white p-4 rounded-xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><Cpu size={28} /></div>
                                 <h4 className="text-xl font-black text-foreground mb-3 tracking-tight">Lokale Key-Souveränität</h4>
                                 <p className="text-muted-foreground font-medium leading-relaxed">In der Desktop & Community Edition werden Ihre API-Schlüssel (z.B. Mistral) <strong className="text-foreground/80">ausschließlich lokal</strong> auf Ihrem Endgerät gespeichert. Es findet keine Übertragung oder Speicherung auf Koreki-Servern statt.</p>
                             </div>
 
-                            <div className="bg-background border border-border shadow-md rounded-hero p-4 md:p-card-padding-sm hover:shadow-lg transition-all group">
+                            <div className="bg-card border border-border shadow-md rounded-hero p-4 md:p-card-padding-sm hover:shadow-lg transition-all group">
                                 <div className="bg-primary text-white p-4 rounded-xl w-fit shadow-lg mb-6 group-hover:scale-110 transition-transform"><HardDrive size={28} /></div>
                                 <h4 className="text-xl font-black text-foreground mb-3 tracking-tight">Lokale Pseudonymisierung</h4>
                                 <p className="text-muted-foreground font-medium leading-relaxed">Dateinamen wie &quot;Klausur_Max_Mustermann.pdf&quot; werden bereits in Ihrem Browser zu &quot;Schüler #1&quot; umbenannt, bevor sie überhaupt hochgeladen werden.</p>
@@ -160,19 +160,19 @@ export default function Security() {
                                     Wir bereiten aktuell den Launch der Cloud-Infrastruktur vor. Hierfür suchen wir noch <strong className="text-foreground">strategische Partner & Pilotschulen</strong>, die den Weg in die Cloud mit uns gemeinsam gestalten möchten.
                                 </p>
                                 <div className="flex flex-wrap gap-4">
-                                    <div className="bg-background border border-border shadow-md px-6 py-4 rounded-xl flex flex-col gap-1">
+                                    <div className="bg-card border border-border shadow-md px-6 py-4 rounded-xl flex flex-col gap-1">
                                         <h4 className="font-black text-foreground text-sm">Standard-Mode</h4>
                                         <p className="text-xs text-muted-foreground font-medium">Bequeme &quot;Out-of-the-box&quot; Lösung mit AVV.</p>
                                         <span className="mt-2 text-xs font-black uppercase text-warning tracking-tighter">Coming Soon</span>
                                     </div>
-                                    <div className="bg-background border border-border shadow-md px-6 py-4 rounded-xl flex flex-col gap-1">
+                                    <div className="bg-card border border-border shadow-md px-6 py-4 rounded-xl flex flex-col gap-1">
                                         <h4 className="font-black text-foreground text-sm">PURE-Mode</h4>
                                         <p className="text-xs text-muted-foreground font-medium">Client-Side Direct-to-AI Kommunikation.</p>
                                         <span className="mt-2 text-xs font-black uppercase text-warning tracking-tighter">Coming Soon</span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex-1 bg-background border border-border shadow-md p-4 md:p-card-padding-sm rounded-xl">
+                            <div className="flex-1 bg-card border border-border shadow-md p-4 md:p-card-padding-sm rounded-xl">
                                 <h3 className="text-xl font-black text-foreground mb-4 font-outfit">Interesse am Partnerprogramm?</h3>
                                 <p className="text-sm text-muted-foreground font-medium mb-6">Wir suchen Institutionen, die Koreki als SaaS-Lösung frühzeitig testen und evaluieren möchten.</p>
                                 <Link href={`mailto:${LEGAL_CONFIG.contact.email}`} className="bg-primary text-white px-8 py-4 rounded-xl font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 w-full hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">

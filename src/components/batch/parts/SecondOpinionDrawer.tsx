@@ -179,13 +179,13 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
 
             {/* Modal Body Panel */}
             <div className={cn(
-                "relative bg-background border border-border/80 shadow-2xl rounded-hero max-w-5xl w-full flex flex-col max-h-[90vh] overflow-hidden",
+                "relative bg-card border border-border/80 shadow-2xl rounded-hero max-w-5xl w-full flex flex-col max-h-[90vh] overflow-hidden",
                 "animate-in zoom-in-95 duration-300"
             )}>
                 {/* Header Section */}
                 <div className="px-4 sm:px-8 py-4 sm:pt-8 sm:pb-4 flex justify-between items-center border-b border-border/50 bg-background/50 backdrop-blur shrink-0">
                     <div className="flex items-center gap-3 sm:gap-4 overflow-hidden">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-background rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg border border-border overflow-hidden shrink-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-card rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg border border-border overflow-hidden shrink-0">
                             <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0 text-left">
@@ -210,7 +210,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                     <div className="lg:col-span-5 border-r border-border/50 bg-muted/20 p-5 flex flex-col gap-4 overflow-y-auto">
                         
                         {/* Task info card */}
-                        <div className="bg-background border border-border/50 rounded-xl p-4 space-y-3 shadow-xs">
+                        <div className="bg-card border border-border/50 rounded-xl p-4 space-y-3 shadow-xs">
                             <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest font-outfit">Kompakter Kontext</span>
                             <div className="space-y-1">
                                 <p className="text-sm font-black text-foreground font-outfit leading-tight">{taskName}</p>
@@ -246,7 +246,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                             
                                             <div className="space-y-1.5">
                                                 <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest font-outfit block">Empfohlenes Feedback:</span>
-                                                <div className="text-sm text-foreground font-inter leading-relaxed whitespace-pre-wrap max-h-[160px] overflow-y-auto bg-background/50 p-3.5 rounded-lg border border-border/40">
+                                                <div className="text-sm text-foreground font-inter leading-relaxed whitespace-pre-wrap max-h-[160px] overflow-y-auto bg-card/50 p-3.5 rounded-lg border border-border/40">
                                                     {activeProposal.feedback}
                                                 </div>
                                             </div>
@@ -345,7 +345,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                     value={input}
                                     onChange={(e) => setInput(e.target.value)}
                                     placeholder="Mit Koreki besprechen..."
-                                    className="flex-1 bg-background border border-border rounded-xl px-4 py-2.5 text-sm text-foreground/90 font-inter focus:border-primary focus:outline-hidden focus:ring-1 focus:ring-primary/20 transition-all h-10"
+                                    className="flex-1 bg-card border border-border rounded-xl px-4 py-2.5 text-sm text-foreground/90 font-inter focus:border-primary focus:outline-hidden focus:ring-1 focus:ring-primary/20 transition-all h-10"
                                     disabled={loading}
                                 />
                                 <Button

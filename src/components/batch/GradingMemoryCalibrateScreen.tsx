@@ -82,12 +82,12 @@ export const GradingMemoryCalibrateScreen: React.FC<GradingMemoryCalibrateScreen
                                                 setSyntheticAnswers(prev => prev.map((ans, idx) => idx === activeCaseIndex ? { ...ans, text: newText } : ans));
                                             }}
                                             placeholder="Simulierter Schülertext..."
-                                            className="flex-1 bg-background border border-border rounded-xl p-4 md:p-5 font-mono text-xs md:text-sm text-foreground leading-relaxed overflow-y-auto custom-scrollbar resize-none focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/50 shadow-sm transition-all"
+                                            className="flex-1 bg-card border border-border rounded-xl p-4 md:p-5 font-mono text-xs md:text-sm text-foreground leading-relaxed overflow-y-auto custom-scrollbar resize-none focus:outline-none focus:ring-2 focus:ring-primary/10 focus:border-primary/50 shadow-sm transition-all"
                                         />
                                     </div>
 
                                     {/* Right Column: Calibration Form Cockpit */}
-                                    <div className="w-full lg:w-1/2 flex flex-col bg-background border border-border rounded-xl p-5 md:p-6 lg:h-full overflow-y-auto custom-scrollbar gap-5">
+                                    <div className="w-full lg:w-1/2 flex flex-col bg-card border border-border rounded-xl p-5 md:p-6 lg:h-full overflow-y-auto custom-scrollbar gap-5">
                                         <div className="border-b border-border pb-3 shrink-0 flex items-center justify-between">
                                             <h4 className="text-sm font-black text-foreground uppercase tracking-wider flex items-center gap-2 font-outfit">
                                                 <BookOpen size={16} className="text-primary" />

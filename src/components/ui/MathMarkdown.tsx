@@ -233,8 +233,14 @@ export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }
 
     return (
         <div className={cn(
-            "prose-koreki prose-math max-w-none break-words leading-relaxed font-normal",
-            "text-sm text-foreground/90",
+            "prose-koreki prose-math max-w-none break-words font-normal",
+            // `text-sm/relaxed` statt `text-sm` + `leading-relaxed`: Tailwinds
+            // `text-sm` setzt Schriftgroesse UND Zeilenhoehe (20px). Ein separates
+            // `leading-relaxed` daneben verlor den Zweikampf, und der Lesemodus lief
+            // mit 20px, waehrend das Eingabefeld 22,75px hatte — beim Umschalten auf
+            // den Stift sprang der Zeilenabstand sichtbar (gemessen am 08.09.2026).
+            // Die Kurzform setzt beides in einer Regel und kann nicht auseinanderfallen.
+            "text-sm/relaxed text-foreground/90",
             className
         )}>
             <ReactMarkdown

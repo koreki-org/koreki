@@ -142,7 +142,7 @@ export const SkillEngineSection: React.FC<SkillEngineSectionProps> = ({
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => setIsGraphModalOpen(true)}
-                                                className="h-8 text-xs font-bold border-primary/20 text-primary bg-background hover:bg-primary/5 rounded-lg px-3 transition-all duration-300"
+                                                className="h-8 text-xs font-bold border-primary/20 text-primary bg-card hover:bg-primary/5 rounded-lg px-3 transition-all duration-300"
                                             >
                                                 Graph bearbeiten ⚙️
                                             </Button>
@@ -161,7 +161,7 @@ export const SkillEngineSection: React.FC<SkillEngineSectionProps> = ({
                                             }}
                                             placeholder="Füge hier den Aufgabentext ein, aus dem die KI Variablen und Formeln extrahieren soll..."
                                             rows={4}
-                                            className="w-full p-3 rounded-xl border border-primary/10 text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-background"
+                                            className="w-full p-3 rounded-xl border border-primary/10 text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-card"
                                         />
                                     </div>
 
@@ -171,7 +171,7 @@ export const SkillEngineSection: React.FC<SkillEngineSectionProps> = ({
                                     {editingSkillData.gradingGraph?.variables && (
                                         <div className="flex flex-wrap gap-1.5 pt-1">
                                             {editingSkillData.gradingGraph.variables.map(v => (
-                                                <Badge key={v.id} variant="outline" className="text-xs font-mono px-2 py-0.5 bg-background border-border text-muted-foreground rounded-md">
+                                                <Badge key={v.id} variant="outline" className="text-xs font-mono px-2 py-0.5 bg-card border-border text-muted-foreground rounded-md">
                                                     {v.id}
                                                 </Badge>
                                             ))}
@@ -205,7 +205,7 @@ export const SkillEngineSection: React.FC<SkillEngineSectionProps> = ({
                                                 variant="outline"
                                                 size="sm"
                                                 onClick={() => setIsCalcTraceModalOpen(true)}
-                                                className="h-8 text-xs font-bold border-border text-primary bg-background hover:bg-primary/5 rounded-lg px-3 transition-all duration-300"
+                                                className="h-8 text-xs font-bold border-border text-primary bg-card hover:bg-primary/5 rounded-lg px-3 transition-all duration-300"
                                             >
                                                 Kette bearbeiten 📐
                                             </Button>
@@ -223,7 +223,7 @@ export const SkillEngineSection: React.FC<SkillEngineSectionProps> = ({
                                             }}
                                             placeholder="Füge hier den Aufgabentext ein, aus dem die KI Rechenschritte extrahieren soll..."
                                             rows={4}
-                                            className="w-full p-3 rounded-xl border border-border text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-background resize-none"
+                                            className="w-full p-3 rounded-xl border border-border text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-card resize-none"
                                         />
                                     </div>
 
@@ -233,7 +233,7 @@ export const SkillEngineSection: React.FC<SkillEngineSectionProps> = ({
                                     {editingSkillData.calcTrace && 'steps' in editingSkillData.calcTrace && (
                                         <div className="flex flex-wrap gap-1.5 pt-1">
                                             {editingSkillData.calcTrace.steps.map(s => (
-                                                <Badge key={s.id} variant="outline" className="text-xs font-mono px-2 py-0.5 bg-background border-border text-muted-foreground rounded-md">
+                                                <Badge key={s.id} variant="outline" className="text-xs font-mono px-2 py-0.5 bg-card border-border text-muted-foreground rounded-md">
                                                     {s.id}: {s.label} ({s.type === 'given' ? 'gegeben' : s.formula})
                                                 </Badge>
                                             ))}
