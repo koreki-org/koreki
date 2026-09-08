@@ -60,7 +60,6 @@ const InteractiveWorkflowVisual: React.FC = () => {
 
     return (
         <div className="w-full bg-muted/50 rounded-2xl border border-border/50 p-6 font-outfit relative overflow-hidden">
-            <div className="absolute inset-0 bg-radial-gradient-glass pointer-events-none opacity-40" />
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
                 {steps.map((step) => {
                     const isHovered = activeStep === step.number;

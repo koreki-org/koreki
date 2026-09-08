@@ -145,7 +145,7 @@ const SIZE_BASELINE: Record<string, number> = {
     'hooks/usePromptProfiles.ts': 398, // s. useSkillProfiles — gleicher Wächter
     'components/batch/parts/SecondOpinionDrawer.tsx': 388,
     'components/settings/ProfileModules.tsx': 341,
-    'pages/features.tsx': 347,
+    'pages/features.tsx': 346,
     // 342 -> 316: die Vorschau-Zeichnung ist nach lib/redaction-preview gezogen
     // (architectural-vision §6.1 — die Komponente steuert nur noch, WANN gezeichnet wird).
     'components/RedactionModal.tsx': 317,

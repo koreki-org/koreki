@@ -233,7 +233,12 @@ export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }
 
     return (
         <div className={cn(
-            "prose-koreki prose-math max-w-none break-words font-normal",
+            // Kein `prose-*` hier: Das typography-Plugin ist nicht installiert
+            // (`plugins: []`) und keine CSS-Regel definiert die Klassen. Sie standen
+            // bis zum 08.09.2026 als Attrappe da und sahen aus, als gaebe es eine
+            // Typografie-Regel. Die echte Typografie machen die `components`-
+            // Ueberschreibungen weiter unten.
+            "max-w-none break-words font-normal",
             // `text-sm/relaxed` statt `text-sm` + `leading-relaxed`: Tailwinds
             // `text-sm` setzt Schriftgroesse UND Zeilenhoehe (20px). Ein separates
             // `leading-relaxed` daneben verlor den Zweikampf, und der Lesemodus lief

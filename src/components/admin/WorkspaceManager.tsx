@@ -52,7 +52,7 @@ const WorkspaceManager: React.FC<WorkspaceManagerProps> = ({
                                 className="rounded-xl h-11 bg-card border-border border-2 focus:border-primary transition-all"
                             />
                         </div>
-                        <Button type="submit" className="w-full font-bold h-12 rounded-full bg-primary hover:bg-primary-hover text-white shadow-md shadow-primary/20 transition-all">
+                        <Button type="submit" className="w-full font-bold h-12 rounded-full bg-primary hover:bg-primary/90 text-white shadow-md shadow-primary/20 transition-all">
                             Partner anlegen
                         </Button>
                     </form>

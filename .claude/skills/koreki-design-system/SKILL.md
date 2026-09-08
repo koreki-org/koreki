@@ -19,6 +19,36 @@ Dieses Dokument definiert das Erscheinungsbild und die Interaktionsstandards fü
 - **Dynamik**: Nutze das Tailwind-System mit HSL-Variablen (`--primary`, `--background`), um Themenwechsel (Dark/Light Mode) und Branding-Anpassungen zu ermöglichen.
 - **Kontrast**: Achte auf hohe Lesbarkeit, insbesondere in Textbereichen der Korrekturansicht (`CorrectionReview`).
 
+## 2b. Flächen, Abgrenzung und Zustände
+
+> **Tiefe entsteht über Flächen, nicht über Linien.** Diese Regeln stammen aus einem Befund vom 07./08.09.2026 und haben einen Wächter: [tests/unit/surface-governance.test.ts](../../../tests/unit/surface-governance.test.ts).
+
+**Die Flächen-Leiter wechselt sich ab.** Seite → Karte → Behälter → Block. Zwei gleiche Töne dürfen nie ineinander stecken:
+
+| Ebene | Token | Wert |
+|---|---|---|
+| Seite | `bg-background` | `220 20% 95%` |
+| Karte | `bg-card` | weiß |
+| Behälter *in* einer Karte | `bg-muted` | `220 14% 96%` |
+| Block *im* Behälter | `bg-card` | weiß |
+
+Bis zum 07.09.2026 waren Seite und Karte **derselbe** Token: beide gemessen `rgb(248,249,252)`. Eine Karte hob sich durch nichts ab außer ihrem Rand, und der liegt bei **1,18 : 1** — WCAG verlangt für ein abgrenzendes UI-Element 3 : 1.
+
+**Ein Mittel pro Aussage, höchstens drei insgesamt.** Rand *und* Flächentönung *und* Schatten *und* Ring am selben Element sind verboten. Vier Mittel entstehen nicht aus Absicht, sondern weil keines allein sichtbar war — das ist ein Symptom, kein Design. Trägt die Fläche die Abgrenzung, darf der Rand leise bleiben; sagt der Rand den Zustand, braucht es keinen Ring.
+
+**Ein Rahmen ist verdient, wenn sein Inhalt eigenständig handhabbar ist.** Sonst reichen Leerraum und Haarlinien. Am 07.09.2026 standen fünf Rahmenebenen ineinander für einen Satz Text.
+
+**Jede `bg-*`-Klasse muss auf eine Farbe zeigen, die es gibt.** Eine Klasse ohne Eintrag in `tailwind.config.js` tut in Tailwind **nichts** — kein Fehler, keine Warnung. So war `bg-card` an 16 Stellen wirkungslos, und `hover:bg-primary-hover` machte einen Button-Hover, der nichts tat.
+
+**Ein Zustandswechsel darf die Geometrie nicht ändern.** Rahmenstärke, Radius, Breite, Innenabstand und Zeilenhöhe bleiben gleich; wechseln darf nur die *Farbe*. Konkrete Fälle, die das verletzt haben:
+- Eine Karte, deren Fläche an `isExpanded` hing — sie wechselte beim Anklicken die Farbe und las sich als Fehler.
+- Ein Eingabefeld, dessen Rahmen an `isEditing` hing — beim Klick auf den Stift erschien er und die Abstände sprangen.
+- `leading-relaxed` neben `text-sm`: Tailwinds `text-sm` bringt eine eigene Zeilenhöhe mit und gewinnt. Lesemodus lief mit 20 px, das Eingabefeld mit 22,75 px. Nutze `text-sm/relaxed` — eine Regel, die nicht auseinanderfallen kann.
+
+**Graue Füllung heißt „deaktiviert".** Ein Feld, in das man gerade schreibt, muss **heller** sein als seine Umgebung, nie dunkler. Den Bearbeitungsmodus sagen Randfarbe und Ring, nicht die Fläche.
+
+**Fokusringe liegen innen (`ring-inset`).** Ein außenliegender Ring wird von jedem Scrollbehälter beschnitten, der nur einseitig Innenabstand hat (`overflow-y-auto pr-2` ist im Baum verbreitet). Innen kann ihn per Konstruktion nichts abschneiden.
+
 - **Hover-Effekte**: Jedes interaktive Element muss einen sanften Transition-Effekt besitzen (`transition-all duration-300`).
 - **Loading-States**: Nutze animierte Pulse-Effekte oder Shimmer-Skeletton-Screens.
 - **Global Registry**: Alle funktionalen Animationen (z.B. `animate-loading-bar`, `animate-scan`) müssen in `globals.css` zentralisiert sein.
