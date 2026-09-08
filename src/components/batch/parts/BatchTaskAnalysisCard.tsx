@@ -375,23 +375,30 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                     <div 
                         id={`task-card-${idx}-${safeTaskName}`} 
                         key={task.name} 
-                        className="bg-card rounded-xl border border-border shadow-sm p-4 sm:p-5 space-y-4 hover:border-primary/40 transition-all group/card"
+                        className="space-y-3 group/card"
                     >
-                        <div className="flex items-center justify-between w-full">
-                            <div className="flex items-center gap-1.5 sm:gap-3">
+                        {/* Kopfzeile IN der Komponente: sonst zwei Zeilen gegen eine links. */}
+                        <EditableMathArea
+                            leftAction={<>
                                 <span className="text-xs font-bold text-foreground font-outfit whitespace-nowrap">
-                                    <span className="inline sm:hidden">{task.name.replace(/Aufgabe\s*/i, 'A.')}</span>
+                                    <span className="inline sm:hidden">{task.name.replace(/Aufgabes*/i, 'A.')}</span>
                                     <span className="hidden sm:inline">{task.name}</span>
                                 </span>
                                 <VertrauensChip vertrauen={confidence} getConfidenceColor={getConfidenceColor} />
-                            </div>
-                            <PointInput 
-                                value={Number(aiResult?.pointsObtained ?? 0)}
-                                maxPoints={Number(task.maxPoints || 0)}
-                                onChange={(val) => handleReviewPointChange(idx, task.name || '', val)}
-                                showMaxPoints={true}
-                            />
-                        </div>
+                                <div className="ml-auto pl-2">
+                                    <PointInput
+                                        value={Number(aiResult?.pointsObtained ?? 0)}
+                                        maxPoints={Number(task.maxPoints || 0)}
+                                        onChange={(val) => handleReviewPointChange(idx, task.name || '', val)}
+                                        showMaxPoints={true}
+                                    />
+                                </div>
+                            </>}
+                            value={aiResult?.feedback || ''} aiNotes={aiResult?.correctionNotes}
+                            onChange={(newVal) => handleReviewFeedbackChange(idx, task.name || '', newVal)}
+                            placeholder="Feedback ..."
+                            className="w-full"
+                        />
                         {aiResult?.sandboxBypassed && (
                             <div className="bg-destructive/10 text-destructive border border-destructive/20 rounded-xl p-3 flex items-start gap-2 text-xs font-semibold animate-in fade-in duration-200">
                                 <AlertCircle size={16} className="shrink-0 mt-0.5" />
@@ -399,16 +406,9 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                             </div>
                         )}
 
-                        <EditableMathArea
-                            value={aiResult?.feedback || ''} aiNotes={aiResult?.correctionNotes}
-                            onChange={(newVal) => handleReviewFeedbackChange(idx, task.name || '', newVal)}
-                            placeholder="Feedback ..."
-                            className="w-full"
-                        />
-
                         {/* LOOP CLOSING FEEDBACK ACTION (On-The-Fly GradingMemory Appender) */}
                         {aiResult && (
-                            <div className="pt-2 border-t border-border/40 flex flex-col gap-2">
+                            <div className="pt-1 border-t border-border/40 flex flex-col gap-2">
                                 {savingTaskId === task.name ? (
                                     <div className="bg-primary/5 rounded-xl p-3 border border-primary/10 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
                                         <div className="flex items-center justify-between">

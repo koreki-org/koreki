@@ -162,7 +162,7 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
     return (
         <div className={cn("relative group w-full", className)}>
             {/* Header / Actions */}
-            <div className="flex items-center justify-between mb-2 px-4">
+            <div className="flex items-center justify-between mb-2 px-4 min-h-[46px]">
                 {leftAction ? (
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                         {leftAction}
