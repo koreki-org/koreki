@@ -85,7 +85,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                     {/* Default None Option */}
                                     <div 
                                         onClick={() => selectMemory(null)}
-                                        className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center cursor-pointer ${!activeMemoryId ? 'bg-primary/10 border-primary/20 text-foreground shadow-sm' : 'bg-muted/40 border-transparent hover:bg-secondary/60 text-muted-foreground'}`}
+                                        className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center cursor-pointer ${!activeMemoryId ? 'bg-card border-primary/20 shadow-sm' : 'bg-transparent border-border hover:bg-muted'}`}
                                     >
                                         <div className="flex flex-col">
                                             <span className="text-xs font-extrabold">Kein Erfahrungsschatz (Standard-Korrektur)</span>
@@ -117,10 +117,10 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                         <div 
                                             key={m.id}
                                             onClick={() => selectMemory(m.id || null)}
-                                            className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${activeMemoryId === m.id ? 'bg-card border-primary/20 shadow-sm' : 'bg-transparent border-transparent hover:bg-card/50'}`}
+                                            className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${activeMemoryId === m.id ? 'bg-card border-primary/20 shadow-sm' : 'bg-transparent border-border hover:bg-muted'}`}
                                         >
                                             <div className="flex flex-col min-w-0 flex-1">
-                                                <span className={`text-xs font-extrabold truncate transition-all duration-300 ${activeMemoryId === m.id ? 'text-foreground' : 'text-foreground'} group-hover:pr-[120px]`}>
+                                                <span className={`text-xs font-extrabold truncate transition-all duration-300 group-hover:pr-[120px]`}>
                                                     {editingMemoryId === m.id ? (
                                                         <Input 
                                                             autoFocus 
