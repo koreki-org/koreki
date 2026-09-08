@@ -106,6 +106,7 @@ export const BatchSolutionPanel: React.FC<BatchSolutionPanelProps> = ({
                         return (
                             <div key={task.id || task.name || task.idx}>
                                 <EditableMathArea
+                                    leftAction={<span className="text-xs font-bold text-foreground truncate font-outfit">{task.name}</span>}
                                     value={sectionText}
                                     onChange={(newText) => {
                                         if (onUpdateText) {

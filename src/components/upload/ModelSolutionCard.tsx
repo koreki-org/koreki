@@ -224,12 +224,12 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 ) : hasTaskStructure ? (
                     <div className="space-y-6">
                         {/* Gemeinsamer Rahmen: gehört zu keiner Aufgabe und hätte sonst keinen sichtbaren Ort. */}
-                        <div className="flex flex-col gap-2">
-                            <div className="flex items-baseline gap-2 px-1">
-                                <p className="text-xxs font-black uppercase tracking-[0.2em] text-muted-foreground">Gemeinsamer Rahmen</p>
-                                <span className="text-xxs font-bold text-muted-foreground/70">— gilt für alle Aufgaben</span>
-                            </div>
+                        <div className="flex flex-col">
                             <EditableMathArea
+                                leftAction={<>
+                                    <p className="text-xxs font-black uppercase tracking-[0.2em] text-muted-foreground">Gemeinsamer Rahmen</p>
+                                    <span className="text-xxs font-bold text-muted-foreground/70">— gilt für alle Aufgaben</span>
+                                </>}
                                 value={modelSolutionContext}
                                 onChange={(wert) => onModelSolutionContextChange?.(wert)}
                                 gesperrt={isLocked}

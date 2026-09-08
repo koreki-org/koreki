@@ -86,23 +86,18 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                             const sectionHasUncertainty = hasOcrWarnings(sectionText);
 
                             return (
-                                <div key={task.name} className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm group">
-                                    <div className="flex items-center justify-between px-3 py-2 bg-muted/30 group-focus-within:bg-primary/5 transition-colors">
-                                        <div className="flex items-center gap-2 overflow-hidden">
-                                            <span className="text-xs font-bold text-foreground truncate font-outfit">{task.name}</span>
-                                            {sectionHasUncertainty && (
-                                                <Badge className="bg-destructive/10 text-destructive border border-destructive/20 text-xs font-bold h-5 px-2 shadow-none gap-1 shrink-0 animate-pulse font-outfit">
-                                                    <AlertCircle size={10} /> OCR prüfen!
-                                                </Badge>
-                                            )}
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <Badge className="bg-primary/10 text-primary border-none text-xs font-black h-5 px-2 rounded-lg shrink-0 font-outfit">
-                                                {task.maxPoints} P
-                                            </Badge>
-                                        </div>
-                                    </div>
+                                <div key={task.name} className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm group pt-3">
                                     <EditableMathArea
+                                        leftAction={
+                                            <>
+                                                <span className="text-xs font-bold text-foreground truncate font-outfit">{task.name}</span>
+                                                {sectionHasUncertainty && (
+                                                    <Badge className="bg-destructive/10 text-destructive border border-destructive/20 text-xs font-bold h-5 px-2 shadow-none gap-1 shrink-0 animate-pulse font-outfit">
+                                                        <AlertCircle size={10} /> OCR prüfen!
+                                                    </Badge>
+                                                )}
+                                            </>
+                                        }
                                         value={sectionText}
                                         onChange={(text) => {
                                             const updatedTasks = [...(item.tasks || [])];
