@@ -29,6 +29,8 @@ interface EditableMathAreaProps {
      * setzte das Selbstgespraech der KI auf das PDF eines Schuelers.
      */
     aiNotes?: string;
+    /** Festgeschrieben: kein Stift, kein Bearbeitungsmodus, nur Lesen. */
+    gesperrt?: boolean;
 }
 
 /**
@@ -146,9 +148,13 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
     initialEditMode = false,
     label,
     leftAction,
-    aiNotes
+    aiNotes,
+    gesperrt = false
 }) => {
-    const [isEditing, setIsEditing] = useState(initialEditMode);
+    const [istOffen, setIstOffen] = useState(initialEditMode);
+    // Die Sperre schlaegt den Zustand — sonst bliebe ein Feld bearbeitbar, das
+    // waehrend der Bearbeitung festgeschrieben wurde.
+    const isEditing = istOffen && !gesperrt;
 
     const { technical, engine, nichtNachgerechnet, pedagogical } = splitFeedback(value);
     const notizen = (aiNotes || '').trim();
@@ -163,11 +169,14 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
                     </div>
                 ) : <div />}
                 
+                {/* Gar nicht erst gerendert, nicht nur per CSS versteckt: Ein
+                    `hidden`-Schalter bleibt im Baum und per Tastatur erreichbar. */}
+                {!gesperrt && (
                 <div className="ml-auto flex items-center gap-1 opacity-30 group-hover:opacity-100 transition-all duration-300">
                     <Button 
                         variant="ghost" 
                         size="icon" 
-                        onClick={() => setIsEditing(!isEditing)}
+                        onClick={() => setIstOffen(!istOffen)}
                         className={cn(
                             "h-7 w-7 rounded-lg transition-all",
                             isEditing ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-primary hover:bg-primary/5"
@@ -177,6 +186,7 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
                         {isEditing ? <Eye size={14} /> : <Pencil size={14} />}
                     </Button>
                 </div>
+                )}
             </div>
 
             {/*

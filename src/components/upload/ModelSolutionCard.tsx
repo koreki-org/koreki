@@ -225,16 +225,16 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                     <div className="space-y-6">
                         {/* Gemeinsamer Rahmen: gehört zu keiner Aufgabe und hätte sonst keinen sichtbaren Ort. */}
                         <div className="flex flex-col gap-2">
-                            <div className="flex items-center justify-between gap-3 px-1">
+                            <div className="flex items-baseline gap-2 px-1">
                                 <p className="text-xxs font-black uppercase tracking-[0.2em] text-muted-foreground">Gemeinsamer Rahmen</p>
-                                <span className="text-xxs font-bold text-muted-foreground/70">gilt für alle Aufgaben</span>
+                                <span className="text-xxs font-bold text-muted-foreground/70">— gilt für alle Aufgaben</span>
                             </div>
-                            <Textarea
+                            <EditableMathArea
                                 value={modelSolutionContext}
-                                onChange={(e) => onModelSolutionContextChange?.(e.target.value)}
-                                disabled={isLocked}
+                                onChange={(wert) => onModelSolutionContextChange?.(wert)}
+                                gesperrt={isLocked}
                                 placeholder="Szenario, übergreifender Arbeitsauftrag oder gemeinsame Annahmen — leer lassen, wenn es keine gibt."
-                                className="min-h-[80px] p-4 rounded-2xl bg-card/50 border-border shadow-inner text-sm resize-y"
+                                className="w-full"
                             />
                         </div>
 

@@ -125,3 +125,33 @@ describe('EditableMathArea — Notizen der KI', () => {
         expect(screen.queryByText('Notizen der KI zur Punktevergabe einblenden')).not.toBeInTheDocument();
     });
 });
+
+describe('EditableMathArea — Festgeschrieben (gesperrt)', () => {
+    it('zeigt keinen Stift, wenn gesperrt', () => {
+        render(<EditableMathArea value="Szenario." onChange={jest.fn()} gesperrt />);
+        expect(screen.queryByTitle('Inhalt bearbeiten')).not.toBeInTheDocument();
+    });
+
+    it('zeigt den Stift, solange nicht gesperrt', () => {
+        render(<EditableMathArea value="Szenario." onChange={jest.fn()} />);
+        expect(screen.getByTitle('Inhalt bearbeiten')).toBeInTheDocument();
+    });
+
+    /**
+     * Die Sperre muss den ZUSTAND schlagen, nicht nur den Schalter verstecken.
+     *
+     * Sonst bliebe ein Feld bearbeitbar, das waehrend des Tippens festgeschrieben
+     * wurde: Der Stift verschwaende, das Eingabefeld bliebe stehen — und die
+     * Musterloesung liesse sich weiter aendern, obwohl sie eingefroren ist.
+     */
+    it('faellt in den Lesemodus zurueck, wenn waehrend der Bearbeitung gesperrt wird', () => {
+        const { rerender } = render(
+            <EditableMathArea value="Szenario." onChange={jest.fn()} initialEditMode />
+        );
+        expect(screen.getByRole('textbox')).toBeInTheDocument();
+
+        rerender(<EditableMathArea value="Szenario." onChange={jest.fn()} initialEditMode gesperrt />);
+        expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+        expect(screen.getByTestId('math-rendered')).toBeInTheDocument();
+    });
+});
