@@ -51,8 +51,12 @@ describe('useRedactionEngine - Industrial Hook Verification', () => {
                 set src(value: string) {
                     this._src = value;
                     setTimeout(() => {
-                        errorsDispatched++;
+                        // Erst zustellen, DANN zaehlen. Andersherum sah `waitFor` den
+                        // Zaehler bereits, waehrend `onerror` noch nicht gelaufen war —
+                        // der Negativtest konnte dann bestehen, ohne die kritische
+                        // Stelle je erreicht zu haben (gefunden am 08.09.2026).
                         this.onerror?.(new Event('error'));
+                        errorsDispatched++;
                     }, 0);
                 }
                 get src() { return this._src; }
@@ -70,9 +74,17 @@ describe('useRedactionEngine - Industrial Hook Verification', () => {
         const waitForLoadFailure = () => waitFor(() => expect(errorsDispatched).toBeGreaterThan(0));
 
         it('protokolliert nichts mehr, nachdem die Komponente während des Ladens ausgehängt wurde', async () => {
-            const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-
             const { unmount } = renderHook(() => useRedactionEngine(true, pngFile()));
+
+            // Der Spion beginnt erst HIER, nicht vor dem Rendern.
+            //
+            // Die Behauptung dieses Tests lautet "nach dem Aushaengen wird nichts
+            // mehr protokolliert". Stand der Spion schon davor, zaehlte auch alles
+            // mit, was React beim Rendern selbst nach console.error schreibt — etwa
+            // eine act()-Warnung unter Parallellast. Der Test wurde dadurch
+            // sporadisch rot, ohne dass am Verhalten des Hooks etwas falsch war
+            // (beobachtet am 08.09.2026 in einem Gesamtlauf, einzeln nie).
+            const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
             unmount();
 
             // Erst wenn der Fehler zugestellt IST, hat die Aussage Gewicht.
