@@ -126,7 +126,10 @@ const SIZE_BASELINE: Record<string, number> = {
     // 495 -> 488: die beiden .koreki-Exporte standen zweimal ausgeschrieben da,
     // unterschieden durch ein einziges `true`.
     'pages/app.tsx': 489,
-    'components/batch/parts/BatchTaskAnalysisCard.tsx': 570,
+    // 569 -> 325: Erfahrungsschatz-Anlernen und Anonymisierung liegen als
+    // useTaskReviewActions daneben, die Zweitmeinung als useSecondOpinion.
+    // Hook-Aufrufe 13 -> 2, damit aus HOOK_BASELINE verschwunden.
+    'components/batch/parts/BatchTaskAnalysisCard.tsx': 325,
     // +7: der Kommentar, warum beim Aktualisieren die bestehende Kennung
     // gewinnt. Ohne ihn wird die Zeile beim naechsten Aufraeumen entfernt.
     // 498 -> 468: Loeschen und Umbenennen gehen jetzt ueber den
@@ -161,7 +164,9 @@ const SIZE_BASELINE: Record<string, number> = {
  * NUR SENKEN, NIE ANHEBEN.
  */
 const HOOK_BASELINE: Record<string, number> = {
-    'components/batch/parts/BatchTaskAnalysisCard.tsx': 13,
+    // BatchTaskAnalysisCard ist am 08.09.2026 von 13 auf 2 gefallen und damit
+    // hier verschwunden: Der Zustand liegt in useTaskReviewActions und
+    // useSecondOpinion.
     'components/settings/OllamaConfig.tsx': 11
 };
 

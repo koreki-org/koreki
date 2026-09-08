@@ -3,10 +3,11 @@ import { Sparkles, GraduationCap, X, Check, Loader2, Lock, AlertCircle, RefreshC
 import { PointInput } from '../../ui/PointInput';
 import { Button } from '@/components/ui/Button';
 import { EditableMathArea } from '@/components/ui/EditableMathArea';
-import { BatchFile, AppSettings, GradingMemory } from '../../../types';
+import { BatchFile, AppSettings, GradingMemory, Task } from '../../../types';
 import { cn } from '@/lib/utils';
 import { VertrauensChip } from './VertrauensChip';
-import { useGradingMemories } from '@/hooks/useGradingMemories';
+import { useTaskReviewActions } from '@/hooks/useTaskReviewActions';
+import { useSecondOpinion } from '@/hooks/useSecondOpinion';
 import { apiClient } from '@/lib/api-client';
 import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,13 +22,13 @@ interface BatchTaskAnalysisCardProps {
     item: BatchFile;
     idx: number;
     activeGroupName: string;
-    groupedTasks: Record<string, any[]>;
+    groupedTasks: Record<string, Task[]>;
     mobileViewMode: 'text' | 'image';
     getConfidenceColor: (conf?: number) => string;
     handleReviewPointChange: (idx: number, name: string, pts: number) => void;
     handleReviewFeedbackChange: (idx: number, name: string, fb: string) => void;
     handleReviewPointAndFeedbackChange?: (idx: number, name: string, pts: number, fb: string) => void;
-    tasksLayout?: any[];
+    tasksLayout?: Task[];
     studentSections?: string[];
     settings?: AppSettings;
     focusedPanel?: 'left' | 'right' | null;
@@ -56,273 +57,24 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
     focusedPanel,
     onToggleFocus
 }) => {
-    const [savingTaskId, setSavingTaskId] = React.useState<string | null>(null);
-    const [targetMemoryId, setTargetMemoryId] = React.useState<string>('');
-    const [isPending, setIsPending] = React.useState(false);
+    const {
+        appMode,
+        memories, activeMemoryId, targetMemoryId, setTargetMemoryId,
+        savingTaskId, setSavingTaskId, isPending,
+        showAnonymizeDialog, anonymizing, anonymizedText, setAnonymizedText,
+        anonymizeError, anonymizePayload,
+        handleStartAnonymize, handleRetryAnonymize, handleConfirmAnonymizeSave, handleCloseAnonymize,
+        isSaaSService
+    } = useTaskReviewActions({ settings });
 
-    const { userData } = useAuth();
-    // Load available memories and sync selected ID
-    const { memories, activeMemoryId, refreshMemories } = useGradingMemories(userData);
-    
-    const [showSecondOpinionDrawer, setShowSecondOpinionDrawer] = React.useState(false);
-    const [activeDoubleCheckTask, setActiveDoubleCheckTask] = React.useState<{
-        name: string;
-        studentText: string;
-        maxPoints: number;
-        currentPoints: number;
-        currentFeedback: string;
-    } | null>(null);
-
-    const handleApplySecondOpinion = (points: number, feedback: string) => {
-        if (!activeDoubleCheckTask) return;
-        if (handleReviewPointAndFeedbackChange) {
-            handleReviewPointAndFeedbackChange(idx, activeDoubleCheckTask.name, points, feedback);
-        } else {
-            handleReviewPointChange(idx, activeDoubleCheckTask.name, points);
-            handleReviewFeedbackChange(idx, activeDoubleCheckTask.name, feedback);
-        }
-    };
-
-    const handleSubmitSecondOpinion = async (doubt: string, chatHistory?: any[]) => {
-        if (!activeDoubleCheckTask) return;
-        const sIdx = (tasksLayout || []).findIndex(t => t.name === activeDoubleCheckTask.name);
-        const instructions = sIdx !== -1 ? (tasksLayout[sIdx].instructions || '') : '';
-        const solution = sIdx !== -1 ? (tasksLayout[sIdx].sampleSolution || '') : '';
-
-        return await performAIRequest(
-            'second-opinion',
-            {
-                taskName: activeDoubleCheckTask.name,
-                studentText: activeDoubleCheckTask.studentText,
-                currentPoints: activeDoubleCheckTask.currentPoints,
-                maxPoints: activeDoubleCheckTask.maxPoints,
-                currentFeedback: activeDoubleCheckTask.currentFeedback,
-                teacherDoubt: doubt,
-                taskInstructions: instructions,
-                sampleSolution: solution,
-                chatHistory
-            },
-            userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
-            settings || {} as any
-        );
-    };
-
-    const [showAnonymizeDialog, setShowAnonymizeDialog] = React.useState(false);
-    const [anonymizing, setAnonymizing] = React.useState(false);
-    const [anonymizedText, setAnonymizedText] = React.useState('');
-    const [anonymizeError, setAnonymizeError] = React.useState<string | null>(null);
-    const [anonymizePayload, setAnonymizePayload] = React.useState<{
-        taskName: string;
-        originalText: string;
-        points: number;
-        notes: string;
-        maxPoints?: number;
-    } | null>(null);
-
-    React.useEffect(() => {
-        if (activeMemoryId) {
-            setTargetMemoryId(activeMemoryId);
-        } else if (memories.length > 0) {
-            setTargetMemoryId(memories[0].id || '');
-        }
-    }, [activeMemoryId, memories]);
-
-    const handleStartAnonymize = async (taskName: string, originalText: string, points: number, notes: string, maxPoints?: number) => {
-        if (!targetMemoryId) {
-            meldeHinweis('Bitte wähle zuerst einen Ziel-Erfahrungsschatz aus.');
-            return;
-        }
-        if (!originalText.trim()) {
-            meldeHinweis('Keine Schülerlösung für diese Aufgabe gefunden.');
-            return;
-        }
-        if (!notes.trim()) {
-            meldeHinweis('Bitte trage zuerst eine Begründung im Feedback-Feld ein.');
-            return;
-        }
-
-        setIsPending(true);
-        setAnonymizeError(null);
-        setAnonymizedText('');
-
-        try {
-            const response = await performAIRequest(
-                'anonymize',
-                { studentText: originalText },
-                userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
-                settings || {} as any
-            );
-
-            if (response && response.anonymizedText) {
-                const cleanAnon = response.anonymizedText.trim();
-                const cleanOrig = originalText.trim();
-
-                if (cleanAnon === cleanOrig) {
-                    // Smart Bypass: No anonymization needed! Save directly
-                    await handleSaveToMemory(taskName, cleanOrig, points, notes, maxPoints);
-                    return;
-                }
-
-                // Otherwise: Open simplified preview modal
-                setAnonymizePayload({ taskName, originalText, points, notes, maxPoints });
-                setAnonymizedText(cleanAnon);
-                setAnonymizing(false);
-                setShowAnonymizeDialog(true);
-            } else {
-                throw new Error('Ungültige Antwort von der Anonymisierungs-API.');
-            }
-        } catch (err) {
-            console.error('[Anonymize] Error during stylistic anonymization:', err);
-            // On error: show the dialog with error state so user can retry or save original
-            setAnonymizePayload({ taskName, originalText, points, notes, maxPoints });
-            setAnonymizedText(originalText);
-            setAnonymizeError(toErrorMessage(err, 'Fehler bei der stilistischen Anonymisierung. Bitte versuche es erneut.'));
-            setAnonymizing(false);
-            setShowAnonymizeDialog(true);
-        } finally {
-            setIsPending(false);
-        }
-    };
-
-    const handleRetryAnonymize = async () => {
-        if (!anonymizePayload) return;
-        setAnonymizing(true);
-        setAnonymizeError(null);
-        setAnonymizedText('');
-        try {
-            const response = await performAIRequest(
-                'anonymize',
-                { studentText: anonymizePayload.originalText },
-                userData?.appMode === 'UNSET' ? undefined : userData?.appMode,
-                settings || {} as any
-            );
-
-            if (response && response.anonymizedText) {
-                setAnonymizedText(response.anonymizedText);
-            } else {
-                throw new Error('Ungültige Antwort von der Anonymisierungs-API.');
-            }
-        } catch (err) {
-            console.error('[Anonymize] Error during stylistic anonymization retry:', err);
-            setAnonymizeError(toErrorMessage(err, 'Fehler bei der stilistischen Anonymisierung. Bitte versuche es erneut.'));
-        } finally {
-            setAnonymizing(false);
-        }
-    };
-
-    const handleConfirmAnonymizeSave = async () => {
-        if (!anonymizePayload || !anonymizedText) return;
-        
-        await handleSaveToMemory(
-            anonymizePayload.taskName,
-            anonymizedText,
-            anonymizePayload.points,
-            anonymizePayload.notes,
-            anonymizePayload.maxPoints
-        );
-        setShowAnonymizeDialog(false);
-    };
-
-    const handleCloseAnonymize = () => {
-        if (isPending) return;
-        setShowAnonymizeDialog(false);
-        setAnonymizePayload(null);
-    };
-
-    const handleSaveToMemory = async (taskName: string, studentText: string, points: number, notes: string, maxPoints?: number) => {
-        if (!targetMemoryId) {
-            meldeHinweis('Bitte wähle zuerst einen Ziel-Erfahrungsschatz aus.');
-            return;
-        }
-        if (!studentText.trim()) {
-            meldeHinweis('Keine Schülerlösung für diese Aufgabe gefunden.');
-            return;
-        }
-        if (!notes.trim()) {
-            meldeHinweis('Bitte trage zuerst eine Begründung im Feedback-Feld ein.');
-            return;
-        }
-
-        setIsPending(true);
-        try {
-            if (isDesktopTarget()) {
-                // --- TAURI CLIENT-SIDE LOCAL STORAGE SYNC ---
-                let list: GradingMemory[] = []; // Typangabe noetig: sonst leitet TS `never[]` ab
-                const stored = localStorage.getItem('koreki_local_grading_memories');
-                if (stored) {
-                    try {
-                        list = JSON.parse(stored);
-                    } catch (e) {
-                        console.error('Failed to parse local memories JSON', e);
-                    }
-                }
-                
-                let memIdx = list.findIndex((m: any) => m.id === targetMemoryId);
-                if (memIdx === -1) {
-                    // Create a placeholder local memory profile if it doesn't exist yet
-                    const activeName = localStorage.getItem('koreki_active_grading_memory_name') || 'Importierter Erfahrungsschatz';
-                    const newMemory = {
-                        id: targetMemoryId,
-                        name: activeName,
-                        cases: []
-                    };
-                    list.push(newMemory);
-                    memIdx = list.length - 1;
-                }
-
-                const newCase = {
-                    id: `case-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-                    studentText: studentText.trim(),
-                    taskName: taskName,
-                    expectedCorrection: {
-                        pointsObtained: points,
-                        maxPoints: maxPoints,
-                        correctionNotes: notes.trim()
-                    }
-                };
-                list[memIdx].cases = [...(list[memIdx].cases || []), newCase];
-                localStorage.setItem('koreki_local_grading_memories', JSON.stringify(list));
-                
-                // Propagate active cases instantly
-                const activeId = localStorage.getItem('koreki_active_grading_memory_id');
-                if (activeId === targetMemoryId) {
-                    localStorage.setItem('koreki_active_grading_memory_cases', JSON.stringify(list[memIdx].cases));
-                }
-                
-                await refreshMemories();
-                setSavingTaskId(null);
-                meldeErfolg('Erfolgreich in den lokalen Erfahrungsschatz aufgenommen! 🎓');
-            } else {
-                // --- SAAS VPS CLOUD DB SYNC ---
-                const res = await apiClient.post('/api/user/grading-memories/append', {
-                    gradingMemoryId: targetMemoryId,
-                    studentText: studentText.trim(),
-                    taskName: taskName,
-                    expectedCorrection: {
-                        pointsObtained: points,
-                        maxPoints: maxPoints,
-                        correctionNotes: notes.trim()
-                    }
-                });
-
-                if (res.ok) {
-                    await refreshMemories();
-                    setSavingTaskId(null);
-                    meldeErfolg('Erfolgreich in den Erfahrungsschatz aufgenommen! 🎓');
-                } else {
-                    const errData = await res.json();
-                    meldeFehler(errData.message || 'Fehler beim Speichern in den Erfahrungsschatz.');
-                }
-            }
-        } catch (err) {
-            console.error('[BatchTaskAnalysisCard:Append] Unexpected error:', err);
-            meldeFehler('Netzwerkfehler beim Anlernen des Falls.');
-        } finally {
-            setIsPending(false);
-        }
-    };
-
-    const isSaaSService = !isLocalInstance() && userData?.appMode === 'STANDARD';
+    const {
+        showSecondOpinionDrawer, setShowSecondOpinionDrawer,
+        activeDoubleCheckTask, setActiveDoubleCheckTask,
+        handleApplySecondOpinion, handleSubmitSecondOpinion
+    } = useSecondOpinion({
+        idx, settings, tasksLayout, appMode,
+        handleReviewPointChange, handleReviewFeedbackChange, handleReviewPointAndFeedbackChange
+    });
 
     const anonymizeModal = showAnonymizeDialog && typeof window !== 'undefined' && anonymizePayload ? (
         <AnonymizeModal
@@ -369,7 +121,8 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                     t.name?.toLowerCase().includes(task.name?.toLowerCase() || '')
                 );
                 const confidence = aiResult?.confidence;
-                const safeTaskName = task.name.replace(/\s+/g, '-').toLowerCase();
+                const taskName = task.name || '';
+                const safeTaskName = taskName.replace(/\s+/g, '-').toLowerCase();
                 
                 return (
                     <div 
@@ -381,7 +134,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                         <EditableMathArea
                             leftAction={<>
                                 <span className="text-xs font-bold text-foreground font-outfit whitespace-nowrap">
-                                    <span className="inline sm:hidden">{task.name.replace(/Aufgabes*/i, 'A.')}</span>
+                                    <span className="inline sm:hidden">{taskName.replace(/Aufgabes*/i, 'A.')}</span>
                                     <span className="hidden sm:inline">{task.name}</span>
                                 </span>
                                 <VertrauensChip vertrauen={confidence} getConfidenceColor={getConfidenceColor} />
@@ -475,11 +228,13 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                                                                 studentAnswer = sIdx !== -1 ? (studentSections?.[sIdx] || '') : '';
                                                             }
                                                             handleStartAnonymize(
-                                                                task.name,
+                                                                taskName,
                                                                 studentAnswer,
                                                                 Number(aiResult?.pointsObtained ?? 0),
                                                                 aiResult?.feedback || '',
-                                                                task.maxPoints
+                                                                // `maxPoints` ist auf `Task` string|number; undefined bleibt undefined,
+                                                    // damit sich am Verhalten nichts aendert.
+                                                    task.maxPoints === undefined ? undefined : Number(task.maxPoints)
                                                             );
                                                         }}
                                                         className="h-7 text-xs font-black bg-primary hover:bg-primary/95 text-primary-foreground rounded-lg px-3 flex items-center gap-1.5 shadow-sm"
@@ -515,7 +270,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                                                 }
                                                 
                                                 setActiveDoubleCheckTask({
-                                                    name: task.name,
+                                                    name: taskName,
                                                     studentText: studentAnswer,
                                                     maxPoints: Number(task.maxPoints || 0),
                                                     currentPoints: Number(aiResult?.pointsObtained ?? 0),
@@ -532,7 +287,7 @@ export const BatchTaskAnalysisCard: React.FC<BatchTaskAnalysisCardProps> = ({
                                             variant="ghost"
                                             size="sm"
                                             onClick={() => {
-                                                setSavingTaskId(task.name);
+                                                setSavingTaskId(taskName);
                                                 if (activeMemoryId) setTargetMemoryId(activeMemoryId);
                                             }}
                                             className="h-8 text-xs font-bold text-primary hover:text-primary/80 hover:bg-primary/5 rounded-lg flex items-center gap-1.5"
