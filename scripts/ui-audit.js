@@ -67,7 +67,10 @@ const perFileRatchets = [
         'src/pages/desktop-setup.tsx': 3,
         'src/components/batch/CalcTraceModal.tsx': 2,
         'src/components/batch/GradingMemoryCalibrateScreen.tsx': 2,
-        'src/components/batch/parts/BatchTaskAnalysisCard.tsx': 2,
+        // 2 -> 1: Das rohe <select> ist beim Herausloesen von
+        // BatchTaskAnalysisCell zum Dropdown-Bauteil geworden (08.09.2026).
+        // Uebrig bleibt der Fokus-Umschalter, den BatchSolutionPanel genauso hat.
+        'src/components/batch/parts/BatchTaskAnalysisCard.tsx': 1,
         'src/components/settings/ProfileModules.tsx': 2,
         'src/components/settings/UnifiedAiConfig.tsx': 2,
         'src/components/upload/StudentWorkCard.tsx': 2,
