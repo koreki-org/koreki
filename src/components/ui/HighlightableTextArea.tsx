@@ -88,7 +88,7 @@ export const HighlightableTextArea: React.FC<HighlightableTextAreaProps> = ({ va
                     textRendering: 'optimizeLegibility',
                     WebkitFontSmoothing: 'antialiased'
                 }}
-                className="absolute inset-0 w-full h-full p-4 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm focus:outline-none transition-all resize-none overflow-hidden leading-relaxed z-10"
+                className="absolute inset-0 w-full h-full p-4 rounded-xl bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm focus:outline-none transition-all resize-none overflow-hidden leading-relaxed z-10"
             />
         </div>
     );
