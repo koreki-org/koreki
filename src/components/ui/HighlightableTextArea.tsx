@@ -13,6 +13,9 @@ export const HighlightableTextArea: React.FC<HighlightableTextAreaProps> = ({ va
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const highlightRef = useRef<HTMLDivElement>(null);
 
+    // Bleibt, obwohl der Kasten jetzt mitwaechst und normalerweise nicht scrollt:
+    // Wird er von aussen doch einmal in der Hoehe begrenzt, laufen Text und
+    // Markierungen sonst auseinander.
     const handleScroll = () => {
         if (textareaRef.current && highlightRef.current) {
             highlightRef.current.scrollTop = textareaRef.current.scrollTop;
@@ -41,10 +44,23 @@ export const HighlightableTextArea: React.FC<HighlightableTextAreaProps> = ({ va
     };
 
     return (
-        <div className={cn("relative overflow-hidden flex flex-col", className)}>
+        /*
+         * Der unsichtbare Zwilling liegt IM FLUSS und gibt die Hoehe vor, das
+         * Eingabefeld legt sich darueber.
+         *
+         * Umgekehrt war es bis zum 08.09.2026: Der Zwilling lag absolut, also
+         * bestimmte nichts die Hoehe, und der Kasten blieb auf seinem `min-h`
+         * stehen. Gemessen sprang ein langer Text beim Klick auf den Stift von
+         * 205px auf 142px zusammen und musste dann gescrollt werden.
+         *
+         * Das ist gefahrlos, weil beide per Konstruktion dieselben Schriftmasse
+         * haben — genau dafuer gibt es den Zwilling. Wer hier etwas an Schrift,
+         * Zeilenhoehe oder Innenabstand aendert, aendert es an BEIDEN.
+         */
+        <div className={cn("relative", className)}>
             <div
                 ref={highlightRef}
-                className="absolute inset-0 p-4 text-sm whitespace-pre-wrap break-words pointer-events-none text-transparent overflow-hidden leading-relaxed border-0"
+                className="p-4 text-sm whitespace-pre-wrap break-words pointer-events-none text-transparent leading-relaxed border-0"
                 style={{
                     fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                     lineHeight: '1.625',
@@ -72,7 +88,7 @@ export const HighlightableTextArea: React.FC<HighlightableTextAreaProps> = ({ va
                     textRendering: 'optimizeLegibility',
                     WebkitFontSmoothing: 'antialiased'
                 }}
-                className="w-full flex-1 p-4 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm focus:outline-none transition-all resize-none shadow-inner leading-relaxed relative z-10"
+                className="absolute inset-0 w-full h-full p-4 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm focus:outline-none transition-all resize-none overflow-hidden leading-relaxed z-10"
             />
         </div>
     );
