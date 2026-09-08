@@ -36,11 +36,11 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
     const { isDragging, dragProps } = useFileDropZone(importMemoryFile);
 
     return (
-                        <div className="flex-1 flex flex-col md:flex-row gap-6 overflow-hidden">
+                        <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
                             
                             {/* Left Column: List of available memories */}
                             <div
-                                className={`w-full md:w-1/3 flex flex-col border-b md:border-b-0 md:border-r border-border pb-6 md:pb-0 md:pr-6 overflow-hidden relative bg-muted transition-all duration-200 ${isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
+                                className={`w-full md:w-1/3 flex flex-col border-b md:border-b-0 md:border-r border-border overflow-hidden relative bg-muted transition-all duration-200 ${isDragging ? 'bg-primary/5 ring-2 ring-inset ring-primary' : ''}`}
                                 {...dragProps}
                             >
                                 {isDragging && (
@@ -214,7 +214,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                             </div>
 
                              {/* Right Column: Wizard Calibration Trigger OR Active Experience Chest Editor */}
-                             <div className="flex-1 flex flex-col gap-4 min-h-0 pr-1">
+                             <div className="flex-1 flex flex-col gap-4 min-h-0 px-4 sm:px-8 py-4 sm:py-6">
                                  {activeMemoryId ? (
                                      <GradingMemoryEditorView 
                                          state={state} 

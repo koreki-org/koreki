@@ -132,10 +132,10 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                 </div>
 
                 {/* Main Content Areas */}
-                <div className="flex-1 flex flex-col min-h-0 overflow-hidden px-4 sm:px-8 py-4 sm:py-6">
+                <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
                     
                     {error && (
-                        <div className="mb-4 p-3.5 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-xs md:text-sm flex items-center gap-2.5 shrink-0 animate-pulse">
+                        <div className="mx-4 sm:mx-8 mt-4 sm:mt-6 mb-4 p-3.5 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-xs md:text-sm flex items-center gap-2.5 shrink-0 animate-pulse">
                             <AlertCircle size={18} className="shrink-0" />
                             <span>{error}</span>
                         </div>
@@ -153,7 +153,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
 
                     {/* STEP 2: GENERATING ANIMATION */}
                     {step === 'generating' && (
-                        <div className="flex-1 flex flex-col items-center justify-center py-12 text-center animate-pulse">
+                        <div className="px-4 sm:px-8 py-4 sm:py-6 flex-1 flex flex-col items-center justify-center py-12 text-center animate-pulse">
                             <div className="relative mb-6">
                                 <div className="w-16 h-16 rounded-full border-4 border-primary border-t-indigo-600 animate-spin" />
                                 <Bot size={28} className="absolute inset-0 m-auto text-primary animate-bounce" />
@@ -167,15 +167,17 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
 
                     {/* STEP 3: ACTIVE CALIBRATION (REDESIGNED EXTRA-LARGE COCKPIT) */}
                     {step === 'calibrate' && syntheticAnswers.length > 0 && (
-                        <GradingMemoryCalibrateScreen 
-                            state={state} 
-                            tasksLayout={tasksLayout} 
-                        />
+                        <div className="px-4 sm:px-8 py-4 sm:py-6 flex-1 flex flex-col min-h-0 overflow-hidden">
+                            <GradingMemoryCalibrateScreen 
+                                state={state} 
+                                tasksLayout={tasksLayout} 
+                            />
+                        </div>
                     )}
 
                     {/* STEP 4: SUCCESS / SAVED */}
                     {step === 'saved' && (
-                        <div className="flex-1 flex flex-col items-center justify-center py-10 text-center">
+                        <div className="px-4 sm:px-8 py-4 sm:py-6 flex-1 flex flex-col items-center justify-center py-10 text-center">
                             <div className="w-14 h-14 bg-success/10 text-success border border-success/20 rounded-full flex items-center justify-center mb-5 shadow-lg shadow-success/20 animate-bounce">
                                 <ShieldCheck size={32} />
                             </div>
