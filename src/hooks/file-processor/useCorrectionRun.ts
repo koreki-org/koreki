@@ -101,8 +101,6 @@ export function useCorrectionRun({
                 console.error('Erfahrungsschatz konnte nicht gelesen werden — die Korrektur läuft ohne ihn.', e);
             }
 
-            console.log(`[Pipeline] Launching AI correction for index ${i}. Active memory cases sent:`, gradingMemoryCases?.length || 0);
-
             if (signal?.aborted) return;
 
             const data = await performAIRequest('correction', {
