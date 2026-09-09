@@ -60,7 +60,16 @@ const getGlobalSettingsPath = () => {
 };
 
 export const GlobalSettingsService = {
-    async getSettings() {
+    /**
+     * Was der Administrator im Einstellungs-Modal gespeichert hat — und solange
+     * dort nichts steht, die Vorgaben aus der Umgebung.
+     *
+     * SYNCHRON, weil der Rumpf es immer war (`readFileSync`). Gebraucht wird das
+     * von `sanitizeClientAiSettings`, das in zehn API-Routen synchron aufgerufen
+     * wird; eine nur-async Fassung haette dort zehn Signaturaenderungen erzwungen,
+     * ohne dass irgendwo tatsaechlich gewartet wird.
+     */
+    getSettingsSync(): GlobalAiSettings {
         try {
             const stored = readJsonObject<GlobalAiSettings>(getGlobalSettingsPath());
             if (stored) return stored;
@@ -69,7 +78,7 @@ export const GlobalSettingsService = {
         }
 
         // Environment Fallbacks if no admin settings file exists yet
-        const envDefaults: Record<string, any> = {
+        const envDefaults: GlobalAiSettings = {
             provider: process.env.DEFAULT_AI_PROVIDER || process.env.DEFAULT_PROVIDER || 'mistral',
             ollamaUrl: process.env.OLLAMA_BASE_URL || process.env.OLLAMA_URL || undefined,
             ollamaModel: process.env.OLLAMA_MODEL || undefined,
@@ -77,11 +86,15 @@ export const GlobalSettingsService = {
             openaiModel: process.env.OPENAI_API_MODEL || process.env.OPENAI_MODEL || undefined,
         };
 
-        Object.keys(envDefaults).forEach(key => {
+        (Object.keys(envDefaults) as (keyof GlobalAiSettings)[]).forEach(key => {
             if (envDefaults[key] === undefined) delete envDefaults[key];
         });
 
         return envDefaults;
+    },
+
+    async getSettings(): Promise<GlobalAiSettings> {
+        return GlobalSettingsService.getSettingsSync();
     },
 
     async updateSettings(data: GlobalAiSettings) {

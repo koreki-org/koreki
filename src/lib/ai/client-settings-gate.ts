@@ -1,5 +1,6 @@
 import { isKeycloakAuth, isLocalInstance } from '../env-context';
 import { logger } from '../logger';
+import { GlobalSettingsService } from '../services/global-settings-service';
 
 /**
  * Anbieter-ADRESSEN, die ausschliesslich lokale Instanzen (Desktop / Community)
@@ -53,15 +54,47 @@ export function sanitizeClientAiSettings<T>(settings: T, endpoint?: string): T {
 
     const source = settings as Record<string, unknown>;
     const stripped = LOCAL_ONLY_CONNECTION_FIELDS.filter(field => source[field] !== undefined);
-    if (stripped.length === 0) return settings;
 
     const sanitized: Record<string, unknown> = { ...source };
     stripped.forEach(field => delete sanitized[field]);
 
-    logger.security('Client-gelieferte Anbieter-Verbindungsdaten im SaaS verworfen', {
-        endpoint: endpoint || 'unbekannt',
-        fields: stripped.join(', ')
-    });
+    if (stripped.length > 0) {
+        logger.security('Client-gelieferte Anbieter-Verbindungsdaten verworfen', {
+            endpoint: endpoint || 'unbekannt',
+            fields: stripped.join(', ')
+        });
+    }
 
-    return sanitized as T;
+    return applyAdminProviderEndpoint(sanitized) as T;
+}
+
+/**
+ * Setzt die Adresse wieder ein, die der Administrator im Einstellungs-Modal
+ * hinterlegt hat.
+ *
+ * WARUM DAS HIER STEHT (09.09.2026): Entfernen allein reicht nicht. Der Server
+ * hat die Admin-Einstellungen nie selbst gelesen — sie gingen ueber `/api/user`
+ * an den Browser und kamen mit jeder Anfrage zurueck. Der Filter oben kappte
+ * genau diesen Rueckweg, und danach stand der Server ohne Adresse da: Jede
+ * Korrektur einer Schulinstanz mit Ollama endete im 500, obwohl Ollama
+ * erreichbar war und im Modal korrekt eingetragen stand.
+ *
+ * Die Regel bleibt unveraendert — der CLIENT darf die Adresse nicht bestimmen.
+ * Aber der ADMINISTRATOR darf es, und zwar dort, wo er es ohnehin tut. Sein Wert
+ * kommt jetzt aus der Datei statt aus dem Umweg ueber den Browser.
+ *
+ * Nur in lokalen Instanzen: Im SaaS ist das Modal gar nicht erreichbar
+ * (`global-ai-settings.ts` antwortet dort mit 403), dort bleibt die Server-Env
+ * die einzige Quelle — aufgeloest weiter hinten in `provider-connection.ts`.
+ */
+function applyAdminProviderEndpoint(settings: Record<string, unknown>): Record<string, unknown> {
+    if (!isLocalInstance()) return settings;
+
+    const admin = GlobalSettingsService.getSettingsSync();
+    const withAdminEndpoint = { ...settings };
+
+    if (admin.openaiUrl) withAdminEndpoint.openaiUrl = admin.openaiUrl;
+    if (admin.ollamaUrl) withAdminEndpoint.ollamaUrl = admin.ollamaUrl;
+
+    return withAdminEndpoint;
 }

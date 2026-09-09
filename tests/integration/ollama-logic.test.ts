@@ -43,18 +43,46 @@ describe('Ollama Provider - Layer 2 Integration Tests', () => {
         }));
     });
 
-    it('should throw an error if no model is provided', async () => {
-        const emptySettings = { ollamaUrl: 'http://localhost:11434' };
-        const payload = { promptText: 'Fallback Test', action: 'correction' };
-        await expect(executeOllamaRequest('correction', payload as any, emptySettings as any))
-            .rejects.toThrow('Ollama-Verbindung fehlgeschlagen: Kein Ollama-Modell in den Einstellungen ausgewählt.');
-    });
+    /**
+     * Seit 09.09.2026 loest `requireOllamaConnection` Adresse und Modell auf —
+     * inklusive Env-Rueckfall auf dem Server. Die Meldung ist deshalb nicht mehr
+     * an "in den Einstellungen" gebunden, und der Fehler ist ein AIConfigError
+     * (→ 503) statt eines nackten Errors (→ 500, ununterscheidbar vom Absturz).
+     *
+     * Die Env wird hier bewusst geleert: Sonst haenge das Ergebnis davon ab, ob
+     * auf der Maschine des Entwicklers zufaellig OLLAMA_BASE_URL gesetzt ist.
+     */
+    describe('fehlende Konfiguration', () => {
+        const ENV_KEYS = ['OLLAMA_BASE_URL', 'OLLAMA_URL', 'OLLAMA_MODEL'] as const;
+        const gesichert: Record<string, string | undefined> = {};
 
-    it('should throw an error if no url is provided', async () => {
-        const emptySettings = { ollamaModel: 'gemma4:latest' };
-        const payload = { promptText: 'Fallback Test', action: 'correction' };
-        await expect(executeOllamaRequest('correction', payload as any, emptySettings as any))
-            .rejects.toThrow('Ollama-Verbindung fehlgeschlagen: Keine Ollama-URL in den Einstellungen konfiguriert.');
+        beforeEach(() => {
+            ENV_KEYS.forEach(key => {
+                gesichert[key] = process.env[key];
+                delete process.env[key];
+            });
+        });
+
+        afterEach(() => {
+            ENV_KEYS.forEach(key => {
+                if (gesichert[key] === undefined) delete process.env[key];
+                else process.env[key] = gesichert[key];
+            });
+        });
+
+        it('should throw an error if no model is provided', async () => {
+            const emptySettings = { ollamaUrl: 'http://localhost:11434' };
+            const payload = { promptText: 'Fallback Test', action: 'correction' };
+            await expect(executeOllamaRequest('correction', payload as any, emptySettings as any))
+                .rejects.toThrow(/Kein Ollama-Modell konfiguriert/);
+        });
+
+        it('should throw an error if no url is provided', async () => {
+            const emptySettings = { ollamaModel: 'gemma4:latest' };
+            const payload = { promptText: 'Fallback Test', action: 'correction' };
+            await expect(executeOllamaRequest('correction', payload as any, emptySettings as any))
+                .rejects.toThrow(/Keine Ollama-URL konfiguriert/);
+        });
     });
 
     it('should respect custom maxTokens for standard actions', async () => {

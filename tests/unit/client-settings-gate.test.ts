@@ -7,7 +7,14 @@ jest.mock('../../src/lib/env-context', () => ({
 }));
 
 jest.mock('../../src/lib/logger', () => ({
-    logger: { security: jest.fn() }
+    logger: { security: jest.fn(), error: jest.fn() }
+}));
+
+const mockAdminSettings = { getSettingsSync: jest.fn() };
+jest.mock('../../src/lib/services/global-settings-service', () => ({
+    GlobalSettingsService: {
+        getSettingsSync: (...args: unknown[]) => mockAdminSettings.getSettingsSync(...args)
+    }
 }));
 
 const mockIsLocalInstance = isLocalInstance as jest.Mock;
@@ -28,7 +35,11 @@ describe('sanitizeClientAiSettings', () => {
         openaiModel: 'Qwen3.6-35B-A3B-FP8'
     };
 
-    beforeEach(() => jest.clearAllMocks());
+    beforeEach(() => {
+        jest.clearAllMocks();
+        // Standardfall: Der Administrator hat nichts hinterlegt.
+        mockAdminSettings.getSettingsSync.mockReturnValue({});
+    });
 
     describe('SaaS (nicht lokal)', () => {
         beforeEach(() => {
@@ -75,6 +86,36 @@ describe('sanitizeClientAiSettings', () => {
 
             expect(result.openaiUrl).toBeUndefined();
             expect(result.ollamaUrl).toBeUndefined();
+        });
+
+        /**
+         * Entfernen allein reichte nicht (09.09.2026). Der Server hat die
+         * Admin-Einstellungen nie selbst gelesen — sie kamen ueber den Browser
+         * zurueck, und genau diesen Rueckweg kappt der Filter. Danach stand der
+         * Server ohne Adresse da und jede Korrektur endete im 500.
+         */
+        it('setzt die Adresse ein, die der Administrator im Modal hinterlegt hat', () => {
+            mockAdminSettings.getSettingsSync.mockReturnValue({
+                ollamaUrl: 'http://host.docker.internal:11434',
+                openaiUrl: 'https://sso-intern.example/v1'
+            });
+
+            const result = sanitizeClientAiSettings(clientSettings) as Record<string, unknown>;
+
+            expect(result.ollamaUrl).toBe('http://host.docker.internal:11434');
+            expect(result.openaiUrl).toBe('https://sso-intern.example/v1');
+        });
+
+        it('nimmt dabei die Adresse des Administrators, nie die des Clients', () => {
+            mockAdminSettings.getSettingsSync.mockReturnValue({
+                ollamaUrl: 'http://host.docker.internal:11434'
+            });
+
+            const result = sanitizeClientAiSettings(clientSettings) as Record<string, unknown>;
+
+            // Der Client hatte 169.254.169.254 geschickt — die Metadaten-Adresse
+            // der Cloud-Instanz, also der klassische SSRF-Versuch.
+            expect(result.ollamaUrl).not.toBe('http://169.254.169.254');
         });
     });
 

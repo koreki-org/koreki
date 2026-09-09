@@ -133,3 +133,78 @@ export function requireOpenAiConnection(
 
     return connection as VerifiedOpenAiConnection;
 }
+
+/** Nur die Felder, die fuer die Ollama-Verbindung zaehlen. */
+export interface OllamaConnectionSettings {
+    ollamaUrl?: string;
+    ollamaModel?: string;
+}
+
+export interface OllamaConnection {
+    baseUrl: string;
+    model: string;
+}
+
+/**
+ * Server-Env — und zwar NUR serverseitig.
+ *
+ * `executeOllamaRequest` laeuft in beiden Welten: serverseitig im STANDARD-Modus
+ * und im Browser im PURE-Pfad (Desktop, eigene Maschine). Dort gibt es diese
+ * Variablen nicht, und es soll sie auch nicht geben — der Nutzer bestimmt seine
+ * eigene Adresse ueber die Einstellungen, die `sanitizeClientAiSettings` bei
+ * lokalen Instanzen unangetastet laesst.
+ *
+ * Die Zugriffe stehen bewusst als Literale da: Next.js ersetzt nur
+ * `process.env.FOO` zur Bauzeit, kein dynamisches `process.env[name]`.
+ */
+function serverOllamaEnv(): { baseUrl?: string; model?: string } {
+    if (typeof window !== 'undefined') return {};
+
+    return {
+        baseUrl: process.env.OLLAMA_BASE_URL || process.env.OLLAMA_URL,
+        model: process.env.OLLAMA_MODEL
+    };
+}
+
+/**
+ * Loest Adresse und Modell fuer Ollama auf — das Gegenstueck zu
+ * `requireOpenAiConnection`, mit demselben Env-Rueckfall.
+ *
+ * DIESE FUNKTION WAR DIE LUECKE (gefunden 09.09.2026). Seit `6dc4609`
+ * (10.08.2026) entfernt `sanitizeClientAiSettings` auch `ollamaUrl` aus den
+ * Client-Einstellungen, sobald Instanz und Nutzer nicht dieselbe Partei sind —
+ * also im SaaS UND in Community Multi-User. Fuer `openaiUrl` fing die Kette oben
+ * das ab; fuer Ollama gab es kein Gegenstueck. `executeOllamaRequest` pruefte
+ * stattdessen selbst auf `settings.ollamaUrl` und warf einen nackten `Error`.
+ *
+ * Praktische Folge auf einer Schulinstanz mit Ollama: Die Adresse reiste ueber
+ * `/api/user` zum Browser, kam mit jeder Anfrage zurueck — und wurde unterwegs
+ * geloescht. Jede Korrektur endete in einem 500, ununterscheidbar von einem
+ * Absturz, obwohl Ollama die ganze Zeit erreichbar war.
+ *
+ * Der Fehler ist deshalb ein `AIConfigError` (→ 503, "Instanz ohne
+ * konfigurierten KI-Zugang") und keine nackte Ausnahme.
+ */
+export function requireOllamaConnection(
+    settings?: OllamaConnectionSettings | null
+): OllamaConnection {
+    const env = serverOllamaEnv();
+
+    const baseUrl = settings?.ollamaUrl || env.baseUrl;
+    if (!baseUrl) {
+        throw new AIConfigError(
+            'Ollama-Verbindung fehlgeschlagen: Keine Ollama-URL konfiguriert. ' +
+            'Auf dem Server wird OLLAMA_BASE_URL erwartet.'
+        );
+    }
+
+    const model = settings?.ollamaModel || env.model;
+    if (!model) {
+        throw new AIConfigError(
+            'Ollama-Verbindung fehlgeschlagen: Kein Ollama-Modell konfiguriert. ' +
+            'Auf dem Server wird OLLAMA_MODEL erwartet.'
+        );
+    }
+
+    return { baseUrl, model };
+}

@@ -122,7 +122,6 @@ const ANY_BASELINE: Record<string, number> = {
     'lib/excel/parser.ts': 1,
     'lib/grading-memory-utils.ts': 1,
     'lib/grading/calc-trace-extraction.ts': 1,
-    'lib/services/global-settings-service.ts': 1,
     'lib/services/skill-profile-service.ts': 1,
     'lib/skills/skill-selection.ts': 1,
 };

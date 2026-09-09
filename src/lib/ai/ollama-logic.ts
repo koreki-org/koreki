@@ -6,6 +6,7 @@ import { VALIDATE_GRAPH_TOOL } from '../grading/graph-generator';
 import { AppSettings } from '../../types';
 import { isDesktopTarget, hasTauriRuntime } from '@/lib/env-context';
 import { AIProviderError } from './provider-error';
+import { requireOllamaConnection } from './provider-connection';
 import { parseLlmJson, LlmJsonParseError } from './llm-json';
 import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
 import { berechneSamplingParameter } from './ollama-sampling';
@@ -71,14 +72,12 @@ export async function executeOllamaRequest(
 // zwaenge jeden Aufrufer in eine Fallunterscheidung, die er nicht braucht —
 // er weiss, welche Aktion er geschickt hat.
 ): Promise<any> {
-    if (!settings || !settings.ollamaUrl) {
-        throw new Error('Ollama-Verbindung fehlgeschlagen: Keine Ollama-URL in den Einstellungen konfiguriert.');
-    }
-    if (!settings.ollamaModel) {
-        throw new Error('Ollama-Verbindung fehlgeschlagen: Kein Ollama-Modell in den Einstellungen ausgewählt.');
-    }
-    const baseUrl = normalizeOllamaUrl(settings.ollamaUrl);
-    let model = settings.ollamaModel.trim();
+    // Adresse und Modell werden zentral aufgeloest — inklusive Env-Rueckfall auf
+    // dem Server, wo `sanitizeClientAiSettings` die client-gelieferte Adresse
+    // entfernt hat. Siehe requireOllamaConnection.
+    const connection = requireOllamaConnection(settings);
+    const baseUrl = normalizeOllamaUrl(connection.baseUrl);
+    let model = connection.model.trim();
 
     // Dynamically resolve model name against available local models
     try {
