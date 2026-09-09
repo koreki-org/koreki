@@ -260,7 +260,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                         onClick={() => setActiveGroupName(name)}
                                         className={cn(
                                             "rounded-xl px-4 py-2 h-9 text-xs font-bold transition-all shrink-0 border border-transparent gap-2",
-                                            activeGroupName === name ? "bg-primary text-primary-foreground shadow-md" : "bg-background text-muted-foreground hover:bg-muted border-border"
+                                            activeGroupName === name ? "bg-primary text-primary-foreground shadow-md" : "bg-background text-muted-foreground hover:bg-foreground/5 border-border"
                                         )}
                                     >
                                         {name}

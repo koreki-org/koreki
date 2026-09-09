@@ -254,7 +254,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                     className={`h-9 gap-2 text-xs font-bold transition-all rounded-xl shadow-sm whitespace-nowrap shrink-0 ${
                         isAnalyticsOpen 
                             ? 'bg-primary text-primary-foreground border-primary hover:bg-primary/90' 
-                            : 'bg-background text-muted-foreground hover:text-foreground border-border hover:bg-muted/50'
+                            : 'bg-background text-muted-foreground hover:text-foreground border-border hover:bg-foreground/5'
                     }`}
                 >
                     <BarChart3 size={16} /> Detaillierte Analyse

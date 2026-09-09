@@ -70,7 +70,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                                     }}
                                     className={cn(
                                         "rounded-xl px-4 py-2 h-auto text-xs font-bold transition-all shrink-0 border border-transparent gap-2 font-outfit",
-                                        activeGroupName === name ? "bg-primary text-white shadow-md scale-105" : "bg-background text-muted-foreground hover:bg-muted border-border"
+                                        activeGroupName === name ? "bg-primary text-white shadow-md scale-105" : "bg-background text-muted-foreground hover:bg-foreground/5 border-border"
                                     )}
                                 >
                                     {name}

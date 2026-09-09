@@ -153,7 +153,7 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, onSelect, upgradin
                                     "w-full h-11 rounded-md font-bold transition-all duration-300",
                                     plan.isMain
                                         ? "bg-primary hover:bg-primary/95 text-primary-foreground shadow-lg shadow-primary/20"
-                                        : "bg-background border border-border text-muted-foreground hover:bg-muted/30 hover:border-primary/40 hover:text-primary"
+                                        : "bg-background border border-border text-muted-foreground hover:bg-foreground/5 hover:border-primary/40 hover:text-primary"
                                 )}
                             >
                                 {isTrial ? 'Gesperrt' : (plan.isMain ? 'Jetzt kaufen' : 'Auswählen')}

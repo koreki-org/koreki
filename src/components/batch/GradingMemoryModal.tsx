@@ -187,7 +187,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                             </p>
                             <Button 
                                 onClick={onClose}
-                                className="px-6 py-3 h-11 bg-muted hover:bg-muted text-foreground font-extrabold rounded-xl border border-border text-xs md:text-sm shadow-sm"
+                                className="px-6 py-3 h-11 bg-muted hover:bg-foreground/5 text-foreground font-extrabold rounded-xl border border-border text-xs md:text-sm shadow-sm"
                             >
                                 Schließen & Zurück zur Korrektur
                             </Button>

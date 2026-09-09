@@ -132,9 +132,15 @@ export const BatchTaskAnalysisCell: React.FC<BatchTaskAnalysisCellProps> = ({
                          *
                          * Und alle Elemente hier heben sich in DIESELBE Richtung: Das Feld
                          * wurde beim Drueberfahren dunkler, der Knopf daneben heller — zwei
-                         * Hover-Sprachen in einer Zeile (gemeldet am 09.09.2026). Jetzt gilt
-                         * eine: Auf grauem Grund steigt ein Element auf Weiss; was bereits
-                         * weiss ist (das Auswahlfeld), sagt seinen Zustand ueber den Rand.
+                         * Hover-Sprachen in einer Zeile (gemeldet am 09.09.2026).
+                         *
+                         * Die Knoepfe setzen dafuer NICHTS mehr: `Button` traegt die Sprache
+                         * inzwischen selbst (`hover:bg-foreground/5`, siehe dort). Hier stand
+                         * einen Entwurf lang `hover:bg-card` — ein Aufhellen auf Weiss. Das
+                         * war nur noetig, solange die Variante mit `bg-accent` einen Hover
+                         * hatte, der auf grauem Grund nichts tat; jetzt waere es eine dritte
+                         * Sprache. Das Auswahlfeld ist bereits weiss und sagt seinen Zustand
+                         * ueber den Rand — Flaeche kann es nicht.
                          */
                         <div className="flex flex-wrap items-center gap-2 mt-1 animate-in fade-in duration-200">
                             <GraduationCap size={13} className="text-primary shrink-0" />
@@ -174,7 +180,7 @@ export const BatchTaskAnalysisCell: React.FC<BatchTaskAnalysisCellProps> = ({
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => setSavingTaskId(null)}
-                                className="shrink-0 h-8 text-xs font-bold text-muted-foreground hover:text-foreground hover:bg-card"
+                                className="shrink-0 h-8 text-xs font-bold text-muted-foreground hover:text-foreground"
                                 disabled={isPending}
                             >
                                 Abbrechen
@@ -216,7 +222,7 @@ export const BatchTaskAnalysisCell: React.FC<BatchTaskAnalysisCellProps> = ({
                                     });
                                     setShowSecondOpinionDrawer(true);
                                 }}
-                                className="h-8 text-xs font-bold text-primary hover:text-primary hover:bg-card flex items-center gap-1.5"
+                                className="h-8 text-xs font-bold text-primary hover:text-primary flex items-center gap-1.5"
                             >
                                 <Sparkles size={13} className="text-primary group-hover/btn:scale-110 transition-all animate-pulse" />
                                 KI-Zweitmeinung
@@ -228,7 +234,7 @@ export const BatchTaskAnalysisCell: React.FC<BatchTaskAnalysisCellProps> = ({
                                     setSavingTaskId(taskName);
                                     if (activeMemoryId) setTargetMemoryId(activeMemoryId);
                                 }}
-                                className="h-8 text-xs font-bold text-primary hover:text-primary hover:bg-card flex items-center gap-1.5"
+                                className="h-8 text-xs font-bold text-primary hover:text-primary flex items-center gap-1.5"
                             >
                                 <GraduationCap size={13} className="text-primary group-hover/btn:scale-110 transition-transform" />
                                 In Erfahrungsschatz übernehmen

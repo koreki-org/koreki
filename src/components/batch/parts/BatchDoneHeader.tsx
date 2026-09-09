@@ -65,7 +65,7 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
                                 onToggleScan(idx);
                             }}
                             className={cn("h-8 px-4 text-xs font-bold gap-2 transition-all rounded-lg shrink-0 shadow-sm", 
-                                showScan ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90" : "bg-background text-foreground border-border hover:bg-muted")}
+                                showScan ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90" : "bg-background text-foreground border-border hover:bg-foreground/5")}
                         >
                             <ImageIcon size={14} /> {showScan ? "Scan aus" : "Scan ein"}
                         </Button>
@@ -86,7 +86,7 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
                             }}
                             className={cn(
                                 "rounded-xl px-4 py-2 h-9 text-xs font-bold transition-all shrink-0 border border-transparent gap-2",
-                                activeGroupName === name ? "bg-primary text-primary-foreground shadow-md" : "bg-background text-muted-foreground hover:bg-muted border-border"
+                                activeGroupName === name ? "bg-primary text-primary-foreground shadow-md" : "bg-background text-muted-foreground hover:bg-foreground/5 border-border"
                             )}
                         >
                             {name}

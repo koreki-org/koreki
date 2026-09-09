@@ -81,7 +81,7 @@ export const TabsTrigger: React.FC<{
                 // ZUSTÄNDE (Exakt nach deinem Bild-Vorbild):
                 isActive 
                     ? 'bg-primary text-primary-foreground shadow-md scale-105 z-10' // Der aktive Look (Design System Token: bg-primary)
-                    : 'bg-background text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-transparent shadow-sm', // Der inaktive Look (Weiß, graue Schrift)
+                    : 'bg-background text-muted-foreground hover:text-foreground hover:bg-foreground/5 border border-transparent shadow-sm', // Der inaktive Look (Weiß, graue Schrift)
                 className
             )}
         >

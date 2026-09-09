@@ -2,6 +2,21 @@ import React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
+/*
+ * Die Hover-Flaechen von `ghost` und `outline` sind eine durchsichtige DUNKLE
+ * Lasur, keine feste Graustufe.
+ *
+ * Bis zum 09.09.2026 stand hier `hover:bg-accent` — 220 14% 96%. Das liegt genau
+ * einen Prozentpunkt ueber dem Seitengrund (`bg-background`, 220 20% 95%): Auf
+ * einer weissen Karte war der Hover sichtbar, auf dem Seitengrund unsichtbar. Bei
+ * `outline` war es noch eindeutiger, denn die Variante setzt sich SELBST auf
+ * `bg-background` — sie hoverte von 95% auf 96%, an 88 Aufrufstellen.
+ *
+ * Eine feste Graustufe kann das nicht loesen: Sie muesste sich zugleich von Weiss
+ * und von Grau absetzen. Eine Lasur schon — `foreground/5` dunkelt ab, was
+ * darunter liegt, und ergibt auf beiden Gruenden rund fuenf Punkte Abstand
+ * (Weiss 100% -> 95,2%; Grund 95% -> 90,5%).
+ */
 const buttonVariants = cva(
     'inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background active:scale-95',
     {
@@ -9,9 +24,9 @@ const buttonVariants = cva(
             variant: {
                 default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg',
                 destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-                outline: 'border border-input bg-background hover:bg-accent hover:text-accent-foreground',
+                outline: 'border border-input bg-background hover:bg-foreground/5 hover:text-accent-foreground',
                 secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-                ghost: 'hover:bg-accent hover:text-accent-foreground',
+                ghost: 'hover:bg-foreground/5 hover:text-accent-foreground',
                 link: 'underline-offset-4 hover:underline text-primary',
                 chip: 'bg-primary/5 text-primary border border-primary/10 hover:bg-primary hover:text-primary-foreground font-bold uppercase tracking-wider',
             },

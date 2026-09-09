@@ -328,7 +328,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                 </span>
                             </div>
 
-                            <div className="flex items-center gap-2 bg-muted border border-border p-2.5 rounded-xl hover:bg-muted/70 transition-all cursor-pointer" onClick={() => {
+                            <div className="flex items-center gap-2 bg-muted border border-border p-2.5 rounded-xl hover:bg-foreground/5 transition-all cursor-pointer" onClick={() => {
                                 if (ollamaNumCtx === 0) {
                                     setOllamaNumCtx(16384);
                                 } else {

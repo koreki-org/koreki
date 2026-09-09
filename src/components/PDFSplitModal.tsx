@@ -241,7 +241,7 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
 
                     <Button
                         variant="ghost"
-                        className="w-full h-auto bg-muted/20 border-2 border-dashed border-border text-muted-foreground p-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-muted/40 hover:border-border hover:text-foreground transition-all mb-6"
+                        className="w-full h-auto bg-muted/20 border-2 border-dashed border-border text-muted-foreground p-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-foreground/5 hover:border-border hover:text-foreground transition-all mb-6"
                         onClick={addStudent}
                     >
                         <Plus size={18} /> Schüler hinzufügen
