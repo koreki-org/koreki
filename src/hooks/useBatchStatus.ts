@@ -3,6 +3,7 @@ import { BatchFile, Task, AppSettings } from '../types';
 import { groupTasksByMain } from '../lib/task-utils';
 import { useBatchState } from './file-processor/useBatchState';
 import { isLocalInstance } from '../lib/env-context';
+import { apiClient } from '@/lib/api-client';
 
 /**
  * Industrial Batch Status Hook (Stage 11)
@@ -116,7 +117,7 @@ export const useBatchStatus = (
         // --- INDUSTRIAL BYPASS: No central logging for local instances ---
         if (!isLocalInstance() && showConfirm !== 'reset') {
             try {
-                await fetch('/api/privacy/log', {
+                await apiClient.fetch('/api/privacy/log', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action, confirmedText: CONFIRM_TEXT })

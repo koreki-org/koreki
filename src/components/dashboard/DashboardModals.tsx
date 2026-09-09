@@ -7,7 +7,6 @@ import PromptSettingsModal from '../PromptSettingsModal';
 import SkillsSettingsModal from '../SkillsSettingsModal';
 import CreditsModal from '../CreditsModal';
 import { useDashboardStore } from '../../hooks/store/useDashboardStore';
-
 import PDFSplitModal from '../PDFSplitModal';
 import RedactionModal from '../RedactionModal';
 import PDFTypeModal from '../PDFTypeModal';
@@ -21,6 +20,7 @@ import { AiParamsModal } from '../AiParamsModal';
 import { AppSettings, Task, BatchFile, User, PromptProfile, AktiveAuswahl } from '../../types';
 import { isLocalInstance } from '../../lib/env-context';
 import { useRedactionBroadcast, isBroadcastTarget } from '../../hooks/useRedactionBroadcast';
+import { apiClient } from '../../lib/api-client';
 
 /**
  * Der Nutzer, wie ihn der Abfrage-Zwischenspeicher haelt.
@@ -204,7 +204,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
  
                         // Hybrid Sync (Arch §2): SaaS → DB
                         if (!isLocalInstance()) {
-                            await fetch('/api/user/update-profile', {
+                            await apiClient.fetch('/api/user/update-profile', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ profileId: targetProfileId })
@@ -258,7 +258,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
 
                         // Hybrid Sync (Arch §2): SaaS → DB
                         if (!isLocalInstance()) {
-                            await fetch('/api/user/update-skill-profile', {
+                            await apiClient.fetch('/api/user/update-skill-profile', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ profileId: targetProfileId })
@@ -417,7 +417,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
 
                         // Hybrid Sync (Arch §2): SaaS → DB persist for AI profile selection
                         if (!isLocalInstance()) {
-                            fetch('/api/user/update-ai-profile', {
+                            apiClient.fetch('/api/user/update-ai-profile', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({ profileId: targetAiProfileId })

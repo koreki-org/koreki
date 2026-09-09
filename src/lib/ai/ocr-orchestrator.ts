@@ -5,6 +5,7 @@ import { promisePool } from './promise-pool';
 import { AppSettings } from '../../types';
 import { istAbrechenbar } from './billing-gate';
 import { logger } from '../logger';
+import { apiClient } from '../api-client';
 import { DEFAULT_OPENAI_COMPATIBLE_MODEL } from './provider-connection';
 
 /**
@@ -96,7 +97,7 @@ export async function performOCRRequest(
         // lokales Modell betrieb, zahlte fuer OCR-Seiten, aber nicht fuer
         // Korrekturen (18.08.2026).
         if (istAbrechenbar(settings)) {
-            await fetch('/api/billing/pure-deduct', {
+            await apiClient.fetch('/api/billing/pure-deduct', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -109,7 +110,7 @@ export async function performOCRRequest(
 
         return fullText;
     } else {
-        const res = await fetch('/api/extract-image', {
+        const res = await apiClient.fetch('/api/extract-image', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { logger } from '../lib/logger';
+import { apiClient } from '@/lib/api-client';
 
 /**
  * Industrial Legal Vault Hook (Stage 12 - Simplified) ⚖️🛡️
@@ -21,7 +22,7 @@ export const useLegalVault = (
 
         try {
             // Industrial API Call: Multi-tenant aware 🏗️
-            const res = await fetch('/api/user/consent-avv', {
+            const res = await apiClient.fetch('/api/user/consent-avv', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
