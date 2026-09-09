@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as pdfjs from 'pdfjs-dist';
 import { toPixelRects, toRelativeRects, RedactionRect as Rect, RedactionScope } from '../lib/privacy-utils';
+import { SEITEN_RENDER_FAKTOR } from '../lib/file-utils';
 
 // Configure worker to use local file
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
@@ -91,7 +92,7 @@ export const useRedactionEngine = (
 
                     for (let p = start; p <= end; p++) {
                         const page = await pdf.getPage(p);
-                        const viewport = page.getViewport({ scale: 2.0 });
+                        const viewport = page.getViewport({ scale: SEITEN_RENDER_FAKTOR });
                         const tempCanvas = document.createElement('canvas');
                         tempCanvas.width = viewport.width;
                         tempCanvas.height = viewport.height;
@@ -242,8 +243,8 @@ export const useRedactionEngine = (
      * dass irgendwo etwas fehlte, das jemandem aufgefallen waere.
      *
      * Selten, aber nicht theoretisch: `getContext('2d')` scheitert unter
-     * Speicherdruck, und mehrseitige Scans werden hier mit Faktor 2.0
-     * gerendert.
+     * Speicherdruck, und mehrseitige Scans belegen als Bitmaps ein Vielfaches
+     * ihrer Dateigröße.
      *
      * Ein Teil-Abzug ist die schlechteste aller Antworten — er sieht aus wie
      * ein ganzer. Deshalb: entweder alle Seiten oder ein Fehler.

@@ -38,11 +38,15 @@ export type RedactionRectMap = Record<number, RedactionRect[]>;
  * 🏮 Rechtecke werden RELATIV zur Seitengröße gespeichert (Anteile von 0..1).
  *
  * Grund: Dieselbe Schwärzung trifft auf unterschiedlich gerenderte Fassungen
- * derselben Seite. Das Schwärzungs-Modal rendert PDFs mit Faktor 2.0
- * (`useRedactionEngine`), die Vorschaubilder der Pipeline mit 2.5
- * (`renderSinglePage`) — und beim Übertragen auf andere Schülerarbeiten kommen
- * beliebige Scan-Auflösungen dazu. In Pixeln gespeicherte Balken säßen dort
- * verschoben und rund 20 % zu klein, würden also PII freilegen statt zu decken.
+ * derselben Seite. Beim Übertragen auf andere Schülerarbeiten kommen beliebige
+ * Scan-Auflösungen dazu, und Foto-Uploads (JPG/PNG) behalten ohnehin die
+ * Kantenlängen der Kamera. In Pixeln gespeicherte Balken säßen dort verschoben
+ * und zu klein, würden also PII freilegen statt zu decken.
+ *
+ * Seit dem 09.09.2026 rendern Modal und Pipeline PDFs mit demselben Faktor
+ * (`SEITEN_RENDER_FAKTOR`) — vorher 2.0 gegen 2.5, was Balken rund 20 % zu klein
+ * gemacht hätte. Dass die Faktoren jetzt gleich sind, ändert nichts an dieser
+ * Regel: Sie schützt gegen fremde Auflösungen, nicht gegen die eigene.
  */
 function isRelativeRect(r: RedactionRect): boolean {
     // Sicheres Unterscheidungsmerkmal: Der Zeichen-Handler verwirft Rechtecke
@@ -251,8 +255,8 @@ export async function applyRedactionsToPreviews(
         // ohne Schwaerzung gehen weiter unveraendert durch (oben abgehandelt).
         //
         // Selten, aber nicht theoretisch: `getContext('2d')` scheitert unter
-        // Speicherdruck, und mehrseitige Scans werden mit Faktor 2.0 bis 2.5
-        // gerendert.
+        // Speicherdruck, und mehrseitige Scans belegen als Bitmaps ein
+        // Vielfaches ihrer Dateigröße.
         if (!ctx) {
             throw new RedactionMissingError(
                 `Seite ${i + 1} konnte nicht geschwärzt werden (keine Zeichenfläche verfügbar)`
@@ -262,7 +266,8 @@ export async function applyRedactionsToPreviews(
         ctx.drawImage(img, 0, 0);
         ctx.fillStyle = '#0f172a'; // Slate-900 / Black
         // Relativ gespeicherte Rechtecke auf die Auflösung DIESES Vorschaubildes
-        // hochrechnen — das Modal rendert mit Faktor 2.0, die Vorschau mit 2.5.
+        // hochrechnen — bei Foto-Uploads und Sammel-Übertragungen ist sie eine
+        // ganz andere als die, gegen die der Balken gezogen wurde.
         toPixelRects(relativeRects, img.width, img.height).forEach(r => {
             ctx.fillRect(r.x, r.y, r.w, r.h);
         });

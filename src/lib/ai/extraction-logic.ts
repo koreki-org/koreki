@@ -1,4 +1,4 @@
-import { extractTextFromFile, renderSinglePage, toBase64 } from '../file-utils';
+import { extractTextFromFile, renderSinglePage, toBase64, SEITEN_RENDER_FAKTOR } from '../file-utils';
 import { performOCRRequest } from '../ai-logic';
 import { promisePool } from '../ai/promise-pool';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -80,7 +80,7 @@ export async function runExtractionStrategy(
             if (idx > 0) {
                 await new Promise(r => setTimeout(r, 1000));
             }
-            const buffer = await renderSinglePage(pdf, pageNum, 2.5);
+            const buffer = await renderSinglePage(pdf, pageNum, SEITEN_RENDER_FAKTOR);
             if (needsPreview) {
                 previewDataUrls[idx] = `data:image/jpeg;base64,${buffer}`;
             }

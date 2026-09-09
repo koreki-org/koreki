@@ -152,6 +152,33 @@ export const extractTextFromFile = async (
 import { promisePool } from './ai/promise-pool';
 
 /**
+ * Renderfaktor für JEDE Fassung einer PDF-Seite — Vorschau, Bilderkennung und
+ * Schwärzungs-Modal.
+ *
+ * 🏮 EINE Zahl, weil zwei Zahlen bereits auseinandergelaufen sind. Bis zum
+ * 09.09.2026 rendete die Bilderkennung mit 2.5 (A4 ≈ 1490 × 2100 px), das
+ * Schwärzungs-Modal aber mit 2.0 (≈ 1190 × 1684 px). Die Folge war ein Fehler,
+ * der aussah wie Zauberei: Eine Korrektur mit lokalem Ollama brach mit 500 ab —
+ * zog man vorher im Schwärzungs-Modal einen Balken, lief exakt dieselbe Seite
+ * durch. Grund: `resolveOCRSource` schickt dann den Abzug des Modals, also die
+ * kleinere Fassung, und der Faktor-2.5-Weg wird übersprungen.
+ *
+ * Gemessen am 09.09.2026 gegen `qwen3.6:35b` auf 2 × RTX 4000 SFF Ada (20 GB),
+ * abwechselnd und reproduzierbar:
+ *   1490 × 2100 → HTTP 500, der Bild-Encoder (`clip_image_batch_encode`)
+ *                 forderte 9,6 GB in EINEM Block an und bekam sie nicht
+ *   1190 × 1684 → OK in 21 s, 1834 Zeichen Text
+ * Die Dateigröße ist dabei fast gleich (465 vs. 424 KB): Der Encoder rechnet
+ * mit den Kantenlängen, nicht mit dem Kompressionsgrad. `num_ctx` und
+ * `num_predict` haben nachweislich KEINE Wirkung — gemessen von 32768 bis 8192,
+ * immer dieselben 9,6 GB.
+ *
+ * Wer diesen Wert erhöht, muss ihn gegen ein lokales Vision-Modell messen, nicht
+ * nur gegen Mistral. Der Wächter dazu: tests/unit/render-scale-governance.test.ts
+ */
+export const SEITEN_RENDER_FAKTOR = 2.0;
+
+/**
  * Converts PDF pages to JPEG images (Base64).
  * Industrial Parallel Rendering (Concurrency: 2)
  */
@@ -198,7 +225,7 @@ export const convertPdfToImage = async (file: File, pageRange?: [number, number]
     for (let i = startPage; i <= endPage; i++) pageIndices.push(i);
 
     const buffers = await promisePool(pageIndices, 2, async (pageNum) => {
-        return await renderSinglePage(pdf, pageNum, 2.5);
+        return await renderSinglePage(pdf, pageNum, SEITEN_RENDER_FAKTOR);
     });
 
     return { buffers, mimeType: 'image/jpeg' };
@@ -206,9 +233,9 @@ export const convertPdfToImage = async (file: File, pageRange?: [number, number]
 
 /**
  * Renders a single PDF page to a JPEG Base64 string.
- * Optimized for AI OCR Consumption (Scale: 2.5, Quality: 92%).
+ * Optimized for AI OCR Consumption (Scale: SEITEN_RENDER_FAKTOR, Quality: 92%).
  */
-export const renderSinglePage = async (pdf: any, pageNum: number, scale: number = 2.5): Promise<string> => {
+export const renderSinglePage = async (pdf: any, pageNum: number, scale: number = SEITEN_RENDER_FAKTOR): Promise<string> => {
     const page = await pdf.getPage(pageNum);
     const viewport = page.getViewport({ scale });
     const canvas = document.createElement('canvas');
