@@ -373,7 +373,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                             <button
                                 type="button"
                                 onClick={() => toggleCategory(category.id)}
-                                className="flex items-center justify-between w-full text-left py-2 px-3 hover:bg-muted/50 rounded-xl transition-all duration-200 group/header"
+                                className="flex items-center justify-between w-full text-left py-2 px-3 hover:bg-foreground/5 rounded-xl transition-all duration-200 group/header"
                             >
                                 <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground tracking-wider uppercase">
                                     {category.icon}
@@ -452,7 +452,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         variant="ghost" 
                                                         size="icon" 
                                                         title="Skill kopieren"
-                                                        className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-muted/80" 
+                                                        className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-foreground/5" 
                                                         onClick={(e) => { e.stopPropagation(); handleCopySkillClick(skill); }}
                                                     >
                                                         <PlusCircle size={14} />
@@ -461,7 +461,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                         variant="ghost" 
                                                         size="icon" 
                                                         title="Skill als .md exportieren"
-                                                        className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-muted/80" 
+                                                        className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-foreground/5" 
                                                         onClick={() => {
                                                             const markdown = `---
 name: "${skill.name}"
@@ -480,10 +480,10 @@ ${skill.prompt || ''}`;
 
                                                     {skill.isCustom && (
                                                         <>
-                                                            <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-muted/80" onClick={() => handleEditSkillClick(skill)}>
+                                                            <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-foreground/5" onClick={() => handleEditSkillClick(skill)}>
                                                                 <Pencil size={14} />
                                                             </Button>
-                                                            <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-muted/80" onClick={async () => { if (await askConfirmation({ title: 'Skill löschen', message: `Möchtest du den Skill "${skill.name}" wirklich löschen?` })) onDeleteCustomSkill(skill.id); }}>
+                                                            <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-foreground/5" onClick={async () => { if (await askConfirmation({ title: 'Skill löschen', message: `Möchtest du den Skill "${skill.name}" wirklich löschen?` })) onDeleteCustomSkill(skill.id); }}>
                                                                 <Trash2 size={14} />
                                                             </Button>
                                                         </>

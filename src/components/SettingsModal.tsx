@@ -79,7 +79,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute h-auto top-4 right-4 z-10 p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-all duration-200"
+                    className="absolute h-auto top-4 right-4 z-10 p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-full transition-all duration-200"
                     onClick={onClose}
                 >
                     <X size={20} />

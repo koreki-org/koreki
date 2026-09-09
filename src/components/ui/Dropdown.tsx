@@ -148,7 +148,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                                         "flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-bold transition-all",
                                         isSelected 
                                             ? "bg-primary/10 text-primary" 
-                                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                                            : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
                                     )}
                                 >
                                     <div className="flex items-center gap-2 truncate">

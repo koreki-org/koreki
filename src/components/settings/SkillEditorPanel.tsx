@@ -140,7 +140,7 @@ export const SkillEditorPanel: React.FC<SkillEditorPanelProps> = ({
                             <Button 
                                 variant="ghost" 
                                 onClick={() => { onClose(); setEditingSkillData(null); }}
-                                className="h-10 rounded-xl px-4 font-bold text-muted-foreground hover:bg-muted"
+                                className="h-10 rounded-xl px-4 font-bold text-muted-foreground hover:bg-foreground/5"
                             >
                                 Abbrechen
                             </Button>

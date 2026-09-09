@@ -152,7 +152,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                             {loading ? <Loader2 size={22} className="animate-spin" /> : <Check size={22} />}
                         </Button>
 
-                        <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-foreground hover:bg-muted rounded-xl transition-colors" onClick={onClose}>
+                        <Button variant="ghost" size="icon" className="h-10 w-10 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-xl transition-colors" onClick={onClose}>
                             <X size={24} />
                         </Button>
                     </div>
@@ -170,14 +170,14 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                             <Button
                                 variant="ghost"
                                 onClick={() => setTool('hand')}
-                                className={`flex h-auto items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${tool === 'hand' ? 'bg-primary text-white shadow-md hover:text-white hover:bg-primary' : 'text-muted-foreground hover:bg-muted'}`}
+                                className={`flex h-auto items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${tool === 'hand' ? 'bg-primary text-white shadow-md hover:text-white hover:bg-primary' : 'text-muted-foreground hover:bg-foreground/5'}`}
                             >
                                 <RotateCcw size={14} className="rotate-45" /> Bewegen
                             </Button>
                             <Button
                                 variant="ghost"
                                 onClick={() => setTool('pen')}
-                                className={`flex h-auto items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${tool === 'pen' ? 'bg-primary text-white shadow-md hover:text-white hover:bg-primary' : 'text-muted-foreground hover:bg-muted'}`}
+                                className={`flex h-auto items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${tool === 'pen' ? 'bg-primary text-white shadow-md hover:text-white hover:bg-primary' : 'text-muted-foreground hover:bg-foreground/5'}`}
                             >
                                 <PenTool size={14} /> Schwärzen
                             </Button>
@@ -275,7 +275,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-auto p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                                className="h-auto p-1.5 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-lg disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                                 onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
                                 disabled={currentPage === 0}
                             >
@@ -287,7 +287,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-auto p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                                className="h-auto p-1.5 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-lg disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
                                 onClick={() => setCurrentPage(p => Math.min(Object.keys(images).length - 1, p + 1))}
                                 disabled={currentPage === Object.keys(images).length - 1}
                             >

@@ -27,7 +27,7 @@ const AiSetupModal: React.FC<AiSetupModalProps> = ({
                     variant="ghost"
                     size="icon"
                     onClick={onClose}
-                    className="absolute right-6 top-6 h-10 w-10 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition-colors z-10 border-none shadow-none"
+                    className="absolute right-6 top-6 h-10 w-10 rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/5 transition-colors z-10 border-none shadow-none"
                 >
                     <X size={20} />
                 </Button>

@@ -26,7 +26,7 @@ const TON: Record<AufklapperTon, { schrift: string; anriss: string; marke: strin
     },
     notizen: {
         schrift: 'text-muted-foreground',
-        anriss: 'hover:bg-muted/50',
+        anriss: 'hover:bg-foreground/5',
         marke: 'text-muted-foreground/70',
         trenner: 'border-border'
     }

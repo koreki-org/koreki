@@ -149,7 +149,7 @@ export const AnonymizeModal: React.FC<AnonymizeModalProps> = ({
                             variant="ghost"
                             size="sm"
                             onClick={onClose}
-                            className="h-8 text-xs font-bold text-muted-foreground hover:bg-muted rounded-lg"
+                            className="h-8 text-xs font-bold text-muted-foreground hover:bg-foreground/5 rounded-lg"
                             disabled={isPending}
                         >
                             Abbrechen

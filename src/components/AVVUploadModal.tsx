@@ -37,7 +37,7 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="absolute top-6 right-6 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-all duration-200 z-10"
+                        className="absolute top-6 right-6 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-full transition-all duration-200 z-10"
                         onClick={onCancel}
                     >
                         <X size={20} />

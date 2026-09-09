@@ -86,7 +86,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                 variant="outline" 
                 size="sm" 
                 onClick={mitBestaetigung(onExportTeacher)} 
-                className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted/50 transition-all rounded-xl shadow-sm whitespace-nowrap"
+                className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-foreground/5 transition-all rounded-xl shadow-sm whitespace-nowrap"
             >
                 <Download size={16} /> Einschätzungsliste
             </Button>
@@ -101,7 +101,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                         "h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-card border transition-all rounded-xl shadow-sm whitespace-nowrap",
                         isFeedbackOpen 
                             ? "border-primary ring-2 ring-primary/10" 
-                            : "border-border hover:bg-muted/50"
+                            : "border-border hover:bg-foreground/5"
                     )}
                 >
                     <Download size={16} /> Einzel-Feedbacks 
@@ -119,7 +119,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => setPdfSettingsOpen(false)}
-                                        className="text-muted-foreground hover:text-foreground transition-all p-0.5 rounded-lg hover:bg-muted"
+                                        className="text-muted-foreground hover:text-foreground transition-all p-0.5 rounded-lg hover:bg-foreground/5"
                                     >
                                         <span className="text-xs font-bold font-mono">←</span>
                                     </button>
@@ -128,7 +128,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
 
                                 {/* Options Selectors */}
                                 <div className="flex flex-col gap-2">
-                                    <label className="flex items-center gap-2.5 px-1 py-1 cursor-pointer rounded-lg hover:bg-muted/40 transition-all">
+                                    <label className="flex items-center gap-2.5 px-1 py-1 cursor-pointer rounded-lg hover:bg-foreground/5 transition-all">
                                         <input
                                             type="radio"
                                             name="pointsMode"
@@ -142,7 +142,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                             <span className="text-xs text-muted-foreground">Nur Text-Feedback</span>
                                         </div>
                                     </label>
-                                    <label className="flex items-center gap-2.5 px-1 py-1 cursor-pointer rounded-lg hover:bg-muted/40 transition-all">
+                                    <label className="flex items-center gap-2.5 px-1 py-1 cursor-pointer rounded-lg hover:bg-foreground/5 transition-all">
                                         <input
                                             type="radio"
                                             name="pointsMode"
@@ -156,7 +156,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                             <span className="text-xs text-muted-foreground">Punkte nur pro Hauptaufgabe</span>
                                         </div>
                                     </label>
-                                    <label className="flex items-center gap-2.5 px-1 py-1 cursor-pointer rounded-lg hover:bg-muted/40 transition-all">
+                                    <label className="flex items-center gap-2.5 px-1 py-1 cursor-pointer rounded-lg hover:bg-foreground/5 transition-all">
                                         <input
                                             type="radio"
                                             name="pointsMode"
@@ -193,7 +193,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                         mitBestaetigung(onExportStudents)();
                                         setIsFeedbackOpen(false);
                                     }}
-                                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-all text-left"
+                                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-all text-left"
                                 >
                                     <Download size={14} /> Einzel-Feedback (Excel)
                                 </button>
@@ -203,7 +203,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                         mitBestaetigung(onExportIndividual)();
                                         setIsFeedbackOpen(false);
                                     }}
-                                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-all text-left"
+                                    className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-xs font-bold text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-all text-left"
                                 >
                                     <Download size={14} /> Einzel-Excels (ZIP)
                                 </button>
@@ -212,7 +212,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                     onClick={() => {
                                         setPdfSettingsOpen(true);
                                     }}
-                                    className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs font-bold text-muted-foreground hover:bg-muted hover:text-foreground transition-all text-left"
+                                    className="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs font-bold text-muted-foreground hover:bg-foreground/5 hover:text-foreground transition-all text-left"
                                 >
                                     <span className="flex items-center gap-2">
                                         <Download size={14} /> Einzel-PDFs (ZIP)
@@ -229,7 +229,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                 variant="outline" 
                 size="sm" 
                 onClick={mitBestaetigung(onExportDigitalSlips)} 
-                className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted/50 transition-all rounded-xl shadow-sm whitespace-nowrap"
+                className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-foreground/5 transition-all rounded-xl shadow-sm whitespace-nowrap"
             >
                 <QrCode size={16} /> Digitale Slips
             </Button>
@@ -240,7 +240,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                     size="sm"
                     onClick={onProtokollSpeichern}
                     title="Aufzeichnung der KI-Läufe speichern (Art. 12 KI-VO)"
-                    className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-muted/50 transition-all rounded-xl shadow-sm whitespace-nowrap"
+                    className="h-9 gap-2 text-xs font-bold text-muted-foreground hover:text-foreground bg-card border border-border hover:bg-foreground/5 transition-all rounded-xl shadow-sm whitespace-nowrap"
                 >
                     <ScrollText size={16} /> Protokoll
                 </Button>

@@ -140,7 +140,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                             variant="ghost"
                             size="icon"
                             onClick={onClose}
-                            className="h-10 w-10 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
+                            className="h-10 w-10 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-full transition-colors"
                         >
                             <X size={20} />
                         </Button>

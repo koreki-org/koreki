@@ -19,7 +19,7 @@ type Ton = 'primary' | 'destruktiv' | 'gedaempft';
 const TON_KLASSEN: Record<Ton, string> = {
     primary: 'border-primary/20 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground',
     destruktiv: 'border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground',
-    gedaempft: 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'
+    gedaempft: 'border-border text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
 };
 
 interface LaufKnopfProps {

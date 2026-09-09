@@ -198,7 +198,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                             <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">Dialogische Zweitmeinung &amp; Feedback-Optimierung</p>
                         </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted shrink-0" onClick={onClose} disabled={loading}>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-foreground/5 shrink-0" onClick={onClose} disabled={loading}>
                         <X size={24} />
                     </Button>
                 </div>

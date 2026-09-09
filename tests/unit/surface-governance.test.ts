@@ -24,14 +24,15 @@ import { join, relative, sep } from 'path';
  *   1. Jede `bg-*`-Klasse verweist auf eine Farbe, die es wirklich gibt.
  *   2. Farben kommen aus Tokens, nicht aus der Tailwind-Palette.
  *   3. Kein Element benutzt vier Abgrenzungsmittel gleichzeitig.
+ *   4. Keine Hover-Flaeche, die auf dem Seitengrund unsichtbar ist.
  *
  * RATSCHEN-PRINZIP (Regeln 2 und 3):
  * - Neue Dateien halten die Regel.
  * - Die Altfälle sind eingefroren und dürfen nur schrumpfen.
  * - Wer eine repariert, nimmt sie aus der Liste.
  *
- * Regel 1 hat bewusst KEINE Baseline. Eine Klasse, die nichts tut, ist kein
- * Geschmack und kein Kompromiss, sondern ein Defekt.
+ * Regeln 1 und 4 haben bewusst KEINE Baseline. Eine Klasse, die nichts tut, ist
+ * kein Geschmack und kein Kompromiss, sondern ein Defekt.
  */
 
 const SRC_DIR = join(process.cwd(), 'src');
@@ -316,6 +317,57 @@ describe('Flächen-Governance (koreki-design-system)', () => {
                 '\n\nErlaubt sind rounded-hero (16px, Modals und Sektionskarten),\n' +
                 'rounded-xl (12px, verschachtelte Kinder), rounded-lg (8px, normale\n' +
                 'Karten und Infoboxen) und rounded-md (Bedienelemente).'
+            );
+        }
+    });
+
+    it('laesst keine Hover-Flaeche zu, die auf dem Seitengrund unsichtbar ist', () => {
+        /*
+         * `bg-muted` und `bg-accent` liegen beide auf 220 14% 96%, der Seitengrund
+         * auf 220 20% 95%. Als Hover-Flaeche eines Elements, das auf dem Seitengrund
+         * steht, ergibt das EINEN Prozentpunkt — nicht sichtbar. In einer weissen
+         * Karte traegt derselbe Ton (96% gegen 100%), und genau deshalb ist es nie
+         * aufgefallen: Dieselbe Klasse funktioniert an der einen Stelle und ist an
+         * der anderen tot.
+         *
+         * Der groesste Einzelfall stand am 09.09.2026 in `Button`: Die Variante
+         * `outline` setzt sich selbst auf `bg-background` und hoverte auf
+         * `bg-accent` — 95% auf 96%, an 88 Aufrufstellen.
+         *
+         * Eine feste Graustufe kann das nicht loesen, sie muesste sich zugleich von
+         * Weiss und von Grau absetzen. Eine durchsichtige dunkle Lasur schon:
+         * `hover:bg-foreground/5` dunkelt ab, was darunter liegt, und ergibt auf
+         * jedem Grund rund fuenf Punkte.
+         *
+         * KEINE Baseline — wie bei Regel 1: Eine Flaeche, die man nicht sieht, ist
+         * kein Geschmack und kein Kompromiss, sondern ein Defekt.
+         *
+         * `accent-1` bis `accent-4` sind ausgenommen. Das sind die Marketing-Akzente
+         * mit eigener Farbe, nicht die graue Stufe — der Bindestrich ist der ganze
+         * Unterschied, und eine Suche ohne diese Grenze hat am 09.09.2026 fuenf
+         * gesunde Stellen als defekt gemeldet.
+         */
+        const RE_TOTER_HOVER = /(?:group-)?hover:bg-(?:muted|accent)(?:\/\d+)?(?![-\w])/g;
+        const treffer: string[] = [];
+
+        for (const datei of alleDateien) {
+            const zeilen = readFileSync(datei, 'utf8').split('\n');
+            zeilen.forEach((zeile, i) => {
+                const roh = zeile.trimStart();
+                // Die Begruendung im Quelltext zitiert die alte Klasse.
+                if (roh.startsWith('*') || roh.startsWith('//') || roh.startsWith('/*')) return;
+                for (const fund of zeile.match(RE_TOTER_HOVER) ?? []) {
+                    treffer.push(`${relativ(datei)}:${i + 1} — ${fund}`);
+                }
+            });
+        }
+
+        if (treffer.length > 0) {
+            throw new Error(
+                'UNSICHTBARE HOVER-FLAECHE — diese Klassen liegen einen Prozentpunkt\n' +
+                'ueber dem Seitengrund und tun dort nichts:\n  - ' + treffer.join('\n  - ') +
+                '\n\nNutze `hover:bg-foreground/5` — eine durchsichtige Lasur wirkt auf\n' +
+                'jedem Untergrund. Fuer farbige Zustaende bleibt `hover:bg-primary/10`.'
             );
         }
     });

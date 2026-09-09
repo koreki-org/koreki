@@ -188,7 +188,7 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                                     users.map(user => {
                                         const costs = calculateUserCost(user, settings);
                                         return (
-                                            <tr key={user.id} className="hover:bg-muted/30 transition-colors duration-200 group">
+                                            <tr key={user.id} className="hover:bg-foreground/5 transition-colors duration-200 group">
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col">
                                                         <span className="text-sm font-bold text-foreground group-hover:text-primary transition-colors">

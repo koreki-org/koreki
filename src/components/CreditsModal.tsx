@@ -68,7 +68,7 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, onSelect, upgradin
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute top-8 right-8 p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-all duration-200"
+                    className="absolute top-8 right-8 p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-full transition-all duration-200"
                     onClick={onClose}
                 >
                     <X size={24} />

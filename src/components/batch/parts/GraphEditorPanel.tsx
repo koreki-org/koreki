@@ -111,7 +111,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                         variant="outline"
                                                         size="sm"
                                                         onClick={() => onAddVariable()}
-                                                        className="h-8 text-xs font-bold rounded-xl border-border text-muted-foreground hover:bg-muted transition-all"
+                                                        className="h-8 text-xs font-bold rounded-xl border-border text-muted-foreground hover:bg-foreground/5 transition-all"
                                                     >
                                                         + Erste Variable hinzufügen
                                                     </Button>
@@ -269,7 +269,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                 )}
                                                 <button 
                                                     onClick={() => setSelectedVarId(null)}
-                                                    className="lg:hidden text-muted-foreground hover:text-muted-foreground transition-colors p-1 hover:bg-muted rounded-full"
+                                                    className="lg:hidden text-muted-foreground hover:text-muted-foreground transition-colors p-1 hover:bg-foreground/5 rounded-full"
                                                     title="Inspektor schließen"
                                                 >
                                                     <X size={16} />

@@ -126,7 +126,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                             </p>
                         </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted shrink-0" onClick={onClose}>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-foreground/5 shrink-0" onClick={onClose}>
                         <X size={24} />
                     </Button>
                 </div>

@@ -43,7 +43,7 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                     variant="ghost"
                     size="icon"
                     onClick={onClose}
-                    className="absolute h-auto top-4 right-4 p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-full transition-colors"
+                    className="absolute h-auto top-4 right-4 p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-full transition-colors"
                 >
                     <X size={20} />
                 </Button>

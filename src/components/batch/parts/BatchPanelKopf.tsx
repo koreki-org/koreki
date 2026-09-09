@@ -38,7 +38,7 @@ export const BatchPanelKopf: React.FC<BatchPanelKopfProps> = ({
                     variant="ghost"
                     size="icon"
                     onClick={() => onToggleFocus(fokussiert ? null : seite)}
-                    className="hidden md:inline-flex h-7 w-7 rounded-lg text-muted-foreground hover:text-primary hover:bg-muted transition-all duration-200"
+                    className="hidden md:inline-flex h-7 w-7 rounded-lg text-muted-foreground hover:text-primary hover:bg-foreground/5 transition-all duration-200"
                     title={fokussiert ? "Fokus beenden" : "Panel maximieren"}
                 >
                     {fokussiert ? <Minimize2 size={13} /> : <Maximize2 size={13} />}

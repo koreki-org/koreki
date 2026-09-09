@@ -74,7 +74,7 @@ export default function Impressum() {
                                             "w-full justify-start text-left px-3 py-2 rounded-lg text-sm transition-all h-auto",
                                             activeSection === sec.id
                                                 ? 'bg-primary/5 text-primary font-bold hover:bg-primary/10'
-                                                : 'text-muted-foreground hover:bg-muted/50 hover:text-primary'
+                                                : 'text-muted-foreground hover:bg-foreground/5 hover:text-primary'
                                         )}
                                         onClick={() => scrollToSection(sec.id)}
                                     >

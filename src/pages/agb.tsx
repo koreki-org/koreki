@@ -62,7 +62,7 @@ export default function AGB() {
                                         variant="ghost"
                                         className={`w-full justify-start text-left px-3 py-2 rounded-lg text-sm transition-all h-auto ${activeSection === sec.id
                                                 ? 'bg-accent-1/5 text-accent-1 font-bold hover:bg-accent-1/10 hover:text-accent-1'
-                                                : 'text-muted-foreground hover:bg-muted hover:text-accent-1'
+                                                : 'text-muted-foreground hover:bg-foreground/5 hover:text-accent-1'
                                             }`}
                                         onClick={() => scrollToSection(sec.id)}
                                     >

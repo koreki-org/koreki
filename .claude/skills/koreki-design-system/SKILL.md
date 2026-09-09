@@ -46,6 +46,10 @@ Bis zum 07.09.2026 waren Seite und Karte **derselbe** Token: beide gemessen `rgb
 - Ein Eingabefeld, dessen Rahmen an `isEditing` hing — beim Klick auf den Stift erschien er und die Abstände sprangen.
 - `leading-relaxed` neben `text-sm`: Tailwinds `text-sm` bringt eine eigene Zeilenhöhe mit und gewinnt. Lesemodus lief mit 20 px, das Eingabefeld mit 22,75 px. Nutze `text-sm/relaxed` — eine Regel, die nicht auseinanderfallen kann.
 
+**Eine Hover-Fläche ist eine Lasur, keine Graustufe.** `bg-muted` und `bg-accent` liegen beide auf `220 14% 96%`, der Seitengrund auf `220 20% 95%` — als Hover eines Elements auf dem Seitengrund ist das **ein Prozentpunkt** und damit unsichtbar. In einer weißen Karte trägt derselbe Ton (96 % gegen 100 %), und genau deshalb fällt es nicht auf: Dieselbe Klasse funktioniert an der einen Stelle und ist an der anderen tot. Am 09.09.2026 betraf das 80 Stellen, darunter die `outline`-Variante von `Button` an 88 Aufrufstellen — sie setzt sich selbst auf `bg-background` und hoverte auf `bg-accent`.
+
+Eine feste Graustufe kann das nicht lösen; sie müsste sich zugleich von Weiß und von Grau absetzen. Nutze **`hover:bg-foreground/5`**: Die Lasur dunkelt ab, was darunter liegt, und ergibt auf jedem Grund rund fünf Punkte. Farbige Zustände bleiben farbig (`hover:bg-primary/10`), und was bereits weiß ist — ein Eingabefeld etwa — sagt seinen Zustand über den **Rand**, denn über die Fläche kann es das nicht.
+
 **Graue Füllung heißt „deaktiviert".** Ein Feld, in das man gerade schreibt, muss **heller** sein als seine Umgebung, nie dunkler. Den Bearbeitungsmodus sagen Randfarbe und Ring, nicht die Fläche.
 
 **Fokusringe liegen innen (`ring-inset`).** Ein außenliegender Ring wird von jedem Scrollbehälter beschnitten, der nur einseitig Innenabstand hat (`overflow-y-auto pr-2` ist im Baum verbreitet). Innen kann ihn per Konstruktion nichts abschneiden.

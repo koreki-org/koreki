@@ -85,7 +85,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                     {/* Default None Option */}
                                     <div 
                                         onClick={() => selectMemory(null)}
-                                        className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center cursor-pointer ${!activeMemoryId ? 'bg-card border-primary/20 shadow-sm' : 'bg-transparent border-border hover:bg-muted'}`}
+                                        className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center cursor-pointer ${!activeMemoryId ? 'bg-card border-primary/20 shadow-sm' : 'bg-transparent border-border hover:bg-foreground/5'}`}
                                     >
                                         <div className="flex flex-col">
                                             <span className="text-xs font-extrabold">Kein Erfahrungsschatz (Standard-Korrektur)</span>
@@ -117,7 +117,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                         <div 
                                             key={m.id}
                                             onClick={() => selectMemory(m.id || null)}
-                                            className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${activeMemoryId === m.id ? 'bg-card border-primary/20 shadow-sm' : 'bg-transparent border-border hover:bg-muted'}`}
+                                            className={`p-4 rounded-xl border transition-all text-left flex justify-between items-center group cursor-pointer relative ${activeMemoryId === m.id ? 'bg-card border-primary/20 shadow-sm' : 'bg-transparent border-border hover:bg-foreground/5'}`}
                                         >
                                             <div className="flex flex-col min-w-0 flex-1">
                                                 <span className={`text-xs font-extrabold truncate transition-all duration-300 group-hover:pr-[120px]`}>
@@ -250,7 +250,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                                  onClick={handleCreateEmptyMemory}
                                                  disabled={isSaving}
                                                  variant="outline"
-                                                 className="w-full py-3 h-12 border-border hover:bg-muted text-foreground font-extrabold rounded-xl flex items-center justify-center gap-2 text-xs md:text-sm shrink-0 transition-all"
+                                                 className="w-full py-3 h-12 border-border hover:bg-foreground/5 text-foreground font-extrabold rounded-xl flex items-center justify-center gap-2 text-xs md:text-sm shrink-0 transition-all"
                                              >
                                                  {isSaving ? (
                                                      <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-muted-foreground border-t-transparent" />

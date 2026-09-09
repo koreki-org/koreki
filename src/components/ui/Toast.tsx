@@ -87,7 +87,7 @@ export const Toast: React.FC<ToastProps> = ({ art, text, onSchliessen }) => {
                 size="icon"
                 onClick={onSchliessen}
                 aria-label="Meldung schließen"
-                className="h-auto shrink-0 p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="h-auto shrink-0 p-1 text-muted-foreground hover:bg-foreground/5 hover:text-foreground"
             >
                 <X className="h-5 w-5" />
             </Button>

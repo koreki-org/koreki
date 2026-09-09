@@ -129,7 +129,7 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                             <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">Modelliere das Antwortverhalten der KI im Detail</p>
                         </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted shrink-0" onClick={onClose}>
+                    <Button variant="ghost" size="icon" className="rounded-full hover:bg-foreground/5 shrink-0" onClick={onClose}>
                         <X size={24} />
                     </Button>
                 </div>

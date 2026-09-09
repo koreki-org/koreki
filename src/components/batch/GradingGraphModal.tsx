@@ -253,7 +253,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             variant="ghost"
                             size="icon"
                             onClick={onClose}
-                            className="lg:hidden text-muted-foreground hover:text-muted-foreground transition-colors p-1.5 hover:bg-muted rounded-full shrink-0 h-8 w-8 flex items-center justify-center border-0 bg-transparent"
+                            className="lg:hidden text-muted-foreground hover:text-muted-foreground transition-colors p-1.5 hover:bg-foreground/5 rounded-full shrink-0 h-8 w-8 flex items-center justify-center border-0 bg-transparent"
                         >
                             <X size={20} />
                         </Button>
@@ -299,7 +299,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         variant="ghost"
                         size="icon"
                         onClick={onClose}
-                        className="text-muted-foreground hover:text-muted-foreground transition-colors p-1.5 hover:bg-muted rounded-full hidden lg:flex h-8 w-8 items-center justify-center border-0 bg-transparent"
+                        className="text-muted-foreground hover:text-muted-foreground transition-colors p-1.5 hover:bg-foreground/5 rounded-full hidden lg:flex h-8 w-8 items-center justify-center border-0 bg-transparent"
                     >
                         <X size={20} />
                     </Button>
@@ -483,7 +483,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         <Button 
                             variant="ghost" 
                             onClick={onClose}
-                            className="h-10 flex-1 sm:flex-initial rounded-xl px-5 font-bold text-muted-foreground hover:bg-muted"
+                            className="h-10 flex-1 sm:flex-initial rounded-xl px-5 font-bold text-muted-foreground hover:bg-foreground/5"
                         >
                             {isLocked ? "Schließen" : "Abbrechen"}
                         </Button>

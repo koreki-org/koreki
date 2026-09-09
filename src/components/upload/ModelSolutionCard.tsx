@@ -469,7 +469,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             </h3>
                             <button 
                                 onClick={() => setShowEngineSelectionTaskIdx(null)}
-                                className="text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-muted rounded-full cursor-pointer focus:outline-none"
+                                className="text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-foreground/5 rounded-full cursor-pointer focus:outline-none"
                             >
                                 <X size={20} />
                             </button>

@@ -142,7 +142,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                         <Button variant="outline" onClick={handleDownloadPDF} className="gap-2 font-bold text-foreground shadow-sm">
                             <Download size={18} /> PDF Export
                         </Button>
-                        <button onClick={onClose} className="p-2 hover:bg-muted rounded-full transition-colors ml-2">
+                        <button onClick={onClose} className="p-2 hover:bg-foreground/5 rounded-full transition-colors ml-2">
                             <X size={20} className="text-muted-foreground" />
                         </button>
                     </div>
