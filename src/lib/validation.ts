@@ -1,10 +1,34 @@
 import { z } from 'zod';
 
+/**
+ * Kontaktformular
+ * ✉️
+ *
+ * WARUM HIER OBERGRENZEN STEHEN (07.10.2026)
+ * ------------------------------------------
+ * Bis heute hatte kein Feld eine. Der Endpunkt ist bewusst anonym
+ * erreichbar (`allowAnonymous`), und `contact.ts` reicht `email` als
+ * `replyTo` an nodemailer weiter — dessen Adressparser hat zwei Meldungen
+ * mit quadratischer Laufzeit. `z.string().email()` filtert die
+ * Klammer-Muster aus den Meldungen weg, aber eine sehr lange, formal
+ * gueltige Adresse kam durch und landete im Parser.
+ *
+ * Die Grenze ist deshalb keine Bequemlichkeit, sondern der Riegel: Was
+ * nicht hereinkommt, kann den Parser nicht beschaeftigen. Sie bleibt auch
+ * nach dem Versionssprung auf nodemailer 10 stehen — eine Eingabegrenze
+ * ist unabhaengig davon richtig, und die naechste Parser-Meldung kommt
+ * bestimmt.
+ *
+ * 254 fuer die Adresse ist die Obergrenze eines Forward-Path nach
+ * RFC 5321; laengere Adressen kann kein Mailserver annehmen. Die drei
+ * uebrigen Grenzen sind grosszuegig gewaehlt — sie sollen Missbrauch
+ * abschneiden, nicht eine ausfuehrliche Anfrage.
+ */
 export const contactSchema = z.object({
-    name: z.string().min(2, 'Name ist zu kurz'),
-    email: z.string().email('Ungültige E-Mail-Adresse'),
-    subject: z.string().min(3, 'Betreff ist zu kurz'),
-    message: z.string().min(10, 'Nachricht ist zu kurz'),
+    name: z.string().min(2, 'Name ist zu kurz').max(100, 'Name ist zu lang'),
+    email: z.string().email('Ungültige E-Mail-Adresse').max(254, 'E-Mail-Adresse ist zu lang'),
+    subject: z.string().min(3, 'Betreff ist zu kurz').max(200, 'Betreff ist zu lang'),
+    message: z.string().min(10, 'Nachricht ist zu kurz').max(5000, 'Nachricht ist zu lang'),
 });
 
 export const CorrectionSchema = z.object({

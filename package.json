@@ -64,7 +64,7 @@
     "micro": "^10.0.1",
     "next": "^15.5.25",
     "node-cron": "^4.2.1",
-    "nodemailer": "^9.1.1",
+    "nodemailer": "^10.0.15",
     "oidc-client-ts": "^3.5.0",
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
