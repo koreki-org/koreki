@@ -11,13 +11,13 @@ describe('Landing Page Smoke Test', () => {
         render(<Home />);
 
         // The Header contains the Logo with "Koreki" text.
-        // The Landing Page contains "Präzise Korrektur" in the H1.
+        // The Landing Page H1 reads "Jede Arbeit. Derselbe Maßstab." (since 12.10.2026).
         
         await waitFor(() => {
             const branding = screen.getAllByText(/Koreki/i)[0];
             expect(branding).toBeInTheDocument();
             
-            const mainHeading = screen.getByText(/Präzise/i);
+            const mainHeading = screen.getByRole('heading', { level: 1, name: /Jede Arbeit/i });
             expect(mainHeading).toBeInTheDocument();
         });
     });
@@ -25,11 +25,11 @@ describe('Landing Page Smoke Test', () => {
     it('contains a link to the features and security pages', () => {
         render(<Home />);
         
-        // Use getAllByText for 'Features' and 'Sicherheit' to confirm presence in Header
-        const featuresLink = screen.getAllByText(/Features/i)[0];
-        expect(featuresLink).toBeInTheDocument();
-        
-        const securityLink = screen.getAllByText(/Sicherheit/i)[0];
-        expect(securityLink).toBeInTheDocument();
+        // Header-Navigation: "Funktionen" (/features) und "Datenschutz" (/security)
+        const featuresLink = screen.getAllByRole('link', { name: 'Funktionen' })[0];
+        expect(featuresLink).toHaveAttribute('href', '/features');
+
+        const securityLink = screen.getAllByRole('link', { name: 'Datenschutz' })[0];
+        expect(securityLink).toHaveAttribute('href', '/security');
     });
 });
