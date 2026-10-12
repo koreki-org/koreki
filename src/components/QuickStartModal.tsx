@@ -35,7 +35,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                         subtitle="KI-Assistent"
                     />
                     <div className="space-y-0.5">
-                        <p className="text-lg font-black text-foreground tracking-tight">Willkommen bei Koreki!</p>
+                        <p className="text-lg font-bold text-foreground tracking-tight">Willkommen bei Koreki!</p>
                         <p className="text-xs text-muted-foreground font-medium">In nur <strong className="font-extrabold text-foreground">sechs</strong> einfachen Schritten zum Ziel.</p>
                     </div>
                 </div>
@@ -120,7 +120,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                         <Button
                             size="sm"
                             onClick={onClose}
-                            className="w-full sm:w-auto px-10 py-5 rounded-xl font-bold text-base bg-primary hover:bg-primary/90 text-white border-none shadow-xl shadow-primary/20 hover:-translate-y-1 transition-all"
+                            className="w-full sm:w-auto px-10 py-5 rounded-xl font-bold text-base bg-primary hover:bg-primary/90 text-white border-none shadow-xl shadow-primary/20 transition-all"
                         >
                             Alles klar, los geht&apos;s! <ChevronRight size={18} className="ml-2" />
                         </Button>

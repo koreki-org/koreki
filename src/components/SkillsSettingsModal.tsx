@@ -99,7 +99,7 @@ const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
                             <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-lg sm:text-2xl font-black text-foreground tracking-tight truncate">Skills Center</h2>
+                            <h2 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight truncate">Skills Center</h2>
                             <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">Modulare KI-Bewertungs-Skills</p>
                         </div>
                     </div>
@@ -158,7 +158,7 @@ const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
                                 </Button>
                                 <Button
                                     onClick={isCreatingNew ? handleSaveToDB : handleApplyToSession}
-                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary hover:bg-primary/90 text-white font-black rounded-xl sm:rounded-2xl shadow-xl shadow-primary/20 transition-all"
+                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl sm:rounded-2xl shadow-xl shadow-primary/20 transition-all"
                                     disabled={saving || (isCreatingNew && !newProfileName.trim())}
                                 >
                                     {saving ? 'Speichert...' : (isCreatingNew ? 'Erstellen' : 'Zuweisen')}

@@ -21,7 +21,7 @@ export const CorrectionAnalytics: React.FC<CorrectionAnalyticsProps> = ({ batchF
                 <Card className="p-4 border-border/50 shadow-sm bg-white/50 backdrop-blur-sm">
                     <div className="flex items-center gap-3 text-muted-foreground mb-2">
                         <GraduationCap className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider font-outfit">Ø Einschätzung</span>
+                        <span className="text-xs font-medium font-outfit">Ø Einschätzung</span>
                     </div>
                     <div className="text-2xl font-bold font-outfit text-primary">
                         {stats.avgGrade !== null ? stats.avgGrade.toFixed(1).replace('.', ',') : 'N/A'}
@@ -31,7 +31,7 @@ export const CorrectionAnalytics: React.FC<CorrectionAnalyticsProps> = ({ batchF
                 <Card className="p-4 border-border/50 shadow-sm bg-white/50 backdrop-blur-sm">
                     <div className="flex items-center gap-3 text-muted-foreground mb-2">
                         <Target className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider font-outfit">Ø Erfüllungsgrad</span>
+                        <span className="text-xs font-medium font-outfit">Ø Erfüllungsgrad</span>
                     </div>
                     <div className="text-2xl font-bold font-outfit">{Math.round(stats.avgScore)}%</div>
                 </Card>
@@ -39,7 +39,7 @@ export const CorrectionAnalytics: React.FC<CorrectionAnalyticsProps> = ({ batchF
                 <Card className="p-4 border-border/50 shadow-sm bg-white/50 backdrop-blur-sm">
                     <div className="flex items-center gap-3 text-muted-foreground mb-2">
                         <ShieldCheck className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider font-outfit">KI-Konfidenz</span>
+                        <span className="text-xs font-medium font-outfit">KI-Konfidenz</span>
                     </div>
                     <div className="text-2xl font-bold font-outfit text-primary">{stats.avgConfidence ? `${Math.round(stats.avgConfidence)}%` : 'N/A'}</div>
                 </Card>
@@ -47,7 +47,7 @@ export const CorrectionAnalytics: React.FC<CorrectionAnalyticsProps> = ({ batchF
                 <Card className="p-4 border-border/50 shadow-sm bg-white/50 backdrop-blur-sm">
                     <div className="flex items-center gap-3 text-muted-foreground mb-2">
                         <Clock className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider font-outfit">Zeit gespart</span>
+                        <span className="text-xs font-medium font-outfit">Zeit gespart</span>
                     </div>
                     <div className="text-2xl font-bold font-outfit text-primary">~{stats.timeSavedMinutes}m</div>
                 </Card>
@@ -55,7 +55,7 @@ export const CorrectionAnalytics: React.FC<CorrectionAnalyticsProps> = ({ batchF
                 <Card className="p-4 border-border/50 shadow-sm bg-white/50 backdrop-blur-sm md:col-span-2 lg:col-span-1">
                     <div className="flex items-center gap-3 text-muted-foreground mb-2">
                         <TrendingDown className="w-4 h-4" />
-                        <span className="text-xs font-bold uppercase tracking-wider font-outfit">Themen-Fokus</span>
+                        <span className="text-xs font-medium font-outfit">Themen-Fokus</span>
                     </div>
                     <div className="text-2xl font-bold font-outfit text-destructive">{stats.criticalTasks.length} Bereiche</div>
                 </Card>
@@ -123,7 +123,7 @@ export const CorrectionAnalytics: React.FC<CorrectionAnalyticsProps> = ({ batchF
                         {stats.analyzedTasks.map(task => (
                             <div key={task.name} className="space-y-1.5">
                                 <div className="flex justify-between items-end">
-                                    <span className="text-xs font-bold text-foreground truncate mr-2 font-outfit uppercase tracking-tight" title={task.name}>{task.name}</span>
+                                    <span className="text-xs font-medium text-foreground truncate mr-2 font-outfit tracking-tight" title={task.name}>{task.name}</span>
                                     <span className="text-xs text-muted-foreground whitespace-nowrap">{task.avgPoints.toFixed(1)} / {task.maxPoints} P</span>
                                 </div>
                                 <div className="h-1 w-full bg-muted rounded-full overflow-hidden">

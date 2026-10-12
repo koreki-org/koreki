@@ -120,18 +120,18 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                                 isSelfSigned ? (
                                     <div className="flex items-center gap-1 text-primary/70" title="Selbstsigniertes Zertifikat aktiv">
                                         <Shield size={12} strokeWidth={3} />
-                                        <span className="uppercase tracking-tighter">Self-Signed</span>
+                                        <span className="tracking-tighter">Self-Signed</span>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-1 text-success/70" title="Gesicherte Verbindung">
                                         <Shield size={12} strokeWidth={3} />
-                                        <span className="uppercase tracking-tighter">Sicher</span>
+                                        <span className="tracking-tighter">Sicher</span>
                                     </div>
                                 )
                             ) : (
                                 <div className="flex items-center gap-1 text-muted-foreground/70" title="Lokale unverschlüsselte Verbindung">
                                     <Server size={12} strokeWidth={3} />
-                                    <span className="uppercase tracking-tighter">Lokal</span>
+                                    <span className="tracking-tighter">Lokal</span>
                                 </div>
                             )}
                         </div>
@@ -148,7 +148,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
 
             {/* 2. Model Selection */}
             <div className="space-y-3">
-                <label className="block text-xxs font-black uppercase text-muted-foreground tracking-widest ml-1">Modell wählen</label>
+                <label className="block text-xs font-medium text-muted-foreground ml-1">Modell wählen</label>
                 <div className="grid grid-cols-1 gap-2">
                     {OLLAMA_VORSCHLAEGE.map(p => {
                         const resolvedForCard = resolveOllamaModel(p.id, availableModels);
@@ -174,7 +174,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                                     <div className="flex items-center gap-1.5">
                                         <span className="text-xs font-bold text-foreground">{p.name}</span>
                                         {!istGepruefteKonfiguration('ollama', p.id) && (
-                                            <span className="px-1.5 py-0.5 rounded-md bg-warning/10 text-xxs font-bold text-warning uppercase tracking-tight">
+                                            <span className="px-1.5 py-0.5 rounded-md bg-warning/10 text-xs font-medium text-warning tracking-tight">
                                                 {EXPERIMENTELL_KENNZEICHEN}
                                             </span>
                                         )}
@@ -216,7 +216,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                                       * "experimentell" ueber der geprueften Konfiguration.
                                       */}
                                     {!istGepruefteKonfiguration('ollama', settings.ollamaModel) && (
-                                        <span className="px-1.5 py-0.5 rounded-md bg-warning/10 text-xxs font-bold text-warning uppercase tracking-tight">
+                                        <span className="px-1.5 py-0.5 rounded-md bg-warning/10 text-xs font-medium text-warning tracking-tight">
                                             {EXPERIMENTELL_KENNZEICHEN}
                                         </span>
                                     )}
@@ -230,7 +230,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                     {/* 3. Dynamic Manual Override (Only visible in Custom Mode) */}
                     {isCustomMode && (
                         <div className="pt-2 animate-in slide-in-from-top-2 duration-300">
-                            <label htmlFor="ollama-model-manual" className="block text-xxs font-black uppercase text-muted-foreground tracking-widest ml-1 mb-2">Manueller Modell-Tag</label>
+                            <label htmlFor="ollama-model-manual" className="block text-xs font-medium text-muted-foreground ml-1 mb-2">Manueller Modell-Tag</label>
                             <div className="relative group">
                                 <Input 
                                     id="ollama-model-manual"
@@ -239,7 +239,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                                     onChange={e => onSave({ ollamaModel: e.target.value })}
                                     className="h-10 rounded-xl text-xs font-mono bg-muted/20 border-2 group-hover:border-border/80 transition-colors"
                                 />
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xxs font-black text-muted-foreground/50 uppercase tracking-tighter">Custom</div>
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground/50 tracking-tighter">Custom</div>
                             </div>
                         </div>
                     )}
@@ -262,7 +262,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                                     {isExactMatch ? <CheckCircle2 size={14} /> : <Info size={14} />}
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-xxs font-black uppercase tracking-widest leading-none mb-1 opacity-70">
+                                    <span className="text-xs font-medium leading-none mb-1 opacity-70">
                                         {isExactMatch ? 'Modell Bereit' : isMapped ? 'Automatisches Mapping' : 'Modell fehlt'}
                                     </span>
                                     <div className="text-xxs font-bold leading-tight">

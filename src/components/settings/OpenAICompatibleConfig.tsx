@@ -62,7 +62,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                             <ShieldCheck size={24} />
                         </div>
                         <div>
-                            <h4 className="text-sm font-black text-primary uppercase tracking-tight">Mittwald AI API aktiv</h4>
+                            <h4 className="text-sm font-medium text-primary tracking-tight">Mittwald AI API aktiv</h4>
                             <p className="text-xxs text-primary font-medium leading-relaxed max-w-[250px] mx-auto mt-1">
                                 Dein Institut stellt diesen Dienst (Qwen) zentral zur Verfügung. Die Konfiguration erfolgt sicher über die Administration.
                             </p>
@@ -77,7 +77,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Server size={16} className="text-primary/60" />
-                            <label className="text-xs font-bold text-foreground uppercase tracking-tight">Eigene Endpunkt-Konfiguration</label>
+                            <label className="text-xs font-medium text-foreground tracking-tight">Eigene Endpunkt-Konfiguration</label>
                         </div>
                         {settings.openaiKey && (
                             <Button 
@@ -87,14 +87,14 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                                 className="h-7 px-2 text-destructive hover:text-destructive hover:bg-destructive/10 rounded-lg gap-1.5"
                             >
                                 <Trash2 size={12} />
-                                <span className="text-xxs font-bold uppercase">Daten löschen</span>
+                                <span className="text-xs font-medium">Daten löschen</span>
                             </Button>
                         )}
                     </div>
 
                     <div className="space-y-3">
                         <div>
-                            <label htmlFor="openai-url" className="block text-xxs font-black text-muted-foreground uppercase tracking-widest ml-1 mb-1.5">Base URL</label>
+                            <label htmlFor="openai-url" className="block text-xs font-medium text-muted-foreground ml-1 mb-1.5">Base URL</label>
                             <Input 
                                 id="openai-url"
                                 placeholder="https://llm.aihosting.mittwald.de/v1" 
@@ -104,7 +104,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                             />
                         </div>
                         <div>
-                            <label htmlFor="openai-key" className="block text-xxs font-black text-muted-foreground uppercase tracking-widest ml-1 mb-1.5">API Key</label>
+                            <label htmlFor="openai-key" className="block text-xs font-medium text-muted-foreground ml-1 mb-1.5">API Key</label>
                             <div className="flex gap-2">
                                 <div className="relative flex-1 group">
                                     <Input 
@@ -129,7 +129,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                             </div>
                         </div>
                         <div>
-                            <label htmlFor="openai-model" className="block text-xxs font-black text-muted-foreground uppercase tracking-widest ml-1 mb-1.5">Modell</label>
+                            <label htmlFor="openai-model" className="block text-xs font-medium text-muted-foreground ml-1 mb-1.5">Modell</label>
                             <Input 
                                 id="openai-model"
                                 placeholder={DEFAULT_OPENAI_COMPATIBLE_MODEL} 

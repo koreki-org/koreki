@@ -257,17 +257,17 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
             {/* Upper Info Section */}
             <div className="flex justify-between items-end gap-6 shrink-0">
                 <div className="flex-1 space-y-2">
-                    <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">
+                    <label className="text-xs font-medium text-muted-foreground">
                         {isCreatingNew ? 'Name für neues Skill-Set' : 'Gewähltes Skill-Set'}
                     </label>
                     {isCreatingNew ? (
                         <Input
                             autoFocus value={newProfileName} onChange={e => setNewProfileName(e.target.value)}
-                            placeholder="z.B. Bayern Realschule Physik" className="text-lg sm:text-xl font-black border-primary/20 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
+                            placeholder="z.B. Bayern Realschule Physik" className="text-lg sm:text-xl font-bold border-primary/20 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
                         />
                     ) : (
                         <div className="flex items-center gap-3 flex-wrap">
-                            <h3 className="text-xl sm:text-2xl font-black text-foreground flex items-center gap-3">
+                            <h3 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-3">
                                 {selectedProfile}
                             </h3>
                             {isSystemSelected && <Badge variant="outline" className="text-xxs bg-muted text-muted-foreground px-3 py-1 rounded-full border-transparent font-bold">SYSTEM PRESET</Badge>}
@@ -277,14 +277,14 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                 {isDirty && !isCreatingNew && !isSystemSelected && (
                     <div className="flex items-center gap-2 text-warning animate-pulse pb-2 shrink-0">
                         <RefreshCcw size={16} />
-                        <span className="text-xxs font-bold uppercase tracking-widest">Ungespeichertes</span>
+                        <span className="text-xs font-medium">Ungespeichertes</span>
                     </div>
                 )}
             </div>
 
             {/* Middle Controls */}
             <div className="flex justify-between items-center border-b border-border pb-3 shrink-0">
-                <span className="text-xs sm:text-sm font-black text-foreground flex items-center gap-2">
+                <span className="text-xs sm:text-sm font-bold text-foreground flex items-center gap-2">
                     <Sparkles size={16} className="text-primary" /> Skills konfigurieren
                 </span>
                 <div className="flex gap-2 items-center">
@@ -304,7 +304,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                             };
                             input.click();
                         }}
-                        className="h-8 sm:h-9 rounded-full text-xxs whitespace-nowrap font-bold uppercase border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 gap-1.5 px-3 sm:px-4 transition-all"
+                        className="h-8 sm:h-9 rounded-full text-xs whitespace-nowrap font-medium border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 gap-1.5 px-3 sm:px-4 transition-all"
                         title="Einzelnen Skill importieren (.md)"
                     >
                         <RefreshCcw size={14} /> Skill Import
@@ -313,7 +313,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                         variant="outline" 
                         size="sm" 
                         onClick={handleCreateSkillClick}
-                        className="h-8 sm:h-9 rounded-full text-xxs whitespace-nowrap font-bold uppercase border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 gap-2 px-3 sm:px-4 transition-all"
+                        className="h-8 sm:h-9 rounded-full text-xs whitespace-nowrap font-medium border-primary/20 text-primary bg-primary/5 hover:bg-primary/10 gap-2 px-3 sm:px-4 transition-all"
                     >
                         <PlusCircle size={14} /> Skill hinzufügen
                     </Button>
@@ -321,7 +321,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                         disabled={saving || isSystemSelected || !isDirty} 
                         onClick={onSaveToDB} 
                         title={isSystemSelected ? "System-Vorlagen können nicht direkt bearbeitet werden. Erstelle eine Kopie." : ""}
-                        className="h-9 px-4 text-xxs whitespace-nowrap font-bold uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0"
+                        className="h-9 px-4 text-xs whitespace-nowrap font-medium rounded-full flex items-center gap-1.5 shadow-md transition-all border-0"
                     >
                         {saving ? (
                             <div className="animate-spin rounded-full h-3 w-3 border-2 border-primary-foreground border-t-transparent" />
@@ -375,7 +375,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                 onClick={() => toggleCategory(category.id)}
                                 className="flex items-center justify-between w-full text-left py-2 px-3 hover:bg-foreground/5 rounded-xl transition-all duration-200 group/header"
                             >
-                                <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground tracking-wider uppercase">
+                                <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                                     {category.icon}
                                     <span>{category.label}</span>
                                     <Badge className="bg-muted group-hover/header:bg-muted/80 text-muted-foreground font-bold px-1.5 py-0.5 text-xxs rounded-full transition-all">
@@ -417,7 +417,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                                                 </div>
                                                 <div className="flex-1 space-y-1 min-w-0">
                                                     <div className="flex items-center gap-2">
-                                                        <h4 className={`text-sm font-black tracking-tight leading-tight ${isChecked ? 'text-foreground' : 'text-foreground'}`}>
+                                                        <h4 className={`text-sm font-bold tracking-tight leading-tight ${isChecked ? 'text-foreground' : 'text-foreground'}`}>
                                                             {skill.name}
                                                         </h4>
                                                         {skill.isCustom && <Badge className="text-xxs bg-primary/10 text-primary px-1.5 py-0.5 font-bold hover:bg-primary/10 rounded">EIGEN</Badge>}

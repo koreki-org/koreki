@@ -198,11 +198,11 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                                     >
                                         <div className="flex justify-between items-start">
                                             <div className="space-y-1">
-                                                <h3 className="text-2xl font-black text-foreground leading-tight">{file.name}</h3>
-                                                <p className="text-sm font-bold text-primary uppercase tracking-wider">{points} / {maxPoints} Punkte</p>
+                                                <h3 className="text-2xl font-bold text-foreground leading-tight">{file.name}</h3>
+                                                <p className="text-sm font-medium text-primary">{points} / {maxPoints} Punkte</p>
                                                 <div className="flex items-center gap-1.5 mt-4 text-muted-foreground">
                                                     <Logo size={14} />
-                                                    <span className="text-xxs font-bold uppercase tracking-widest">Feedback Slip</span>
+                                                    <span className="text-xs font-medium">Feedback Slip</span>
                                                 </div>
                                             </div>
                                             <div className="bg-card p-2 rounded-xl border border-border flex items-center justify-center min-w-[120px] min-h-[120px]">
@@ -225,8 +225,8 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
 
                                         <div className="flex items-end justify-between mt-auto">
                                             <div className="space-y-1">
-                                                <p className="text-xxs text-muted-foreground font-medium uppercase tracking-tighter">Zugangscode</p>
-                                                <p className="text-lg font-mono font-black text-foreground tracking-widest">PIN: {pin}</p>
+                                                <p className="text-xs text-muted-foreground font-medium tracking-tighter">Zugangscode</p>
+                                                <p className="text-lg font-mono font-bold text-foreground tracking-widest">PIN: {pin}</p>
                                             </div>
                                              <div className="flex items-center gap-1 text-xxs text-success font-bold bg-success/5 border border-success/20 px-2 py-1 rounded-lg">
                                                 <ShieldCheck size={12} /> Verschlüsselt
@@ -245,7 +245,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                         <Sparkles size={14} className="text-primary" />
                         <span>Tipp: Der PDF-Export ist am zuverlässigsten für den Druck.</span>
                     </div>
-                    <div className="text-xxs font-bold uppercase tracking-widest opacity-50">
+                    <div className="text-xs font-medium opacity-50">
                         koreki.org distribution system
                     </div>
                 </div>

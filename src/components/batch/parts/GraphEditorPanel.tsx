@@ -122,7 +122,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                         Object.entries(groupedVariables).map(([groupName, vars]) => (
                                             <div key={groupName} className="space-y-3">
                                                 <div className="flex justify-between items-center px-1">
-                                                    <h4 className="text-xs font-black uppercase text-muted-foreground tracking-wider font-outfit flex items-center gap-2">
+                                                    <h4 className="text-xs font-medium text-muted-foreground font-outfit flex items-center gap-2">
                                                         <Layers size={13} className="text-primary" />
                                                         {groupName}
                                                     </h4>
@@ -162,7 +162,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                                 {/* Variable ID Title and Badges */}
                                                                 <div className="flex justify-between items-start gap-3">
                                                                     <div className="space-y-0.5 min-w-0">
-                                                                        <h5 className={cn("text-xs font-black font-mono truncate leading-none pt-0.5", isSelected || isDependency ? "text-primary" : "text-foreground")}>
+                                                                        <h5 className={cn("text-xs font-bold font-mono truncate leading-none pt-0.5", isSelected || isDependency ? "text-primary" : "text-foreground")}>
                                                                             {v.id}
                                                                         </h5>
                                                                         <p className="text-xs text-muted-foreground font-medium mt-0.5">
@@ -171,21 +171,21 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                                     </div>
                                                                     <div className="flex gap-1.5 shrink-0 items-center">
                                                                         {hasError && (
-                                                                            <Badge className="bg-destructive text-destructive-foreground text-xxs py-0 px-1.5 rounded font-black uppercase flex items-center gap-0.5">
+                                                                            <Badge className="bg-destructive text-destructive-foreground text-xs py-0 px-1.5 rounded font-medium flex items-center gap-0.5">
                                                                                 <AlertCircle size={8} /> FEHLER
                                                                             </Badge>
                                                                         )}
                                                                         {v.type === 'input' ? (
-                                                                            <Badge className="bg-muted border-border text-muted-foreground text-xxs py-0 px-1.5 rounded font-black uppercase">INPUT</Badge>
+                                                                            <Badge className="bg-muted border-border text-muted-foreground text-xs py-0 px-1.5 rounded font-medium">INPUT</Badge>
                                                                         ) : (
-                                                                            <Badge className="bg-primary/5 border-primary/20 text-primary text-xxs py-0 px-1.5 rounded font-black uppercase">FORMULA</Badge>
+                                                                            <Badge className="bg-primary/5 border-primary/20 text-primary text-xs py-0 px-1.5 rounded font-medium">FORMULA</Badge>
                                                                         )}
                                                                     </div>
                                                                 </div>
 
                                                                 {/* Expected Output / Master value */}
                                                                 <div className={cn("rounded-xl p-2.5 flex justify-between items-center text-xs border", hasError ? "bg-destructive/10 border-destructive/20" : "bg-muted border-border")}>
-                                                                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Erwarteter Wert:</span>
+                                                                    <span className="text-xs font-medium text-muted-foreground tracking-tight">Erwarteter Wert:</span>
                                                                     <span className={cn("font-mono font-bold text-foreground", hasError ? "text-destructive" : "text-foreground")}>
                                                                         {String(evalVal)}
                                                                     </span>
@@ -214,7 +214,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                                         if (deps.length === 0) return null;
                                                                         return (
                                                                             <div className="flex flex-wrap gap-1 mt-1 items-center">
-                                                                                <span className="text-xxs text-muted-foreground font-black uppercase tracking-wider mr-1 shrink-0">🔗 Berechnet aus:</span>
+                                                                                <span className="text-xs text-muted-foreground font-medium mr-1 shrink-0">🔗 Berechnet aus:</span>
                                                                                 {deps.map(d => (
                                                                                     <Badge key={d} className="bg-primary/5 border border-primary/20 text-primary text-xxs py-0 px-1 font-mono rounded-sm select-none font-bold">
                                                                                         {d}
@@ -253,7 +253,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                 {selectedVar ? (
                                     <div className="flex flex-col h-full overflow-y-auto p-4 sm:p-6 space-y-6">
                                         <div className="flex justify-between items-center pb-2 border-b border-border shrink-0">
-                                            <h4 className="text-xs font-black uppercase text-foreground font-outfit tracking-tight flex items-center gap-1.5">
+                                            <h4 className="text-xs font-medium text-foreground font-outfit tracking-tight flex items-center gap-1.5">
                                                 <Layers size={12} className="text-primary" />
                                                 <span>Knoten-Inspektor</span>
                                             </h4>
@@ -279,7 +279,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
 
                                         {/* Edit ID Field */}
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Variablen-ID</label>
+                                            <label className="text-xs font-medium text-muted-foreground">Variablen-ID</label>
                                             <Input
                                                 value={selectedVar.id}
                                                 disabled={isLocked}
@@ -293,7 +293,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
 
                                         {/* Type Selector (Input vs Formula) */}
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Knotentyp</label>
+                                            <label className="text-xs font-medium text-muted-foreground">Knotentyp</label>
                                             <Select
                                                 value={selectedVar.type}
                                                 disabled={isLocked}
@@ -313,7 +313,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                         {/* Default Value / Expression fields */}
                                         {selectedVar.type === 'input' ? (
                                             <div className="space-y-1">
-                                                <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Musterlösung (Wert)</label>
+                                                <label className="text-xs font-medium text-muted-foreground">Musterlösung (Wert)</label>
                                                 <Input
                                                     value={selectedVar.defaultValue !== undefined ? String(selectedVar.defaultValue) : ''}
                                                     disabled={isLocked}
@@ -331,7 +331,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                         ) : (
                                             <div className="space-y-1">
                                                 <div className="flex justify-between items-center">
-                                                    <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Berechnungs-Formel</label>
+                                                    <label className="text-xs font-medium text-muted-foreground">Berechnungs-Formel</label>
                                                     {evaluatedContext.errors[selectedVar.id] && (
                                                         <Badge className="bg-destructive/10 text-destructive text-xxs py-0 px-1 border-destructive/20 rounded">Error ⚠️</Badge>
                                                     )}
@@ -357,7 +357,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
 
                                         {/* Points allocation */}
                                         <div className="space-y-1">
-                                            <label className="text-xs font-black uppercase text-muted-foreground tracking-wider text-left block">Punkte für diesen Schritt</label>
+                                            <label className="text-xs font-medium text-muted-foreground text-left block">Punkte für diesen Schritt</label>
                                             <Input
                                                 type="number"
                                                 value={selectedVar.maxPoints !== undefined ? selectedVar.maxPoints : 1}
@@ -381,7 +381,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                             <button
                                                 type="button"
                                                 onClick={() => setShowAdvancedInspector(!showAdvancedInspector)}
-                                                className="w-full text-left text-xs font-black uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center justify-between py-1 cursor-pointer"
+                                                className="w-full text-left text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center justify-between py-1 cursor-pointer"
                                             >
                                                 <span>⚙️ Erweiterte Einstellungen (Toleranzen)</span>
                                                 <span className="font-bold text-xs">{showAdvancedInspector ? "−" : "+"}</span>
@@ -391,7 +391,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                 <div className="space-y-4 pt-3 animate-in fade-in slide-in-from-top-1 duration-200">
                                                     {/* Validation Type */}
                                                     <div className="space-y-1">
-                                                        <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Validierungsart</label>
+                                                        <label className="text-xs font-medium text-muted-foreground">Validierungsart</label>
                                                         <Select
                                                             value={selectedVar.validationType}
                                                             disabled={isLocked}
@@ -412,7 +412,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                     {/* Tolerance offset field */}
                                                     {selectedVar.validationType === 'tolerance' && (
                                                         <div className="space-y-1">
-                                                            <label className="text-xs font-black uppercase text-muted-foreground tracking-wider">Zulässige Toleranz (+/-)</label>
+                                                            <label className="text-xs font-medium text-muted-foreground">Zulässige Toleranz (+/-)</label>
                                                             <Input
                                                                 type="number"
                                                                 value={selectedVar.tolerance !== undefined ? selectedVar.tolerance : 0}
@@ -431,7 +431,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
 
                                         {/* Evaluated Value Preview block */}
                                         <div className="pt-4 border-t border-border flex flex-col gap-2 shrink-0">
-                                            <span className="text-xs font-black uppercase text-muted-foreground tracking-wider">Echtzeit-Berechnung (Musterlösung)</span>
+                                            <span className="text-xs font-medium text-muted-foreground">Echtzeit-Berechnung (Musterlösung)</span>
                                             <div className="bg-primary/5 rounded-xl p-3 border border-primary/20 flex flex-col gap-1 text-xs">
                                                 <div className="flex justify-between items-center">
                                                     <span className="font-bold text-muted-foreground">Erwarteter Wert:</span>

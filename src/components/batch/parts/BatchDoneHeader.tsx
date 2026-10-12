@@ -1,8 +1,9 @@
 import React from 'react';
-import { AlertTriangle, Sparkles, Image as ImageIcon, ChevronDown } from 'lucide-react';
+import { AlertTriangle, Image as ImageIcon, ChevronDown } from 'lucide-react';
 import { Button } from '../../ui/Button';
 import { Badge } from '../../ui/Badge';
 import { PopoverMenu } from '../../ui/PopoverMenu';
+import { AufgabenReiter } from '../../ui/AufgabenReiter';
 import { BatchFile, Task } from '../../../types';
 import { cn } from '@/lib/utils';
 import { brauchtPruefung } from '@/lib/vertrauen';
@@ -47,98 +48,77 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
         }, 100);
     };
 
+    /*
+     * Seit dem 12.10.2026 eine einzige Zeile: links die Aufgaben, rechts
+     * "Bitte prüfen" und der Scan-Umschalter. Vorher standen darueber eine
+     * Zeile "KI-Korrektur Review", die nichts tat, und zwei Trennlinien — fuenf
+     * Kopfzeilen, bevor die erste Zeile Schuelertext kam.
+     */
     return (
-        <>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 border-b border-border mb-4 sm:mb-6 gap-3 w-full overflow-hidden">
-                <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto overflow-x-auto no-scrollbar max-w-full">
-                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2 shrink-0">
-                        <Sparkles size={14} className="text-primary hidden sm:block" />
-                        <span className="hidden sm:inline">KI-Korrektur Review</span>
-                        <span className="sm:hidden">KI-Review</span>
-                    </span>
-                    {item.documentType === 'scanned' && (
-                        <Button 
-                            variant="outline" 
-                            size="sm" 
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 w-full">
+            {/* LEFT SIDE: Task Navigation */}
+            <AufgabenReiter namen={groupNames} aktiv={activeGroupName} onWaehle={onSetActiveGroupName} />
+
+            <div className="flex items-center gap-2 shrink-0">
+            {/* RIGHT SIDE: Specific Review Recommendation */}
+            {lowConfidenceTasks.length > 0 && (
+                <div className="flex items-center gap-2 animate-in fade-in duration-700 h-8">
+                    {lowConfidenceTasks.length === 1 ? (
+                        // Genau ein Treffer: direkter Sprung-Button, kein Popover-Overhead nötig
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            title={lowConfidenceTasks[0].name}
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onToggleScan(idx);
+                                jumpToTask(lowConfidenceTasks[0]);
                             }}
-                            className={cn("h-8 px-4 text-xs font-bold gap-2 transition-all rounded-lg shrink-0 shadow-sm", 
-                                showScan ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90" : "bg-background text-foreground border-border hover:bg-foreground/5")}
+                            className="h-8 px-3 text-xs text-warning bg-warning/10 hover:bg-warning/20 shadow-none gap-1.5 max-w-[260px] truncate"
                         >
-                            <ImageIcon size={14} /> {showScan ? "Scan aus" : "Scan ein"}
+                            <AlertTriangle size={12} className="shrink-0" /> Bitte prüfen: {lowConfidenceTasks[0].name}
                         </Button>
+                    ) : (
+                        // Mehrere Treffer: fixer Trigger-Footprint statt N Buttons in der Reihe -
+                        // wächst nicht mit der Trefferzahl, kein Kollisionsrisiko mit der Task-Navigation links.
+                        <PopoverMenu
+                            align="right"
+                            widthClass="w-72"
+                            trigger={
+                                <Badge
+                                    variant="secondary"
+                                    className="bg-warning/10 text-warning border-transparent h-8 px-3 gap-1.5 rounded-lg cursor-pointer"
+                                >
+                                    <AlertTriangle size={12} className="text-warning" />
+                                    {lowConfidenceTasks.length} Aufgaben: Bitte prüfen
+                                    <ChevronDown size={12} className="text-warning" />
+                                </Badge>
+                            }
+                            items={lowConfidenceTasks.map((t, i) => ({
+                                key: `warn-item-${t.name || i}`,
+                                label: t.name || 'Unbenannte Aufgabe',
+                                icon: <AlertTriangle size={12} />,
+                                className: 'hover:bg-warning/10 hover:text-warning',
+                                onSelect: () => jumpToTask(t),
+                            }))}
+                        />
                     )}
                 </div>
+            )}
+            {item.documentType === 'scanned' && (
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleScan(idx);
+                    }}
+                    className={cn("h-8 px-3 text-xs gap-2 shrink-0",
+                        showScan && "bg-primary text-primary-foreground border-primary hover:bg-primary/90")}
+                >
+                    <ImageIcon size={14} /> {showScan ? "Scan aus" : "Scan ein"}
+                </Button>
+            )}
             </div>
-
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 px-1 border-b border-border/50 mb-6 mt-2 w-full">
-                {/* LEFT SIDE: Task Navigation */}
-                <div className="flex gap-2 overflow-x-auto px-2 py-1.5 -mx-2 no-scrollbar scrollbar-hide flex-1">
-                    {groupNames.map(name => (
-                        <Button
-                            key={name}
-                            variant={activeGroupName === name ? "default" : "secondary"}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onSetActiveGroupName(name);
-                            }}
-                            className={cn(
-                                "rounded-xl px-4 py-2 h-9 text-xs font-bold transition-all shrink-0 border border-transparent gap-2",
-                                activeGroupName === name ? "bg-primary text-primary-foreground shadow-md" : "bg-background text-muted-foreground hover:bg-foreground/5 border-border"
-                            )}
-                        >
-                            {name}
-                        </Button>
-                    ))}
-                </div>
-
-                {/* RIGHT SIDE: Specific Review Recommendation */}
-                {lowConfidenceTasks.length > 0 && (
-                    <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-2 duration-700 shrink-0 border-l border-border pl-4 h-8">
-                        {lowConfidenceTasks.length === 1 ? (
-                            // Genau ein Treffer: direkter Sprung-Button, kein Popover-Overhead nötig
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                title={lowConfidenceTasks[0].name}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    jumpToTask(lowConfidenceTasks[0]);
-                                }}
-                                className="h-8 px-4 text-xs font-bold text-warning border-warning/20 bg-warning/10 hover:bg-warning/20 transition-all rounded-lg gap-1.5 max-w-[220px] truncate"
-                            >
-                                <AlertTriangle size={12} className="shrink-0" /> {lowConfidenceTasks[0].name}
-                            </Button>
-                        ) : (
-                            // Mehrere Treffer: fixer Trigger-Footprint statt N Buttons in der Reihe -
-                            // wächst nicht mit der Trefferzahl, kein Kollisionsrisiko mit der Task-Navigation links.
-                            <PopoverMenu
-                                align="right"
-                                widthClass="w-72"
-                                trigger={
-                                    <Badge
-                                        variant="secondary"
-                                        className="bg-warning/10 text-warning border-warning/20 h-8 px-3 text-xxs font-black uppercase tracking-tight gap-1.5 shadow-sm rounded-lg cursor-pointer"
-                                    >
-                                        <AlertTriangle size={12} className="text-warning" />
-                                        {lowConfidenceTasks.length} Aufgaben: Review empfohlen!
-                                        <ChevronDown size={12} className="text-warning" />
-                                    </Badge>
-                                }
-                                items={lowConfidenceTasks.map((t, i) => ({
-                                    key: `warn-item-${t.name || i}`,
-                                    label: t.name || 'Unbenannte Aufgabe',
-                                    icon: <AlertTriangle size={12} />,
-                                    className: 'hover:bg-warning/10 hover:text-warning',
-                                    onSelect: () => jumpToTask(t),
-                                }))}
-                            />
-                        )}
-                    </div>
-                )}
-            </div>
-        </>
+        </div>
     );
 };

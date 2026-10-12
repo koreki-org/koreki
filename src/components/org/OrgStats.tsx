@@ -28,7 +28,7 @@ export const OrgStats: React.FC<OrgStatsProps> = ({
                         <Badge variant="outline" className="bg-secondary/50 border-primary/20 text-primary font-bold">Kollegium</Badge>
                     </div>
                     <div className="text-3xl font-bold text-foreground mb-1">{membersCount}</div>
-                    <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Lehrkräfte registriert</div>
+                    <div className="text-xs font-medium text-muted-foreground">Lehrkräfte registriert</div>
                 </CardContent>
             </Card>
 
@@ -41,7 +41,7 @@ export const OrgStats: React.FC<OrgStatsProps> = ({
                         <Badge variant="outline" className="bg-secondary/50 border-primary/20 text-primary font-bold">Guthaben</Badge>
                     </div>
                     <div className="text-3xl font-bold text-foreground mb-1">{workspace?.credits}</div>
-                    <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Verfügbare Credits</div>
+                    <div className="text-xs font-medium text-muted-foreground">Verfügbare Credits</div>
                 </CardContent>
             </Card>
 
@@ -64,7 +64,7 @@ export const OrgStats: React.FC<OrgStatsProps> = ({
                     <div className="text-3xl font-mono font-bold text-foreground mb-1 tracking-tight">
                         {workspace?.inviteCode || '---'}
                     </div>
-                    <div className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Aktiver Beitritts-Code</div>
+                    <div className="text-xs font-medium text-muted-foreground">Aktiver Beitritts-Code</div>
                 </CardContent>
             </Card>
         </div>

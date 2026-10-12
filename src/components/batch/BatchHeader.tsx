@@ -3,7 +3,7 @@ import { Loader2, PenLine, Brain, Download, Info } from 'lucide-react';
 import { CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { cn } from '@/lib/utils';
-import { isLocalInstance } from '@/lib/env-context';
+import { isLocalInstance, zeigtCredits } from '@/lib/env-context';
 import { KorekiTooltip } from '../ui/KorekiTooltip';
 import { BatchHelpContent } from './BatchHelpContent';
 import { AppSettings } from '../../types';
@@ -56,11 +56,12 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
     const isReCorrectionMode = pendingCount === 0 && hasFinishedFiles;
     const activeBatchController = useBatchStore((state) => state.activeBatchController);
     const abortBatch = useBatchStore((state) => state.abortBatch);
+    const kosten = (n: number) => zeigtCredits(isPureMode) ? ` (${n} Credits)` : '';
 
     return (
         <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6">
             <div>
-                <CardTitle className="text-2xl font-bold flex items-center gap-3">
+                <CardTitle className="text-2xl flex items-center gap-3">
                     Stapelverarbeitung
                     <BatchHelpContent />
                 </CardTitle>
@@ -153,14 +154,14 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                 className="bg-primary/5 hover:bg-primary/10 text-primary border-primary/20 w-full sm:w-auto"
                             >
                                 {loading ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
-                                Bilderkennung ({ocrCreditsRequired} Credits)
+                                Bilderkennung{kosten(ocrCreditsRequired)}
                             </Button>
                         )}
                         {onExportSL && !hasFinishedFiles && !hasPendingOcr && (
                             <div className="relative group flex items-center w-full sm:w-auto">
                                 <Button
                                     variant="outline"
-                                    className="border border-primary/20 bg-primary/5 text-primary hover:bg-primary hover:text-primary-foreground transition-all rounded-xl w-full sm:w-auto flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider h-10 px-4"
+                                    className="w-full sm:w-auto"
                                     onClick={onExportSL}
                                     disabled={loading}
                                 >
@@ -181,11 +182,11 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                     variant="outline"
                                     onClick={onExportKoreki}
                                     disabled={loading}
-                                    className="h-10 px-4 gap-2 text-xs font-bold bg-primary/5 text-primary border-primary/20 hover:bg-primary hover:text-primary-foreground transition-all rounded-xl shadow-sm whitespace-nowrap shrink-0 w-full sm:w-auto flex items-center justify-center"
+                                    className="whitespace-nowrap shrink-0 w-full sm:w-auto"
                                 >
                                     <Download size={14} />
                                     <span>Korrektur exportieren</span>
-                                    <Info size={14} className="opacity-60 group-hover:text-primary-foreground/80 transition-colors shrink-0" />
+                                    <Info size={14} className="opacity-60 shrink-0" />
                                 </Button>
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:flex flex-col items-center z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
                                     <div className="w-2.5 h-2.5 bg-white/95 border-l border-t border-border rotate-45 -mb-1.5 z-40"></div>
@@ -200,15 +201,12 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                             onClick={() => isReCorrectionMode ? onShowConfirm('reset') : onShowConfirm('process')}
                             disabled={loading || (pendingCount === 0 && !hasFinishedFiles) || (pendingCount > 0 && credits < totalPendingCredits) || ocrCreditsRequired > 0 || !avvAccepted}
                             title={!avvAccepted ? "AVV-Zustimmung erforderlich" : ""}
-                            className={cn(
-                                "shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all rounded-xl w-full sm:w-auto",
-                                pendingCount === 0 && !hasFinishedFiles ? "bg-primary hover:bg-primary/90 border-none text-white animate-pulse" : "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white border-0"
-                            )}
+                            className="w-full sm:w-auto"
                         >
                             {loading && ocrCreditsRequired === 0 ? <Loader2 size={16} className="animate-spin mr-2" /> : null}
-                            {isReCorrectionMode 
-                                ? `Erneut korrigieren (${totalPossibleCredits} Credits)` 
-                                : (pendingCount === 0 ? "Alle korrigiert" : <span className="font-bold tracking-wide">Korrigieren ({totalPendingCredits} Credits)</span>)
+                            {isReCorrectionMode
+                                ? `Erneut korrigieren${kosten(totalPossibleCredits)}`
+                                : (pendingCount === 0 ? "Alle korrigiert" : `Korrigieren${kosten(totalPendingCredits)}`)
                             }
                         </Button>
                     </>

@@ -28,7 +28,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                          <div className="flex items-center justify-between border-b border-border pb-3 shrink-0 mb-3">
                                              <div className="flex items-center gap-2">
                                                  <Sliders size={16} className="text-primary" />
-                                                 <h3 className="text-sm font-black uppercase tracking-wider text-foreground font-outfit">
+                                                 <h3 className="text-sm font-medium text-foreground font-outfit">
                                                      Verwalten & Editieren
                                                  </h3>
                                              </div>
@@ -37,7 +37,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                      onClick={isImportedAndUnsaved ? () => handleSaveImportedMemory(activeMemory!) : handleSaveActiveMemoryChanges}
                                                      disabled={!hasChanges || isSaving}
                                                      className={cn(
-                                                         "h-9 px-4 text-xs font-black uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0",
+                                                         "h-9 px-4 text-xs font-medium rounded-full flex items-center gap-1.5 shadow-md transition-all border-0",
                                                          hasChanges 
                                                              ? "bg-primary hover:opacity-90 text-white shadow-md" 
                                                              : "bg-secondary text-muted-foreground cursor-not-allowed shadow-none"
@@ -60,7 +60,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                              {isImportedAndUnsaved && activeMemory && (
                                                  <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-center justify-between gap-4 shadow-sm">
                                                      <div className="space-y-1">
-                                                         <h4 className="text-xs font-black text-foreground uppercase tracking-wide">Importierter Erfahrungsschatz</h4>
+                                                         <h4 className="text-xs font-medium text-foreground">Importierter Erfahrungsschatz</h4>
                                                          <p className="text-xs text-primary font-bold leading-normal">
                                                              Dieser Erfahrungsschatz wurde mit der Sitzung importiert, ist aber noch nicht in deiner lokalen Bibliothek gespeichert. Sichert alle {activeMemory.cases?.length || 0} Beispiele dauerhaft.
                                                          </p>
@@ -68,7 +68,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                      <Button 
                                                          onClick={() => handleSaveImportedMemory(activeMemory!)}
                                                          disabled={isSaving}
-                                                         className="bg-primary hover:opacity-90 text-white font-extrabold text-xs uppercase h-9 px-4 rounded-xl flex items-center gap-1.5 shrink-0 shadow-md shadow-md"
+                                                         className="bg-primary hover:opacity-90 text-white font-medium text-xs h-9 px-4 rounded-xl flex items-center gap-1.5 shrink-0 shadow-md shadow-md"
                                                      >
                                                          {isSaving ? (
                                                              <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent" />
@@ -83,7 +83,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                              {/* List of Cases to view/edit */}
                                              <div className="space-y-3.5">
                                                  <div className="flex justify-between items-center pb-1">
-                                                     <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                                     <h4 className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                                                          <BookOpen size={12} className="text-primary" />
                                                          Enthaltene Fallbeispiele ({activeMemory?.cases?.length || 0}):
                                                      </h4>
@@ -92,7 +92,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                          size="sm"
                                                          onClick={handleAddCaseManually}
                                                          disabled={isImportedAndUnsaved}
-                                                         className="h-8 rounded-full text-xs font-black uppercase text-primary hover:bg-primary/10 transition-all flex items-center gap-1.5"
+                                                         className="h-8 rounded-full text-xs font-medium text-primary hover:bg-primary/10 transition-all flex items-center gap-1.5"
                                                      >
                                                          <PlusCircle size={14} /> Fallbeispiel hinzufügen
                                                      </Button>
@@ -111,7 +111,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                              <div className="flex items-center justify-between pb-2 border-b border-border">
                                                                  <span className="text-xs font-extrabold text-foreground">Fallbeispiel {index + 1} {resolvedTaskName ? `(${resolvedTaskName})` : ''}</span>
                                                                  <div className="flex items-center gap-2">
-                                                                     <span className="text-xs font-black uppercase text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/10">
+                                                                     <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/10">
                                                                          Few-Shot #${index + 1}
                                                                      </span>
                                                                      <button 
@@ -131,7 +131,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                              </div>
  
                                                             <div className="space-y-1">
-                                                                <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Schülerantwort (Simuliert / Editierbar):</span>
+                                                                <span className="text-xs font-medium text-muted-foreground">Schülerantwort (Simuliert / Editierbar):</span>
                                                                 <Textarea 
                                                                     rows={3}
                                                                     value={c.studentText}
@@ -144,7 +144,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
  
                                                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                                                                  <div className="space-y-1">
-                                                                     <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Vergebene Punkte:</span>
+                                                                     <span className="text-xs font-medium text-muted-foreground">Vergebene Punkte:</span>
                                                                       <PointInput 
                                                                            value={Number(c.expectedCorrection.pointsObtained ?? 0)}
                                                                            maxPoints={resolvedMaxPoints}
@@ -156,7 +156,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                                  </div>
  
                                                                 <div className="space-y-1">
-                                                                    <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Feedback an Schüler:</span>
+                                                                    <span className="text-xs font-medium text-muted-foreground">Feedback an Schüler:</span>
                                                                     <Input 
                                                                         type="text"
                                                                         value={c.expectedCorrection.feedback || ''}
@@ -169,7 +169,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                              </div>
  
                                                              <div className="space-y-1">
-                                                                 <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Pädagogische Begründung:</span>
+                                                                 <span className="text-xs font-medium text-muted-foreground">Pädagogische Begründung:</span>
                                                                  <Textarea 
                                                                      rows={2}
                                                                      value={c.expectedCorrection.correctionNotes}
@@ -193,7 +193,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                 </Button>
                                                 <Button
                                                     onClick={onClose}
-                                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary hover:bg-primary/90 text-white font-black rounded-xl sm:rounded-2xl shadow-xl shadow-primary/20 transition-all"
+                                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl sm:rounded-2xl shadow-xl shadow-primary/20 transition-all"
                                                 >
                                                     Zuweisen
                                                 </Button>

@@ -1,355 +1,149 @@
 ---
 name: koreki-design-system
-description: Richtlinien für UI & Design Excellence (Enterprise Aesthetics)
+description: Gestaltung und UX der Koreki-Oberfläche — Zielbild, Grundsätze, Tokens, Komponenten und die Regeln mit Wächter
 ---
 
-# Skill: UI & Design Excellence (Enterprise Aesthetics)
+# Skill: Koreki Design System
 
-Dieses Dokument definiert das Erscheinungsbild und die Interaktionsstandards für Koreki. Es ist als verbindlicher Leitfaden für den **UI Expert** zu verstehen.
+Gilt für App, Marketing-Seiten und Außenkommunikation. Koreki ist **hell, es gibt keinen Dark Mode**.
 
-## 1. Glassmorphism Principle
-- **Geltungsbereich**: Glassmorphism (`.glass-morphism`, `backdrop-blur-*`, `bg-white/NN`) ist explizit auf **Modals, Sidebars und Overlays** beschränkt — also Elemente, die schwebend über anderem Content liegen (inkl. schwebender Bild-/Screenshot-Rahmen).
-- **Marketing-Content-Cards**: Flache Content-, Feature- und Info-Karten mit Fließtext auf Marketing-Seiten nutzen **standardmäßig keine Glass-Optik**. Stattdessen: `bg-background` + `border border-border` + `shadow-md`, ohne `backdrop-blur`.
-  > **Korrektur (09.09.2026):** Hier stand als Begründung, `bg-card` sei ein farbloser No-Op. Das stimmt seit dem 07.09.2026 nicht mehr — der Token trägt jetzt Weiß, `bg-background` Grau (siehe Flächen-Leiter unter 2b). Die Vorgabe bleibt vorerst `bg-background`, damit sich das Erscheinungsbild der Marketing-Seiten nicht unbemerkt ändert; ob eine weiße Karte dort besser trägt, ist eine offene Gestaltungsfrage.
-- **Backdrop Blur (Modals & große Content-Cards)**: Nutze `backdrop-blur-glass` (12px, definiert in `tailwind.config.js` unter `theme.extend.backdropBlur.glass`) für die `fixed inset-0`-Backdrop-Ebene von Modals sowie für große Content-/Spotlight-Cards (z.B. `SettingsModal.tsx`, `ConfirmationModal.tsx`, `GlobalBillingSettings.tsx`, `marketing/ShowroomCard.tsx`).
-- **Transparenz**: Hintergründe sollten eine subtile Deckkraft aufweisen, um räumliche Tiefe zu erzeugen.
-- **Box Shadows (Modals & große Content-Cards)**: Nutze den `shadow-glass` Effekt (definiert in `tailwind.config.js` unter `theme.extend.boxShadow.glass`) für eine schwebende Optik.
-- **Kleine, verankerte Popover-Overlays (Ausnahme)**: Dropdowns, Tooltips, Kontextmenüs und andere klein-dimensionierte, an einem Trigger-Element verankerte Overlays (kein `fixed inset-0`-Backdrop, sondern `absolute`/`top-full` relativ zum Trigger) nutzen **nicht** die Glass-Tokens, sondern durchgängig `backdrop-blur-md` oder `backdrop-blur-xl` kombiniert mit `shadow-xl`/`shadow-2xl` (Referenzimplementierungen: `src/components/ui/Dropdown.tsx`, `src/components/ui/KorekiTooltip.tsx`, `src/components/ui/PopoverMenu.tsx`). Diese Ausnahme ist eine bewusste, etablierte Konvention — kein Verstoß gegen das "Verbotene Tailwind-Klassen"-Verbot von `backdrop-blur-md` unten (siehe dortige Anmerkung).
+Regeln mit Wächter stehen hier kurz; Begründung und Fallgeschichte stehen im Kopf der jeweiligen Testdatei.
 
-## 2. Color Mastery (HSL)
-- **Dynamik**: Nutze das Tailwind-System mit HSL-Variablen (`--primary`, `--background`), um Themenwechsel (Dark/Light Mode) und Branding-Anpassungen zu ermöglichen.
-- **Kontrast**: Achte auf hohe Lesbarkeit, insbesondere in Textbereichen der Korrekturansicht (`CorrectionReview`).
+## 0. Zielbild: ein professionelles Schulwerkzeug
 
-## 2b. Flächen, Abgrenzung und Zustände
+Koreki soll aussehen wie ein Werkzeug, dem eine Schulleitung Schülerarbeiten anvertraut — nicht wie ein KI-Schaufenster. Vorbild sind sachliche Fachanwendungen: ruhig, lesbar, präzise.
 
-> **Tiefe entsteht über Flächen, nicht über Linien.** Diese Regeln stammen aus einem Befund vom 07./08.09.2026 und haben einen Wächter: [tests/unit/surface-governance.test.ts](../../../tests/unit/surface-governance.test.ts).
+- **Eine Akzentfarbe.** `primary` markiert Aktionen und Auswahl, sonst nichts. Keine Verläufe in Schrift, Flächen oder Buttons.
+- **Gewicht statt Lautstärke.** Überschriften höchstens `font-bold`, meist `font-semibold`. `font-black`, Versalien (`uppercase`) und gesperrte Schrift (`tracking-wide*`) sind verboten — auch in `Badge`.
+- **Keine Dekoration ohne Aufgabe.** Keine Ambient-Blobs (`blur-[100px]` u. ä.), keine farbigen Leucht-Schatten (`shadow-primary/40`), keine Dauer-Animationen an statischen Elementen.
+- **Echte Inhalte zeigen.** Screenshots zeigen eine Arbeit mit Vorschlag und Feedback, nie einen leeren Zustand.
+- **Text vor Technik.** Wer eine Lehrkraft anspricht, beschreibt, was sie davon hat. Hardware, Modelle und Laufzeiten gehören auf die Installationsseiten, nicht auf die Startseite.
 
-**Die Flächen-Leiter wechselt sich ab.** Seite → Karte → Behälter → Block. Zwei gleiche Töne dürfen nie ineinander stecken:
+> **Altbestand.** Stand 12.10.2026: In der App abgebaut (Versalien, `font-black`, Ambient-Blobs, Verlaufsschrift — `.text-gradient` färbt nur noch in `primary`). Übrig sind die Marketing-Seiten, die mit der neuen Startseite umgebaut werden. Ein Wächter folgt danach.
 
-| Ebene | Token | Wert |
+## 1. UX-Grundsätze
+
+1. **Ergebnis vor Einstellung.** Wer neu ist, sieht ein Korrekturergebnis (die Demo), bevor er etwas konfigurieren muss.
+2. **Keine Dialog-Ketten.** Kein Modal öffnet als Folge eines anderen. Was mehrere Schritte braucht, ist eine Seite mit Fortschrittsanzeige.
+3. **Der Standard reicht.** Jede Einstellung hat einen guten Vorgabewert. Expertise, Skills, Erfahrungsschatz und Intelligenz sind Verfeinerungen, keine Voraussetzung.
+4. **Eine Hauptaktion pro Bildschirm.** Genau ein Button in `variant="default"` ist hervorgehoben; alles andere ist sekundär.
+5. **Die Lehrkraft entscheidet — sichtbar.** KI-Werte heißen „Vorschlag". Übernehmen und Ändern sind die Hauptinteraktion der Prüfansicht. Nie „automatische Korrektur", nie „vollautomatisch".
+6. **Kosten nur dort, wo sie entstehen.** Credits erscheinen nur im gehosteten Dienst. Desktop, Community und eigener Schlüssel zeigen keine.
+7. **Leere Zustände führen weiter.** Ein leerer Bereich sagt, was als Nächstes zu tun ist, und bietet die Demo an.
+
+## 2. Sprache in der Oberfläche
+
+- **Anrede: Sie.** Überall — App, Marketing, Meldungen, E-Mails.
+- **Deutsch.** Keine englischen UI-Wörter (Update, Review, Deep Dive, Logistics, Coming soon).
+- **Satzschreibung.** Keine Versalien, auch nicht in `Badge`.
+- **Ein Begriff pro Konzept:**
+
+| Konzept | Begriff in der UI | Nicht verwenden |
 |---|---|---|
-| Seite | `bg-background` | `220 20% 95%` |
-| Karte | `bg-card` | weiß |
-| Behälter *in* einer Karte | `bg-muted` | `220 14% 96%` |
-| Block *im* Behälter | `bg-card` | weiß |
+| Fach-Anweisungen der Lehrkraft | Expertise | Expert Center, Experten-Modus, Fach-Prompts |
+| Zuschaltbare Bewertungsbausteine | Skills | Kompetenzbereiche, Module |
+| Gespeicherte Bewertungsbeispiele | Erfahrungsschatz | GradingMemory, Memory, Erfahrung, Präzedenzfälle |
+| Modell- und Genauigkeitswahl | Intelligenz | KI-Parameter-Center, AI-Leistungskraft |
+| Ergebnis der KI | Vorschlag | Bewertung, automatische Korrektur |
+| Texterkennung | Texterkennung | OCR (höchstens einmal in Klammern) |
+| Hinweis geringer Sicherheit | „Bitte prüfen" | Konfidenz, Review empfohlen |
 
-Bis zum 07.09.2026 waren Seite und Karte **derselbe** Token: beide gemessen `rgb(248,249,252)`. Eine Karte hob sich durch nichts ab außer ihrem Rand, und der liegt bei **1,18 : 1** — WCAG verlangt für ein abgrenzendes UI-Element 3 : 1.
+- **Kein Technikjargon** in Ansichten für Lehrkräfte: Inferenz, Zero-Shot, Sandbox, Knoten, Deduction, PII, Prompt, Token. Wo die Sache nötig ist, die Eigenschaft beschreiben.
 
-**Ein Mittel pro Aussage, höchstens drei insgesamt.** Rand *und* Flächentönung *und* Schatten *und* Ring am selben Element sind verboten. Vier Mittel entstehen nicht aus Absicht, sondern weil keines allein sichtbar war — das ist ein Symptom, kein Design. Trägt die Fläche die Abgrenzung, darf der Rand leise bleiben; sagt der Rand den Zustand, braucht es keinen Ring.
+## 3. Flächen und Abgrenzung
+Wächter: `tests/unit/surface-governance.test.ts`
 
-**Ein Rahmen ist verdient, wenn sein Inhalt eigenständig handhabbar ist.** Sonst reichen Leerraum und Haarlinien. Am 07.09.2026 standen fünf Rahmenebenen ineinander für einen Satz Text.
+**Die Flächen-Leiter wechselt sich ab** — zwei gleiche Töne stecken nie ineinander:
 
-**Jede `bg-*`-Klasse muss auf eine Farbe zeigen, die es gibt.** Eine Klasse ohne Eintrag in `tailwind.config.js` tut in Tailwind **nichts** — kein Fehler, keine Warnung. So war `bg-card` an 16 Stellen wirkungslos, und `hover:bg-primary-hover` machte einen Button-Hover, der nichts tat.
+| Ebene | Token |
+|---|---|
+| Seite | `bg-background` |
+| Karte | `bg-card` (weiß) |
+| Behälter in einer Karte | `bg-muted` |
+| Block im Behälter | `bg-card` |
 
-**Ein Zustandswechsel darf die Geometrie nicht ändern.** Rahmenstärke, Radius, Breite, Innenabstand und Zeilenhöhe bleiben gleich; wechseln darf nur die *Farbe*. Konkrete Fälle, die das verletzt haben:
-- Eine Karte, deren Fläche an `isExpanded` hing — sie wechselte beim Anklicken die Farbe und las sich als Fehler.
-- Ein Eingabefeld, dessen Rahmen an `isEditing` hing — beim Klick auf den Stift erschien er und die Abstände sprangen.
-- `leading-relaxed` neben `text-sm`: Tailwinds `text-sm` bringt eine eigene Zeilenhöhe mit und gewinnt. Lesemodus lief mit 20 px, das Eingabefeld mit 22,75 px. Nutze `text-sm/relaxed` — eine Regel, die nicht auseinanderfallen kann.
+Werte stehen in `src/styles/globals.css` — nirgends sonst abschreiben.
 
-**Eine Hover-Fläche ist eine Lasur, keine Graustufe.** `bg-muted` und `bg-accent` liegen beide auf `220 14% 96%`, der Seitengrund auf `220 20% 95%` — als Hover eines Elements auf dem Seitengrund ist das **ein Prozentpunkt** und damit unsichtbar. In einer weißen Karte trägt derselbe Ton (96 % gegen 100 %), und genau deshalb fällt es nicht auf: Dieselbe Klasse funktioniert an der einen Stelle und ist an der anderen tot. Am 09.09.2026 betraf das 80 Stellen, darunter die `outline`-Variante von `Button` an 88 Aufrufstellen — sie setzt sich selbst auf `bg-background` und hoverte auf `bg-accent`.
+- **Jede `bg-*`-Klasse zeigt auf eine Farbe, die es gibt.** Tailwind ignoriert unbekannte Klassen lautlos. *(Wächter)*
+- **Höchstens drei Abgrenzungsmittel pro Element** (Rand, Tönung, Schatten, Ring). Ein Mittel pro Aussage. *(Wächter)*
+- **Keine hartcodierten Palettenfarben** (`bg-slate-*`, `text-blue-*` …) — immer Tokens. *(Wächter)*
+- **Hover ist eine Lasur:** `hover:bg-foreground/5`; farbig `hover:bg-primary/10`. `hover:bg-muted`/`hover:bg-accent` auf dem Seitengrund ist unsichtbar. Was weiß ist (Eingabefeld, `outline`-Knopf), sagt den Zustand über den **Rand** — eine Lasur ließe den grauen Grund durchscheinen. *(Wächter)*
+- **Ein Rahmen ist verdient, wenn sein Inhalt eigenständig handhabbar ist.** Sonst Leerraum und Haarlinien.
+- **Zustandswechsel ändern nur Farbe, nie Geometrie** (Rahmenstärke, Radius, Abstand, Zeilenhöhe). Zeilenhöhe mit `text-sm/relaxed`, nicht `text-sm leading-relaxed`.
+- **Grau heißt deaktiviert.** Ein Feld, in das man schreibt, ist heller als die Umgebung; den Bearbeitungsmodus sagen Randfarbe und Ring.
+- **Fokusringe liegen innen** (`ring-inset`) — Scrollbehälter schneiden sie sonst ab.
 
-Eine feste Graustufe kann das nicht lösen; sie müsste sich zugleich von Weiß und von Grau absetzen. Nutze **`hover:bg-foreground/5`**: Die Lasur dunkelt ab, was darunter liegt, und ergibt auf jedem Grund rund fünf Punkte. Farbige Zustände bleiben farbig (`hover:bg-primary/10`), und was bereits weiß ist — ein Eingabefeld etwa — sagt seinen Zustand über den **Rand**, denn über die Fläche kann es das nicht.
+## 4. Tokens
 
-**Graue Füllung heißt „deaktiviert".** Ein Feld, in das man gerade schreibt, muss **heller** sein als seine Umgebung, nie dunkler. Den Bearbeitungsmodus sagen Randfarbe und Ring, nicht die Fläche.
+**Farben** (HSL-Variablen aus `globals.css`): `background`, `foreground`, `card`, `primary`, `secondary`, `muted`, `destructive`, `warning`, `success`, `border` — jeweils mit `-foreground`.
+`accent-1` … `accent-4` unterscheiden nur gleichwertige Optionen und tragen keine Bedeutung.
 
-**Fokusringe liegen innen (`ring-inset`).** Ein außenliegender Ring wird von jedem Scrollbehälter beschnitten, der nur einseitig Innenabstand hat (`overflow-y-auto pr-2` ist im Baum verbreitet). Innen kann ihn per Konstruktion nichts abschneiden.
-
-- **Hover-Effekte**: Jedes interaktive Element muss einen sanften Transition-Effekt besitzen (`transition-all duration-300`).
-- **Loading-States**: Nutze animierte Pulse-Effekte oder Shimmer-Skeletton-Screens.
-- **Global Registry**: Alle funktionalen Animationen (z.B. `animate-loading-bar`, `animate-scan`) müssen in `globals.css` zentralisiert sein.
-
-## 4. Component Guidelines
-- **Modals**: Konsistente Nutzung von Radien (`rounded-hero`) und Standard-Abständen (`p-6`).
-- **Icons**: Verwende ausschließlich **Lucide Icons** mit einer Standard-Größe von `w-5 h-5` oder `w-6 h-6`.
-- **Formulare**: Textareas und Inputs sollten Fokus-Ringe in der Primärfarbe besitzen.
-
-## 5. Industrial Scale & Performance
-- **Component LOC Limit**: UI-Komponenten sollten primär **< 300 Zeilen** Code umfassen. Grow-Buster: Komplexe Logik MUSS in Hooks extrahiert werden, Sub-Layouts in eigene Komponenten.
-- **Next.js 15 Link Compliance**: Nutze niemals verschachtelte `<a>` Tags innerhalb von `<Link>`, es sei denn, `legacyBehavior` ist explizit gefordert. Styles gehören direkt auf die `Link`-Komponente.
-
-## Global Stacking Context (Z-Index)
-Um visuelle Überlagerungen (Clipping) zu verhindern, folgt Koreki einer Hierarchie aus **Bändern**. Zwischen den Bändern ist die Reihenfolge unverhandelbar; innerhalb eines Bandes entscheidet der konkrete Wert, welcher Dialog über welchem liegt.
-
-- **Z-0**: Footer / Hintergrund-Elemente.
-- **Z-10**: Main Content Shell.
-- **Z-20**: Active Layout Content (Navigation / Cards).
-- **Z-100 – Z-2300**: Verankerte Overlays — Dropdowns, Tooltips, Popover-Menüs, Kontextleisten.
-- **Z-6000 – Z-10000**: Modals, Drawers & Lightboxen (stets via Portals am Body). Ein Dialog, der über einem anderen liegen muss, bekommt einen höheren Wert **innerhalb** dieses Bandes.
-- **Z-10001**: Flüchtige Meldungen (Toasts, `ToastHost`). Die oberste Ebene überhaupt.
+**Typografie:** Eine Schrift: **Geist**, selbst ausgeliefert aus `public/fonts/` (die CSP blockiert Google Fonts). `font-sans` und `font-outfit` zeigen beide darauf; `font-mono` nur für Code/Diffs. Kleinste Schrift `text-xs` — `text-[9px]`…`text-[11px]` sind verboten.
 
-> **Warum Meldungen ganz oben liegen.** Ein Toast berichtet über das, was gerade *in* einem Dialog geschehen ist — „Profil erfolgreich gespeichert". Läge er darunter, verschwände genau die Rückmeldung hinter genau dem Fenster, das sie ausgelöst hat. Am 25.08.2026 war das der Fall: Der Toast stand auf `z-9999` und verließ sich darauf, später im Dokument zu stehen als die Dialoge — `AVVUploadModal` und `QuickStartModal` lagen aber schon auf `z-10000`.
->
-> Der oberste Rang ist testgesichert: [tests/unit/components/ToastHost.test.tsx](../../../tests/unit/components/ToastHost.test.tsx) liest **alle** `z-[N]` in `src/` und verlangt, dass die Meldungs-Ebene strikt darüber liegt. Wer künftig ein Modal höher legt, bekommt einen roten Test statt einer unsichtbaren Meldung.
+**Radien** *(Wächter: nur Stufen, die es gibt und die erlaubt sind)*:
 
-> **Zum Bestand.** Die Werte im Baum sind historisch gewachsen — es gibt derzeit 14 verschiedene. Die Bänder oben beschreiben, wo eine Ebene **hingehört**, nicht jede Zahl, die existiert. Wer eine neue Ebene braucht, ordnet sie einem Band zu, statt eine weitere Zahl zu erfinden.
-
-## Responsive First
-- **Mobile First Spacing**: Richte Abstände primär mobil-first aus (z. B. `px-6`) und füge die Desktop-Tokens mit dem standardmäßigen Tailwind-Präfix `md:` hinzu (z. B. `md:px-page-inline`).
-- **Standard-Raster**: Vermeide es, responsive Layout-Sonderregeln direkt über eigene Media-Queries in den CSS-Dateien zu deklarieren. Nutze stattdessen Tailwinds integrierte Breakpoint-Präfixe (`md:`, `lg:`).
-
----
+| Klasse | Einsatz |
+|---|---|
+| `rounded-hero` (16 px, = `rounded-2xl`) | Modals, Drawer, Hauptkarten |
+| `rounded-xl` | Kinder in `rounded-hero`-Karten |
+| `rounded-lg` | normale App-Karten, Infoboxen |
+| `rounded-md` | Buttons, Inputs (aus dem UI-Kit) |
+| `rounded-full` | Kreise, Pillen |
 
-# Koreki – Agent Coding Rules
-
-## Pflicht: UI-Komponenten
+Verboten: `rounded-3xl` und alle Werte in eckigen Klammern.
 
-Alle UI-Elemente MÜSSEN aus `@/components/ui/` stammen. Niemals raw HTML-Elemente für UI verwenden.
-
-| Zweck | Komponente | Import |
-|---|---|---|
-| Buttons | `Button` | `@/components/ui/Button` |
-| Karten / Panels | `Card`, `CardHeader`, `CardContent`, `CardTitle` | `@/components/ui/Card` |
-| Status-Labels | `Badge` | `@/components/ui/Badge` |
-
-> **Button `shape="pill"`**: Nutzt bewusst Sentence-Case (kein `uppercase`/`tracking-widest` mehr — entfernt zugunsten eines weniger "AI-SaaS-Hype"-artigen Looks). Die `shimmer`-Prop bleibt technisch nutzbar, ist auf Marketing-CTAs aber **nicht Standard** — Hover-Feedback läuft über `hover:-translate-y-0.5` + Shadow-Intensivierung.
->
-> **Badge-Konventionen**: `Badge`-Varianten (`vibrant`, `light`, `glass`, `subtle`) behalten ihr Uppercase/`tracking-widest` bewusst bei — das ist gewollte Differenzierung gegenüber CTA-Buttons, nicht inkonsistent.
-| Checkboxen | `Checkbox` | `@/components/ui/Checkbox` |
-| Einzeiliger Input | `Input` | `@/components/ui/Input` |
-| Mehrzeiliger Input | `Textarea` | `@/components/ui/Textarea` |
-| Text mit Highlighting | `HighlightableTextArea` | `@/components/ui/HighlightableTextArea` |
-| Tabs / Navigation | `Tabs`, `TabsList`, `TabsTrigger`, `TabsContent` | `@/components/ui/Tabs` |
-| Custom Select | `Dropdown` | `@/components/ui/Dropdown` |
+**Abstände:** `px-6 md:px-page-inline` (Seite), `pb-12 md:pb-section-vertical` (Sektion, einseitig), `p-6 md:p-card-padding` (Karte), `p-4 md:p-card-padding-sm` (kompakt), `pt-16 pb-12 md:pt-hero-top md:pb-hero-bottom` (Hero). Mobile zuerst, Desktop über `md:`/`lg:`, keine eigenen Media-Queries.
 
-### Verboten
-- Raw `<button>` außerhalb von UI-Komponenten
-- Raw `<input>` außerhalb von UI-Komponenten
-- Inline `style={{}}` Props für Layout oder Farben (nur für Keyframe-Animationen erlaubt)
-- `<style jsx>` Blöcke außer für `@keyframes`
+**Icons:** nur Lucide, `w-5 h-5` oder `w-6 h-6`. Ein Icon-Button ohne sichtbaren Text hat ein `aria-label`.
 
----
+## 5. Tiefe und Bewegung
 
-## Design Tokens – IMMER verwenden
+- **Schatten:** Karten tragen sich über die Fläche (Abschnitt 3), Schatten höchstens `shadow-sm`. Modals `shadow-glass`, verankerte Popover `shadow-xl`.
+- **Glas und Unschärfe** nur für Ebenen, die über Inhalt schweben: Modal-Hintergrund (`backdrop-blur-glass`), die schwebende Kopfleiste. Nie für Inhaltskarten. Verankerte Listen und Menüs (Vorbild `ui/Dropdown.tsx`) sind undurchsichtig: `bg-card`, Haarlinie, `shadow-xl`.
+- **Animation:** nur Klassen aus `globals.css` (`animate-fade-up`, `-fade-down`, `-fade-in`, `animate-spin`, `animate-scan`, `animate-loading-bar`). Übergänge 150–300 ms, nur Farbe und Deckkraft. `prefers-reduced-motion` respektieren.
+- **Laden:** Skeleton oder Fortschrittsbalken mit Text, was gerade passiert.
 
-Farben und Abstände kommen aus CSS-Variablen, nicht aus hardcodierten Werten.
+## 6. Komponenten (Pflicht)
 
-### Spacing (Layouts & Sektionen)
-Nutze die standardisierten Spacing-Tokens für ein konsistentes Raster. Für Responsivität kombiniere sie mit Tailwind-Präfixen:
-- **`px-6 md:px-page-inline`**: Horizontaler Seitenabstand (32px Desktop, 24px Mobile).
-- **`pb-12 md:pb-section-vertical`**: Standardmäßiger vertikaler Sektionsabstand. Wird nur einseitig angewendet (Bottom-Padding), um eine Verdopplung des Abstands zwischen aufeinanderfolgenden Sektionen zu vermeiden.
-- **`py-12 md:py-section-vertical`**: Nur nutzen, wenn eine Sektion komplett isoliert steht und beidseitig Padding benötigt.
-- **`p-6 md:p-card-padding`**: Innenabstand für Standard- und große Karten/Highlightboxen (40px Desktop, 24px Mobile).
-- **`p-4 md:p-card-padding-sm`**: Innenabstand für kompakte Info-Zellen/Bento-Karten (24px Desktop, 16px Mobile).
-- **`pt-16 pb-12 md:pt-hero-top md:pb-hero-bottom`**: Vertikales Hero-Padding für Standard-Unterseiten.
-
-### Farben (HSL via CSS-Variables)
-Nutze die HSL-Variablen aus `globals.css` via Tailwind:
-```
-bg-background, text-foreground
-bg-primary, text-primary, text-primary-foreground
-bg-secondary, text-secondary-foreground
-bg-muted, text-muted-foreground
-bg-destructive, text-destructive-foreground
-bg-warning, text-warning, text-warning-foreground
-bg-success, text-success, text-success-foreground
-border-border
-```
-
-**Accent Tokens (Marketing Pages)**
-- `--accent-1` bis `--accent-4` (sowie `-foreground` Varianten)
-- **Wichtig:** Diese Tokens dienen *ausschließlich* zur rein visuellen Unterscheidung gleichwertiger Karten oder Optionen (z. B. auf Marketing-Seiten). Sie haben im Gegensatz zu `--success` oder `--warning` bewusst **keine** semantische oder inhaltliche Bedeutung. Versuch niemals, sie konzeptionell zuzuordnen (z.B. "Accent-1 ist immer Cloud").
-
-### Typografie (Branding & UI)
-- **font-outfit**: Standard für Branding, Überschriften und UI-Elemente (Korrektur-Modus).
-- **font-inter / font-sans**: Standard für Fließtext und Datentabellen.
-- **font-mono**: Ausschließlich für Code-Blöcke oder Diff-Ansichten.
-
-### Eckenradien (Border-Radius)
-Nutze ausschließlich die standardisierten Radien-Klassen. Willkürliche Eckenrundungen (wie `rounded-[2.5rem]`, `rounded-[40px]`, `rounded-3xl` etc.) sind strengstens untersagt:
-- **`rounded-hero` (16px / `1.0rem` via `--radius-hero`):** Einheitlicher Standard für alle Modals, Drawers, Popups und primäre Sektionskarten (z.B. Haupt-Card der Stapelverarbeitung).
-- **`rounded-xl` (12px):** Für verschachtelte Kind-Elemente innerhalb von `rounded-hero`-Karten (z.B. Listenzeilen/Schülerzeilen in der Stapelverarbeitung), um eine harmonische Ecken-Nestung zu gewährleisten ($R_{outer} > R_{inner}$).
-- **`rounded-lg` (8px / `0.5rem` via `--radius`):** Standard für normale App-Karten, Widgets und Infoboxen.
-- **`rounded-md` (~6px):** Standard-Radius für interaktive Kontrollelemente (Buttons, Inputs). Wird direkt aus den UI-Kit-Komponenten (`Button`, `Input`) vererbt.
-- **`rounded-full`** für Kreise und Pillen, **`rounded-sm`/`rounded-none`** für Sonderfälle.
-
-> **`rounded-2xl` ist erlaubt und identisch mit `rounded-hero`** — beide ergeben 16px. Bevorzuge `rounded-hero`, weil der Name die Absicht trägt; `rounded-2xl` steht an 152 Stellen und wird nicht verfolgt.
->
-> **Wächter:** [tests/unit/surface-governance.test.ts](../../../tests/unit/surface-governance.test.ts) prüft jede `rounded-*`-Klasse gegen die Tailwind-Skala **und** die Konfiguration. Er fängt zwei Fehlerarten:
-> - **Verbotene Stufen.** `rounded-3xl` stand am 08.09.2026 an 28 Stellen in 13 Dateien — verboten seit jeher, nie geprüft. Ersetzt durch `rounded-hero` (Seiten-, Dialog- und Tabellenkarten) bzw. `rounded-xl` (eingebettete Kästen und Kacheln).
-> - **Radien, die es gar nicht gibt.** `rounded-1.5xl` in `CreditsModal` war weder in Tailwind noch in der Konfiguration definiert — die Schaltfläche war schlicht eckig, ohne dass jemand etwas gemerkt hätte. Dieselbe Fehlerart wie das tote `bg-card`.
-
----
-
-## Verbotene Tailwind-Klassen
-
-Diese Klassen sind im Koreki-Projekt nicht erlaubt:
-
-```css
-/* Willkürliche Border-Radius Werte */
-rounded-[2.5rem], rounded-[3rem], rounded-[40px] etc.
-→ Stattdessen: rounded-xl, rounded-2xl oder rounded-[var(--radius)]
-
-/* Mikro-Typografie */
-text-[9px], text-[10px], text-[11px]
-→ Stattdessen: text-xs (12px)
-
-/* Hardcodierte Farben */
-bg-slate-900, text-blue-600, bg-indigo-500 etc. als primäre UI-Farben
-→ Stattdessen: bg-primary, text-primary etc.
-
-/* Verbotene Button-Farben */
-bg-slate-900, bg-black, bg-gray-900 für Buttons
-→ Koreki nutzt keine rein schwarzen Buttons. Nutze bg-primary, bg-gradient oder secondary Themes.
-
-/* Glassmorphism ohne explizite Anforderung */
-backdrop-blur-md, bg-white/60, bg-slate-900/60
-→ Nur wenn Glassmorphism explizit gefordert ist oder .glass-morphism genutzt wird
-→ Etablierte Ausnahme: kleine, verankerte Popover-Overlays (Dropdown/Tooltip/PopoverMenu, siehe Abschnitt 1) nutzen bewusst backdrop-blur-md/-xl + shadow-xl/-2xl statt der Glass-Tokens.
-
-/* Dekorative Hintergründe */
-blur-[100px], blur-[120px] Ambient-Blobs
-→ Nur auf explizite Anfrage
-```
-
----
-
-## Layout-Regeln
-
-Koreki nutzt zwei primäre Layout-Typen, um eine klare Trennung zwischen Marketing-Präsenz und funktionaler Applikation zu gewährleisten.
-
-### 1. AppLayout (`@/layouts/AppLayout`)
-**Einsatzbereich**: Dashboard, Admin-Panel, Login/Register-Flows.
-- **Optik**: `bg-background`, nutzt denselben `BackgroundGradients`-Ambient-Shell-Layer wie `MarketingLayout` (vereinheitlicht — siehe Abschnitt 7), Fokus auf Funktionalität in der Content-Ebene selbst.
-- **Komponenten**: Nutzt den `MinimalFooter`.
-
-### 2. MarketingLayout (`@/layouts/MarketingLayout`)
-**Einsatzbereich**: Landingpage (`index`), Features, Pricing, Legal Docs.
-- **Optik**: Premium Aesthetics, komplexe radiale Gradients, Sticky Header.
-- **Komponenten**: Nutzt `MarketingHeader` und `MarketingFooter`.
-
-> **Hinweis:** Der `BackgroundGradients`-Ambient-Shell-Layer (Abschnitt 7) ist **kein Marketing-exklusives Element** — er läuft app-weit über `AppLayout` und `MarketingLayout` gleichermaßen, um eine kohärente Markenidentität zu erzeugen. Unterschiede zwischen beiden Layouts bestehen primär in Header/Footer-Komponenten und der Content-Dichte, nicht im Hintergrund-Layer.
-
-### Seitenstruktur Beispiele
-
-**Für App-Seiten (Internal):**
-```tsx
-import AppLayout from '@/layouts/AppLayout';
-
-export default function MyDashboard() {
-    return (
-        <AppLayout>
-            <div className="max-w-[1500px] mx-auto p-4 md:p-8 relative z-10">
-                <Head>
-                    <title>Dashboard | Koreki</title>
-                </Head>
-                {/* Inhalt mit Card-Komponenten */}
-            </div>
-        </AppLayout>
-    );
-}
-```
-
-**Für Marketing-Seiten (Public):**
-```tsx
-import MarketingLayout from '@/layouts/MarketingLayout';
-
-export default function PricingPage() {
-    return (
-        <MarketingLayout>
-            <div className="max-w-7xl mx-auto px-4 py-20">
-                <Head>
-                    <title>Preise | Koreki</title>
-                </Head>
-                {/* Hero & Pricing Sections */}
-            </div>
-        </MarketingLayout>
-    );
-}
-```
-
----
-
-## Animationen
-
-Nur diese vordefinierten Klassen aus globals.css verwenden:
-`animate-fade-up`, `animate-fade-down`, `animate-fade-in`, `animate-spin`, `animate-pulse-blue`, `animate-float-glow`, `animate-scan`, `animate-loading-bar`.
-
----
-
-## 7. Ambient Shell & Backgrounds
-
-Für das "Premium Aesthetics" Feeling nutzen wir eine überlagerte Hintergrund-Ebene aus weichen, animierten Unschärfekreisen (Ambient Blobs).
-
-### Implementation Pattern:
-```tsx
-const BackgroundGradients = () => (
-    <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-indigo-500/10 blur-[120px] rounded-full mix-blend-multiply" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-blue-500/10 blur-[120px] rounded-full mix-blend-multiply" />
-    </div>
-);
-```
-
-### Regeln:
-1. **Low Contrast**: Die Deckkraft (`opacity`) darf niemals so hoch sein, dass sie die Lesbarkeit des Contents stört. Standard ist `/5` bis `/10`.
-2. **Fixed**: Der Hintergrund muss mit `fixed` fixiert sein, um den "schwebenden" Effekt beim Scrollen zu erzeugen.
-3. **Marketing-Sections**: Zusätzlich zum globalen `BackgroundGradients`-Layer max. **1 zusätzlicher lokaler Akzent-Blob** (`blur-[...]`) pro sichtbarer Section — nur bei begründetem visuellem Zweck (z.B. Tiefe hinter einem Screenshot-Rahmen), nicht als reine Flächen-Dekoration.
-
----
-
-## 8. Branding Constants
-
-Das Branding von Koreki folgt strikten typografischen Regeln:
-
-- **Logotype**: `font-outfit font-extrabold tracking-tighter`.
-- **Der Punkt**: Ein farbiger Schlusspunkt (`text-primary`) am Ende des Markennamens ist Pflicht: `Koreki<span className="text-primary">.</span>`.
-
-## Modals
-
-- **Implementation**: Modals existieren als eigene Komponenten in `@/components/`. 
-- **Z-Index & Stacking**: Niemals Modals inline in Pages implementieren. Sie MÜSSEN über **React Portals** (`ReactDOM.createPortal`) an den `document.body` gehängt werden.
-- **Rationale**: Dies verhindert "Clipping" durch CSS-Transformationen oder Animationen in Eltern-Containern (Stacking Context).
-- **UX**: Den Body-Scroll beim Öffnen sperren (`overflow: hidden`).
-- **Barrierefreiheit**: Portal-Montage, Scroll-Sperre und Fokusfalle kommen aus dem Hook `useDialogA11y`. Ohne Fokusfalle läuft der Tastatur-Fokus hinter das Overlay weiter — der Nutzer bedient dann Elemente, die er nicht sieht. Wer schließbar ist, nimmt zusätzlich `useEscapeKey`; ein **blockierender** Dialog bekommt bewusst keinen Escape-Ausgang, den es fachlich nicht gibt.
-- **Scroll-Sperre zurücksetzen**: Beim Aufräumen den **vorher gemerkten** `overflow`-Wert wiederherstellen, nicht hart auf `unset`. Sonst hebt ein schließender Dialog die Sperre eines noch offenen mit auf.
-
----
-
-## Meldungen & Rückfragen
-
-Koreki spricht mit der Lehrkraft **nie über den Browser**. `alert()` und `confirm()` sehen aus wie Meldungen des Betriebssystems, tragen keine Warnfarbe und lassen sich weder gestalten noch übersetzen: eine belanglose Nachfrage sieht darin genauso aus wie ein endgültiger Verlust.
-
-| Zweck | Aufruf | Import |
-|---|---|---|
-| Bestätigung („gespeichert") | `meldeErfolg(text)` | `@/lib/notify` |
-| Offene Aufgabe („Bitte gib einen Namen ein") | `meldeHinweis(text)` | `@/lib/notify` |
-| Fehlschlag | `meldeFehler(text)` | `@/lib/notify` |
-| Rückfrage vor folgenreicher Aktion | `askConfirmation({ title, message })` | `@/lib/confirm-dialog` |
-| Rückfrage vor dem Überschreiben | `confirmOverwrite(label, name)` | `@/lib/confirm-dialog` |
-
-### Regeln
-- **Drei Tonlagen, nicht zwei.** `hinweis` steht zwischen Erfolg und Fehler. Ein fehlender Name ist eine offene Aufgabe, kein Defekt — rot signalisiert der Lehrkraft, etwas sei kaputt.
-- **Erfolg blendet sich aus, Fehler bleiben stehen.** Fehler enthalten oft, was zu tun ist; einer, der sich vor dem Lesen schließt, ist schlimmer als keiner.
-- **Kein Modal für eine Erfolgsmeldung.** Ein Dialog, der „gespeichert" meldet und einen Klick auf OK verlangt, bestraft die Lehrkraft dafür, dass etwas geklappt hat.
-- **Die Fläche eines Toasts ist undurchsichtig.** Die Tonlage trägt der farbige Streifen links, nicht eine Einfärbung der Fläche. Grund: `cn()` fasst über `tailwind-merge` zusammen und behält von zwei `bg-*`-Klassen nur die letzte — `bg-background` neben `bg-success/5` ergibt fünf Prozent Deckkraft.
-
-Beide Regeln haben einen Wächter: [tests/unit/confirm-dialog-governance.test.ts](../../../tests/unit/confirm-dialog-governance.test.ts) hält `alert(` **und** `confirm(` im gesamten `src/` auf null — in der langen Form (`window.confirm(`) wie in der kurzen. Es gibt keinen eingefrorenen Altbestand mehr, den man noch abtragen dürfte.
-
-## Tabs & Dropdown Usage
-
-```tsx
-// Tabs Beispiel (Segmented Control)
-<Tabs defaultValue="users">
-    <TabsList>
-        <TabsTrigger value="users">Benutzer</TabsTrigger>
-        <TabsTrigger value="workspaces">Institute</TabsTrigger>
-    </TabsList>
-    <TabsContent value="users">...</TabsContent>
-</Tabs>
-
-// Dropdown Beispiel (Premium Select)
-<Dropdown 
-    value={selected} 
-    onValueChange={setSelected}
-    options={[
-        { value: '1', label: 'Option A', icon: <User size={14}/> }
-    ]}
-/>
-```
-
----
-## Industrial Maintenance Protocol 🏮
-1. **Consistency First**: Neue Komponenten müssen das bestehende Design-Vokabular (Rundungen, Schatten, HSL) von Koreki nutzen.
-2. **Refactor-Trigger**: Fällt eine Komponente durch das LOC-Limit (> 300 Zeilen), wird sie unmittelbar modularisiert.
-3. **No-Bypass**: Manuelle z-index Vergaben außerhalb der Bänder des *Global Stacking Context* sind untersagt. Wer eine neue Ebene braucht, ordnet sie einem Band zu, statt eine weitere Zahl zu erfinden.
+Alle UI-Elemente kommen aus `@/components/ui/`:
+`Button`, `Card` (+ `CardHeader`/`CardContent`/`CardTitle`), `Badge`, `Checkbox`, `Input`, `Textarea`, `HighlightableTextArea`, `Tabs` (+ `TabsList`/`TabsTrigger`/`TabsContent`), `Dropdown`.
 
+Verboten: rohes `<button>`/`<input>` außerhalb des UI-Kits; `style={{}}` für Layout oder Farbe (nur Keyframe-Werte); `<style jsx>` außer `@keyframes`; verschachteltes `<a>` in `<Link>`.
+
+`Button shape="pill"` ist in Satzschreibung, ohne `shimmer`.
+
+## 7. Dialoge
+
+- Eigene Komponente, per Portal an `document.body`, nie inline in einer Seite.
+- Portal, Scroll-Sperre und Fokusfalle aus `useDialogA11y`; schließbare Dialoge zusätzlich `useEscapeKey`, blockierende bewusst nicht. Die Scroll-Sperre stellt den **vorher gemerkten** Wert wieder her.
+- `rounded-hero`, `p-6`.
+- Kein Modal für eine Erfolgsmeldung.
+
+## 8. Meldungen und Rückfragen
+Wächter: `tests/unit/confirm-dialog-governance.test.ts`, `tests/unit/components/ToastHost.test.tsx`
+
+Nie `alert()` oder `confirm()` (auch nicht `window.`).
+
+| Zweck | Aufruf (`@/lib/notify`, `@/lib/confirm-dialog`) |
+|---|---|
+| Bestätigung | `meldeErfolg(text)` — blendet sich aus |
+| Offene Aufgabe | `meldeHinweis(text)` — nicht rot |
+| Fehlschlag | `meldeFehler(text)` — bleibt stehen |
+| Rückfrage vor folgenreicher Aktion | `askConfirmation({ title, message })` |
+| Rückfrage vor dem Überschreiben | `confirmOverwrite(label, name)` |
+
+Die Toast-Fläche ist undurchsichtig; die Tonlage trägt der Streifen links.
+
+## 9. Ebenen (z-index)
+
+Bänder statt Einzelwerte; eine neue Ebene wird einem Band zugeordnet, keine neue Zahl erfunden:
+`z-0` Hintergrund · `z-10` Inhalt · `z-20` Navigation/Karten · `z-100–2300` verankerte Overlays · `z-6000–10000` Modals, Drawer, Lightbox · `z-10001` Toasts (oberste Ebene, Wächter im ToastHost-Test).
+
+## 10. Layouts und Umfang
+
+- `AppLayout` für App, Admin, Login/Registrierung; `MarketingLayout` für öffentliche Seiten.
+- Größengrenzen *(Wächter: `tests/unit/file-size-governance.test.ts`)*: 300 Zeilen für `components/`, `hooks/`, `pages/`; max. 10 Hook-Aufrufe pro Komponente. Logik in Hooks bzw. `src/lib/`.
+
+## 11. Marke
+
+Logotype `font-outfit font-extrabold tracking-tighter`, farbiger Schlusspunkt: `Koreki<span className="text-primary">.</span>`.

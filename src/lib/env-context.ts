@@ -65,6 +65,16 @@ export function isKeycloakAuth(): boolean {
 }
 
 /**
+ * Ob die Oberflaeche Credit-Angaben zeigt.
+ * Credits entstehen nur im gehosteten Dienst mit Koreki-Schluessel. Desktop,
+ * Community und der eigene Schluessel (PURE) zeigen keine
+ * (koreki-design-system §1, Grundsatz 6).
+ */
+export function zeigtCredits(isPureMode = false): boolean {
+    return !isLocalInstance() && !isPureMode;
+}
+
+/**
  * Bestimmt, ob es sich um eine lokale Instanz handelt (Desktop oder Community Single User).
  * Lokale Instanzen umgehen die SaaS-Authentifizierung und das Billing.
  */

@@ -59,7 +59,7 @@ export const AnonymizeModal: React.FC<AnonymizeModalProps> = ({
                     <div className="flex flex-col gap-1.5">
                         <div className="flex items-center gap-2 flex-wrap">
                             <ShieldCheck size={18} className="text-primary" />
-                            <h3 className="text-sm font-bold text-foreground font-outfit font-black">Anonymisierte Vorschau</h3>
+                            <h3 className="text-sm font-bold text-foreground font-outfit font-bold">Anonymisierte Vorschau</h3>
                             <Badge variant="secondary" className="font-outfit font-bold tracking-tight">
                                 {points} {maxPoints !== undefined ? `von ${maxPoints}` : ''} Punkte
                             </Badge>
@@ -80,7 +80,7 @@ export const AnonymizeModal: React.FC<AnonymizeModalProps> = ({
                 {/* Content Panel (Single Column) */}
                 <div className="p-5 flex-1 overflow-y-auto flex flex-col gap-4">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-primary uppercase tracking-wider font-outfit flex items-center gap-1">
+                        <span className="text-xs font-medium text-primary font-outfit flex items-center gap-1">
                             <Sparkles size={11} /> Anonymisierte Schülerantwort
                         </span>
                         <Button
@@ -157,7 +157,7 @@ export const AnonymizeModal: React.FC<AnonymizeModalProps> = ({
                         <Button
                             size="sm"
                             onClick={onConfirmSave}
-                            className="h-8 text-xs font-black bg-primary hover:bg-primary/95 text-primary-foreground rounded-lg px-4 flex items-center gap-1.5 shadow-sm"
+                            className="h-8 text-xs font-bold bg-primary hover:bg-primary/95 text-primary-foreground rounded-lg px-4 flex items-center gap-1.5 shadow-sm"
                             disabled={anonymizing || !!anonymizeError || !anonymizedText || isPending}
                         >
                             {isPending ? (

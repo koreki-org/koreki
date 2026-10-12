@@ -96,7 +96,7 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
             {/* User Profiles */}
             {profiles.filter(p => !p.isSystem).length > 0 && (
                 <div className="space-y-2">
-                    <label className="text-xxs uppercase font-bold text-muted-foreground tracking-widest px-2">Eigene Experten-Profile</label>
+                    <label className="text-xs font-medium text-muted-foreground px-2">Eigene Experten-Profile</label>
                     {profiles.filter(p => !p.isSystem).map(p => (
                         <div
                             key={p.id}
@@ -160,7 +160,7 @@ ${p.correctionPrompt || p.prompt}`;
             )}
             {/* System Templates */}
             <div className="space-y-2">
-                <label className="text-xxs uppercase font-bold text-muted-foreground tracking-widest px-2">Standard-Experten-Profile</label>
+                <label className="text-xs font-medium text-muted-foreground px-2">Standard-Experten-Profile</label>
                 {profiles.filter(p => p.isSystem).map(p => (
                     <div
                         key={p.name}
@@ -261,16 +261,16 @@ ${correctionPrompt}`;
     <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 overflow-y-auto p-4 sm:p-8">
         <div className="flex justify-between items-end gap-6">
             <div className="flex-1 space-y-2">
-                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">
+                <label className="text-xs font-medium text-muted-foreground">
                     {isCreatingNew ? 'Name des neuen Experten-Profils' : 'Gewähltes Experten-Profil'}
                 </label>
                 {isCreatingNew ? (
                     <Input
                         autoFocus value={newProfileName} onChange={e => setNewProfileName(e.target.value)}
-                        placeholder="z.B. IT-Systeme 11b" className="text-lg sm:text-xl font-black border-primary/20 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
+                        placeholder="z.B. IT-Systeme 11b" className="text-lg sm:text-xl font-bold border-primary/20 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
                     />
                 ) : (
-                    <h3 className="text-xl sm:text-2xl font-black text-foreground flex items-center gap-3">
+                    <h3 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-3">
                         {selectedProfile}
                         {isSystemSelected && <Badge variant="outline" className="text-xxs bg-muted text-muted-foreground px-3 py-1 rounded-full border-transparent font-bold">SYSTEM</Badge>}
                     </h3>
@@ -279,7 +279,7 @@ ${correctionPrompt}`;
             {isDirty && !isCreatingNew && !isSystemSelected && (
                 <div className="flex items-center gap-2 text-warning animate-pulse pb-2 shrink-0">
                     <RefreshCcw size={16} />
-                    <span className="text-xxs font-bold uppercase tracking-widest">Ungespeichertes</span>
+                    <span className="text-xs font-medium">Ungespeichertes</span>
                 </div>
             )}
         </div>
@@ -294,7 +294,7 @@ ${correctionPrompt}`;
                     className="mt-1 w-5 h-5 text-primary rounded-md border-primary/30 focus:ring-primary focus:ring-offset-primary/5 cursor-pointer transition-all"
                 />
                 <div className="flex-1">
-                    <label htmlFor="createAiProfile" className="text-sm font-black text-foreground cursor-pointer block">
+                    <label htmlFor="createAiProfile" className="text-sm font-bold text-foreground cursor-pointer block">
                         Mitgelieferte KI-Parameter speichern
                     </label>
                     <p className="text-xs text-muted-foreground mt-1 font-medium leading-relaxed">
@@ -317,7 +317,7 @@ ${correctionPrompt}`;
                         <Button 
                             onClick={onSaveToDB}
                             disabled={saving || !isDirty}
-                            className="h-9 px-4 text-xxs whitespace-nowrap font-bold uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0"
+                            className="h-9 px-4 text-xs whitespace-nowrap font-medium rounded-full flex items-center gap-1.5 shadow-md transition-all border-0"
                         >
                             {saving ? (
                                 <div className="animate-spin rounded-full h-3 w-3 border-2 border-primary-foreground border-t-transparent" />

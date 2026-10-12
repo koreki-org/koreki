@@ -194,7 +194,7 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-[1fr_1fr_80px_40px] gap-3 px-2 text-xs font-bold text-muted-foreground uppercase mb-2">
+                    <div className="grid grid-cols-[1fr_1fr_80px_40px] gap-3 px-2 text-xs font-medium text-muted-foreground mb-2">
                         <span>Nachname</span>
                         <span>Vorname</span>
                         <span className="text-center">Seiten</span>

@@ -16,26 +16,31 @@ import { cn } from '@/lib/utils';
  * und von Grau absetzen. Eine Lasur schon — `foreground/5` dunkelt ab, was
  * darunter liegt, und ergibt auf beiden Gruenden rund fuenf Punkte Abstand
  * (Weiss 100% -> 95,2%; Grund 95% -> 90,5%).
+ *
+ * Ausnahme seit dem 12.10.2026: `outline` ist ein WEISSER Knopf. Eine Lasur als
+ * Hover-Flaeche ersetzt sein Weiss durch etwas Durchsichtiges, und der graue
+ * Seitengrund scheint durch — der Knopf wurde beim Ueberfahren grau. Was weiss
+ * ist, sagt den Zustand ueber den Rand.
  */
 const buttonVariants = cva(
-    'inline-flex items-center justify-center rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background active:scale-95',
+    'inline-flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background',
     {
         variants: {
             variant: {
-                default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md hover:shadow-lg',
+                default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm',
                 destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-                outline: 'border border-input bg-background hover:bg-foreground/5 hover:text-accent-foreground',
+                outline: 'border border-border bg-card hover:border-foreground/30',
                 secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
                 ghost: 'hover:bg-foreground/5 hover:text-accent-foreground',
                 link: 'underline-offset-4 hover:underline text-primary',
-                chip: 'bg-primary/5 text-primary border border-primary/10 hover:bg-primary hover:text-primary-foreground font-bold uppercase tracking-wider',
+                chip: 'bg-primary/5 text-primary hover:bg-primary/10',
             },
             size: {
                 default: 'h-10 py-2 px-4',
-                sm: 'h-9 px-3 rounded-md',
+                sm: 'h-9 px-3',
                 lg: 'h-11 px-8 rounded-lg text-base',
                 icon: 'h-10 w-10',
-                xs: 'h-8 px-3 rounded-lg text-xxs',
+                xs: 'h-8 px-3 text-xs',
             },
             shape: {
                 default: '',
@@ -45,7 +50,7 @@ const buttonVariants = cva(
                 // Bewusst Sentence-Case (kein uppercase/tracking-widest) — Uppercase-CTAs
                 // erzeugten zusammen mit den Badges einen zu "hypigen" Gesamteindruck.
                 // Uppercase/tracking-widest bleibt Badge.tsx vorbehalten (dortige Konvention).
-                pill: 'relative overflow-hidden rounded-full font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 group',
+                pill: 'relative overflow-hidden rounded-full group',
             },
         },
         defaultVariants: {

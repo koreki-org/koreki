@@ -189,9 +189,9 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                             <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0 text-left">
-                            <h2 className="text-lg sm:text-2xl font-black text-foreground tracking-tight truncate font-outfit flex items-center gap-2">
+                            <h2 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight truncate font-outfit flex items-center gap-2">
                                 Mit Koreki besprechen
-                                <span className="hidden sm:inline-block text-xs font-bold bg-primary/10 text-primary border border-primary/20 rounded-full px-2.5 py-0.5 uppercase tracking-wider">
+                                <span className="hidden sm:inline-block text-xs font-medium bg-primary/10 text-primary border border-primary/20 rounded-full px-2.5 py-0.5">
                                     Copilot
                                 </span>
                             </h2>
@@ -211,13 +211,13 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                         
                         {/* Task info card */}
                         <div className="bg-card border border-border/50 rounded-xl p-4 space-y-3 shadow-xs">
-                            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest font-outfit">Kompakter Kontext</span>
+                            <span className="text-xs font-medium text-muted-foreground font-outfit">Kompakter Kontext</span>
                             <div className="space-y-1">
-                                <p className="text-sm font-black text-foreground font-outfit leading-tight">{taskName}</p>
+                                <p className="text-sm font-bold text-foreground font-outfit leading-tight">{taskName}</p>
                                 <p className="text-xs text-primary font-bold">Maximal {maxPoints} P. | Aktuell: {currentPoints} P.</p>
                             </div>
                             <div className="pt-2 border-t border-border/30">
-                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest font-outfit block mb-1">Schülerantwort (Auszug)</span>
+                                <span className="text-xs font-medium text-muted-foreground font-outfit block mb-1">Schülerantwort (Auszug)</span>
                                 <p className="text-sm text-muted-foreground font-inter italic line-clamp-3 leading-relaxed">
                                     &quot;{studentText}&quot;
                                 </p>
@@ -236,16 +236,16 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                     <div className="flex flex-col h-full justify-between gap-4 animate-in fade-in duration-500">
                                         <div className="space-y-3.5">
                                             <div className="flex items-center justify-between pb-2 border-b border-primary/10">
-                                                <span className="text-xs font-bold text-primary uppercase tracking-widest font-outfit flex items-center gap-1.5">
+                                                <span className="text-xs font-medium text-primary font-outfit flex items-center gap-1.5">
                                                     <Award size={14} /> Aktueller Vorschlag
                                                 </span>
-                                                <span className="text-sm font-black bg-primary text-primary-foreground rounded-lg px-2.5 py-0.5 font-outfit">
+                                                <span className="text-sm font-bold bg-primary text-primary-foreground rounded-lg px-2.5 py-0.5 font-outfit">
                                                     {activeProposal.points} / {maxPoints} P.
                                                 </span>
                                             </div>
                                             
                                             <div className="space-y-1.5">
-                                                <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest font-outfit block">Empfohlenes Feedback:</span>
+                                                <span className="text-xs font-medium text-muted-foreground font-outfit block">Empfohlenes Feedback:</span>
                                                 <div className="text-sm text-foreground font-inter leading-relaxed whitespace-pre-wrap max-h-[160px] overflow-y-auto bg-card/50 p-3.5 rounded-lg border border-border/40">
                                                     {activeProposal.feedback}
                                                 </div>
@@ -257,7 +257,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                                 onApply(activeProposal.points, activeProposal.feedback);
                                                 onClose();
                                             }}
-                                            className="w-full font-black bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl py-3 shadow-md text-sm flex items-center justify-center gap-1.5 transition-all"
+                                            className="w-full font-bold bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl py-3 shadow-md text-sm flex items-center justify-center gap-1.5 transition-all"
                                         >
                                             <Check size={14} />
                                             Vorschlag übernehmen

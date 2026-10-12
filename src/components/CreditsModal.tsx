@@ -78,7 +78,7 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, onSelect, upgradin
                     <CreditCard size={32} />
                 </div>
 
-                <h2 className="text-4xl font-black text-foreground tracking-tight mb-2">Guthaben aufladen</h2>
+                <h2 className="text-4xl font-bold text-foreground tracking-tight mb-2">Guthaben aufladen</h2>
                 <p className="text-muted-foreground font-medium mb-10">Wähle ein Paket, um sofort weiterzuarbeiten.</p>
 
                 <div className={cn(
@@ -129,13 +129,13 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, onSelect, upgradin
                             )}
                         >
                             {plan.badge && (
-                                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-primary-foreground border-none rounded-full text-xxs font-black uppercase tracking-wider whitespace-nowrap shadow-lg">
+                                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-primary-foreground border-none rounded-full text-xs font-medium whitespace-nowrap shadow-lg">
                                     {plan.badge}
                                 </Badge>
                             )}
 
                             <h3 className="text-lg font-bold text-foreground mb-2">{plan.name}</h3>
-                            <div className="text-3xl font-black text-foreground mb-1">{plan.price}</div>
+                            <div className="text-3xl font-bold text-foreground mb-1">{plan.price}</div>
                             <div className="text-sm font-bold text-primary mb-6">{plan.credits}</div>
 
                             <ul className="space-y-3 mb-8 w-full">

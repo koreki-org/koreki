@@ -75,7 +75,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                     <div className="flex-grow flex flex-col overflow-hidden min-h-0 bg-white">
                                         <div className="px-4 sm:px-8 py-3 bg-muted border-b border-border flex flex-col sm:flex-row items-stretch sm:items-center shrink-0 gap-3 sm:gap-6">
                                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                                                <span className="text-xs font-black uppercase text-muted-foreground tracking-wider text-left block">KI-Generierungs-Engine:</span>
+                                                <span className="text-xs font-medium text-muted-foreground text-left block">KI-Generierungs-Engine:</span>
                                                 <select
                                                     value={selectedPlugin}
                                                     disabled={isLocked}
@@ -92,7 +92,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
 
                                             {/* Bewertung Dropdown */}
                                             <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                                                <span className="text-xs font-black uppercase text-muted-foreground tracking-wider text-left block">Bewertung:</span>
+                                                <span className="text-xs font-medium text-muted-foreground text-left block">Bewertung:</span>
                                                 <select
                                                     value={isPointsDisabled ? 'hybrid' : 'strict'}
                                                     disabled={isLocked}
@@ -145,7 +145,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                                             setInitialUserNotes('');
                                                         }
                                                     }}
-                                                    className="h-10 rounded-xl bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary text-white font-black shadow-lg shadow-primary/10 transition-all active:scale-[0.98] text-xs gap-2 flex-grow flex items-center justify-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                                    className="h-10 rounded-xl bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary text-white font-bold shadow-lg shadow-primary/10 transition-all active:scale-[0.98] text-xs gap-2 flex-grow flex items-center justify-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                                 >
                                                     {isGenerating ? (
                                                         <RefreshCw size={14} className="animate-spin" />
@@ -154,7 +154,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                                     )}
                                                     <span>{isGenerating ? "Erstelle Graph..." : "🪄 Graph mit KI generieren"}</span>
                                                     {!isGenerating && showsCreditCost && (
-                                                        <span className="bg-white/20 rounded px-1 text-xs font-black leading-none py-0.5">1 C</span>
+                                                        <span className="bg-white/20 rounded px-1 text-xs font-bold leading-none py-0.5">1 C</span>
                                                     )}
                                                 </Button>
                                             )}
@@ -165,7 +165,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                     <div className="hidden lg:flex w-80 border-l border-border bg-white flex flex-col p-6 space-y-4 shrink-0 overflow-y-auto animate-in fade-in duration-300">
                                         <div className="flex items-center gap-2 pb-2 border-b border-border shrink-0">
                                             <span className="text-lg">💡</span>
-                                            <h4 className="text-xs font-black uppercase text-foreground font-outfit tracking-tight">Was leistet der PANG-Bewertungsgraph?</h4>
+                                            <h4 className="text-xs font-medium text-foreground font-outfit tracking-tight">Was leistet der PANG-Bewertungsgraph?</h4>
                                         </div>
                                         
                                         <div className="space-y-4 text-xs leading-relaxed text-muted-foreground">
@@ -189,7 +189,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                     {/* Left half: Interactive chat assistant */}
                                     <div className="w-full lg:w-1/2 flex flex-col overflow-hidden bg-white p-4 sm:p-8 border-b lg:border-b-0 lg:border-r border-border h-[50vh] lg:h-full shrink-0 lg:shrink">
                                         <div className="space-y-1.5 shrink-0 pb-4 border-b border-border">
-                                            <h4 className="text-xs font-black uppercase text-foreground font-outfit tracking-tight flex items-center gap-2">
+                                            <h4 className="text-xs font-medium text-foreground font-outfit tracking-tight flex items-center gap-2">
                                                 <Sparkles size={13} className="text-primary animate-pulse" />
                                                 Interaktiver KI-Assistent
                                             </h4>
@@ -280,8 +280,8 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                     <div className="w-full lg:w-1/2 overflow-y-auto p-4 sm:p-8 bg-muted h-[50vh] lg:h-full">
                                         <div className="space-y-6">
                                             <div className="flex justify-between items-center">
-                                                <h4 className="text-xs font-black uppercase text-muted-foreground tracking-wider font-outfit">Visualisierte Graphen-Struktur</h4>
-                                                <Badge className="bg-muted text-muted-foreground border border-border py-0.5 px-2 rounded-full font-bold text-xs uppercase">{graph.variables.length} Variablen</Badge>
+                                                <h4 className="text-xs font-medium text-muted-foreground font-outfit">Visualisierte Graphen-Struktur</h4>
+                                                <Badge className="bg-muted text-muted-foreground border border-border py-0.5 px-2 rounded-full font-medium text-xs">{graph.variables.length} Variablen</Badge>
                                             </div>
 
                                             {graph.validation?.dryRunChecked && (
@@ -320,9 +320,9 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                                             <div className="flex items-center gap-2">
                                                                 <span className="font-mono font-bold text-xs text-foreground truncate leading-none">{v.id}</span>
                                                                 {v.type === 'input' ? (
-                                                                    <Badge className="bg-muted text-muted-foreground border border-border text-xxs py-0 px-1 rounded-sm uppercase font-black">IN</Badge>
+                                                                    <Badge className="bg-muted text-muted-foreground border border-border text-xs py-0 px-1 rounded-sm font-medium">IN</Badge>
                                                                 ) : (
-                                                                    <Badge className="bg-primary/5 text-primary border border-primary/20 text-xxs py-0 px-1 rounded-sm uppercase font-black">FORMEL</Badge>
+                                                                    <Badge className="bg-primary/5 text-primary border border-primary/20 text-xs py-0 px-1 rounded-sm font-medium">FORMEL</Badge>
                                                                 )}
                                                             </div>
                                                             <p className="text-xs text-muted-foreground font-mono truncate leading-none mt-1">

@@ -56,13 +56,13 @@ export default function AdminDashboard() {
                     <>
                         <Card className="min-w-[150px] shadow-sm bg-card border-border">
                             <CardContent className="p-4 text-center">
-                                <span className="block text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Nutzer</span>
+                                <span className="block text-xs font-medium text-muted-foreground mb-1">Nutzer</span>
                                 <span className="text-2xl font-bold tracking-tight text-foreground">{users.length}</span>
                             </CardContent>
                         </Card>
                         <Card className="min-w-[150px] shadow-sm border-primary/20 bg-primary/5">
                             <CardContent className="p-4 text-center">
-                                <span className="block text-xs font-medium text-primary uppercase tracking-wide mb-1">Partner</span>
+                                <span className="block text-xs font-medium text-primary mb-1">Partner</span>
                                 <span className="text-2xl font-bold tracking-tight text-primary">{workspaces.filter(w=>w.type==='ORGANIZATION').length}</span>
                             </CardContent>
                         </Card>
@@ -84,7 +84,7 @@ export default function AdminDashboard() {
                             className="gap-2 h-10 rounded-full px-6 bg-card border-border shadow-sm text-foreground hover:bg-secondary transition-all"
                         >
                             <Settings size={14} />
-                            <span className="text-xs font-bold uppercase tracking-wider">KI-Einstellungen</span>
+                            <span className="text-xs font-medium">KI-Einstellungen</span>
                         </Button>
                     </div>
 

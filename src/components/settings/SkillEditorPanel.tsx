@@ -65,7 +65,7 @@ export const SkillEditorPanel: React.FC<SkillEditorPanelProps> = ({
                 <div className="fixed inset-0 z-[2200] flex items-center justify-center bg-foreground/40 backdrop-blur-md p-4">
                     <div className="bg-card w-full max-w-xl rounded-hero shadow-2xl border border-border p-6 sm:p-8 space-y-6 flex flex-col max-h-[90vh] overflow-hidden animate-fade-in text-foreground">
                         <div className="flex justify-between items-center pb-2 border-b border-border">
-                            <h3 className="text-lg sm:text-xl font-black text-foreground flex items-center gap-2">
+                            <h3 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
                                 <Sparkles className="text-primary animate-pulse" size={20} />
                                 {editingSkillData.id ? 'Eigenen Skill bearbeiten' : 'Eigenen Skill erstellen'}
                             </h3>
@@ -73,7 +73,7 @@ export const SkillEditorPanel: React.FC<SkillEditorPanelProps> = ({
                         
                         <div className="space-y-4 flex-1 overflow-y-auto pr-1 pb-4">
                             <div className="space-y-1.5">
-                                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">Name des Skills</label>
+                                <label className="text-xs font-medium text-muted-foreground">Name des Skills</label>
                                 <Input 
                                     value={editingSkillData.name}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, name: e.target.value })}
@@ -83,7 +83,7 @@ export const SkillEditorPanel: React.FC<SkillEditorPanelProps> = ({
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">Kategorie</label>
+                                <label className="text-xs font-medium text-muted-foreground">Kategorie</label>
                                 <select
                                     value={editingSkillData.category}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, category: e.target.value })}
@@ -114,7 +114,7 @@ export const SkillEditorPanel: React.FC<SkillEditorPanelProps> = ({
                             />
 
                             <div className="space-y-1.5">
-                                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">Kurzbeschreibung</label>
+                                <label className="text-xs font-medium text-muted-foreground">Kurzbeschreibung</label>
                                 <Textarea 
                                     value={editingSkillData.description}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, description: e.target.value })}
@@ -125,7 +125,7 @@ export const SkillEditorPanel: React.FC<SkillEditorPanelProps> = ({
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">KI-Anweisung (Prompt Snippet)</label>
+                                <label className="text-xs font-medium text-muted-foreground">KI-Anweisung (Prompt Snippet)</label>
                                 <Textarea 
                                     value={editingSkillData.promptSnippet}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, promptSnippet: e.target.value })}

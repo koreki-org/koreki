@@ -100,7 +100,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                 {/* Custom User Profiles */}
                 {profiles.filter(p => !p.isSystem).length > 0 && (
                     <div className="space-y-2">
-                        <label className="text-xxs uppercase font-bold text-muted-foreground tracking-widest px-2">Eigene Skill-Sets</label>
+                        <label className="text-xs font-medium text-muted-foreground px-2">Eigene Skill-Sets</label>
                         {profiles.filter(p => !p.isSystem).map(p => (
                             <div
                                 key={p.id}
@@ -155,7 +155,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
                 
                 {/* System Default Presets */}
                 <div className="space-y-2">
-                    <label className="text-xxs uppercase font-bold text-muted-foreground tracking-widest px-2">System-Vorlagen</label>
+                    <label className="text-xs font-medium text-muted-foreground px-2">System-Vorlagen</label>
                     {profiles.filter(p => p.isSystem).map(p => (
                         <div
                             key={p.id || p.name}

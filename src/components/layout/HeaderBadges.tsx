@@ -33,8 +33,8 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full border border-primary/20 group transition-all">
                    <Building2 size={14} className="text-primary opacity-80 group-hover:scale-110 transition-transform" />
                    <div className="flex items-center gap-1.5">
-                       <span className="text-xxs font-bold uppercase tracking-wider text-primary/70">INSTITUT:</span>
-                       <span className="text-xs font-bold uppercase tracking-wide truncate max-w-[120px]">
+                       <span className="text-xs font-medium text-primary/70">INSTITUT:</span>
+                       <span className="text-xs font-medium truncate max-w-[120px]">
                            {userData?.activeWorkspaceName || 'Organisation'}
                        </span>
                    </div>
@@ -45,7 +45,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
             {isLocalInstance() ? (
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full border border-primary/20 shadow-2xs shrink-0">
                     <ShieldCheck size={14} className="text-primary shrink-0" />
-                    <span className="text-xs font-bold uppercase tracking-wider whitespace-nowrap hidden sm:inline">
+                    <span className="text-xs font-medium whitespace-nowrap hidden sm:inline">
                         Community Edition
                     </span>
                 </div>
@@ -53,7 +53,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                 <div className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20 text-primary shadow-xs shrink-0 whitespace-nowrap">
                      <Crown size={14} className="text-primary sm:w-[16px] sm:h-[16px]" />
                      <span className="font-bold text-xs sm:text-sm">{userData?.credits || 0}</span> 
-                     <span className="hidden sm:inline text-xxs sm:text-xs font-semibold opacity-80 uppercase tracking-wide">Credits</span>
+                     <span className="hidden sm:inline text-xs sm:text-xs font-semibold opacity-80">Credits</span>
                 </div>
             )}
 
@@ -64,7 +64,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                     size="sm"
                     onClick={onUpgrade}
                     disabled={upgrading}
-                    className="bg-gradient-to-r from-primary to-primary/85 hover:from-primary/95 hover:to-primary/75 text-primary-foreground shadow-sm border-0 rounded-full px-3.5 h-8 transition-all hover:-translate-y-0.5 shrink-0 whitespace-nowrap flex items-center justify-center font-bold text-xs"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm border-0 rounded-full px-3.5 h-8 transition-all shrink-0 whitespace-nowrap flex items-center justify-center font-bold text-xs"
                 >
                     {upgrading ? (
                         <Loader2 size={14} className="animate-spin shrink-0" />

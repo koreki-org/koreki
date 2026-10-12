@@ -61,14 +61,14 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         {/* OCR Pricing */}
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-xs font-black text-muted-foreground uppercase tracking-widest">
+                            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                                 <span>OCR-Modul (Tokens)</span>
                                 <div className="h-px flex-1 bg-border" />
                             </div>
                             
                             <div className="grid grid-cols-2 gap-3 p-3 bg-muted/30 rounded-xl border border-border">
                                 <div>
-                                    <label className="block text-xxs font-bold text-muted-foreground uppercase mb-1">Input Preis / 1M (€)</label>
+                                    <label className="block text-xs font-medium text-muted-foreground mb-1">Input Preis / 1M (€)</label>
                                     <Input 
                                         type="text"
                                         placeholder="0.00"
@@ -77,7 +77,7 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xxs font-bold text-muted-foreground uppercase mb-1">Output Preis / 1M (€)</label>
+                                    <label className="block text-xs font-medium text-muted-foreground mb-1">Output Preis / 1M (€)</label>
                                     <Input 
                                         type="text"
                                         placeholder="0.00"
@@ -100,14 +100,14 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
 
                         {/* KI Pricing */}
                         <div className="space-y-4">
-                            <div className="flex items-center gap-2 text-xs font-black text-muted-foreground uppercase tracking-widest">
+                            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                                 <span>KI-Korrektur (Tokens)</span>
                                 <div className="h-px flex-1 bg-border" />
                             </div>
 
                             <div className="grid grid-cols-2 gap-3 p-3 bg-muted/30 rounded-xl border border-border">
                                 <div>
-                                    <label className="block text-xxs font-bold text-muted-foreground uppercase mb-1">Input Preis / 1M (€)</label>
+                                    <label className="block text-xs font-medium text-muted-foreground mb-1">Input Preis / 1M (€)</label>
                                     <Input 
                                         type="text"
                                         placeholder="0.00"
@@ -116,7 +116,7 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xxs font-bold text-muted-foreground uppercase mb-1">Output Preis / 1M (€)</label>
+                                    <label className="block text-xs font-medium text-muted-foreground mb-1">Output Preis / 1M (€)</label>
                                     <Input 
                                         type="text"
                                         placeholder="0.00"
@@ -141,7 +141,7 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                     <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 flex items-start gap-3">
                         <Info className="text-primary w-5 h-5 shrink-0 mt-0.5" />
                         <div className="text-xs text-muted-foreground leading-relaxed">
-                            <span className="font-bold text-primary uppercase mr-1">Hinweis:</span> 
+                            <span className="font-medium text-primary mr-1">Hinweis:</span> 
                             Die Kosten werden in Echtzeit berechnet. Wenn die Preise auf 0 stehen, werden in der Analyse unten keine Kosten ausgewiesen, auch wenn Tokens verbraucht wurden.
                         </div>
                     </div>
@@ -170,11 +170,11 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-muted/20 text-xxs font-black text-muted-foreground uppercase tracking-widest border-b border-border/40">
-                                    <th className="px-6 py-4 font-black">Nutzer</th>
-                                    <th className="px-4 py-4 font-black text-right">OCR (Euro)</th>
-                                    <th className="px-4 py-4 font-black text-right">KI (Euro)</th>
-                                    <th className="px-6 py-4 font-black text-right">Gesamt</th>
+                                <tr className="bg-muted/20 text-xs font-medium text-muted-foreground border-b border-border/40">
+                                    <th className="px-6 py-4 font-bold">Nutzer</th>
+                                    <th className="px-4 py-4 font-bold text-right">OCR (Euro)</th>
+                                    <th className="px-4 py-4 font-bold text-right">KI (Euro)</th>
+                                    <th className="px-6 py-4 font-bold text-right">Gesamt</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/30">

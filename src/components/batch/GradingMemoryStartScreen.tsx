@@ -77,7 +77,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
 
                                 <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-6 pt-4 custom-scrollbar min-h-[150px]">
                                     <div className="space-y-2">
-                                        <h3 className="text-xs uppercase font-black text-muted-foreground tracking-widest px-2 flex items-center gap-2 mb-2">
+                                        <h3 className="text-xs font-medium text-muted-foreground px-2 flex items-center gap-2 mb-2">
                                             <Sliders size={14} className="text-primary" />
                                             Gespeicherte Erfahrungsschätze
                                         </h3>
@@ -105,7 +105,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                                     <Download size={12} className="text-primary animate-pulse" />
                                                     {activeMemory.name}
                                                 </span>
-                                                <span className="text-xs text-primary font-bold uppercase mt-1 font-outfit">
+                                                <span className="text-xs text-primary font-medium mt-1 font-outfit">
                                                     {activeMemory.cases?.length || 0} Fallbeispiele (Importiert, Nicht gespeichert)
                                                 </span>
                                             </div>
@@ -135,7 +135,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                                         m.name
                                                     )}
                                                 </span>
-                                                <span className="text-xs text-muted-foreground font-bold uppercase mt-1">
+                                                <span className="text-xs text-muted-foreground font-medium mt-1">
                                                     {m.cases?.length || 0} Fallbeispiele (Few-Shot)
                                                 </span>
 
@@ -225,7 +225,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                  ) : (
                                      // 🧙‍♂️ WIZARD: CREATE NEW CALIBRATION
                                      <div className="flex-grow overflow-y-auto custom-scrollbar pr-1 flex flex-col gap-4 min-h-0">
-                                         <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                                         <h3 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                                              <Sparkles size={14} className="text-primary/80" />
                                              Neuen Erfahrungsschatz kalibrieren
                                          </h3>
@@ -236,7 +236,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
 
                                          <div className="bg-muted/50 border border-border p-5 rounded-xl flex flex-col gap-4 mt-2">
                                              <div>
-                                                 <label className="block text-xs font-bold uppercase tracking-wider text-primary mb-1.5">Name des neuen Profils:</label>
+                                                 <label className="block text-xs font-medium text-primary mb-1.5">Name des neuen Profils:</label>
                                                  <Input 
                                                       type="text" 
                                                       value={profileName} 
@@ -262,7 +262,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
 
                                              <div className="relative flex py-2 items-center">
                                                  <div className="flex-grow border-t border-border"></div>
-                                                 <span className="flex-shrink mx-4 text-xs text-muted-foreground font-bold uppercase tracking-wider">Oder virtuell simulieren</span>
+                                                 <span className="flex-shrink mx-4 text-xs text-muted-foreground font-medium">Oder virtuell simulieren</span>
                                                  <div className="flex-grow border-t border-border"></div>
                                              </div>
 
@@ -270,7 +270,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                                  <div className="flex flex-col gap-4">
                                                       {tasksLayout && tasksLayout.length > 0 && (
                                                           <div>
-                                                              <label className="block text-xs font-bold uppercase tracking-wider text-primary mb-1.5">
+                                                              <label className="block text-xs font-medium text-primary mb-1.5">
                                                                   Zu simulierende Aufgaben auswählen:
                                                               </label>
                                                               <div className="bg-card border border-border rounded-xl p-3.5 max-h-36 overflow-y-auto space-y-2.5 shadow-sm">

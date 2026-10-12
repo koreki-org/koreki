@@ -28,7 +28,7 @@ const ComplianceAuditLog: React.FC<ComplianceAuditLogProps> = ({
                         </div>
                         <div>
                             <CardTitle className="text-xl font-bold tracking-tight">Compliance Audit Log</CardTitle>
-                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{username}</p>
+                            <p className="text-xs font-medium text-muted-foreground">{username}</p>
                         </div>
                     </div>
                     <Button variant="ghost" size="icon" className="rounded-full" onClick={onClose}>
@@ -41,18 +41,18 @@ const ComplianceAuditLog: React.FC<ComplianceAuditLogProps> = ({
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-20 opacity-50">
                                 <Loader2 size={40} className="mb-4 animate-spin text-primary" />
-                                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Lade Audit-Daten...</p>
+                                <p className="text-xs font-medium text-muted-foreground">Lade Audit-Daten...</p>
                             </div>
                         ) : logs.length === 0 ? (
                             <div className="text-center py-16 bg-muted/30 rounded-2xl border border-dashed border-border">
                                 <Info className="mx-auto mb-3 text-muted-foreground/50" size={32} />
-                                <p className="text-muted-foreground font-medium text-xs uppercase tracking-wide">Keine Einträge vorhanden.</p>
+                                <p className="text-muted-foreground font-medium text-xs">Keine Einträge vorhanden.</p>
                             </div>
                         ) : (
                             logs.map((log) => (
                                 <div key={log.id} className="p-4 bg-muted/20 border border-border rounded-xl hover:border-primary/30 transition-all group">
                                     <div className="flex justify-between items-start mb-2">
-                                        <span className="px-2 py-0.5 bg-primary text-primary-foreground text-xxs font-bold uppercase tracking-widest rounded-md">{log.action}</span>
+                                        <span className="px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded-md">{log.action}</span>
                                         <span className="text-xxs font-medium text-muted-foreground flex items-center gap-1">
                                             <Clock size={10} /> {new Date(log.createdAt).toLocaleString('de-DE')}
                                         </span>
@@ -60,7 +60,7 @@ const ComplianceAuditLog: React.FC<ComplianceAuditLogProps> = ({
                                     <p className="text-sm text-foreground/80 leading-relaxed bg-card/50 border border-border/50 p-3 rounded-lg mb-2 italic">
                                         &quot;{log.confirmedText}&quot;
                                     </p>
-                                    <div className="text-xxs font-medium text-muted-foreground uppercase tracking-wide flex items-center gap-2">
+                                    <div className="text-xs font-medium text-muted-foreground flex items-center gap-2">
                                         <div className="w-1 h-1 rounded-full bg-primary/50" />
                                         Quell-IP: {log.ip || 'Unbekannt'}
                                     </div>
@@ -70,7 +70,7 @@ const ComplianceAuditLog: React.FC<ComplianceAuditLogProps> = ({
                     </div>
 
                     <div className="flex justify-between items-center pt-6 border-t border-border">
-                        <p className="text-xxs font-medium text-muted-foreground uppercase tracking-widest">DSGVO-konformes Logging</p>
+                        <p className="text-xs font-medium text-muted-foreground">DSGVO-konformes Logging</p>
                         <div className="flex gap-3">
                             {logs.length > 0 && (
                                 <Button variant="outline" size="sm" className="font-bold flex items-center gap-2" onClick={onExport}>

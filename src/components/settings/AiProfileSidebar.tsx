@@ -92,7 +92,7 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                 {/* User Profiles */}
                 {profiles.filter(p => !p.isSystem).length > 0 && (
                     <div className="space-y-2">
-                        <label className="text-xxs uppercase font-bold text-muted-foreground tracking-widest px-2">Eigene Profile</label>
+                        <label className="text-xs font-medium text-muted-foreground px-2">Eigene Profile</label>
                         {profiles.filter(p => !p.isSystem).map(p => (
                             <div
                                 key={p.id}
@@ -155,7 +155,7 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
                 )}
                 {/* System Templates */}
                 <div className="space-y-2">
-                    <label className="text-xxs uppercase font-bold text-muted-foreground tracking-widest px-2">System-Vorlagen</label>
+                    <label className="text-xs font-medium text-muted-foreground px-2">System-Vorlagen</label>
                     {profiles.filter(p => p.isSystem).map(p => (
                         <div
                             key={p.name}

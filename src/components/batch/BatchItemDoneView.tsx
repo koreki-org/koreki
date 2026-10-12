@@ -119,7 +119,7 @@ export const BatchItemDoneView: React.FC<BatchItemDoneViewProps> = (props) => {
                 <div className={rechteZelle}>
                     <BatchPanelKopf
                         icon={<Sparkles size={14} className="text-primary/60" />}
-                        titel="Bearbeitbare Einschätzung"
+                        titel="Vorschlag"
                         seite="right"
                         focusedPanel={focusedPanel}
                         onToggleFocus={setFocusedPanel}

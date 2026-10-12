@@ -85,7 +85,7 @@ export default function ManualPage({ content, version, isAcceptedVersion }: Manu
                 <div className="relative">
                     <div className="absolute -top-12 -left-12 w-64 h-64 bg-primary/10 rounded-full blur-[120px] opacity-50 -z-10 no-print" />
                     
-                    <div className="flex items-center gap-2 text-primary font-black uppercase tracking-widest text-xs mb-4 no-print">
+                    <div className="flex items-center gap-2 text-primary font-medium text-xs mb-4 no-print">
                         <BookOpen size={12} />
                         Betriebsanleitung (Art. 13 EU AI Act)
                     </div>
@@ -99,7 +99,7 @@ export default function ManualPage({ content, version, isAcceptedVersion }: Manu
                         {isAcceptedVersion && (
                             <div className="flex items-center gap-2 bg-success/10 text-success px-4 py-2 rounded-2xl border border-success/20 no-print">
                                 <CheckCircle size={16} />
-                                <span className="text-xs font-bold uppercase tracking-tight">Ihre abgeschlossene Version</span>
+                                <span className="text-xs font-medium tracking-tight">Ihre abgeschlossene Version</span>
                             </div>
                         )}
                     </div>
@@ -115,7 +115,7 @@ export default function ManualPage({ content, version, isAcceptedVersion }: Manu
                         <LegalMarkdown content={content} />
 
                         <div className="mt-20 pt-10 border-t border-border flex flex-col md:flex-row md:items-center justify-between gap-8 no-print">
-                            <div className="text-xs text-muted-foreground font-bold uppercase tracking-widest">
+                            <div className="text-xs text-muted-foreground font-medium">
                                 Version: {version} <br />
                                 Koreki Industrial Grade AI Compliance
                             </div>
@@ -139,7 +139,7 @@ export default function ManualPage({ content, version, isAcceptedVersion }: Manu
 
             <footer className="bg-foreground text-white py-12 md:py-20 mt-20 text-center no-print">
                 <div className="max-w-4xl mx-auto px-6">
-                    <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
+                    <p className="text-xs text-muted-foreground font-medium">
                         &copy; {new Date().getFullYear()} {LEGAL_CONFIG.provider.name}<span className="text-primary">.</span> Alle Rechte vorbehalten.
                     </p>
                 </div>

@@ -65,7 +65,7 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
                         <ShieldCheck size={24} />
                     </div>
                     <div>
-                        <h4 className="text-sm font-black text-success uppercase tracking-tight">System-Standard aktiv</h4>
+                        <h4 className="text-sm font-medium text-success tracking-tight">System-Standard aktiv</h4>
                         <p className="text-xxs text-success font-medium leading-relaxed max-w-[250px] mx-auto mt-1">
                             Dieser Dienst wird sicher über die Server-Umgebung bereitgestellt. Du musst keinen eigenen Key hinterlegen.
                         </p>
@@ -79,7 +79,7 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <Globe size={16} className="text-primary/60" />
-                            <label htmlFor="mistral-key" className="text-xs font-bold text-muted-foreground uppercase tracking-tight">Mistral API Key</label>
+                            <label htmlFor="mistral-key" className="text-xs font-medium text-muted-foreground tracking-tight">Mistral API Key</label>
                         </div>
                         {settings.mistralKey && isDesktop && (
                             <Button 
@@ -89,7 +89,7 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
                                 className="h-7 px-2 text-destructive hover:text-destructive/80 hover:bg-destructive/10 rounded-lg gap-1.5"
                             >
                                 <Trash2 size={12} />
-                                <span className="text-xxs font-bold uppercase">Vom Rechner löschen</span>
+                                <span className="text-xs font-medium">Vom Rechner löschen</span>
                             </Button>
                         )}
                     </div>

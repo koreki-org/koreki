@@ -21,7 +21,7 @@ export const PrivacySection: React.FC<PrivacySectionProps> = ({
 }) => {
     return (
         <div className="mb-6 pb-4 border-b border-border">
-            <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground mb-4">Modus & Datenschutz</h3>
+            <h3 className="text-xs font-medium text-muted-foreground mb-4">Modus & Datenschutz</h3>
             {!isLocalInstance() && (
                 <div className="grid grid-cols-3 gap-3 mb-6">
                     {(['STANDARD', 'PURE', 'TRIAL'] as const).map((mode) => {
@@ -40,7 +40,7 @@ export const PrivacySection: React.FC<PrivacySectionProps> = ({
                                 </span>
                                 {isDisabled && (
                                     <div className="absolute top-1 right-1">
-                                        <span className="text-xxs font-black uppercase text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">Soon</span>
+                                        <span className="text-xs font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded-full">Soon</span>
                                     </div>
                                 )}
                             </div>

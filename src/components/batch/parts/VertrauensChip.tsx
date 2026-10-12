@@ -20,23 +20,23 @@ interface VertrauensChipProps {
  * der Groessengrenze fuer `components/`.
  */
 export const VertrauensChip: React.FC<VertrauensChipProps> = ({ vertrauen, getConfidenceColor }) => {
-    const genannt = vertrauen !== undefined;
-    const text = genannt ? `${vertrauen}%` : 'n. a.';
+    // Seit dem 12.10.2026 spricht der Chip nur noch, wenn es etwas zu tun gibt
+    // (koreki-design-system §2: "Bitte prüfen" statt Konfidenz). Ein sicheres
+    // "100 %" an jeder Aufgabe war Rauschen; fehlt der Wert, gibt es nichts zu melden.
+    if (vertrauen === undefined || vertrauen >= VERTRAUEN_SCHWELLE) return null;
 
     return (
         <div
-            title={genannt ? undefined : 'Die KI hat für diese Aufgabe keinen Vertrauenswert genannt.'}
+            title={`Die KI war sich bei dieser Aufgabe unsicher (${vertrauen} %).`}
             className={cn(
-                "flex items-center gap-1.5 px-2 py-1 rounded-full border text-xs font-black uppercase tracking-tight whitespace-nowrap",
-                !genannt ? "bg-muted text-muted-foreground border-border" :
-                vertrauen >= VERTRAUEN_SCHWELLE ? "bg-success/10 text-success border-success/20" :
-                vertrauen >= 50 ? "bg-warning/10 text-warning border-warning/20" :
-                "bg-destructive/10 text-destructive border-destructive/20"
+                "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap",
+                // Unter 50 bleibt es rot: Eine genannte Null kommt auch aus
+                // `mapMissingTask` — dort wurde tatsaechlich nichts ausgewertet.
+                vertrauen < 50 ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"
             )}
         >
-            <div className={cn("w-2 h-2 rounded-full", getConfidenceColor(vertrauen))} />
-            <span className="hidden sm:inline">Ki-Vertrauen: {text}</span>
-            <span className="sm:hidden">KI: {text}</span>
+            <div className={cn("w-1.5 h-1.5 rounded-full", getConfidenceColor(vertrauen))} />
+            Bitte prüfen
         </div>
     );
 };

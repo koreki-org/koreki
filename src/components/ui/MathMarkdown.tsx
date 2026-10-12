@@ -225,7 +225,7 @@ export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }
         // Handled via raw HTML classes supported perfectly by rehypeRaw
         joined = joined.replace(/\[([A-Za-z?]{1,5})\]/g, (match, mark) => {
             const styles = getBadgeStyles();
-            return `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xxs font-black ${styles.bg} ${styles.text} border ${styles.border} tracking-wider ml-1.5">${mark}</span>`;
+            return `<span class="inline-flex items-center px-1.5 py-0.5 rounded text-xxs font-bold ${styles.bg} ${styles.text} border ${styles.border} tracking-wider ml-1.5">${mark}</span>`;
         });
 
         return joined;
@@ -271,7 +271,7 @@ export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }
                         </div>
                     ),
                     thead: ({ node, ...props }) => <thead className="bg-muted/50" {...props} />,
-                    th: ({ node, ...props }) => <th className="px-4 py-2 text-left text-xs font-black uppercase tracking-widest text-muted-foreground" {...props} />,
+                    th: ({ node, ...props }) => <th className="px-4 py-2 text-left text-xs font-medium text-muted-foreground" {...props} />,
                     td: ({ node, ...props }) => <td className="px-4 py-2 border-t border-border text-xs" {...props} />,
                 }}
             >

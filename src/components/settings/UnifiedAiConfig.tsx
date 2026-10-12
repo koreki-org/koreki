@@ -39,7 +39,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
     if (isSaaS && mode === 'USER_SETUP') {
         // ... SaaS card logic remains same ...
         const LocationBadge = ({ location }: { location: string }) => (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/5 text-xxs font-black text-success uppercase tracking-tight border border-success/20">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-success/5 text-xs font-medium text-success tracking-tight border border-success/20">
                 <Zap size={10} /> {location}
             </span>
         );
@@ -59,7 +59,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                             </div>
                             <LocationBadge location="Frankreich (EU)" />
                         </div>
-                        <h4 className="font-black text-foreground tracking-tight">Mistral AI Standard</h4>
+                        <h4 className="font-bold text-foreground tracking-tight">Mistral AI Standard</h4>
                         <p className="text-xs text-muted-foreground font-medium">Bewährte Performance, DSGVO-konform gehostet in der EU.</p>
                     </button>
 
@@ -81,8 +81,8 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                             <LocationBadge location="Deutschland (DE)" />
                         </div>
                         <div className="flex items-center gap-2">
-                            <h4 className="font-black text-foreground tracking-tight">Mittwald AI API (Qwen)</h4>
-                            <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-xxs font-bold text-primary uppercase">Pro</span>
+                            <h4 className="font-bold text-foreground tracking-tight">Mittwald AI API (Qwen)</h4>
+                            <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-xs font-medium text-primary">Pro</span>
                         </div>
                         <p className="text-xs text-muted-foreground font-medium">Maximale Präzision durch High-Performance AI, gehostet in Deutschland.</p>
                     </button>
@@ -95,7 +95,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
     return (
         <div className="space-y-6">
             <div className="space-y-2">
-                <label className="text-xxs font-black uppercase text-muted-foreground tracking-widest ml-1">KI Engine / Provider</label>
+                <label className="text-xs font-medium text-muted-foreground ml-1">KI Engine / Provider</label>
                 <div className="grid grid-cols-3 gap-2">
                     {[
                         { id: 'mistral', label: 'Mistral API', icon: Globe },
@@ -119,7 +119,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                               * Modell ungeprueft — siehe `lib/ai/gepruefte-konfiguration.ts`.
                               */}
                             {p.id !== GEPRUEFTER_ANBIETER && (
-                                <span className="px-1.5 py-0.5 rounded-md bg-warning/10 text-xxs font-bold text-warning uppercase tracking-tight leading-none">
+                                <span className="px-1.5 py-0.5 rounded-md bg-warning/10 text-xs font-medium text-warning tracking-tight leading-none">
                                     {EXPERIMENTELL_KENNZEICHEN}
                                 </span>
                             )}

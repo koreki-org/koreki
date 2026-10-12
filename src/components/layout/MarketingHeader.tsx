@@ -55,7 +55,7 @@ const MarketingHeader: React.FC = () => {
                     </nav>
 
                     {!authLoading && userData ? (
-                        <Link href="/app" className={cn(buttonVariants({ variant: 'default', size: 'sm' }), "bg-primary rounded-full px-5 font-bold uppercase tracking-widest text-xs shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all active:scale-95")}>
+                        <Link href="/app" className={cn(buttonVariants({ variant: 'default', size: 'sm' }), "bg-primary rounded-full px-5 font-medium text-xs shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all active:scale-95")}>
                             Dashboard
                         </Link>
                     ) : (
@@ -96,7 +96,7 @@ const MarketingHeader: React.FC = () => {
                                 key={item.href}
                                 href={item.href} 
                                 className={cn(
-                                    "text-2xl font-black tracking-tighter transition-all duration-300 font-outfit",
+                                    "text-2xl font-bold tracking-tighter transition-all duration-300 font-outfit",
                                     isActive ? "text-primary scale-110" : "text-foreground hover:text-primary"
                                 )}
                                 onClick={() => setIsMenuOpen(false)}
@@ -108,7 +108,7 @@ const MarketingHeader: React.FC = () => {
                     {!authLoading && userData ? (
                         <Link 
                             href="/app" 
-                            className="text-xs font-black uppercase tracking-[0.2em] text-primary-foreground bg-primary px-10 py-4 rounded-full shadow-2xl shadow-primary/40 transition-all hover:scale-105 active:scale-95" 
+                            className="text-xs font-medium text-primary-foreground bg-primary px-10 py-4 rounded-full shadow-2xl shadow-primary/40 transition-all hover:scale-105 active:scale-95" 
                             onClick={() => setIsMenuOpen(false)}
                         >
                             Dashboard
@@ -117,7 +117,7 @@ const MarketingHeader: React.FC = () => {
                         <Link 
                             href="/login" 
                             onClick={() => setIsMenuOpen(false)}
-                            className="text-xs font-black uppercase tracking-[0.2em] text-primary-foreground bg-primary px-10 py-4 rounded-full shadow-2xl shadow-primary/40 transition-all hover:scale-105 active:scale-95"
+                            className="text-xs font-medium text-primary-foreground bg-primary px-10 py-4 rounded-full shadow-2xl shadow-primary/40 transition-all hover:scale-105 active:scale-95"
                         >
                             Einloggen
                         </Link>

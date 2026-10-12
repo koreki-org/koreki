@@ -102,7 +102,7 @@ export default function StudentFeedbackView() {
                                     />
                                 </div>
                                 {pinError && (
-                                    <p className="text-center text-destructive text-xs font-bold uppercase tracking-wider animate-fade-in">
+                                    <p className="text-center text-destructive text-xs font-medium animate-fade-in">
                                         Falscher PIN. Bitte prüfe die Angabe auf deinem Slip.
                                     </p>
                                 )}
@@ -157,7 +157,7 @@ export default function StudentFeedbackView() {
                 <div className="mb-8 text-center animate-fade-up">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full mb-4">
                         <Logo size={14} />
-                        <span className="text-xs font-extrabold uppercase tracking-widest">Digitales Feedback</span>
+                        <span className="text-xs font-medium">Digitales Feedback</span>
                     </div>
                     <h1 className="text-3xl font-extrabold text-foreground tracking-tight mb-2">
                         Koreki<span className="text-primary">.</span>
@@ -187,7 +187,7 @@ export default function StudentFeedbackView() {
                 {/* Overall Feedback Card */}
                 <Card className="mb-8 border-none shadow-glass bg-background/80 backdrop-blur-xl animate-fade-up print:shadow-none print:bg-background print:border print:border-border/50">
                     <CardContent className="p-6">
-                        <h2 className="text-sm font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <h2 className="text-sm font-medium text-muted-foreground mb-4 flex items-center gap-2">
                             <Info size={16} /> Gesamtfeedback
                         </h2>
                         <p className="text-foreground leading-relaxed font-medium">
@@ -197,7 +197,7 @@ export default function StudentFeedbackView() {
                 </Card>
 
                 <div className="space-y-4 mb-12">
-                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest px-2 mb-2 print:text-foreground">Detaillierte Rückmeldung</h3>
+                    <h3 className="text-sm font-medium text-muted-foreground px-2 mb-2 print:text-foreground">Detaillierte Rückmeldung</h3>
                     {data.tasks.map((task, idx) => {
                         const { status, cleanText } = parseStatus(task.feedback);
                         return (
@@ -214,7 +214,7 @@ export default function StudentFeedbackView() {
                                             <div>
                                                 <h4 className="font-bold text-foreground">{task.id}</h4>
                                                 {task.points !== undefined && task.maxPoints !== undefined && (
-                                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mt-0.5">
+                                                    <p className="text-xs font-medium text-muted-foreground mt-0.5">
                                                         Erreicht: <span className="text-primary">{task.points} / {task.maxPoints} Pkt.</span>
                                                     </p>
                                                 )}
@@ -254,7 +254,7 @@ export default function StudentFeedbackView() {
                     </p>
                     <div className="mt-8 pt-8 border-t border-border/50">
                         <p className="text-xs text-muted-foreground mb-3">{KI_HINWEIS_KURZ}</p>
-                        <p className="text-xs font-bold text-muted-foreground uppercase tracking-[0.2em]">Powered by Koreki.org</p>
+                        <p className="text-xs font-medium text-muted-foreground">Powered by Koreki.org</p>
                     </div>
                 </div>
             </div>

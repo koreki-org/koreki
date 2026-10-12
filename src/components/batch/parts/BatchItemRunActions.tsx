@@ -17,9 +17,9 @@ interface BatchItemRunActionsProps {
 type Ton = 'primary' | 'destruktiv' | 'gedaempft';
 
 const TON_KLASSEN: Record<Ton, string> = {
-    primary: 'border-primary/20 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground',
-    destruktiv: 'border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground',
-    gedaempft: 'border-border text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
+    primary: 'border-transparent bg-transparent text-primary hover:bg-primary/10',
+    destruktiv: 'border-transparent bg-destructive/10 text-destructive hover:bg-destructive/15',
+    gedaempft: 'border-transparent bg-transparent text-muted-foreground hover:bg-foreground/5 hover:text-foreground'
 };
 
 interface LaufKnopfProps {
@@ -48,8 +48,8 @@ const LaufKnopf: React.FC<LaufKnopfProps> = ({ titel, ton, beschriftung, icon, o
         title={titel}
         aria-label={titel}
         className={cn(
-            'h-8 transition-all rounded-lg',
-            beschriftung ? 'px-3 gap-2 text-xxs font-bold uppercase tracking-wider' : 'w-8',
+            'h-8 rounded-lg',
+            beschriftung ? 'px-3 gap-2 text-xs font-medium' : 'w-8',
             TON_KLASSEN[ton]
         )}
     >

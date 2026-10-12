@@ -73,16 +73,16 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
         <div className="flex-1 flex flex-col space-y-4 sm:space-y-6 overflow-y-auto p-4 sm:p-8">
             <div className="flex justify-between items-center gap-6">
                 <div className="flex-1 space-y-2">
-                    <label className="text-xxs font-bold text-muted-foreground uppercase tracking-widest">
+                    <label className="text-xs font-medium text-muted-foreground">
                         {isCreatingNew ? 'Name für neues KI-Profil' : 'Gewähltes KI-Profil'}
                     </label>
                     {isCreatingNew ? (
                         <Input
                             autoFocus value={newProfileName} onChange={e => setNewProfileName(e.target.value)}
-                            placeholder="z.B. Kalt & Präzise" className="text-lg sm:text-xl font-black border-primary/20 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
+                            placeholder="z.B. Kalt & Präzise" className="text-lg sm:text-xl font-bold border-primary/20 h-12 sm:h-14 rounded-xl sm:rounded-2xl"
                         />
                     ) : (
-                        <h3 className="text-xl sm:text-2xl font-black text-foreground flex items-center gap-3 truncate">
+                        <h3 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-3 truncate">
                             {selectedProfile}
                             {isSystemSelected && <Badge variant="outline" className="text-xxs bg-muted text-muted-foreground px-3 py-1 rounded-full border-transparent">SYSTEM</Badge>}
                         </h3>
@@ -92,14 +92,14 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                     {isDirty && !isCreatingNew && !isSystemSelected && (
                         <div className="flex items-center gap-2 text-warning animate-pulse px-2 hidden sm:flex">
                             <RefreshCcw size={14} />
-                            <span className="text-xxs font-bold uppercase tracking-widest">Ungespeichert</span>
+                            <span className="text-xs font-medium">Ungespeichert</span>
                         </div>
                     )}
                     {!isSystemSelected && (
                         <Button 
                             onClick={onSaveToDB} 
                             disabled={!isDirty || saving}
-                            className="h-9 px-4 text-xxs whitespace-nowrap font-bold uppercase rounded-full flex items-center gap-1.5 shadow-md transition-all border-0"
+                            className="h-9 px-4 text-xs whitespace-nowrap font-medium rounded-full flex items-center gap-1.5 shadow-md transition-all border-0"
                         >
                             {saving ? (
                                 <div className="animate-spin rounded-full h-3 w-3 border-2 border-primary-foreground border-t-transparent" />
@@ -159,7 +159,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                                             <Brain size={14} />
                                         </div>
                                         <div>
-                                            <p className="text-xs font-black uppercase tracking-tight text-foreground">Deep Reasoning</p>
+                                            <p className="text-xs font-medium tracking-tight text-foreground">Deep Reasoning</p>
                                             <p className="text-xxs text-muted-foreground font-medium">Aktiviert tiefere Überlegungen vor Notenerteilung</p>
                                         </div>
                                     </div>
@@ -312,7 +312,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                         <div className="pt-4 border-t border-border space-y-3">
                             <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-1">
-                                    <label className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                                    <label className="text-xs font-medium text-foreground flex items-center gap-1.5">
                                         Kontext-Größe (num_ctx)
                                     </label>
                                     <KorekiTooltip 

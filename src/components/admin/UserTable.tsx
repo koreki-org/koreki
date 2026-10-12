@@ -34,12 +34,12 @@ const UserTable: React.FC<UserTableProps> = ({
             <table className="w-full text-left">
                 <thead>
                     <tr className="bg-secondary/30 border-b border-border/50">
-                        <th className="px-8 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Nutzer</th>
-                        <th className="px-8 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Workspace Mapping</th>
-                        <th className="px-8 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide text-center">Modus</th>
-                        <th className="px-8 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide text-center">Status / Rolle</th>
-                        <th className="px-8 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide text-center">Guthaben</th>
-                        <th className="px-8 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wide text-right">Aktionen</th>
+                        <th className="px-8 py-4 text-xs font-semibold text-muted-foreground">Nutzer</th>
+                        <th className="px-8 py-4 text-xs font-semibold text-muted-foreground">Workspace Mapping</th>
+                        <th className="px-8 py-4 text-xs font-semibold text-muted-foreground text-center">Modus</th>
+                        <th className="px-8 py-4 text-xs font-semibold text-muted-foreground text-center">Status / Rolle</th>
+                        <th className="px-8 py-4 text-xs font-semibold text-muted-foreground text-center">Guthaben</th>
+                        <th className="px-8 py-4 text-xs font-semibold text-muted-foreground text-right">Aktionen</th>
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">
@@ -96,7 +96,7 @@ const UserTable: React.FC<UserTableProps> = ({
                                 </td>
                                 <td className="px-8 py-4">
                                     {u.role === 'ADMIN' ? (
-                                        <span className="text-xxs uppercase tracking-widest text-muted-foreground/40 italic">Global Governance</span>
+                                        <span className="text-xs text-muted-foreground/40 italic">Global Governance</span>
                                     ) : (
                                         <div className="relative">
                                             <Dropdown
@@ -111,7 +111,7 @@ const UserTable: React.FC<UserTableProps> = ({
                                 </td>
                                 <td className="px-8 py-4 text-center">
                                     <Badge variant="outline" className={cn(
-                                        "text-xxs uppercase font-bold px-2 py-0.5",
+                                        "text-xs font-medium px-2 py-0.5",
                                         u.appMode === 'PURE' && "bg-primary/10 text-primary",
                                         u.appMode === 'STANDARD' && "bg-primary/10 text-primary",
                                         u.appMode === 'TRIAL' && "bg-warning/10 text-warning"
@@ -120,7 +120,7 @@ const UserTable: React.FC<UserTableProps> = ({
                                     </Badge>
                                 </td>
                                 <td className="px-8 py-4 text-center">
-                                    <Badge variant="outline" className={cn("text-xxs uppercase font-bold px-2 py-1 flex items-center justify-center gap-1 min-w-[120px] rounded-full border-none", badgeStyles)}>
+                                    <Badge variant="outline" className={cn("text-xs font-medium px-2 py-1 flex items-center justify-center gap-1 min-w-[120px] rounded-full border-none", badgeStyles)}>
                                         {roleLabel}
                                     </Badge>
                                 </td>

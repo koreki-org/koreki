@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertCircle, FileText } from 'lucide-react';
-import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { AufgabenReiter } from '../ui/AufgabenReiter';
 import { EditableMathArea } from '../ui/EditableMathArea';
 import { BatchScanViewer } from './parts/BatchScanViewer';
 import { BatchFile, Task } from '../../types';
@@ -49,36 +49,19 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                     {/* RESTORATION: Image 2 Header Title */}
                     <div className="flex items-center gap-2 mb-3 px-1 pt-4 shrink-0">
                         <FileText size={14} className="text-muted-foreground" />
-                        <span className="text-xs font-black text-muted-foreground uppercase tracking-widest font-outfit">OCR Verifizierung</span>
+                        <span className="text-xs font-medium text-muted-foreground font-outfit">OCR Verifizierung</span>
                     </div>
 
-                    <div className="flex gap-2 overflow-x-auto px-2 py-1.5 -mx-2 no-scrollbar border-b border-border/50 mb-4 w-full max-w-full shrink-0">
-                        {groupNames.map(name => {
-                            const subtasks = groupedTasks[name];
-                            const groupHasWarnings = subtasks.some(task => {
-                                const sIdx = tasksLayout.findIndex(t => t.name === task.name);
-                                return hasOcrWarnings(studentSections[sIdx] || '');
-                            });
-
-                            return (
-                                <Button
-                                    key={name}
-                                    variant={activeGroupName === name ? "default" : "secondary"}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        onSetActiveGroupName(name);
-                                    }}
-                                    className={cn(
-                                        "rounded-xl px-4 py-2 h-auto text-xs font-bold transition-all shrink-0 border border-transparent gap-2 font-outfit",
-                                        activeGroupName === name ? "bg-primary text-white shadow-md scale-105" : "bg-background text-muted-foreground hover:bg-foreground/5 border-border"
-                                    )}
-                                >
-                                    {name}
-                                    {groupHasWarnings && <AlertCircle size={12} className="text-destructive animate-pulse" />}
-                                </Button>
-                            );
+                    <AufgabenReiter
+                        namen={groupNames}
+                        aktiv={activeGroupName}
+                        onWaehle={onSetActiveGroupName}
+                        warnung={(name) => groupedTasks[name].some(task => {
+                            const sIdx = tasksLayout.findIndex(t => t.name === task.name);
+                            return hasOcrWarnings(studentSections[sIdx] || '');
                         })}
-                    </div>
+                        className="mb-4 shrink-0"
+                    />
 
                     <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar animate-in fade-in duration-500">
                         {activeGroupName && groupedTasks[activeGroupName]?.map((task) => {

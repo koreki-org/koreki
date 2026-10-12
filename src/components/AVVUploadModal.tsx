@@ -48,7 +48,7 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
                     <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mb-4 shadow-inner ring-4 ring-primary/5">
                         <Shield size={32} />
                     </div>
-                    <h2 className="text-2xl font-black text-foreground tracking-tight mb-2">
+                    <h2 className="text-2xl font-bold text-foreground tracking-tight mb-2">
                         {isOrganization ? 'Instituts-AVV' : 'Rechtssicherheit'}
                     </h2>
                     <p className="text-muted-foreground text-sm leading-relaxed max-w-[340px]">
@@ -130,7 +130,7 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
                 </div>
 
                 <Button 
-                    className="w-full py-7 text-lg font-black shadow-xl shadow-primary/20 gap-2 mb-2 rounded-2xl disabled:opacity-50 disabled:grayscale transition-all" 
+                    className="w-full py-7 text-lg font-bold shadow-xl shadow-primary/20 gap-2 mb-2 rounded-2xl disabled:opacity-50 disabled:grayscale transition-all" 
                     disabled={!isAccepted || isProcessing}
                     onClick={handlers.executeConsent}
                 >

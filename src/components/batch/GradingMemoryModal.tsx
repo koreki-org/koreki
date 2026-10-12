@@ -118,7 +118,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                             <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-lg sm:text-2xl font-black font-outfit text-foreground tracking-tight truncate">
+                            <h2 className="text-lg sm:text-2xl font-bold font-outfit text-foreground tracking-tight truncate">
                                 GradingMemory Center
                             </h2>
                             <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">

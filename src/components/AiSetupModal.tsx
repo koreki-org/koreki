@@ -36,7 +36,7 @@ const AiSetupModal: React.FC<AiSetupModalProps> = ({
                     <div className="inline-flex p-3 bg-primary/10 rounded-2xl text-primary mb-2">
                         <Sparkles size={28} />
                     </div>
-                    <h2 className="text-2xl font-black text-foreground tracking-tight">KI-Setup</h2>
+                    <h2 className="text-2xl font-bold text-foreground tracking-tight">KI-Setup</h2>
                     <p className="text-muted-foreground text-sm font-medium px-4">
                         Wähle deine bevorzugte Infrastruktur für die Analyse und Korrektur.
                     </p>

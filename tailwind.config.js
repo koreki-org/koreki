@@ -74,10 +74,15 @@ module.exports = {
                 glass: "12px",
             },
             boxShadow: {
-                glass: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+                glass: "0 0 0 1px hsl(232 30% 20% / 0.06), 0 12px 24px -6px hsl(232 40% 20% / 0.10), 0 40px 80px -20px hsl(239 50% 30% / 0.22)",
+                // Weicher, mehrschichtiger Kartenschatten: ersetzt Rand + shadow-sm.
+                card: "0 0 0 1px hsl(232 30% 20% / 0.06), 0 1px 2px hsl(232 40% 20% / 0.05), 0 4px 12px -4px hsl(232 40% 20% / 0.08)",
             },
             fontFamily: {
-                outfit: ["var(--font-outfit)", "Inter", "sans-serif"],
+                // Eine Schrift fuer alles. `font-outfit` bleibt als Alias, damit die
+                // 118 Aufrufstellen nicht auf einen Schlag umgeschrieben werden muessen.
+                sans: ["Geist", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+                outfit: ["Geist", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
             },
         },
     },

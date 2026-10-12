@@ -76,7 +76,7 @@ const PromptSettingsModal: React.FC<PromptSettingsModalProps> = ({
                             <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-lg sm:text-2xl font-black text-foreground tracking-tight truncate">Expert Center</h2>
+                            <h2 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight truncate">Expert Center</h2>
                             <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">Konfiguriere deine KI-Expertise</p>
                         </div>
                     </div>
@@ -135,7 +135,7 @@ const PromptSettingsModal: React.FC<PromptSettingsModalProps> = ({
                                 </Button>
                                 <Button
                                     onClick={isCreatingNew ? handleSaveToDB : handleApplyToSession}
-                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary text-white font-black rounded-xl sm:rounded-2xl shadow-xl shadow-primary/20"
+                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary text-white font-bold rounded-xl sm:rounded-2xl shadow-xl shadow-primary/20"
                                     disabled={saving || (isCreatingNew && !newProfileName.trim())}
                                 >
                                     {saving ? 'Speichert...' : (isCreatingNew ? 'Erstellen' : 'Zuweisen')}

@@ -95,15 +95,15 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                         </div>
                         <div>
                             <h2 className="text-2xl font-bold tracking-tight text-foreground font-outfit">Detaillierte Analyse</h2>
-                            <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Statistische Auswertung der Korrektur</p>
+                            <p className="text-xs text-muted-foreground font-medium">Statistische Auswertung der Korrektur</p>
                         </div>
                     </div>
                     
                     <div className="flex items-center gap-3">
                         {stats && (
                             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 border border-border rounded-xl text-muted-foreground animate-in fade-in slide-in-from-right-4 duration-700">
-                                <span className="text-xxs font-bold uppercase tracking-tight opacity-70">Gesamt-Inferenz:</span>
-                                <span className="text-xs font-black text-foreground/80">{(stats as any).totalInferenceDuration > 0 ? `${((stats as any).totalInferenceDuration / 1000).toFixed(1)}s` : '...'}</span>
+                                <span className="text-xs font-medium tracking-tight opacity-70">Gesamt-Inferenz:</span>
+                                <span className="text-xs font-bold text-foreground/80">{(stats as any).totalInferenceDuration > 0 ? `${((stats as any).totalInferenceDuration / 1000).toFixed(1)}s` : '...'}</span>
                             </div>
                         )}
 
@@ -116,7 +116,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                             >
                                 <Clock size={14} className="shrink-0" />
                                 <div className="flex flex-col items-start -space-y-0.5">
-                                    <span className="text-xxs font-black uppercase tracking-tight leading-none text-left">Inferenz-Analyse</span>
+                                    <span className="text-xs font-medium tracking-tight leading-none text-left">Inferenz-Analyse</span>
                                     <span className="text-xxs font-bold opacity-80">Excel Download</span>
                                 </div>
                             </Button>
@@ -154,7 +154,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
 
                 {/* Footer */}
                 <div className="mt-8 pt-6 border-t border-border text-center shrink-0">
-                    <p className="text-xxs text-muted-foreground font-bold uppercase tracking-[0.2em]">
+                    <p className="text-xs text-muted-foreground font-medium">
                         Koreki Analytics Engine | Enterprise Grade
                     </p>
                 </div>

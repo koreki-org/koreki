@@ -7,6 +7,7 @@ import { promisePool } from '../../lib/ai/promise-pool';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { CollapsibleCardContent, CollapseToggleButton } from '@/components/ui/CollapsibleCardContent';
 import { Button } from '@/components/ui/Button';
+import { AufgabenReiter } from '@/components/ui/AufgabenReiter';
 import { Badge } from '@/components/ui/Badge';
 import { Textarea } from '@/components/ui/Textarea';
 import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
@@ -227,7 +228,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         <div className="flex flex-col">
                             <EditableMathArea
                                 leftAction={<>
-                                    <p className="text-xxs font-black uppercase tracking-[0.2em] text-muted-foreground">Gemeinsamer Rahmen</p>
+                                    <p className="text-xs font-medium text-muted-foreground">Gemeinsamer Rahmen</p>
                                     <span className="text-xxs font-bold text-muted-foreground/70">— gilt für alle Aufgaben</span>
                                 </>}
                                 value={modelSolutionContext}
@@ -239,7 +240,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         </div>
 
                         <div className="flex flex-col gap-4">
-                            <p className="text-xxs font-black uppercase tracking-[0.2em] text-muted-foreground px-1">Aufgabenstruktur</p>
+                            <p className="text-xs font-medium text-muted-foreground px-1">Aufgabenstruktur</p>
 
                             <ModelSolutionAutopilotBar
                                 eligibleTaskIndices={eligibleTaskIndices}
@@ -252,21 +253,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                 onStartAutoPilot={handleStartAutoPilot}
                             />
 
-                            <div className="flex gap-2 overflow-x-auto pb-4 px-1 no-scrollbar scrollbar-hide">
-                                {groupNames.map(name => (
-                                    <Button
-                                        key={name}
-                                        variant={activeGroupName === name ? "default" : "secondary"}
-                                        onClick={() => setActiveGroupName(name)}
-                                        className={cn(
-                                            "rounded-xl px-4 py-2 h-9 text-xs font-bold transition-all shrink-0 border border-transparent gap-2",
-                                            activeGroupName === name ? "bg-primary text-primary-foreground shadow-md" : "bg-background text-muted-foreground hover:bg-foreground/5 border-border"
-                                        )}
-                                    >
-                                        {name}
-                                    </Button>
-                                ))}
-                            </div>
+                            <AufgabenReiter namen={groupNames} aktiv={activeGroupName} onWaehle={setActiveGroupName} className="mb-2" />
 
 
                             <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
@@ -301,12 +288,12 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         <div className="mt-8 pt-6 border-t border-border/40 flex items-center justify-between bg-card/40 p-4 rounded-2xl">
                             <div className="flex items-center gap-6">
                                 <div className="flex flex-col">
-                                    <span className="text-xxs font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">Aufgaben</span>
-                                    <span className="text-lg font-black text-foreground">{tasksLayout.length}</span>
+                                    <span className="text-xs font-medium text-muted-foreground leading-none mb-1">Aufgaben</span>
+                                    <span className="text-lg font-bold text-foreground">{tasksLayout.length}</span>
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-xxs font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1">Max. Punkte</span>
-                                    <span className="text-lg font-black text-primary">{totalMaxPoints}</span>
+                                    <span className="text-xs font-medium text-muted-foreground leading-none mb-1">Max. Punkte</span>
+                                    <span className="text-lg font-bold text-primary">{totalMaxPoints}</span>
                                 </div>
                             </div>
                         </div>
@@ -314,7 +301,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 ) : (
                     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-xxs font-bold text-muted-foreground uppercase tracking-widest px-1">
+                            <span className="text-xs font-medium text-muted-foreground px-1">
                                 {extractingLayout ? "Extraktion läuft..." : "Extrahiertes Dokument"}
                             </span>
                         </div>
@@ -463,7 +450,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-black text-foreground font-outfit tracking-tight flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-foreground font-outfit tracking-tight flex items-center gap-2">
                                 <Sparkles className="text-primary w-5 h-5 shrink-0" />
                                 Evaluierungs-Engine auswählen
                             </h3>

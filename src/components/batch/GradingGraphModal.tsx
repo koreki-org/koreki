@@ -243,7 +243,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                 <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                             </div>
                             <div className="min-w-0">
-                                <h3 className="text-sm sm:text-lg font-black text-foreground font-outfit tracking-tight">
+                                <h3 className="text-sm sm:text-lg font-bold text-foreground font-outfit tracking-tight">
                                     Grading Graph Designer
                                 </h3>
                                 <p className="text-xxs sm:text-xs text-muted-foreground font-medium truncate">{taskName} (Variable Beziehungen, Toleranzen & Folgefehler-Pfade)</p>
@@ -264,7 +264,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         <button 
                             type="button"
                             onClick={() => setActiveTab('ai')}
-                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'ai' ? "bg-white text-primary shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'ai' ? "bg-white text-primary shadow-sm font-bold" : "text-muted-foreground hover:text-foreground")}
                         >
                             <Sparkles size={12} className={cn(activeTab === 'ai' && "text-primary")} />
                             KI-Assistent 🪄
@@ -272,7 +272,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         <button 
                             type="button"
                             onClick={() => { setActiveTab('testing'); handleRunPlayground(); }}
-                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'testing' ? "bg-white text-primary shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'testing' ? "bg-white text-primary shadow-sm font-bold" : "text-muted-foreground hover:text-foreground")}
                         >
                             <Eye size={12} className={cn(activeTab === 'testing' && "text-primary")} />
                             Graph testen 🧪
@@ -280,7 +280,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         <button 
                             type="button"
                             onClick={() => setActiveTab('editor')}
-                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'editor' ? "bg-white text-primary shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'editor' ? "bg-white text-primary shadow-sm font-bold" : "text-muted-foreground hover:text-foreground")}
                         >
                             <Layers size={12} className={cn(activeTab === 'editor' && "text-primary")} />
                             Knoten-Editor 📊
@@ -288,7 +288,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         <button 
                             type="button"
                             onClick={() => setActiveTab('json')}
-                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'json' ? "bg-white text-primary shadow-sm font-black" : "text-muted-foreground hover:text-foreground")}
+                            className={cn("px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shrink-0", activeTab === 'json' ? "bg-white text-primary shadow-sm font-bold" : "text-muted-foreground hover:text-foreground")}
                         >
                             <Code size={12} className={cn(activeTab === 'json' && "text-primary")} />
                             JSON-Editor 💻
@@ -317,7 +317,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                     <div className="flex flex-col md:flex-row md:items-center gap-4 w-full md:w-auto">
                         {/* 1. Assign Existing Graph Skill from Skill Center */}
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                            <span className="text-xs font-black uppercase text-muted-foreground tracking-wider text-left block">Bestehender Skill:</span>
+                            <span className="text-xs font-medium text-muted-foreground text-left block">Bestehender Skill:</span>
                             <select
                                 value={taskType || 'default'}
                                 disabled={isLocked}
@@ -340,7 +340,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
                         {/* 3. Name & Save Custom Skill (Template) */}
                         <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
-                            <span className="text-xs font-black uppercase text-muted-foreground tracking-wider text-left block">Skill Name:</span>
+                            <span className="text-xs font-medium text-muted-foreground text-left block">Skill Name:</span>
                             <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
                                 <Input 
                                     value={skillName}
@@ -364,7 +364,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                                     meldeErfolg(`Änderungen am Graphen wurden in den Skill "${skillName.trim()}" übernommen. Klicke gleich im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern!`);
                                                 }
                                             }}
-                                            className="flex-1 sm:flex-initial h-8 rounded-full text-xs font-black uppercase border border-primary/20 text-primary bg-primary/5 hover:bg-primary/5 gap-1.5 px-4 transition-all flex items-center justify-center shrink-0 shadow-xs duration-300 active:scale-95"
+                                            className="flex-1 sm:flex-initial h-8 rounded-full text-xs font-medium border border-primary/20 text-primary bg-primary/5 hover:bg-primary/5 gap-1.5 px-4 transition-all flex items-center justify-center shrink-0 shadow-xs duration-300 active:scale-95"
                                             title="Als wiederverwendbaren Custom Skill im Skill Center speichern bzw. übernehmen"
                                         >
                                             <Check size={14} /> Speichern
@@ -491,7 +491,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             <Button 
                                 onClick={() => { onSave(graph); onClose(); }}
                                 disabled={!!jsonError}
-                                className="h-10 flex-1 sm:flex-initial rounded-xl px-6 bg-primary hover:bg-primary text-white font-black shadow-lg shadow-primary/10 transition-all"
+                                className="h-10 flex-1 sm:flex-initial rounded-xl px-6 bg-primary hover:bg-primary text-white font-bold shadow-lg shadow-primary/10 transition-all"
                             >
                                 Zuweisen
                             </Button>

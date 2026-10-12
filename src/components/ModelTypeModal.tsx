@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { FileText, Camera, X } from 'lucide-react';
 import { Button } from './ui/Button';
+import { zeigtCredits } from '@/lib/env-context';
 
 interface ModelTypeModalProps {
     isOpen: boolean;
@@ -70,11 +71,7 @@ const ModelTypeModal: React.FC<ModelTypeModalProps> = ({ isOpen, onClose, onSele
                         <p className="text-sm text-muted-foreground mb-4 whitespace-normal">
                             Text-Dateien (.txt) oder einfache PDFs mit direkt kopierbarem Text.
                         </p>
-                        {isPureMode ? (
-                            <div className="px-3 py-1 bg-secondary text-secondary-foreground text-xs font-bold rounded-full">
-                                Kostenlos (0 Credits)
-                            </div>
-                        ) : (
+                        {zeigtCredits(isPureMode) && (
                             <div className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">
                                 1 Credit / Seite
                             </div>
@@ -96,11 +93,7 @@ const ModelTypeModal: React.FC<ModelTypeModalProps> = ({ isOpen, onClose, onSele
                         <p className="text-sm text-muted-foreground mb-4 whitespace-normal">
                             Komplexere PDFs, Bilder (.jpg, .png) oder handschriftliche Arbeiten.
                         </p>
-                        {isPureMode ? (
-                            <div className="px-3 py-1 bg-secondary text-secondary-foreground text-xs font-bold rounded-full">
-                                Kostenlos (0 Credits)
-                            </div>
-                        ) : (
+                        {zeigtCredits(isPureMode) && (
                             <div className="px-3 py-1 bg-warning/10 text-warning text-xs font-bold rounded-full">
                                 2 Credits / Seite
                             </div>

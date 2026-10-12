@@ -27,7 +27,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
         </div>
         <div className="bg-muted border border-border rounded-xl px-4 py-3 flex items-center justify-between mb-8">
             <span className="text-sm font-semibold text-muted-foreground truncate mr-2">{username}</span>
-            <span className="px-2 py-0.5 bg-primary/20 text-primary text-xxs font-black uppercase tracking-wider rounded-md">{role}</span>
+            <span className="px-2 py-0.5 bg-primary/20 text-primary text-xs font-medium rounded-md">{role}</span>
         </div>
 
         <div className="pt-6 border-t border-border">
@@ -36,7 +36,7 @@ export const AccountSection: React.FC<AccountSectionProps> = ({
                 <h3 className="text-sm font-bold text-foreground/80">Einem Institut beitreten</h3>
             </div>
             <div className="flex gap-2">
-                <Input placeholder="JOIN-ABC123..." value={inviteCode} onChange={e => setInviteCode(e.target.value)} className="h-10 text-sm font-mono uppercase" />
+                <Input placeholder="JOIN-ABC123..." value={inviteCode} onChange={e => setInviteCode(e.target.value)} className="h-10 text-sm font-mono" />
                 <Button onClick={onJoin} disabled={joinLoading || !inviteCode} className="h-10 px-6 font-bold">
                     {joinLoading ? <Loader2 size={16} className="animate-spin" /> : 'Beitreten'}
                 </Button>

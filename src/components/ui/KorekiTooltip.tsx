@@ -64,7 +64,7 @@ export const KorekiTooltip: React.FC<KorekiTooltipProps> = ({
                     widthClass,
                     positionClasses
                 )}>
-                    <p className="text-primary font-bold text-xxs uppercase tracking-widest mb-2 font-outfit">
+                    <p className="text-primary font-medium text-xs mb-2 font-outfit">
                         {title}
                     </p>
                     <div className="text-muted-foreground leading-relaxed text-xs">

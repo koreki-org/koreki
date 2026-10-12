@@ -39,7 +39,7 @@ const PureKeyModal: React.FC<PureKeyModalProps> = ({ onSave, onClose }) => {
                 </div>
 
                 <div className="bg-success/5 border border-success/20 text-success p-4 rounded-xl text-sm leading-relaxed mb-6">
-                    <p>Im <strong className="text-success font-black">Pure-Modus</strong> kommuniziert Ihr Browser direkt mit Mistral AI. Ihr API-Key wird <strong>nur im Arbeitsspeicher (RAM)</strong> gehalten und niemals auf unseren Server übertragen oder dauerhaft gespeichert.</p>
+                    <p>Im <strong className="text-success font-bold">Pure-Modus</strong> kommuniziert Ihr Browser direkt mit Mistral AI. Ihr API-Key wird <strong>nur im Arbeitsspeicher (RAM)</strong> gehalten und niemals auf unseren Server übertragen oder dauerhaft gespeichert.</p>
                 </div>
 
                 <div className="space-y-4 mb-8">

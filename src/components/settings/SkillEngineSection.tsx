@@ -120,7 +120,7 @@ export const SkillEngineSection: React.FC<SkillEngineSectionProps> = ({
                             {editingSkillData.isGraphBased && (
                                 <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 flex flex-col gap-3">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-xs font-black text-primary uppercase tracking-widest">Grading Graph</span>
+                                        <span className="text-xs font-medium text-primary">Grading Graph</span>
                                         <div className="flex gap-2">
                                             {onGenerateGraph && (
                                                 <Button
@@ -151,7 +151,7 @@ export const SkillEngineSection: React.FC<SkillEngineSectionProps> = ({
 
                                     {/* Permanently visible task text input for graph skills */}
                                     <div className="space-y-1.5">
-                                        <label className="text-xxs font-bold text-primary uppercase tracking-widest">Aufgabentext für KI-Analyse & PANG-Kompensation</label>
+                                        <label className="text-xs font-medium text-primary">Aufgabentext für KI-Analyse & PANG-Kompensation</label>
                                         <Textarea
                                             value={editingSkillData.taskText || ''}
                                             onChange={e => {
@@ -183,7 +183,7 @@ export const SkillEngineSection: React.FC<SkillEngineSectionProps> = ({
                             {editingSkillData.isCalcTrace && (
                                 <div className="p-4 bg-primary/5 rounded-2xl border border-primary/20 flex flex-col gap-3">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-xs font-black text-primary uppercase tracking-widest">MINT Rechenkette (CalcTrace)</span>
+                                        <span className="text-xs font-medium text-primary">MINT Rechenkette (CalcTrace)</span>
                                         <div className="flex gap-2">
                                             {onGenerateCalcTrace && (
                                                 <Button
@@ -213,7 +213,7 @@ export const SkillEngineSection: React.FC<SkillEngineSectionProps> = ({
                                     </div>
 
                                     <div className="space-y-1.5">
-                                        <label className="text-xxs font-bold text-primary uppercase tracking-widest">Aufgabentext für KI-Analyse & CalcTrace-Kompensation</label>
+                                        <label className="text-xs font-medium text-primary">Aufgabentext für KI-Analyse & CalcTrace-Kompensation</label>
                                         <Textarea
                                             value={editingSkillData.taskText || ''}
                                             onChange={e => {

@@ -180,7 +180,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                             <Target size={20} />
                         </div>
                         <div>
-                            <h3 className="text-lg font-black text-foreground font-outfit tracking-tight">
+                            <h3 className="text-lg font-bold text-foreground font-outfit tracking-tight">
                                 MINT Zielwert-Definition
                             </h3>
                             <p className="text-xs text-muted-foreground font-medium">{taskName} – Hybrides Grading</p>
@@ -206,7 +206,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
                     <div className="flex flex-col gap-4">
                         <div className="flex justify-between items-center">
-                            <label className="text-xs font-bold uppercase text-muted-foreground">Zielwerte & Meilensteine</label>
+                            <label className="text-xs font-medium text-muted-foreground">Zielwerte & Meilensteine</label>
                             <Button 
                                 variant="outline" 
                                 size="sm" 
@@ -228,7 +228,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                 return (
                                     <div key={idx} className="flex gap-4 items-end animate-fade-in">
                                         <div className="flex-1 space-y-2">
-                                            <label className="text-xs font-bold uppercase text-muted-foreground/70">{label}</label>
+                                            <label className="text-xs font-medium text-muted-foreground/70">{label}</label>
                                             <Input 
                                                 type="text" 
                                                 value={row.value}
@@ -239,7 +239,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                             />
                                         </div>
                                         <div className="w-32 space-y-2">
-                                            <label className="text-xs font-bold uppercase text-muted-foreground/70">Einheit</label>
+                                            <label className="text-xs font-medium text-muted-foreground/70">Einheit</label>
                                             <Input 
                                                 value={row.unit}
                                                 disabled={isLocked}
@@ -264,7 +264,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                         </div>
                         
                         <div className="w-48 mt-2 space-y-2">
-                            <label className="text-xs font-bold uppercase text-muted-foreground">Max. Punkte (Gesamt)</label>
+                            <label className="text-xs font-medium text-muted-foreground">Max. Punkte (Gesamt)</label>
                             <Input 
                                 type="number"
                                 min="0"
@@ -280,7 +280,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                     <div className="flex flex-col gap-4 border-t border-border pt-4">
                         <div className="flex justify-between items-center">
                             <div className="space-y-0.5">
-                                <label className="text-xs font-bold uppercase text-muted-foreground">Strukturierte Kriterien (Hybrid-Grading)</label>
+                                <label className="text-xs font-medium text-muted-foreground">Strukturierte Kriterien (Hybrid-Grading)</label>
                                 <p className="text-xs text-muted-foreground">Kombination aus KI-Prüfung und mathematischen Sandbox-Tests.</p>
                             </div>
                             <Button 
@@ -302,7 +302,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                     <div key={crit.id || cIdx} className="bg-muted/30 border border-border rounded-xl p-3 flex flex-col gap-3 animate-fade-in text-sm">
                                         <div className="flex gap-3 items-end">
                                             <div className="flex-1 space-y-1">
-                                                <label className="text-xs font-bold uppercase text-muted-foreground/70">Kriterium Beschreibung</label>
+                                                <label className="text-xs font-medium text-muted-foreground/70">Kriterium Beschreibung</label>
                                                 <Input 
                                                     value={crit.label}
                                                     disabled={isLocked}
@@ -312,7 +312,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                                 />
                                             </div>
                                             <div className="w-16 space-y-1">
-                                                <label className="text-xs font-bold uppercase text-muted-foreground/70">Punkte</label>
+                                                <label className="text-xs font-medium text-muted-foreground/70">Punkte</label>
                                                 <Input 
                                                     type="number"
                                                     min="0"
@@ -335,7 +335,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
                                         <div className="flex gap-4">
                                             <div className="flex-1 space-y-1">
-                                                <label className="text-xs font-bold uppercase text-muted-foreground/70">Prüfungs-Typ</label>
+                                                <label className="text-xs font-medium text-muted-foreground/70">Prüfungs-Typ</label>
                                                 <select
                                                     value={crit.source}
                                                     disabled={isLocked}
@@ -350,7 +350,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
                                             {crit.source !== 'llm' && (
                                                 <div className="w-48 space-y-1 animate-fade-in">
-                                                    <label className="text-xs font-bold uppercase text-muted-foreground/70">Bezieht sich auf</label>
+                                                    <label className="text-xs font-medium text-muted-foreground/70">Bezieht sich auf</label>
                                                     <select
                                                         value={crit.targetIndex ?? 0}
                                                         disabled={isLocked}
@@ -393,7 +393,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                                         size="sm"
                                         disabled={isLocked}
                                         onClick={() => setGoal(prev => ({ ...prev, maxPoints: criteriaSum }))}
-                                        className="h-6 text-xs uppercase font-bold border-warning/30 text-warning bg-warning/10 hover:bg-warning/20 transition-all"
+                                        className="h-6 text-xs font-medium border-warning/30 text-warning bg-warning/10 hover:bg-warning/20 transition-all"
                                     >
                                         Auf {criteriaSum} P setzen
                                     </Button>
@@ -404,7 +404,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
                     <div className="space-y-2 border-t border-border pt-4">
                         <div className="flex items-center gap-2">
-                            <label className="text-xs font-bold uppercase text-muted-foreground">Erwartungshorizont für KI (Zusatzhinweise)</label>
+                            <label className="text-xs font-medium text-muted-foreground">Erwartungshorizont für KI (Zusatzhinweise)</label>
                             <Info size={14} className="text-muted-foreground" />
                         </div>
                         <Textarea 

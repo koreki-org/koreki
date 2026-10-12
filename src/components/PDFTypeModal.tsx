@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { FileText, Camera, Check, X } from 'lucide-react';
 import { Button } from './ui/Button';
 import { cn } from '@/lib/utils';
+import { zeigtCredits } from '@/lib/env-context';
 
 interface PDFTypeModalProps {
     isOpen: boolean;
@@ -72,11 +73,7 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                         <span className="mt-1 text-sm text-muted-foreground whitespace-normal">
                             Text-Dateien (.txt) oder einfache PDFs mit direkt kopierbarem Text.
                         </span>
-                        {isPureMode ? (
-                            <div className="mt-4 px-3 py-1 bg-secondary text-secondary-foreground text-xs font-bold rounded-full">
-                                Kostenlos (0 Credits)
-                            </div>
-                        ) : (
+                        {zeigtCredits(isPureMode) && (
                             <div className="mt-4 px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">
                                 1 Credit / Seite
                             </div>
@@ -95,11 +92,7 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                         <span className="mt-1 text-sm text-muted-foreground whitespace-normal">
                             Komplexere PDFs, Bilder (.jpg, .png) oder handschriftliche Arbeiten.
                         </span>
-                        {isPureMode ? (
-                            <div className="mt-4 px-3 py-1 bg-secondary text-secondary-foreground text-xs font-bold rounded-full">
-                                Kostenlos (0 Credits)
-                            </div>
-                        ) : (
+                        {zeigtCredits(isPureMode) && (
                             <div className="mt-4 px-3 py-1 bg-warning/10 text-warning text-xs font-bold rounded-full">
                                 2 Credits / Seite
                             </div>

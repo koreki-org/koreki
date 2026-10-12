@@ -33,21 +33,21 @@ const MarketingFooter: React.FC = () => {
 
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-16">
                         <div className="space-y-3">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-foreground font-outfit">Plattform</h4>
+                            <h4 className="text-xs font-medium text-foreground font-outfit">Plattform</h4>
                             <nav className="flex flex-col gap-2 text-xs font-bold">
                                 <Link href="/features" className="text-muted-foreground hover:text-primary transition-colors duration-300">Features</Link>
                                 <Link href="/security" className="text-muted-foreground hover:text-primary transition-colors duration-300">Sicherheit</Link>
                             </nav>
                         </div>
                         <div className="space-y-3">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-foreground font-outfit">Rechtliches</h4>
+                            <h4 className="text-xs font-medium text-foreground font-outfit">Rechtliches</h4>
                             <nav className="flex flex-col gap-2 text-xs font-bold">
                                 <Link href="/impressum" className="text-muted-foreground hover:text-primary transition-colors duration-300">Impressum</Link>
                                 <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors duration-300">Datenschutz</Link>
                             </nav>
                         </div>
                         <div className="space-y-3 col-span-2 md:col-span-1">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-foreground font-outfit">Kontakt</h4>
+                            <h4 className="text-xs font-medium text-foreground font-outfit">Kontakt</h4>
                             <div className="flex flex-col gap-2 text-xs font-bold">
                                 {mode === 'saas' && (
                                     <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors duration-300 flex items-center gap-2">
@@ -62,7 +62,7 @@ const MarketingFooter: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-muted-foreground text-xs font-bold uppercase tracking-[0.2em]">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-muted-foreground text-xs font-medium tracking-[0.2em]">
                     <p>&copy; {new Date().getFullYear()} Koreki<span className="text-primary">.</span> Made in Germany.</p>
                     <div className="flex items-center gap-6">
                         <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-success" /> Datenschutz-Fokus</span>

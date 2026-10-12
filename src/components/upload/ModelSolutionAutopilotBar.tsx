@@ -88,7 +88,7 @@ export const ModelSolutionAutopilotBar: React.FC<ModelSolutionAutopilotBarProps>
                                         }}
                                         size="sm"
                                         className={cn(
-                                            "rounded-lg px-3 py-1 h-7 text-xxs font-bold tracking-wide text-primary-foreground uppercase flex items-center gap-1.5 shrink-0 transition-all duration-200",
+                                            "rounded-lg px-3 py-1 h-7 text-xs font-medium text-primary-foreground flex items-center gap-1.5 shrink-0 transition-all duration-200",
                                             isBatchGenerating 
                                                 ? "bg-muted-foreground/40 cursor-not-allowed" 
                                                 : "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-sm shadow-primary/20"
@@ -103,7 +103,7 @@ export const ModelSolutionAutopilotBar: React.FC<ModelSolutionAutopilotBarProps>
                                             <>
                                                 <Sparkles size={11} />
                                                 <span>GO</span>
-                                                <span className="bg-white/20 rounded px-1 text-xxs font-black leading-none py-0.5">{eligibleTaskIndices.length} C</span>
+                                                <span className="bg-white/20 rounded px-1 text-xxs font-bold leading-none py-0.5">{eligibleTaskIndices.length} C</span>
                                             </>
                                         ) : (
                                             <>
@@ -132,7 +132,7 @@ export const ModelSolutionAutopilotBar: React.FC<ModelSolutionAutopilotBarProps>
                                             <ShieldCheck size={18} />
                                         </div>
                                         <div>
-                                            <h4 className="text-xs font-black text-foreground uppercase tracking-wider mb-0.5 font-outfit">KI-Berechnungsstrukturen erfolgreich erstellt</h4>
+                                            <h4 className="text-xs font-medium text-foreground mb-0.5 font-outfit">KI-Berechnungsstrukturen erfolgreich erstellt</h4>
                                             <p className="text-xs text-muted-foreground leading-normal font-medium">
                                                 Alle Rechengraphen / Rechenketten für eine deterministische Korrektur von Aufgaben wurden erfolgreich generiert und getestet.
                                             </p>

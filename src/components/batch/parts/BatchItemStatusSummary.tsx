@@ -3,6 +3,7 @@ import { Camera, FileText, Highlighter, AlertCircle } from 'lucide-react';
 import { Badge } from '../../ui/Badge';
 import { BatchFile } from '../../../types';
 import { cn } from '@/lib/utils';
+import { zeigtCredits } from '@/lib/env-context';
 
 interface BatchItemStatusSummaryProps {
     item: BatchFile;
@@ -28,13 +29,15 @@ export const BatchItemStatusSummary: React.FC<BatchItemStatusSummaryProps> = ({
                     className={cn("h-7 px-3 text-xs transition-all font-bold gap-2 ring-1 shadow-sm whitespace-nowrap shrink-0", 
                         !isDone && "cursor-pointer hover:opacity-80 transition-opacity",
                         item.documentType === 'scanned' ? "bg-warning/10 text-warning border-warning/20 hover:bg-warning/20 ring-warning/10" : "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 ring-primary/10")}>
-                    {item.documentType === 'scanned' ? <><Camera size={14}/>{item.estimatedCredits} Credits</> : <><FileText size={14}/>Digital ({item.estimatedCredits} Credits)</>}
+                    {item.documentType === 'scanned'
+                        ? <><Camera size={14}/>{zeigtCredits() ? `${item.estimatedCredits} Credits` : 'Scan'}</>
+                        : <><FileText size={14}/>Digital{zeigtCredits() ? ` (${item.estimatedCredits} Credits)` : ''}</>}
                 </Badge>
             )}
-            
+
             {item.isRedacted && (
-                <Badge className="bg-success/10 text-success border-success/20 text-xs font-black uppercase h-5 px-2 gap-1 shadow-none rounded-md font-outfit">
-                    <Highlighter size={12} /> GESCHWÄRZT
+                <Badge className="bg-success/10 text-success border-transparent h-6 px-2 gap-1">
+                    <Highlighter size={12} /> Geschwärzt
                 </Badge>
             )}
             {item.status === 'error' && (

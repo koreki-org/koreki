@@ -120,7 +120,7 @@ export default function OrgAdminDashboard() {
                                         <KeyRound size={32} className="text-primary" />
                                     </div>
                                     <h4 className="text-2xl font-mono font-bold text-foreground tracking-wider mb-2">{workspace?.inviteCode}</h4>
-                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-6">Aktiver Schul-Schlüssel</p>
+                                    <p className="text-xs font-medium text-muted-foreground mb-6">Aktiver Schul-Schlüssel</p>
                                     <Button 
                                         variant="outline" 
                                         className="w-full rounded-xl font-bold bg-card border-border hover:bg-secondary"
@@ -156,14 +156,14 @@ export default function OrgAdminDashboard() {
                                             </p>
                                             
                                             {workspace?.avvAccepted && (
-                                                <div className="mt-3 flex items-center gap-2 text-xs font-bold text-success uppercase tracking-wider">
+                                                <div className="mt-3 flex items-center gap-2 text-xs font-medium text-success">
                                                     <CheckCircle size={14} /> Audit-Log Status: Verifiziert
                                                 </div>
                                             )}
                                         </div>
                                     </div>
                                     <Button 
-                                        className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 rounded-2xl font-black gap-2 shadow-lg shadow-primary/20"
+                                        className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 rounded-2xl font-bold gap-2 shadow-lg shadow-primary/20"
                                         onClick={() => router.push('/app/compliance/avv')}
                                     >
                                         Anzeigen & Drucken <Eye size={20} />

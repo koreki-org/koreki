@@ -76,7 +76,7 @@ export const LegalMarkdown: React.FC<LegalMarkdownProps> = ({ content }) => (
             ),
             thead: ({ node, ...props }) => <thead className="bg-muted/50" {...props} />,
             th: ({ node, ...props }) => (
-                <th className="px-4 py-3 text-left text-xs font-black uppercase tracking-widest text-muted-foreground" {...props} />
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground" {...props} />
             ),
             td: ({ node, ...props }) => (
                 <td className="px-4 py-3 border-t border-border text-sm text-muted-foreground align-top" {...props} />

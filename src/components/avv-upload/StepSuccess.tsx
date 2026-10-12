@@ -14,7 +14,7 @@ export const StepSuccess: React.FC<StepSuccessProps> = ({ isOrganization, onComp
                 <div className="absolute inset-0 bg-success blur-2xl opacity-20 rounded-full animate-pulse"></div>
                 <CheckCircle size={80} className="text-success relative z-10" />
             </div>
-            <h3 className="text-3xl font-black text-foreground mb-4 tracking-tight">Vollständig!</h3>
+            <h3 className="text-3xl font-bold text-foreground mb-4 tracking-tight">Vollständig!</h3>
             <p className="text-muted-foreground leading-relaxed mb-10 max-w-[350px]">
                 {isOrganization 
                   ? 'Der Instituts-AVV wurde erfolgreich hinterlegt. Alle Lehrkräfte sind nun für die Verarbeitung freigeschaltet.'

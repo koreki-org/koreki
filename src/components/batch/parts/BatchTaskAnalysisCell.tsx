@@ -80,7 +80,7 @@ export const BatchTaskAnalysisCell: React.FC<BatchTaskAnalysisCellProps> = ({
                         <span className="hidden sm:inline">{taskName}</span>
                     </span>
                     <VertrauensChip vertrauen={confidence} getConfidenceColor={getConfidenceColor} />
-                    <div className="ml-auto pl-2">
+                    <div className="ml-auto pl-2 pr-3 mr-1 border-r border-border">
                         <PointInput
                             value={Number(aiResult?.pointsObtained ?? 0)}
                             maxPoints={Number(task.maxPoints || 0)}
@@ -187,7 +187,7 @@ export const BatchTaskAnalysisCell: React.FC<BatchTaskAnalysisCellProps> = ({
                             </Button>
                             {memories.length > 0 && (
                                 /* Die Standardvariante, nicht nachgebaut: Hier standen
-                                   `hover:bg-primary/95`, `shadow-sm` und `font-black` gegen die
+                                   `hover:bg-primary/95`, `shadow-sm` und `font-bold` gegen die
                                    `bg-primary/90`, `shadow-md`, `font-medium` des Bauteils —
                                    derselbe Knopf, knapp daneben. */
                                 <Button

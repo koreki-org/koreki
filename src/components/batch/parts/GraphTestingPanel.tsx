@@ -43,7 +43,7 @@ export const GraphTestingPanel: React.FC<GraphTestingPanelProps> = ({
                                 {/* Sticky Header with Actions */}
                                 <div className="px-6 py-4 border-b border-border bg-muted flex justify-between items-center shrink-0">
                                     <div>
-                                        <h4 className="text-xs font-black uppercase text-foreground font-outfit">Schüler-Eingaben</h4>
+                                        <h4 className="text-xs font-medium text-foreground font-outfit">Schüler-Eingaben</h4>
                                         <p className="text-xs text-muted-foreground font-medium font-inter">Simulationswerte zum Testen</p>
                                     </div>
                                     <div className="flex gap-2">
@@ -58,7 +58,7 @@ export const GraphTestingPanel: React.FC<GraphTestingPanelProps> = ({
                                         <Button 
                                             size="sm" 
                                             onClick={onRun}
-                                            className="h-8 text-xs font-black bg-primary hover:bg-primary text-white rounded-lg px-3.5 shadow-md shadow-primary/10"
+                                            className="h-8 text-xs font-bold bg-primary hover:bg-primary text-white rounded-lg px-3.5 shadow-md shadow-primary/10"
                                         >
                                             Berechnen
                                         </Button>
@@ -97,15 +97,15 @@ export const GraphTestingPanel: React.FC<GraphTestingPanelProps> = ({
                                         {/* Sticky Score Header */}
                                         <div className="px-6 py-4 border-b border-border bg-muted flex justify-between items-center shrink-0">
                                             <div className="text-left">
-                                                <h4 className="text-xs font-black uppercase text-foreground font-outfit">Simulations-Ergebnis</h4>
+                                                <h4 className="text-xs font-medium text-foreground font-outfit">Simulations-Ergebnis</h4>
                                                 <p className="text-xs text-muted-foreground font-medium font-inter">Bewertung des Schülerversuchs</p>
                                             </div>
                                             {isPointsDisabled ? (
-                                                <Badge className="bg-primary/5 border-primary/20 text-primary font-black px-3 py-1 text-xs rounded-full">
+                                                <Badge className="bg-primary/5 border-primary/20 text-primary font-bold px-3 py-1 text-xs rounded-full">
                                                     Variablen: {playgroundResult.stepResults.filter((s: any) => s.status === 'correct' || s.status === 'consecutive_correct').length} / {playgroundResult.stepResults.length} korrekt
                                                 </Badge>
                                             ) : (
-                                                <Badge className="bg-primary/5 border-primary/20 text-primary font-black px-3 py-1 text-xs rounded-full">
+                                                <Badge className="bg-primary/5 border-primary/20 text-primary font-bold px-3 py-1 text-xs rounded-full">
                                                     Gesamtpunkte: {playgroundResult.totalPoints} / {playgroundResult.maxPoints} P
                                                 </Badge>
                                             )}
@@ -127,7 +127,7 @@ export const GraphTestingPanel: React.FC<GraphTestingPanelProps> = ({
                                                         <div className="flex items-center gap-2">
                                                             <span className="font-mono font-bold truncate">{step.variableId}</span>
                                                             <Badge className={cn(
-                                                                "text-xxs py-0 px-1.5 rounded font-black uppercase border shrink-0",
+                                                                "text-xs py-0 px-1.5 rounded font-medium border shrink-0",
                                                                 step.status === 'correct' ? "bg-success/10 border-success/20 text-success" :
                                                                 step.status === 'consecutive_correct' ? "bg-primary/5 border-primary/20 text-primary" :
                                                                 "bg-destructive/10 border-destructive/20 text-destructive"
@@ -148,7 +148,7 @@ export const GraphTestingPanel: React.FC<GraphTestingPanelProps> = ({
                                                             <p className="font-mono font-bold">{step.studentValue !== undefined ? String(step.studentValue) : 'Fehlt'}</p>
                                                         </div>
                                                         {!isPointsDisabled && (
-                                                            <Badge variant="outline" className="border-transparent font-black px-2.5 py-1 rounded-full text-xs">
+                                                            <Badge variant="outline" className="border-transparent font-bold px-2.5 py-1 rounded-full text-xs">
                                                                 +{step.points} P
                                                             </Badge>
                                                         )}

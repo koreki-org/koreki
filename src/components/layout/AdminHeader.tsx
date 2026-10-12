@@ -31,7 +31,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => router.push(backPath)}
-                    className="group -ml-2 text-xs font-bold text-muted-foreground uppercase tracking-wide hover:bg-transparent hover:text-primary transition-colors pr-4"
+                    className="group -ml-2 text-xs font-medium text-muted-foreground hover:bg-transparent hover:text-primary transition-colors pr-4"
                 >
                     <ArrowLeft size={14} className="mr-2 group-hover:-translate-x-1 transition-transform" />
                     {backLabel}
@@ -63,7 +63,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                             <div className="hidden md:flex flex-col gap-1">
                                 <div className="flex items-center gap-2">
                                     <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Enterprise Environment v2.0</p>
+                                    <p className="text-xs font-medium text-muted-foreground">Enterprise Environment v2.0</p>
                                 </div>
                                 <p className="text-sm font-semibold text-foreground">Multi-Tenant Management</p>
                             </div>

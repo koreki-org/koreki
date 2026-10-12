@@ -51,7 +51,7 @@ export const ParameterSlider: React.FC<ParameterSliderProps> = ({
         <div className="space-y-1.5">
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-1">
-                    <label className="text-xs font-bold text-foreground uppercase tracking-wider">{label}</label>
+                    <label className="text-xs font-medium text-foreground">{label}</label>
                     <KorekiTooltip
                         title={tooltipTitle}
                         content={tooltipContent}

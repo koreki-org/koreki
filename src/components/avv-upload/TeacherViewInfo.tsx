@@ -12,7 +12,7 @@ export const TeacherViewInfo: React.FC<TeacherViewInfoProps> = ({ onLogout }) =>
             <div className="flex items-start gap-4 p-5 bg-warning/5 border border-warning/20 rounded-2xl text-xs text-warning text-left mb-6 shadow-sm">
                 <AlertCircle size={20} className="text-warning shrink-0 mt-0.5" />
                 <div className="flex flex-col gap-2">
-                    <p className="font-bold uppercase tracking-wide">Zentraler AVV steht noch aus.</p>
+                    <p className="font-medium">Zentraler AVV steht noch aus.</p>
                     <p className="leading-relaxed opacity-90">
                         Dein Institut hat noch keinen gültigen AVV hinterlegt. Solange dieses Dokument fehlt, sind Bilderkennung und Korrekturen im Schul-Profil gesperrt.
                     </p>

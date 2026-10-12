@@ -19,7 +19,7 @@ export const MistralConfigSection: React.FC<MistralConfigSectionProps> = ({
     return (
         <div className="space-y-4">
             <div className="space-y-2">
-                <label htmlFor="mistral-key" className="text-xs font-black uppercase text-muted-foreground tracking-wider ml-1">Mistral API Key</label>
+                <label htmlFor="mistral-key" className="text-xs font-medium text-muted-foreground ml-1">Mistral API Key</label>
                 <div className="relative">
                     <Key size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <Input 

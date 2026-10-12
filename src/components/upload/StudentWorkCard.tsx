@@ -6,6 +6,7 @@ import { CollapsibleCardContent, CollapseToggleButton } from '@/components/ui/Co
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
+import { zeigtCredits } from '@/lib/env-context';
 
 interface StudentWorkCardProps {
     batchFilesCount: number;
@@ -104,14 +105,14 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                             <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center text-primary shadow-sm mb-3">
                                 <Users size={24} />
                             </div>
-                            <h4 className="font-black text-foreground leading-tight mb-1">{batchFilesCount} Schüler gefunden</h4>
+                            <h4 className="font-bold text-foreground leading-tight mb-1">{batchFilesCount} Schüler gefunden</h4>
                             <p className="text-xs text-muted-foreground font-medium">Bereit für die Analyse</p>
                         </div>
 
                         {tasksLayout.length > 0 && (
                             <div className="mt-auto">
                                 <div className="flex items-center justify-between mb-3 px-1">
-                                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest font-outfit">Erkannte Aufgabenstellung</span>
+                                    <span className="text-xs font-medium text-muted-foreground font-outfit">Erkannte Aufgabenstellung</span>
                                     <div className="flex flex-col items-end gap-1">
                                         <div className="flex items-center gap-2">
                                             <Button
@@ -119,10 +120,10 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                                                 size="sm"
                                                 onClick={onReExtractLayout}
                                                 disabled={extractingLayout || isLocked}
-                                                className="h-auto p-0 text-xs text-primary font-bold uppercase tracking-wide flex items-center gap-1 font-outfit hover:text-primary/90 transition-colors"
+                                                className="h-auto p-0 text-xs text-primary font-medium flex items-center gap-1 hover:text-primary/90 transition-colors"
                                             >
                                                 <RefreshCw size={10} className={extractingLayout ? "animate-spin" : ""} />
-                                                Update
+                                                Aktualisieren
                                             </Button>
 
                                             <KorekiTooltip 
@@ -131,17 +132,17 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                                                 position="top"
                                                 iconSize={14}
                                                 buttonClassName="h-6 w-6"
-                                                footer={(
+                                                footer={zeigtCredits() ? (
                                                     <div className="flex items-center justify-between">
-                                                        <span className="text-xxs font-bold text-muted-foreground uppercase tracking-wider">Kosten</span>
+                                                        <span className="text-xs font-medium text-muted-foreground">Kosten</span>
                                                         <span className="text-xxs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">1 Credit / Seite</span>
                                                     </div>
-                                                )}
+                                                ) : undefined}
                                             />
                                         </div>
-                                        <span className="text-xxs font-bold text-primary/70 uppercase tracking-tight font-outfit bg-primary/5 px-1.5 py-0.5 rounded-md border border-primary/20">
-                                            1 Credit / Seite
-                                        </span>
+                                        {zeigtCredits() && (
+                                            <span className="text-xs font-medium text-primary/70 bg-primary/5 px-1.5 py-0.5 rounded-md">1 Credit / Seite</span>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex flex-wrap gap-2">

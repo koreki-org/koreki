@@ -6,7 +6,7 @@ import { isLocalInstance } from '@/lib/env-context';
 const MinimalFooter: React.FC = () => {
     return (
         <footer className="mt-auto py-6 px-8 border-t border-border/50 bg-background/40 backdrop-blur-md">
-            <div className="max-w-[1500px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-xxs font-bold text-muted-foreground uppercase tracking-widest">
+            <div className="max-w-[1500px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-xs font-medium text-muted-foreground">
                 <div className="flex items-center gap-2">
                     <span>&copy; {new Date().getFullYear()} Koreki. Open Source. Developed with</span>
                     <Heart size={10} className="text-primary fill-primary" />

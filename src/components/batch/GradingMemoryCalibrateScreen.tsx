@@ -32,14 +32,14 @@ export const GradingMemoryCalibrateScreen: React.FC<GradingMemoryCalibrateScreen
                                 {/* Wizard Progress Indicator */}
                                 <div className="bg-muted border border-border rounded-xl p-4 shrink-0 flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-black text-xs">
+                                        <div className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-xs">
                                             {activeCaseIndex + 1}
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-black text-foreground font-outfit">
+                                            <h4 className="text-sm font-bold text-foreground font-outfit">
                                                 Kalibrierung: Fall {activeCaseIndex + 1} von {syntheticAnswers.length}
                                             </h4>
-                                            <p className="text-xs text-muted-foreground font-bold uppercase tracking-wide">
+                                            <p className="text-xs text-muted-foreground font-medium">
                                                 Zugeordnete Aufgabe: <span className="text-primary font-extrabold">{cal.taskName || 'noch nicht zugeordnet'}</span>
                                             </p>
                                         </div>
@@ -65,14 +65,14 @@ export const GradingMemoryCalibrateScreen: React.FC<GradingMemoryCalibrateScreen
                                     <div className="w-full lg:w-1/2 flex flex-col bg-muted/50 border border-border rounded-xl p-5 md:p-6 min-h-[220px] lg:h-full overflow-hidden">
                                         <div className="flex items-center justify-between mb-4 pb-2 border-b border-border shrink-0">
                                             <div className="flex items-center gap-2">
-                                                <span className={`text-xs font-black uppercase px-2.5 py-0.5 rounded-full ${getCharacterBadgeStyle(activeCase.character)}`}>
+                                                <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${getCharacterBadgeStyle(activeCase.character)}`}>
                                                     {getCharacterTitle(activeCase.character)}
                                                 </span>
                                                 <h4 className="text-sm font-extrabold text-foreground font-outfit">
                                                     Simulierter Text
                                                 </h4>
                                             </div>
-                                            <span className="text-xs text-muted-foreground font-bold uppercase">Abgabe editieren</span>
+                                            <span className="text-xs text-muted-foreground font-medium">Abgabe editieren</span>
                                         </div>
 
                                         <Textarea 
@@ -89,7 +89,7 @@ export const GradingMemoryCalibrateScreen: React.FC<GradingMemoryCalibrateScreen
                                     {/* Right Column: Calibration Form Cockpit */}
                                     <div className="w-full lg:w-1/2 flex flex-col bg-card border border-border rounded-xl p-5 md:p-6 lg:h-full overflow-y-auto custom-scrollbar gap-5">
                                         <div className="border-b border-border pb-3 shrink-0 flex items-center justify-between">
-                                            <h4 className="text-sm font-black text-foreground uppercase tracking-wider flex items-center gap-2 font-outfit">
+                                            <h4 className="text-sm font-medium text-foreground flex items-center gap-2 font-outfit">
                                                 <BookOpen size={16} className="text-primary" />
                                                 Bewertungs-Cockpit
                                             </h4>
@@ -100,7 +100,7 @@ export const GradingMemoryCalibrateScreen: React.FC<GradingMemoryCalibrateScreen
 
                                         {/* 1. Task Association Dropdown */}
                                         <div className="space-y-2">
-                                            <label className="block text-xs font-black uppercase tracking-wider text-muted-foreground">
+                                            <label className="block text-xs font-medium text-muted-foreground">
                                                 Zugeordnete Aufgabe aus der Musterlösung:
                                             </label>
                                             {tasksLayout && tasksLayout.length > 0 ? (
@@ -162,7 +162,7 @@ export const GradingMemoryCalibrateScreen: React.FC<GradingMemoryCalibrateScreen
 
                                         {/* 2. Interactive Points Slider */}
                                         <div className="space-y-3 pt-3 border-t border-border">
-                                            <div className="flex items-center justify-between text-xs font-black uppercase tracking-wider text-muted-foreground">
+                                            <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
                                                 <span>Menschliche Wertung (Slider):</span>
                                                 <span className="text-primary font-extrabold text-sm md:text-base bg-primary/10 px-3 py-1 rounded-lg border border-primary/10 shadow-sm font-mono">
                                                     {cal.pointsObtained} von {cal.maxPoints} Punkten
@@ -186,7 +186,7 @@ export const GradingMemoryCalibrateScreen: React.FC<GradingMemoryCalibrateScreen
 
                                         {/* 3. Pedagogical Correction Notes */}
                                         <div className="space-y-2 pt-3 border-t border-border flex-1 flex flex-col min-h-[140px]">
-                                            <label className="block text-xs font-black uppercase tracking-wider text-muted-foreground">
+                                            <label className="block text-xs font-medium text-muted-foreground">
                                                 Korrekturbegründung (correctionNotes):
                                             </label>
                                             <Textarea 
@@ -200,7 +200,7 @@ export const GradingMemoryCalibrateScreen: React.FC<GradingMemoryCalibrateScreen
 
                                         {/* 4. Student Feedback Input */}
                                         <div className="space-y-2">
-                                            <label className="block text-xs font-black uppercase tracking-wider text-muted-foreground">
+                                            <label className="block text-xs font-medium text-muted-foreground">
                                                 Feedback an Schüler (Optional):
                                             </label>
                                             <Input 

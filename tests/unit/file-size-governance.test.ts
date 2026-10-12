@@ -93,7 +93,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // Autopilot nach hooks/useModelSolutionAutopilot.ts, Ableitungen nach
     // hooks/useModelSolutionDerivations.ts. Hook-Aufrufe 16 -> 10, damit aus
     // HOOK_BASELINE verschwunden.
-    'components/upload/ModelSolutionCard.tsx': 562,
+    'components/upload/ModelSolutionCard.tsx': 549,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
     // +42 gegenueber 793: der Ansichtstyp SkillListenEintrag und die

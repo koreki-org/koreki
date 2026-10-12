@@ -82,10 +82,10 @@ const Dropdown: React.FC<DropdownProps> = ({
                 disabled={disabled}
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
-                    "flex w-full items-center justify-between border bg-card py-2 font-bold text-foreground shadow-sm transition-all outline-none",
+                    "flex w-full items-center justify-between border bg-card py-2 font-medium text-foreground transition-colors outline-none",
                     SIZE[size],
                     isOpen 
-                        ? "border-primary ring-4 ring-primary/10" // Weicher, blauer Fokus-Ring
+                        ? "border-primary" // Offen: der Rand sagt es. Ein Ring dazu war ein zweiter Rahmen um denselben Zustand.
                         /*
                          * Der Hover sitzt am RAND, nicht auf der Flaeche.
                          *
@@ -98,7 +98,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                          * es ist bereits das Hellste der Leiter. Der Rand kann es, und er
                          * kuendigt zugleich den geoeffneten Zustand an (dort `border-primary`).
                          */
-                        : "border-border hover:border-primary/40",
+                        : "border-border hover:border-foreground/30",
                     disabled && "cursor-not-allowed opacity-50"
                 )}
             >
@@ -106,7 +106,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                     {selectedOption?.icon && (
                         <span className="text-muted-foreground">{selectedOption.icon}</span>
                     )}
-                    <span className={cn("truncate tracking-wide", !selectedOption && "text-muted-foreground font-medium")}>
+                    <span className={cn("truncate", !selectedOption && "text-muted-foreground")}>
                         {selectedOption ? selectedOption.label : placeholder}
                     </span>
                 </div>
@@ -118,12 +118,11 @@ const Dropdown: React.FC<DropdownProps> = ({
                 />
             </button>
 
-            {/* Dropdown Menu - mit echtem Tailwind Glassmorphism */}
+            {/* Aufgeklappte Liste: undurchsichtige Karte mit Haarlinie und Schatten */}
             {isOpen && (
                 <div 
                     className={cn(
-                        // Native Tailwind-Klassen für den milchigen Glass-Effekt + Fallback-Hintergrund
-                        "absolute z-50 mt-2 w-full min-w-[12rem] rounded-2xl border border-white/50 bg-white/90 p-1.5 shadow-xl backdrop-blur-xl",
+                        "absolute z-50 mt-1.5 w-full min-w-[12rem] rounded-xl border border-border bg-card p-1 shadow-xl",
                         "max-h-[300px] overflow-y-auto custom-scrollbar",
                         "animate-in fade-in zoom-in-95 duration-200 origin-top"
                     )}
@@ -144,8 +143,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                                         setIsOpen(false);
                                     }}
                                     className={cn(
-                                        // Die einzelnen Optionen sind jetzt auch leicht abgerundet (rounded-xl)
-                                        "flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-bold transition-all",
+                                        "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                                         isSelected 
                                             ? "bg-primary/10 text-primary" 
                                             : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground"

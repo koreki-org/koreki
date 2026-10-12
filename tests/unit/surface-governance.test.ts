@@ -58,7 +58,7 @@ const HARTE_FARBEN_BASELINE: string[] = [
  *
  * Die Kopfleiste trägt `bg-card/70` + `border` + `shadow-xl` + `ring-1`. Sie
  * ist als schwebende Glas-Leiste gedacht, und Glasmorphismus ist für schwebende
- * Elemente ausdrücklich erlaubt (`koreki-design-system` §1) — vier Mittel
+ * Elemente ausdrücklich erlaubt (`koreki-design-system` §5) — vier Mittel
  * bleiben trotzdem drei zu viel. Eine der beiden Stellen hebt ausserdem alles
  * ab `md:` wieder auf (`md:border-0 md:shadow-none md:ring-0`), gilt also nur
  * mobil. Der Umbau der Navigation war nicht Teil des Auftrags.

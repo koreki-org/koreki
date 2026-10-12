@@ -154,13 +154,13 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                     {isDone && (
                         <div className="flex items-center gap-2">
                             {reviewRecommended && (
-                                <Badge className="hidden sm:flex bg-warning/10 text-warning border-warning/20 h-7 px-3 text-xxs font-black uppercase tracking-tight gap-1.5 shadow-sm animate-pulse rounded-lg">
+                                <Badge className="hidden sm:flex bg-warning/10 text-warning border-warning/20 h-7 px-3 text-xs font-medium tracking-tight gap-1.5 shadow-sm animate-pulse rounded-lg">
                                     <AlertTriangle size={12} className="text-warning" /> Review
                                 </Badge>
                             )}
                             <div className="flex items-center gap-3">
-                                {scorePercentage !== null && <span className="text-xxs sm:text-xs font-black text-muted-foreground">{scorePercentage}%</span>}
-                                <Badge data-testid="note" className="bg-success text-white h-7 px-3 text-xs font-black tracking-tight shadow-sm border-0 rounded-lg">{item.grade}</Badge>
+                                {scorePercentage !== null && <span className="text-xxs sm:text-xs font-bold text-muted-foreground">{scorePercentage}%</span>}
+                                <Badge data-testid="note" className="bg-success text-white h-7 px-3 text-xs font-bold tracking-tight shadow-sm border-0 rounded-lg">{item.grade}</Badge>
                             </div>
                         </div>
                     )}

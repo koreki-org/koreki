@@ -44,7 +44,7 @@ const WorkspaceManager: React.FC<WorkspaceManagerProps> = ({
                         form.reset();
                     }}>
                         <div className="space-y-2">
-                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Bezeichnung</label>
+                            <label className="text-xs font-medium text-muted-foreground">Bezeichnung</label>
                             <Input 
                                 name="wsName"
                                 placeholder="z.B. Koreki University"
@@ -68,10 +68,10 @@ const WorkspaceManager: React.FC<WorkspaceManagerProps> = ({
                         <table className="w-full text-left">
                             <thead>
                                 <tr className="bg-secondary/30 border-b border-border/50">
-                                    <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide">Name</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide text-center">Budget</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide text-center">Code</th>
-                                    <th className="px-6 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wide text-right">Aktionen</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-muted-foreground">Name</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-muted-foreground text-center">Budget</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-muted-foreground text-center">Code</th>
+                                    <th className="px-6 py-3 text-xs font-semibold text-muted-foreground text-right">Aktionen</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/50">

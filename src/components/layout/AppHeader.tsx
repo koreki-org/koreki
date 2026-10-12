@@ -246,7 +246,7 @@ const Header: React.FC<HeaderProps> = ({
                         
                         <ProfileConfigButton 
                             icon={<BookOpen size={14} />} 
-                            label="Erfahrung"
+                            label="Erfahrungsschatz"
                             value={activeGradingMemoryName || 'Standard-Korrektur'} 
                             onClick={onShowGradingMemory!} 
                             description="GradingMemory: Korrektur-Erfahrung kalibrieren" 
@@ -280,7 +280,7 @@ const Header: React.FC<HeaderProps> = ({
                         variant="outline"
                         size="lg"
                         onClick={onLoadDemo}
-                        className="flex-1 rounded-full px-2 sm:px-4 bg-card/50 backdrop-blur-sm border-border text-muted-foreground hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-xxs sm:text-xs"
+                        className="flex-1 rounded-full px-2 sm:px-4 h-10 text-xs sm:text-sm text-foreground"
                     >
                         <Sparkles size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Demo
                     </Button>
@@ -289,7 +289,7 @@ const Header: React.FC<HeaderProps> = ({
                         variant="default"
                         size="lg"
                         onClick={onReset}
-                        className="flex-1 rounded-full px-2 sm:px-4 bg-primary text-primary-foreground hover:shadow-lg hover:-translate-y-0.5 transition-all h-10 font-bold text-xxs sm:text-xs whitespace-nowrap"
+                        className="flex-1 rounded-full px-2 sm:px-4 h-10 text-xs sm:text-sm whitespace-nowrap"
                     >
                         <PlusCircle size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Neue Korrektur
                     </Button>
@@ -298,7 +298,7 @@ const Header: React.FC<HeaderProps> = ({
                         variant="outline"
                         size="lg"
                         onClick={actions.triggerImport}
-                        className="flex-1 rounded-full px-2 sm:px-4 bg-card/50 backdrop-blur-sm border-border text-muted-foreground hover:border-primary/40 hover:text-primary hover:-translate-y-0.5 transition-all shadow-sm h-10 font-bold text-xxs sm:text-xs"
+                        className="flex-1 rounded-full px-2 sm:px-4 h-10 text-xs sm:text-sm text-foreground"
                     >
                         <FileUp size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Importieren
                     </Button>
@@ -319,7 +319,7 @@ const Header: React.FC<HeaderProps> = ({
                     <div className="shrink-0 ml-auto sm:ml-0">
                         <Button
                             variant="default"
-                            className="px-4 py-1.5 h-auto text-xs font-black uppercase tracking-wider rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg hover:shadow-primary/20 hover:-translate-y-0.5"
+                            className="px-4 py-1.5 h-auto text-xs font-medium rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg hover:shadow-primary/20"
                             onClick={actions.triggerRelink}
                         >
                             Dateien verknüpfen

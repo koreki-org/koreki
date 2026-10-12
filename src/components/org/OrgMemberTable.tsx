@@ -27,11 +27,11 @@ export const OrgMemberTable: React.FC<OrgMemberTableProps> = ({
                 <table className="w-full text-left">
                     <thead>
                         <tr className="bg-secondary/30 border-b border-border">
-                            <th className="px-8 py-5 text-xs font-bold text-muted-foreground uppercase tracking-widest">Lehrkraft</th>
-                            <th className="px-6 py-5 text-xs font-bold text-muted-foreground uppercase tracking-widest text-center">Modus</th>
-                            <th className="px-6 py-5 text-xs font-bold text-muted-foreground uppercase tracking-widest text-center">Rolle im Institut</th>
-                            <th className="px-6 py-5 text-xs font-bold text-muted-foreground uppercase tracking-widest text-center">Verbrauch (OCR/KI)</th>
-                            <th className="px-8 py-5 text-xs font-bold text-muted-foreground uppercase tracking-widest text-right w-[150px]">Aktionen</th>
+                            <th className="px-8 py-5 text-xs font-medium text-muted-foreground">Lehrkraft</th>
+                            <th className="px-6 py-5 text-xs font-medium text-muted-foreground text-center">Modus</th>
+                            <th className="px-6 py-5 text-xs font-medium text-muted-foreground text-center">Rolle im Institut</th>
+                            <th className="px-6 py-5 text-xs font-medium text-muted-foreground text-center">Verbrauch (OCR/KI)</th>
+                            <th className="px-8 py-5 text-xs font-medium text-muted-foreground text-right w-[150px]">Aktionen</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border/50">
@@ -39,7 +39,7 @@ export const OrgMemberTable: React.FC<OrgMemberTableProps> = ({
                             <tr key={m.id} className="hover:bg-secondary/10 transition-colors group">
                                 <td className="px-8 py-5">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-9 h-9 rounded-full bg-secondary text-primary flex items-center justify-center font-bold text-xs uppercase tracking-tighter">
+                                        <div className="w-9 h-9 rounded-full bg-secondary text-primary flex items-center justify-center font-medium text-xs tracking-tighter">
                                             {(m.username || '??').substring(0, 2)}
                                         </div>
                                         <div className="flex flex-col">
