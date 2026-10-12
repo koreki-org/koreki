@@ -68,12 +68,17 @@ const MarketingHeader: React.FC = () => {
                         {mode === 'saas' && (
                             <Link
                                 href={eingeloggt ? '/app' : '/login'}
-                                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), "hidden sm:inline-flex")}
+                                className={buttonVariants({ variant: 'outline', size: 'sm' })}
                             >
                                 {eingeloggt ? 'Zur App' : 'Anmelden'}
                             </Link>
                         )}
-                        <Link href={hauptaktion.href} className={buttonVariants({ variant: 'default', size: 'sm' })}>
+                        {/* Auf dem Handy laedt niemand das Windows-Programm herunter: Dort ist
+                            "Anmelden" die sichtbare Aktion, "Desktop" steht im Menue. */}
+                        <Link
+                            href={hauptaktion.href}
+                            className={cn(buttonVariants({ variant: 'default', size: 'sm' }), mode === 'saas' && "hidden sm:inline-flex")}
+                        >
                             {hauptaktion.icon}{hauptaktion.text}
                         </Link>
                         <Button
@@ -105,15 +110,6 @@ const MarketingHeader: React.FC = () => {
                             {item.name}
                         </Link>
                     ))}
-                    {mode === 'saas' && (
-                        <Link
-                            href={eingeloggt ? '/app' : '/login'}
-                            onClick={() => setIsMenuOpen(false)}
-                            className="px-3 py-3 rounded-lg text-base text-muted-foreground"
-                        >
-                            {eingeloggt ? 'Zur App' : 'Anmelden'}
-                        </Link>
-                    )}
                 </div>
             )}
         </>
