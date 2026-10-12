@@ -189,7 +189,7 @@ export function useGradingMemoryModalState({
 
     const handleDeleteCase = async (caseId: string) => {
         if (!activeMemoryId) return;
-        if (!(await askConfirmation({ title: 'Fallbeispiel löschen', message: 'Möchtest du dieses Fallbeispiel wirklich aus dem Erfahrungsschatz löschen?' }))) return;
+        if (!(await askConfirmation({ title: 'Fallbeispiel löschen', message: 'Möchten Sie dieses Fallbeispiel wirklich aus dem Erfahrungsschatz löschen?' }))) return;
 
         setMemories(prev => prev.map(m => {
             if (m.id !== activeMemoryId) return m;
@@ -250,7 +250,7 @@ export function useGradingMemoryModalState({
                     createdAt: new Date().toISOString()
                 };
                 addLocalMemory(localMemory);
-                meldeErfolg(`Erfahrungsschatz "${memory.name}" erfolgreich in deiner lokalen Bibliothek gespeichert!`);
+                meldeErfolg(`Erfahrungsschatz "${memory.name}" in Ihrer lokalen Bibliothek gespeichert.`);
             } else {
                 const response = await apiClient.post('/api/user/grading-memories', {
                     name: memory.name,
@@ -259,7 +259,7 @@ export function useGradingMemoryModalState({
                 if (response.ok) {
                     const saved = await response.json();
                     addLocalMemory(saved);
-                    meldeErfolg(`Erfahrungsschatz "${memory.name}" erfolgreich in deiner Bibliothek gespeichert!`);
+                    meldeErfolg(`Erfahrungsschatz "${memory.name}" in Ihrer Bibliothek gespeichert.`);
                 } else {
                     const errData = await response.json();
                     throw new Error(errData.message || "Fehler beim Speichern des importierten Erfahrungsschatzes im Backend.");

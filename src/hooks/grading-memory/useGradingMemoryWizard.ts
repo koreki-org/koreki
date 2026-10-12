@@ -81,12 +81,12 @@ export function useGradingMemoryWizard({
 
     const handleGenerate = async () => {
         if (!modelSolution || !modelSolution.trim()) {
-            setError('Bitte lade zuerst eine Musterlösung im Dashboard hoch, um darauf basierende Schülerfehler zu simulieren.');
+            setError('Bitte laden Sie zuerst eine Musterlösung hoch, um darauf basierende Schülerfehler zu simulieren.');
             return;
         }
 
         if (selectedTasks.length === 0) {
-            setError('Bitte wähle mindestens eine Aufgabe für die Simulation aus.');
+            setError('Bitte wählen Sie mindestens eine Aufgabe für die Simulation aus.');
             return;
         }
 
@@ -207,7 +207,7 @@ export function useGradingMemoryWizard({
         setSyntheticAnswers(newAnswers);
         
         if (newAnswers.length === 0) {
-            const proceed = await askConfirmation({ title: 'Leeren Erfahrungsschatz anlegen?', message: 'Alle fiktiven Schülerabgaben wurden übersprungen. Möchtest du den Erfahrungsschatz trotzdem als leeres Profil erstellen?' });
+            const proceed = await askConfirmation({ title: 'Leeren Erfahrungsschatz anlegen?', message: 'Alle fiktiven Schülerabgaben wurden übersprungen. Möchten Sie den Erfahrungsschatz trotzdem als leeres Profil anlegen?' });
             if (proceed) {
                 handleSave([]);
             } else {

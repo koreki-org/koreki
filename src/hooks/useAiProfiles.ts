@@ -250,7 +250,7 @@ export const useAiProfiles = (
         let zielId = isCreatingNew ? '' : selectedProfileId;
         const nameToSave = isCreatingNew ? newProfileName.trim() : (selectedProfileData?.name || '');
         if (!nameToSave) {
-            meldeHinweis("Bitte gib einen Namen für das KI-Profil ein.");
+            meldeHinweis("Bitte geben Sie einen Namen für das KI-Profil ein.");
             return;
         }
 
@@ -260,7 +260,7 @@ export const useAiProfiles = (
         // ungefragt eine namensgleiche Dublette.
         if (isCreatingNew) {
             if (profiles.some(p => p.isSystem && isSameName(p.name, nameToSave))) {
-                meldeHinweis('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
+                meldeHinweis('Dieser Name gehört zu einer System-Vorlage. Bitte wählen Sie einen anderen Namen.');
                 return;
             }
 

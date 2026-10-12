@@ -33,7 +33,7 @@ const GRAPH_NICHT_MOEGLICH =
     'Hinweis: Das PANG-System ist für strukturierte, netzwerkartige Aufgaben ' +
     '(z. B. Subnetting) optimiert. Für rein textuelle/konzeptionelle Fragen ' +
     '(wie z. B. Freitext-Erklärungen) ist kein Rechengraph erforderlich – ' +
-    'nutze hierfür einfach die Standard-Korrektur ohne Graph.';
+    'nutzen Sie hierfür einfach die Standard-Korrektur ohne Graph.';
 
 /** Deutet die Fehlermeldung: fachlich unmöglich oder technisch gescheitert? */
 const meldeGraphFehler = (error: unknown) => {

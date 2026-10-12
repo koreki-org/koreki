@@ -62,7 +62,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                      <div className="space-y-1">
                                                          <h4 className="text-xs font-medium text-foreground">Importierter Erfahrungsschatz</h4>
                                                          <p className="text-xs text-primary font-bold leading-normal">
-                                                             Dieser Erfahrungsschatz wurde mit der Sitzung importiert, ist aber noch nicht in deiner lokalen Bibliothek gespeichert. Sichert alle {activeMemory.cases?.length || 0} Beispiele dauerhaft.
+                                                             Dieser Erfahrungsschatz wurde mit der Sitzung importiert, ist aber noch nicht in Ihrer lokalen Bibliothek gespeichert. Sichert alle {activeMemory.cases?.length || 0} Beispiele dauerhaft.
                                                          </p>
                                                      </div>
                                                      <Button 

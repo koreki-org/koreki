@@ -354,14 +354,14 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         <Button
                                             onClick={() => {
                                                 if (!skillName.trim()) {
-                                                    meldeHinweis("Bitte gib einen Namen für den Skill ein.");
+                                                    meldeHinweis("Bitte geben Sie einen Namen für den Skill ein.");
                                                     return;
                                                 }
                                                 if (onSaveCustomSkill) {
                                                     onSaveCustomSkill(skillName.trim(), graph);
                                                 } else {
                                                     onSave(graph);
-                                                    meldeErfolg(`Änderungen am Graphen wurden in den Skill "${skillName.trim()}" übernommen. Klicke gleich im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern!`);
+                                                    meldeErfolg(`Änderungen am Graphen wurden in den Skill "${skillName.trim()}" übernommen. Klicken Sie im Skill-Editor unten auf 'Speichern', um sie dauerhaft zu sichern.`);
                                                 }
                                             }}
                                             className="flex-1 sm:flex-initial h-8 rounded-full text-xs font-medium border border-primary/20 text-primary bg-primary/5 hover:bg-primary/5 gap-1.5 px-4 transition-all flex items-center justify-center shrink-0 shadow-xs duration-300 active:scale-95"
@@ -374,7 +374,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                                         <Button
                                             variant="outline"
                                             onClick={async () => {
-                                                if (await askConfirmation({ title: 'Bewertungs-Graph löschen', message: 'Möchtest du den Bewertungs-Graphen wirklich unwiderruflich löschen?' })) onDeleteGraph();
+                                                if (await askConfirmation({ title: 'Bewertungs-Graph löschen', message: 'Möchten Sie den Bewertungs-Graphen wirklich unwiderruflich löschen?' })) onDeleteGraph();
                                             }}
                                             className="flex-1 sm:flex-initial h-8 rounded-xl border border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive/10 hover:text-destructive transition-all text-xs font-bold gap-1 px-3 flex items-center justify-center shrink-0"
                                             title="Bewertungs-Graph löschen und Aufgabe zurücksetzen"

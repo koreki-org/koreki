@@ -74,7 +74,7 @@ export function useTaskReviewActions({ settings }: TaskReviewActionsParams) {
      */
     const fehltEtwas = (text: string, notes: string): boolean => {
         if (!targetMemoryId) {
-            meldeHinweis('Bitte wähle zuerst einen Ziel-Erfahrungsschatz aus.');
+            meldeHinweis('Bitte wählen Sie zuerst einen Ziel-Erfahrungsschatz aus.');
             return true;
         }
         if (!text.trim()) {
@@ -198,7 +198,7 @@ export function useTaskReviewActions({ settings }: TaskReviewActionsParams) {
             // On error: show the dialog with error state so user can retry or save original
             setAnonymizePayload({ taskName, originalText, points, notes, maxPoints });
             setAnonymizedText(originalText);
-            setAnonymizeError(toErrorMessage(err, 'Fehler bei der stilistischen Anonymisierung. Bitte versuche es erneut.'));
+            setAnonymizeError(toErrorMessage(err, 'Fehler bei der stilistischen Anonymisierung. Bitte versuchen Sie es erneut.'));
             setAnonymizing(false);
             setShowAnonymizeDialog(true);
         } finally {
@@ -221,7 +221,7 @@ export function useTaskReviewActions({ settings }: TaskReviewActionsParams) {
             }
         } catch (err) {
             console.error('[Anonymize] Error during stylistic anonymization retry:', err);
-            setAnonymizeError(toErrorMessage(err, 'Fehler bei der stilistischen Anonymisierung. Bitte versuche es erneut.'));
+            setAnonymizeError(toErrorMessage(err, 'Fehler bei der stilistischen Anonymisierung. Bitte versuchen Sie es erneut.'));
         } finally {
             setAnonymizing(false);
         }

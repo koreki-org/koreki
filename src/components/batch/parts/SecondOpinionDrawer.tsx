@@ -49,11 +49,11 @@ export const SecondOpinionDrawer: React.FC<SecondOpinionDrawerProps> = ({
     // Initialisiere die Besprechung mit einer freundlichen Begrüßung durch Koreki
     React.useEffect(() => {
         if (isOpen) {
-            const welcomeText = `Hallo! Ich bin Koreki, dein kollegialer Assistent für die Korrektur. 
+            const welcomeText = `Hallo! Ich bin Koreki, Ihr kollegialer Assistent für die Korrektur. 
 
-Ich habe mir die Aufgabe **"${taskName}"** und die Schülerantwort angesehen. Bisher hast du **${currentPoints} von ${maxPoints} Punkten** vergeben.
+Ich habe mir die Aufgabe **"${taskName}"** und die Schülerantwort angesehen. Bisher haben Sie **${currentPoints} von ${maxPoints} Punkten** vergeben.
 
-Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
+Wo genau haben Sie Zweifel, oder wobei soll ich helfen? Fragen Sie mich z. B.:
 * *"Ist diese Formulierung fachlich noch als richtig zu werten?"*
 * *"Der Rechenweg stimmt, aber das Ergebnis ist falsch. Welcher Abzug ist angemessen?"*
 * *"Schreibe mir ein motivierendes, aber präzises Schüler-Feedback."*`;
@@ -149,7 +149,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
             }
         } catch (err) {
             console.error('[SecondOpinionDrawer] Chat error:', err);
-            setError(toErrorMessage(err, 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.'));
+            setError(toErrorMessage(err, 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuchen Sie es erneut.'));
             // Entferne die letzte Benutzernachricht bei Fehler, damit der Verlauf sauber bleibt
             setMessages(prev => prev.slice(0, -1));
             setInput(cleanInput); // Gib dem Nutzer seinen Text zurück
@@ -295,7 +295,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                     )}
                                 >
                                     <span className="text-xs text-muted-foreground font-bold font-outfit mb-1 px-1">
-                                        {msg.role === 'user' ? 'Du' : 'Koreki'}
+                                        {msg.role === 'user' ? 'Sie' : 'Koreki'}
                                     </span>
                                     <div
                                         className={cn(

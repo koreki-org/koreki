@@ -128,7 +128,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
 
                                             <KorekiTooltip 
                                                 title="Aufgaben-Sync"
-                                                content="Aktualisiert die Aufgabenstruktur basierend auf deiner Musterlösung, damit die Schüler nach dem aktuellen Stand korrigiert werden."
+                                                content="Aktualisiert die Aufgabenstruktur auf Grundlage Ihrer Musterlösung, damit die Schüler nach dem aktuellen Stand korrigiert werden."
                                                 position="top"
                                                 iconSize={14}
                                                 buttonClassName="h-6 w-6"

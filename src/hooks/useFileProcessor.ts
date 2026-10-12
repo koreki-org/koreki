@@ -143,7 +143,7 @@ export const useFileProcessor = (
                 setTasksLayout(data.tasks);
                 setModelSolution(buildModelSolutionFromTasks(analysisContext, data.tasks));
             } else {
-                throw new Error("Koreki konnte keine Aufgabenstruktur in diesem Dokument erkennen. Bitte prüfe die PDF-Qualität.");
+                throw new Error("Koreki konnte keine Aufgabenstruktur in diesem Dokument erkennen. Bitte prüfen Sie die PDF-Qualität.");
             }
         } catch (err) {
             // Ein ausgelasteter Server ist kein Defekt, sondern eine Bitte um

@@ -79,7 +79,7 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, onSelect, upgradin
                 </div>
 
                 <h2 className="text-4xl font-bold text-foreground tracking-tight mb-2">Guthaben aufladen</h2>
-                <p className="text-muted-foreground font-medium mb-10">Wähle ein Paket, um sofort weiterzuarbeiten.</p>
+                <p className="text-muted-foreground font-medium mb-10">Wählen Sie ein Paket, um sofort weiterzuarbeiten.</p>
 
                 <div className={cn(
                     "w-full max-w-2xl flex items-start gap-4 p-5 rounded-2xl mb-8 border transition-all duration-300",

@@ -138,7 +138,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                                     <AlertTriangle size={18} className="mt-0.5 shrink-0" />
                                     <div>
                                         <p className="font-bold mb-1">Bewertungen werden verworfen</p>
-                                        <p>Die Bewertungen von {bewerteteArbeiten} Arbeit(en) werden gelöscht und neu erzeugt — auch deine Änderungen an Punkten und Rückmeldungen. Deine Korrekturen am Schülertext bleiben erhalten.</p>
+                                        <p>Die Bewertungen von {bewerteteArbeiten} Arbeit(en) werden gelöscht und neu erzeugt — auch Ihre Änderungen an Punkten und Rückmeldungen. Ihre Korrekturen am Schülertext bleiben erhalten.</p>
                                     </div>
                                 </div>
                             )}
@@ -147,7 +147,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                                     <Info size={18} className="mt-0.5 shrink-0" />
                                     <div>
                                         <p className="font-bold mb-1">Hinweis zur Anonymisierung</p>
-                                        <p>Du hast {unredactedScansCount} Scan(s) hochgeladen, aber noch nicht manuell geschwärzt. Bitte stelle sicher, dass keine personenbezogenen Daten (z.B. Namen) sichtbar sind.</p>
+                                        <p>Sie haben {unredactedScansCount} Scan(s) hochgeladen, aber noch nicht manuell geschwärzt. Bitte stellen Sie sicher, dass keine personenbezogenen Daten (z.B. Namen) sichtbar sind.</p>
                                         {redactionDiscardsOcr && (
                                             <p className="mt-2 text-xxs font-medium opacity-90">
                                                 Achtung: Wer jetzt noch schwärzt, verwirft den bereits erkannten Text dieser Arbeiten — die Bilderkennung muss dafür erneut laufen und kostet erneut Credits.

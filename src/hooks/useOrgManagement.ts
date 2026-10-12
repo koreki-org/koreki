@@ -80,7 +80,7 @@ export const useOrgManagement = () => {
         if (!workspace) return;
         if (!(await askConfirmation({
             title: 'Neuen Beitritts-Code erzeugen',
-            message: 'Möchtest du wirklich einen neuen Beitritts-Code für dein Institut generieren?\n\nACHTUNG: Der ALTE Code wird dadurch sofort ungültig!'
+            message: 'Möchten Sie wirklich einen neuen Beitritts-Code für Ihr Institut erzeugen?\n\nACHTUNG: Der ALTE Code wird dadurch sofort ungültig!'
         }))) return;
 
         setActionLoading('update-code');
@@ -105,7 +105,7 @@ export const useOrgManagement = () => {
     const handleRemoveMember = async (memberUserId: string, mId: string, username: string) => {
         if (!(await askConfirmation({
             title: 'Mitglied entfernen',
-            message: `Möchtest du ${username} wirklich aus deinem Institut entfernen?\n\nDer Lehrer wird automatisch auf TRIAL zurückgestuft und verliert den Zugriff auf das Schul-Budget.`
+            message: `Möchten Sie ${username} wirklich aus Ihrem Institut entfernen?\n\nDer Lehrer wird automatisch auf TRIAL zurückgestuft und verliert den Zugriff auf das Schul-Budget.`
         }))) return;
 
         setActionLoading(mId);

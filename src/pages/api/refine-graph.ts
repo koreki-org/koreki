@@ -137,7 +137,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
                 rawKeys: Object.keys(rawResult)
             });
             return res.status(422).json({
-                error: 'Die KI konnte keinen gültigen Bewertungs-Graphen generieren. Bitte passe deine Anweisung an oder versuche es erneut.'
+                error: 'Die KI konnte keinen gültigen Bewertungs-Graphen generieren. Bitte passen Sie Ihre Anweisung an oder versuchen Sie es erneut.'
             });
         }
 

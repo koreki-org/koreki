@@ -53,7 +53,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
         if (!bestaetigt) {
             const weiter = await askConfirmation({
                 title: 'Bewertungen bestätigen',
-                message: `Du exportierst die Bewertungen von ${anzahlArbeiten} ${anzahlArbeiten === 1 ? 'Arbeit' : 'Arbeiten'}. Bitte bestätige, dass du sie geprüft hast — die Verantwortung für die Noten liegt bei dir.`
+                message: `Sie exportieren die Bewertungen von ${anzahlArbeiten} ${anzahlArbeiten === 1 ? 'Arbeit' : 'Arbeiten'}. Bitte bestätigen Sie, dass Sie sie geprüft haben — die Verantwortung für die Noten liegt bei Ihnen.`
             });
             if (!weiter) return;
 

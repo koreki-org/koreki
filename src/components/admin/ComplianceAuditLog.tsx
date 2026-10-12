@@ -41,7 +41,7 @@ const ComplianceAuditLog: React.FC<ComplianceAuditLogProps> = ({
                         {loading ? (
                             <div className="flex flex-col items-center justify-center py-20 opacity-50">
                                 <Loader2 size={40} className="mb-4 animate-spin text-primary" />
-                                <p className="text-xs font-medium text-muted-foreground">Lade Audit-Daten...</p>
+                                <p className="text-xs font-medium text-muted-foreground">Audit-Daten werden geladen …</p>
                             </div>
                         ) : logs.length === 0 ? (
                             <div className="text-center py-16 bg-muted/30 rounded-2xl border border-dashed border-border">

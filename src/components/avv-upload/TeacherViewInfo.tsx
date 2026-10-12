@@ -14,11 +14,11 @@ export const TeacherViewInfo: React.FC<TeacherViewInfoProps> = ({ onLogout }) =>
                 <div className="flex flex-col gap-2">
                     <p className="font-medium">Zentraler AVV steht noch aus.</p>
                     <p className="leading-relaxed opacity-90">
-                        Dein Institut hat noch keinen gültigen AVV hinterlegt. Solange dieses Dokument fehlt, sind Bilderkennung und Korrekturen im Schul-Profil gesperrt.
+                        Ihr Institut hat noch keinen gültigen AVV hinterlegt. Solange dieses Dokument fehlt, sind Bilderkennung und Korrekturen im Schul-Profil gesperrt.
                     </p>
-                    <p className="font-bold mt-2">Was du tun kannst:</p>
+                    <p className="font-bold mt-2">Was Sie tun können:</p>
                     <p className="leading-relaxed opacity-90 italic">
-                        &quot;Bitte wende dich an deine Schulleitung oder System-Verwaltung, um den AVV im Schul-Admin-Dashboard hochzuladen.&quot;
+                        &quot;Bitte wenden Sie sich an Ihre Schulleitung oder System-Verwaltung, um den AVV im Schul-Admin-Dashboard hochzuladen.&quot;
                     </p>
                 </div>
             </div>

@@ -247,7 +247,7 @@ export async function performAIRequest(
 
                 let graph = parseGeneratedGraph(typeof genResult === 'string' ? genResult : JSON.stringify(genResult));
                 if (!graph) {
-                    throw new Error('Die KI konnte keinen gültigen Bewertungs-Graphen generieren. Bitte versuche es erneut oder passe den Aufgabentext an.');
+                    throw new Error('Die KI konnte keinen gültigen Bewertungs-Graphen generieren. Bitte versuchen Sie es erneut oder passen Sie den Aufgabentext an.');
                 }
 
                 let graphValidation = validateGraphDeterminism(graph);
@@ -351,7 +351,7 @@ Gib AUSSCHLIESSLICH das korrigierte JSON-Objekt im bekannten Schema aus.`;
                 const graph = parseGeneratedGraph(rawStr, { skipSanitization: true });
 
                 if (!graph) {
-                    throw new Error('Die KI konnte keinen gültigen Bewertungs-Graphen generieren. Bitte passe deine Anweisung an oder versuche es erneut.');
+                    throw new Error('Die KI konnte keinen gültigen Bewertungs-Graphen generieren. Bitte passen Sie Ihre Anweisung an oder versuchen Sie es erneut.');
                 }
 
                 const graphValidation = validateGraphDeterminism(graph);

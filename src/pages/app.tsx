@@ -160,7 +160,7 @@ export default function Home() {
 
     const handleStartNew = async () => {
         if (fileProcessor.batchFiles.length > 0 || data.modelSolution) {
-            if (await askConfirmation({ title: 'Neue Korrektur starten', message: 'Möchtest du wirklich alle aktuellen Daten löschen und eine neue Korrektur starten?' })) {
+            if (await askConfirmation({ title: 'Neue Korrektur starten', message: 'Möchten Sie wirklich alle aktuellen Daten löschen und eine neue Korrektur starten?' })) {
                 fileProcessor.setBatchFiles([]);
                 data.setModelSolution("");
                 data.setModelSolutionContext("");

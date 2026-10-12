@@ -102,7 +102,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                             <div>
                                                 <h4 className="font-extrabold text-foreground text-sm">Noch kein Bewertungs-Graph vorhanden</h4>
                                                 <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed font-medium">
-                                                    Dieser Task hat noch keine mathematische Struktur hinterlegt. Du kannst oben im KI-Assistenten 🪄 einen Graphen generieren lassen oder hier direkt eine manuelle Variable hinzufügen.
+                                                    Dieser Task hat noch keine mathematische Struktur hinterlegt. Sie können oben im KI-Assistenten 🪄 einen Graphen erzeugen lassen oder hier direkt eine manuelle Variable hinzufügen.
                                                 </p>
                                             </div>
                                             {!isLocked && (
@@ -345,7 +345,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                     className="w-full p-2.5 rounded-xl border border-border text-xs font-mono text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-white leading-relaxed resize-none shadow-3xs disabled:opacity-60"
                                                 />
                                                 <p className="text-xs text-muted-foreground font-medium leading-normal mt-0.5">
-                                                    Berechnungsvorschrift. Verwende Variablen-IDs (z.B. <code className="font-mono bg-muted px-1 py-0.5 rounded text-muted-foreground">subnetA_hosts</code>).
+                                                    Berechnungsvorschrift. Verwenden Sie Variablen-IDs (z.B. <code className="font-mono bg-muted px-1 py-0.5 rounded text-muted-foreground">subnetA_hosts</code>).
                                                 </p>
                                                 {evaluatedContext.errors[selectedVar.id] && (
                                                     <p className="text-xs text-destructive font-semibold font-mono leading-tight pt-1">
@@ -446,7 +446,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                     <div className="flex-1 flex flex-col items-center justify-center p-6 text-center text-muted-foreground gap-2 select-none">
                                         <HelpCircle size={32} className="stroke-1 opacity-70" />
                                         <p className="text-xs font-semibold leading-relaxed">
-                                            Wähle links einen Knoten aus, um seine Werte manuell anzupassen.
+                                            Wählen Sie links einen Knoten aus, um seine Werte anzupassen.
                                         </p>
                                     </div>
                                 )}

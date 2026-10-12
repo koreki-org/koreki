@@ -118,7 +118,7 @@ export const SkillEditorPanel: React.FC<SkillEditorPanelProps> = ({
                                 <Textarea 
                                     value={editingSkillData.description}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, description: e.target.value })}
-                                    placeholder="Beschreibe kurz, worauf die KI achten soll und in welchem Fach."
+                                    placeholder="Beschreiben Sie kurz, worauf die KI achten soll und in welchem Fach."
                                     rows={2}
                                     className="w-full p-3 rounded-xl border border-border text-sm font-semibold text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none resize-none"
                                 />
@@ -129,7 +129,7 @@ export const SkillEditorPanel: React.FC<SkillEditorPanelProps> = ({
                                 <Textarea 
                                     value={editingSkillData.promptSnippet}
                                     onChange={e => setEditingSkillData({ ...editingSkillData, promptSnippet: e.target.value })}
-                                    placeholder="Gib hier die genaue systemische Korrektur-Anweisung für das LLM an. Beispiel:&#10;FOLGEFEHLER BEI BERECHNUNGEN:&#10;- Wenn der Schüler ein falsches Zwischenergebnis verwendet, aber die darauffolgenden Rechenschritte mathematisch korrekt ausführt, ziehe nur einmalig für den ersten Fehler Punkte ab."
+                                    placeholder="Geben Sie hier die genaue Korrektur-Anweisung für die KI an. Beispiel:&#10;FOLGEFEHLER BEI BERECHNUNGEN:&#10;- Wenn der Schüler ein falsches Zwischenergebnis verwendet, aber die darauffolgenden Rechenschritte mathematisch korrekt ausführt, ziehe nur einmalig für den ersten Fehler Punkte ab."
                                     rows={6}
                                     className="w-full p-3 rounded-xl border border-border text-xs font-mono text-foreground focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-muted/30"
                                 />

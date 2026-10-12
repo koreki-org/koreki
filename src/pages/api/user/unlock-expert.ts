@@ -25,7 +25,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         // Already Expert or Admin?
         if (user.role === 'EXPERTE' || user.role === 'ADMIN') {
-            return res.status(400).json({ error: 'Du bist bereits im Experten-Modus oder Admin.' });
+            return res.status(400).json({ error: 'Sie sind bereits im Experten-Modus oder Admin.' });
         }
 
         // --- NEW CENTRALIZED BILLING ---
@@ -45,7 +45,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
         return res.status(200).json({
             success: true,
-            message: 'Glückwunsch! Du bist jetzt Experte.',
+            message: 'Der Experten-Modus ist jetzt freigeschaltet.',
             newRole: 'EXPERTE'
         });
     } catch (error) {

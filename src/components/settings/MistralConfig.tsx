@@ -20,7 +20,7 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
     const { isDesktop, isCommunity, isSaaS, isPure, istEigenverwaltet } = anbieterPanelModus(appMode);
 
     const handleClearKey = async () => {
-        if (await askConfirmation({ title: 'Schlüssel löschen', message: 'Möchtest du den Key wirklich sicher vom Rechner löschen?' })) {
+        if (await askConfirmation({ title: 'Schlüssel löschen', message: 'Möchten Sie den Schlüssel wirklich vom Rechner löschen?' })) {
             if (isDesktop) {
                 try {
                     await vaultService.deleteSecret('koreki-mistral-key');
@@ -67,7 +67,7 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
                     <div>
                         <h4 className="text-sm font-medium text-success tracking-tight">System-Standard aktiv</h4>
                         <p className="text-xxs text-success font-medium leading-relaxed max-w-[250px] mx-auto mt-1">
-                            Dieser Dienst wird sicher über die Server-Umgebung bereitgestellt. Du musst keinen eigenen Key hinterlegen.
+                            Dieser Dienst wird sicher über die Server-Umgebung bereitgestellt. Sie müssen keinen eigenen Schlüssel hinterlegen.
                         </p>
                     </div>
                 </div>
@@ -141,9 +141,9 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
                         <div className="space-y-1">
                             <p className="text-xxs text-primary font-medium leading-tight">
                                 {isDesktop 
-                                    ? "Dieser Key wird verschlüsselt im Tresor deines Betriebssystems (Windows Credential Manager / Keychain / GNOME Keyring) gespeichert."
+                                    ? "Dieser Schlüssel wird verschlüsselt im Tresor Ihres Betriebssystems (Windows Credential Manager / Keychain / GNOME Keyring) gespeichert."
                                     : istEigenverwaltet
-                                    ? "Der Schlüssel gilt für diese Koreki-Instanz und wird in ihrer Konfiguration gespeichert. Die Anfragen laufen über deinen eigenen Server."
+                                    ? "Der Schlüssel gilt für diese Koreki-Instanz und wird in ihrer Konfiguration gespeichert. Die Anfragen laufen über Ihren eigenen Server."
                                     : "Direkte Browser-Verbindung (Pure Mode). Aus DSGVO-Gründen werden Daten nicht über Koreki-Server geproxt."}
                             </p>
                             {/* Der CORS-Hinweis gilt nur, wo der Browser selbst beim Anbieter anfragt. */}

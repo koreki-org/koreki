@@ -39,7 +39,7 @@ export const BatchScanViewer: React.FC<BatchScanViewerProps> = ({ item, previewU
                 <div className="flex flex-col items-center justify-center p-8 text-muted-foreground text-sm text-center h-full w-full max-w-xs m-auto space-y-2">
                     <FileText size={40} className="stroke-1 opacity-60 text-muted-foreground" />
                     <span className="font-semibold text-foreground">Keine Scan-Vorschau aktiv</span>
-                    <span className="text-xs text-muted-foreground">Du kannst deine Scans jederzeit nachträglich über den „Dateien verknüpfen“-Button ganz oben erneut laden.</span>
+                    <span className="text-xs text-muted-foreground">Sie können Ihre Scans jederzeit nachträglich über den „Dateien verknüpfen“-Button ganz oben erneut laden.</span>
                 </div>
             )}
         </div>

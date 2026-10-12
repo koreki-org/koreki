@@ -20,7 +20,7 @@ export const DemoHintBanner: React.FC<DemoHintBannerProps> = ({ isOpen, onDismis
         <div className="mb-6 flex items-center gap-3 bg-primary/5 border border-primary/10 text-primary p-4 rounded-2xl shadow-sm animate-in fade-in slide-in-from-top-2">
             <Sparkles size={18} className="shrink-0" />
             <span className="flex-1 text-xs sm:text-sm font-semibold">
-                Demo geladen: Beispielprojekt „Solaranlage für die Schule“ mit Musterlösung und einer Beispiel-Schülerantwort. Das sind keine echten Daten — klicke unten einfach auf „Korrigieren“, um die KI-Korrektur live zu sehen.
+                Demo geladen: Beispielprojekt „Solaranlage für die Schule“ mit Musterlösung und einer Beispiel-Schülerantwort. Das sind keine echten Daten — klicken Sie unten einfach auf „Korrigieren“, um die KI-Korrektur live zu sehen.
             </span>
             <Button
                 variant="ghost"

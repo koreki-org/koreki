@@ -462,7 +462,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             </button>
                         </div>
                         <p className="text-xs text-muted-foreground font-medium mb-6">
-                            Wähle das passende Korrektur-Modell für diese Aufgabe aus, um die Kriterien-Erstellung zu konfigurieren.
+                            Wählen Sie das passende Korrektur-Modell für diese Aufgabe aus, um die Kriterien-Erstellung zu konfigurieren.
                         </p>
 
                         {/* Grid */}

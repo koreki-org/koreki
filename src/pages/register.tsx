@@ -37,7 +37,7 @@ export default function Register() {
                         textLarge
                         size={72}
                         className="mb-8 cursor-pointer hover:opacity-80 transition-opacity"
-                        subtitle="Dein KI-Korrektur Assistent"
+                        subtitle="Ihr KI-Korrekturassistent"
                     />
                 </Link>
 

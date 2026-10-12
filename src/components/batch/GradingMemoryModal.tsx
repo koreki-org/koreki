@@ -160,7 +160,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                             </div>
                             <h3 className="text-lg font-bold text-foreground mb-2 font-outfit">Simuliere virtuelle Schülerabgaben...</h3>
                             <p className="text-muted-foreground text-xs md:text-sm max-w-[450px]">
-                                Die KI analysiert deine Musterlösung und schlüpft in die Rollen verschiedener Schüler-Avatare, um Tippfehler, lückenhafte Rechenwege und schwammige Sprache zu simulieren und zu bewerten.
+                                Die KI analysiert Ihre Musterlösung und schlüpft in die Rollen verschiedener Schüler-Avatare, um Tippfehler, lückenhafte Rechenwege und schwammige Sprache zu simulieren und zu bewerten.
                             </p>
                         </div>
                     )}
@@ -183,7 +183,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                             </div>
                             <h3 className="text-lg md:text-xl font-bold text-foreground mb-2 font-outfit">Erfahrungsschatz erfolgreich kalibriert!</h3>
                             <p className="text-muted-foreground text-xs md:text-sm max-w-[500px] mb-6 font-medium">
-                                Der neue Erfahrungsschatz <strong>&quot;{profileName}&quot;</strong> wurde sicher gespeichert und ist ab sofort als aktives Few-Shot-Modul für deine Korrekturen vorausgewählt!
+                                Der neue Erfahrungsschatz <strong>&quot;{profileName}&quot;</strong> wurde sicher gespeichert und ist ab sofort für Ihre Korrekturen vorausgewählt.
                             </p>
                             <Button 
                                 onClick={onClose}

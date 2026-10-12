@@ -38,7 +38,7 @@ const AiSetupModal: React.FC<AiSetupModalProps> = ({
                     </div>
                     <h2 className="text-2xl font-bold text-foreground tracking-tight">KI-Setup</h2>
                     <p className="text-muted-foreground text-sm font-medium px-4">
-                        Wähle deine bevorzugte Infrastruktur für die Analyse und Korrektur.
+                        Wählen Sie Ihre bevorzugte Infrastruktur für die Analyse und Korrektur.
                     </p>
                 </div>
 

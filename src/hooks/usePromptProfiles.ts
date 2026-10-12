@@ -185,11 +185,11 @@ export const usePromptProfiles = (
         const zielId = isCreatingNew ? '' : selectedProfileId;
         const nameToSave = isCreatingNew ? newProfileName.trim() : (selectedProfileData?.name || '');
         if (!nameToSave) {
-            meldeHinweis("Bitte gib einen Namen für das Profil ein.");
+            meldeHinweis("Bitte geben Sie einen Namen für das Profil ein.");
             return;
         }
         if (!correctionPrompt.trim()) {
-            meldeHinweis("Bitte gib erst deine pädagogischen Anweisungen ein.");
+            meldeHinweis("Bitte geben Sie zuerst Ihre pädagogischen Anweisungen ein.");
             return;
         }
 
@@ -198,7 +198,7 @@ export const usePromptProfiles = (
         // ein ADMIN bearbeiten darf). Siehe useSkillProfiles.
         if (isCreatingNew) {
             if (profiles.some(p => p.isSystem && isSameName(p.name, nameToSave))) {
-                meldeHinweis('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
+                meldeHinweis('Dieser Name gehört zu einer System-Vorlage. Bitte wählen Sie einen anderen Namen.');
                 return;
             }
 
@@ -292,7 +292,7 @@ export const usePromptProfiles = (
             }
         } catch (err) {
             console.error("Save Error:", err);
-            meldeFehler("Speichern fehlgeschlagen. Bitte prüfe deine Internetverbindung oder ob der Server erreichbar ist.");
+            meldeFehler("Speichern fehlgeschlagen. Bitte prüfen Sie Ihre Internetverbindung oder ob der Server erreichbar ist.");
         } finally {
             setSaving(false);
         }

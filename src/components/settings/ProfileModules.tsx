@@ -301,7 +301,7 @@ ${correctionPrompt}`;
                         Diese Datei enthält empfohlene Experteneinstellungen 
                         (z.B. Temp: <strong className="text-primary">{importedAiParams.temperature}</strong>, 
                         Thinking: <strong className="text-primary">{importedAiParams.enableThinking ? 'Aktiv' : 'Inaktiv'}</strong>). 
-                        Möchtest du diese direkt als KI-Profil mit demselben Namen abspeichern?
+                        Möchten Sie diese direkt als KI-Profil mit demselben Namen speichern?
                     </p>
                 </div>
             </div>
@@ -331,7 +331,7 @@ ${correctionPrompt}`;
             </div>
             <Textarea
                 value={correctionPrompt} onChange={e => setCorrectionPrompt(e.target.value)}
-                placeholder="Hier deine fachliche Expertise eingeben..."
+                placeholder="Ihre fachliche Expertise …"
                 className="flex-1 w-full p-6 rounded-xl border-border bg-muted/30 text-sm sm:text-base leading-relaxed focus:ring-4 focus:ring-primary/10 resize-none font-medium"
             />
         </div>
