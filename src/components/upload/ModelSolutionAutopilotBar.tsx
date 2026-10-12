@@ -91,7 +91,7 @@ export const ModelSolutionAutopilotBar: React.FC<ModelSolutionAutopilotBarProps>
                                             "rounded-lg px-3 py-1 h-7 text-xs font-medium text-primary-foreground flex items-center gap-1.5 shrink-0 transition-all duration-200",
                                             isBatchGenerating 
                                                 ? "bg-muted-foreground/40 cursor-not-allowed" 
-                                                : "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-sm shadow-primary/20"
+                                                : "bg-primary hover:bg-primary/90 shadow-sm"
                                         )}
                                     >
                                         {isBatchGenerating ? (

@@ -1,97 +1,21 @@
-import React, { useState } from 'react';
-import Head from 'next/head';
-import MarketingLayout from '@/layouts/MarketingLayout';
-import { Badge } from '@/components/ui/Badge';
-
-import { FeatureSubNav } from '@/components/marketing/FeatureSubNav';
-import { ImageLightbox } from '@/components/marketing/ImageLightbox';
-import { Database, CheckCircle } from 'lucide-react';
+import React from 'react';
+import { FunktionsSeite } from '@/components/marketing/site/FunktionsSeite';
 
 export default function MemoryFeature() {
-    const [zoomedImage, setZoomedImage] = useState<string | null>(null);
-
     return (
-        <MarketingLayout>
-            <Head>
-                <title>Koreki Memory | Einschätzungsgedächtnis & Konsistenz</title>
-                <meta name="description" content="Lernen aus Ihren Korrekturen. Sichern Sie absolute Fairness und Konsistenz über alle Schülerarbeiten hinweg." />
-            </Head>
-
-            {zoomedImage && (
-                <ImageLightbox 
-                    src={zoomedImage} 
-                    onClose={() => setZoomedImage(null)} 
-                />
-            )}
-
-            <div className="relative">
-                {/* 🧭 Showroom Context Navigation */}
-                <FeatureSubNav />
-
-                {/* Hero Section */}
-                <section className="px-6 md:px-page-inline pt-4 pb-12 md:pt-6 md:pb-hero-bottom max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 relative z-10 animate-fade-up">
-                    <div className="w-full lg:w-[42%] xl:w-[38%] lg:flex-shrink-0 space-y-8 text-center lg:text-left">
-                        <Badge variant="light" className="mb-4">
-                            Pillar: Memory
-                        </Badge>
-                        <h1 className="text-6xl md:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
-                            Einschätzungs-<br />gedächtnis. <br />
-                            <span className="text-gradient">Absolute Konsistenz.</span>
-                        </h1>
-                        <p className="text-xl text-muted-foreground font-medium leading-relaxed max-w-xl mx-auto lg:ml-0">
-                            Das Grading-Memory lernt in Echtzeit aus Ihren Korrekturen. Einmal manuell korrigierte oder angepasste Einschätzungen merkt sich Koreki für den gesamten Stapel – das garantiert absolute Fairness und Präzision.
-                        </p>
-                    </div>
-                    
-                    <div className="w-full lg:w-[58%] xl:w-[62%] lg:flex-grow animate-fade-in delay-300">
-                        <div 
-                            className="relative group cursor-zoom-in"
-                            onClick={() => setZoomedImage("/screenshots/4c_koreki_grading-memory_center.png")}
-                        >
-                            <div className="absolute -inset-4 bg-primary/5 blur-3xl rounded-hero opacity-50 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                            <div className="relative rounded-hero overflow-hidden border border-white/60 bg-white/20 p-2 md:p-3 lg:p-4 shadow-glass transition-all duration-300 hover:scale-[1.01]">
-                                <img 
-                                    src="/screenshots/4c_koreki_grading-memory_center.png" 
-                                    alt="Koreki Grading-Memory Interface"
-                                    className="w-full h-auto rounded-xl shadow-md border border-border"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Highlight Section */}
-                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-muted/50 border-y border-border/60 relative">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="glass-morphism p-6 md:p-card-padding rounded-hero border border-white bg-white/60 shadow-xl relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
-                                <Database size={160} />
-                            </div>
-                            <div className="max-w-2xl relative z-10">
-                                <h2 className="text-4xl font-black mb-6 tracking-tight text-foreground">Das Grading-Memory</h2>
-                                <p className="text-lg text-muted-foreground font-medium mb-10 leading-relaxed">
-                                    Vermeiden Sie doppelte Arbeit und Bewertungsfehler. Sobald Sie eine Korrekturentscheidung verfeinern, wendet Koreki dieses Wissen automatisch auf ähnliche Schülerantworten an.
-                                </p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    {[
-                                        { t: 'Lernfähiges Korrekturgedächtnis', i: CheckCircle },
-                                        { t: 'Automatischer Abgleich im Hintergrund', i: CheckCircle },
-                                        { t: 'Echtzeit-Aktualisierung des Stapels', i: CheckCircle },
-                                        { t: 'Vollständige Transparenz und Rückverfolgbarkeit', i: CheckCircle }
-                                    ].map((f, i) => (
-                                        <div key={i} className="flex items-center gap-4 text-sm font-black text-foreground">
-                                            <div className="bg-primary/10 text-primary p-2 rounded-lg">
-                                                <f.i size={20} />
-                                            </div>
-                                            <span>{f.t}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-        </MarketingLayout>
+        <FunktionsSeite
+            seitentitel="Erfahrungsschatz | Koreki"
+            beschreibung="Gespeicherte Bewertungsbeispiele als Maßstab: So bewertet Koreki neue Arbeiten so, wie Sie es bisher getan haben."
+            kicker="Erfahrungsschatz"
+            titel="Ihre Beispiele werden zum Maßstab."
+            text="Haben Sie eine Antwort bewertet, können Sie sie als Beispiel speichern. Koreki zieht diese Beispiele bei den nächsten Arbeiten heran."
+            bild={{ src: '/marketing/pruefansicht.webp', alt: 'Prüfansicht, aus der eine Bewertung in den Erfahrungsschatz übernommen werden kann' }}
+            punkte={[
+                { titel: 'Direkt aus der Prüfansicht', text: 'Eine Bewertung, die Sie geprüft oder angepasst haben, übernehmen Sie mit einem Klick in den Erfahrungsschatz.' },
+                { titel: 'Gute und lückenhafte Antworten', text: 'Speichern Sie Beispiele für volle Punktzahl ebenso wie für typische Fehler – beides schärft den Maßstab.' },
+                { titel: 'Je Klassenarbeit auswählbar', text: 'Sie entscheiden, welcher Erfahrungsschatz für eine Korrektur gilt. Ohne Auswahl korrigiert Koreki nach Musterlösung und Expertise.' },
+                { titel: 'Nachvollziehbar', text: 'Jedes Beispiel bleibt einsehbar und änderbar. Nichts geschieht im Verborgenen.' },
+            ]}
+        />
     );
 }

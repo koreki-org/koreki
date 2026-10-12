@@ -78,9 +78,9 @@ const MIN_ZEICHEN = 25;
  * NUR SENKEN, NIE ANHEBEN.
  */
 const DUPLICATION_BASELINE: Record<string, number> = {
-    'pages/app/compliance/avv.tsx <-> pages/app/compliance/manual.tsx': 25,
-    'pages/app/compliance/avv.tsx <-> pages/app/compliance/tom.tsx': 25,
-    'pages/app/compliance/manual.tsx <-> pages/app/compliance/tom.tsx': 25,
+    'pages/app/compliance/avv.tsx <-> pages/app/compliance/manual.tsx': 24,
+    'pages/app/compliance/avv.tsx <-> pages/app/compliance/tom.tsx': 24,
+    'pages/app/compliance/manual.tsx <-> pages/app/compliance/tom.tsx': 24,
     'pages/api/clean-and-analyze.ts <-> pages/api/clean-and-map.ts': 21,
     'pages/app/compliance/agb.tsx <-> pages/app/compliance/avv.tsx': 17,
     'pages/app/compliance/agb.tsx <-> pages/app/compliance/manual.tsx': 17,
@@ -103,17 +103,10 @@ const DUPLICATION_BASELINE: Record<string, number> = {
     'components/settings/ProfileModules.tsx <-> components/settings/SkillsSidebar.tsx': 6,
     'pages/agb.tsx <-> pages/privacy.tsx': 7,
     'pages/impressum.tsx <-> pages/privacy.tsx': 7,
-    'components/guards/AuthGuard.tsx <-> pages/login.tsx': 6,
     'lib/validation.ts <-> pages/api/generate-calc-trace.ts': 6,
     'lib/validation.ts <-> pages/api/generate-graph.ts': 6,
     'lib/validation.ts <-> pages/api/refine-graph.ts': 6,
     'pages/api/user/grading-memories.ts <-> pages/api/user/grading-memories/append.ts': 6,
-    'pages/features/expertise.tsx <-> pages/features/intelligence.tsx': 6,
-    'pages/features/expertise.tsx <-> pages/features/memory.tsx': 6,
-    'pages/features/expertise.tsx <-> pages/features/skills.tsx': 6,
-    'pages/features/intelligence.tsx <-> pages/features/memory.tsx': 6,
-    'pages/features/intelligence.tsx <-> pages/features/skills.tsx': 6,
-    'pages/features/memory.tsx <-> pages/features/skills.tsx': 6
 };
 
 /**

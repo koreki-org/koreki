@@ -135,7 +135,7 @@ const PromptSettingsModal: React.FC<PromptSettingsModalProps> = ({
                                 </Button>
                                 <Button
                                     onClick={isCreatingNew ? handleSaveToDB : handleApplyToSession}
-                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary text-white font-bold rounded-xl sm:rounded-2xl shadow-xl shadow-primary/20"
+                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary text-white font-bold rounded-xl sm:rounded-2xl shadow-xl"
                                     disabled={saving || (isCreatingNew && !newProfileName.trim())}
                                 >
                                     {saving ? 'Speichert...' : (isCreatingNew ? 'Erstellen' : 'Zuweisen')}

@@ -65,7 +65,7 @@ export default function AGBPage({ content, version }: AGBPageProps) {
             <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-border no-print">
                 <div className="max-w-4xl mx-auto px-6 h-20 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/20">
+                        <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground shadow-lg">
                             <Zap size={20} />
                         </div>
                         <span className="text-xl font-outfit font-extrabold tracking-tighter text-foreground">
@@ -86,7 +86,6 @@ export default function AGBPage({ content, version }: AGBPageProps) {
 
             <main className="max-w-4xl mx-auto px-6 py-16 md:py-24 print-container">
                 <div className="relative">
-                    <div className="absolute -top-12 -right-12 w-64 h-64 bg-primary/10 rounded-full blur-[120px] opacity-50 -z-10 no-print" />
                     
                     <div className="flex items-center gap-2 text-primary font-medium text-xs mb-4 no-print">
                         <FileText size={12} />
@@ -95,7 +94,7 @@ export default function AGBPage({ content, version }: AGBPageProps) {
                     
                     <h1 className="text-4xl md:text-5xl font-outfit font-extrabold text-foreground mb-8 tracking-tight leading-[1.1]">
                         Nutzungsbedingungen <br /> 
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/80">für die Zukunft der Korrektur.</span>
+                        <span className="text-primary">für die Zukunft der Korrektur.</span>
                     </h1>
 
                     <div className="bg-card rounded-hero p-6 md:p-card-padding shadow-xl shadow-border/50 border border-border max-w-none print-container">

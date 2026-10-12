@@ -158,7 +158,7 @@ const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
                                 </Button>
                                 <Button
                                     onClick={isCreatingNew ? handleSaveToDB : handleApplyToSession}
-                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl sm:rounded-2xl shadow-xl shadow-primary/20 transition-all"
+                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl sm:rounded-2xl shadow-xl transition-all"
                                     disabled={saving || (isCreatingNew && !newProfileName.trim())}
                                 >
                                     {saving ? 'Speichert...' : (isCreatingNew ? 'Erstellen' : 'Zuweisen')}

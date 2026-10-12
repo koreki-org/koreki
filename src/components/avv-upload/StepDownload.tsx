@@ -36,7 +36,7 @@ export const StepDownload: React.FC<StepDownloadProps> = ({ isOrganization, onNe
                 <ExternalLink size={20} className="text-muted-foreground group-hover:text-primary transition-colors" />
             </a>
 
-            <Button className="w-full py-6 font-bold shadow-lg shadow-primary/20 gap-2 mt-auto" onClick={onNext}>
+            <Button className="w-full py-6 font-bold shadow-lg gap-2 mt-auto" onClick={onNext}>
                 Ich habe das Dokument unterzeichnet <Upload size={18} />
             </Button>
         </div>

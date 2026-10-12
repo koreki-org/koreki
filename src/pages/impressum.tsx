@@ -64,7 +64,7 @@ export default function Impressum() {
             <div className="max-w-[1200px] mx-auto px-8 pt-0 pb-24 flex flex-col md:flex-row gap-12 items-start animate-fade-in">
                 <aside className="w-full md:w-[300px] flex-shrink-0 sticky top-24">
                     <div className="bg-card rounded-2xl p-6 border border-border shadow-sm">
-                        <h3 className="mt-0 mb-4 text-xs uppercase tracking-widest font-bold text-muted-foreground">Inhalt</h3>
+                        <h3 className="mt-0 mb-4 text-xs font-bold text-muted-foreground">Inhalt</h3>
                         <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
                             {tocSections.map((sec) => (
                                 <li key={sec.id}>

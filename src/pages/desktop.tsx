@@ -1,165 +1,106 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { ShieldAlert, Monitor, ArrowRight, Zap, Info, Compass, Layers } from 'lucide-react';
+import { Download, ArrowRight, BookOpen, Cpu, Laptop, KeyRound, ShieldAlert } from 'lucide-react';
 import { isLocalInstance } from '@/lib/env-context';
 import MarketingLayout from '@/layouts/MarketingLayout';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
-import Logo from '@/components/Logo';
+import { Abschnitt, Kachel, Produktbild, Symbol } from '@/components/marketing/site/Bausteine';
 
+const MERKMALE = [
+    { icon: Cpu, titel: 'Lokal oder mit Mistral', text: 'Ein lokales Modell über Ollama oder Mistral mit Ihrem eigenen Schlüssel – Sie wählen.' },
+    { icon: Laptop, titel: 'Windows und Ubuntu', text: 'Für Windows 10/11 und Ubuntu Desktop. Eine Version für macOS ist in Planung.' },
+    { icon: KeyRound, titel: 'Schlüssel bleiben bei Ihnen', text: 'API-Schlüssel werden nur auf Ihrem Gerät gespeichert, nie auf Servern von Koreki.' },
+];
+
+/**
+ * Desktop-Seite. Dient doppelt: oeffentlich als Download-Seite, und in der
+ * installierten App als Startbildschirm (dann ohne Kopf- und Fusszeile und mit
+ * "Zur App" statt Download).
+ */
 export default function DesktopOnboarding() {
     const router = useRouter();
-
-    useEffect(() => {
-        // SaaS Discovery allowed
-    }, []);
-
-    const handleStartApp = () => {
-        router.push('/app');
-    };
+    const lokal = isLocalInstance();
 
     const handleDownloadDesktop = () => {
         window.location.href = 'https://github.com/koreki-org/koreki/releases';
     };
 
     return (
-        <MarketingLayout hideHeader={isLocalInstance()} hideFooter={isLocalInstance()}>
+        <MarketingLayout hideHeader={lokal} hideFooter={lokal}>
             <Head>
-                <title>Koreki Desktop | Lokale Korrekturinstanz</title>
-                <meta name="description" content="Willkommen bei Koreki Desktop – Ihrer sicheren, lokalen Lösung für KI-gestützte Korrekturen." />
+                <title>Koreki Desktop | Korrektur auf Ihrem eigenen Rechner</title>
+                <meta name="description" content="Koreki Desktop für Windows und Ubuntu: Korrekturvorschläge für Klassenarbeiten, lokal auf Ihrem Rechner." />
             </Head>
 
-            <div className="min-h-screen flex flex-col items-center justify-start px-8 md:px-12 pt-24 pb-12 relative overflow-hidden bg-background">
+            <Abschnitt karo className="pt-16 md:pt-24">
+                <div className="grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-16 items-start">
+                    <div>
+                        <p className="text-sm font-medium text-primary mb-3">Desktop-Version</p>
+                        <h1 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[1.05] text-foreground">
+                            Koreki auf Ihrem eigenen Rechner.
+                        </h1>
+                        <p className="mt-6 text-lg text-muted-foreground max-w-xl">
+                            Installieren wie jedes andere Programm. Musterlösung und Arbeiten hochladen, Vorschläge prüfen – ohne Konto und ohne Server.
+                        </p>
+                        <ul className="mt-12 space-y-6">
+                            {MERKMALE.map(({ icon: Icon, titel, text }) => (
+                                <li key={titel} className="flex gap-4">
+                                    <Symbol><Icon size={19} /></Symbol>
+                                    <div>
+                                        <p className="font-semibold text-foreground">{titel}</p>
+                                        <p className="text-sm text-muted-foreground">{text}</p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
 
-                <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-start z-10">
-                    <div className="flex flex-col gap-6 animate-fade-up lg:pt-4">
-                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary border border-primary/20 w-fit">
-                            <Monitor size={14} />
-                            <span className="text-xs font-black uppercase tracking-wider">Desktop Edition</span>
-                        </div>
-                        
-                        <div className="space-y-3">
-                            <h1 className="text-4xl md:text-5xl font-black text-foreground tracking-tight leading-[1.1]">
-                                Ihre lokale <br />
-                                <span className="text-gradient">KI-Instanz.</span>
-                            </h1>
-                            <p className="text-base text-muted-foreground leading-relaxed font-medium max-w-md">
-                                Koreki Desktop bringt die Power moderner Korrektur-KI direkt in Ihre Infrastruktur. 
-                                Maximale Souveränität durch lokale Kontrolle oder sichere Cloud-Anbindung.
+                    <Kachel className="shadow-lift">
+                        {lokal ? (
+                            <Button size="lg" className="w-full h-12 text-base" onClick={() => router.push('/app')}>
+                                Zur App <ArrowRight size={18} />
+                            </Button>
+                        ) : (
+                            <Button size="lg" className="w-full h-12 text-base" onClick={handleDownloadDesktop}>
+                                <Download size={18} /> Kostenlos herunterladen
+                            </Button>
+                        )}
+                        <p className="mt-3 text-center text-xs text-muted-foreground">
+                            Kostenlos für den nicht-kommerziellen Einsatz · Lizenz: PolyForm Noncommercial
+                        </p>
+
+                        <Link
+                            href="/desktop-setup"
+                            className="mt-6 flex items-center gap-3 rounded-xl border border-border p-4 hover:border-foreground/30 transition-colors"
+                        >
+                            <Symbol className="w-9 h-9"><BookOpen size={17} /></Symbol>
+                            <div className="flex-1">
+                                <p className="text-sm font-medium text-foreground">Einrichtungsanleitung</p>
+                                <p className="text-xs text-muted-foreground">Ollama oder Mistral in wenigen Schritten verbinden</p>
+                            </div>
+                            <ArrowRight size={16} className="text-muted-foreground" />
+                        </Link>
+
+                        <div className="mt-6 rounded-xl bg-warning/10 p-4 flex gap-3">
+                            <ShieldAlert size={18} className="text-warning shrink-0 mt-0.5" />
+                            <p className="text-xs/relaxed text-foreground">
+                                Bitte beachten Sie die Datenschutzrichtlinien Ihrer Schule und schützen Sie Ihr Gerät vor unbefugtem Zugriff.
                             </p>
                         </div>
-
-                        <div className="flex flex-col gap-2 mt-2">
-                            <div className="flex items-start gap-4 p-3 rounded-xl transition-all hover:bg-white group">
-                                <div className="mt-1 w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                                    <Compass size={18} />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-foreground text-sm">Flexible Anbindung</h3>
-                                    <p className="text-sm text-muted-foreground leading-normal">Wählen Sie zwischen Cloud-Komfort (Mistral) oder lokaler Autonomie (Ollama).</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-4 p-3 rounded-xl transition-all hover:bg-white group">
-                                <div className="mt-1 w-9 h-9 rounded-lg bg-primary/5 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                                    <Zap size={18} />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-foreground text-sm">Native Performance</h3>
-                                    <p className="text-sm text-muted-foreground leading-normal">Optimiert für lokale Hardware-Beschleunigung und nahtlose Integration.</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-4 p-3 rounded-xl transition-all hover:bg-white group">
-                                <div className="mt-1 w-9 h-9 rounded-lg bg-success/5 text-success flex items-center justify-center shrink-0 group-hover:bg-success group-hover:text-success-foreground transition-all">
-                                    <Layers size={18} />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-foreground text-sm">Windows & Linux</h3>
-                                    <p className="text-sm text-muted-foreground leading-normal">Native Unterstützung für Windows 10/11 und Ubuntu Desktop (macOS coming soon).</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="animate-fade-up delay-150">
-                        <Card className="border-white/60 shadow-xl relative overflow-hidden group rounded-2xl">
-                           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent pointer-events-none" />
-                           <CardContent className="p-6 md:p-8 relative z-10">
-                               <div className="flex items-start gap-3 mb-6 text-warning bg-warning/5 p-4 rounded-xl border border-warning/20">
-                                   <ShieldAlert size={24} className="shrink-0 mt-0.5" />
-                                   <div>
-                                       <h4 className="font-black uppercase text-xs tracking-widest mb-1">Datenschutz & Verantwortung</h4>
-                                       <p className="font-bold text-xs leading-snug">Bitte beachten Sie die Datenschutzrichtlinien Ihrer Schule.</p>
-                                   </div>
-                               </div>
-
-                               <div className="space-y-4 text-muted-foreground text-sm leading-relaxed mb-8 font-medium">
-                                   <p>
-                                       Stellen Sie sicher, dass Ihr System vor unbefugtem Zugriff geschützt ist. Details zur Anbindung finden Sie im Guide.
-                                   </p>
-                                   <div className="text-xs bg-muted/50 p-4 rounded-xl border border-border mt-4 leading-normal">
-                                        <strong className="text-foreground block mb-1 uppercase tracking-tighter font-black text-xs">Haftungsausschluss</strong> 
-                                        Die Nutzung der Software erfolgt auf eigene Gefahr. Der Entwickler übernimmt keine Haftung für Schäden, Datenverlust oder Inkompatibilitäten, die durch die Installation oder Nutzung der Desktop Edition entstehen.
-                                    </div>
-                               </div>
-
-                               <div className="space-y-3">
-                                   {isLocalInstance() ? (
-                                       <Button 
-                                           onClick={handleStartApp}
-                                           size="lg" 
-                                           className="w-full h-14 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] group shadow-lg shadow-primary/20"
-                                       >
-                                           Zur Applikation
-                                           <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                                       </Button>
-                                   ) : (
-                                       <Button 
-                                           onClick={handleDownloadDesktop}
-                                           size="lg" 
-                                           className="w-full h-14 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold text-base flex items-center justify-center gap-2 transition-all active:scale-[0.98] group shadow-lg shadow-primary/20"
-                                       >
-                                           Desktop App herunterladen
-                                           <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                                       </Button>
-                                   )}
-
-                                   <div 
-                                       className="bg-primary/5 p-4 rounded-xl border border-primary/10 group/setup cursor-pointer transition-all hover:bg-primary/10 hover:border-primary/30 shadow-sm" 
-                                       onClick={() => router.push('/desktop-setup')}
-                                   >
-                                       <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-white text-primary flex items-center justify-center shrink-0 shadow-sm border border-primary/20 group-hover/setup:scale-110 transition-transform">
-                                                <Info size={20} />
-                                            </div>
-                                            <div className="text-left flex-grow">
-                                                <h4 className="font-bold text-foreground text-xs text-gradient">Einrichtung noch nicht fertig?</h4>
-                                                <p className="text-xs text-muted-foreground font-black uppercase tracking-wider">Setup Guide: Mistral oder Ollama</p>
-                                            </div>
-                                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm border border-primary/20 group-hover/setup:bg-primary group-hover/setup:text-white transition-all">
-                                                <ArrowRight size={14} className="group-hover/setup:translate-x-0.5 transition-transform" />
-                                            </div>
-                                       </div>
-                                   </div>
-                               </div>
-
-                               <div className="mt-6 flex items-center justify-center gap-2 text-xs font-black text-muted-foreground uppercase tracking-[0.2em]">
-                                   <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                                   Koreki V1.0 Desktop Build
-                               </div>
-                           </CardContent>
-                        </Card>
-                    </div>
+                        <p className="mt-4 text-xs/relaxed text-muted-foreground">
+                            <span className="font-medium text-foreground">Haftungsausschluss:</span> Die Nutzung der Software erfolgt auf eigene Gefahr.
+                            Der Entwickler übernimmt keine Haftung für Schäden, Datenverlust oder Inkompatibilitäten, die durch die Installation
+                            oder Nutzung der Desktop-Version entstehen.
+                        </p>
+                    </Kachel>
                 </div>
 
-                {isLocalInstance() && (
-                    <div className="mt-8 text-center animate-fade-in delay-500">
-                        <p className="text-xs text-muted-foreground font-black uppercase tracking-[0.3em] px-6">
-                            &copy; {new Date().getFullYear()} Koreki – Premium AI Correction Architecture
-                        </p>
-                    </div>
-                )}
-            </div>
+                <div className="mt-12">
+                    <Produktbild src="/marketing/uebersicht.webp" alt="Koreki Desktop mit Musterlösung, Schülerarbeiten und Stapelverarbeitung" />
+                </div>
+            </Abschnitt>
         </MarketingLayout>
     );
 }

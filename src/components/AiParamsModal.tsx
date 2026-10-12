@@ -207,7 +207,7 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                                 </Button>
                                 <Button
                                     onClick={isCreatingNew ? handleSaveProfile : handleApplyToSession}
-                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary text-white font-bold rounded-xl sm:rounded-2xl shadow-xl shadow-primary/20"
+                                    className="flex-[2] sm:flex-none px-6 sm:px-10 h-10 sm:h-14 bg-primary text-white font-bold rounded-xl sm:rounded-2xl shadow-xl"
                                     disabled={saving || (isCreatingNew && !newProfileName.trim())}
                                 >
                                     {saving ? 'Speichert...' : (isCreatingNew ? 'Erstellen' : 'Zuweisen')}

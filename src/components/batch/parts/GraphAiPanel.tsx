@@ -145,7 +145,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                                             setInitialUserNotes('');
                                                         }
                                                     }}
-                                                    className="h-10 rounded-xl bg-gradient-to-r from-primary to-primary hover:from-primary hover:to-primary text-white font-bold shadow-lg shadow-primary/10 transition-all active:scale-[0.98] text-xs gap-2 flex-grow flex items-center justify-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                                    className="h-10 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold shadow-lg transition-all active:scale-[0.98] text-xs gap-2 flex-grow flex items-center justify-center cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                                 >
                                                     {isGenerating ? (
                                                         <RefreshCw size={14} className="animate-spin" />
@@ -311,7 +311,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                                         key={v.id} 
                                                         className={cn(
                                                             "p-3.5 rounded-2xl bg-white border border-border shadow-xs flex items-center justify-between transition-all",
-                                                            hoveredVarId === v.id && "border-primary/20 shadow-md shadow-primary/10"
+                                                            hoveredVarId === v.id && "border-primary/20 shadow-md"
                                                         )}
                                                         onMouseEnter={() => setHoveredVarId(v.id)}
                                                         onMouseLeave={() => setHoveredVarId(null)}

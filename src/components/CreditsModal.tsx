@@ -124,7 +124,7 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, onSelect, upgradin
                             className={cn(
                                 "relative group p-8 rounded-hero border-2 transition-all duration-500 cursor-pointer flex flex-col items-center text-center",
                                 plan.isMain
-                                    ? "bg-background border-primary shadow-xl shadow-primary/10 scale-105 z-10"
+                                    ? "bg-background border-primary shadow-xl scale-105 z-10"
                                     : "bg-muted/10 border-border hover:border-primary/40 hover:bg-background hover:shadow-lg"
                             )}
                         >
@@ -152,7 +152,7 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, onSelect, upgradin
                                 className={cn(
                                     "w-full h-11 rounded-md font-bold transition-all duration-300",
                                     plan.isMain
-                                        ? "bg-primary hover:bg-primary/95 text-primary-foreground shadow-lg shadow-primary/20"
+                                        ? "bg-primary hover:bg-primary/95 text-primary-foreground shadow-lg"
                                         : "bg-background border border-border text-muted-foreground hover:bg-foreground/5 hover:border-primary/40 hover:text-primary"
                                 )}
                             >

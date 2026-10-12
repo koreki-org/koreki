@@ -48,8 +48,6 @@ const SRC_DIR = join(process.cwd(), 'src');
  */
 const HARTE_FARBEN_BASELINE: string[] = [
     'lib/grading-memory-characters.ts',
-    'components/guards/AuthGuard.tsx',
-    'pages/login.tsx',
 ];
 
 /**

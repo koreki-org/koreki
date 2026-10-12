@@ -31,7 +31,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
             {/* Branding Badge (Institutional Tenancy) - ONLY rendered locally, hidden in SaaS for space */}
             {isLocalInstance() && userData?.activeWorkspaceType === 'ORGANIZATION' && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full border border-primary/20 group transition-all">
-                   <Building2 size={14} className="text-primary opacity-80 group-hover:scale-110 transition-transform" />
+                   <Building2 size={14} className="text-primary opacity-80 transition-transform" />
                    <div className="flex items-center gap-1.5">
                        <span className="text-xs font-medium text-primary/70">INSTITUT:</span>
                        <span className="text-xs font-medium truncate max-w-[120px]">

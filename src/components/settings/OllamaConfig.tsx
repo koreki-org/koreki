@@ -255,7 +255,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                             <div className="flex items-center gap-3">
                                 <div className={`p-2 rounded-xl ${
                                     isExactMatch ? 'bg-success text-success-foreground shadow-sm shadow-success/20' :
-                                    isMapped ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/20' :
+                                    isMapped ? 'bg-primary text-primary-foreground shadow-sm' :
                                     availableModels.length > 0 ? 'bg-warning text-white shadow-sm shadow-warning/20' :
                                     'bg-muted text-muted-foreground'
                                 }`}>

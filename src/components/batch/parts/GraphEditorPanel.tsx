@@ -153,7 +153,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                                                 className={cn(
                                                                     "p-4 rounded-2xl border-2 transition-all flex flex-col gap-3 select-none relative group cursor-pointer text-left",
                                                                     hasError ? "bg-destructive/10 border-destructive/20 hover:border-destructive/20 shadow-destructive/10 shadow-sm" :
-                                                                    isSelected ? "bg-white border-primary shadow-md shadow-primary/10 ring-1 ring-primary" :
+                                                                    isSelected ? "bg-white border-primary shadow-md ring-1 ring-primary" :
                                                                     isDependency ? "bg-primary/5 border-primary/20 shadow-sm" :
                                                                     isHovered ? "bg-white border-border shadow-sm" :
                                                                     "bg-white border-border hover:border-border"

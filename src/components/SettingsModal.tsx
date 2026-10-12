@@ -143,7 +143,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                     <span className="text-xs text-muted-foreground font-medium font-sans">
                         Koreki<span className="text-primary">.</span> v{packageJson.version}
                     </span>
-                    <Button onClick={onClose} className="px-8 font-bold shadow-lg shadow-primary/20 rounded-xl h-12">
+                    <Button onClick={onClose} className="px-8 font-bold shadow-lg rounded-xl h-12">
                         Schließen
                     </Button>
                 </div>

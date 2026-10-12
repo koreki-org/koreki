@@ -86,7 +86,7 @@ export default function DesktopSetup() {
                 </div>
 
                 <div className="text-center mb-10 animate-fade-down">
-                    <h1 className="text-3xl md:text-4xl font-black text-foreground mb-4 tracking-tight">
+                    <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
                         Wählen Sie Ihre <span className="text-gradient">KI-Strategie.</span>
                     </h1>
                     <p className="text-sm text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
@@ -98,11 +98,11 @@ export default function DesktopSetup() {
                     {/* Ollama Card */}
                     <Card className="border-primary/20 shadow-lg hover:shadow-xl transition-all duration-500 group animate-fade-up bg-primary/10 rounded-2xl overflow-hidden">
                         <CardHeader className="p-6 pb-2">
-                            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary mb-4 flex items-center justify-center group-hover:scale-110 transition-transform border border-primary/20">
+                            <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary mb-4 flex items-center justify-center transition-transform border border-primary/20">
                                 <Cpu size={24} />
                             </div>
-                            <CardTitle className="text-2xl font-black tracking-tight text-foreground">Ollama Lokal</CardTitle>
-                            <p className="text-xs text-primary font-black uppercase tracking-widest mt-1">Eigene Infrastruktur</p>
+                            <CardTitle className="text-2xl font-bold tracking-tight text-foreground">Ollama Lokal</CardTitle>
+                            <p className="text-xs text-primary font-bold mt-1">Eigene Infrastruktur</p>
                         </CardHeader>
                         <CardContent className="p-6 pt-0 space-y-4">
                             <ul className="space-y-3">
@@ -133,11 +133,11 @@ export default function DesktopSetup() {
                     {/* Mistral Card */}
                     <Card className="border-white/60 shadow-lg hover:shadow-xl transition-all duration-500 group animate-fade-up delay-100 rounded-2xl overflow-hidden">
                         <CardHeader className="p-6 pb-2">
-                            <div className="w-12 h-12 rounded-xl bg-primary/5 text-primary mb-4 flex items-center justify-center group-hover:scale-110 transition-transform border border-primary/20">
+                            <div className="w-12 h-12 rounded-xl bg-primary/5 text-primary mb-4 flex items-center justify-center transition-transform border border-primary/20">
                                 <Cloud size={24} />
                             </div>
-                            <CardTitle className="text-2xl font-black tracking-tight text-foreground">KI-Cloud (API)</CardTitle>
-                            <p className="text-xs text-primary font-black uppercase tracking-widest mt-1">Mistral AI / OpenAI-kompatibel</p>
+                            <CardTitle className="text-2xl font-bold tracking-tight text-foreground">KI-Cloud (API)</CardTitle>
+                            <p className="text-xs text-primary font-bold mt-1">Mistral AI / OpenAI-kompatibel</p>
                         </CardHeader>
                         <CardContent className="p-6 pt-0 space-y-4">
                             <ul className="space-y-3">
@@ -175,7 +175,7 @@ export default function DesktopSetup() {
                 <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10">
                     <div className="animate-fade-up">
                         <div className="text-left mb-6">
-                            <h2 className="text-xl font-black text-foreground mb-2 tracking-tight">Ollama Einrichtungs-Guide</h2>
+                            <h2 className="text-xl font-bold text-foreground mb-2 tracking-tight">Ollama Einrichtungs-Guide</h2>
                             <div className="w-12 h-1 bg-primary/100 rounded-full" />
                         </div>
                         <div className="grid grid-cols-1 gap-4 text-left">
@@ -189,9 +189,9 @@ export default function DesktopSetup() {
                                         <img 
                                             src={phase.img} 
                                             alt={phase.title} 
-                                            className="w-full h-full object-contain group-hover:scale-105 transition-transform"
+                                            className="w-full h-full object-contain transition-transform"
                                         />
-                                        <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-primary text-white text-xs font-black flex items-center justify-center">
+                                        <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-primary text-white text-xs font-bold flex items-center justify-center">
                                             {idx + 1}
                                         </div>
                                     </div>
@@ -206,7 +206,7 @@ export default function DesktopSetup() {
 
                     <div className="animate-fade-up delay-100">
                         <div className="text-left mb-6">
-                            <h2 className="text-xl font-black text-foreground mb-2 tracking-tight">Cloud-API Einrichtungs-Guide</h2>
+                            <h2 className="text-xl font-bold text-foreground mb-2 tracking-tight">Cloud-API Einrichtungs-Guide</h2>
                             <div className="w-12 h-1 bg-accent-1 rounded-full" />
                         </div>
                         <div className="grid grid-cols-1 gap-4">
@@ -220,9 +220,9 @@ export default function DesktopSetup() {
                                         <img 
                                             src={phase.img} 
                                             alt={phase.title} 
-                                            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                                            className="w-full h-full object-contain transition-transform duration-500"
                                         />
-                                        <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-primary/50 text-white text-xs font-black flex items-center justify-center shadow-sm">
+                                        <div className="absolute top-1 left-1 w-4 h-4 rounded-full bg-primary/50 text-white text-xs font-bold flex items-center justify-center shadow-sm">
                                             {idx + 1}
                                         </div>
                                     </div>
@@ -243,7 +243,7 @@ export default function DesktopSetup() {
                 {getKorekiMode() === 'desktop' && (
                     <Button 
                         onClick={() => router.push('/app')}
-                        className="w-full max-w-md h-14 bg-primary hover:bg-primary/90 text-white font-black text-base rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl shadow-primary/20 active:scale-[0.98] group"
+                        className="w-full max-w-md h-14 bg-primary hover:bg-primary/90 text-white font-bold text-base rounded-2xl flex items-center justify-center gap-3 transition-all shadow-xl active:scale-[0.98] group"
                     >
                         Fertig, zur Applikation
                         <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />

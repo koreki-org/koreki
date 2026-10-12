@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Instagram, Linkedin, Github, Mail, ShieldCheck } from 'lucide-react';
+import { Instagram, Linkedin, Github } from 'lucide-react';
 import Logo from '../Logo';
 import { LEGAL_CONFIG } from '@/config/legal-contact';
 import { getKorekiMode } from '@/lib/env-context';
+
+const spalte = "flex flex-col gap-2.5 text-sm";
+const verweis = "text-muted-foreground hover:text-foreground transition-colors";
 
 const MarketingFooter: React.FC = () => {
     const [mode, setMode] = useState<'saas' | 'community' | 'desktop'>('saas');
@@ -13,61 +16,45 @@ const MarketingFooter: React.FC = () => {
     }, []);
 
     return (
-        <footer className="relative bg-muted/30 py-8 overflow-hidden border-t border-border">
-            {/* Subtle Gradient Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-            
-            <div className="max-w-7xl mx-auto px-8 relative z-10">
-                <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-6 pb-6 border-b border-border/60">
-                    <div className="flex flex-col gap-4">
-                        <Logo showText={true} size={24} className="text-foreground" />
-                        <p className="max-w-xs text-xs text-muted-foreground font-medium leading-relaxed">
-                            Die intelligente Korrektur-Infrastruktur für Bildungs- und Prüfungsinstitutionen.
+        <footer className="border-t border-border bg-card">
+            <div className="max-w-6xl mx-auto px-6 md:px-page-inline py-12">
+                <div className="flex flex-col md:flex-row justify-between gap-10">
+                    <div className="flex flex-col gap-4 max-w-xs">
+                        <Logo showText={true} size={24} className="self-start" />
+                        <p className="text-sm text-muted-foreground">
+                            Korrekturvorschläge für Klassenarbeiten. Die Note vergeben Sie.
                         </p>
                         <div className="flex gap-4 items-center">
-                            <a href="https://www.instagram.com/koreki_org/" target="_blank" rel="noopener noreferrer" aria-label="Koreki auf Instagram" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"><Instagram className="w-5 h-5" /></a>
-                            <a href="https://www.linkedin.com/company/koreki-org/" target="_blank" rel="noopener noreferrer" aria-label="Koreki auf LinkedIn" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"><Linkedin className="w-5 h-5" /></a>
-                            <a href="https://github.com/koreki-org/koreki" target="_blank" rel="noopener noreferrer" aria-label="Koreki auf GitHub" className="text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-110"><Github className="w-5 h-5" /></a>
+                            <a href="https://www.instagram.com/koreki_org/" target="_blank" rel="noopener noreferrer" aria-label="Koreki auf Instagram" className={verweis}><Instagram className="w-5 h-5" /></a>
+                            <a href="https://www.linkedin.com/company/koreki-org/" target="_blank" rel="noopener noreferrer" aria-label="Koreki auf LinkedIn" className={verweis}><Linkedin className="w-5 h-5" /></a>
+                            <a href="https://github.com/koreki-org/koreki" target="_blank" rel="noopener noreferrer" aria-label="Koreki auf GitHub" className={verweis}><Github className="w-5 h-5" /></a>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-16">
-                        <div className="space-y-3">
-                            <h4 className="text-xs font-medium text-foreground font-outfit">Plattform</h4>
-                            <nav className="flex flex-col gap-2 text-xs font-bold">
-                                <Link href="/features" className="text-muted-foreground hover:text-primary transition-colors duration-300">Features</Link>
-                                <Link href="/security" className="text-muted-foreground hover:text-primary transition-colors duration-300">Sicherheit</Link>
-                            </nav>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-10 md:gap-16">
+                        <div className={spalte}>
+                            <h4 className="font-medium text-foreground mb-1">Produkt</h4>
+                            <Link href="/features" className={verweis}>Funktionen</Link>
+                            <Link href="/security" className={verweis}>Datenschutz</Link>
+                            {mode === 'saas' && <Link href="/desktop" className={verweis}>Desktop</Link>}
+                            {mode === 'saas' && <Link href="/self-hosting" className={verweis}>Für Schulen</Link>}
                         </div>
-                        <div className="space-y-3">
-                            <h4 className="text-xs font-medium text-foreground font-outfit">Rechtliches</h4>
-                            <nav className="flex flex-col gap-2 text-xs font-bold">
-                                <Link href="/impressum" className="text-muted-foreground hover:text-primary transition-colors duration-300">Impressum</Link>
-                                <Link href="/privacy" className="text-muted-foreground hover:text-primary transition-colors duration-300">Datenschutz</Link>
-                            </nav>
+                        <div className={spalte}>
+                            <h4 className="font-medium text-foreground mb-1">Rechtliches</h4>
+                            <Link href="/impressum" className={verweis}>Impressum</Link>
+                            <Link href="/privacy" className={verweis}>Datenschutzerklärung</Link>
                         </div>
-                        <div className="space-y-3 col-span-2 md:col-span-1">
-                            <h4 className="text-xs font-medium text-foreground font-outfit">Kontakt</h4>
-                            <div className="flex flex-col gap-2 text-xs font-bold">
-                                {mode === 'saas' && (
-                                    <Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors duration-300 flex items-center gap-2">
-                                        <Mail className="w-5 h-5" /> Kontaktformular
-                                    </Link>
-                                )}
-                                <a href={`mailto:${LEGAL_CONFIG.contact.email}`} className="text-muted-foreground hover:text-primary transition-colors duration-300 flex items-center gap-2">
-                                    <Mail className="w-5 h-5" /> {LEGAL_CONFIG.contact.email}
-                                </a>
-                            </div>
+                        <div className={`${spalte} col-span-2 md:col-span-1`}>
+                            <h4 className="font-medium text-foreground mb-1">Kontakt</h4>
+                            {mode === 'saas' && <Link href="/contact" className={verweis}>Kontaktformular</Link>}
+                            <a href={`mailto:${LEGAL_CONFIG.contact.email}`} className={verweis}>{LEGAL_CONFIG.contact.email}</a>
                         </div>
                     </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-muted-foreground text-xs font-medium tracking-[0.2em]">
-                    <p>&copy; {new Date().getFullYear()} Koreki<span className="text-primary">.</span> Made in Germany.</p>
-                    <div className="flex items-center gap-6">
-                        <span className="flex items-center gap-1.5"><ShieldCheck className="w-4 h-4 text-success" /> Datenschutz-Fokus</span>
-                    </div>
-                </div>
+                <p className="mt-10 pt-6 border-t border-border text-xs text-muted-foreground">
+                    &copy; {new Date().getFullYear()} Koreki. Entwickelt in Deutschland.
+                </p>
             </div>
         </footer>
     );

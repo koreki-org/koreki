@@ -47,6 +47,7 @@ module.exports = {
                     DEFAULT: "hsl(var(--accent) / <alpha-value>)",
                     foreground: "hsl(var(--accent-foreground) / <alpha-value>)",
                 },
+                wash: "hsl(var(--wash) / <alpha-value>)",
                 "accent-1": "hsl(var(--accent-1) / <alpha-value>)",
                 "accent-2": "hsl(var(--accent-2) / <alpha-value>)",
                 "accent-3": "hsl(var(--accent-3) / <alpha-value>)",
@@ -75,6 +76,8 @@ module.exports = {
             },
             boxShadow: {
                 glass: "0 0 0 1px hsl(232 30% 20% / 0.06), 0 12px 24px -6px hsl(232 40% 20% / 0.10), 0 40px 80px -20px hsl(239 50% 30% / 0.22)",
+                // Grosser, weicher Schatten fuer Produktbilder auf den Marketing-Seiten.
+                lift: "0 0 0 1px hsl(232 30% 20% / 0.06), 0 2px 4px hsl(232 40% 20% / 0.04), 0 12px 24px -6px hsl(232 40% 20% / 0.08), 0 40px 80px -20px hsl(239 50% 30% / 0.18)",
                 // Weicher, mehrschichtiger Kartenschatten: ersetzt Rand + shadow-sm.
                 card: "0 0 0 1px hsl(232 30% 20% / 0.06), 0 1px 2px hsl(232 40% 20% / 0.05), 0 4px 12px -4px hsl(232 40% 20% / 0.08)",
             },

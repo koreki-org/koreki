@@ -70,7 +70,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onSelectMode }) => {
                     </p>
                 </header>
 
-                <section className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-left transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 focus-within:border-primary/40 md:p-card-padding-sm">
+                <section className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-4 text-left transition-all duration-300 hover:border-primary/40 hover:shadow-xl focus-within:border-primary/40 md:p-card-padding-sm">
                     <div className="mb-1 flex flex-wrap items-center gap-3">
                         <h2 className="font-outfit text-lg font-bold tracking-tight text-foreground">Koreki Trial</h2>
                         <Badge variant="light">Kostenlos testen</Badge>

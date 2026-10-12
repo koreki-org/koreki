@@ -80,7 +80,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                 {!hasStudents ? (
                     <div 
                         onClick={() => studentInputRef.current?.click()}
-                        className="flex-1 border-2 border-dashed border-border/60 rounded-hero bg-muted/20 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
+                        className="flex-1 border-2 border-dashed border-border/60 rounded-hero bg-muted/20 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
                     >
                         <input
                             data-testid="upload-schuelerarbeit"

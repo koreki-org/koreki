@@ -1,97 +1,20 @@
-import React, { useState } from 'react';
-import Head from 'next/head';
-import MarketingLayout from '@/layouts/MarketingLayout';
-import { Badge } from '@/components/ui/Badge';
-
-import { FeatureSubNav } from '@/components/marketing/FeatureSubNav';
-import { ImageLightbox } from '@/components/marketing/ImageLightbox';
-import { ShieldCheck, CheckCircle } from 'lucide-react';
+import React from 'react';
+import { FunktionsSeite } from '@/components/marketing/site/FunktionsSeite';
 
 export default function ExpertiseFeature() {
-    const [zoomedImage, setZoomedImage] = useState<string | null>(null);
-
     return (
-        <MarketingLayout>
-            <Head>
-                <title>Koreki Expertise | Expert-Center & Kriterien</title>
-                <meta name="description" content="Bewahren Sie Ihre pädagogische Hoheit. Kriterien und Parameter exakt definieren." />
-            </Head>
-
-            {zoomedImage && (
-                <ImageLightbox 
-                    src={zoomedImage} 
-                    onClose={() => setZoomedImage(null)} 
-                />
-            )}
-
-            <div className="relative">
-                {/* 🧭 Showroom Context Navigation */}
-                <FeatureSubNav />
-
-                {/* Hero Section */}
-                <section className="px-6 md:px-page-inline pt-4 pb-12 md:pt-6 md:pb-hero-bottom max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 relative z-10 animate-fade-up">
-                    <div className="w-full lg:w-[42%] xl:w-[38%] lg:flex-shrink-0 space-y-8 text-center lg:text-left">
-                        <Badge variant="light" className="mb-4">
-                            Pillar: Expertise
-                        </Badge>
-                        <h1 className="text-6xl md:text-7xl font-black text-foreground tracking-tighter leading-[0.9]">
-                            Fachliche Hoheit. <br />
-                            <span className="text-gradient">Unter Ihrer Kontrolle.</span>
-                        </h1>
-                        <p className="text-xl text-muted-foreground font-medium leading-relaxed max-w-xl mx-auto lg:ml-0">
-                            Koreki ist kein unkontrollierbarer Algorithmus. Im Expert-Center legen Sie fest, nach welchen Kriterien und fachlichen Vorgaben korrigiert wird. Sie bleiben der alleinige Entscheider.
-                        </p>
-                    </div>
-                    
-                    <div className="w-full lg:w-[58%] xl:w-[62%] lg:flex-grow animate-fade-in delay-300">
-                        <div 
-                            className="relative group cursor-zoom-in"
-                            onClick={() => setZoomedImage("/screenshots/4a_koreki_expert_center.png")}
-                        >
-                            <div className="absolute -inset-4 bg-primary/5 blur-3xl rounded-hero opacity-50 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-                            <div className="relative rounded-hero overflow-hidden border border-white/60 bg-white/20 p-2 md:p-3 lg:p-4 shadow-glass transition-all duration-300 hover:scale-[1.01]">
-                                <img 
-                                    src="/screenshots/4a_koreki_expert_center.png" 
-                                    alt="Koreki Expert-Center Interface"
-                                    className="w-full h-auto rounded-xl shadow-md border border-border"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                {/* Highlight Section */}
-                <section className="pb-12 md:pb-section-vertical px-6 md:px-page-inline bg-muted/50 border-y border-border/50 relative">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="glass-morphism p-6 md:p-card-padding rounded-hero border border-white bg-white/60 shadow-xl relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
-                                <ShieldCheck size={160} />
-                            </div>
-                            <div className="max-w-2xl relative z-10">
-                                <h2 className="text-4xl font-black mb-6 tracking-tight text-foreground">Das Expert-Center</h2>
-                                <p className="text-lg text-muted-foreground font-medium mb-10 leading-relaxed">
-                                    Die KI folgt Ihren Anweisungen und Vorgaben atomar. Sie bestimmen den Rahmen der sprachlichen Kulanz und die Gewichtung von Argumenten.
-                                </p>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    {[
-                                        { t: 'Klare Vorgabe von Musterlösungen', i: CheckCircle },
-                                        { t: 'Steuerung der sprachlichen Toleranz', i: CheckCircle },
-                                        { t: 'Manuelles Überschreiben jederzeit möglich', i: CheckCircle },
-                                        { t: 'Einhaltung Ihrer pädagogischen Linie', i: CheckCircle }
-                                    ].map((f, i) => (
-                                        <div key={i} className="flex items-center gap-4 text-sm font-black text-foreground">
-                                            <div className="bg-primary/10 text-primary p-2 rounded-lg">
-                                                <f.i size={20} />
-                                            </div>
-                                            <span>{f.t}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </div>
-        </MarketingLayout>
+        <FunktionsSeite
+            seitentitel="Expertise | Koreki"
+            beschreibung="Legen Sie fest, worauf es in Ihrem Fach ankommt. Koreki bewertet nach Ihren fachlichen Vorgaben."
+            kicker="Expertise"
+            titel="Ihr Fach, Ihre Maßstäbe."
+            text="Mit der Expertise beschreiben Sie in eigenen Worten, worauf Sie bei der Korrektur achten. Koreki richtet seine Vorschläge danach aus."
+            punkte={[
+                { titel: 'In Ihren eigenen Worten', text: 'Zum Beispiel: „Achte vor allem auf logische Korrektheit, Rechtschreibung ist zweitrangig.“ Kein Fachvokabular nötig.' },
+                { titel: 'Vorlagen zum Start', text: 'Mitgelieferte Profile, etwa für Mathematik, Informatik oder Wirtschaft, können Sie übernehmen und anpassen.' },
+                { titel: 'Eigene Profile', text: 'Legen Sie für jedes Fach oder jede Lerngruppe ein eigenes Profil an und wechseln Sie mit einem Klick.' },
+                { titel: 'Teilen im Kollegium', text: 'Profile lassen sich aus einer Datei importieren – so kann eine Fachschaft mit denselben Vorgaben arbeiten.' },
+            ]}
+        />
     );
 }

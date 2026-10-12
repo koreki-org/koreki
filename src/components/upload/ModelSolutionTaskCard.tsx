@@ -199,7 +199,7 @@ export const ModelSolutionTaskCard: React.FC<ModelSolutionTaskCardProps> = ({
                                                                 ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 hover:border-primary/30" 
                                                                 : "bg-success/5 border border-success/20 text-success hover:bg-success/10 hover:border-success/30"))
                                                         : (shouldSuggestGraph
-                                                            ? "bg-primary/5 border-primary/20 text-primary hover:text-primary hover:border-primary/50 shadow-sm shadow-primary/10"
+                                                            ? "bg-primary/5 border-primary/20 text-primary hover:text-primary hover:border-primary/50 shadow-sm"
                                                             : "border-dashed border-border text-muted-foreground hover:text-primary hover:border-primary/50")
                                                 )}
                                             >

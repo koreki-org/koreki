@@ -491,7 +491,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                             <Button 
                                 onClick={() => { onSave(graph); onClose(); }}
                                 disabled={!!jsonError}
-                                className="h-10 flex-1 sm:flex-initial rounded-xl px-6 bg-primary hover:bg-primary text-white font-bold shadow-lg shadow-primary/10 transition-all"
+                                className="h-10 flex-1 sm:flex-initial rounded-xl px-6 bg-primary hover:bg-primary text-white font-bold shadow-lg transition-all"
                             >
                                 Zuweisen
                             </Button>

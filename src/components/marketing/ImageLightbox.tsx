@@ -49,7 +49,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({ src, alt, onClose 
                     {/* Industrial Close Button */}
                     <button 
                         onClick={onClose}
-                        className="absolute -top-4 -right-4 md:-top-8 md:-right-8 bg-white text-foreground p-3 rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 z-50 group/close"
+                        className="absolute -top-4 -right-4 md:-top-8 md:-right-8 bg-white text-foreground p-3 rounded-full shadow-2xl active:scale-95 transition-all duration-300 z-50 group/close"
                         aria-label="Schließen"
                     >
                         <X size={24} className="group-hover/close:rotate-90 transition-transform duration-300" />
@@ -57,7 +57,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({ src, alt, onClose 
                 </div>
 
                 {/* Info Tip */}
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/40 text-xs font-black uppercase tracking-[0.3em] flex items-center gap-2 pointer-events-none">
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/40 text-xs font-bold flex items-center gap-2 pointer-events-none">
                     <ArrowRight size={12} className="rotate-[-45deg]" />
                     Zum Schließen klicken oder ESC drücken
                 </div>

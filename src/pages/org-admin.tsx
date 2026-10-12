@@ -163,7 +163,7 @@ export default function OrgAdminDashboard() {
                                         </div>
                                     </div>
                                     <Button 
-                                        className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 rounded-2xl font-bold gap-2 shadow-lg shadow-primary/20"
+                                        className="shrink-0 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 rounded-2xl font-bold gap-2 shadow-lg"
                                         onClick={() => router.push('/app/compliance/avv')}
                                     >
                                         Anzeigen & Drucken <Eye size={20} />

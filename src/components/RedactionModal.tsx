@@ -300,7 +300,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                         <Button variant="outline" onClick={onClose} className="h-10 px-5 font-semibold hidden sm:flex">
                             Abbrechen
                         </Button>
-                        <Button onClick={() => void anwenden()} disabled={loading || Object.keys(images).length === 0} className="h-10 px-6 font-bold flex-1 sm:flex-none shadow-lg shadow-primary/20 gap-2">
+                        <Button onClick={() => void anwenden()} disabled={loading || Object.keys(images).length === 0} className="h-10 px-6 font-bold flex-1 sm:flex-none shadow-lg gap-2">
                             <Check size={18} />
                             {applyToAllScans
                                 ? `${templateSize} Balken auf ${otherScanCount + 1} Scans`

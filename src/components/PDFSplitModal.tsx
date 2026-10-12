@@ -275,7 +275,7 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                     </Button>
                     <Button
                         onClick={handleSplit}
-                        className="flex-[2] font-bold shadow-lg shadow-primary/20"
+                        className="flex-[2] font-bold shadow-lg"
                         disabled={assignedPages === 0 || assignedPages > totalPageCount}
                     >
                         Aufteilen starten

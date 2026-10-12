@@ -180,7 +180,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                                         setIsFeedbackOpen(false);
                                         setPdfSettingsOpen(false);
                                     }}
-                                    className="h-8 text-xxs font-extrabold w-full rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm shadow-primary/10 transition-all"
+                                    className="h-8 text-xxs font-extrabold w-full rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm transition-all"
                                 >
                                     PDF-Export starten
                                 </Button>

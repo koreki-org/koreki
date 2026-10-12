@@ -130,7 +130,7 @@ const AVVUploadModal: React.FC<AVVUploadModalProps> = ({
                 </div>
 
                 <Button 
-                    className="w-full py-7 text-lg font-bold shadow-xl shadow-primary/20 gap-2 mb-2 rounded-2xl disabled:opacity-50 disabled:grayscale transition-all" 
+                    className="w-full py-7 text-lg font-bold shadow-xl gap-2 mb-2 rounded-2xl disabled:opacity-50 disabled:grayscale transition-all" 
                     disabled={!isAccepted || isProcessing}
                     onClick={handlers.executeConsent}
                 >

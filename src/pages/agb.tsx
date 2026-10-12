@@ -46,7 +46,7 @@ export default function AGB() {
             <div className="max-w-[1200px] mx-auto px-8 pt-0 pb-24 flex flex-col md:flex-row gap-12 items-start">
                 <aside className="w-full md:w-[250px] flex-shrink-0 sticky top-24">
                     <div className="bg-white rounded-2xl p-6 border border-border shadow-sm">
-                        <h3 className="mt-0 mb-4 text-[0.75rem] uppercase tracking-widest font-bold text-muted-foreground">Inhalt</h3>
+                        <h3 className="mt-0 mb-4 text-[0.75rem] font-bold text-muted-foreground">Inhalt</h3>
                         <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
                             {[
                                 { id: 'scope', label: '§1 Geltungsbereich' },
@@ -92,7 +92,7 @@ export default function AGB() {
                             <p className="leading-relaxed text-muted-foreground">Koreki richtet sich an Lehrkräfte und Bildungseinrichtungen als Open-Source-Hilfsmittel zur KI-gestützten Korrektur und Einschätzung von Aufgaben.</p>
                         </section>
 
-                        <section id="liability" className="bg-white rounded-hero p-10 border border-warning/20 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-warning/5 to-white">
+                        <section id="liability" className="bg-white rounded-hero p-10 border border-warning/20 shadow-sm relative scroll-mt-24 bg-warning/5">
                             <div className="inline-flex p-3 bg-warning/10 text-warning rounded-xl mb-6"><Scale size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§2 Leistungsumfang und KI-Haftungsausschluss</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Koreki bietet Werkzeuge zur Textextraktion (OCR) und Analyse mittels Künstlicher Intelligenz (KI). Die KI generiert Einschätzungen und Bepunktungsvorschläge basierend auf den von der Lehrkraft bereitgestellten Musterlösungen.</p>

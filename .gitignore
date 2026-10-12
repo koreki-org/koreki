@@ -47,6 +47,8 @@ verify_math.js
 *.zip
 public/download/
 *.webp
+# Ausnahme: Produktbilder der Marketing-Seiten werden ausgeliefert.
+!public/marketing/*.webp
 # *.png removed to allow brand assets (e.g. logos)
 
 /lib/generated/prisma

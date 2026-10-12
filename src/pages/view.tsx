@@ -108,7 +108,7 @@ export default function StudentFeedbackView() {
                                 )}
                                 <Button 
                                     type="submit"
-                                    className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-2xl font-bold shadow-lg shadow-primary/20 border-none transition-all"
+                                    className="w-full bg-primary hover:bg-primary/90 text-white py-4 rounded-2xl font-bold shadow-lg border-none transition-all"
                                 >
                                     Feedback anzeigen
                                 </Button>
@@ -149,8 +149,6 @@ export default function StudentFeedbackView() {
             </Head>
  
             <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-10%] left-[-10%] w-[100vw] h-[100vw] bg-primary/5 blur-[120px] rounded-full" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[100vw] h-[100vw] bg-primary/5 blur-[120px] rounded-full" />
             </div>
 
             <div className="relative z-10 max-w-2xl mx-auto px-4 pt-8">
@@ -238,7 +236,7 @@ export default function StudentFeedbackView() {
                     <div className="flex flex-col items-center gap-6 mb-8 print:hidden">
                         <Button 
                             onClick={() => window.print()}
-                            className="flex items-center gap-2 bg-card hover:bg-foreground/5 text-foreground px-8 py-3 rounded-2xl font-bold shadow-xl border border-border hover:scale-[1.02] active:scale-[0.98] transition-all"
+                            className="flex items-center gap-2 bg-card hover:bg-foreground/5 text-foreground px-8 py-3 rounded-2xl font-bold shadow-xl border border-border active:scale-[0.98] transition-all"
                         >
                             <Printer size={18} /> Feedback drucken
                         </Button>

@@ -57,7 +57,7 @@ const AiConfigurationContent: React.FC<AiConfigurationContentProps> = ({
             <div className="pt-4">
                 <Button 
                     onClick={applyConfiguration} 
-                    className="w-full rounded-2xl font-bold h-14 text-sm shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    className="w-full rounded-2xl font-bold h-14 text-sm shadow-xl transition-all active:scale-[0.98]"
                 >
                     Konfiguration anwenden
                 </Button>

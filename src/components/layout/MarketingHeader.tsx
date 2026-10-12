@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Download } from 'lucide-react';
 import Logo from '../Logo';
 import { Button, buttonVariants } from '../ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { getKorekiMode } from '@/lib/env-context';
 
+/**
+ * Kopfleiste der Marketing-Seiten: schmal, ueber die volle Breite, leicht
+ * durchscheinend (schwebende Ebene, koreki-design-system §5).
+ *
+ * Desktop und Self-Hosting erscheinen nur auf der oeffentlichen Seite; eine
+ * lokale Installation verweist nicht auf sich selbst.
+ */
 const MarketingHeader: React.FC = () => {
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const router = useRouter();
@@ -18,112 +25,97 @@ const MarketingHeader: React.FC = () => {
         setMode(getKorekiMode());
     }, []);
 
+    const eintraege = [
+        { name: 'Funktionen', href: '/features' },
+        { name: 'Datenschutz', href: '/security' },
+        ...(mode === 'saas' ? [
+            { name: 'Desktop', href: '/desktop' },
+            { name: 'Für Schulen', href: '/self-hosting' }
+        ] : [])
+    ];
+
+    const eingeloggt = !authLoading && !!userData;
+    const hauptaktion = mode === 'saas'
+        ? { href: '/desktop', text: 'Herunterladen', icon: <Download size={15} /> }
+        : { href: eingeloggt ? '/app' : '/login', text: 'Zur App', icon: null };
+
     return (
         <>
-            <header className="relative my-4 left-0 right-0 mx-auto w-[90%] max-w-7xl flex justify-between items-center px-8 py-4 z-50 bg-card/85 backdrop-blur-xl border border-white/40 rounded-full shadow-lg transition-all duration-300 animate-fade-down">
-                <Link href="/">
-                    <Logo showText size={40} className="relative z-10 cursor-pointer" />
-                </Link>
-                
-                <div className="flex items-center gap-3">
-                    <nav className="hidden md:flex items-center gap-1">
-                        {[
-                            { name: 'Features', href: '/features' },
-                            { name: 'Sicherheit', href: '/security' },
-                            ...(mode === 'saas' ? [
-                                { name: 'Desktop', href: '/desktop' },
-                                { name: 'Self-Hosting', href: '/self-hosting' }
-                            ] : [])
-                        ].map((item) => {
-                            const isActive = router.pathname === item.href;
-                            return (
-                                <Link 
-                                    key={item.href}
-                                    href={item.href} 
-                                    className={cn(
-                                        buttonVariants({ variant: 'ghost', size: 'sm' }), 
-                                        "px-4 rounded-full transition-all duration-300 font-semibold tracking-tight text-[15px]",
-                                        isActive 
-                                            ? "text-primary bg-primary/5 hover:bg-primary/10 shadow-sm" 
-                                            : "text-muted-foreground hover:text-primary hover:bg-foreground/5"
-                                    )}
-                                >
-                                    {item.name}
-                                </Link>
-                            );
-                        })}
-                    </nav>
+            <header className="w-full bg-card/80 backdrop-blur-md border-b border-border/70">
+                <div className="max-w-6xl mx-auto px-6 md:px-page-inline h-16 flex items-center gap-8">
+                    <Link href="/" aria-label="Koreki – Startseite">
+                        <Logo showText size={32} className="cursor-pointer" />
+                    </Link>
 
-                    {!authLoading && userData ? (
-                        <Link href="/app" className={cn(buttonVariants({ variant: 'default', size: 'sm' }), "bg-primary rounded-full px-5 font-medium text-xs shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:-translate-y-0.5 transition-all active:scale-95")}>
-                            Dashboard
-                        </Link>
-                    ) : (
-                        <Link 
-                            href="/login" 
-                            className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }), "text-primary bg-primary/5 border-primary/10 rounded-full px-5 font-bold shadow-sm hover:shadow-md transition-all")}
-                        >
-                            Einloggen
-                        </Link>
-                    )}
-
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="md:hidden flex items-center justify-center p-2 text-muted-foreground hover:text-primary"
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        aria-label="Menü öffnen"
-                    >
-                        {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-                    </Button>
-                </div>
-            </header>
-
-            {/* Mobile Menu Overlay */}
-            <div className={`fixed inset-0 bg-background/95 backdrop-blur-3xl z-[999] flex items-center justify-center transition-all duration-500 ease-out ${isMenuOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-5 pointer-events-none'}`}>
-                <div className="flex flex-col items-center gap-8">
-                    {[
-                        { name: 'Features', href: '/features' },
-                        { name: 'Sicherheit', href: '/security' },
-                        ...(mode === 'saas' ? [
-                            { name: 'Desktop', href: '/desktop' },
-                            { name: 'Self-Hosting', href: '/self-hosting' }
-                        ] : [])
-                    ].map((item) => {
-                        const isActive = router.pathname === item.href;
-                        return (
-                            <Link 
+                    <nav className="hidden md:flex items-center gap-1 flex-1">
+                        {eintraege.map((item) => (
+                            <Link
                                 key={item.href}
-                                href={item.href} 
+                                href={item.href}
                                 className={cn(
-                                    "text-2xl font-bold tracking-tighter transition-all duration-300 font-outfit",
-                                    isActive ? "text-primary scale-110" : "text-foreground hover:text-primary"
+                                    "px-3 py-2 rounded-lg text-sm transition-colors",
+                                    router.pathname === item.href
+                                        ? "text-foreground font-medium"
+                                        : "text-muted-foreground hover:text-foreground"
                                 )}
-                                onClick={() => setIsMenuOpen(false)}
                             >
                                 {item.name}
                             </Link>
-                        );
-                    })}
-                    {!authLoading && userData ? (
-                        <Link 
-                            href="/app" 
-                            className="text-xs font-medium text-primary-foreground bg-primary px-10 py-4 rounded-full shadow-2xl shadow-primary/40 transition-all hover:scale-105 active:scale-95" 
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Dashboard
+                        ))}
+                    </nav>
+
+                    <div className="ml-auto md:ml-0 flex items-center gap-2">
+                        {mode === 'saas' && (
+                            <Link
+                                href={eingeloggt ? '/app' : '/login'}
+                                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), "hidden sm:inline-flex")}
+                            >
+                                {eingeloggt ? 'Zur App' : 'Anmelden'}
+                            </Link>
+                        )}
+                        <Link href={hauptaktion.href} className={buttonVariants({ variant: 'default', size: 'sm' })}>
+                            {hauptaktion.icon}{hauptaktion.text}
                         </Link>
-                    ) : (
-                        <Link 
-                            href="/login" 
-                            onClick={() => setIsMenuOpen(false)}
-                            className="text-xs font-medium text-primary-foreground bg-primary px-10 py-4 rounded-full shadow-2xl shadow-primary/40 transition-all hover:scale-105 active:scale-95"
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="md:hidden h-9 w-9 text-muted-foreground"
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            aria-label={isMenuOpen ? 'Menü schließen' : 'Menü öffnen'}
                         >
-                            Einloggen
+                            {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                        </Button>
+                    </div>
+                </div>
+            </header>
+
+            {/* Mobiles Menue */}
+            {isMenuOpen && (
+                <div className="md:hidden bg-card border-b border-border px-6 py-4 flex flex-col gap-1 animate-fade-in">
+                    {eintraege.map((item) => (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setIsMenuOpen(false)}
+                            className={cn(
+                                "px-3 py-3 rounded-lg text-base",
+                                router.pathname === item.href ? "text-foreground font-medium bg-foreground/5" : "text-muted-foreground"
+                            )}
+                        >
+                            {item.name}
+                        </Link>
+                    ))}
+                    {mode === 'saas' && (
+                        <Link
+                            href={eingeloggt ? '/app' : '/login'}
+                            onClick={() => setIsMenuOpen(false)}
+                            className="px-3 py-3 rounded-lg text-base text-muted-foreground"
+                        >
+                            {eingeloggt ? 'Zur App' : 'Anmelden'}
                         </Link>
                     )}
                 </div>
-            </div>
+            )}
         </>
     );
 };

@@ -16,7 +16,7 @@ interface MarketingLayoutProps {
 
 const MarketingLayout: React.FC<MarketingLayoutProps> = ({ children, hideHeader = false, hideFooter = false }) => {
     return (
-        <div className="min-h-screen bg-background font-outfit overflow-x-hidden flex flex-col relative">
+        <div className="min-h-screen bg-wash overflow-x-hidden flex flex-col relative">
 
             {!hideHeader && (
                 <div className="sticky top-0 z-[1000] w-full">

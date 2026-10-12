@@ -86,7 +86,7 @@ export default function Contact() {
 
             <div className="max-w-4xl mx-auto px-6 md:px-page-inline pt-10 pb-12 md:pt-14 md:pb-hero-bottom animate-fade-in">
                 <div className="text-center mb-16">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-xs font-bold uppercase tracking-wider mb-4 border border-primary/10">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-xs font-bold mb-4 border border-primary/10">
                         <Mail className="w-4 h-4" /> Kontakt
                     </div>
                     <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-6 tracking-tighter font-outfit">
@@ -185,7 +185,7 @@ export default function Contact() {
                                     <Button 
                                         type="submit" 
                                         disabled={status === 'loading'} 
-                                        className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-lg shadow-primary/20"
+                                        className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-lg"
                                     >
                                         {status === 'loading' ? (
                                             <span className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
@@ -223,7 +223,7 @@ export default function Contact() {
                             </ul>
                         </div>
 
-                        <div className="bg-primary rounded-2xl p-4 md:p-card-padding-sm text-primary-foreground shadow-xl shadow-primary/20 transition-all duration-300 hover:scale-[1.02]">
+                        <div className="bg-primary rounded-2xl p-4 md:p-card-padding-sm text-primary-foreground shadow-xl transition-all duration-300">
                             <h3 className="text-lg font-bold mb-2 font-outfit">Lieber direkt?</h3>
                             <p className="text-primary-foreground/80 text-sm mb-6">Wir antworten normalerweise innerhalb von 24 Stunden.</p>
                             <a href={`mailto:${LEGAL_CONFIG.contact.email}`} className="flex items-center gap-3 font-bold hover:opacity-80 transition-all duration-300">

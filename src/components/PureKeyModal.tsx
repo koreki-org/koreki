@@ -79,7 +79,7 @@ const PureKeyModal: React.FC<PureKeyModalProps> = ({ onSave, onClose }) => {
                     <Button
                         disabled={!key}
                         onClick={() => onSave(key)}
-                        className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg shadow-primary/20 border-none"
+                        className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg border-none"
                     >
                         Sitzung starten
                     </Button>

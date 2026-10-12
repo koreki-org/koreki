@@ -319,7 +319,7 @@ const Header: React.FC<HeaderProps> = ({
                     <div className="shrink-0 ml-auto sm:ml-0">
                         <Button
                             variant="default"
-                            className="px-4 py-1.5 h-auto text-xs font-medium rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg hover:shadow-primary/20"
+                            className="px-4 py-1.5 h-auto text-xs font-medium rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg"
                             onClick={actions.triggerRelink}
                         >
                             Dateien verknüpfen

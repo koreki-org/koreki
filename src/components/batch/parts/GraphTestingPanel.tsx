@@ -58,7 +58,7 @@ export const GraphTestingPanel: React.FC<GraphTestingPanelProps> = ({
                                         <Button 
                                             size="sm" 
                                             onClick={onRun}
-                                            className="h-8 text-xs font-bold bg-primary hover:bg-primary text-white rounded-lg px-3.5 shadow-md shadow-primary/10"
+                                            className="h-8 text-xs font-bold bg-primary hover:bg-primary text-white rounded-lg px-3.5 shadow-md"
                                         >
                                             Berechnen
                                         </Button>

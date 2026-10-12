@@ -68,7 +68,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     <Button variant="outline" onClick={onCancel} className="px-6 font-semibold">
                         Abbrechen
                     </Button>
-                    <Button data-testid="bestaetigen" onClick={onConfirm} className="px-6 font-bold shadow-lg shadow-primary/20">
+                    <Button data-testid="bestaetigen" onClick={onConfirm} className="px-6 font-bold shadow-lg">
                         Bestätigen
                     </Button>
                 </div>

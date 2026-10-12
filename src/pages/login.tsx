@@ -82,7 +82,6 @@ export default function Login() {
         </Head>
         <div className="relative z-10 flex flex-col items-center gap-8 animate-fade-in">
           <div className="relative">
-            <div className="absolute inset-0 bg-primary/20 blur-[40px] rounded-full scale-150 animate-pulse"></div>
             <Logo size={72} className="relative z-10" />
           </div>
           <div className="flex flex-col items-center gap-2">
@@ -90,7 +89,7 @@ export default function Login() {
             <p className="text-muted-foreground text-sm font-medium tracking-wide">Weiterleitung zur Anmeldung …</p>
           </div>
           <div className="w-48 h-1 bg-muted rounded-full overflow-hidden">
-            <div className="h-full bg-gradient-to-r from-primary via-indigo-500 to-primary rounded-full animate-loading-bar"></div>
+            <div className="h-full bg-primary rounded-full animate-loading-bar"></div>
           </div>
         </div>
       </div>

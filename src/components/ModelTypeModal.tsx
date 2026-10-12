@@ -64,7 +64,7 @@ const ModelTypeModal: React.FC<ModelTypeModalProps> = ({ isOpen, onClose, onSele
                         data-testid="modelltyp-digital"
                         onClick={() => onSelect('typed')}
                     >
-                        <div className="w-14 h-14 bg-primary/5 text-primary rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <div className="w-14 h-14 bg-primary/5 text-primary rounded-full flex items-center justify-center mb-4 transition-transform duration-300">
                             <FileText size={24} />
                         </div>
                         <h3 className="font-bold text-base text-foreground mb-2">Digitaler Text / PDF</h3>
@@ -83,7 +83,7 @@ const ModelTypeModal: React.FC<ModelTypeModalProps> = ({ isOpen, onClose, onSele
                         className="group flex h-auto flex-col items-center text-center p-5 sm:p-6 bg-white border-2 border-border rounded-2xl hover:border-primary hover:bg-primary/[0.02] transition-all duration-300"
                         onClick={() => onSelect('scanned')}
                     >
-                        <div className="w-14 h-14 bg-warning/10 text-warning rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                        <div className="w-14 h-14 bg-warning/10 text-warning rounded-full flex items-center justify-center mb-4 transition-transform duration-300">
                             <Camera size={24} />
                         </div>
                         <h3 className="font-bold text-base text-foreground mb-2">Scan / Bilder / Handschrift</h3>

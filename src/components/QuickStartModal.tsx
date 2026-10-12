@@ -120,7 +120,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                         <Button
                             size="sm"
                             onClick={onClose}
-                            className="w-full sm:w-auto px-10 py-5 rounded-xl font-bold text-base bg-primary hover:bg-primary/90 text-white border-none shadow-xl shadow-primary/20 transition-all"
+                            className="w-full sm:w-auto px-10 py-5 rounded-xl font-bold text-base bg-primary hover:bg-primary/90 text-white border-none shadow-xl transition-all"
                         >
                             Alles klar, los geht&apos;s! <ChevronRight size={18} className="ml-2" />
                         </Button>

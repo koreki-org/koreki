@@ -22,7 +22,7 @@ export const OrgStats: React.FC<OrgStatsProps> = ({
             <Card className="shadow-sm bg-card group">
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="p-2.5 bg-secondary text-primary rounded-xl group-hover:scale-110 transition-transform">
+                        <div className="p-2.5 bg-secondary text-primary rounded-xl transition-transform">
                             <Users size={20} />
                         </div>
                         <Badge variant="outline" className="bg-secondary/50 border-primary/20 text-primary font-bold">Kollegium</Badge>
@@ -35,7 +35,7 @@ export const OrgStats: React.FC<OrgStatsProps> = ({
             <Card className="shadow-sm bg-card group">
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="p-2.5 bg-secondary text-primary rounded-xl group-hover:scale-110 transition-transform">
+                        <div className="p-2.5 bg-secondary text-primary rounded-xl transition-transform">
                             <CreditCard size={20} />
                         </div>
                         <Badge variant="outline" className="bg-secondary/50 border-primary/20 text-primary font-bold">Guthaben</Badge>
@@ -48,7 +48,7 @@ export const OrgStats: React.FC<OrgStatsProps> = ({
             <Card className="shadow-sm bg-card group border-none">
                 <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="p-2.5 bg-secondary text-primary rounded-xl group-hover:scale-110 transition-transform">
+                        <div className="p-2.5 bg-secondary text-primary rounded-xl transition-transform">
                             <KeyRound size={20} />
                         </div>
                         <Button 

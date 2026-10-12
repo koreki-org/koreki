@@ -41,7 +41,7 @@ export default function Privacy() {
             <div className="max-w-[1200px] mx-auto px-8 pt-0 pb-24 flex flex-col md:flex-row gap-12 items-start">
                 <aside className="w-full md:w-[300px] flex-shrink-0 sticky top-24">
                     <div className="bg-white rounded-2xl p-6 border border-border shadow-sm">
-                        <h3 className="mt-0 mb-4 text-[0.75rem] uppercase tracking-widest font-bold text-muted-foreground">Inhalt</h3>
+                        <h3 className="mt-0 mb-4 text-[0.75rem] font-bold text-muted-foreground">Inhalt</h3>
                         <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
                             {[
                                 { id: 'intro', label: '§1 Einleitung & Transparenz' },
@@ -91,7 +91,7 @@ export default function Privacy() {
                             <div className="inline-flex p-3 bg-muted/80 text-muted-foreground rounded-xl mb-6"><Database size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§2 Welche Daten fallen an?</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Da dies ein privates Projekt ist, sammeln wir nur das absolute Minimum:</p>
-                            <p className="leading-relaxed text-muted-foreground mb-6 text-xs italic uppercase tracking-wider">
+                            <p className="leading-relaxed text-muted-foreground mb-6 text-xs italic">
                                 Hosting: Diese Website wird auf einem virtuellen Server der IONOS SE, Elgendorfer Str. 57, 56410 Montabaur gehostet.
                             </p>
                             <ul className="list-disc leading-relaxed text-muted-foreground pl-6 mb-6 flex flex-col gap-3">
@@ -118,7 +118,7 @@ export default function Privacy() {
                             </div>
                         </section>
 
-                         <section id="privacy" className="bg-white rounded-hero p-10 border border-accent-3/20 shadow-sm relative scroll-mt-24 bg-gradient-to-br from-accent-3/5 to-white">
+                         <section id="privacy" className="bg-white rounded-hero p-10 border border-accent-3/20 shadow-sm relative scroll-mt-24 bg-accent-3/5">
                             <div className="inline-flex p-3 bg-accent-3/10 text-accent-3 rounded-xl mb-6"><Lock size={24} /></div>
                             <h2 className="text-2xl font-bold text-foreground mb-6">§4 Empfehlung für maximale Privatsphäre</h2>
                             <p className="leading-relaxed text-muted-foreground mb-4">Wenn Sie Koreki mit echten Daten nutzen möchten, empfehlen wir:</p>

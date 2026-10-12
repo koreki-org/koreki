@@ -32,7 +32,7 @@ export const StepUpload: React.FC<StepUploadProps> = ({
                 onDragLeave={handleDragEvent(false)}
                 onDrop={handleDrop}
             >
-                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-4 transition-all ${file ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105' : 'bg-white text-muted-foreground shadow-sm border border-border'}`}>
+                <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-4 transition-all ${file ? 'bg-primary text-white shadow-lg scale-105' : 'bg-white text-muted-foreground shadow-sm border border-border'}`}>
                     <Upload size={32} />
                 </div>
 
@@ -60,7 +60,7 @@ export const StepUpload: React.FC<StepUploadProps> = ({
                     Zurück
                 </Button>
                 <Button 
-                    className="flex-[2] py-6 font-bold rounded-xl shadow-lg shadow-primary/20" 
+                    className="flex-[2] py-6 font-bold rounded-xl shadow-lg" 
                     disabled={!file || isUploading} 
                     onClick={onUpload}
                 >
