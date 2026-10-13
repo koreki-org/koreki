@@ -45,20 +45,21 @@
    */
   --background: 220 20% 95%;
   --card: 0 0% 100%;
-  /* Seitengrund der Marketing-Seiten: heller als die App, damit weisse
-     Kacheln mit Kartenschatten auf grossen Flaechen ruhig wirken. */
-  --wash: 228 30% 97.5%;
   --card-foreground: 232 45% 11%;
   --foreground: 232 45% 11%;
 
-  --primary: 239 62% 52%;
+  /* Marken-Indigo. Bis 09.09.2026: 239 84% 67% (#6467F2), weisse Schrift darauf
+     nur 4,4:1. Am 12.10.2026 auf 239 62% 52% abgedunkelt — lesbar, aber die
+     Marke war nicht mehr wiederzuerkennen. Jetzt 64 %: fast der alte Ton,
+     5,2:1 mit Weiss. */
+  --primary: 239 84% 64%;
   /* Vibrant Koreki Indigo */
   --primary-foreground: 210 40% 98%;
   /* Komma-getrennte RGB-Entsprechung von --primary, ausschliesslich fuer
      rgba()-Aufrufe in arbitraeren Tailwind-Klassen (Hero-CTA-Schatten,
      radiale Deko-Gradients). Muss bei jeder Aenderung von --primary
-     mitgezogen werden: hsl(239 62% 52%) === rgb(57 59 208). */
-  --primary-rgb: 57, 59, 208;
+     mitgezogen werden: hsl(239 84% 64%) === rgb(86 89 240). */
+  --primary-rgb: 86, 89, 240;
 
   --secondary: 220 14% 96%;
   --secondary-foreground: 224 71% 4%;
@@ -85,7 +86,7 @@
 
   --border: 220 13% 91%;
   --input: 220 13% 91%;
-  --ring: 239 62% 52%;
+  --ring: 239 84% 64%;
 
   --radius: 0.5rem;
   --radius-hero: 1.0rem;
@@ -266,17 +267,14 @@ body {
  * bestehen und setzt die Hervorhebung jetzt schlicht in der Akzentfarbe.
  */
 /*
- * Karopapier: das Rechenpapier aus dem Schulheft als ruhiger Hintergrund der
- * Marketing-Seiten. Zur Mitte sichtbar, zum Rand ausgeblendet.
+ * Der Marken-Schimmer: weiches Indigo oben in der Mitte, ein Hauch Violett
+ * rechts. Nachfolger der Ambient-Blobs, die bis 12.10.2026 fest ueber jeder
+ * Seite lagen — jetzt nur im Kopf einer Marketing-Seite (`Abschnitt schimmer`).
  */
-.karopapier {
-  background-image:
-    linear-gradient(hsl(214 60% 70% / 0.22) 1px, transparent 1px),
-    linear-gradient(90deg, hsl(214 60% 70% / 0.22) 1px, transparent 1px);
-  background-size: 22px 22px;
-  background-position: center top;
-  -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 25%, #000 30%, transparent 75%);
-  mask-image: radial-gradient(ellipse 60% 70% at 50% 25%, #000 30%, transparent 75%);
+.marken-schimmer {
+  background:
+    radial-gradient(ellipse 55% 45% at 50% 0%, hsl(var(--primary) / 0.16), transparent 70%),
+    radial-gradient(ellipse 40% 35% at 85% 55%, hsl(var(--accent-4) / 0.07), transparent 70%);
 }
 
 .text-gradient {

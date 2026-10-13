@@ -1,9 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+    // Ganz src/: Klassen stehen auch in layouts/, hooks/ und lib/. Fehlt ein
+    // Ordner, sind Klassen von dort lautlos tot (Waechter: surface-governance).
     content: [
-        "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-        "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-        "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+        "./src/**/*.{js,ts,jsx,tsx,mdx}",
     ],
     theme: {
         extend: {
@@ -47,7 +47,6 @@ module.exports = {
                     DEFAULT: "hsl(var(--accent) / <alpha-value>)",
                     foreground: "hsl(var(--accent-foreground) / <alpha-value>)",
                 },
-                wash: "hsl(var(--wash) / <alpha-value>)",
                 "accent-1": "hsl(var(--accent-1) / <alpha-value>)",
                 "accent-2": "hsl(var(--accent-2) / <alpha-value>)",
                 "accent-3": "hsl(var(--accent-3) / <alpha-value>)",

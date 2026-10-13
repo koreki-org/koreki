@@ -34,7 +34,7 @@ export default function DesktopOnboarding() {
                 <meta name="description" content="Koreki Desktop für Windows und Ubuntu: Korrekturvorschläge für Klassenarbeiten, lokal auf Ihrem Rechner." />
             </Head>
 
-            <Abschnitt karo className="pt-16 md:pt-24">
+            <Abschnitt schimmer className="pt-16 md:pt-24">
                 <div className="grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-16 items-start">
                     <div>
                         <p className="text-sm font-medium text-primary mb-3">Desktop-Version</p>

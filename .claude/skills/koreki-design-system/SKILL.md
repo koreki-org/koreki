@@ -14,6 +14,9 @@ Regeln mit Wächter stehen hier kurz; Begründung und Fallgeschichte stehen im K
 Koreki soll aussehen wie ein Werkzeug, dem eine Schulleitung Schülerarbeiten anvertraut — nicht wie ein KI-Schaufenster. Vorbild sind sachliche Fachanwendungen: ruhig, lesbar, präzise.
 
 - **Eine Akzentfarbe.** `primary` markiert Aktionen und Auswahl, sonst nichts. Keine Verläufe in Schrift, Flächen oder Buttons.
+- **Keine Hintergrundmuster.** Kein Gitter, keine Punkte, keine Linien hinter Inhalten. Das Karogitter (bis 13.10.2026) wurde als das Tech-Gitter vieler KI-Seiten gelesen, nicht als Schulheft.
+- **Marketing-Seiten stehen auf demselben Grau wie die App.** Einziger Schmuck: der Marken-Schimmer im Seitenkopf (`Abschnitt schimmer`, `.marken-schimmer`) — die gezähmte Fassung der früheren Lichtflecken. Kein Verlauf sonst.
+- **Überschriften einfarbig.** Hervorhebung über den Korrekturstrich, nicht über eine farbige Zeile.
 - **Gewicht statt Lautstärke.** Überschriften höchstens `font-bold`, meist `font-semibold`. `font-black`, Versalien (`uppercase`) und gesperrte Schrift (`tracking-wide*`) sind verboten — auch in `Badge`.
 - **Keine Dekoration ohne Aufgabe.** Keine Ambient-Blobs (`blur-[100px]` u. ä.), keine farbigen Leucht-Schatten (`shadow-primary/40`), keine Dauer-Animationen an statischen Elementen.
 - **Echte Inhalte zeigen.** Screenshots zeigen eine Arbeit mit Vorschlag und Feedback, nie einen leeren Zustand.

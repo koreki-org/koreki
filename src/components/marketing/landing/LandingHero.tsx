@@ -23,7 +23,7 @@ const merkmale = [
 ];
 
 export const LandingHero: React.FC<LandingHeroProps> = ({ aktion }) => (
-    <Abschnitt karo className="pt-12 md:pt-16">
+    <Abschnitt schimmer className="pt-12 md:pt-16">
         <div className="text-center">
             <Link
                 href="/desktop"

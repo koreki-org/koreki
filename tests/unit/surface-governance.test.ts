@@ -171,6 +171,26 @@ describe('Flächen-Governance (koreki-design-system)', () => {
         expect(alleDateien.length).toBeGreaterThan(50);
     });
 
+    /**
+     * Tailwind baut nur Klassen aus Dateien, die unter `content` stehen. Fehlt
+     * ein Ordner, ist jede Klasse, die NUR dort vorkommt, tot — ohne Fehler und
+     * ohne Warnung, genau wie das `bg-card` vom 07.09.2026.
+     *
+     * GEFUNDEN AM 13.10.2026: `src/layouts/` fehlte. `bg-wash` (heller Marketing-Grund, inzwischen entfernt) stand nur im
+     * MarketingLayout und hat nie gegriffen; die Marketing-Seiten liefen auf
+     * dem App-Grau, waehrend alle annahmen, es sei der hellere Ton.
+     */
+    it('laesst Tailwind jede Datei mit Klassen durchsuchen', () => {
+        const config = require(join(process.cwd(), 'tailwind.config.js'));
+        const globs: string[] = config.content;
+        const ordner = Array.from(new Set(
+            alleDateien.map(d => relative(SRC_DIR, d).split(/[\\/]/)[0]).filter(o => !o.includes('.'))
+        ));
+        const deckt = (o: string) => globs.some(g => g.startsWith('./src/**') || g.startsWith(`./src/${o}/`));
+        const fehlend = ordner.filter(o => !deckt(o));
+        expect(fehlend).toEqual([]);
+    });
+
     it('laesst keine bg-Klasse zu, die auf gar keine Farbe zeigt', () => {
         const erlaubt = erlaubteFarben();
         const treffer: string[] = [];

@@ -13,9 +13,8 @@ import { LandingEditionen, LandingSchluss } from '@/components/marketing/landing
 /**
  * Startseite (neu seit 12.10.2026).
  *
- * Koreki startet lokal: Desktop und Community Edition. Die oeffentliche Seite
- * bewirbt deshalb zuerst den Download; eine lokale Installation fuehrt direkt
- * in die eigene App. Technikangaben (Hardware, Modelle, Laufzeiten) stehen auf
+ * Im gehosteten Dienst fuehrt der Hauptknopf zum Testzugang ("Jetzt testen"),
+ * in einer lokalen Installation direkt in die eigene App. Technikangaben (Hardware, Modelle, Laufzeiten) stehen auf
  * den Installationsseiten, nicht hier (koreki-design-system §0).
  */
 export default function LandingPage() {
@@ -29,9 +28,13 @@ export default function LandingPage() {
         }
     }, [router]);
 
+    const eingeloggt = !authLoading && !!userData;
+    // Gehosteter Dienst: Testzugang wie vor dem Umbau. Lokale Installation:
+    // direkt in die eigene App. Der Desktop-Download steht in Kopfleiste und
+    // "Zwei Wege zu Koreki".
     const aktion: Hauptaktion = mode === 'community'
-        ? { href: (!authLoading && userData) ? '/app' : '/login', text: 'Korrektur starten' }
-        : { href: '/desktop', text: 'Kostenlos herunterladen', download: true };
+        ? { href: eingeloggt ? '/app' : '/login', text: 'Korrektur starten' }
+        : { href: eingeloggt ? '/app' : '/register', text: eingeloggt ? 'Zur App' : 'Jetzt testen' };
 
     return (
         <MarketingLayout>

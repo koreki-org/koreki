@@ -64,7 +64,7 @@ interface LandingSchlussProps {
 }
 
 export const LandingSchluss: React.FC<LandingSchlussProps> = ({ href, text }) => (
-    <Abschnitt karo className="border-t border-border text-center md:py-20">
+    <Abschnitt className="border-t border-border text-center md:py-20">
             <AbschnittsKopf
                 zentriert
                 titel="Probieren Sie es mit Ihrer nächsten Klassenarbeit."

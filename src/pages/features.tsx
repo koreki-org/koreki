@@ -29,7 +29,7 @@ export default function FeaturesPage() {
                 <meta name="description" content="Was Koreki kann: Musterlösung, Texterkennung, Vorschläge mit Punkten und Feedback, Expertise, Skills, Erfahrungsschatz und freie Modellwahl." />
             </Head>
 
-            <Abschnitt karo className="pt-10 md:pt-12">
+            <Abschnitt schimmer className="pt-10 md:pt-12">
                     <FunktionsNavigation />
                     <div className="mt-12 text-center">
                         <p className="text-sm font-medium text-primary mb-3">Funktionen</p>

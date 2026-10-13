@@ -48,7 +48,7 @@ export default function SecurityPage() {
                 <meta name="description" content="Wie Koreki Schülerdaten schützt: Pseudonyme beim Hochladen, Schwärzen auf Scans, lokale Modelle und Schlüssel, die auf Ihrem Gerät bleiben." />
             </Head>
 
-            <Abschnitt karo className="pt-16 md:pt-24">
+            <Abschnitt schimmer className="pt-16 md:pt-24">
                 <div className="text-center">
                     <p className="text-sm font-medium text-primary mb-3">Datenschutz</p>
                     <h1 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[1.05] text-foreground max-w-3xl mx-auto">

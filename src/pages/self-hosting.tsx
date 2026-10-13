@@ -38,7 +38,7 @@ export default function SelfHostingPage() {
                 <meta name="description" content="Koreki auf dem eigenen Server: die Community Edition für einzelne Lehrkräfte oder das ganze Kollegium, mit Docker und lokalen Modellen." />
             </Head>
 
-            <Abschnitt karo className="pt-16 md:pt-24 text-center">
+            <Abschnitt schimmer className="pt-16 md:pt-24 text-center">
                     <p className="text-sm font-medium text-primary mb-3">Community Edition</p>
                     <h1 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[1.05] text-foreground max-w-3xl mx-auto">
                         Koreki auf dem Server Ihrer Schule.

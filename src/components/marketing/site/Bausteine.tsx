@@ -31,13 +31,13 @@ interface AbschnittProps {
     id?: string;
     /** Getoentes Band ueber die volle Breite — gleicher Abstand wie jeder andere Abschnitt. */
     band?: boolean;
-    /** Karopapier im Hintergrund (Seitenanfang, Schluss). */
-    karo?: boolean;
+    /** Marken-Schimmer im Seitenkopf (nur erster Abschnitt einer Seite). */
+    schimmer?: boolean;
     className?: string;
 }
 
 /** Jeder Abschnitt jeder Marketing-Seite. Abstaende entstehen nur hier. */
-export const Abschnitt: React.FC<AbschnittProps> = ({ children, id, band, karo, className }) => (
+export const Abschnitt: React.FC<AbschnittProps> = ({ children, id, band, schimmer, className }) => (
     <section
         id={id}
         className={cn(
@@ -46,7 +46,7 @@ export const Abschnitt: React.FC<AbschnittProps> = ({ children, id, band, karo, 
             className
         )}
     >
-        {karo && <div aria-hidden="true" className="karopapier absolute inset-x-0 top-0 h-[640px] -z-10" />}
+        {schimmer && <div aria-hidden="true" className="marken-schimmer absolute inset-x-0 top-0 h-[760px] -z-10" />}
         <Breite>{children}</Breite>
     </section>
 );
@@ -118,13 +118,13 @@ export const Symbol: React.FC<{ children: React.ReactNode; className?: string }>
 
 /** Die Unterstreichung wie mit dem Korrekturstift — das Markenmotiv. */
 export const Korrekturstrich: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <span className="relative whitespace-nowrap text-primary">
+    <span className="relative whitespace-nowrap">
         {children}
         <svg
             aria-hidden="true"
             viewBox="0 0 300 20"
             preserveAspectRatio="none"
-            className="absolute left-[-2%] bottom-[-0.18em] w-[104%] h-[0.32em] overflow-visible"
+            className="absolute left-[-2%] bottom-[-0.18em] w-[104%] h-[0.32em] overflow-visible text-primary"
         >
             <path d="M4 13c40-6 90-9 150-8s100 3 142 1" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" opacity=".45" />
         </svg>
