@@ -26,6 +26,28 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+/*
+ * Outfit, die Markenschrift (SIL OFL, public/fonts/Outfit-OFL.txt): Logo und
+ * Ueberschriften — wie auf den veroeffentlichten Social-Media-Grafiken.
+ * Fliesstext und Bedienelemente bleiben in Geist.
+ */
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/outfit-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/outfit-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 :root {
   /* Premium Koreki Brand Palette (HSL) */
 
@@ -113,6 +135,16 @@ body {
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ueberschriften und Logo in der Markenschrift. */
+h1, h2, h3, h4, .logo-text-new {
+  font-family: 'Outfit', 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Der Punkt hinter "Koreki" — vorher var(--blue-600), die es nicht gibt. */
+.logo-dot-new {
+  color: hsl(var(--primary)) !important;
 }
 
 /* Base scrollbar styling */
@@ -267,14 +299,26 @@ body {
  * bestehen und setzt die Hervorhebung jetzt schlicht in der Akzentfarbe.
  */
 /*
- * Der Marken-Schimmer: weiches Indigo oben in der Mitte, ein Hauch Violett
- * rechts. Nachfolger der Ambient-Blobs, die bis 12.10.2026 fest ueber jeder
- * Seite lagen — jetzt nur im Kopf einer Marketing-Seite (`Abschnitt schimmer`).
+ * Seitenkopf der Marketing-Seiten: derselbe Lavendel-Schimmer wie auf den
+ * veroeffentlichten Social-Media-Grafiken (marketing/brand.css, .slide) —
+ * Indigo links oben, Violett rechts unten, fast weisser Grund. Unten laeuft
+ * er in das App-Grau aus. Auf dem hellen Grund heben sich die grauen
+ * Produkt-Screenshots ab.
  */
-.marken-schimmer {
+.kopfband {
   background:
-    radial-gradient(ellipse 55% 45% at 50% 0%, hsl(var(--primary) / 0.16), transparent 70%),
-    radial-gradient(ellipse 40% 35% at 85% 55%, hsl(var(--accent-4) / 0.07), transparent 70%);
+    radial-gradient(120% 80% at 8% -5%, rgb(99 102 241 / 0.13) 0%, transparent 55%),
+    radial-gradient(105% 65% at 98% 102%, rgb(168 85 247 / 0.11) 0%, transparent 55%),
+    linear-gradient(180deg, #FCFCFE 0%, #F7F8FD 70%, hsl(var(--background)) 100%);
+}
+
+/* Der Markenverlauf fuer hervorgehobene Woerter — wie auf den Posts. Nur auf
+   Marketing-Seiten, hoechstens eine Hervorhebung je Ueberschrift. */
+.markenverlauf {
+  background: linear-gradient(98deg, #6366F1 0%, #A855F7 48%, #DB2777 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .text-gradient {

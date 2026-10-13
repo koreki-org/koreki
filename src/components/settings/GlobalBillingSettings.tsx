@@ -234,7 +234,7 @@ export const GlobalBillingSettings: React.FC<GlobalBillingSettingsProps> = ({ se
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <Badge variant="outline" className="font-outfit font-bold border-primary/20 text-primary bg-primary/5">
+                                                    <Badge variant="outline" className=" font-bold border-primary/20 text-primary bg-primary/5">
                                                         {formatEuro(costs.total)}
                                                     </Badge>
                                                 </td>

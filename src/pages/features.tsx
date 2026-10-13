@@ -29,11 +29,11 @@ export default function FeaturesPage() {
                 <meta name="description" content="Was Koreki kann: Musterlösung, Texterkennung, Vorschläge mit Punkten und Feedback, Expertise, Skills, Erfahrungsschatz und freie Modellwahl." />
             </Head>
 
-            <Abschnitt schimmer className="pt-10 md:pt-12">
+            <Abschnitt kopfband className="pt-10 md:pt-12">
                     <FunktionsNavigation />
                     <div className="mt-12 text-center">
-                        <p className="text-sm font-medium text-primary mb-3">Funktionen</p>
-                        <h1 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[1.05] text-foreground max-w-3xl mx-auto">
+                        <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary mb-3">Funktionen</p>
+                        <h1 className="text-4xl md:text-6xl font-extrabold tracking-[-0.045em] leading-[1.05] text-foreground max-w-3xl mx-auto">
                             Alles, was eine Korrektur braucht. Nichts darüber hinaus.
                         </h1>
                         <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">

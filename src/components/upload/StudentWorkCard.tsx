@@ -112,7 +112,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                         {tasksLayout.length > 0 && (
                             <div className="mt-auto">
                                 <div className="flex items-center justify-between mb-3 px-1">
-                                    <span className="text-xs font-medium text-muted-foreground font-outfit">Erkannte Aufgabenstellung</span>
+                                    <span className="text-xs font-medium text-muted-foreground">Erkannte Aufgabenstellung</span>
                                     <div className="flex flex-col items-end gap-1">
                                         <div className="flex items-center gap-2">
                                             <Button
@@ -147,7 +147,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                                 </div>
                                 <div className="flex flex-wrap gap-2">
                                     {tasksLayout.map((t, i) => (
-                                        <Badge key={i} variant="outline" className="bg-card/50 border-border font-bold px-3 py-1.5 text-xs text-foreground shadow-sm rounded-lg hover:border-primary/40 transition-colors font-outfit">
+                                        <Badge key={i} variant="outline" className="bg-card/50 border-border font-bold px-3 py-1.5 text-xs text-foreground shadow-sm rounded-lg hover:border-primary/40 transition-colors">
                                             {t.name} <span className="ml-1 opacity-40 font-medium">{t.maxPoints}P</span>
                                         </Badge>
                                     ))}

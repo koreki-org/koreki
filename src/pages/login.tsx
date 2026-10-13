@@ -76,7 +76,7 @@ export default function Login() {
     }
 
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden font-outfit">
+      <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
         <Head>
           <title>Anmeldung | Koreki</title>
         </Head>

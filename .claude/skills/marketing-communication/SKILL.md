@@ -19,9 +19,11 @@ Operatives Werkzeug für den **Product Manager** (Botschaft) und den **UI Expert
 
 ## 2. Marketing folgt dem Design System
 
-Koreki hat **keinen Dark Mode**. `globals.css` definiert mit `--background: 220 33% 98%` genau eine Flächenfarbe, und der Style Guide verbietet schwarze Flächen als primäre UI-Farbe. Das gilt für Außenkommunikation genauso wie für die App — Referenzoptik ist die Landingpage.
+Koreki hat **keinen Dark Mode**, und der Style Guide verbietet schwarze Flächen als primäre UI-Farbe. Das gilt für Außenkommunikation genauso wie für die App.
 
-Details im Skill `koreki-design-system`. Farbwerte in `brand.css` sind Kopien der App-Tokens und müssen bei Änderungen dort nachgezogen werden.
+**Die veröffentlichten Grafiken sind der Maßstab** (seit 13.10.2026): Lavendel-Schimmer, Outfit extra-kräftig, hervorgehobene Wörter im Verlauf Indigo → Violett → Pink, Kicker in Versalien. Die Marketing-Seiten übernehmen diesen Stil (`.kopfband`, `.markenverlauf` in `globals.css`). Wer an `brand.css` etwas ändert, zieht die Webseite nach — und umgekehrt. Kein Hintergrundraster mehr.
+
+App-Screenshots für Grafiken liegen unter `marketing/assets/` und werden bei sichtbaren App-Änderungen neu aufgenommen; die `--zoom/--x/--y`-Ausschnitte der Vorlagen hängen an deren Viewport-Größe. Details im Skill `koreki-design-system`.
 
 ## 3. Keine Zahl ohne Beleg
 

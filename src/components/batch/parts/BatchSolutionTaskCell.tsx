@@ -51,7 +51,7 @@ export const BatchSolutionTaskCell: React.FC<BatchSolutionTaskCellProps> = ({
 
     return (
         <EditableMathArea
-            leftAction={<span className="text-xs font-bold text-foreground truncate font-outfit">{task.name}</span>}
+            leftAction={<span className="text-xs font-bold text-foreground truncate">{task.name}</span>}
             value={sectionText}
             onChange={uebernehmen}
             placeholder="Schülerantwort..."

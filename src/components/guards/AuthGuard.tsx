@@ -79,7 +79,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children, requireAdmin = false })
     // --- LOADING STATE (Aesthetic consistency with app.tsx) ---
     if (authLoading || !userData) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden font-outfit">
+            <div className="min-h-screen flex items-center justify-center bg-background relative overflow-hidden">
                 <div className="relative z-10 flex flex-col items-center gap-8 animate-fade-in">
                     <div className="relative">
                         <Logo size={72} className="relative z-10" />

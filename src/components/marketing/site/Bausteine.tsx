@@ -31,22 +31,22 @@ interface AbschnittProps {
     id?: string;
     /** Getoentes Band ueber die volle Breite — gleicher Abstand wie jeder andere Abschnitt. */
     band?: boolean;
-    /** Marken-Schimmer im Seitenkopf (nur erster Abschnitt einer Seite). */
-    schimmer?: boolean;
+    /** Kopfband in zartem Indigo (nur erster Abschnitt einer Seite). */
+    kopfband?: boolean;
     className?: string;
 }
 
 /** Jeder Abschnitt jeder Marketing-Seite. Abstaende entstehen nur hier. */
-export const Abschnitt: React.FC<AbschnittProps> = ({ children, id, band, schimmer, className }) => (
+export const Abschnitt: React.FC<AbschnittProps> = ({ children, id, band, kopfband, className }) => (
     <section
         id={id}
         className={cn(
             "relative isolate py-10 md:py-12 scroll-mt-16",
             band && "bg-primary/[0.04] border-y border-primary/10",
+            kopfband && "kopfband",
             className
         )}
     >
-        {schimmer && <div aria-hidden="true" className="marken-schimmer absolute inset-x-0 top-0 h-[760px] -z-10" />}
         <Breite>{children}</Breite>
     </section>
 );
@@ -66,9 +66,9 @@ interface AbschnittsKopfProps {
 
 export const AbschnittsKopf: React.FC<AbschnittsKopfProps> = ({ kicker, titel, text, zentriert, className }) => (
     <div className={cn(zentriert && "text-center", className)}>
-        {kicker && <p className="text-sm font-medium text-primary mb-3">{kicker}</p>}
+        {kicker && <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary mb-3">{kicker}</p>}
         <h2 className={cn(
-            "text-3xl md:text-5xl font-semibold tracking-tight leading-[1.08] text-foreground max-w-3xl",
+            "text-3xl md:text-5xl font-extrabold tracking-[-0.045em] leading-[1.05] text-foreground max-w-3xl",
             zentriert && "mx-auto"
         )}>
             {titel}
@@ -116,17 +116,7 @@ export const Symbol: React.FC<{ children: React.ReactNode; className?: string }>
     </div>
 );
 
-/** Die Unterstreichung wie mit dem Korrekturstift — das Markenmotiv. */
-export const Korrekturstrich: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <span className="relative whitespace-nowrap">
-        {children}
-        <svg
-            aria-hidden="true"
-            viewBox="0 0 300 20"
-            preserveAspectRatio="none"
-            className="absolute left-[-2%] bottom-[-0.18em] w-[104%] h-[0.32em] overflow-visible text-primary"
-        >
-            <path d="M4 13c40-6 90-9 150-8s100 3 142 1" fill="none" stroke="currentColor" strokeWidth="5" strokeLinecap="round" opacity=".45" />
-        </svg>
-    </span>
+/** Hervorgehobene Woerter im Markenverlauf — wie auf den Social-Media-Grafiken. */
+export const Markenverlauf: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+    <span className="markenverlauf whitespace-nowrap pr-1">{children}</span>
 );

@@ -6,8 +6,11 @@
    Bei Aenderungen an den App-Tokens muessen die Werte unten nachgezogen
    werden.
 
-   Koreki hat bewusst KEINEN Dark Mode: --background ist mit 220 33% 98%
-   die einzige definierte Flaechenfarbe, und der Style Guide verbietet
+   Seit 13.10.2026 sind diese Grafiken der Massstab fuer die Webseite: deren
+   Seitenkopf (.kopfband in globals.css) uebernimmt den Schimmer von .slide,
+   hervorgehobene Woerter den Verlauf von .grad (dort .markenverlauf).
+
+   Koreki hat bewusst KEINEN Dark Mode, und der Style Guide verbietet
    schwarze/anthrazitfarbene Flaechen als primaere UI-Farbe. Marketing-
    Grafiken folgen derselben Regel — hell mit lavendelfarbenem Ambient-Wash,
    wie die Landingpage.
@@ -83,17 +86,8 @@ body[data-format="linkedin-cover"] .slide {
    Faustregel ~250px oben, ~340px unten — nichts Wichtiges dort platzieren. */
 body[data-format="story"] .slide { width: 1080px; height: 1920px; padding: 270px 76px 350px; }
 
-/* dezente Raster-Textur, damit die Flaeche nicht flach wirkt */
-.slide::before {
-    content: '';
-    position: absolute; inset: 0;
-    background-image:
-        linear-gradient(rgba(10, 15, 31, 0.030) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(10, 15, 31, 0.030) 1px, transparent 1px);
-    background-size: 60px 60px;
-    mask-image: radial-gradient(90% 70% at 50% 40%, #000 0%, transparent 78%);
-    pointer-events: none;
-}
+/* Bis 13.10.2026 lag hier eine Raster-Textur. Entfernt: Webseite und App
+   verzichten auf Hintergrundmuster (koreki-design-system §0). */
 .slide > * { position: relative; z-index: 1; }
 
 /* ---------- Kopfzeile ---------- */

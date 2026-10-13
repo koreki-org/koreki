@@ -13,11 +13,10 @@ Regeln mit Wächter stehen hier kurz; Begründung und Fallgeschichte stehen im K
 
 Koreki soll aussehen wie ein Werkzeug, dem eine Schulleitung Schülerarbeiten anvertraut — nicht wie ein KI-Schaufenster. Vorbild sind sachliche Fachanwendungen: ruhig, lesbar, präzise.
 
-- **Eine Akzentfarbe.** `primary` markiert Aktionen und Auswahl, sonst nichts. Keine Verläufe in Schrift, Flächen oder Buttons.
+- **Eine Akzentfarbe.** `primary` markiert Aktionen und Auswahl, sonst nichts. In der App keine Verläufe in Schrift, Flächen oder Buttons.
 - **Keine Hintergrundmuster.** Kein Gitter, keine Punkte, keine Linien hinter Inhalten. Das Karogitter (bis 13.10.2026) wurde als das Tech-Gitter vieler KI-Seiten gelesen, nicht als Schulheft.
-- **Marketing-Seiten stehen auf demselben Grau wie die App.** Einziger Schmuck: der Marken-Schimmer im Seitenkopf (`Abschnitt schimmer`, `.marken-schimmer`) — die gezähmte Fassung der früheren Lichtflecken. Kein Verlauf sonst.
-- **Überschriften einfarbig.** Hervorhebung über den Korrekturstrich, nicht über eine farbige Zeile.
-- **Gewicht statt Lautstärke.** Überschriften höchstens `font-bold`, meist `font-semibold`. `font-black`, Versalien (`uppercase`) und gesperrte Schrift (`tracking-wide*`) sind verboten — auch in `Badge`.
+- **Marketing folgt den Social-Media-Grafiken** (`marketing/brand.css`, seit 13.10.2026 der Maßstab, weil dort bereits veröffentlicht): Seitenkopf mit dem Lavendel-Schimmer der Posts (`Abschnitt kopfband`, `.kopfband`), Überschriften in Outfit `font-extrabold`, je Überschrift höchstens eine Hervorhebung im Markenverlauf Indigo → Violett → Pink (`Markenverlauf`, `.markenverlauf`), kleine Überschriften (Kicker) in Versalien mit `tracking-[0.22em]`. Das gilt **nur** auf Marketing-Seiten; die App bleibt sachlich.
+- **Gewicht statt Lautstärke (App).** Überschriften höchstens `font-bold`, meist `font-semibold`. `font-black`, Versalien (`uppercase`) und gesperrte Schrift (`tracking-wide*`) sind in der App verboten — auch in `Badge`.
 - **Keine Dekoration ohne Aufgabe.** Keine Ambient-Blobs (`blur-[100px]` u. ä.), keine farbigen Leucht-Schatten (`shadow-primary/40`), keine Dauer-Animationen an statischen Elementen.
 - **Echte Inhalte zeigen.** Screenshots zeigen eine Arbeit mit Vorschlag und Feedback, nie einen leeren Zustand.
 - **Text vor Technik.** Wer eine Lehrkraft anspricht, beschreibt, was sie davon hat. Hardware, Modelle und Laufzeiten gehören auf die Installationsseiten, nicht auf die Startseite.
@@ -38,7 +37,7 @@ Koreki soll aussehen wie ein Werkzeug, dem eine Schulleitung Schülerarbeiten an
 
 - **Anrede: Sie.** Überall — App, Marketing, Meldungen, E-Mails.
 - **Deutsch.** Keine englischen UI-Wörter (Update, Review, Deep Dive, Logistics, Coming soon).
-- **Satzschreibung.** Keine Versalien, auch nicht in `Badge`.
+- **Satzschreibung.** Keine Versalien in der App, auch nicht in `Badge`. Ausnahme: Kicker auf Marketing-Seiten (siehe §0).
 - **Ein Begriff pro Konzept:**
 
 | Konzept | Begriff in der UI | Nicht verwenden |
@@ -81,7 +80,7 @@ Werte stehen in `src/styles/globals.css` — nirgends sonst abschreiben.
 **Farben** (HSL-Variablen aus `globals.css`): `background`, `foreground`, `card`, `primary`, `secondary`, `muted`, `destructive`, `warning`, `success`, `border` — jeweils mit `-foreground`.
 `accent-1` … `accent-4` unterscheiden nur gleichwertige Optionen und tragen keine Bedeutung.
 
-**Typografie:** Eine Schrift: **Geist**, selbst ausgeliefert aus `public/fonts/` (die CSP blockiert Google Fonts). `font-sans` und `font-outfit` zeigen beide darauf; `font-mono` nur für Code/Diffs. Kleinste Schrift `text-xs` — `text-[9px]`…`text-[11px]` sind verboten.
+**Typografie:** Zwei Schriften, beide selbst ausgeliefert aus `public/fonts/` (die CSP blockiert Google Fonts): **Outfit** für Logo und Überschriften (`h1`–`h4` bekommen sie über `globals.css`, sonst `font-outfit`), **Geist** für Text und Bedienung (`font-sans`). `font-outfit` nur an Überschriften, nie an Fließtext oder Labels. `font-mono` nur für Code/Diffs. Kleinste Schrift `text-xs` — `text-[9px]`…`text-[11px]` sind verboten.
 
 **Radien** *(Wächter: nur Stufen, die es gibt und die erlaubt sind)*:
 

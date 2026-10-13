@@ -14,7 +14,7 @@ interface AppLayoutProps {
 
 const AppLayout: React.FC<AppLayoutProps> = ({ children, showFooter = true }) => {
     return (
-        <div className="min-h-screen bg-background font-outfit flex flex-col relative">
+        <div className="min-h-screen bg-background flex flex-col relative">
             <main className="flex-grow relative z-20">
                 {children}
             </main>

@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Download, Laptop, ShieldCheck, Code2 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
-import { Abschnitt, Korrekturstrich, Produktbild } from '../site/Bausteine';
+import { Abschnitt, Markenverlauf, Produktbild } from '../site/Bausteine';
 
 export interface Hauptaktion {
     href: string;
@@ -23,7 +23,7 @@ const merkmale = [
 ];
 
 export const LandingHero: React.FC<LandingHeroProps> = ({ aktion }) => (
-    <Abschnitt schimmer className="pt-12 md:pt-16">
+    <Abschnitt kopfband className="pt-12 md:pt-16">
         <div className="text-center">
             <Link
                 href="/desktop"
@@ -34,9 +34,9 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ aktion }) => (
                 <ArrowRight size={14} />
             </Link>
 
-            <h1 className="text-[2.6rem] leading-[1.05] sm:text-6xl md:text-7xl font-semibold tracking-[-0.045em] text-foreground">
+            <h1 className="text-[2.6rem] leading-[1.05] sm:text-6xl md:text-7xl font-extrabold tracking-[-0.045em] text-foreground">
                 Jede Arbeit.<br />
-                <Korrekturstrich>Derselbe Maßstab.</Korrekturstrich>
+                <Markenverlauf>Derselbe Maßstab.</Markenverlauf>
             </h1>
 
             <p className="mt-7 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">

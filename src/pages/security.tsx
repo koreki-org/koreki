@@ -48,10 +48,10 @@ export default function SecurityPage() {
                 <meta name="description" content="Wie Koreki Schülerdaten schützt: Pseudonyme beim Hochladen, Schwärzen auf Scans, lokale Modelle und Schlüssel, die auf Ihrem Gerät bleiben." />
             </Head>
 
-            <Abschnitt schimmer className="pt-16 md:pt-24">
+            <Abschnitt kopfband className="pt-16 md:pt-24">
                 <div className="text-center">
-                    <p className="text-sm font-medium text-primary mb-3">Datenschutz</p>
-                    <h1 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[1.05] text-foreground max-w-3xl mx-auto">
+                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary mb-3">Datenschutz</p>
+                    <h1 className="text-4xl md:text-6xl font-extrabold tracking-[-0.045em] leading-[1.05] text-foreground max-w-3xl mx-auto">
                         Datenschutz, der im Code steht – nicht nur im Vertrag.
                     </h1>
                     <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -88,7 +88,7 @@ export default function SecurityPage() {
             <Abschnitt className="pt-0 md:pt-0">
                     <div className="rounded-hero bg-primary/[0.04] border border-primary/10 p-8 md:p-12 flex flex-col md:flex-row md:items-center justify-between gap-8">
                         <div className="max-w-xl">
-                            <p className="text-sm font-medium text-primary mb-2">In Vorbereitung</p>
+                            <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary mb-2">In Vorbereitung</p>
                             <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">Ein gehosteter Dienst für Schulen.</h2>
                             <p className="mt-3 text-muted-foreground">
                                 Für Schulen ohne eigenen Server bereiten wir einen gehosteten Dienst vor. Wenn Ihre Schule ihn mit erproben möchte, schreiben Sie uns.

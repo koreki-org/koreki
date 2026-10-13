@@ -81,10 +81,10 @@ module.exports = {
                 card: "0 0 0 1px hsl(232 30% 20% / 0.06), 0 1px 2px hsl(232 40% 20% / 0.05), 0 4px 12px -4px hsl(232 40% 20% / 0.08)",
             },
             fontFamily: {
-                // Eine Schrift fuer alles. `font-outfit` bleibt als Alias, damit die
-                // 118 Aufrufstellen nicht auf einen Schlag umgeschrieben werden muessen.
+                // Geist fuer Text und Bedienung, Outfit (Markenschrift) fuer
+                // Ueberschriften und Logo — h1–h4 bekommen sie ueber globals.css.
                 sans: ["Geist", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
-                outfit: ["Geist", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
+                outfit: ["Outfit", "Geist", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
             },
         },
     },

@@ -75,11 +75,11 @@ export const FunktionsSeite: React.FC<FunktionsSeiteProps> = ({
                 <meta name="description" content={beschreibung} />
             </Head>
 
-            <Abschnitt schimmer className="pt-10 md:pt-12">
+            <Abschnitt kopfband className="pt-10 md:pt-12">
                     <FunktionsNavigation />
                     <div className="mt-12 text-center">
-                        <p className="text-sm font-medium text-primary mb-3">{kicker}</p>
-                        <h1 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[1.05] text-foreground max-w-3xl mx-auto">
+                        <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary mb-3">{kicker}</p>
+                        <h1 className="text-4xl md:text-6xl font-extrabold tracking-[-0.045em] leading-[1.05] text-foreground max-w-3xl mx-auto">
                             {titel}
                         </h1>
                         <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">{text}</p>

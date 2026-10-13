@@ -49,7 +49,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                     {/* RESTORATION: Image 2 Header Title */}
                     <div className="flex items-center gap-2 mb-3 px-1 pt-4 shrink-0">
                         <FileText size={14} className="text-muted-foreground" />
-                        <span className="text-xs font-medium text-muted-foreground font-outfit">OCR Verifizierung</span>
+                        <span className="text-xs font-medium text-muted-foreground">OCR Verifizierung</span>
                     </div>
 
                     <AufgabenReiter
@@ -74,9 +74,9 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                                     <EditableMathArea
                                         leftAction={
                                             <>
-                                                <span className="text-xs font-bold text-foreground truncate font-outfit">{task.name}</span>
+                                                <span className="text-xs font-bold text-foreground truncate">{task.name}</span>
                                                 {sectionHasUncertainty && (
-                                                    <Badge className="bg-destructive/10 text-destructive border border-destructive/20 text-xs font-bold h-5 px-2 shadow-none gap-1 shrink-0 animate-pulse font-outfit">
+                                                    <Badge className="bg-destructive/10 text-destructive border border-destructive/20 text-xs font-bold h-5 px-2 shadow-none gap-1 shrink-0 animate-pulse">
                                                         <AlertCircle size={10} /> OCR prüfen!
                                                     </Badge>
                                                 )}

@@ -55,7 +55,7 @@ export default function StudentFeedbackView() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-background flex items-center justify-center p-6 font-outfit">
+            <div className="min-h-screen bg-background flex items-center justify-center p-6">
                 <div className="text-center animate-pulse">
                     <div className="mb-6 flex justify-center">
                         <Logo size={48} />
@@ -72,7 +72,7 @@ export default function StudentFeedbackView() {
     // `data.studentName` auf null: weisser Bildschirm statt Fehlermeldung.
     if (error || !data) {
         return (
-            <div className="min-h-screen bg-background flex items-center justify-center p-6 font-outfit">
+            <div className="min-h-screen bg-background flex items-center justify-center p-6">
                 {isPinRequired ? (
                     <Card className="max-w-md w-full border-none shadow-2xl overflow-hidden animate-fade-up">
                         <div className="bg-primary p-8 text-center text-white">
@@ -139,7 +139,7 @@ export default function StudentFeedbackView() {
     }
 
     return (
-        <div className="min-h-screen bg-background font-outfit pb-12">
+        <div className="min-h-screen bg-background pb-12">
             <Head>
                 <title>Koreki | Dein Feedback</title>
                 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0" />

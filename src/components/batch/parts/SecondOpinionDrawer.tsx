@@ -211,13 +211,13 @@ Wo genau haben Sie Zweifel, oder wobei soll ich helfen? Fragen Sie mich z. B.:
                         
                         {/* Task info card */}
                         <div className="bg-card border border-border/50 rounded-xl p-4 space-y-3 shadow-xs">
-                            <span className="text-xs font-medium text-muted-foreground font-outfit">Kompakter Kontext</span>
+                            <span className="text-xs font-medium text-muted-foreground">Kompakter Kontext</span>
                             <div className="space-y-1">
-                                <p className="text-sm font-bold text-foreground font-outfit leading-tight">{taskName}</p>
+                                <p className="text-sm font-bold text-foreground leading-tight">{taskName}</p>
                                 <p className="text-xs text-primary font-bold">Maximal {maxPoints} P. | Aktuell: {currentPoints} P.</p>
                             </div>
                             <div className="pt-2 border-t border-border/30">
-                                <span className="text-xs font-medium text-muted-foreground font-outfit block mb-1">Schülerantwort (Auszug)</span>
+                                <span className="text-xs font-medium text-muted-foreground block mb-1">Schülerantwort (Auszug)</span>
                                 <p className="text-sm text-muted-foreground font-inter italic line-clamp-3 leading-relaxed">
                                     &quot;{studentText}&quot;
                                 </p>
@@ -236,16 +236,16 @@ Wo genau haben Sie Zweifel, oder wobei soll ich helfen? Fragen Sie mich z. B.:
                                     <div className="flex flex-col h-full justify-between gap-4 animate-in fade-in duration-500">
                                         <div className="space-y-3.5">
                                             <div className="flex items-center justify-between pb-2 border-b border-primary/10">
-                                                <span className="text-xs font-medium text-primary font-outfit flex items-center gap-1.5">
+                                                <span className="text-xs font-medium text-primary flex items-center gap-1.5">
                                                     <Award size={14} /> Aktueller Vorschlag
                                                 </span>
-                                                <span className="text-sm font-bold bg-primary text-primary-foreground rounded-lg px-2.5 py-0.5 font-outfit">
+                                                <span className="text-sm font-bold bg-primary text-primary-foreground rounded-lg px-2.5 py-0.5">
                                                     {activeProposal.points} / {maxPoints} P.
                                                 </span>
                                             </div>
                                             
                                             <div className="space-y-1.5">
-                                                <span className="text-xs font-medium text-muted-foreground font-outfit block">Empfohlenes Feedback:</span>
+                                                <span className="text-xs font-medium text-muted-foreground block">Empfohlenes Feedback:</span>
                                                 <div className="text-sm text-foreground font-inter leading-relaxed whitespace-pre-wrap max-h-[160px] overflow-y-auto bg-card/50 p-3.5 rounded-lg border border-border/40">
                                                     {activeProposal.feedback}
                                                 </div>
@@ -269,7 +269,7 @@ Wo genau haben Sie Zweifel, oder wobei soll ich helfen? Fragen Sie mich z. B.:
                                             <Scale size={20} />
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-sm font-bold text-foreground font-outfit">Noch kein Vorschlag</p>
+                                            <p className="text-sm font-bold text-foreground">Noch kein Vorschlag</p>
                                             <p className="text-xs text-muted-foreground leading-normal font-inter">
                                                 Diskutiere mit der KI. Sobald ein konkreter Notenvorschlag generiert wird, erscheint er hier zur Übernahme.
                                             </p>
@@ -294,7 +294,7 @@ Wo genau haben Sie Zweifel, oder wobei soll ich helfen? Fragen Sie mich z. B.:
                                         msg.role === 'user' ? "ml-auto items-end" : "items-start"
                                     )}
                                 >
-                                    <span className="text-xs text-muted-foreground font-bold font-outfit mb-1 px-1">
+                                    <span className="text-xs text-muted-foreground font-bold mb-1 px-1">
                                         {msg.role === 'user' ? 'Sie' : 'Koreki'}
                                     </span>
                                     <div
@@ -317,7 +317,7 @@ Wo genau haben Sie Zweifel, oder wobei soll ich helfen? Fragen Sie mich z. B.:
                             {/* Loading / ChatGPT-style pulsing dots */}
                             {loading && (
                                 <div className="flex flex-col items-start max-w-[85%] animate-in fade-in duration-300">
-                                    <span className="text-xs text-muted-foreground font-bold font-outfit mb-1 px-1">
+                                    <span className="text-xs text-muted-foreground font-bold mb-1 px-1">
                                         Koreki schreibt...
                                     </span>
                                     <div className="bg-muted/60 border border-border/40 text-foreground rounded-2xl rounded-tl-none py-3 px-4 flex items-center gap-1.5">

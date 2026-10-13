@@ -75,7 +75,7 @@ export const BatchTaskAnalysisCell: React.FC<BatchTaskAnalysisCellProps> = ({
             {/* Kopfzeile IN der Komponente: sonst zwei Zeilen gegen eine links. */}
             <EditableMathArea
                 leftAction={<>
-                    <span className="text-xs font-bold text-foreground font-outfit whitespace-nowrap">
+                    <span className="text-xs font-bold text-foreground whitespace-nowrap">
                         <span className="inline sm:hidden">{taskName.replace(/Aufgabe\s*/i, 'A.')}</span>
                         <span className="hidden sm:inline">{taskName}</span>
                     </span>

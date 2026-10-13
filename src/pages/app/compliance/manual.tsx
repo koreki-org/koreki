@@ -65,7 +65,7 @@ export default function ManualPage({ content, version, isAcceptedVersion }: Manu
                         <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-primary-foreground shadow-lg">
                             <Shield size={20} />
                         </div>
-                        <span className="text-xl font-outfit font-extrabold tracking-tighter text-foreground">
+                        <span className="text-xl font-extrabold tracking-tighter text-foreground">
                             Koreki<span className="text-primary">.</span> Compliance
                         </span>
                     </div>

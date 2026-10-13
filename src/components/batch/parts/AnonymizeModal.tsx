@@ -60,7 +60,7 @@ export const AnonymizeModal: React.FC<AnonymizeModalProps> = ({
                         <div className="flex items-center gap-2 flex-wrap">
                             <ShieldCheck size={18} className="text-primary" />
                             <h3 className="text-sm font-bold text-foreground font-outfit font-bold">Anonymisierte Vorschau</h3>
-                            <Badge variant="secondary" className="font-outfit font-bold tracking-tight">
+                            <Badge variant="secondary" className=" font-bold tracking-tight">
                                 {points} {maxPoints !== undefined ? `von ${maxPoints}` : ''} Punkte
                             </Badge>
                         </div>
@@ -80,7 +80,7 @@ export const AnonymizeModal: React.FC<AnonymizeModalProps> = ({
                 {/* Content Panel (Single Column) */}
                 <div className="p-5 flex-1 overflow-y-auto flex flex-col gap-4">
                     <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-primary font-outfit flex items-center gap-1">
+                        <span className="text-xs font-medium text-primary flex items-center gap-1">
                             <Sparkles size={11} /> Anonymisierte Schülerantwort
                         </span>
                         <Button

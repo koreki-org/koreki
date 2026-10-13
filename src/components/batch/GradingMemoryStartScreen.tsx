@@ -105,7 +105,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                                     <Download size={12} className="text-primary animate-pulse" />
                                                     {activeMemory.name}
                                                 </span>
-                                                <span className="text-xs text-primary font-medium mt-1 font-outfit">
+                                                <span className="text-xs text-primary font-medium mt-1">
                                                     {activeMemory.cases?.length || 0} Fallbeispiele (Importiert, Nicht gespeichert)
                                                 </span>
                                             </div>

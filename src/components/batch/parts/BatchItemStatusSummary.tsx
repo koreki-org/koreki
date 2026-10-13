@@ -41,12 +41,12 @@ export const BatchItemStatusSummary: React.FC<BatchItemStatusSummaryProps> = ({
                 </Badge>
             )}
             {item.status === 'error' && (
-                <Badge className="bg-destructive/10 text-destructive border border-destructive/20 text-xs font-bold h-6 px-3 shadow-none gap-1.5 shrink-0 rounded-full font-outfit" title={item.error || 'Fehler bei der Analyse'}>
+                <Badge className="bg-destructive/10 text-destructive border border-destructive/20 text-xs font-bold h-6 px-3 shadow-none gap-1.5 shrink-0 rounded-full" title={item.error || 'Fehler bei der Analyse'}>
                     <AlertCircle size={12} /> Fehler Details
                 </Badge>
             )}
             {itemHasWarnings && (
-                <Badge className="bg-warning/10 text-warning border border-warning/20 text-xs font-bold h-6 px-3 shadow-none gap-1.5 shrink-0 animate-pulse rounded-full font-outfit">
+                <Badge className="bg-warning/10 text-warning border border-warning/20 text-xs font-bold h-6 px-3 shadow-none gap-1.5 shrink-0 animate-pulse rounded-full">
                     <AlertCircle size={12} /> OCR prüfen!
                 </Badge>
             )}

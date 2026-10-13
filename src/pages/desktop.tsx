@@ -34,11 +34,11 @@ export default function DesktopOnboarding() {
                 <meta name="description" content="Koreki Desktop für Windows und Ubuntu: Korrekturvorschläge für Klassenarbeiten, lokal auf Ihrem Rechner." />
             </Head>
 
-            <Abschnitt schimmer className="pt-16 md:pt-24">
+            <Abschnitt kopfband className="pt-16 md:pt-24">
                 <div className="grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-16 items-start">
                     <div>
-                        <p className="text-sm font-medium text-primary mb-3">Desktop-Version</p>
-                        <h1 className="text-4xl md:text-6xl font-semibold tracking-[-0.04em] leading-[1.05] text-foreground">
+                        <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary mb-3">Desktop-Version</p>
+                        <h1 className="text-4xl md:text-6xl font-extrabold tracking-[-0.045em] leading-[1.05] text-foreground">
                             Koreki auf Ihrem eigenen Rechner.
                         </h1>
                         <p className="mt-6 text-lg text-muted-foreground max-w-xl">

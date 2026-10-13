@@ -129,7 +129,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 max-w-full overflow-hidden">
                         {item.status === 'error' && <AlertCircle data-testid="fehler" size={20} className="text-destructive shrink-0 animate-pulse" />}
                         <div className="flex flex-col min-w-0">
-                            <span className="font-bold text-foreground truncate tracking-tight text-sm sm:text-base font-outfit">{item.name}</span>
+                            <span className="font-bold text-foreground truncate tracking-tight text-sm sm:text-base">{item.name}</span>
                             {isProcessing && streamedText && (
                                 <div className="text-xxs text-primary font-mono truncate max-w-[200px] animate-pulse">
                                     KI schreibt: {streamedText.substring(streamedText.length - 40)}

@@ -229,7 +229,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                             )}
                                             {isRefining && (
                                                 <div className="flex flex-col items-start max-w-[85%] animate-in fade-in duration-300 gap-1">
-                                                    <span className="text-xxs text-muted-foreground font-bold font-outfit px-1">
+                                                    <span className="text-xxs text-muted-foreground font-bold px-1">
                                                         Koreki passt Graph an...
                                                     </span>
                                                     <div className="bg-white border border-border dark:bg-foreground dark:border-border rounded-2xl rounded-tl-none py-2.5 px-3.5 flex items-center gap-1.5 shadow-3xs">
