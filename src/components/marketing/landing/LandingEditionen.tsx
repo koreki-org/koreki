@@ -28,7 +28,7 @@ const editionen = [
 
 export const LandingEditionen: React.FC = () => (
     <Abschnitt>
-            <AbschnittsKopf zentriert kicker="Zwei Wege zu Koreki" titel="Für Sie allein oder für die ganze Fachschaft." />
+            <AbschnittsKopf zentriert kicker="Zwei Wege zu Koreki" titel="Für dich allein oder für die ganze Fachschaft." />
             <div className={cn(NACH_KOPF, RASTER, "md:grid-cols-2")}>
                 {editionen.map((e) => (
                     <div
@@ -67,8 +67,8 @@ export const LandingSchluss: React.FC<LandingSchlussProps> = ({ href, text }) =>
     <Abschnitt className="border-t border-border text-center md:py-20">
             <AbschnittsKopf
                 zentriert
-                titel="Probieren Sie es mit Ihrer nächsten Klassenarbeit."
-                text="Mit dem mitgelieferten Beispiel sehen Sie, wie Koreki bewertet – bevor Sie eigene Arbeiten hochladen."
+                titel="Probier es mit deiner nächsten Klassenarbeit."
+                text="Mit dem mitgelieferten Beispiel siehst du, wie Koreki bewertet – bevor du eigene Arbeiten hochlädst."
             />
             <Link href={href} className={cn(buttonVariants({ variant: 'default', size: 'lg' }), "mt-8 h-12 px-6 text-base")}>
                 {text}

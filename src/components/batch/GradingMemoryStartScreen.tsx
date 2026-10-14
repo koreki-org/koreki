@@ -231,7 +231,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                          </h3>
  
                                          <p className="text-foreground text-xs md:text-sm leading-relaxed font-medium">
-                                             KI-Modelle überlesen häufig kritische Zeichenabweichungen (z. B. IP-Adressen oder Ports). Mit <strong>GradingMemory</strong> zeigen Sie der KI Ihren Maßstab: Ein virtueller Schüler simuliert typische Fehlerbilder auf Grundlage Ihrer Musterlösung. Sie bewerten diese erfundenen Fälle einmal, und die KI nutzt sie danach als Beispiele für Ihre Bewertung.
+                                             KI-Modelle überlesen häufig kritische Zeichenabweichungen (z. B. IP-Adressen oder Ports). Mit <strong>GradingMemory</strong> trainierst du die KI interaktiv: Ein virtueller Schüler simuliert typische Fehlerbilder basierend auf deiner Musterlösung. Du benotest diese fiktiven Fälle einmalig und die KI nutzt diese fortan als exakte Few-Shot-Richtlinie.
                                          </p>
 
                                          <div className="bg-muted/50 border border-border p-5 rounded-xl flex flex-col gap-4 mt-2">

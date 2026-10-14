@@ -68,7 +68,7 @@ export const GraphTestingPanel: React.FC<GraphTestingPanelProps> = ({
                                 {/* Scrollable Inputs Grid */}
                                 <div className="flex-grow lg:flex-1 lg:overflow-y-auto p-6 space-y-4 custom-scrollbar">
                                     {graph.variables.length === 0 ? (
-                                        <p className="text-xs text-muted-foreground py-4 font-medium text-center">Keine Variablen deklariert. Erstellen Sie zuerst einen Graphen.</p>
+                                        <p className="text-xs text-muted-foreground py-4 font-medium text-center">Keine Variablen deklariert. Erstelle zuerst einen Graphen.</p>
                                     ) : (
                                         <div className="space-y-3.5">
                                             {(graph?.variables || []).map(v => (
@@ -165,7 +165,7 @@ export const GraphTestingPanel: React.FC<GraphTestingPanelProps> = ({
                                         <div className="max-w-xs space-y-1.5">
                                             <h4 className="font-extrabold text-foreground text-sm font-outfit leading-none mb-1">Bereit zum Testen 🧪</h4>
                                             <p className="text-xs text-muted-foreground leading-relaxed font-medium font-inter">
-                                                Füllen Sie die Musterlösung aus, verändern Sie Werte absichtlich, um Fehler zu simulieren, und klicken Sie auf <strong>Berechnen</strong>, um die Folgefehler-Diagnose live zu prüfen.
+                                                Fülle die Musterlösung aus, verändere Werte absichtlich, um Fehler zu simulieren, und klicke auf <strong>Berechnen</strong>, um die Folgefehler-Diagnose live zu prüfen.
                                             </p>
                                         </div>
                                     </div>

@@ -41,7 +41,7 @@ export default function SelfHostingPage() {
             <Abschnitt kopfband className="pt-16 md:pt-24 text-center">
                     <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary mb-3">Community Edition</p>
                     <h1 className="text-4xl md:text-6xl font-extrabold tracking-[-0.045em] leading-[1.05] text-foreground max-w-3xl mx-auto">
-                        Koreki auf dem Server Ihrer Schule.
+                        Koreki auf dem Server deiner Schule.
                     </h1>
                     <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
                         Einmal eingerichtet, für alle nutzbar. Die Arbeiten bleiben im Schulnetz, und die Schule behält die Kontrolle über Nutzer und KI-Zugang.
@@ -75,7 +75,7 @@ export default function SelfHostingPage() {
             </Abschnitt>
 
             <Abschnitt>
-                    <AbschnittsKopf kicker="Technik" titel="Was Ihre IT wissen möchte." />
+                    <AbschnittsKopf kicker="Technik" titel="Was deine IT wissen möchte." />
                     <div className={cn(NACH_KOPF, RASTER, "md:grid-cols-3")}>
                         {TECHNIK.map(({ icon: Icon, titel, text }) => (
                             <Kachel key={titel}>
@@ -89,7 +89,7 @@ export default function SelfHostingPage() {
                         <ModelProfiles />
                     </div>
                     <p className="mt-10 text-sm text-muted-foreground">
-                        Lieber ohne Server? <Link href="/desktop" className="text-primary hover:underline">Koreki Desktop</Link> läuft direkt auf Ihrem Rechner.
+                        Lieber ohne Server? <Link href="/desktop" className="text-primary hover:underline">Koreki Desktop</Link> läuft direkt auf deinem Rechner.
                     </p>
             </Abschnitt>
 

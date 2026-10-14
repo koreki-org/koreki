@@ -51,7 +51,7 @@ export async function persistGradingMemory(p: PersistGradingMemoryParams): Promi
  */
 export async function bestaetigeSchatzName(name: string, vorhandene: GradingMemory[]): Promise<{ ok: boolean; fehler?: string }> {
     if (!name.trim()) {
-        return { ok: false, fehler: 'Bitte geben Sie dem Erfahrungsschatz einen aussagekräftigen Namen.' };
+        return { ok: false, fehler: 'Bitte gib dem Erfahrungsschatz einen aussagekräftigen Namen.' };
     }
 
     // Ueber `isSameName`, nicht von Hand: die Variante hier verglich den

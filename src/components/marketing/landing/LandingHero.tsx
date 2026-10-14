@@ -40,9 +40,9 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ aktion }) => (
             </h1>
 
             <p className="mt-7 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-                Koreki liest Klassenarbeiten – auch handschriftliche –, vergleicht sie mit Ihrer
-                Musterlösung und schlägt Punkte und Feedback vor. Die Entscheidung treffen Sie.
-                Auf Ihrem eigenen Rechner.
+                Koreki liest Klassenarbeiten – auch handschriftliche –, vergleicht sie mit deiner
+                Musterlösung und schlägt Punkte und Feedback vor. Die Entscheidung triffst du.
+                Auf deinem eigenen Rechner.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
@@ -70,7 +70,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ aktion }) => (
                 alt="Startbildschirm von Koreki mit Musterlösung, Schülerarbeiten und den eigenen Profilen in der Kopfleiste"
             />
             <p className="mt-4 text-center text-sm text-muted-foreground">
-                Echte Ansicht aus Koreki: Musterlösung links, Arbeiten der Klasse rechts – oben Ihre eigenen Profile.
+                Echte Ansicht aus Koreki: Musterlösung links, Arbeiten der Klasse rechts – oben die eigenen Profile.
             </p>
         </div>
     </Abschnitt>

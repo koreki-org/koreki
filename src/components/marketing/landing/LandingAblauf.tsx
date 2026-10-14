@@ -6,7 +6,7 @@ const schritte = [
     {
         nr: '01',
         titel: 'Musterlösung hochladen',
-        text: 'Ihr Erwartungshorizont mit Punkten je Aufgabe – als PDF oder Scan. Koreki erkennt die Aufgabenstruktur.',
+        text: 'Dein Erwartungshorizont mit Punkten je Aufgabe – als PDF oder Scan. Koreki erkennt die Aufgabenstruktur.',
         bild: '/marketing/musterloesung.webp',
         alt: 'Musterlösung mit erkannten Aufgaben und Punkten',
         breite: 'w-[115%]',
@@ -34,7 +34,7 @@ export const LandingAblauf: React.FC = () => (
             <AbschnittsKopf
                 zentriert
                 kicker="So funktioniert es"
-                titel="Drei Schritte, die Sie aus Ihrer eigenen Korrektur kennen."
+                titel="Drei Schritte, die du aus deiner eigenen Korrektur kennst."
             />
             <div className={cn(NACH_KOPF, RASTER, "md:grid-cols-3")}>
                 {schritte.map((s) => (

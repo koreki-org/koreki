@@ -234,7 +234,7 @@ export const useSkillProfiles = (
             return;
         }
 
-        meldeHinweis("Warnung: Die importierte Datei enthält kein gültiges Skill-Set. Bitte nutzen Sie den Upload-Bereich für Skills rechts, wenn Sie einen einzelnen Skill importieren möchten.");
+        meldeHinweis("Warnung: Die importierte Datei enthält kein gültiges Skill-Set. Bitte nutze die Upload-Area für Skills rechts, wenn du einen einzelnen Skill importieren möchtest.");
     };
 
     const handleSaveToDB = async () => {
@@ -244,7 +244,7 @@ export const useSkillProfiles = (
         const zielId = isCreatingNew ? '' : selectedProfileId;
         const nameToSave = isCreatingNew ? newProfileName.trim() : (selectedProfileData?.name || '');
         if (!nameToSave) {
-            meldeHinweis("Bitte geben Sie einen Namen für das Skill-Profil ein.");
+            meldeHinweis("Bitte gib einen Namen für das Skill-Profil ein.");
             return;
         }
 
@@ -258,7 +258,7 @@ export const useSkillProfiles = (
             // dateibasierte und die Desktop-Ablage legten bisher ein gleichnamiges
             // Nutzerprofil daneben — es erschien dann in beiden Listen-Abschnitten.
             if (istSystemName) {
-                meldeHinweis('Dieser Name gehört zu einer System-Vorlage. Bitte wählen Sie einen anderen Namen.');
+                meldeHinweis('Dieser Name gehört zu einer System-Vorlage. Bitte wähle einen anderen Namen.');
                 return;
             }
 

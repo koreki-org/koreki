@@ -200,7 +200,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                     <div className="bg-primary/5 border border-primary/10 rounded-xl p-4 flex gap-3 text-sm text-primary">
                         <Sparkles className="shrink-0 mt-0.5" size={18} />
                         <p>
-                            <strong>Neues Hybrid-Grading:</strong> Geben Sie hier nur das finale numerische Endergebnis der Aufgabe sowie die maximalen Punkte und einen optionalen Erwartungshorizont (Rubric) für die KI an. Koreki extrahiert den Rechenweg des Schülers automatisch und prüft mathematisch exakt.
+                            <strong>Neues Hybrid-Grading:</strong> Gib hier nur das finale numerische Endergebnis der Aufgabe sowie die maximalen Punkte und einen optionalen Erwartungshorizont (Rubric) für die KI an. Koreki extrahiert den Rechenweg des Schülers automatisch und prüft mathematisch exakt.
                         </p>
                     </div>
 
@@ -296,7 +296,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
                         <div className="space-y-3 max-h-[30vh] overflow-y-auto pr-1">
                             {(goal.criteria || []).length === 0 ? (
-                                <p className="text-xs text-muted-foreground italic py-2">Keine Kriterien vorhanden. Klicken Sie auf &apos;Kriterium hinzufügen&apos; oder erzeugen Sie die Zielwerte neu.</p>
+                                <p className="text-xs text-muted-foreground italic py-2">Keine Kriterien vorhanden. Klicke auf &apos;Kriterium hinzufügen&apos; oder generiere die Zielwerte neu.</p>
                             ) : (
                                 (goal.criteria || []).map((crit, cIdx) => (
                                     <div key={crit.id || cIdx} className="bg-muted/30 border border-border rounded-xl p-3 flex flex-col gap-3 animate-fade-in text-sm">

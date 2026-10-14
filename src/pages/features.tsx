@@ -10,10 +10,10 @@ import { HaeufigeFragen } from '@/components/marketing/site/HaeufigeFragen';
 
 const BEREICHE = [
     { icon: Workflow, name: 'Ablauf', href: '/features/workflow', text: 'Von der Musterlösung über die Texterkennung bis zur fertigen Einschätzungsliste.' },
-    { icon: GraduationCap, name: 'Expertise', href: '/features/expertise', text: 'Beschreiben Sie in eigenen Worten, worauf es in Ihrem Fach ankommt.' },
+    { icon: GraduationCap, name: 'Expertise', href: '/features/expertise', text: 'Beschreib in eigenen Worten, worauf es in deinem Fach ankommt.' },
     { icon: Puzzle, name: 'Skills', href: '/features/skills', text: 'Zuschaltbare Regeln für typische Aufgabenarten, etwa gleichwertige Rechenwege.' },
-    { icon: BookOpenCheck, name: 'Erfahrungsschatz', href: '/features/memory', text: 'Ihre geprüften Bewertungen werden zum Maßstab für die nächsten Arbeiten.' },
-    { icon: Cpu, name: 'Intelligenz', href: '/features/intelligence', text: 'Lokales Modell über Ollama oder Mistral mit eigenem Schlüssel – Sie wählen.' },
+    { icon: BookOpenCheck, name: 'Erfahrungsschatz', href: '/features/memory', text: 'Deine geprüften Bewertungen werden zum Maßstab für die nächsten Arbeiten.' },
+    { icon: Cpu, name: 'Intelligenz', href: '/features/intelligence', text: 'Lokales Modell über Ollama oder Mistral mit eigenem Schlüssel – du wählst.' },
 ];
 
 /**
@@ -37,7 +37,7 @@ export default function FeaturesPage() {
                             Alles, was eine Korrektur braucht. Nichts darüber hinaus.
                         </h1>
                         <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-                            Koreki übernimmt das Lesen und Vergleichen. Das Urteil bleibt bei Ihnen – und jede Einstellung lässt sich an Ihr Fach anpassen.
+                            Koreki übernimmt das Lesen und Vergleichen. Das Urteil bleibt bei dir – und jede Einstellung lässt sich an dein Fach anpassen.
                         </p>
                     </div>
                 <div className="mt-12">

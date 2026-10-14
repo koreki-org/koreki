@@ -8,11 +8,11 @@ import { Abschnitt, AbschnittsKopf, Kachel, NACH_KOPF, Produktbild, RASTER, Symb
  * Ergebnis ist (marketing-communication §3).
  */
 const funktionen = [
-    { icon: PenLine, titel: 'Liest Handschrift', text: 'Gescannte Arbeiten werden zu Text, den Sie neben dem Original prüfen und korrigieren.' },
+    { icon: PenLine, titel: 'Liest Handschrift', text: 'Gescannte Arbeiten werden zu Text, den du neben dem Original prüfst und korrigierst.' },
     { icon: Calculator, titel: 'Rechnet nach', text: 'Rechenwege werden nachgerechnet, nicht geschätzt. Folgefehler werden als solche erkannt.' },
-    { icon: BookOpenCheck, titel: 'Ihr Erfahrungsschatz', text: 'Bewertungsbeispiele, die Sie gespeichert haben, werden zum Maßstab für die nächsten Arbeiten.' },
-    { icon: GraduationCap, titel: 'Ihre Fachsprache', text: 'Legen Sie fest, worauf es in Ihrem Fach ankommt – Koreki bewertet danach.' },
-    { icon: FileSpreadsheet, titel: 'Export für Ihre Unterlagen', text: 'Einschätzungsliste als Tabelle und Rückmeldungen zum Ausdrucken oder digital.' },
+    { icon: BookOpenCheck, titel: 'Dein Erfahrungsschatz', text: 'Bewertungsbeispiele, die du gespeichert hast, werden zum Maßstab für die nächsten Arbeiten.' },
+    { icon: GraduationCap, titel: 'Deine Fachsprache', text: 'Leg fest, worauf es in deinem Fach ankommt – Koreki bewertet danach.' },
+    { icon: FileSpreadsheet, titel: 'Export für deine Unterlagen', text: 'Einschätzungsliste als Tabelle und Rückmeldungen zum Ausdrucken oder digital.' },
 ];
 
 export const LandingFunktionen: React.FC = () => (
@@ -20,7 +20,7 @@ export const LandingFunktionen: React.FC = () => (
             <AbschnittsKopf zentriert
                 kicker="Funktionen"
                 titel="Gebaut für echte Klassenarbeiten – nicht für Demos."
-                text="Handschrift, Rechenwege, Folgefehler: Koreki arbeitet mit dem, was tatsächlich auf Ihrem Tisch liegt."
+                text="Handschrift, Rechenwege, Folgefehler: Koreki arbeitet mit dem, was tatsächlich auf deinem Tisch liegt."
             />
 
             <div className={cn(NACH_KOPF, RASTER, "md:grid-cols-3")}>

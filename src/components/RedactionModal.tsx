@@ -162,7 +162,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                 <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 mb-6">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="min-w-0 text-sm text-primary leading-relaxed font-medium">
-                            <p className="mb-1">Ziehen Sie Rechtecke über die Stellen, die Sie unkenntlich machen möchten.</p>
+                            <p className="mb-1">Ziehe Rechtecke über die Stellen, die Du unkenntlich machen möchtest.</p>
                             <p className="text-xxs opacity-70 italic font-normal">Hinweis: Bilderkennung (OCR) ist für dieses Dokument anschließend erforderlich.</p>
                         </div>
 
@@ -212,7 +212,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                                 <span className="text-xxs text-primary/70 font-medium leading-normal">
                                     {applyToAllScans
                                         ? 'Ab jetzt gezogene Balken gelten für alle Scans und werden farbig markiert. Vorher gezogene bleiben nur bei dieser Arbeit.'
-                                        : 'Balken, die Sie bei gesetztem Haken ziehen, landen auf jeder Seite aller Scans. Bereits einzeln geschwärzte Stellen bleiben erhalten.'}
+                                        : 'Balken, die Du bei gesetztem Haken ziehst, landen auf jeder Seite aller Scans. Bereits einzeln geschwärzte Stellen bleiben erhalten.'}
                                 </span>
                             </div>
                         </label>
@@ -224,7 +224,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                     {loading && (
                         <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-4 rounded-xl">
                             <Loader2 size={40} className="text-primary animate-spin" />
-                            <span className="font-semibold text-muted-foreground">Dokument wird geladen …</span>
+                            <span className="font-semibold text-muted-foreground">Lade Dokument...</span>
                         </div>
                     )}
                     <canvas

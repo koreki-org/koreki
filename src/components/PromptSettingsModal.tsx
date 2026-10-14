@@ -77,7 +77,7 @@ const PromptSettingsModal: React.FC<PromptSettingsModalProps> = ({
                         </div>
                         <div className="min-w-0">
                             <h2 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight truncate">Expert Center</h2>
-                            <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">Legen Sie Ihre fachliche Expertise fest</p>
+                            <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">Konfiguriere deine KI-Expertise</p>
                         </div>
                     </div>
                     <Button variant="ghost" size="icon" className="rounded-full hover:bg-foreground/5 shrink-0" onClick={onClose}>

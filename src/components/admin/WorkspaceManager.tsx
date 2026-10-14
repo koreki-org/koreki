@@ -33,7 +33,7 @@ const WorkspaceManager: React.FC<WorkspaceManagerProps> = ({
                         <School size={24} />
                     </div>
                     <CardTitle className="text-xl font-bold text-foreground">Institut anlegen</CardTitle>
-                    <CardDescription className="text-muted-foreground">Legen Sie eine neue Organisationseinheit an.</CardDescription>
+                    <CardDescription className="text-muted-foreground">Erstelle eine neue Organisationseinheit.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                     <form className="space-y-6" onSubmit={(e) => {

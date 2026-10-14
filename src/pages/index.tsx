@@ -42,7 +42,7 @@ export default function LandingPage() {
                 <title>Koreki – Korrekturvorschläge für Klassenarbeiten</title>
                 <meta
                     name="description"
-                    content="Koreki liest Klassenarbeiten, vergleicht sie mit Ihrer Musterlösung und schlägt Punkte und Feedback vor. Die Note vergeben Sie – auf Ihrem eigenen Rechner."
+                    content="Koreki liest Klassenarbeiten, vergleicht sie mit deiner Musterlösung und schlägt Punkte und Feedback vor. Die Note vergibst du – auf deinem eigenen Rechner."
                 />
             </Head>
 

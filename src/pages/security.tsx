@@ -16,27 +16,27 @@ const MASSNAHMEN = [
     {
         icon: User,
         titel: 'Pseudonyme schon beim Hochladen',
-        text: 'Dateinamen wie „Klausur_Max_Mustermann.pdf“ werden in Ihrem Browser zu „Schüler #1“, bevor die Datei weiterverarbeitet wird. Namen im Text werden vor jeder Übergabe an eine KI ersetzt.',
+        text: 'Dateinamen wie „Klausur_Max_Mustermann.pdf“ werden in deinem Browser zu „Schüler #1“, bevor die Datei weiterverarbeitet wird. Namen im Text werden vor jeder Übergabe an eine KI ersetzt.',
     },
     {
         icon: EyeOff,
         titel: 'Schwärzen auf Scans',
-        text: 'Namen auf eingescannten Seiten können Sie direkt im Browser unkenntlich machen. Erst das geschwärzte Bild verlässt Ihren Rechner.',
+        text: 'Namen auf eingescannten Seiten kannst du direkt im Browser unkenntlich machen. Erst das geschwärzte Bild verlässt deinen Rechner.',
     },
     {
         icon: Cpu,
         titel: 'Lokale Modelle',
-        text: 'Mit Ollama läuft die KI auf Ihrem Rechner oder dem Schulserver. Dann verlässt keine Arbeit Ihr Netzwerk.',
+        text: 'Mit Ollama läuft die KI auf deinem Rechner oder dem Schulserver. Dann verlässt keine Arbeit dein Netzwerk.',
     },
     {
         icon: KeyRound,
-        titel: 'Schlüssel bleiben bei Ihnen',
-        text: 'In Desktop-Version und Community Edition werden API-Schlüssel, etwa für Mistral, nur auf Ihrem Gerät gespeichert – nie auf Servern von Koreki.',
+        titel: 'Schlüssel bleiben bei dir',
+        text: 'In Desktop-Version und Community Edition werden API-Schlüssel, etwa für Mistral, nur auf deinem Gerät gespeichert – nie auf Servern von Koreki.',
     },
     {
         icon: UserCheck,
-        titel: 'Die Entscheidung bleibt bei Ihnen',
-        text: 'Koreki macht ausschließlich Vorschläge. Jede Bewertung prüfen und bestätigen Sie selbst, bevor sie ausgegeben wird.',
+        titel: 'Die Entscheidung bleibt bei dir',
+        text: 'Koreki macht ausschließlich Vorschläge. Jede Bewertung prüfst und bestätigst du selbst, bevor sie ausgegeben wird.',
     },
 ];
 
@@ -45,7 +45,7 @@ export default function SecurityPage() {
         <MarketingLayout>
             <Head>
                 <title>Datenschutz und Sicherheit | Koreki</title>
-                <meta name="description" content="Wie Koreki Schülerdaten schützt: Pseudonyme beim Hochladen, Schwärzen auf Scans, lokale Modelle und Schlüssel, die auf Ihrem Gerät bleiben." />
+                <meta name="description" content="Wie Koreki Schülerdaten schützt: Pseudonyme beim Hochladen, Schwärzen auf Scans, lokale Modelle und Schlüssel, die auf deinem Gerät bleiben." />
             </Head>
 
             <Abschnitt kopfband className="pt-16 md:pt-24">
@@ -91,7 +91,7 @@ export default function SecurityPage() {
                             <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary mb-2">In Vorbereitung</p>
                             <h2 className="text-2xl md:text-3xl font-semibold tracking-tight text-foreground">Ein gehosteter Dienst für Schulen.</h2>
                             <p className="mt-3 text-muted-foreground">
-                                Für Schulen ohne eigenen Server bereiten wir einen gehosteten Dienst vor. Wenn Ihre Schule ihn mit erproben möchte, schreiben Sie uns.
+                                Für Schulen ohne eigenen Server bereiten wir einen gehosteten Dienst vor. Wenn deine Schule ihn mit erproben möchte, schreib uns.
                             </p>
                         </div>
                         <a href={`mailto:${LEGAL_CONFIG.contact.email}`} className={cn(buttonVariants({ variant: 'default', size: 'lg' }), "h-12 shrink-0")}>

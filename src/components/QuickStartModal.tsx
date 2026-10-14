@@ -62,7 +62,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
                             <div className="space-y-0">
                                 <h3 className="font-bold text-foreground text-xs">2. Didaktik & KI-Kalibrierung</h3>
                                 <p className="text-xxs text-muted-foreground leading-snug">
-                                    Legen Sie in der Kopfleiste Ihre <strong className="font-extrabold text-foreground">Expertise</strong> (fachliche Vorgaben) fest, aktivieren Sie <strong className="font-extrabold text-foreground">Skills</strong> (z. B. mathematische Äquivalenz), pflegen Sie den <strong className="font-extrabold text-foreground">Erfahrungsschatz</strong> (Bewertungsbeispiele) oder wählen Sie die passende <strong className="font-extrabold text-foreground">Intelligenz</strong> (Denktiefe der KI).
+                                    Konfiguriere im Header deine <strong className="font-extrabold text-foreground">Expertise</strong> (Fach-Prompts), aktiviere modulare <strong className="font-extrabold text-foreground">Skills</strong> (z. B. mathematische Äquivalenz), trainiere den <strong className="font-extrabold text-foreground">Erfahrungsschatz</strong> (Präzedenzfälle) oder wähle die passende <strong className="font-extrabold text-foreground">Intelligenz</strong> (Denktiefe der KI).
                                 </p>
                             </div>
                         </div>

@@ -273,7 +273,7 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* The Classic Center Branding & Action Layer */}
             <div className="flex flex-col items-center text-center mt-5 md:mt-1 animate-in fade-in duration-500 ease-out">
-                <Logo showText={true} textLarge={true} size={40} subtitle="Ihr KI-Korrekturassistent" />
+                <Logo showText={true} textLarge={true} size={40} subtitle="Dein KI-Korrektur Assistent" />
                 
                 <div className="flex flex-row gap-2 sm:gap-2.5 mt-3 md:mt-4 w-full max-w-[480px] mx-auto px-4 sm:px-0">
                     <Button
@@ -313,7 +313,7 @@ const Header: React.FC<HeaderProps> = ({
                             <Camera size={18} className="text-primary" />
                         </div>
                         <span className="text-xxs sm:text-sm font-semibold text-primary text-left">
-                            Vorschau vervollständigen: Laden Sie die Original-PDFs nach, um Dokumente im Split-Screen zu sehen.
+                            Vorschau vervollständigen: Lade die Original-PDFs nach, um Dokumente im Split-Screen zu sehen.
                         </span>
                     </div>
                     <div className="shrink-0 ml-auto sm:ml-0">

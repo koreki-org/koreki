@@ -121,7 +121,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                                     <Sparkles size={12} className="text-primary animate-pulse" />
                                                     PANG KI-Assistent
                                                 </p>
-                                                Hallo! Ich bin Ihr PANG-Assistent. Geben Sie mir Ihre Wünsche oder Richtlinien für diese Aufgabe (z. B. Toleranzen, Formeln oder Punkteverteilung) und klicken Sie auf „Graph generieren“, um einen Vorschlag für den Bewertungs-Graphen zu erhalten.
+                                                Hallo! Ich bin dein PANG-Assistent. Gib mir einfach deine Wünsche oder Richtlinien für diese Aufgabe ein (z. B. Toleranzen, Formeln oder Punkteverteilung) und klicke auf „Graph generieren“, um deinen Bewertungs-Graphen vollautomatisch zu erstellen.
                                             </div>
                                         </div>
 
@@ -152,7 +152,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                                     ) : (
                                                         <Sparkles size={14} />
                                                     )}
-                                                    <span>{isGenerating ? "Graph wird erstellt …" : "🪄 Graph mit KI generieren"}</span>
+                                                    <span>{isGenerating ? "Erstelle Graph..." : "🪄 Graph mit KI generieren"}</span>
                                                     {!isGenerating && showsCreditCost && (
                                                         <span className="bg-white/20 rounded px-1 text-xs font-bold leading-none py-0.5">1 C</span>
                                                     )}
@@ -179,7 +179,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                                 <p className="font-bold text-foreground flex items-center gap-1">
                                                     <span className="text-primary font-extrabold">✓</span> Didaktische Toleranzen
                                                 </p>
-                                                <p className="pl-4 text-muted-foreground font-medium leading-normal">Legen Sie Abweichungen für Rundungs- oder Format-Fehler fest, um Schülerarbeiten fair zu bewerten.</p>
+                                                <p className="pl-4 text-muted-foreground font-medium leading-normal">Definiere Abweichungen für Rundungs- oder Format-Fehler, um Schülerarbeiten fair zu bewerten.</p>
                                             </div>
                                         </div>
                                     </div>
@@ -194,7 +194,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                                 Interaktiver KI-Assistent
                                             </h4>
                                             <p className="text-xs text-muted-foreground font-medium leading-relaxed">
-                                                Passen Sie Formeln, Toleranzen oder Punktgewichtungen in natürlicher Sprache im Chat an.
+                                                Passe Formeln, Toleranzen oder Punktgewichtungen flexibel mit natürlicher Sprache im Chat an.
                                             </p>
                                         </div>
 
@@ -207,7 +207,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                                     </div>
                                                     <p className="text-xs font-bold text-muted-foreground">Keine Chat-Historie</p>
                                                     <p className="text-xs leading-relaxed font-medium px-2 text-muted-foreground">
-                                                        Geben Sie unten eine Anweisung ein, z. B. <em>&quot;Setze die Toleranz von subnetA_mask auf 0.1&quot;</em>.
+                                                        Gib unten eine Anweisung ein, z.B. <em>&quot;Setze die Toleranz von subnetA_mask auf 0.1&quot;</em>.
                                                     </p>
                                                 </div>
                                             ) : (

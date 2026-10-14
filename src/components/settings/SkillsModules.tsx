@@ -182,11 +182,11 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
 
     const handleSaveCustomSkillClick = () => {
         if (!editingSkillData?.name?.trim()) { // `?.` verengt auch die Basis auf non-null
-            meldeHinweis("Bitte geben Sie einen Namen für den Skill ein.");
+            meldeHinweis("Bitte gib einen Namen für den Skill ein.");
             return;
         }
         if (!editingSkillData.promptSnippet?.trim()) {
-            meldeHinweis("Bitte geben Sie die Anweisung für die KI ein.");
+            meldeHinweis("Bitte gib die KI-Anweisung (Prompt Snippet) ein.");
             return;
         }
 
@@ -204,7 +204,7 @@ export const SkillsEditor: React.FC<SkillsEditorProps> = ({
             const newSkills = [...activeSkillIds, skillToSave.id];
             onStartNew(newSkills);
             setNewProfileName(`Kopie von ${selectedProfile}`);
-            meldeErfolg(`Ein neues, anpassbares Skill-Set "Kopie von ${selectedProfile}" wurde erstellt und Ihr neuer Skill "${skillToSave.name}" darin aktiviert.`);
+            meldeErfolg(`Ein neues, anpassbares Skill-Set "Kopie von ${selectedProfile}" wurde erstellt und dein neuer Skill "${skillToSave.name}" wurde darin aktiviert!`);
         } else {
             // Auto-check/enable newly created skill
             if (!editingSkillData.id && !activeSkillIds.includes(skillToSave.id)) {
@@ -320,7 +320,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                     <Button 
                         disabled={saving || isSystemSelected || !isDirty} 
                         onClick={onSaveToDB} 
-                        title={isSystemSelected ? "System-Vorlagen können nicht direkt bearbeitet werden. Legen Sie eine Kopie an." : ""}
+                        title={isSystemSelected ? "System-Vorlagen können nicht direkt bearbeitet werden. Erstelle eine Kopie." : ""}
                         className="h-9 px-4 text-xs whitespace-nowrap font-medium rounded-full flex items-center gap-1.5 shadow-md transition-all border-0"
                     >
                         {saving ? (
@@ -483,7 +483,7 @@ ${skill.prompt || ''}`;
                                                             <Button variant="ghost" size="icon" title="Bearbeiten" className="h-7 w-7 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-foreground/5" onClick={() => handleEditSkillClick(skill)}>
                                                                 <Pencil size={14} />
                                                             </Button>
-                                                            <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-foreground/5" onClick={async () => { if (await askConfirmation({ title: 'Skill löschen', message: `Möchten Sie den Skill "${skill.name}" wirklich löschen?` })) onDeleteCustomSkill(skill.id); }}>
+                                                            <Button variant="ghost" size="icon" title="Löschen" className="h-7 w-7 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-foreground/5" onClick={async () => { if (await askConfirmation({ title: 'Skill löschen', message: `Möchtest du den Skill "${skill.name}" wirklich löschen?` })) onDeleteCustomSkill(skill.id); }}>
                                                                 <Trash2 size={14} />
                                                             </Button>
                                                         </>

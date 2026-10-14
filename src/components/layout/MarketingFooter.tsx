@@ -22,7 +22,7 @@ const MarketingFooter: React.FC = () => {
                     <div className="flex flex-col gap-4 max-w-xs">
                         <Logo showText={true} size={24} className="self-start" />
                         <p className="text-sm text-muted-foreground">
-                            Korrekturvorschläge für Klassenarbeiten. Die Note vergeben Sie.
+                            Dein KI-Korrektur Assistent. Die Note vergibst du.
                         </p>
                         <div className="flex gap-4 items-center">
                             <a href="https://www.instagram.com/koreki_org/" target="_blank" rel="noopener noreferrer" aria-label="Koreki auf Instagram" className={verweis}><Instagram className="w-5 h-5" /></a>

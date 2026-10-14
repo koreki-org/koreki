@@ -35,7 +35,7 @@ Koreki soll aussehen wie ein Werkzeug, dem eine Schulleitung Schülerarbeiten an
 
 ## 2. Sprache in der Oberfläche
 
-- **Anrede: Sie.** Überall — App, Marketing, Meldungen, E-Mails.
+- **Anrede: du.** Überall — App, Marketing, Meldungen. Der Slogan ist „Dein KI-Korrektur Assistent“, und die veröffentlichten Posts duzen. (Am 12.10.2026 kurz auf „Sie“ umgestellt, am 14.10.2026 zurückgenommen.) Ausnahme: rechtliche Texte (AGB, Datenschutz, AVV) bleiben förmlich.
 - **Deutsch.** Keine englischen UI-Wörter (Update, Review, Deep Dive, Logistics, Coming soon).
 - **Satzschreibung.** Keine Versalien in der App, auch nicht in `Badge`. Ausnahme: Kicker auf Marketing-Seiten (siehe §0).
 - **Ein Begriff pro Konzept:**

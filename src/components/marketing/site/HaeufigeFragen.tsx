@@ -10,23 +10,23 @@ import { Abschnitt, AbschnittsKopf } from './Bausteine';
 const FRAGEN = [
     {
         frage: 'Braucht Koreki eine Internetverbindung?',
-        antwort: 'Nicht, wenn Sie ein lokales Modell über Ollama nutzen – dann läuft die Korrektur vollständig auf Ihrem Rechner oder dem Schulserver. Mit Mistral werden die Arbeiten ohne Namen an Mistral übertragen.',
+        antwort: 'Nicht, wenn du ein lokales Modell über Ollama nutzt – dann läuft die Korrektur vollständig auf deinem Rechner oder dem Schulserver. Mit Mistral werden die Arbeiten ohne Namen an Mistral übertragen.',
     },
     {
         frage: 'Was passiert mit den Schülerdaten?',
-        antwort: 'Bei lokaler Nutzung bleiben sie auf Ihrem Gerät bzw. im Schulnetz. Namen werden vor jeder Übergabe an eine KI durch Platzhalter ersetzt. Koreki selbst erhebt keine Daten für eigene Zwecke.',
+        antwort: 'Bei lokaler Nutzung bleiben sie auf deinem Gerät bzw. im Schulnetz. Namen werden vor jeder Übergabe an eine KI durch Platzhalter ersetzt. Koreki selbst erhebt keine Daten für eigene Zwecke.',
     },
     {
         frage: 'Was kostet Koreki?',
-        antwort: 'Desktop-Version und Community Edition sind für den nicht-kommerziellen Einsatz kostenlos (Lizenz: PolyForm Noncommercial). Nutzen Sie Mistral, berechnet Mistral die Nutzung über Ihren eigenen Schlüssel.',
+        antwort: 'Desktop-Version und Community Edition sind für den nicht-kommerziellen Einsatz kostenlos (Lizenz: PolyForm Noncommercial). Nutzt du Mistral, berechnet Mistral die Nutzung über deinen eigenen Schlüssel.',
     },
     {
         frage: 'Vergibt Koreki die Noten?',
-        antwort: 'Nein. Koreki macht Vorschläge für Punkte und Rückmeldungen. Jede Bewertung prüfen, ändern und bestätigen Sie selbst.',
+        antwort: 'Nein. Koreki macht Vorschläge für Punkte und Rückmeldungen. Jede Bewertung prüfst, änderst und bestätigst du selbst.',
     },
     {
         frage: 'Kann ich Koreki an mein Fach anpassen?',
-        antwort: 'Ja. Mit der Expertise beschreiben Sie, worauf es in Ihrem Fach ankommt; Skills ergänzen Regeln für bestimmte Aufgabenarten; der Erfahrungsschatz hält Ihre Bewertungsbeispiele fest.',
+        antwort: 'Ja. Mit der Expertise beschreibst du, worauf es in deinem Fach ankommt; Skills ergänzen Regeln für bestimmte Aufgabenarten; der Erfahrungsschatz hält deine Bewertungsbeispiele fest.',
     },
 ];
 

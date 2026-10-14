@@ -92,7 +92,7 @@ export const FunktionsSeite: React.FC<FunktionsSeiteProps> = ({
             </Abschnitt>
 
             <Abschnitt>
-                    <AbschnittsKopf kicker="Im Einzelnen" titel="Was diese Funktion für Sie tut." />
+                    <AbschnittsKopf kicker="Im Einzelnen" titel="Was diese Funktion für dich tut." />
                     <div className={cn(NACH_KOPF, RASTER, "md:grid-cols-2")}>
                         {punkte.map((p) => (
                             <Kachel key={p.titel}>

@@ -159,7 +159,7 @@ export const SkillEngineSection: React.FC<SkillEngineSectionProps> = ({
                                                 setEditingSkillData({ ...editingSkillData, taskText: val });
                                                 setGraphGenTaskText(val);
                                             }}
-                                            placeholder="Fügen Sie hier den Aufgabentext ein, aus dem die KI Variablen und Formeln entnehmen soll …"
+                                            placeholder="Füge hier den Aufgabentext ein, aus dem die KI Variablen und Formeln extrahieren soll..."
                                             rows={4}
                                             className="w-full p-3 rounded-xl border border-primary/10 text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-card"
                                         />
@@ -221,7 +221,7 @@ export const SkillEngineSection: React.FC<SkillEngineSectionProps> = ({
                                                 setEditingSkillData({ ...editingSkillData, taskText: val });
                                                 setGraphGenTaskText(val);
                                             }}
-                                            placeholder="Fügen Sie hier den Aufgabentext ein, aus dem die KI Rechenschritte entnehmen soll …"
+                                            placeholder="Füge hier den Aufgabentext ein, aus dem die KI Rechenschritte extrahieren soll..."
                                             rows={4}
                                             className="w-full p-3 rounded-xl border border-border text-xs font-semibold text-foreground focus:ring-2 focus:ring-primary/20 focus:border-transparent outline-none bg-card resize-none"
                                         />

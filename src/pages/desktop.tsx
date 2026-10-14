@@ -9,9 +9,9 @@ import { Button } from '@/components/ui/Button';
 import { Abschnitt, Kachel, Produktbild, Symbol } from '@/components/marketing/site/Bausteine';
 
 const MERKMALE = [
-    { icon: Cpu, titel: 'Lokal oder mit Mistral', text: 'Ein lokales Modell über Ollama oder Mistral mit Ihrem eigenen Schlüssel – Sie wählen.' },
+    { icon: Cpu, titel: 'Lokal oder mit Mistral', text: 'Ein lokales Modell über Ollama oder Mistral mit deinem eigenen Schlüssel – du wählst.' },
     { icon: Laptop, titel: 'Windows und Ubuntu', text: 'Für Windows 10/11 und Ubuntu Desktop. Eine Version für macOS ist in Planung.' },
-    { icon: KeyRound, titel: 'Schlüssel bleiben bei Ihnen', text: 'API-Schlüssel werden nur auf Ihrem Gerät gespeichert, nie auf Servern von Koreki.' },
+    { icon: KeyRound, titel: 'Schlüssel bleiben bei dir', text: 'API-Schlüssel werden nur auf deinem Gerät gespeichert, nie auf Servern von Koreki.' },
 ];
 
 /**
@@ -30,8 +30,8 @@ export default function DesktopOnboarding() {
     return (
         <MarketingLayout hideHeader={lokal} hideFooter={lokal}>
             <Head>
-                <title>Koreki Desktop | Korrektur auf Ihrem eigenen Rechner</title>
-                <meta name="description" content="Koreki Desktop für Windows und Ubuntu: Korrekturvorschläge für Klassenarbeiten, lokal auf Ihrem Rechner." />
+                <title>Koreki Desktop | Korrektur auf deinem eigenen Rechner</title>
+                <meta name="description" content="Koreki Desktop für Windows und Ubuntu: Korrekturvorschläge für Klassenarbeiten, lokal auf deinem Rechner." />
             </Head>
 
             <Abschnitt kopfband className="pt-16 md:pt-24">
@@ -39,7 +39,7 @@ export default function DesktopOnboarding() {
                     <div>
                         <p className="text-xs font-bold uppercase tracking-[0.22em] text-primary mb-3">Desktop-Version</p>
                         <h1 className="text-4xl md:text-6xl font-extrabold tracking-[-0.045em] leading-[1.05] text-foreground">
-                            Koreki auf Ihrem eigenen Rechner.
+                            Koreki auf deinem eigenen Rechner.
                         </h1>
                         <p className="mt-6 text-lg text-muted-foreground max-w-xl">
                             Installieren wie jedes andere Programm. Musterlösung und Arbeiten hochladen, Vorschläge prüfen – ohne Konto und ohne Server.
@@ -86,7 +86,7 @@ export default function DesktopOnboarding() {
                         <div className="mt-6 rounded-xl bg-warning/10 p-4 flex gap-3">
                             <ShieldAlert size={18} className="text-warning shrink-0 mt-0.5" />
                             <p className="text-xs/relaxed text-foreground">
-                                Bitte beachten Sie die Datenschutzrichtlinien Ihrer Schule und schützen Sie Ihr Gerät vor unbefugtem Zugriff.
+                                Bitte beachte die Datenschutzrichtlinien deiner Schule und schütze dein Gerät vor unbefugtem Zugriff.
                             </p>
                         </div>
                         <p className="mt-4 text-xs/relaxed text-muted-foreground">

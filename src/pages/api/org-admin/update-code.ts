@@ -38,7 +38,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
     } catch (error) {
         logger.error('ERROR in /api/org-admin/update-code', { endpoint: req.url, message: toErrorMessage(error) });
         if (toErrorCode(error) === 'P2002') {
-            return res.status(400).json({ message: 'Dieser Code ist bereits vergeben. Bitte wählen Sie einen anderen.' });
+            return res.status(400).json({ message: 'Dieser Code ist bereits vergeben. Bitte versuche einen anderen.' });
         }
         return res.status(500).json({ message: 'Interner Server-Fehler' });
     }

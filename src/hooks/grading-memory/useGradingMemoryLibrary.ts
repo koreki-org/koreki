@@ -69,7 +69,7 @@ export function useGradingMemoryLibrary({
                     meldeHinweis(
                         `Der Erfahrungsschatz „${parsed.name}" enthält keine Fallbeispiele.\n\n`
                         + 'Die Datei ist in Ordnung — sie war bereits beim Exportieren leer. '
-                        + 'Öffnen Sie den Erfahrungsschatz, fügen Sie Fallbeispiele hinzu und exportieren Sie ihn erneut.'
+                        + 'Öffne den Erfahrungsschatz, füge Fallbeispiele hinzu und exportiere ihn erneut.'
                     );
                     return;
                 }

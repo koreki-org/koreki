@@ -59,7 +59,7 @@ export default function Login() {
           </Head>
           <div className="flex-grow flex items-center justify-center p-6 text-center">
             <div className="bg-white w-full max-w-[400px] p-10 rounded-2xl border border-border shadow-sm animate-fade-up">
-              <Logo showText textLarge size={72} className="mb-8" subtitle="Ihr KI-Korrekturassistent" />
+              <Logo showText textLarge size={72} className="mb-8" subtitle="Dein KI-Korrektur Assistent" />
               <div className="p-4 bg-warning/5 border border-warning/20 rounded-xl text-left text-xs text-warning flex gap-3">
                 <AlertTriangle size={24} className="shrink-0 text-warning" />
                 <div>
@@ -110,7 +110,7 @@ export default function Login() {
             textLarge
             size={72}
             className="mb-8 cursor-pointer hover:opacity-80 transition-opacity"
-            subtitle="Ihr KI-Korrekturassistent"
+            subtitle="Dein KI-Korrektur Assistent"
           />
         </Link>
 

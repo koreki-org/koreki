@@ -21,7 +21,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
     const { isDesktop, isCommunity, isSaaS, isPure, istEigenverwaltet } = anbieterPanelModus(appMode);
 
     const handleClearKey = async () => {
-        if (await askConfirmation({ title: 'Zugangsdaten löschen', message: 'Möchten Sie die Zugangsdaten wirklich vom Rechner löschen?' })) {
+        if (await askConfirmation({ title: 'Zugangsdaten löschen', message: 'Möchtest du die Zugangsdaten wirklich sicher vom Rechner löschen?' })) {
             if (isDesktop) {
                 try {
                     const { vaultService } = await import('@/lib/ai/vault-service');
@@ -64,7 +64,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                         <div>
                             <h4 className="text-sm font-medium text-primary tracking-tight">Mittwald AI API aktiv</h4>
                             <p className="text-xxs text-primary font-medium leading-relaxed max-w-[250px] mx-auto mt-1">
-                                Ihr Institut stellt diesen Dienst (Qwen) zentral zur Verfügung. Die Konfiguration erfolgt sicher über die Administration.
+                                Dein Institut stellt diesen Dienst (Qwen) zentral zur Verfügung. Die Konfiguration erfolgt sicher über die Administration.
                             </p>
                         </div>
                     </div>
@@ -153,9 +153,9 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
                     <div className="space-y-1">
                         <p className="text-xxs text-primary font-medium leading-tight">
                             {isDesktop 
-                                ? "Ihre Zugangsdaten werden sicher im Tresor Ihres Betriebssystems verwaltet."
+                                ? "Deine Zugangsdaten werden sicher im Tresor deines Betriebssystems verwaltet."
                                 : istEigenverwaltet
-                                ? "Der Schlüssel gilt für diese Koreki-Instanz und wird in ihrer Konfiguration gespeichert. Die Anfragen laufen über Ihren eigenen Server."
+                                ? "Der Schlüssel gilt für diese Koreki-Instanz und wird in ihrer Konfiguration gespeichert. Die Anfragen laufen über deinen eigenen Server."
                                 : "Direkte Browser-Verbindung (Pure Mode). Aus DSGVO-Gründen werden Daten nicht über Koreki-Server geproxt."}
                         </p>
                         {/* Der CORS-Hinweis gilt nur, wo der Browser selbst beim Anbieter anfragt. */}

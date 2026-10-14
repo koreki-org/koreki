@@ -10,7 +10,7 @@ export const GradingMemoryGeneratingScreen: React.FC = () => {
             </div>
             <h3 className="text-lg font-bold text-foreground mb-2 font-outfit">Simuliere virtuelle Schülerabgaben...</h3>
             <p className="text-muted-foreground text-xs md:text-sm max-w-[450px]">
-                Die KI analysiert Ihre Musterlösung und schlüpft in die Rollen verschiedener Schüler-Avatare, um Tippfehler, lückenhafte Rechenwege und schwammige Sprache zu simulieren und zu bewerten.
+                Die KI analysiert deine Musterlösung und schlüpft in die Rollen verschiedener Schüler-Avatare, um Tippfehler, lückenhafte Rechenwege und schwammige Sprache zu simulieren und zu bewerten.
             </p>
         </div>
     );
