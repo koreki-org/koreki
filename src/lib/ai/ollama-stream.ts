@@ -25,7 +25,29 @@
  * weg, was ueber die Paketgrenze reichte — nicht nur am Ende, sondern an JEDER
  * Grenze. Serverseitig fehlte damit potenziell mitten im Bewertungstext ein
  * Stueck, und weil das Ergebnis gueltiges JSON blieb, fiel es nirgends auf.
+ *
+ * DER ABSCHLUSS IST PFLICHT (19.10.2026)
+ * --------------------------------------
+ * Ollama schliesst jede Antwort mit einer Zeile `"done": true` ab — auch wenn die
+ * Laengengrenze greift (`done_reason: "length"`). Fehlt sie, hat der Server den
+ * Strom mittendrin beendet. Gemessen an `qwen3.8`: Das Modell schrieb im JSON ein
+ * gerades `"` nach einem deutschen „, die JSON-Vorgabe (`format: json`) liess
+ * danach kein Zeichen mehr zu, und Ollama brach ohne Fehlermeldung ab. Der halbe
+ * Text ging als Antwort durch, und die Aufgaben bekamen still 0 Punkte. Ein
+ * sichtbarer Fehler ist einer falschen Punktzahl vorzuziehen.
  */
+
+/** Ollama hat den Strom beendet, ohne die Antwort abzuschliessen. */
+export class OllamaAbbruchFehler extends Error {
+    constructor(zeichen: number) {
+        super(
+            `Ollama hat die Antwort nach ${zeichen} Zeichen abgebrochen, ohne sie abzuschliessen. `
+            + 'Das Modell hat vermutlich ein Zeichen erzeugt, das die JSON-Vorgabe nicht zulaesst. '
+            + 'Die Aufgabe wurde nicht bewertet.'
+        );
+        this.name = 'OllamaAbbruchFehler';
+    }
+}
 
 /** Der Lesezugriff eines Web-Streams — im Node-Zweig gibt es ihn nicht. */
 type WebStreamKoerper = { getReader: () => ReadableStreamDefaultReader<Uint8Array> };
@@ -37,8 +59,9 @@ type WebStreamKoerper = { getReader: () => ReadableStreamDefaultReader<Uint8Arra
  * `message` in den Strom, und eine abgeschnittene Zeile ist normal — die
  * gehoert dem naechsten Durchlauf.
  */
-function sammleAusZeilen(zeilen: string[]): string {
+function sammleAusZeilen(zeilen: string[]): { text: string; abgeschlossen: boolean } {
     let text = '';
+    let abgeschlossen = false;
     for (const zeile of zeilen) {
         const sauber = zeile.trim();
         if (!sauber) continue;
@@ -47,16 +70,18 @@ function sammleAusZeilen(zeilen: string[]): string {
             if (geparst.message?.content) {
                 text += geparst.message.content;
             }
+            if (geparst.done === true) abgeschlossen = true;
         } catch {
             // Kein vollstaendiges JSON-Objekt — nichts beizutragen.
         }
     }
-    return text;
+    return { text, abgeschlossen };
 }
 
 /**
  * Liest den gestreamten Antwortkoerper vollstaendig aus.
  *
+ * @throws OllamaAbbruchFehler wenn die Abschlusszeile fehlt.
  * @param koerper Der Rumpf der `fetch`-Antwort, in welcher Form auch immer.
  */
 export async function leseOllamaStream(koerper: unknown): Promise<string> {
@@ -64,12 +89,19 @@ export async function leseOllamaStream(koerper: unknown): Promise<string> {
 
     let text = '';
     let rest = '';
+    let abgeschlossen = false;
+
+    const uebernimm = (zeilen: string[]): void => {
+        const ergebnis = sammleAusZeilen(zeilen);
+        text += ergebnis.text;
+        abgeschlossen = abgeschlossen || ergebnis.abgeschlossen;
+    };
 
     const verarbeite = (stueck: string): void => {
         const zeilen = (rest + stueck).split('\n');
         // Die letzte Zeile ist moeglicherweise unvollstaendig — aufheben.
         rest = zeilen.pop() || '';
-        text += sammleAusZeilen(zeilen);
+        uebernimm(zeilen);
     };
 
     if (typeof (koerper as { getReader?: unknown }).getReader === 'function') {
@@ -87,6 +119,7 @@ export async function leseOllamaStream(koerper: unknown): Promise<string> {
     }
 
     // Was nach dem letzten Zeilenumbruch stehen blieb, ist jetzt vollstaendig.
-    text += sammleAusZeilen([rest]);
+    uebernimm([rest]);
+    if (!abgeschlossen) throw new OllamaAbbruchFehler(text.length);
     return text;
 }

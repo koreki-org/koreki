@@ -1,4 +1,4 @@
-import { leseOllamaStream } from '../../../src/lib/ai/ollama-stream';
+import { leseOllamaStream, OllamaAbbruchFehler } from '../../../src/lib/ai/ollama-stream';
 
 /**
  * Antwort von Ollama zusammensetzen (Layer 1)
@@ -22,6 +22,9 @@ import { leseOllamaStream } from '../../../src/lib/ai/ollama-stream';
 
 /** Ollama-Zeile, wie sie tatsaechlich ueber die Leitung geht. */
 const zeile = (text: string) => JSON.stringify({ message: { content: text } }) + '\n';
+
+/** Die Abschlusszeile, mit der Ollama jede vollstaendige Antwort beendet. */
+const abschluss = JSON.stringify({ message: { content: '' }, done: true, done_reason: 'stop' }) + '\n';
 
 /** Node-Rumpf: liefert Zeichenketten-Pakete. */
 const alsNodeStream = (pakete: string[]) => ({
@@ -48,8 +51,12 @@ describe.each([
     ['Node-Stream', alsNodeStream],
     ['Web-Stream', alsWebStream]
 ])('leseOllamaStream (%s)', (_name, alsStream) => {
+    /** Wie Ollama: die Pakete, dann die Abschlusszeile. */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const lese = (pakete: string[]) => leseOllamaStream(alsStream(pakete) as any);
+    const lese = (pakete: string[]) => leseOllamaStream(alsStream([...pakete, abschluss]) as any);
+    /** Ohne Abschlusszeile — der Server hat den Strom mittendrin beendet. */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const leseAbgebrochen = (pakete: string[]) => leseOllamaStream(alsStream(pakete) as any);
 
     it('setzt saubere Zeilen zusammen', async () => {
         expect(await lese([zeile('Hallo '), zeile('Welt')])).toBe('Hallo Welt');
@@ -74,8 +81,9 @@ describe.each([
 
     /** Ohne abschliessenden Zeilenumbruch darf das letzte Stueck nicht wegfallen. */
     it('wertet die letzte Zeile ohne Zeilenumbruch aus', async () => {
-        const ohneUmbruch = zeile('Schluss').trimEnd();
-        expect(await lese([ohneUmbruch])).toBe('Schluss');
+        const ohneUmbruch = (zeile('Schluss') + abschluss).trimEnd();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect(await leseOllamaStream(alsStream([ohneUmbruch]) as any)).toBe('Schluss');
     });
 
     /** Ollama mischt Statusobjekte ohne `message` in den Strom. */
@@ -93,8 +101,34 @@ describe.each([
         expect(await lese([zeile('A'), 'kein JSON\n', zeile('B')])).toBe('AB');
     });
 
-    it('liefert bei leerem Strom eine leere Zeichenkette', async () => {
+    it('liefert bei einer leeren, aber abgeschlossenen Antwort eine leere Zeichenkette', async () => {
         expect(await lese([])).toBe('');
+    });
+
+    /**
+     * REGRESSION, 19.10.2026. `qwen3.8` schrieb im JSON ein gerades `"` nach einem
+     * deutschen „; die JSON-Vorgabe liess danach kein Zeichen mehr zu, und Ollama
+     * beendete den Strom ohne Abschlusszeile. Der halbe Text ging als Antwort durch,
+     * die Aufgaben bekamen still 0 Punkte.
+     */
+    it('meldet einen Strom ohne Abschlusszeile als Abbruch, statt den Rumpf zu liefern', async () => {
+        await expect(leseAbgebrochen([zeile('{"tasks": [{"name": "Aufgabe a)", "correctionNotes": "Der Begriff „Personifikation"')]))
+            .rejects.toThrow(OllamaAbbruchFehler);
+    });
+
+    it('nennt im Abbruch, wie weit die Antwort kam', async () => {
+        await expect(leseAbgebrochen([zeile('12345')])).rejects.toThrow(/nach 5 Zeichen abgebrochen/);
+    });
+
+    it('meldet auch einen Strom ganz ohne Zeilen als Abbruch', async () => {
+        await expect(leseAbgebrochen([])).rejects.toThrow(OllamaAbbruchFehler);
+    });
+
+    /** Die Laengengrenze ist ein regulaerer Abschluss — nur ohne Abschlusszeile ist es ein Abbruch. */
+    it('nimmt auch einen Abschluss wegen der Laengengrenze als Abschluss', async () => {
+        const laenge = JSON.stringify({ done: true, done_reason: 'length' }) + '\n';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect(await leseOllamaStream(alsStream([zeile('Teil'), laenge]) as any)).toBe('Teil');
     });
 });
 
