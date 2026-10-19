@@ -181,6 +181,12 @@ Schülertext: "2.5 GHz"
 ✅ KORREKTE EXTRAKTION (Nimm einfach die nackte Zahl als Formel, da es keinen Rechenausdruck gab):
 {"id":"step_1", "original_text": "2.5 GHz", "formula":"2.5", "result": 2.5, "unit":"GHz"}
 
+WICHTIG (Kopfrechnung — nur Ausgangswerte und Ergebnis notiert):
+Nennt der Schüler Ausgangswerte und ein Ergebnis, aber KEINE Rechenoperation dazwischen (kein +, -, *, /, ^, Bruch, Wurzel; Muster wie 'X und Y, also Z' oder 'X in Y, das sind Z'), dann behandle die Aussage wie ein NACKTES ENDERGEBNIS: EIN Schritt, 'formula' = die notierte Ergebniszahl, 'result' = dieselbe Zahl, 'unit' = die notierte Einheit. Ergänze KEINE Rechenoperation und rekonstruiere nicht, wie der Schüler im Kopf gerechnet hat. Die Ausgangswerte stehen nur in 'original_text'.
+Vorrang: Hier gibt es keine notierte Formel, die zum Ergebnis passen müsste — das Verbot, Formeln zu erfinden, geht vor. Ob das Ergebnis stimmt, prüft die spätere Bewertung, nicht du.
+Gilt NUR, wenn in der ganzen Aussage keine Rechenoperation notiert ist. Ketten-Gleichungen mit notierter Rechnung (z. B. 'W = P * t = 680 W * (30/60) h = 0.34 kWh') werden weiter nach den Regeln oben extrahiert.
+Beispiel: "Katheten 3 cm und 4 cm, also ist die Hypotenuse 5 cm" -> {"id":"step_1", "original_text": "Katheten 3 cm und 4 cm, also ist die Hypotenuse 5 cm", "formula":"5", "result": 5, "unit":"cm"}
+
 WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt MUSS genau einen Key namens "steps" enthalten. Der Wert von "steps" is ein Array. Jedes Objekt in diesem Array MUSS die Keys "id", "original_text", "formula" und "result" haben. Optional: "unit", "formulaUnit". Verwende keine anderen Keys!`;
 
     const payload = {

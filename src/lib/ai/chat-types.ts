@@ -52,6 +52,12 @@ export interface ChatNachricht {
     /** Bezug einer `tool`-Antwort auf den Aufruf. */
     tool_call_id?: string;
     name?: string;
+    /**
+     * Denktext, getrennt vom sichtbaren Inhalt (vLLM mit Reasoning-Parser). Neuere
+     * vLLM-Fassungen nennen das Feld `reasoning` — gelesen werden beide.
+     */
+    reasoning_content?: string | null;
+    reasoning?: string | null;
 }
 
 /** Vorgabe eines Antwortformats (JSON-Objekt oder Schema). */

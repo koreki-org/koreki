@@ -227,20 +227,37 @@ describe('Leere Antwort', () => {
         'correction', { modelSolution: '', studentText: '' }, URL, API_KEY, { model: 'm' }
     );
 
-    /**
-     * KEIN WIEDERHOLUNGSVERSUCH — und das ist eine Entscheidung, keine Luecke.
-     *
-     * Am 07.09.2026 stand hier kurzzeitig einer. Der Einspruch des Anbieters hat ihn
-     * gekippt: Er haette den Fehler unsichtbar gemacht. Eine Aufgabe waere nach einem
-     * Aussetzer anders zustande gekommen als die daneben, und der Punktzahl saehe man
-     * das nicht an. Ein sichtbarer Fehlschlag ist einer Bewertung vorzuziehen, die
-     * niemand einordnen kann.
-     */
-    it('wiederholt nicht, sondern meldet', async () => {
-        mockFetchWithRetry.mockResolvedValue(leer);
+    /** Die Fortsetzung kommt ebenfalls leer zurueck — ohne Inhalt, ohne Denktext. */
+    const auchLeer = { ok: true, json: async () => ({ choices: [{ message: { content: '' }, finish_reason: 'stop' }] }) };
 
-        await expect(anfragen()).rejects.toThrow(/leere Antwort/);
-        expect(mockFetchWithRetry).toHaveBeenCalledTimes(1);
+    /**
+     * KEIN NEU-WUERFELN — und das ist eine Entscheidung, keine Luecke.
+     *
+     * Am 07.09.2026 stand hier kurzzeitig ein Wiederholungsversuch. Der Einspruch des
+     * Anbieters hat ihn gekippt: Eine Aufgabe waere nach einem Aussetzer anders
+     * zustande gekommen als die daneben, und der Punktzahl saehe man das nicht an.
+     *
+     * SEIT 19.10.2026 wird ein Denkabbruch FORTGESETZT: derselbe Denktext, nur der
+     * Uebergang zur Antwort wird erzwungen (`denkabbruch.ts`). Darum zwei Aufrufe —
+     * aber der zweite enthaelt den Denktext des ersten und denkt nicht neu. Waere er
+     * eine blosse Wiederholung, stuende hier dieselbe Anfrage zweimal.
+     */
+    it('setzt einen Denkabbruch fort, statt neu zu wuerfeln', async () => {
+        mockFetchWithRetry
+            .mockResolvedValueOnce(leer)
+            .mockResolvedValueOnce({ ok: true, json: async () => ({ choices: [{ message: { content: null, reasoning_content: '{"ok":1}' }, finish_reason: 'stop' }] }) });
+
+        const ergebnis = await anfragen();
+
+        expect(ergebnis.ok).toBe(1);
+        expect(mockFetchWithRetry).toHaveBeenCalledTimes(2);
+        const zweite = JSON.parse(mockFetchWithRetry.mock.calls[1][1].body);
+        const vorgabe = zweite.messages[zweite.messages.length - 1];
+        expect(vorgabe.role).toBe('assistant');
+        expect(vorgabe.content).toMatch(/^<think>\nx+/);
+        expect(vorgabe.content).toMatch(/<\/think>\n\n$/);
+        expect(zweite.continue_final_message).toBe(true);
+        expect(zweite.add_generation_prompt).toBe(false);
     });
 
     /**
@@ -248,20 +265,32 @@ describe('Leere Antwort', () => {
      * war fertig und hat nichts gesagt — eine ganz andere Ursache als `length`
      * (Platz aufgebraucht) oder `content_filter` (blockiert).
      */
-    it('nennt Abbruchgrund und Umfang in der Meldung', async () => {
-        mockFetchWithRetry.mockResolvedValue(leer);
+    it('nennt Abbruchgrund und Umfang in der Meldung, wenn auch die Fortsetzung leer bleibt', async () => {
+        mockFetchWithRetry.mockResolvedValueOnce(leer).mockResolvedValueOnce(auchLeer);
 
         await expect(anfragen()).rejects.toThrow(/Abbruchgrund: stop \(4415 Antwort-Tokens\)/);
+        expect(mockFetchWithRetry).toHaveBeenCalledTimes(2);
     });
 
-    /** Der leere String lief frueher weiter und scheiterte erst beim JSON-Lesen. */
-    it('behandelt den leeren String wie eine fehlende Antwort', async () => {
-        mockFetchWithRetry.mockResolvedValue({
-            ok: true,
-            json: async () => ({ choices: [{ message: { content: '' }, finish_reason: 'stop' }] })
-        });
+    /**
+     * Ohne Denktext gibt es nichts fortzusetzen. Der leere String lief frueher weiter
+     * und scheiterte erst beim JSON-Lesen.
+     */
+    it('behandelt den leeren String ohne Denktext als fehlende Antwort — ein Aufruf', async () => {
+        mockFetchWithRetry.mockResolvedValue(auchLeer);
 
         await expect(anfragen()).rejects.toThrow(/leere Antwort/);
+        expect(mockFetchWithRetry).toHaveBeenCalledTimes(1);
+    });
+
+    /** Wer nicht denken sollte, hat keinen Denkabbruch — dort bleibt es beim Fehler. */
+    it('setzt nicht fort, wenn der Denkschritt aus war', async () => {
+        mockFetchWithRetry.mockResolvedValue(leer);
+
+        await expect(executeOpenAIRequest(
+            'correction', { modelSolution: '', studentText: '' }, URL, API_KEY, { model: 'm', enableThinking: false }
+        )).rejects.toThrow(/leere Antwort/);
+        expect(mockFetchWithRetry).toHaveBeenCalledTimes(1);
     });
 
     /**

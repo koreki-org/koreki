@@ -119,7 +119,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                         <p className="text-xxs text-muted-foreground leading-relaxed">
                                             {isPureMode 
                                                 ? 'Aktiviert eine tiefere Analyse und kognitive Vision-Erweiterung für komplexe Handschriften.' 
-                                                : 'Nutzt das leistungsstärkere Modell Qwen3.6 für maximale logische Präzision bei der Korrektur. Die Ausführung dauert dafür etwas länger.'
+                                                : 'Nutzt ein leistungsstärkeres Qwen-Modell für maximale logische Präzision bei der Korrektur. Die Ausführung dauert dafür etwas länger.'
                                             }
                                         </p>
                                     </div>

@@ -23,6 +23,7 @@ import { alsText } from './chat-types';
 import type { ChatNachricht, ChatAnfrage, ChatAntwort, TokenVerbrauch } from './chat-types';
 import { pruefeWerkzeugAufruf } from './tool-validation';
 import { denktBeiAktion } from './denkschritt';
+import { addiereVerbrauch, antwortAusFortsetzung, baueFortsetzung, denktextAus, istDenkabbruch } from './denkabbruch';
 
 /**
  * Leer ist auch der leere String.
@@ -281,38 +282,47 @@ export async function executeOpenAIRequest(
      *
      * Der Abbruchgrund gehoert deshalb in die Meldung: Ohne ihn sieht man nur, DASS
      * nichts kam.
+     *
+     * NACHTRAG (19.10.2026). Die Ursache ist inzwischen bekannt — das Modell setzt
+     * mitten im Denken sein Ende-Zeichen. Endet eine Denk-Antwort so, wird sie
+     * fortgesetzt statt wiederholt: gleicher Denktext, nur der Uebergang zur Antwort
+     * wird erzwungen (`denkabbruch.ts`). Der Einwand oben gilt fuer das Neu-Wuerfeln,
+     * nicht dafuer. Bleibt auch die Fortsetzung leer, kommt der Fehler wie bisher.
      */
     let abbruchgrund: string | undefined;
+    let letzteNachricht: ChatNachricht | undefined;
 
-    while (toolRetryCount <= maxToolRetries) {
-        let currentData: ChatAntwort;
-
+    const sende = async (anfrage: ChatAnfrage): Promise<ChatAntwort> => {
         if (isDesktopTarget()) {
-            currentData = await ueberDesktopProxy({ url, apiKey, body, signal: options.signal, kontext: 'Desktop Proxy Fehler' });
-        } else {
-            const response = await fetchWithRetry(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
-                body: JSON.stringify(body),
-                signal: options.signal
-            });
+            return ueberDesktopProxy({ url, apiKey, body: anfrage, signal: options.signal, kontext: 'Desktop Proxy Fehler' });
+        }
+        const response = await fetchWithRetry(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: JSON.stringify(anfrage),
+            signal: options.signal
+        });
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                throw new AIProviderError(
-                    'OpenAI-kompatibler Anbieter',
-                    response.status,
-                    errorData.error?.message || response.statusText
-                );
-            }
-
-            currentData = await response.json();
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new AIProviderError(
+                'OpenAI-kompatibler Anbieter',
+                response.status,
+                errorData.error?.message || response.statusText
+            );
         }
 
+        return response.json();
+    };
+
+    while (toolRetryCount <= maxToolRetries) {
+        const currentData = await sende(body);
+
         const message = currentData.choices?.[0]?.message;
+        letzteNachricht = message;
         responseUsage = currentData.usage;
 
         // Tool Calling Logic
@@ -348,6 +358,26 @@ export async function executeOpenAIRequest(
 
     if (toolRetryCount > maxToolRetries) {
         throw new Error('Die KI konnte nach mehreren Versuchen keinen mathematisch validen Graphen generieren. Bitte passe den Aufgabentext an oder nutze ein leistungsstärkeres Modell.');
+    }
+
+    if (istLeer(responseContent) && istDenkabbruch(letzteNachricht, abbruchgrund, isThinking)) {
+        const denktext = denktextAus(letzteNachricht);
+        const fortsetzung = await sende(baueFortsetzung(body, denktext));
+        const antwort = antwortAusFortsetzung(fortsetzung.choices?.[0]?.message);
+        logger.warn('[OpenAI] Denkabbruch — Antwort aus dem vorhandenen Denktext fortgesetzt', {
+            action,
+            model: targetModel,
+            abbruchgrund,
+            denkZeichen: denktext.length,
+            fortsetzungAbbruchgrund: fortsetzung.choices?.[0]?.finish_reason,
+            ergebnis: antwort !== '' ? 'Antwort' : 'weiterhin leer'
+        });
+        responseUsage = addiereVerbrauch(responseUsage, fortsetzung.usage);
+        if (antwort !== '') {
+            responseContent = antwort;
+        } else {
+            abbruchgrund = fortsetzung.choices?.[0]?.finish_reason ?? abbruchgrund;
+        }
     }
 
     // Ausgeschrieben statt ueber `istLeer`: Nur so verengt der Compiler den Typ fuer
