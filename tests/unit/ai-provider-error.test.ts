@@ -132,6 +132,28 @@ describe('resolveAiHttpError', () => {
     });
 });
 
+/**
+ * Speichermangel auf dem lokalen KI-Server (20.10.2026): Ein Handyfoto forderte im
+ * Bild-Encoder 17 GB an. Der Rohtext bleibt im Protokoll, die Lehrkraft bekommt
+ * eine Meldung, mit der sie etwas anfangen kann.
+ */
+describe('Speichermangel auf dem KI-Server', () => {
+    const OLLAMA_OOM = 'an error was encountered while running the model: cudaMalloc failed: out of memory\n'
+        + 'ggml_gallocr_reserve_n_impl: failed to allocate CUDA0 buffer of size 17183641344';
+
+    it('wird als Grafikspeicher-Problem gemeldet, nicht als "nicht erreichbar"', () => {
+        const { status, message } = resolveAiHttpError(new AIProviderError('Ollama', 500, OLLAMA_OOM), 'Fallback');
+        expect(status).toBe(502);
+        expect(message).toContain('Grafikspeicher');
+        expect(message).not.toContain('cudaMalloc');
+    });
+
+    it('andere Serverfehler bleiben "nicht erreichbar"', () => {
+        const { message } = resolveAiHttpError(new AIProviderError('Ollama', 500, 'model runner has unexpectedly stopped'), 'Fallback');
+        expect(message).toContain('nicht erreichbar');
+    });
+});
+
 describe('AIProviderError', () => {
     it('bewahrt Anbieter, Status und Detail fuer den Server-Log', () => {
         const err = new AIProviderError('Mittwald', 401, 'Authentication error.');

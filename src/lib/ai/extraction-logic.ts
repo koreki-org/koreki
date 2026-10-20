@@ -2,6 +2,7 @@ import { extractTextFromFile, renderSinglePage, toBase64, SEITEN_RENDER_FAKTOR }
 import { performOCRRequest } from '../ai-logic';
 import { promisePool } from '../ai/promise-pool';
 import * as pdfjsLib from 'pdfjs-dist';
+import { verkleinereFuerLokaleBilderkennung } from '../bild-verkleinern';
 
 export interface OCRResult {
     text: string;
@@ -29,11 +30,19 @@ export async function runExtractionStrategy(
 ): Promise<OCRResult> {
     const { isScan, needsPreview, appMode, settings, pageRange, sourceOverride, isComplex, signal } = options;
 
+    // Lokales Ollama: Bilder auf Seitengroesse — sonst reicht der Grafikspeicher
+    // des Bild-Encoders nicht (siehe ../bild-verkleinern). PDF-Seiten haben diese
+    // Groesse bereits; Fotos, Scans und ihre geschwaerzten Abzuege nicht.
+    const lokal = settings?.provider === 'ollama';
+
     // --- CASE 0: Privacy / Source Override ---
     if (sourceOverride) {
+        const quelle = lokal
+            ? await Promise.all(sourceOverride.buffers.map(b => verkleinereFuerLokaleBilderkennung({ base64: b, mimeType: sourceOverride.mimeType })))
+            : sourceOverride.buffers.map(b => ({ base64: b, mimeType: sourceOverride.mimeType }));
         const text = await performOCRRequest(
-            sourceOverride.buffers, 
-            sourceOverride.mimeType, 
+            quelle.map(q => q.base64), 
+            quelle[0]?.mimeType ?? sourceOverride.mimeType, 
             false, 
             appMode, 
             settings, 
@@ -107,9 +116,12 @@ export async function runExtractionStrategy(
 
     // --- CASE C: Direct Image Files ---
     const base64 = await toBase64(file);
+    const bild = lokal
+        ? await verkleinereFuerLokaleBilderkennung({ base64, mimeType: file.type })
+        : { base64, mimeType: file.type };
     const text = await performOCRRequest(
-        [base64], 
-        file.type, 
+        [bild.base64], 
+        bild.mimeType, 
         true, 
         appMode, 
         settings, 

@@ -65,6 +65,17 @@ const REQUEST_REJECTED_MESSAGE =
     'Der KI-Anbieter hat die Anfrage abgelehnt — vermutlich ist das konfigurierte Modell ' +
     'dort nicht (mehr) verfügbar. Bitte den Administrator informieren.';
 
+/**
+ * Der lokale KI-Server hatte nicht genug Grafikspeicher. Gemessen am 20.10.2026:
+ * Ein Handyfoto forderte im Bild-Encoder 17 GB in einem Block an. Seit diesem Tag
+ * verkleinert Koreki Bilder fuer Ollama (`bild-verkleinern.ts`); tritt es trotzdem
+ * auf, ist das Modell fuer die Karte zu gross oder ein zweites Modell belegt sie.
+ */
+const GPU_MEMORY_MESSAGE =
+    'Der KI-Server hatte nicht genug Grafikspeicher für diese Anfrage. ' +
+    'Bitte erneut versuchen; tritt es wiederholt auf, ein kleineres Modell wählen ' +
+    'oder den Administrator informieren.';
+
 const UNREACHABLE_MESSAGE =
     'Der KI-Anbieter ist derzeit nicht erreichbar. Bitte versuchen Sie es in Kürze erneut.';
 
@@ -116,6 +127,9 @@ export function resolveAiHttpError(
         }
         if (status === 400 || status === 404 || status === 422) {
             return { status: 502, message: REQUEST_REJECTED_MESSAGE };
+        }
+        if (/out of memory|cudaMalloc failed/i.test(err.upstreamDetail)) {
+            return { status: 502, message: GPU_MEMORY_MESSAGE };
         }
         return { status: 502, message: UNREACHABLE_MESSAGE };
     }

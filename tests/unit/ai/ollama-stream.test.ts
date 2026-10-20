@@ -124,6 +124,23 @@ describe.each([
         await expect(leseAbgebrochen([])).rejects.toThrow(OllamaAbbruchFehler);
     });
 
+    /**
+     * Ollama meldet einen Fehler mitten im Strom (20.10.2026: Grafikspeicher bei der
+     * Bilderkennung). Der Rohtext gehoert ins Protokoll, nicht in die Meldung.
+     */
+    it('macht aus einer Fehlerzeile im Strom einen Anbieter-Fehler mit Rohtext', async () => {
+        const fehlerzeile = JSON.stringify({ error: 'cudaMalloc failed: out of memory' }) + '\n';
+        await expect(leseAbgebrochen([fehlerzeile])).rejects.toMatchObject({
+            name: 'AIProviderError',
+            upstreamDetail: 'cudaMalloc failed: out of memory'
+        });
+    });
+
+    it('nennt im Abbruch keine Ursache, die es nicht kennt', async () => {
+        await expect(leseAbgebrochen([])).rejects.toThrow(/nicht.*JSON|abgestürzt/);
+        await expect(leseAbgebrochen([])).rejects.not.toThrow(/JSON-Vorgabe/);
+    });
+
     /** Die Laengengrenze ist ein regulaerer Abschluss — nur ohne Abschlusszeile ist es ein Abbruch. */
     it('nimmt auch einen Abschluss wegen der Laengengrenze als Abschluss', async () => {
         const laenge = JSON.stringify({ done: true, done_reason: 'length' }) + '\n';

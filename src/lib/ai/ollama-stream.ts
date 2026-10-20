@@ -35,15 +35,25 @@
  * danach kein Zeichen mehr zu, und Ollama brach ohne Fehlermeldung ab. Der halbe
  * Text ging als Antwort durch, und die Aufgaben bekamen still 0 Punkte. Ein
  * sichtbarer Fehler ist einer falschen Punktzahl vorzuziehen.
+ *
+ * NACHTRAG (20.10.2026). Der Abbruch hat mehr als eine Ursache. Bei der
+ * Bilderkennung stuerzte der Ollama-Prozess ab, weil der Grafikspeicher fuer ein
+ * grosses Foto nicht reichte — dort gibt es gar keine JSON-Vorgabe. Die Meldung
+ * nennt deshalb keine Ursache mehr, die sie nicht kennt. Schickt Ollama im Strom
+ * selbst eine Fehlerzeile (`"error": …`), wird daraus ein `AIProviderError`: Der
+ * Rohtext geht ins Server-Protokoll, die Lehrkraft bekommt die aufbereitete
+ * Meldung aus `resolveAiHttpError`.
  */
+
+import { AIProviderError } from './provider-error';
 
 /** Ollama hat den Strom beendet, ohne die Antwort abzuschliessen. */
 export class OllamaAbbruchFehler extends Error {
     constructor(zeichen: number) {
         super(
-            `Ollama hat die Antwort nach ${zeichen} Zeichen abgebrochen, ohne sie abzuschliessen. `
-            + 'Das Modell hat vermutlich ein Zeichen erzeugt, das die JSON-Vorgabe nicht zulaesst. '
-            + 'Die Aufgabe wurde nicht bewertet.'
+            `Ollama hat die Antwort nach ${zeichen} Zeichen abgebrochen, ohne sie abzuschließen — `
+            + 'der KI-Server ist dabei vermutlich abgestürzt oder die Verbindung riss ab. '
+            + 'Bitte erneut versuchen; tritt es wiederholt auf, das Server-Protokoll von Ollama prüfen.'
         );
         this.name = 'OllamaAbbruchFehler';
     }
@@ -59,9 +69,10 @@ type WebStreamKoerper = { getReader: () => ReadableStreamDefaultReader<Uint8Arra
  * `message` in den Strom, und eine abgeschnittene Zeile ist normal — die
  * gehoert dem naechsten Durchlauf.
  */
-function sammleAusZeilen(zeilen: string[]): { text: string; abgeschlossen: boolean } {
+function sammleAusZeilen(zeilen: string[]): { text: string; abgeschlossen: boolean; fehler?: string } {
     let text = '';
     let abgeschlossen = false;
+    let fehler: string | undefined;
     for (const zeile of zeilen) {
         const sauber = zeile.trim();
         if (!sauber) continue;
@@ -71,16 +82,18 @@ function sammleAusZeilen(zeilen: string[]): { text: string; abgeschlossen: boole
                 text += geparst.message.content;
             }
             if (geparst.done === true) abgeschlossen = true;
+            if (typeof geparst.error === 'string') fehler = geparst.error;
         } catch {
             // Kein vollstaendiges JSON-Objekt — nichts beizutragen.
         }
     }
-    return { text, abgeschlossen };
+    return { text, abgeschlossen, fehler };
 }
 
 /**
  * Liest den gestreamten Antwortkoerper vollstaendig aus.
  *
+ * @throws AIProviderError wenn Ollama im Strom eine Fehlerzeile schickt.
  * @throws OllamaAbbruchFehler wenn die Abschlusszeile fehlt.
  * @param koerper Der Rumpf der `fetch`-Antwort, in welcher Form auch immer.
  */
@@ -90,11 +103,13 @@ export async function leseOllamaStream(koerper: unknown): Promise<string> {
     let text = '';
     let rest = '';
     let abgeschlossen = false;
+    let fehler: string | undefined;
 
     const uebernimm = (zeilen: string[]): void => {
         const ergebnis = sammleAusZeilen(zeilen);
         text += ergebnis.text;
         abgeschlossen = abgeschlossen || ergebnis.abgeschlossen;
+        fehler = ergebnis.fehler ?? fehler;
     };
 
     const verarbeite = (stueck: string): void => {
@@ -120,6 +135,7 @@ export async function leseOllamaStream(koerper: unknown): Promise<string> {
 
     // Was nach dem letzten Zeilenumbruch stehen blieb, ist jetzt vollstaendig.
     uebernimm([rest]);
+    if (fehler) throw new AIProviderError('Ollama', 500, fehler);
     if (!abgeschlossen) throw new OllamaAbbruchFehler(text.length);
     return text;
 }
