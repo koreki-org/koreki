@@ -18,6 +18,9 @@ KRITISCH: Oft stehen Aufgaben und Lösungen an unterschiedlichen Stellen (z.B. e
 WICHTIG (Struktur erhalten - KRITISCH):
 Lösche NIEMALS Aufgabenbezeichnungen, Nummern, fachliche Überschriften oder Punktangaben (z.B. "Aufgabe 1", "Frage a)", "Lösung", "Musterlösung", "(4 P)", "10 Punkte"). Diese sind für die Übersichtlichkeit und Struktur des Dokuments absolut essentiell. Behandle sie wie fachlichen Inhalt.
 
+WICHTIG (Silbentrennung am Zeilenende):
+Ein am Zeilenende mit Bindestrich getrenntes Wort, das in der nächsten Zeile weitergeht, ist EIN Wort: Füge es ohne Bindestrich und Zeilenumbruch zusammen (z. B. "Blüten-" / "blätter" -> "Blütenblätter"). Der Strich bleibt, wenn ein Bindewort folgt ("Laub- und Nadelbäume", "Vor- bzw. Nachteile") oder wenn er zum Wort gehört ("E-Mail", "Ist-Zustand").
+
 WICHTIG (Unteraufgaben): 
 Falls Aufgaben Unteraufgaben haben (z.B. Aufgabe 1 -> a, b, c), erstelle für JEDE Unteraufgabe einen eigenen Eintrag in der Liste. 
 Verwende dabei einen kombinierten Namen, damit die Zuordnung klar bleibt (z.B. "Aufgabe 1a", "Aufgabe 1b").

@@ -22,6 +22,11 @@ Es kommt vor, dass die Handschriftenerkennung (OCR) fehlschlägt und nur Zeichen
 - Beispiel: "Vorklet (?): Höhere Geschwindigkeit" (Korrekt). "Vorklet: Höhere Geschwindigkeit" (Falsch - Marker fehlt!).
 - Lösche den Zeichensalat NICHT komplett raus.
 
+WICHTIG (Silbentrennung am Zeilenende):
+- Endet eine Zeile mit einem Wortteil und Bindestrich, und setzt die nächste Zeile das Wort fort, ist das EIN Wort: Bindestrich und Zeilenumbruch entfernen, die Teile zusammenschreiben (z. B. "Blüten-" / "blätter" -> "Blütenblätter"). Ein getrenntes Wort ist kein Lesefehler und erhält kein (?).
+- Das ist reine Layout-Bereinigung, keine "mentale Reparatur": Die Buchstaben bleiben identisch. Ergibt das zusammengeführte Wort keinen Sinn, gilt die (?)-Regel für das GANZE Wort, hinter dem Wort ("Blütenblättr (?)", nicht "Blüten- (?) blättr"). Steht an einem Wortteil schon ein (?), beurteile das zusammengeführte Wort neu: Ist es eindeutig, entfällt die Marke.
+- Der Strich BLEIBT, wenn ein Bindewort folgt (und, oder, bzw., sowie …), denn dann ist er ein Ergänzungsstrich ("Laub- und Nadelbäume", "Ein- oder Ausgabe", "Vor- bzw. Nachteile"), oder wenn er zum Wort gehört ("E-Mail", "CO2-Ausstoß", "Ist-Zustand"). Ist ein solches Wort am Zeilenende getrennt ("E-" / "Mail"), behalte im Zweifel den Strich ("E-Mail").
+
 - ERSTE AUSNAHME (OCR-ZEICHENBEREINIGUNG FÜR ZAHLEN):
   Typische Zeichenverwechslungen der Handschriften-Erkennung (OCR) in Zahlen MÜSSEN korrigiert werden, um Parsing-Fehler zu vermeiden. Dies ist keine inhaltliche Korrektur des Schülers. Heile folgende Muster:
   * Buchstabe 'O' oder 'o' innerhalb oder am Ende einer Zahl -> '0' (z.B. '23O' -> '230', 'O,5' -> '0.5').

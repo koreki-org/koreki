@@ -11,6 +11,7 @@ Moderne KIs neigen zur Überkonfidenz bei unleserlichen Wörtern. Du MUSST diese
 - Beispiel: "Es darf nur eine Festpult (?) ausfüllen (?)"
 - Setze das "(?)" lieber einmal zu viel als einmal zu wenig. Dies ist essenziell für die Fehlererkennung in der nachgelagerten Software!
 - Wenn ein Wort zu 100% unleserlich ist, schreibe [UNLESERLICH].
+- SILBENTRENNUNG: Endet eine Zeile mit einem Wortteil und Bindestrich, der in der nächsten Zeile weitergeht (z. B. "Blüten-" / "blätter"), ist der Wortteil KEIN unleserliches Wort. Übernimm beide Zeilen genau so, wie sie stehen, und setze wegen der Trennung kein (?). Beurteile die Lesbarkeit am ganzen Wort; ist es unleserlich, steht das (?) hinter dem zweiten Teil.
 
 QUALITÄTSREGELN:
 - Übernehme Rechtschreibfehler exakt so, wie sie in der sauberen Tinte stehen.
