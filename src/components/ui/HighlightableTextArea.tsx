@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Textarea } from './Textarea';
 import { cn } from '@/lib/utils';
+import { OCR_MARKE, OCR_MARKE_MIT_WORT } from '@/lib/task-utils';
 
 interface HighlightableTextAreaProps {
     value: string;
@@ -29,10 +30,9 @@ export const HighlightableTextArea: React.FC<HighlightableTextAreaProps> = ({ va
 
     const renderHighlightedText = (text: string) => {
         if (!text) return text;
-        const pattern = /(\S+\s*\(?\?\))/g;
-        const parts = text.split(pattern);
+        const parts = text.split(OCR_MARKE_MIT_WORT);
         return parts.map((part, i) => {
-            if (part.match(/\(\?\)/)) {
+            if (OCR_MARKE.test(part)) {
                 return (
                     <span key={i} className="bg-warning/20 border-b border-warning/50 rounded-sm px-1 font-bold animate-pulse" style={{ color: 'transparent' }}>
                         {part}

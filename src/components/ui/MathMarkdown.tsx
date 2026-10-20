@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm';
 import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import { cn } from '@/lib/utils';
+import { OCR_MARKE, OCR_MARKE_MIT_WORT } from '@/lib/task-utils';
 
 /**
  * Detects and formats markdown tables that have been squashed into a single line
@@ -202,10 +203,9 @@ export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }
     const processContent = (text: string) => {
         if (!text) return text;
         // 1. OCR Warnings (?)
-        const pattern = /(\S+\s*\(?\?\))/g;
-        const parts = text.split(pattern);
+        const parts = text.split(OCR_MARKE_MIT_WORT);
         let joined = parts.map((part, i) => {
-            if (part.match(/\(\?\)/)) {
+            if (OCR_MARKE.test(part)) {
                 return `<span class="bg-warning/20 border-b border-warning/40 text-warning px-1 rounded-sm font-bold animate-pulse inline-block">${part}</span>`;
             }
             return part;

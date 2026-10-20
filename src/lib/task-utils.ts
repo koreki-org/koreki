@@ -33,10 +33,32 @@ export function groupTasksByMain(tasks: Task[]): Record<string, Task[]> {
 }
 
 /**
- * Checks if a block of text contains OCR uncertainty markers "(?)".
+ * Die OCR-Marke fuer unsichere Lesungen — EINE Definition fuer alle Stellen.
+ *
+ * ANLASS (20.10.2026). Die Bilderkennung schrieb „Fest- platten ( ? )" mit
+ * Leerzeichen in der Klammer. Gesucht wurde an vier Stellen zeichengenau nach
+ * `(?)` — Markierung im Textfeld, in der Anzeige, Vertrauensbremse, Zuordnung.
+ * Keine fand die Marke: Die Farbe fehlte, und die Vertrauensbremse griff nicht.
+ *
+ * Toleriert Leerzeichen innerhalb der Klammer, sonst nichts.
+ */
+export const OCR_MARKE_MUSTER = String.raw`\(\s*\?\s*\)`;
+
+/** Die Marke allein, ohne `g`-Flag — sicher fuer wiederholtes `test`. */
+export const OCR_MARKE = new RegExp(OCR_MARKE_MUSTER);
+
+/**
+ * Das markierte Wort samt Marke, als Fanggruppe fuer `split` — so bleiben die
+ * Teile beim Zerlegen erhalten und koennen hervorgehoben werden.
+ */
+export const OCR_MARKE_MIT_WORT = new RegExp(String.raw`(\S+\s*${OCR_MARKE_MUSTER})`, 'g');
+
+/**
+ * Checks if a block of text contains OCR uncertainty markers "(?)" — auch mit
+ * Leerzeichen in der Klammer.
  */
 export function hasOcrWarnings(text: string): boolean {
-    return text.includes('(?)');
+    return OCR_MARKE.test(text);
 }
 
 /**

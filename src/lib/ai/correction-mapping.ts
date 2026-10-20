@@ -4,10 +4,10 @@ import { StepResult } from '../grading/types';
 import { TargetGoal, GradingCriterion } from '../grading/calc-trace-types';
 import { isEngineOwned, resolveEngineVerdict } from '../grading/criterion-source';
 import { formatPluginFeedback } from '../grading/feedback-formatter';
-import { formatCalcTraceFeedback } from '../grading/calc-trace-feedback';
-import type { KriteriumErgebnis } from '../grading/calc-trace-feedback';
+import { formatCalcTraceFeedback, type KriteriumErgebnis } from '../grading/calc-trace-feedback';
 import { shouldDisablePoints } from './prompt-builder';
 import { alsModellzahl } from '../zahlen';
+import { hasOcrWarnings } from '../task-utils';
 import { alsVertrauen, mitMarkerDeckelung } from '../vertrauen';
 import { hatOcrMarkerFuerAufgabe } from '../schuelertext';
 
@@ -390,7 +390,7 @@ export function mapModelTask(layoutTask: Task, aiTask: AITask, schuelertext?: st
     const isSandboxBypassed = isCalcTraceTask && !calcTraceAlreadyFormatted;
 
     // Der Marker steht im ABGESCHICKTEN Text, nicht in der Antwort — `lib/schuelertext`.
-    const markerIssue = hatOcrMarkerFuerAufgabe(schuelertext, layoutTask.name) || !!aiTask.content?.includes('(?)');
+    const markerIssue = hatOcrMarkerFuerAufgabe(schuelertext, layoutTask.name) || hasOcrWarnings(aiTask.content ?? '');
     const confidence = mitMarkerDeckelung(alsVertrauen(aiTask.confidence), markerIssue);
 
     let feedback = aiTask.feedback || '';

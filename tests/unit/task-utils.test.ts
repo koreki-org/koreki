@@ -36,6 +36,11 @@ describe('Task Utils tests', () => {
             { text: 'Normaler Text', expected: false },
             { text: 'Text mit (?) Warnung', expected: true },
             { text: 'Nur (?)', expected: true },
+            // 20.10.2026: Die Bilderkennung schrieb die Marke mit Leerzeichen.
+            { text: 'Fest- platten ( ? )', expected: true },
+            { text: 'Daten- ( ? ) träger', expected: true },
+            { text: 'Wort (? )', expected: true },
+            { text: 'Eine Frage? (Klammer)', expected: false },
             { text: '', expected: false },
         ])('should return $expected for "$text"', ({ text, expected }) => {
             expect(hasOcrWarnings(text)).toBe(expected);
@@ -155,5 +160,17 @@ describe('Task Utils tests', () => {
             
             expect(result).toEqual(['Inhalt 1', 'Inhalt 2']);
         });
+    });
+});
+
+/**
+ * Die Hervorhebung zerlegt den Text an der Marke. Mit Leerzeichen in der Klammer
+ * fand sie bis zum 20.10.2026 nichts — die Farbe fehlte.
+ */
+describe('OCR_MARKE_MIT_WORT', () => {
+    it('trennt Wort und Marke auch mit Leerzeichen heraus', async () => {
+        const { OCR_MARKE_MIT_WORT, OCR_MARKE } = await import('../../src/lib/task-utils');
+        const teile = 'auf alle Daten- ( ? ) träger verteilt'.split(OCR_MARKE_MIT_WORT);
+        expect(teile.filter(t => OCR_MARKE.test(t))).toEqual(['Daten- ( ? )']);
     });
 });
