@@ -1,5 +1,5 @@
 /**
- * Waechter: Nur EINE Konfiguration gilt als geprueft. 🧪
+ * Waechter: Nur die gemessenen Konfigurationen gelten als geprueft. 🧪
  *
  * ANLASS (05.09.2026). Anhang IV §4.6 weist genau eine gemessene Konfiguration aus:
  * `qwen3.6:35b` ueber lokales Ollama. In der Oberflaeche stand davon nichts — wer
@@ -20,6 +20,23 @@ describe('istGepruefteKonfiguration', () => {
 
     it('verlangt den Anbieter mit — derselbe Modellname genuegt nicht', () => {
         expect(istGepruefteKonfiguration('openai-compatible', 'Qwen3.6-35B-A3B-FP8')).toBe(false);
+    });
+
+    /**
+     * SEIT 20.10.2026 zwei Konfigurationen. Qwen 3.8 gilt nur in der gemessenen
+     * Fassung — eine andere Quantisierung verhielt sich nachweislich anders.
+     */
+    it('erkennt Qwen 3.8 in der gemessenen Fassung', () => {
+        expect(istGepruefteKonfiguration('ollama', 'qwen3.8:27b-mtp-q4_K_M')).toBe(true);
+    });
+
+    it('weist andere Fassungen von Qwen 3.8 als ungeprueft aus', () => {
+        expect(istGepruefteKonfiguration('ollama', 'qwen3.8:27b-q8_0')).toBe(false);
+        expect(istGepruefteKonfiguration('ollama', 'qwen3.8:latest')).toBe(false);
+    });
+
+    it('weist Qwen 3.8 ueber Mittwald als ungeprueft aus', () => {
+        expect(istGepruefteKonfiguration('openai-compatible', 'Qwen3.8-27B-NVFP4')).toBe(false);
     });
 
     it('weist andere Ollama-Modelle als ungeprueft aus', () => {

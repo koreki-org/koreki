@@ -9,7 +9,7 @@ import { AIProviderError } from './provider-error';
 import { requireOllamaConnection } from './provider-connection';
 import { parseLlmJson, LlmJsonParseError } from './llm-json';
 import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
-import { berechneSamplingParameter } from './ollama-sampling';
+import { berechneSamplingParameter, mitJsonVorgabe } from './ollama-sampling';
 import { leseOllamaStream } from './ollama-stream';
 import { nutztFestenStartwert, SAMPLING_SEED } from './temperature-guidance';
 import { pruefeWerkzeugAufruf, MAX_TOOL_RETRIES } from './tool-validation';
@@ -132,7 +132,7 @@ export async function executeOllamaRequest(
             const { invoke } = await import('@tauri-apps/api/core');
             // [Industrial Validation] If Mistral works but Qwen fails with connection error,
             // we must unify the request structure. Enabled JSON format for all.
-            const targetFormat = (action === 'vision' || action === 'second-opinion') 
+            const targetFormat = (action === 'vision' || action === 'second-opinion' || !mitJsonVorgabe(art, thinkValue)) 
                 ? undefined 
                 : (options?.responseSchema ? options.responseSchema : 'json');
 
@@ -216,7 +216,9 @@ export async function executeOllamaRequest(
         // causing Ollama's backend to reject the generation and return an empty string.
         // Furthermore, passing complex JSON Schemas to Ollama can cause 110s timeouts.
         // We rely on standard 'json' formatting and the system prompt.
-        const formatParam = (action === 'vision' || action === 'second-opinion' || tools) 
+        // Modelle, die die Vorgabe beim Denken nicht einhalten, bekommen sie dann
+        // nicht (`mitJsonVorgabe`, ./ollama-sampling) — Koreki liest das JSON selbst.
+        const formatParam = (action === 'vision' || action === 'second-opinion' || tools || !mitJsonVorgabe(art, thinkValue)) 
             ? undefined 
             : 'json';
 

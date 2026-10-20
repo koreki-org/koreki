@@ -24,8 +24,16 @@
  */
 import type { AppSettings } from '@/types';
 
-/** Das einzige gemessene Modell. Anhang IV §4.6. */
-export const GEPRUEFTES_MODELL = 'qwen3.6';
+/**
+ * Die gemessenen Modelle. Anhang IV §4.6.
+ *
+ * Qwen 3.6 als Familie, wie seit dem 05.09.2026. Qwen 3.8 dagegen nur in der
+ * EINEN gemessenen Fassung (20.10.2026): Bei diesem Modell haengt das Verhalten
+ * nachweislich an der Fassung — die NVFP4-Fassung bei Mittwald und die
+ * Q4-Fassung auf Ollama verhielten sich bei der JSON-Ausgabe verschieden. Eine
+ * andere Quantisierung gilt deshalb als ungeprueft, auch wenn der Name passt.
+ */
+export const GEPRUEFTE_MODELLE = ['qwen3.6', 'qwen3.8:27b-mtp-q4_k_m'] as const;
 
 /** Der einzige gemessene Anbieterweg. */
 export const GEPRUEFTER_ANBIETER = 'ollama';
@@ -33,7 +41,7 @@ export const GEPRUEFTER_ANBIETER = 'ollama';
 export const EXPERIMENTELL_KENNZEICHEN = 'Experimentell';
 
 export const EXPERIMENTELL_BEGRUENDUNG =
-    'Diese Kombination ist nicht gegen den Referenzsatz gemessen. Gemessen ist allein Qwen 3.6 über lokales Ollama; dort greifen auch Schutzmaßnahmen, die auf anderen Wegen entfallen. Die Bewertung bleibt nutzbar — prüfen Sie sie nur besonders sorgfältig.';
+    'Diese Kombination ist nicht gegen den Referenzsatz gemessen. Gemessen sind allein Qwen 3.6 und Qwen 3.8 (27b-mtp-q4_K_M) über lokales Ollama; dort greifen auch Schutzmaßnahmen, die auf anderen Wegen entfallen. Die Bewertung bleibt nutzbar — prüfen Sie sie nur besonders sorgfältig.';
 
 /** Modellkennung, die fuer den gewaehlten Anbieter tatsaechlich gesendet wird. */
 export function aktivesModell(settings: Pick<AppSettings, 'provider' | 'ollamaModel' | 'openaiModel' | 'model'>): string {
@@ -42,8 +50,9 @@ export function aktivesModell(settings: Pick<AppSettings, 'provider' | 'ollamaMo
     return settings.model ?? '';
 }
 
-/** Wahr nur fuer die eine gemessene Konfiguration: Qwen 3.6 ueber lokales Ollama. */
+/** Wahr nur fuer die gemessenen Konfigurationen: Qwen 3.6 und Qwen 3.8 (eine Fassung) ueber lokales Ollama. */
 export function istGepruefteKonfiguration(anbieter: string | undefined, modell: string | undefined): boolean {
+    const m = (modell ?? '').toLowerCase();
     return anbieter === GEPRUEFTER_ANBIETER
-        && (modell ?? '').toLowerCase().includes(GEPRUEFTES_MODELL);
+        && GEPRUEFTE_MODELLE.some(gemessen => m.includes(gemessen));
 }

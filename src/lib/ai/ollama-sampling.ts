@@ -56,6 +56,23 @@ export interface ModellArt {
     isReasoningModel: boolean;
     isGemmaOrMoE: boolean;
     isQwen: boolean;
+    /**
+     * Haelt das Modell die JSON-Vorgabe (`format`) ein, waehrend es denkt?
+     *
+     * Qwen sagt fuer seine Modelle selbst: Im Denkmodus greift die JSON-Vorgabe
+     * moeglicherweise nicht, die Antwort ist dann kein gueltiges JSON (Qwen Cloud,
+     * „Structured output"). Gemessen am 19.10.2026 an `qwen3.8` (Q4_K_M) auf
+     * Ollama 0.40.6: Mit Denken UND Vorgabe schrieb es im Antworttext ein gerades
+     * `"` nach einem deutschen „, die Vorgabe schloss das JSON dort zwangsweise ab,
+     * und die Bewertung endete mitten in Aufgabe a) — Aufgabe b) fehlte. Dieselbe
+     * Anfrage ohne Vorgabe: vollstaendig, gueltig, richtige Punkte.
+     *
+     * Bewusst nur fuer `qwen3.8` abgeschaltet: `qwen3.6:35b` ist die einzige
+     * gepruefte Konfiguration und laeuft mit Vorgabe einwandfrei. Das JSON liest
+     * Koreki ohnehin selbst ein (`parseLlmJson`); ist es ungueltig, wird die
+     * Aufgabe sichtbar nicht bewertet.
+     */
+    vertraegtJsonVorgabeBeimDenken: boolean;
 }
 
 /**
@@ -77,8 +94,17 @@ export function bestimmeModellArt(action: AIAction, model: string): ModellArt {
             !m.includes('31b') &&
             !m.includes('32b') &&
             !m.includes('dense'),
-        isQwen: m.includes('qwen')
+        isQwen: m.includes('qwen'),
+        vertraegtJsonVorgabeBeimDenken: !m.includes('qwen3.8')
     };
+}
+
+/**
+ * Darf die JSON-Vorgabe mitgehen? Nur wenn das Modell sie beim Denken einhaelt —
+ * oder gar nicht gedacht wird. Gilt fuer beide Ollama-Wege (Server und Desktop).
+ */
+export function mitJsonVorgabe(art: ModellArt, denkt: boolean): boolean {
+    return art.vertraegtJsonVorgabeBeimDenken || !denkt;
 }
 
 export interface SamplingEingabe {
