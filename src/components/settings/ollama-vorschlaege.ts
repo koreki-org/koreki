@@ -12,12 +12,18 @@
  * handgepflegte Liste laeuft mit der Zeit auseinander.
  */
 export const OLLAMA_VORSCHLAEGE = [
-    { id: 'qwen3.6:35b', name: 'Qwen 3.6', desc: 'Empfohlen (High Reasoning)' },
     // Feste Kennung statt `qwen3.8:latest` — so wurde es am 20.10.2026 gemessen, und
     // ein beweglicher Bezeichner koennte das Modell unbemerkt austauschen.
-    { id: 'qwen3.8:27b-mtp-q4_K_M', name: 'Qwen 3.8', desc: 'Neu (High Reasoning, kompakter)' },
+    // Seit 21.10.2026 die Empfehlung (vorne); 3.6 bleibt geprueft, ohne Empfehlung.
+    { id: 'qwen3.8:27b-mtp-q4_K_M', name: 'Qwen 3.8', desc: 'Empfohlen (High Reasoning, kompakt)' },
+    { id: 'qwen3.6:35b', name: 'Qwen 3.6', desc: 'High Reasoning' },
     { id: 'mistral-small3.2:latest', name: 'Mistral Small 3.2', desc: 'Schnell & Effizient' },
     { id: 'gemma4:31b', name: 'Gemma 31B', desc: 'Spezialist für Inhaltsanalyse' }
 ];
 
 export const VORSCHLAG_IDS: string[] = OLLAMA_VORSCHLAEGE.map(v => v.id);
+
+/** Der erste Vorschlag ist die Empfehlung — und zugleich die Voreinstellung,
+ *  wenn noch kein Modell gewaehlt wurde. Eine Stelle, damit beide nicht
+ *  auseinanderlaufen. */
+export const EMPFOHLENES_OLLAMA_MODELL: string = OLLAMA_VORSCHLAEGE[0].id;

@@ -3,6 +3,7 @@ import { Button } from './ui/Button';
 import { AppSettings } from '@/types';
 import { denkschrittAktiv } from '@/lib/ai/temperature-guidance';
 import { UnifiedAiConfig } from './settings/UnifiedAiConfig';
+import { EMPFOHLENES_OLLAMA_MODELL } from './settings/ollama-vorschlaege';
 
 interface AiConfigurationContentProps {
     initialSettings: Partial<AppSettings>;
@@ -24,7 +25,7 @@ const AiConfigurationContent: React.FC<AiConfigurationContentProps> = ({
 
     const applyConfiguration = () => {
         if (settings.provider === 'ollama') {
-            onSaveOllama(settings.ollamaUrl || 'http://127.0.0.1:11434', settings.ollamaModel || 'qwen3.6:35b');
+            onSaveOllama(settings.ollamaUrl || 'http://127.0.0.1:11434', settings.ollamaModel || EMPFOHLENES_OLLAMA_MODELL);
         } else if (settings.provider === 'mistral') {
             onSaveMistral(settings.mistralKey || '');
         } else if (settings.provider === 'openai-compatible') {

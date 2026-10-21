@@ -27,12 +27,12 @@ export default function DesktopSetup() {
         },
         {
             title: "2. Ollama installieren & Modell herunterladen",
-            desc: "Laden Sie Ollama herunter und installieren Sie ein für koreki bevorzugtes KI-Modell.",
+            desc: "Lade Ollama herunter und installiere ein empfohlenes KI-Modell – aktuell Qwen 3.8 (siehe unten).",
             img: "/help/ollama-download.png"
         },
         {
             title: "3. Koreki mit Ollama verbinden",
-            desc: "Stellen Sie die Verbindung her und wählen Sie das installierte Modell aus.",
+            desc: "Stell die Verbindung her und wähle das installierte Modell aus.",
             img: "/help/ollama-setup.png"
         }
     ];
@@ -40,17 +40,17 @@ export default function DesktopSetup() {
     const mistralPhases = [
         {
             title: "1. API Key bei Mistral erstellen",
-            desc: "Erstellen Sie Ihren API-Key im Mistral Studio unter 'API Keys'.",
+            desc: "Erstelle deinen API-Key im Mistral Studio unter 'API Keys'.",
             img: "/help/mistral-guide-1.png"
         },
         {
             title: "2. API Key in Koreki eintragen",
-            desc: "Geben Sie den Key in das Setup-Feld ein. Er wird nur lokal gespeichert.",
+            desc: "Gib den Key in das Setup-Feld ein. Er wird nur lokal gespeichert.",
             img: "/help/mistral-guide-2.png"
         },
         {
             title: "3. Sichere Speicherung im Windows Tresor",
-            desc: "Koreki Desktop speichert Ihren Key verschlüsselt im Windows Credential Manager. Höchste Sicherheit für Ihre Zugangsdaten.",
+            desc: "Koreki Desktop speichert deinen Key verschlüsselt im Windows Credential Manager – nicht im Klartext.",
             img: "/help/windows-desktop-api-key-storage.png"
         }
     ];
@@ -87,10 +87,10 @@ export default function DesktopSetup() {
 
                 <div className="text-center mb-10 animate-fade-down">
                     <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4 tracking-tight">
-                        Wählen Sie Ihre <span className="text-gradient">KI-Strategie.</span>
+                        Wähle deine <span className="text-gradient">KI-Strategie.</span>
                     </h1>
                     <p className="text-sm text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
-                        Entscheiden Sie sich für cloud-basierte Performance (Mistral) oder lokale Datensouveränität (Ollama).
+                        Entscheide dich für einen Cloud-Anbieter (Mistral) oder ein lokales Modell auf deinem Rechner (Ollama).
                     </p>
                 </div>
 
@@ -116,7 +116,7 @@ export default function DesktopSetup() {
                                 </li>
                                 <li className="flex items-start gap-3 text-warning text-xs font-bold leading-tight bg-warning/5 p-2 rounded-lg border border-warning/20">
                                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                                    <span>Bitte beachten Sie die Datenschutzrichtlinien Ihrer Schule</span>
+                                    <span>Bitte beachte die Datenschutzrichtlinien deiner Schule</span>
                                 </li>
                             </ul>
                             <div className="pt-4 border-t border-border/50">
@@ -151,7 +151,7 @@ export default function DesktopSetup() {
                                 </li>
                                 <li className="flex items-start gap-3 text-warning text-xs font-bold leading-tight bg-warning/5 p-2 rounded-lg border border-warning/20">
                                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                                    <span>Bitte beachten Sie die Datenschutzrichtlinien Ihrer Schule</span>
+                                    <span>Bitte beachte die Datenschutzrichtlinien deiner Schule</span>
                                 </li>
                             </ul>
                             <div className="pt-4 border-t border-border/50 flex flex-wrap gap-x-6 gap-y-2">

@@ -97,9 +97,13 @@ export default function DesktopOnboarding() {
                     </Kachel>
                 </div>
 
-                <div className="mt-12">
-                    <Produktbild src="/marketing/uebersicht.webp" alt="Koreki Desktop mit Musterlösung, Schülerarbeiten und Stapelverarbeitung" />
-                </div>
+                {/* In der installierten App ist diese Seite der Startbildschirm: dort
+                    ohne Produktbild, damit nichts zum Scrollen zwingt. */}
+                {!lokal && (
+                    <div className="mt-12">
+                        <Produktbild src="/marketing/uebersicht.webp" alt="Koreki Desktop mit Musterlösung, Schülerarbeiten und Stapelverarbeitung" />
+                    </div>
+                )}
             </Abschnitt>
         </MarketingLayout>
     );

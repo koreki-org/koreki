@@ -6,7 +6,9 @@ import { cn } from '@/lib/utils';
  * Modell eignet — keine Superlative (marketing-communication §3).
  */
 const MODELLE = [
-    { name: 'Qwen 3.6 (35B)', marke: 'Empfohlen', text: 'Liest getippte und handschriftliche Arbeiten. Braucht einen leistungsfähigen Rechner mit Grafikkarte.' },
+    // Qwen 3.8 nur in genau der gemessenen Fassung (GEPRUEFTE_MODELLE, 20.10.2026);
+    // seit 21.10.2026 die aktuelle Empfehlung, 3.6 bleibt geprueft.
+    { name: 'Qwen 3.8 (27B) · Qwen 3.6 (35B)', marke: 'Empfohlen', text: 'Aktuell empfohlen ist Qwen 3.8 – in Ollama genau als qwen3.8:27b-mtp-q4_K_M. Qwen 3.6 ist ebenfalls geprüft. Beide lesen getippte und handschriftliche Arbeiten und brauchen einen leistungsfähigen Rechner mit Grafikkarte.' },
     { name: 'Mistral Small 3.2', marke: 'Sparsam', text: 'Gut für getippte Texte und PDFs mit kopierbarem Text. Läuft auch auf schwächerer Hardware.' },
     { name: 'Gemma 4 (31B)', marke: 'Alternative', text: 'Eine weitere Wahl für Handschrift und mathematische Darstellungen.' },
 ];
