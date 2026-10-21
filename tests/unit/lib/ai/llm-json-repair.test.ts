@@ -1,4 +1,4 @@
-import { escapeInnerQuotes, repairJsonString } from '../../../../src/lib/ai/llm-json';
+import { escapeInnerQuotes, parseLlmJson, repairJsonString } from '../../../../src/lib/ai/llm-json';
 
 /** Repariert und parst — so wird die Kette benutzt. */
 const parseRepaired = (raw: string) => JSON.parse(repairJsonString(raw));
@@ -162,5 +162,53 @@ describe('Ollama JSON Repair (Layer 1)', () => {
 
             expect(() => parseRepaired(raw)).toThrow();
         });
+    });
+});
+
+/**
+ * Deutsche Anfuehrungszeichen, mit geradem Zeichen geschlossen (21.10.2026).
+ *
+ * `qwen3.8` auf Ollama schreibt ohne JSON-Vorgabe `„Arbeitsplätze", weil …`. Das
+ * Komma dahinter liess die Reparatur das Zeichen als Stringende lesen — die ganze
+ * Korrektur scheiterte (Koreki Desktop). Ist ein „ offen, ist das naechste gerade
+ * Zeichen eindeutig sein Schlusszeichen.
+ */
+describe('Deutsche Anfuehrungszeichen mit geradem Schlusszeichen', () => {
+    const antwort = [
+        '{',
+        '  "overallMatchPercentage": 53,',
+        '  "overallFeedback": "Die wirtschaftliche Erläuterung (Aufgabe 2) bleibt allgemein.",',
+        '  "tasks": [',
+        '    {',
+        '      "name": "Aufgabe 2",',
+        '      "maxPoints": 4,',
+        '      "pointsObtained": 2,',
+        '      "correctionNotes": "Der Begriff „Arbeitsplätze", den die Antwort nennt, wird nicht begründet. Ein „Für und Wider" fehlt.",',
+        '      "confidence": 98',
+        '    }',
+        '  ]',
+        '}'
+    ].join('\n');
+
+    it('liest die ganze Antwort, statt zu scheitern', () => {
+        const j = parseLlmJson<{ overallMatchPercentage: number; tasks: { pointsObtained: number; correctionNotes: string; confidence: number }[] }>(antwort);
+        expect(j.overallMatchPercentage).toBe(53);
+        expect(j.tasks).toHaveLength(1);
+        expect(j.tasks[0].pointsObtained).toBe(2);
+        expect(j.tasks[0].confidence).toBe(98);
+    });
+
+    it('schliesst das Zitat typografisch richtig', () => {
+        const j = parseLlmJson<{ tasks: { correctionNotes: string }[] }>(antwort);
+        expect(j.tasks[0].correctionNotes).toBe('Der Begriff „Arbeitsplätze“, den die Antwort nennt, wird nicht begründet. Ein „Für und Wider“ fehlt.');
+    });
+
+    it('laesst korrekt geschlossene deutsche Zitate unveraendert', () => {
+        const j = parseLlmJson<{ a: string; b: string }>('{"a": "Ein „Zitat“, sauber.", "b": "x"}');
+        expect(j).toEqual({ a: 'Ein „Zitat“, sauber.', b: 'x' });
+    });
+
+    it('beendet einen String weiterhin, wenn kein „ offen ist', () => {
+        expect(escapeInnerQuotes('{"a": "x", "b": "y"}')).toBe('{"a": "x", "b": "y"}');
     });
 });

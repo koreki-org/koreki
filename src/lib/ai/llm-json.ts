@@ -87,6 +87,12 @@ export function extractJsonCandidate(text: string): string {
  * Bewusste Grenze: Ein Anfuehrungszeichen, dem im Fliesstext ein Komma folgt
  * (`er sagte "hallo", dann ging er`), bleibt mit lokalem Lookahead
  * unentscheidbar und wird weiterhin als Stringende gewertet.
+ *
+ * AUSNAHME — DEUTSCHE ANFUEHRUNGSZEICHEN (21.10.2026). Ist im selben String ein
+ * „ geoeffnet und noch nicht mit “ geschlossen, ist das naechste gerade `"` sein
+ * Schlusszeichen — eindeutig, ohne Lookahead. Es wird zu “. Anlass: `qwen3.8`
+ * auf Ollama schreibt ohne JSON-Vorgabe `„Arbeitsplätze", weil …`; das Komma
+ * dahinter liess die Antwort als Ganzes scheitern (Koreki Desktop, Korrektur).
  */
 export function escapeInnerQuotes(jsonStr: string): string {
     let result = '';
@@ -94,6 +100,8 @@ export function escapeInnerQuotes(jsonStr: string): string {
     let stringIsKey = false;
     const containers: string[] = [];
     let lastMeaningful = '';
+    // Ein im aktuellen String geoeffnetes „, das noch auf sein Schlusszeichen wartet.
+    let deutschesZitatOffen = false;
 
     const nextNonWhitespaceFrom = (from: number): { char: string; index: number } => {
         let k = from;
@@ -113,6 +121,10 @@ export function escapeInnerQuotes(jsonStr: string): string {
 
         if (char !== '"') {
             result += char;
+            if (inString) {
+                if (char === '„') deutschesZitatOffen = true;
+                else if (char === '“' || char === '”') deutschesZitatOffen = false;
+            }
             if (!inString) {
                 if (char === '{' || char === '[') {
                     containers.push(char);
@@ -138,10 +150,18 @@ export function escapeInnerQuotes(jsonStr: string): string {
         if (!inString) {
             // Ein Schlüssel steht nur direkt hinter "{" oder "," innerhalb eines Objekts.
             inString = true;
+            deutschesZitatOffen = false;
             stringIsKey = containers[containers.length - 1] === '{'
                 && (lastMeaningful === '{' || lastMeaningful === ',');
             result += char;
             lastMeaningful = char;
+            i++;
+            continue;
+        }
+
+        if (deutschesZitatOffen && !stringIsKey && !isEscaped) {
+            result += '“';
+            deutschesZitatOffen = false;
             i++;
             continue;
         }
