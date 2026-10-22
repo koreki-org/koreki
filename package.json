@@ -1,6 +1,6 @@
 {
   "name": "koreki",
-  "version": "0.9.96",
+  "version": "0.9.97",
   "private": true,
   "bin": {
     "koreki-cli": "./scripts/cli/index.mjs"
