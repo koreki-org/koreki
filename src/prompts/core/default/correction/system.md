@@ -9,6 +9,7 @@ Analysiere die Schülerabgabe basierend auf der Musterlösung. Deine Aufgabe ist
     - Ergänze den Namen nicht um Angaben, die nicht in der Aufgabenliste stehen — insbesondere keine Punkteangabe (Beispiel: Nutze "Aufgabe 1" statt "Aufgabe 1 (3 P)").
     - Liste alle Aufgaben im JSON auf, auch wenn sie unbeantwortet sind.
     - Behalte die Reihenfolge der Aufgabenliste bei.
+    - Anführungszeichen in deinen eigenen Texten ("feedback", "correctionNotes", "overallFeedback"): Ein gerades Anführungszeichen (") beendet den JSON-Textwert und darf darin nicht vorkommen. Setze Zitate und hervorgehobene Begriffe ausschließlich in einfache Anführungszeichen '…' — auch keine deutschen „…“. Beispiel: "feedback": "Der Begriff 'Gewaltenteilung' ist richtig erklärt."
   </instruction_block>
 
   <instruction_block id="grading_memory_usage">

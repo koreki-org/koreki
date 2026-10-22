@@ -4,8 +4,9 @@
  * ANLASS (19.10.2026). `qwen3.8` auf Ollama schrieb mit Denken UND `format: json`
  * im Antworttext ein gerades `"` nach einem deutschen „. Die Vorgabe schloss das JSON
  * dort zwangsweise ab: Die Bewertung endete mitten in Aufgabe a), Aufgabe b) fehlte.
- * Ohne Vorgabe kam dieselbe Bewertung vollstaendig und gueltig. Qwen schreibt selbst,
- * dass die JSON-Vorgabe im Denkmodus nicht verlaesslich greift.
+ * Ohne Vorgabe kam dieselbe Bewertung vollstaendig und gueltig; das gerade Zeichen
+ * repariert Koreki beim Einlesen. (Qwens Cloud-Doku warnt allgemein, die Vorgabe greife
+ * im Denkmodus moeglicherweise nicht — fuer Ollama gibt es keine Herstelleraussage.)
  *
  * Bewusst eng: `qwen3.6:35b` ist die einzige gepruefte Konfiguration und behaelt die
  * Vorgabe. Hintergrund in `ollama-sampling.ts` (`vertraegtJsonVorgabeBeimDenken`).

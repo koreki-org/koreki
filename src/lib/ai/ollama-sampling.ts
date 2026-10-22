@@ -59,18 +59,24 @@ export interface ModellArt {
     /**
      * Haelt das Modell die JSON-Vorgabe (`format`) ein, waehrend es denkt?
      *
-     * Qwen sagt fuer seine Modelle selbst: Im Denkmodus greift die JSON-Vorgabe
-     * moeglicherweise nicht, die Antwort ist dann kein gueltiges JSON (Qwen Cloud,
-     * „Structured output"). Gemessen am 19.10.2026 an `qwen3.8` (Q4_K_M) auf
-     * Ollama 0.40.6: Mit Denken UND Vorgabe schrieb es im Antworttext ein gerades
-     * `"` nach einem deutschen „, die Vorgabe schloss das JSON dort zwangsweise ab,
-     * und die Bewertung endete mitten in Aufgabe a) — Aufgabe b) fehlte. Dieselbe
-     * Anfrage ohne Vorgabe: vollstaendig, gueltig, richtige Punkte.
+     * Gemessen am 19.10.2026 an `qwen3.8` (Q4_K_M) auf Ollama 0.40.6: Mit Denken
+     * UND Vorgabe schrieb es im Antworttext ein gerades `"` nach einem deutschen „,
+     * die Vorgabe schloss das JSON dort zwangsweise ab, und die Bewertung endete
+     * mitten in Aufgabe a) — Aufgabe b) fehlte. Dieselbe Anfrage ohne Vorgabe:
+     * vollstaendig, gueltig, richtige Punkte.
      *
-     * Bewusst nur fuer `qwen3.8` abgeschaltet: `qwen3.6:35b` ist die einzige
-     * gepruefte Konfiguration und laeuft mit Vorgabe einwandfrei. Das JSON liest
-     * Koreki ohnehin selbst ein (`parseLlmJson`); ist es ungueltig, wird die
-     * Aufgabe sichtbar nicht bewertet.
+     * KORRIGIERT AM 21.10.2026. Hier stand, Qwen sage das „fuer seine Modelle
+     * selbst". Das war zu stark: Die Warnung steht in der Doku zu Qwens eigenem
+     * Cloud-Dienst (Qwen Cloud, „Structured output": im Denkmodus greife die
+     * Vorgabe moeglicherweise nicht). Fuer Qwen 3.8 auf Ollama gibt es keine
+     * Herstelleraussage. Und die Vorgabe versagt hier nicht — Ollama haelt sie
+     * ein. Die Ursache ist die Schreibgewohnheit des Modells, „…" mit geradem
+     * Zeichen zu schliessen; ohne Vorgabe repariert Koreki das beim Einlesen
+     * (`escapeInnerQuotes`), mit Vorgabe ist die Antwort schon abgeschnitten.
+     *
+     * Bewusst nur fuer `qwen3.8` abgeschaltet: `qwen3.6:35b` laeuft mit Vorgabe
+     * einwandfrei. Ist das JSON trotz Reparatur ungueltig, wird die Aufgabe
+     * sichtbar nicht bewertet.
      */
     vertraegtJsonVorgabeBeimDenken: boolean;
 }

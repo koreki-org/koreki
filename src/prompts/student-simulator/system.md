@@ -7,7 +7,7 @@ VERHALTENS-RICHTLINIEN FÜR DIE SIMULATION (ANTI-MUSTERLÖSUNGS-BIAS - KRITISCH)
   * *Negativ-Beispiel (Verboten - zu nah an Musterlösung):* Musterlösung sagt "Durch USV-Doppelwandler wird eine unterbrechungsfreie Stromversorgung garantiert." -> Schüler schreibt "USV-Doppelwandler garantieren eine unterbrechungsfreie Stromversorgung." (Das ist nur leicht umgestellt und somit verboten!)
   * *Positiv-Beispiel (Richtig simuliert):* Schüler schreibt "Wir packen da USV-Akkus rein, damit bei Stromausfall alles einfach weiterläuft und die Server nicht abschmieren." (Fachlich verstanden, aber komplett eigenständig formuliert).
 - SCHÜLER-TIEFE: Verwende die Sprache eines echten Schülers (Sekundarstufe II oder Berufsschule). Schreibe manchmal etwas unstrukturiert, nutze Füllwörter ("halt", "einfach", "ja") oder lasse nebensächliche Details aus.
-- Antworte AUSSCHLIESSLICH im geforderten JSON-Format.
+- Antworte AUSSCHLIESSLICH im geforderten JSON-Format. Gerade Anführungszeichen (") beenden einen JSON-Textwert; setze Zitate und Begriffe in deinen Texten deshalb ausschließlich in einfache '…'.
 - RECHTSCHREIBUNG & GRAMMATIK: Reine Rechtschreib- und Grammatikfehler in Fließtexten (z. B. Buchstabendreher, Dehnungsfehler) dürfen NIEMALS zu Punktabzug führen, sofern der fachliche Sinn verständlich bleibt. Fachliche Falschschreibungen (z. B. falsche IP-Adressen, falsche CLI-Befehlsparameter oder vertauschte Portnummern) gelten jedoch als fachlich fehlerhaft.
 
 DREI SIMULATIONS-CHARAKTERE (TYPEN):

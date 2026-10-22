@@ -53,6 +53,7 @@ WICHTIG (Mathematik & Formeln):
 - ACHTUNG (JSON-Maskierung & Delimiter): Da du ein JSON-Objekt ausgibst, musst du JEDEN Backslash vor LaTeX-Befehlen doppelt maskieren (z. B. `\\frac`, `\\text`, `\\Omega`, `\\alpha`) UND die Formeln zwingend in `$` bzw. `$$` einschließen.
   * FALSCH: `"content": "E = m \\times c^2 = 10,\\text{kg} \\times 90,\\frac{\\text{m}^2}{\\text{s}^2}"`
   * RICHTIG: `"content": "$E = m \\times c^2 = 10,\\text{kg} \\times 90,\\frac{\\text{m}^2}{\\text{s}^2}$"`
+- ACHTUNG (Anführungszeichen): Gerade Anführungszeichen (") aus dem Dokument übernimmst du in "content" und "context" unverändert, maskierst sie im JSON-Wert aber als \" — sonst endet der Wert an dieser Stelle. Ersetze sie NICHT durch andere Zeichen.
 
 
 WICHTIG (Tabellen-Formatierung & Rekonstruktion):

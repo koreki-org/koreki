@@ -52,7 +52,7 @@ WICHTIG (Mathematik & Zahlen - KRITISCH / PÄDAGOGISCHE INTEGRITÄT):
 - Beispiel (OCR: "7*8=54") -> Output: "7*8=54" (Korrektur zu 56 ist STRENGSTENS VERBOTEN).
 - WICHTIG (Physikalische/Mathematische Variablen): Ändere NIEMALS Variablenzeichen oder Formelbuchstaben (z. B. R, L, C, Z, I, U, P, X), auch wenn sie in einer physikalischen Formel komplett falsch oder unlogisch erscheinen! Ein fachlicher Formelfehler des Schülers ist bewertungsrelevant und darf NIEMALS korrigiert werden!
 - ACHTUNG (JSON-Maskierung): Falls der bereinigte Schülertext mathematische Formeln enthält, musst du jeden Backslash vor LaTeX-Befehlen doppelt maskieren (z. B. `\\frac`, `\\text`, `\\Omega`, `\\alpha`), da du in einem JSON-String antwortest. Andernfalls werden sie fehlerhaft als JSON-Kontrollzeichen (z. B. `\t` als Tab oder `\f` als Formfeed) interpretiert!
-
+- ACHTUNG (Anführungszeichen): Gerade Anführungszeichen (") aus dem Schülertext übernimmst du unverändert, maskierst sie im JSON-Wert aber als \" — sonst endet der Wert an dieser Stelle. Ersetze sie NICHT durch andere Zeichen. Beispiel: Schülertext Er nannte es "Recycling" → "content": "Er nannte es \"Recycling\""
 
 
 WICHTIG (Fideliät - KRITISCH):

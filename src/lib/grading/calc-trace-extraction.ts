@@ -187,6 +187,8 @@ Vorrang: Hier gibt es keine notierte Formel, die zum Ergebnis passen müsste —
 Gilt NUR, wenn in der ganzen Aussage keine Rechenoperation notiert ist. Ketten-Gleichungen mit notierter Rechnung (z. B. 'W = P * t = 680 W * (30/60) h = 0.34 kWh') werden weiter nach den Regeln oben extrahiert.
 Beispiel: "Katheten 3 cm und 4 cm, also ist die Hypotenuse 5 cm" -> {"id":"step_1", "original_text": "Katheten 3 cm und 4 cm, also ist die Hypotenuse 5 cm", "formula":"5", "result": 5, "unit":"cm"}
 
+WICHTIG (Anführungszeichen): Gerade Anführungszeichen (") aus dem Schülertext bleiben in 'original_text' unverändert, werden im JSON-Wert aber als \\" maskiert — sonst endet der Wert dort.
+
 WICHTIG: Antworte AUSSCHLIESSLICH mit einem validen JSON-Objekt. Dieses Objekt MUSS genau einen Key namens "steps" enthalten. Der Wert von "steps" is ein Array. Jedes Objekt in diesem Array MUSS die Keys "id", "original_text", "formula" und "result" haben. Optional: "unit", "formulaUnit". Verwende keine anderen Keys!`;
 
     const payload = {
