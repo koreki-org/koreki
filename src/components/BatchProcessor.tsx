@@ -7,6 +7,7 @@ import { Card, CardContent } from './ui/Card';
 import ConfirmationModal from './ConfirmationModal';
 import { ExportToolbar } from './batch/ExportToolbar';
 import { BatchHeader } from './batch/BatchHeader';
+import { LaufFortschritt } from './batch/parts/LaufFortschritt';
 import { BatchFileListItem } from './batch/BatchFileListItem';
 import { AnalyticsModal } from './batch/AnalyticsModal';
 import { DigitalSlipsModal } from './batch/DigitalSlipsModal';
@@ -195,6 +196,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                     onExportKoreki={onExportKoreki}
                     hasPendingOcr={hasPendingOcr}
                 />
+                <LaufFortschritt />
 
                 <CardContent>
                     {/* Action Toolbar */}

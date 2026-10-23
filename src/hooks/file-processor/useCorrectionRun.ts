@@ -206,15 +206,27 @@ export function useCorrectionRun({
         useBatchStore.getState().registerBatchController(controller);
         const signal = controller.signal;
 
+        // Dieselbe Auswahl, die `internalCorrectionPipeline` ohne `force` trifft —
+        // nur so stimmt der Zaehler „Blatt x von y“.
+        const indices = freshFiles
+            .map((_, i) => i)
+            .filter(i => freshFiles[i].selected && freshFiles[i].status !== 'done');
+        const { starteLauf, blattFertig, beendeLauf } = useBatchStore.getState();
+        starteLauf('korrektur', indices.length);
+
         try {
-            const indices = freshFiles.map((_, i) => i);
             await promisePool(indices, 1, async (i: number) => {
                 if (signal.aborted) return;
+                const start = performance.now();
                 await internalCorrectionPipeline(i, freshFiles, false, signal);
+                if (signal.aborted) return;
+                const erfolgreich = useBatchStore.getState().batchFiles[i]?.status === 'done';
+                blattFertig(erfolgreich ? performance.now() - start : undefined);
             });
         } finally {
             setIsLoadingBatch(false);
             setCurrentProcessingIndex(-1);
+            beendeLauf();
             useBatchStore.getState().clearBatchController();
         }
     }, [internalCorrectionPipeline, setIsLoadingBatch, setCurrentProcessingIndex, modelSolution]);

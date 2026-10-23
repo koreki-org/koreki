@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { BatchFile } from '../../types';
 import type { ProtokollEintrag } from '../../lib/ai-protocol';
+import type { LaufArt, LaufFortschritt } from '../../lib/restzeit';
 
 type Setter<T> = (val: T | ((prev: T) => T)) => void;
 
@@ -45,6 +46,13 @@ interface BatchStateStore {
      *  alten Ergebnissen. */
     bewertungenBestaetigt: boolean;
     setBewertungenBestaetigt: (wert: boolean) => void;
+
+    /** Fortschritt des laufenden Stapellaufs, fuer Zaehler und Restzeit. */
+    laufFortschritt: LaufFortschritt | null;
+    starteLauf: (art: LaufArt, gesamt: number) => void;
+    /** `dauerMs` nur bei Erfolg — siehe `LaufFortschritt.dauernMs`. */
+    blattFertig: (dauerMs?: number) => void;
+    beendeLauf: () => void;
 
     activeBatchController: AbortController | null;
     registerBatchController: (controller: AbortController) => void;
@@ -92,6 +100,17 @@ export const useBatchStore = create<BatchStateStore>((set) => ({
 
     bewertungenBestaetigt: false,
     setBewertungenBestaetigt: (wert) => set({ bewertungenBestaetigt: wert }),
+
+    laufFortschritt: null,
+    starteLauf: (art, gesamt) => set({ laufFortschritt: { art, gesamt, fertig: 0, dauernMs: [] } }),
+    blattFertig: (dauerMs) => set((state) => state.laufFortschritt ? {
+        laufFortschritt: {
+            ...state.laufFortschritt,
+            fertig: state.laufFortschritt.fertig + 1,
+            dauernMs: dauerMs === undefined ? state.laufFortschritt.dauernMs : [...state.laufFortschritt.dauernMs, dauerMs]
+        }
+    } : {}),
+    beendeLauf: () => set({ laufFortschritt: null }),
 
     activeBatchController: null,
     registerBatchController: (controller) => set({ activeBatchController: controller }),

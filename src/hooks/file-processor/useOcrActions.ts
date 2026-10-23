@@ -75,12 +75,15 @@ export function useOcrActions({
         const controller = new AbortController();
         useBatchStore.getState().registerBatchController(controller);
         const signal = controller.signal;
+        const { starteLauf, blattFertig, beendeLauf } = useBatchStore.getState();
+        starteLauf('texterkennung', currentBatch.filter(f => f.selected && !f.ocrDone).length);
 
         try {
             for (let i = 0; i < currentBatch.length; i++) {
                 if (signal.aborted) break;
                 if (currentBatch[i].selected && !currentBatch[i].ocrDone) {
                     setCurrentProcessingIndex(i);
+                    const start = performance.now();
                     try {
                         const mainFile = currentBatch[i].files![0];
                         
@@ -109,6 +112,8 @@ export function useOcrActions({
                             { previewDataUrls: ocrRes.previewDataUrls || currentBatch[i].previewDataUrls },
                             signal
                         );
+                        if (signal.aborted) break;
+                        blattFertig(performance.now() - start);
                     } catch (err) {
                         if (isAbortError(err) || signal.aborted) {
                             console.log("OCR aborted by user");
@@ -119,12 +124,14 @@ export function useOcrActions({
                             next[i] = { ...next[i], status: 'error', error: alsBlattFehler(err) };
                             return next;
                         });
+                        blattFertig();
                     }
                 }
             }
         } finally {
             setIsLoadingBatch(false);
             setCurrentProcessingIndex(-1);
+            beendeLauf();
             useBatchStore.getState().clearBatchController();
         }
     }, [userData, settings, tasksLayout, setUserData, setBatchFiles, setCurrentProcessingIndex, setIsLoadingBatch, ocrStrategy, internalProcessMapping]);
