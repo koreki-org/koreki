@@ -94,7 +94,7 @@ export const PopoverMenu: React.FC<PopoverMenuProps> = ({
                     className={cn(
                         'absolute z-[100] top-full mt-2 rounded-hero border border-border/50 bg-white/95 backdrop-blur-md p-1.5 shadow-2xl',
                         'max-h-[280px] overflow-y-auto custom-scrollbar',
-                        'animate-in fade-in slide-in-from-top-2 duration-200 origin-top',
+                        'animate-overlay-in',
                         alignClasses,
                         widthClass
                     )}

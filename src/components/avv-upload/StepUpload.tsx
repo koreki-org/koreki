@@ -24,7 +24,7 @@ export const StepUpload: React.FC<StepUploadProps> = ({
     handleDrop
 }) => {
     return (
-        <div className="w-full flex-1 flex flex-col relative animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full flex-1 flex flex-col relative">
             <div
                 className={`flex-1 border-2 border-dashed rounded-hero p-8 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 mb-6 ${file ? 'border-primary bg-primary/5' : (isDragging ? 'border-primary bg-primary/10 scale-[1.02]' : 'border-border hover:border-primary hover:bg-foreground/5')}`}
                 onClick={() => document.getElementById('avv-file')?.click()}

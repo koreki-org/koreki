@@ -233,7 +233,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
 
     return createPortal(
         <div className="fixed inset-0 z-[2300] flex items-center justify-center p-0 sm:p-4 bg-foreground backdrop-blur-md animate-fade-in font-inter text-foreground">
-            <div className="bg-white border border-border shadow-2xl rounded-none sm:rounded-[var(--radius)] w-full max-w-6xl h-[100dvh] sm:h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
+            <div className="bg-white border border-border shadow-2xl rounded-none sm:rounded-[var(--radius)] w-full max-w-6xl h-[100dvh] sm:h-[90vh] flex flex-col overflow-hidden animate-dialog-in">
                 
                 {/* Header */}
                 <div className="px-4 py-4 sm:px-8 sm:py-5 border-b border-border bg-muted flex flex-col lg:flex-row gap-4 lg:gap-3 justify-between items-start lg:items-center shrink-0">

@@ -103,7 +103,7 @@ export const BatchItemDoneView: React.FC<BatchItemDoneViewProps> = (props) => {
     const { anonymizePayload } = aktionen;
 
     return (
-        <div className="animate-in fade-in duration-500">
+        <div>
             <BatchDoneHeader {...props} />
 
             <div className={cn(zeile, "mt-4")}>

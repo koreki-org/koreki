@@ -45,7 +45,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
         );
 
         return (
-            <div className="space-y-4 animate-in fade-in duration-500">
+            <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-3">
                     <button
                         onClick={() => updateSettings({ provider: 'mistral' })}
@@ -129,7 +129,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
             </div>
 
             {/* Orchestrated Config Panels */}
-            <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+            <div>
                 {settings.provider === 'mistral' && (
                     <MistralConfig settings={settings} onSave={updateSettings} appMode={appMode} />
                 )}

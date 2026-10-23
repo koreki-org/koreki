@@ -13,11 +13,11 @@ const PureKeyModal: React.FC<PureKeyModalProps> = ({ onSave, onClose }) => {
 
     return (
         <div
-            className="fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-background/40 backdrop-blur-glass animate-in fade-in duration-200"
+            className="fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-background/40 backdrop-blur-glass animate-overlay-in"
             onClick={onClose}
         >
             <div
-                className="relative w-full max-w-[500px] bg-white rounded-hero p-8 shadow-glass border border-border animate-in slide-in-from-bottom-4 duration-300"
+                className="relative w-full max-w-[500px] bg-white rounded-hero p-8 shadow-glass border border-border animate-dialog-in"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Close Button */}

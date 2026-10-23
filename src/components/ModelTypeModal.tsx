@@ -29,11 +29,11 @@ const ModelTypeModal: React.FC<ModelTypeModalProps> = ({ isOpen, onClose, onSele
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[9000] flex items-center justify-center p-4 bg-background/40 backdrop-blur-glass animate-in fade-in duration-200"
+            className="fixed inset-0 z-[9000] flex items-center justify-center p-4 bg-background/40 backdrop-blur-glass animate-overlay-in"
             onClick={onClose}
         >
             <div
-                className="relative w-full max-w-[600px] max-h-[90dvh] overflow-y-auto bg-white rounded-2xl p-5 sm:p-8 shadow-glass border border-border animate-in zoom-in-95 duration-200"
+                className="relative w-full max-w-[600px] max-h-[90dvh] overflow-y-auto bg-white rounded-2xl p-5 sm:p-8 shadow-glass border border-border animate-dialog-in"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Close Button */}
@@ -48,7 +48,6 @@ const ModelTypeModal: React.FC<ModelTypeModalProps> = ({ isOpen, onClose, onSele
 
                 <div className="text-center mb-6 sm:mb-8">
                     <div className="w-14 h-14 bg-primary/10 text-primary rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                        <div className="absolute inset-0 bg-primary/20 rounded-full animate-ping opacity-25" />
                         <FileText size={28} />
                     </div>
                     <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground mb-2">Musterlösung analysieren</h2>
@@ -102,7 +101,7 @@ const ModelTypeModal: React.FC<ModelTypeModalProps> = ({ isOpen, onClose, onSele
                 </div>
 
                 {fileName.toLowerCase().endsWith('.txt') && (
-                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                    <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-3">
                         <FileText size={18} className="text-primary mt-0.5 shrink-0" />
                         <p className="text-sm text-primary leading-relaxed font-medium">
                             💡 <strong className="font-bold">Hinweis:</strong> Dies ist eine <strong className="font-bold">.txt-Datei</strong>. Sie liegt bereits als digitaler Text vor. Für das beste Ergebnis wählen Sie bitte <strong className="font-bold">&quot;Digital / Getippt&quot;</strong>.

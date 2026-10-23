@@ -53,7 +53,7 @@ export const OpenAICompatibleConfig: React.FC<OpenAICompatibleConfigProps> = ({ 
     };
 
     return (
-        <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="space-y-4">
             {/* Case 1: Community / SaaS Standard (Server Managed) */}
             {((isCommunity && !istEigenverwaltet) || (isSaaS && !isPure)) && (
                 <div className="space-y-4">

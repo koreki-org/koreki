@@ -51,8 +51,8 @@ export const AnonymizeModal: React.FC<AnonymizeModalProps> = ({
     if (!isOpen || !mounted) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300">
-            <div className="bg-card border border-border shadow-glass rounded-2xl max-w-xl w-full flex flex-col max-h-[85vh] overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-overlay-in">
+            <div className="bg-card border border-border shadow-glass rounded-2xl max-w-xl w-full flex flex-col max-h-[85vh] overflow-hidden animate-dialog-in">
                 
                 {/* Header */}
                 <div className="flex items-center justify-between border-b border-border px-5 py-4 bg-muted/20">

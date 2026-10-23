@@ -116,9 +116,9 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
 
                                         {/* Greeting area */}
                                         <div className="flex-1 bg-muted p-4 sm:p-6 overflow-y-auto flex flex-col space-y-4 custom-scrollbar">
-                                            <div className="p-4 bg-white border border-border text-foreground rounded-2xl rounded-tl-none shadow-3xs text-xs leading-relaxed font-medium max-w-[90%] sm:max-w-[85%] animate-in fade-in slide-in-from-left-2 duration-300">
+                                            <div className="p-4 bg-white border border-border text-foreground rounded-2xl rounded-tl-none shadow-3xs text-xs leading-relaxed font-medium max-w-[90%] sm:max-w-[85%]">
                                                 <p className="font-extrabold text-foreground mb-1 flex items-center gap-1.5">
-                                                    <Sparkles size={12} className="text-primary animate-pulse" />
+                                                    <Sparkles size={12} className="text-primary" />
                                                     PANG KI-Assistent
                                                 </p>
                                                 Hallo! Ich bin dein PANG-Assistent. Gib mir einfach deine Wünsche oder Richtlinien für diese Aufgabe ein (z. B. Toleranzen, Formeln oder Punkteverteilung) und klicke auf „Graph generieren“, um deinen Bewertungs-Graphen vollautomatisch zu erstellen.
@@ -162,7 +162,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                     </div>
 
                                     {/* Right Panel: Widescreen Info Box */}
-                                    <div className="hidden lg:flex w-80 border-l border-border bg-white flex flex-col p-6 space-y-4 shrink-0 overflow-y-auto animate-in fade-in duration-300">
+                                    <div className="hidden lg:flex w-80 border-l border-border bg-white flex flex-col p-6 space-y-4 shrink-0 overflow-y-auto">
                                         <div className="flex items-center gap-2 pb-2 border-b border-border shrink-0">
                                             <span className="text-lg">💡</span>
                                             <h4 className="text-xs font-medium text-foreground font-outfit tracking-tight">Was leistet der PANG-Bewertungsgraph?</h4>
@@ -190,7 +190,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                     <div className="w-full lg:w-1/2 flex flex-col overflow-hidden bg-white p-4 sm:p-8 border-b lg:border-b-0 lg:border-r border-border h-[50vh] lg:h-full shrink-0 lg:shrink">
                                         <div className="space-y-1.5 shrink-0 pb-4 border-b border-border">
                                             <h4 className="text-xs font-medium text-foreground font-outfit tracking-tight flex items-center gap-2">
-                                                <Sparkles size={13} className="text-primary animate-pulse" />
+                                                <Sparkles size={13} className="text-primary" />
                                                 Interaktiver KI-Assistent
                                             </h4>
                                             <p className="text-xs text-muted-foreground font-medium leading-relaxed">
@@ -228,7 +228,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
                                                 ))
                                             )}
                                             {isRefining && (
-                                                <div className="flex flex-col items-start max-w-[85%] animate-in fade-in duration-300 gap-1">
+                                                <div className="flex flex-col items-start max-w-[85%] gap-1">
                                                     <span className="text-xxs text-muted-foreground font-bold px-1">
                                                         Koreki passt Graph an...
                                                     </span>
@@ -286,7 +286,7 @@ export const GraphAiPanel: React.FC<GraphAiPanelProps> = ({
 
                                             {graph.validation?.dryRunChecked && (
                                                 <div className={cn(
-                                                    "rounded-2xl p-4 text-xs leading-normal flex items-start gap-3 border shadow-xs animate-in fade-in slide-in-from-top-2 duration-300",
+                                                    "rounded-2xl p-4 text-xs leading-normal flex items-start gap-3 border shadow-xs",
                                                     graph.validation.isValid
                                                         ? "bg-success/10 border-success/20 text-success"
                                                         : "bg-destructive/10 border-destructive/20 text-destructive"

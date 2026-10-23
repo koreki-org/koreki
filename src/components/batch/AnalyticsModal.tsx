@@ -79,9 +79,9 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
     if (!isOpen || !mounted) return null;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300" onClick={onClose}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-overlay-in" onClick={onClose}>
             <div 
-                className="relative w-full max-w-[1000px] max-h-[90vh] bg-white rounded-2xl p-6 md:p-10 shadow-glass border border-border animate-in zoom-in-95 duration-300 overflow-hidden flex flex-col"
+                className="relative w-full max-w-[1000px] max-h-[90vh] bg-white rounded-2xl p-6 md:p-10 shadow-glass border border-border animate-dialog-in overflow-hidden flex flex-col"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Background Decoration */}
@@ -101,7 +101,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                     
                     <div className="flex items-center gap-3">
                         {stats && (
-                            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 border border-border rounded-xl text-muted-foreground animate-in fade-in slide-in-from-right-4 duration-700">
+                            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-muted/50 border border-border rounded-xl text-muted-foreground">
                                 <span className="text-xs font-medium tracking-tight opacity-70">Gesamt-Inferenz:</span>
                                 <span className="text-xs font-bold text-foreground/80">{(stats as any).totalInferenceDuration > 0 ? `${((stats as any).totalInferenceDuration / 1000).toFixed(1)}s` : '...'}</span>
                             </div>
@@ -112,7 +112,7 @@ export const AnalyticsModal: React.FC<AnalyticsModalProps> = ({
                                 variant="outline" 
                                 size="sm" 
                                 onClick={handleExportPerformance}
-                                className="hidden sm:flex h-10 gap-2 px-3 bg-success/10 border-success/20 text-success hover:bg-success hover:text-white transition-all rounded-xl shadow-sm animate-in fade-in slide-in-from-right-4 duration-500"
+                                className="hidden sm:flex h-10 gap-2 px-3 bg-success/10 border-success/20 text-success hover:bg-success hover:text-white transition-all rounded-xl shadow-sm duration-500"
                             >
                                 <Clock size={14} className="shrink-0" />
                                 <div className="flex flex-col items-start -space-y-0.5">

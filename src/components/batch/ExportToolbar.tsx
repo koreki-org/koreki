@@ -81,7 +81,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
     }, []);
 
     return (
-        <div className="flex gap-2 flex-wrap mb-6 pb-6 border-b border-border/40 animate-in fade-in">
+        <div className="flex gap-2 flex-wrap mb-6 pb-6 border-b border-border/40">
             <Button 
                 variant="outline" 
                 size="sm" 
@@ -109,7 +109,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
                 </Button>
                 {isFeedbackOpen && (
                     <div className={cn(
-                        "absolute left-0 mt-1.5 rounded-xl border border-border/50 bg-card/95 p-1.5 shadow-xl backdrop-blur-md z-50 animate-in fade-in zoom-in-95 duration-200 origin-top transition-all",
+                        "absolute left-0 mt-1.5 rounded-xl border border-border/50 bg-card/95 p-1.5 shadow-xl backdrop-blur-md z-50 animate-overlay-in duration-200 origin-top transition-all",
                         pdfSettingsOpen ? "w-64 p-3" : "w-56"
                     )}>
                         {pdfSettingsOpen ? (

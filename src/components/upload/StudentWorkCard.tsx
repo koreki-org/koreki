@@ -100,7 +100,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                         </p>
                     </div>
                 ) : (
-                    <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex-1 flex flex-col">
                         <div className="bg-primary/5 border border-primary/10 rounded-xl p-6 flex flex-col items-center justify-center text-center mb-6">
                             <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center text-primary shadow-sm mb-3">
                                 <Users size={24} />

@@ -63,7 +63,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                         className="mb-4 shrink-0"
                     />
 
-                    <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar animate-in fade-in duration-500">
+                    <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
                         {activeGroupName && groupedTasks[activeGroupName]?.map((task) => {
                             const sIdx = tasksLayout.findIndex(t => t.name === task.name);
                             const sectionText = studentSections[sIdx] || '';
@@ -76,7 +76,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                                             <>
                                                 <span className="text-xs font-bold text-foreground truncate">{task.name}</span>
                                                 {sectionHasUncertainty && (
-                                                    <Badge className="bg-destructive/10 text-destructive border border-destructive/20 text-xs font-bold h-5 px-2 shadow-none gap-1 shrink-0 animate-pulse">
+                                                    <Badge className="bg-destructive/10 text-destructive border border-destructive/20 text-xs font-bold h-5 px-2 shadow-none gap-1 shrink-0">
                                                         <AlertCircle size={10} /> OCR prüfen!
                                                     </Badge>
                                                 )}

@@ -10,11 +10,11 @@ interface QuickStartModalProps {
 const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
     return (
         <div
-            className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-background/40 backdrop-blur-glass animate-in fade-in duration-300"
+            className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-background/40 backdrop-blur-glass animate-overlay-in"
             onClick={onClose}
         >
             <div
-                className="relative w-full max-w-[550px] bg-white rounded-hero p-6 shadow-glass border border-border animate-in zoom-in-95 duration-500 my-auto max-h-[92vh] flex flex-col"
+                className="relative w-full max-w-[550px] bg-white rounded-hero p-6 shadow-glass border border-border animate-dialog-in my-auto max-h-[92vh] flex flex-col"
                 onClick={e => e.stopPropagation()}
             >
                 <Button

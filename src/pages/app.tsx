@@ -294,7 +294,7 @@ export default function Home() {
                     />
 
                     {(aiStatus?.ocrBrakeActive || aiStatus?.correctionBrakeActive) && (
-                        <div className="mb-6 flex items-center gap-3 bg-destructive/10 border border-destructive/20 text-destructive p-4 rounded-xl font-semibold shadow-sm animate-pulse">
+                        <div className="mb-6 flex items-center gap-3 bg-destructive/10 border border-destructive/20 text-destructive p-4 rounded-xl font-semibold shadow-sm">
                             <AlertTriangle size={20} />
                             <span>{aiStatus.message}</span>
                         </div>

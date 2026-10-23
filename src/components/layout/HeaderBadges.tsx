@@ -86,7 +86,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                     size="sm"
                     onClick={onUnlockExpert}
                     disabled={upgrading}
-                    className="relative group bg-primary/10 text-primary hover:bg-primary hover:text-white border border-primary/20 rounded-full px-3.5 h-8 font-bold text-xs transition-all animate-pulse hover:animate-none shrink-0"
+                    className="relative group bg-primary/10 text-primary hover:bg-primary hover:text-white border border-primary/20 rounded-full px-3.5 h-8 font-bold text-xs transition-all shrink-0"
                     title={`Experten-Modus für ${EXPERTEN_MODUS_CREDITS} Credits: unbegrenzt eigene Profile`}
                 >
                     <Sparkles size={14} className="mr-1.5 text-primary group-hover:text-white" />

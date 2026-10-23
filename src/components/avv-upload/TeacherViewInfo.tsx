@@ -8,7 +8,7 @@ interface TeacherViewInfoProps {
 
 export const TeacherViewInfo: React.FC<TeacherViewInfoProps> = ({ onLogout }) => {
     return (
-        <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full flex flex-col items-center">
             <div className="flex items-start gap-4 p-5 bg-warning/5 border border-warning/20 rounded-2xl text-xs text-warning text-left mb-6 shadow-sm">
                 <AlertCircle size={20} className="text-warning shrink-0 mt-0.5" />
                 <div className="flex flex-col gap-2">

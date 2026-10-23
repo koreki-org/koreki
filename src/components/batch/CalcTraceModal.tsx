@@ -172,7 +172,7 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
 
     return createPortal(
         <div className="fixed inset-0 z-[2300] flex items-center justify-center p-4 bg-foreground/60 backdrop-blur-md animate-fade-in font-inter text-foreground">
-            <div className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-zoom-in">
+            <div className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-dialog-in">
                 
                 <div className="px-6 py-5 border-b border-border bg-muted/30 flex justify-between items-center">
                     <div className="flex items-center gap-3">

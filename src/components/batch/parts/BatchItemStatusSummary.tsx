@@ -46,7 +46,7 @@ export const BatchItemStatusSummary: React.FC<BatchItemStatusSummaryProps> = ({
                 </Badge>
             )}
             {itemHasWarnings && (
-                <Badge className="bg-warning/10 text-warning border border-warning/20 text-xs font-bold h-6 px-3 shadow-none gap-1.5 shrink-0 animate-pulse rounded-full">
+                <Badge className="bg-warning/10 text-warning border border-warning/20 text-xs font-bold h-6 px-3 shadow-none gap-1.5 shrink-0 rounded-full">
                     <AlertCircle size={12} /> OCR prüfen!
                 </Badge>
             )}

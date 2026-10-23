@@ -171,7 +171,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
     const isFollowUp = messages.filter(m => m.role === 'user').length >= 1;
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-foreground/60 backdrop-blur-md animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-foreground/60 backdrop-blur-md animate-overlay-in">
 
 
             {/* Backdrop (Accidental close protection) */}
@@ -180,7 +180,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
             {/* Modal Body Panel */}
             <div className={cn(
                 "relative bg-card border border-border/80 shadow-2xl rounded-hero max-w-5xl w-full flex flex-col max-h-[90vh] overflow-hidden",
-                "animate-in zoom-in-95 duration-300"
+                "animate-dialog-in"
             )}>
                 {/* Header Section */}
                 <div className="px-4 sm:px-8 py-4 sm:pt-8 sm:pb-4 flex justify-between items-center border-b border-border/50 bg-background/50 backdrop-blur shrink-0">
@@ -233,7 +233,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                     : "border-dashed border-border/60 bg-transparent justify-center items-center text-center p-8"
                             )}>
                                 {activeProposal ? (
-                                    <div className="flex flex-col h-full justify-between gap-4 animate-in fade-in duration-500">
+                                    <div className="flex flex-col h-full justify-between gap-4">
                                         <div className="space-y-3.5">
                                             <div className="flex items-center justify-between pb-2 border-b border-primary/10">
                                                 <span className="text-xs font-medium text-primary flex items-center gap-1.5">
@@ -290,7 +290,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
                                 <div
                                     key={index}
                                     className={cn(
-                                        "flex flex-col max-w-[85%] animate-in fade-in duration-300",
+                                        "flex flex-col max-w-[85%]",
                                         msg.role === 'user' ? "ml-auto items-end" : "items-start"
                                     )}
                                 >
@@ -316,7 +316,7 @@ Wo genau hast du Zweifel oder wo soll ich dir helfen? Frag mich z.B.:
 
                             {/* Loading / ChatGPT-style pulsing dots */}
                             {loading && (
-                                <div className="flex flex-col items-start max-w-[85%] animate-in fade-in duration-300">
+                                <div className="flex flex-col items-start max-w-[85%]">
                                     <span className="text-xs text-muted-foreground font-bold mb-1 px-1">
                                         Koreki schreibt...
                                     </span>

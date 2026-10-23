@@ -23,7 +23,9 @@ describe('MathMarkdown Component (Layer 1)', () => {
         
         const markdownContainer = screen.getByTestId('markdown');
         expect(markdownContainer.innerHTML).toContain('bg-warning/20');
-        expect(markdownContainer.innerHTML).toContain('animate-pulse');
+        // Markiert, aber ruhig: blinkende Woerter mitten im Schuelertext stoeren
+        // beim Lesen (animation-governance.test.ts, 23.10.2026).
+        expect(markdownContainer.innerHTML).not.toContain('animate-pulse');
         expect(markdownContainer.innerHTML).toContain('Unsicher (?)');
         expect(markdownContainer.innerHTML).toContain('Wort(?)');
     });

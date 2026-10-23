@@ -58,11 +58,11 @@ const CreditsModal: React.FC<CreditsModalProps> = ({ onClose, onSelect, upgradin
 
     return (
         <div
-            className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-background/40 backdrop-blur-md animate-in fade-in duration-300"
+            className="fixed inset-0 z-[1000] flex items-center justify-center p-4 bg-background/40 backdrop-blur-md animate-overlay-in"
             onClick={onClose}
         >
             <div
-                className="relative w-full max-w-[1000px] max-h-[95vh] bg-white rounded-hero p-8 md:p-12 shadow-2xl border border-white flex flex-col items-center animate-in zoom-in-95 duration-500 overflow-y-auto custom-scrollbar"
+                className="relative w-full max-w-[1000px] max-h-[95vh] bg-white rounded-hero p-8 md:p-12 shadow-2xl border border-white flex flex-col items-center animate-dialog-in overflow-y-auto custom-scrollbar"
                 onClick={e => e.stopPropagation()}
             >
                 <Button

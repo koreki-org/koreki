@@ -124,7 +124,7 @@ const Dropdown: React.FC<DropdownProps> = ({
                     className={cn(
                         "absolute z-50 mt-1.5 w-full min-w-[12rem] rounded-xl border border-border bg-card p-1 shadow-xl",
                         "max-h-[300px] overflow-y-auto custom-scrollbar",
-                        "animate-in fade-in zoom-in-95 duration-200 origin-top"
+                        "animate-overlay-in"
                     )}
                 >
                     {options.length === 0 ? (

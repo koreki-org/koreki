@@ -95,7 +95,7 @@ export const BatchTaskAnalysisCell: React.FC<BatchTaskAnalysisCellProps> = ({
                 className="w-full"
             />
             {aiResult?.sandboxBypassed && (
-                <div className="bg-destructive/10 text-destructive border border-destructive/20 rounded-xl p-3 flex items-start gap-2 text-xs font-semibold animate-in fade-in duration-200">
+                <div className="bg-destructive/10 text-destructive border border-destructive/20 rounded-xl p-3 flex items-start gap-2 text-xs font-semibold">
                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
                     <span>Diese Bewertung erfolgte ohne mathematische Sandbox-Prüfung — bitte manuell gegenprüfen!</span>
                 </div>
@@ -142,7 +142,7 @@ export const BatchTaskAnalysisCell: React.FC<BatchTaskAnalysisCellProps> = ({
                          * Sprache. Das Auswahlfeld ist bereits weiss und sagt seinen Zustand
                          * ueber den Rand — Flaeche kann es nicht.
                          */
-                        <div className="flex flex-wrap items-center gap-2 mt-1 animate-in fade-in duration-200">
+                        <div className="flex flex-wrap items-center gap-2 mt-1">
                             <GraduationCap size={13} className="text-primary shrink-0" />
                             {memories.length === 0 ? (
                                 <p className="flex-1 min-w-[200px] text-xs text-muted-foreground">
@@ -224,7 +224,7 @@ export const BatchTaskAnalysisCell: React.FC<BatchTaskAnalysisCellProps> = ({
                                 }}
                                 className="h-8 text-xs font-bold text-primary hover:text-primary flex items-center gap-1.5"
                             >
-                                <Sparkles size={13} className="text-primary group-hover/btn:scale-110 transition-all animate-pulse" />
+                                <Sparkles size={13} className="text-primary group-hover/btn:scale-110 transition-all" />
                                 KI-Zweitmeinung
                             </Button>
                             <Button

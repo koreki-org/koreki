@@ -24,7 +24,7 @@ export const GraphJsonPanel: React.FC<GraphJsonPanelProps> = ({
     isLocked,
     onJsonChange
 }) => (
-    <div className="flex-grow flex flex-col overflow-hidden bg-foreground border-l border-border animate-in slide-in-from-left-4 duration-300">
+    <div className="flex-grow flex flex-col overflow-hidden bg-foreground border-l border-border">
         <div className="px-6 py-2 border-b border-background/10 bg-foreground flex justify-between items-center shrink-0">
             <span className="text-xs font-medium text-background/60 font-mono">raw_graph_config.json</span>
             {jsonError ? (

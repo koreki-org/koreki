@@ -184,7 +184,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                 title="Musterlösung ändern"
                                 aria-label="Musterlösung ändern"
                             >
-                                <RefreshCw size={12} className={extractingLayout ? "animate-spin" : ""} />
+                                <RefreshCw size={12} />
                                 <span className="hidden sm:inline">Ändern</span>
                             </Button>
 
@@ -257,7 +257,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             <AufgabenReiter namen={groupNames} aktiv={activeGroupName} onWaehle={setActiveGroupName} className="mb-2" />
 
 
-                            <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                            <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                 {activeGroupName && groupedTasks[activeGroupName]?.map((task) => {
                                     const originalIdx = tasksLayout.findIndex(t => t === task);
                                     return (
@@ -300,7 +300,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         </div>
                     </div>
                 ) : (
-                    <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex-1 flex flex-col">
                         {extractingLayout
                             ? <MusterFortschritt />
                             : <p className="text-xs font-medium text-muted-foreground px-1 mb-2">Extrahiertes Dokument</p>}
@@ -444,7 +444,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                     onClick={() => setShowEngineSelectionTaskIdx(null)}
                 >
                     <div 
-                        className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-lg overflow-hidden animate-zoom-in flex flex-col p-6 sm:p-8"
+                        className="bg-card border border-border shadow-2xl rounded-2xl w-full max-w-lg overflow-hidden animate-dialog-in flex flex-col p-6 sm:p-8"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Header */}

@@ -32,7 +32,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({ src, alt, onClose 
     // Render into Portal
     return createPortal(
         <div 
-            className="fixed inset-0 z-[9999] bg-foreground text-background/90 backdrop-blur-2xl flex items-center justify-center p-4 md:p-12 animate-in fade-in duration-300 cursor-zoom-out"
+            className="fixed inset-0 z-[9999] bg-foreground text-background/90 backdrop-blur-2xl flex items-center justify-center p-4 md:p-12 animate-overlay-in cursor-zoom-out"
             onClick={onClose}
         >
             <div 
@@ -43,7 +43,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({ src, alt, onClose 
                     <img 
                         src={src} 
                         alt={alt || "Vergrößerte Ansicht"} 
-                        className="max-w-full max-h-[90vh] object-contain rounded-hero shadow-[0_0_80px_rgba(0,0,0,0.5)] border border-white/10 animate-in zoom-in-95 duration-500"
+                        className="max-w-full max-h-[90vh] object-contain rounded-hero shadow-[0_0_80px_rgba(0,0,0,0.5)] border border-white/10 animate-dialog-in"
                     />
                     
                     {/* Industrial Close Button */}

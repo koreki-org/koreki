@@ -62,7 +62,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                             <div className="hidden md:block h-12 w-px bg-border ml-2" />
                             <div className="hidden md:flex flex-col gap-1">
                                 <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                                    <div className="w-2 h-2 rounded-full bg-primary" />
                                     <p className="text-xs font-medium text-muted-foreground">Enterprise Environment v2.0</p>
                                 </div>
                                 <p className="text-sm font-semibold text-foreground">Multi-Tenant Management</p>

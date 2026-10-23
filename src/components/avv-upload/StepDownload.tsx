@@ -9,7 +9,7 @@ interface StepDownloadProps {
 
 export const StepDownload: React.FC<StepDownloadProps> = ({ isOrganization, onNext }) => {
     return (
-        <div className="w-full flex flex-col relative animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="w-full flex flex-col relative">
             <div className="flex items-start gap-4 p-4 bg-primary/5 border border-primary/10 rounded-2xl text-xs text-primary text-left mb-5">
                 <AlertCircle size={24} className="text-primary shrink-0" />
                 <p className="leading-relaxed">

@@ -34,7 +34,7 @@ export const HighlightableTextArea: React.FC<HighlightableTextAreaProps> = ({ va
         return parts.map((part, i) => {
             if (OCR_MARKE.test(part)) {
                 return (
-                    <span key={i} className="bg-warning/20 border-b border-warning/50 rounded-sm px-1 font-bold animate-pulse" style={{ color: 'transparent' }}>
+                    <span key={i} className="bg-warning/20 border-b border-warning/50 rounded-sm px-1 font-bold" style={{ color: 'transparent' }}>
                         {part}
                     </span>
                 );

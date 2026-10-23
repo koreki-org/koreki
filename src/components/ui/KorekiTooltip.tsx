@@ -35,8 +35,8 @@ export const KorekiTooltip: React.FC<KorekiTooltipProps> = ({
 
     // Dynamic positioning classes
     const positionClasses = position === 'top' 
-        ? 'bottom-full mb-3 origin-bottom slide-in-from-bottom-2' 
-        : 'top-full mt-3 origin-top slide-in-from-top-2';
+        ? 'bottom-full mb-3 origin-bottom' 
+        : 'top-full mt-3 origin-top';
 
     const alignClasses = align === 'left'
         ? 'left-0'
@@ -59,7 +59,7 @@ export const KorekiTooltip: React.FC<KorekiTooltipProps> = ({
             
             {isVisible && (
                 <div className={cn(
-                    "absolute bg-white/95 backdrop-blur-md border border-border/50 p-4 rounded-2xl shadow-2xl z-[100] text-sm animate-in fade-in duration-200",
+                    "absolute bg-white/95 backdrop-blur-md border border-border/50 p-4 rounded-2xl shadow-2xl z-[100] text-sm animate-overlay-in",
                     alignClasses,
                     widthClass,
                     positionClasses

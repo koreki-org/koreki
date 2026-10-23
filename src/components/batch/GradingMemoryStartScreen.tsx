@@ -46,7 +46,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                 {isDragging && (
                                     <div className="absolute inset-0 z-50 flex items-center justify-center bg-primary/5 backdrop-blur-sm border-2 border-dashed border-primary rounded-2xl m-2 pointer-events-none">
                                         <div className="flex flex-col items-center text-primary font-bold gap-2">
-                                            <RefreshCcw size={32} className="animate-spin-slow" />
+                                            <RefreshCcw size={32} />
                                             <p>Erfahrungsschatz hier loslassen!</p>
                                         </div>
                                     </div>
@@ -102,14 +102,14 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                         >
                                             <div className="flex flex-col min-w-0 flex-1">
                                                 <span className="text-xs font-extrabold text-foreground flex items-center gap-1.5">
-                                                    <Download size={12} className="text-primary animate-pulse" />
+                                                    <Download size={12} className="text-primary" />
                                                     {activeMemory.name}
                                                 </span>
                                                 <span className="text-xs text-primary font-medium mt-1">
                                                     {activeMemory.cases?.length || 0} Fallbeispiele (Importiert, Nicht gespeichert)
                                                 </span>
                                             </div>
-                                            <Check size={16} className="text-primary animate-pulse" />
+                                            <Check size={16} className="text-primary" />
                                         </div>
                                     )}
 

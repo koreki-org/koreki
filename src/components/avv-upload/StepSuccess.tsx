@@ -9,9 +9,8 @@ interface StepSuccessProps {
 
 export const StepSuccess: React.FC<StepSuccessProps> = ({ isOrganization, onComplete }) => {
     return (
-        <div className="w-full flex flex-col items-center justify-center text-center h-full animate-in zoom-in-50 duration-500">
+        <div className="w-full flex flex-col items-center justify-center text-center h-full">
             <div className="relative mb-6">
-                <div className="absolute inset-0 bg-success blur-2xl opacity-20 rounded-full animate-pulse"></div>
                 <CheckCircle size={80} className="text-success relative z-10" />
             </div>
             <h3 className="text-3xl font-bold text-foreground mb-4 tracking-tight">Vollständig!</h3>

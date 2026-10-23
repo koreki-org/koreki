@@ -21,8 +21,8 @@ const AiSetupModal: React.FC<AiSetupModalProps> = ({
     initialSettings = {} 
 }) => {
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-in fade-in duration-300">
-            <div className="relative w-full max-w-lg bg-card rounded-hero shadow-glass border border-border max-h-[90vh] md:max-h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 text-foreground">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/60 backdrop-blur-glass animate-overlay-in">
+            <div className="relative w-full max-w-lg bg-card rounded-hero shadow-glass border border-border max-h-[90vh] md:max-h-[85vh] flex flex-col overflow-hidden animate-dialog-in text-foreground">
                 <Button 
                     variant="ghost"
                     size="icon"

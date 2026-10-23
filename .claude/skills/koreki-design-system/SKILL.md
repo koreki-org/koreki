@@ -102,7 +102,11 @@ Verboten: `rounded-3xl` und alle Werte in eckigen Klammern.
 
 - **Schatten:** Karten tragen sich über die Fläche (Abschnitt 3), Schatten höchstens `shadow-sm`. Modals `shadow-glass`, verankerte Popover `shadow-xl`.
 - **Glas und Unschärfe** nur für Ebenen, die über Inhalt schweben: Modal-Hintergrund (`backdrop-blur-glass`), die schwebende Kopfleiste. Nie für Inhaltskarten. Verankerte Listen und Menüs (Vorbild `ui/Dropdown.tsx`) sind undurchsichtig: `bg-card`, Haarlinie, `shadow-xl`.
-- **Animation:** nur Klassen aus `globals.css` (`animate-fade-up`, `-fade-down`, `-fade-in`, `animate-spin`, `animate-scan`, `animate-loading-bar`). Übergänge 150–300 ms, nur Farbe und Deckkraft. `prefers-reduced-motion` respektieren.
+- **Animation:** nur Klassen aus `globals.css` oder Tailwind selbst. Übergänge 150–300 ms, nur Farbe und Deckkraft. `prefers-reduced-motion` respektieren. *(Wächter: `tests/unit/animation-governance.test.ts`)*
+  - **Ebenen über dem Inhalt** blenden ein: Hintergrund, Menü, Tooltip mit `animate-overlay-in` (150 ms), die Dialog-Karte mit `animate-dialog-in` (180 ms, leichtes Größerwerden).
+  - **Inhalt bewegt sich nicht** — Karten, Listen, Einstellungen sind einfach da.
+  - **Dauer-Animationen** (`animate-pulse`, `-ping`, `-bounce`) nur an Elementen, die zeigen, dass gerade etwas läuft; sie tragen `data-laufanzeige`. Warnungen und Deko blinken nicht — Farbe und Symbol tragen die Aussage. `animate-spin` und `animate-loading-bar` sind Laufanzeigen von sich aus.
+  - Keine Klassen aus `tailwindcss-animate` (`animate-in`, `fade-in`, `zoom-in-95` …) — der Zusatz ist nicht eingebunden, die Klassen tun nichts.
 - **Laden:** Skeleton oder Fortschrittsbalken mit Text, was gerade passiert.
 
 ## 6. Komponenten (Pflicht)

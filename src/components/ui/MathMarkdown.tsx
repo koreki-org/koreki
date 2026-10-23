@@ -206,7 +206,7 @@ export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }
         const parts = text.split(OCR_MARKE_MIT_WORT);
         let joined = parts.map((part, i) => {
             if (OCR_MARKE.test(part)) {
-                return `<span class="bg-warning/20 border-b border-warning/40 text-warning px-1 rounded-sm font-bold animate-pulse inline-block">${part}</span>`;
+                return `<span class="bg-warning/20 border-b border-warning/40 text-warning px-1 rounded-sm font-bold inline-block">${part}</span>`;
             }
             return part;
         }).join('');

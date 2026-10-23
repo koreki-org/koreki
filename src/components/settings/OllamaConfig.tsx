@@ -79,7 +79,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
     const isMapped = settings.ollamaModel && !isExactMatch && availableModels.length > 0 && resolvedModel !== settings.ollamaModel;
 
     return (
-        <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="space-y-6">
             {/* 1. Connection Header */}
             <div className="p-4 bg-muted/30 rounded-2xl border border-border space-y-4">
                 <div className="flex gap-2">
@@ -109,7 +109,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                 </div>
                 
                 {checkStatus === 'ok' && (
-                    <div className="flex items-center justify-between text-xxs text-success font-bold bg-success/5 p-2.5 rounded-xl border border-success/20 animate-in fade-in slide-in-from-left-2">
+                    <div className="flex items-center justify-between text-xxs text-success font-bold bg-success/5 p-2.5 rounded-xl border border-success/20">
                         <div className="flex items-center gap-2">
                             <CheckCircle2 size={14} />
                             <span>Ollama {ollamaVersion ? `v${ollamaVersion}` : ''} bereit</span>
@@ -139,7 +139,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                 )}
                 
                 {checkStatus === 'error' && hasAttempted && (
-                    <div className="flex items-center gap-2 text-xxs text-destructive font-bold bg-destructive/5 p-2.5 rounded-xl border border-destructive/20 animate-shake">
+                    <div className="flex items-center gap-2 text-xxs text-destructive font-bold bg-destructive/5 p-2.5 rounded-xl border border-destructive/20">
                         <Info size={14} />
                         <span>Ollama konnte nicht erreicht werden. Läuft die App?</span>
                     </div>
@@ -181,7 +181,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                                     </div>
                                     <div className="text-xxs text-muted-foreground font-medium">{p.desc}</div>
                                 </div>
-                                {isSelected && <CheckCircle2 size={18} className="text-primary animate-in zoom-in duration-300" />}
+                                {isSelected && <CheckCircle2 size={18} className="text-primary" />}
                             </Button>
                         );
                     })}
@@ -224,12 +224,12 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
                                 <div className="text-xxs text-muted-foreground font-medium">Manuelle Eingabe eines beliebigen Modell-Tags</div>
                             </div>
                         </div>
-                        {isCustomMode && <CheckCircle2 size={18} className="text-primary animate-in zoom-in duration-300" />}
+                        {isCustomMode && <CheckCircle2 size={18} className="text-primary" />}
                     </Button>
 
                     {/* 3. Dynamic Manual Override (Only visible in Custom Mode) */}
                     {isCustomMode && (
-                        <div className="pt-2 animate-in slide-in-from-top-2 duration-300">
+                        <div className="pt-2">
                             <label htmlFor="ollama-model-manual" className="block text-xs font-medium text-muted-foreground ml-1 mb-2">Manueller Modell-Tag</label>
                             <div className="relative group">
                                 <Input 
@@ -246,7 +246,7 @@ export const OllamaConfig: React.FC<OllamaConfigProps> = ({ settings, onSave }) 
 
                     {/* 4. Smart Mapping & Discovery Banner (Only visible in Preset Mode) */}
                     {!isCustomMode && (checkStatus === 'ok' || isMapped) && settings.ollamaModel && (
-                        <div className={`p-4 rounded-2xl border-2 transition-all duration-300 animate-in slide-in-from-top-2 ${
+                        <div className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
                             isExactMatch ? 'border-success/20 bg-success/5 text-success' :
                             isMapped ? 'border-primary/20 bg-primary/5 text-primary' :
                             availableModels.length > 0 ? 'border-warning/20 bg-warning/5 text-warning' :

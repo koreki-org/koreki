@@ -63,7 +63,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                             {/* Left part: Variables visual list */}
                             <div className="flex-1 overflow-y-auto p-4 sm:p-8 min-h-0">
                                 <div className="space-y-8 pb-12">
-                                    <div className="bg-primary/5 border border-primary/20 rounded-xl p-5 flex gap-4 text-xs text-primary items-start shadow-xs animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <div className="bg-primary/5 border border-primary/20 rounded-xl p-5 flex gap-4 text-xs text-primary items-start shadow-xs">
                                         <span className="text-xl">💡</span>
                                         <div className="space-y-1">
                                             <p className="font-extrabold text-primary leading-none">Manuelle Knotengestaltung</p>
@@ -75,7 +75,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
 
                                     {graph.validation?.dryRunChecked && (
                                         <div className={cn(
-                                            "rounded-xl p-5 text-xs leading-normal flex items-start gap-3 border shadow-xs animate-in fade-in slide-in-from-top-2 duration-300 mt-4",
+                                            "rounded-xl p-5 text-xs leading-normal flex items-start gap-3 border shadow-xs mt-4",
                                             graph.validation.isValid
                                                 ? "bg-success/10 border-success/20 text-success"
                                                 : "bg-destructive/10 border-destructive/20 text-destructive"
@@ -95,9 +95,9 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                     )}
 
                                     {Object.keys(groupedVariables).length === 0 ? (
-                                        <div className="bg-white border-2 border-dashed border-border rounded-hero p-12 text-center max-w-xl mx-auto flex flex-col items-center justify-center gap-4 shadow-lg shadow-glass/50 mt-8 animate-in fade-in zoom-in-95 duration-500">
+                                        <div className="bg-white border-2 border-dashed border-border rounded-hero p-12 text-center max-w-xl mx-auto flex flex-col items-center justify-center gap-4 shadow-lg shadow-glass/50 mt-8">
                                             <div className="w-12 h-12 bg-muted border border-border rounded-2xl flex items-center justify-center text-muted-foreground">
-                                                <Sparkles size={24} className="text-primary animate-pulse" />
+                                                <Sparkles size={24} className="text-primary" />
                                             </div>
                                             <div>
                                                 <h4 className="font-extrabold text-foreground text-sm">Noch kein Bewertungs-Graph vorhanden</h4>
@@ -388,7 +388,7 @@ export const GraphEditorPanel: React.FC<GraphEditorPanelProps> = ({
                                             </button>
 
                                             {showAdvancedInspector && (
-                                                <div className="space-y-4 pt-3 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                <div className="space-y-4 pt-3">
                                                     {/* Validation Type */}
                                                     <div className="space-y-1">
                                                         <label className="text-xs font-medium text-muted-foreground">Validierungsart</label>

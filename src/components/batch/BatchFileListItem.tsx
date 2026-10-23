@@ -127,11 +127,11 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                         ) : null}
                     </div>
                     <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1 max-w-full overflow-hidden">
-                        {item.status === 'error' && <AlertCircle data-testid="fehler" size={20} className="text-destructive shrink-0 animate-pulse" />}
+                        {item.status === 'error' && <AlertCircle data-testid="fehler" size={20} className="text-destructive shrink-0" />}
                         <div className="flex flex-col min-w-0">
                             <span className="font-bold text-foreground truncate tracking-tight text-sm sm:text-base">{item.name}</span>
                             {isProcessing && streamedText && (
-                                <div className="text-xxs text-primary font-mono truncate max-w-[200px] animate-pulse">
+                                <div data-laufanzeige className="text-xxs text-primary font-mono truncate max-w-[200px] animate-pulse">
                                     KI schreibt: {streamedText.substring(streamedText.length - 40)}
                                 </div>
                             )}
@@ -154,7 +154,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                     {isDone && (
                         <div className="flex items-center gap-2">
                             {reviewRecommended && (
-                                <Badge className="hidden sm:flex bg-warning/10 text-warning border-warning/20 h-7 px-3 text-xs font-medium tracking-tight gap-1.5 shadow-sm animate-pulse rounded-lg">
+                                <Badge className="hidden sm:flex bg-warning/10 text-warning border-warning/20 h-7 px-3 text-xs font-medium tracking-tight gap-1.5 shadow-sm rounded-lg">
                                     <AlertTriangle size={12} className="text-warning" /> Review
                                 </Badge>
                             )}
@@ -181,7 +181,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                   * Kopfzeile sieht dagegen aus wie ein Darstellungsfehler; genau das
                   * war am 07.09.2026 der erste Versuch.
                   */
-                <div className="p-4 border-t border-border animate-in slide-in-from-top-2">
+                <div className="p-4 border-t border-border">
                     <MobileViewSelector mobileViewMode={mobileViewMode} onSetMobileViewMode={onSetMobileViewMode} isDone={isDone} />
                     
                     {isDone ? (

@@ -120,7 +120,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     };
 
     return (
-        <div id="batch-processor-anchor" className="animate-in fade-in slide-in-from-bottom-6 duration-700 scroll-mt-10">
+        <div id="batch-processor-anchor" className="scroll-mt-10">
             {/* Info Badge */}
             <div className="mb-6 flex items-center gap-3 bg-primary/5 border border-primary/10 text-primary p-4 rounded-xl shadow-sm backdrop-blur-xs">
                 <Info size={18} className="text-primary" />

@@ -62,7 +62,7 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
             <div className="flex items-center gap-2 shrink-0">
             {/* RIGHT SIDE: Specific Review Recommendation */}
             {lowConfidenceTasks.length > 0 && (
-                <div className="flex items-center gap-2 animate-in fade-in duration-700 h-8">
+                <div className="flex items-center gap-2 h-8">
                     {lowConfidenceTasks.length === 1 ? (
                         // Genau ein Treffer: direkter Sprung-Button, kein Popover-Overhead nötig
                         <Button

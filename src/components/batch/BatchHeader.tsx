@@ -86,7 +86,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                         <div className="flex items-center gap-1.5 min-w-0 flex-1 sm:flex-none">
                             <Brain size={14} className={cn(
                                 "shrink-0 transition-colors duration-300",
-                                ocrStrategy === 'handwriting' ? "text-primary animate-pulse" : "text-muted-foreground"
+                                ocrStrategy === 'handwriting' ? "text-primary" : "text-muted-foreground"
                             )} />
                             <span className="text-xs font-bold text-muted-foreground select-none truncate">
                                 <span className="hidden sm:inline">Hohe Genauigkeit (langsamer)</span>
@@ -176,7 +176,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                     <Download size={14} />
                                     <span>Exportieren</span>
                                 </Button>
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:flex flex-col items-center z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:flex flex-col items-center z-50 animate-overlay-in pointer-events-none">
                                     <div className="w-2.5 h-2.5 bg-white/95 border-l border-t border-border rotate-45 -mb-1.5 z-40"></div>
                                     <div className="bg-white/95 backdrop-blur-md border border-border px-3.5 py-2 rounded-2xl shadow-xl whitespace-nowrap text-xs font-bold text-primary">
                                         Schülerlösung als Zwischenstand exportieren (.koreki)
@@ -196,7 +196,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                     <span>Korrektur exportieren</span>
                                     <Info size={14} className="opacity-60 shrink-0" />
                                 </Button>
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:flex flex-col items-center z-50 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:flex flex-col items-center z-50 animate-overlay-in pointer-events-none">
                                     <div className="w-2.5 h-2.5 bg-white/95 border-l border-t border-border rotate-45 -mb-1.5 z-40"></div>
                                     <div className="bg-white/95 backdrop-blur-md border border-border px-3.5 py-2 rounded-2xl shadow-xl whitespace-nowrap text-xs font-bold text-primary">
                                         Ohne PDFs (beim Import nachladbar)

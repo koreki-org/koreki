@@ -57,7 +57,7 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
     };
 
     return (
-        <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-500">
+        <div className="space-y-4">
             {/* Case 1: Community / SaaS Standard (Server Managed) */}
             {((isCommunity && !istEigenverwaltet) || (isSaaS && !isPure)) && (
                 <div className="p-5 bg-success/5 rounded-xl border-2 border-success/20 flex flex-col items-center text-center gap-3">
@@ -123,14 +123,14 @@ export const MistralConfig: React.FC<MistralConfigProps> = ({ settings, onSave, 
                     </div>
 
                     {saveStatus === 'success' && (
-                        <div className="flex items-center gap-2 text-success text-xxs font-bold animate-in fade-in slide-in-from-left-2">
+                        <div className="flex items-center gap-2 text-success text-xxs font-bold">
                             <CheckCircle2 size={12} />
                             Key wurde sicher im System-Tresor hinterlegt.
                         </div>
                     )}
 
                     {saveStatus === 'error' && (
-                        <div className="flex items-center gap-2 text-destructive text-xxs font-bold animate-in fade-in slide-in-from-left-2">
+                        <div className="flex items-center gap-2 text-destructive text-xxs font-bold">
                             <AlertCircle size={12} />
                             Fehler beim Zugriff auf den Tresor.
                         </div>

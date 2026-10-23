@@ -56,7 +56,7 @@ export default function StudentFeedbackView() {
     if (loading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center p-6">
-                <div className="text-center animate-pulse">
+                <div data-laufanzeige className="text-center animate-pulse">
                     <div className="mb-6 flex justify-center">
                         <Logo size={48} />
                     </div>
@@ -95,7 +95,7 @@ export default function StudentFeedbackView() {
                                         placeholder="0000"
                                         className={`w-full text-center text-4xl font-extrabold tracking-[0.5em] py-4 bg-card border-2 rounded-2xl focus:outline-none focus:ring-4 transition-all ${
                                             pinError 
-                                            ? 'border-destructive/30 focus:ring-destructive/10 text-destructive animate-shake' 
+                                            ? 'border-destructive/30 focus:ring-destructive/10 text-destructive' 
                                             : 'border-border/50 focus:ring-primary/10 focus:border-primary/20 text-foreground'
                                         }`}
                                         autoFocus

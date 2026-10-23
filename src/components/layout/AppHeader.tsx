@@ -80,7 +80,7 @@ export const HeaderPortalTooltip: React.FC<{
             {children}
             {mounted && isHovered && typeof document !== 'undefined' && createPortal(
                 <div 
-                    className="fixed z-[9999] bg-white/95 backdrop-blur-md border border-border/50 px-3.5 py-2.5 rounded-xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 pointer-events-none whitespace-nowrap"
+                    className="fixed z-[9999] bg-white/95 backdrop-blur-md border border-border/50 px-3.5 py-2.5 rounded-xl shadow-2xl animate-overlay-in pointer-events-none whitespace-nowrap"
                     style={{ top: coords.top, left: coords.left, transform: 'translateX(-50%)' }}
                 >
                     <p className="text-primary font-bold text-xs">{title}</p>
@@ -203,7 +203,7 @@ const Header: React.FC<HeaderProps> = ({
     );
 
     return (
-        <header className="mb-4 md:mb-5 flex flex-col gap-4 w-full animate-in fade-in duration-500">
+        <header className="mb-4 md:mb-5 flex flex-col gap-4 w-full">
             {/* Strictly Single-Row Navigation Bar */}
             <div className="w-full bg-card/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 flex flex-row items-center justify-between gap-3 transition-all duration-300">
                 
@@ -272,7 +272,7 @@ const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* The Classic Center Branding & Action Layer */}
-            <div className="flex flex-col items-center text-center mt-5 md:mt-1 animate-in fade-in duration-500 ease-out">
+            <div className="flex flex-col items-center text-center mt-5 md:mt-1">
                 <Logo showText={true} textLarge={true} size={40} subtitle="Dein KI-Korrektur Assistent" />
                 
                 <div className="flex flex-row gap-2 sm:gap-2.5 mt-3 md:mt-4 w-full max-w-[480px] mx-auto px-4 sm:px-0">
@@ -307,7 +307,7 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* Contextual Warning: Missing Files */}
             {isImportedSession && hasMissingFiles && (
-                <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 p-4 bg-primary/5 border border-primary/10 rounded-2xl animate-in fade-in slide-in-from-top-2 shadow-sm max-w-[800px] mx-auto w-full">
+                <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 p-4 bg-primary/5 border border-primary/10 rounded-2xl shadow-sm max-w-[800px] mx-auto w-full">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-card rounded-xl shadow-sm">
                             <Camera size={18} className="text-primary" />

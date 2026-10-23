@@ -76,7 +76,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
             {isDragging && (
                 <div className="absolute inset-0 z-50 flex items-center justify-center bg-primary/5 backdrop-blur-sm border-2 border-dashed border-primary rounded-2xl m-2 pointer-events-none">
                     <div className="flex flex-col items-center text-primary font-bold gap-2">
-                        <RefreshCcw size={32} className="animate-spin-slow" />
+                        <RefreshCcw size={32} />
                         <p>Skill-Profil hier loslassen!</p>
                     </div>
                 </div>

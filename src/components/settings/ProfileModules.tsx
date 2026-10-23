@@ -72,7 +72,7 @@ export const ProfileSidebar: React.FC<SidebarProps> = ({
         {isDragging && (
             <div className="absolute inset-0 z-50 flex items-center justify-center bg-primary/5 backdrop-blur-sm border-2 border-dashed border-primary rounded-2xl m-2 pointer-events-none">
                 <div className="flex flex-col items-center text-primary font-bold gap-2">
-                    <RefreshCcw size={32} className="animate-spin-slow" />
+                    <RefreshCcw size={32} />
                     <p>Profil hier loslassen!</p>
                 </div>
             </div>
@@ -277,7 +277,7 @@ ${correctionPrompt}`;
                 )}
             </div>
             {isDirty && !isCreatingNew && !isSystemSelected && (
-                <div className="flex items-center gap-2 text-warning animate-pulse pb-2 shrink-0">
+                <div className="flex items-center gap-2 text-warning pb-2 shrink-0">
                     <RefreshCcw size={16} />
                     <span className="text-xs font-medium">Ungespeichertes</span>
                 </div>

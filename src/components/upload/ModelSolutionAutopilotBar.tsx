@@ -41,9 +41,9 @@ export const ModelSolutionAutopilotBar: React.FC<ModelSolutionAutopilotBarProps>
 }) => (
     <>
                             {(eligibleTaskIndices.length > 0 || isBatchGenerating) && (
-                                <div className="flex items-center justify-between gap-3 rounded-xl bg-primary/5 border border-primary/10 px-3 py-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                                <div className="flex items-center justify-between gap-3 rounded-xl bg-primary/5 border border-primary/10 px-3 py-2">
                                     <div className="flex items-center gap-2 min-w-0">
-                                        <Sparkles size={13} className="text-primary shrink-0 animate-pulse" />
+                                        <Sparkles size={13} className="text-primary shrink-0" />
                                         <p className="text-xxs text-foreground truncate">
                                             {isBatchGenerating ? (
                                                 <>
@@ -126,7 +126,7 @@ export const ModelSolutionAutopilotBar: React.FC<ModelSolutionAutopilotBarProps>
                             )}
 
                             {allSuggestedGraphsVerified && (
-                                <div className="relative overflow-hidden rounded-2xl bg-success/5 border border-success/20 p-4 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="relative overflow-hidden rounded-2xl bg-success/5 border border-success/20 p-4 shadow-sm">
                                     <div className="flex items-center gap-3">
                                         <div className="bg-success text-success-foreground p-2.5 rounded-xl shadow-sm">
                                             <ShieldCheck size={18} />

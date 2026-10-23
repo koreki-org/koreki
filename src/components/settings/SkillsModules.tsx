@@ -275,7 +275,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                     )}
                 </div>
                 {isDirty && !isCreatingNew && !isSystemSelected && (
-                    <div className="flex items-center gap-2 text-warning animate-pulse pb-2 shrink-0">
+                    <div className="flex items-center gap-2 text-warning pb-2 shrink-0">
                         <RefreshCcw size={16} />
                         <span className="text-xs font-medium">Ungespeichertes</span>
                     </div>

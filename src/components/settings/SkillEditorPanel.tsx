@@ -66,7 +66,7 @@ export const SkillEditorPanel: React.FC<SkillEditorPanelProps> = ({
                     <div className="bg-card w-full max-w-xl rounded-hero shadow-2xl border border-border p-6 sm:p-8 space-y-6 flex flex-col max-h-[90vh] overflow-hidden animate-fade-in text-foreground">
                         <div className="flex justify-between items-center pb-2 border-b border-border">
                             <h3 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
-                                <Sparkles className="text-primary animate-pulse" size={20} />
+                                <Sparkles className="text-primary" size={20} />
                                 {editingSkillData.id ? 'Eigenen Skill bearbeiten' : 'Eigenen Skill erstellen'}
                             </h3>
                         </div>

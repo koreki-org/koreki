@@ -32,11 +32,11 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[9000] flex items-center justify-center p-4 bg-background/40 backdrop-blur-glass animate-in fade-in duration-200"
+            className="fixed inset-0 z-[9000] flex items-center justify-center p-4 bg-background/40 backdrop-blur-glass animate-overlay-in"
             onClick={onClose}
         >
             <div
-                className="relative w-full max-w-[560px] max-h-[90dvh] overflow-y-auto bg-white rounded-2xl p-5 sm:p-8 shadow-glass border border-border animate-in zoom-in-95 duration-200"
+                className="relative w-full max-w-[560px] max-h-[90dvh] overflow-y-auto bg-white rounded-2xl p-5 sm:p-8 shadow-glass border border-border animate-dialog-in"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Close Button */}
@@ -114,7 +114,7 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                         <span className="text-sm text-muted-foreground">Diese Wahl für alle Dokumente in diesem Upload anwenden</span>
                     </label>
                     {fileName.toLowerCase().endsWith('.txt') && (
-                        <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-3 animate-in fade-in slide-in-from-top-1">
+                        <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-3">
                             <FileText size={16} className="text-primary mt-0.5 shrink-0" />
                             <p className="text-sm text-primary leading-relaxed font-medium">
                                 💡 <strong className="font-bold">Hinweis:</strong> Dies ist eine <strong className="font-bold">.txt-Datei</strong>. Sie liegt bereits als digitaler Text vor und benötigt keinen Scan-Pfad.
