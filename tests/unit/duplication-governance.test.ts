@@ -132,7 +132,6 @@ const DUPLICATION_BASELINE: Record<string, number> = {
 const SELF_DUPLICATION_BASELINE: Record<string, number> = {
     'components/settings/SkillsModules.tsx': 8,
     'pages/api/extract-image.ts': 7,
-    'hooks/file-processor/useOcrActions.ts': 6,
     'hooks/useSkillGovernance.ts': 6,
     'pages/api/generate-calc-trace.ts': 6,
     'pages/api/generate-graph.ts': 6,

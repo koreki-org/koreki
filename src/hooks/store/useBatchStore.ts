@@ -117,7 +117,7 @@ export const useBatchStore = create<BatchStateStore>((set) => ({
     setBewertungenBestaetigt: (wert) => set({ bewertungenBestaetigt: wert }),
 
     laufFortschritt: null,
-    starteLauf: (art, gesamt) => set({ laufFortschritt: { art, gesamt, fertig: 0, dauernMs: [] } }),
+    starteLauf: (art, gesamt) => set({ laufFortschritt: { art, gesamt, fertig: 0, seit: Date.now(), dauernMs: [] } }),
     blattFertig: (dauerMs) => set((state) => state.laufFortschritt ? {
         laufFortschritt: {
             ...state.laufFortschritt,

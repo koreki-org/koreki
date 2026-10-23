@@ -49,6 +49,7 @@ Koreki soll aussehen wie ein Werkzeug, dem eine Schulleitung Schülerarbeiten an
 | Ergebnis der KI | Vorschlag | Bewertung, automatische Korrektur |
 | Texterkennung | Texterkennung | OCR (höchstens einmal in Klammern) |
 | Hinweis geringer Sicherheit | „Bitte prüfen" | Konfidenz, Review empfohlen |
+| Selbstauskunft der KI (ab 90 %, grau) | „KI-Vertrauen 95 %" | Konfidenz, „95 % sicher" (klingt nach gemessener Trefferquote) |
 
 - **Kein Technikjargon** in Ansichten für Lehrkräfte: Inferenz, Zero-Shot, Sandbox, Knoten, Deduction, PII, Prompt, Token. Wo die Sache nötig ist, die Eigenschaft beschreiben.
 

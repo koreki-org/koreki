@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useBatchStore, type MusterFortschritt as Lauf } from '@/hooks/store/useBatchStore';
-import { formatiereLaufzeit } from '@/lib/restzeit';
+import { useLaufzeit } from '@/hooks/useLaufzeit';
+import { LaufBalken } from '@/components/ui/LaufBalken';
 
 const beschreibe = (lauf: Lauf): string => {
     if (lauf.schritt === 'aufgaben') return 'Aufgaben werden erkannt …';
@@ -20,17 +21,7 @@ const beschreibe = (lauf: Lauf): string => {
  */
 export const MusterFortschritt: React.FC = () => {
     const lauf = useBatchStore((state) => state.musterFortschritt);
-    const [jetzt, setJetzt] = useState(() => Date.now());
-    // Die Uhr haengt am Beginn, nicht am ganzen Zustand: jede erkannte Seite
-    // erneuert das Objekt, die Uhr soll dabei weiterlaufen.
-    const seit = lauf?.seit;
-
-    useEffect(() => {
-        if (seit === undefined) return;
-        setJetzt(Date.now());
-        const uhr = setInterval(() => setJetzt(Date.now()), 1000);
-        return () => clearInterval(uhr);
-    }, [seit]);
+    const laufzeit = useLaufzeit(lauf?.seit);
 
     // Digitaler Text wird ohne KI ausgelesen; bis die Aufgabenerkennung
     // beginnt, vergeht nur ein Augenblick.
@@ -43,25 +34,12 @@ export const MusterFortschritt: React.FC = () => {
         <div className="px-1 mb-3" role="status" aria-live="polite">
             <div className="flex items-center justify-between gap-4 text-sm">
                 <span className="font-medium text-foreground">{beschreibe(lauf)}</span>
-                <span className="text-muted-foreground tabular-nums">{formatiereLaufzeit(jetzt - lauf.seit)}</span>
+                <span className="text-muted-foreground tabular-nums">{laufzeit}</span>
             </div>
-            {seiten && seiten.gesamt > 1 ? (
-                <div
-                    className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden"
-                    role="progressbar"
-                    aria-valuemin={0}
-                    aria-valuemax={seiten.gesamt}
-                    aria-valuenow={seiten.fertig}
-                    aria-label={`${seiten.fertig} von ${seiten.gesamt} Seiten erkannt`}
-                >
-                    <div className="h-full bg-primary" style={{ width: `${(seiten.fertig / seiten.gesamt) * 100}%` }} />
-                </div>
-            ) : (
-                // Ohne Seiten gibt es nichts zu zaehlen: der Balken zeigt nur, dass es laeuft.
-                <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden" role="progressbar" aria-label="Läuft">
-                    <div className="h-full bg-primary rounded-full animate-loading-bar" />
-                </div>
-            )}
+            <LaufBalken
+                className="mt-2"
+                fortschritt={seiten && seiten.gesamt > 1 ? { ...seiten, einheit: 'Seiten' } : undefined}
+            />
         </div>
     );
 };

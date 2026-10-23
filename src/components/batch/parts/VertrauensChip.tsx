@@ -20,10 +20,23 @@ interface VertrauensChipProps {
  * der Groessengrenze fuer `components/`.
  */
 export const VertrauensChip: React.FC<VertrauensChipProps> = ({ vertrauen, getConfidenceColor }) => {
-    // Seit dem 12.10.2026 spricht der Chip nur noch, wenn es etwas zu tun gibt
-    // (koreki-design-system §2: "Bitte prüfen" statt Konfidenz). Ein sicheres
-    // "100 %" an jeder Aufgabe war Rauschen; fehlt der Wert, gibt es nichts zu melden.
-    if (vertrauen === undefined || vertrauen >= VERTRAUEN_SCHWELLE) return null;
+    // Fehlt der Wert, gibt es nichts zu melden — kein "0 %", kein "n. a.".
+    if (vertrauen === undefined) return null;
+
+    // Vom 12.10. bis 23.10.2026 schwieg der Chip bei sicheren Werten ganz. Das
+    // war zu still: Die Lehrkraft vermisste den Wert und hielt ihn fuer
+    // verschwunden. Jetzt steht er leise in Grau da — sichtbar, aber ohne
+    // Farbe, weil es nichts zu tun gibt. Laut wird es erst unter der Schwelle.
+    if (vertrauen >= VERTRAUEN_SCHWELLE) {
+        return (
+            <span
+                title="So sicher war sich die KI nach eigener Einschätzung — keine gemessene Trefferquote."
+                className="text-xs text-muted-foreground tabular-nums whitespace-nowrap"
+            >
+                KI-Vertrauen {vertrauen} %
+            </span>
+        );
+    }
 
     return (
         <div

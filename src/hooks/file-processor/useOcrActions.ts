@@ -152,6 +152,7 @@ export function useOcrActions({
         const controller = new AbortController();
         useBatchStore.getState().registerBatchController(controller);
         const signal = controller.signal;
+        useBatchStore.getState().starteLauf('texterkennung', 1);
 
         try {
             // Reset state for this specific file to ocrDone: false, clear results/errors/grade
@@ -213,6 +214,7 @@ export function useOcrActions({
         } finally {
             setIsLoadingBatch(false);
             setCurrentProcessingIndex(-1);
+            useBatchStore.getState().beendeLauf();
             useBatchStore.getState().clearBatchController();
         }
     }, [userData, settings, tasksLayout, setUserData, setBatchFiles, setCurrentProcessingIndex, setIsLoadingBatch, ocrStrategy, internalProcessMapping]);

@@ -240,6 +240,8 @@ export function useCorrectionRun({
         useBatchStore.getState().registerBatchController(controller);
         const signal = controller.signal;
 
+        useBatchStore.getState().starteLauf('korrektur', 1);
+
         try {
             setBatchFiles((prev: BatchFile[]) => {
                 const next = [...prev];
@@ -250,6 +252,7 @@ export function useCorrectionRun({
         } finally {
             setIsLoadingBatch(false);
             setCurrentProcessingIndex(-1);
+            useBatchStore.getState().beendeLauf();
             useBatchStore.getState().clearBatchController();
         }
     }, [internalCorrectionPipeline, setIsLoadingBatch, setCurrentProcessingIndex, modelSolution, setBatchFiles]);

@@ -22,6 +22,8 @@ export interface LaufFortschritt {
     gesamt: number;
     /** Abgeschlossene Blaetter — erfolgreich oder fehlgeschlagen. */
     fertig: number;
+    /** Beginn des Laufs — fuer „laeuft seit“, solange es nichts hochzurechnen gibt. */
+    seit: number;
     /** Dauer der erfolgreichen Blaetter. Fehlschlaege fehlen hier: sie brechen
      *  oft sofort ab und wuerden die Schaetzung nach unten ziehen. */
     dauernMs: number[];
