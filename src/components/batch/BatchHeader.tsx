@@ -56,6 +56,14 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
     const isReCorrectionMode = pendingCount === 0 && hasFinishedFiles;
     const activeBatchController = useBatchStore((state) => state.activeBatchController);
     const abortBatch = useBatchStore((state) => state.abortBatch);
+    // Der Abbruch-Knopf steht hier für jeden Lauf, der den gemeinsamen Abbruch
+    // nutzt — auch für die Analyse der Musterlösung. Die Aufschrift sagt, was läuft.
+    const laufArt = useBatchStore((state) => state.laufFortschritt?.art);
+    const musterLaeuft = useBatchStore((state) => state.musterFortschritt !== null);
+    const abbruchText = musterLaeuft ? 'Analyse abbrechen'
+        : laufArt === 'korrektur' ? 'Korrektur abbrechen'
+        : laufArt === 'texterkennung' || ocrCreditsRequired > 0 ? 'Erkennung abbrechen'
+        : 'Korrektur abbrechen';
     const kosten = (n: number) => zeigtCredits(isPureMode) ? ` (${n} Credits)` : '';
 
     return (
@@ -141,7 +149,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                         className="border-destructive/20 text-destructive hover:bg-destructive/10 hover:border-destructive/30 transition-all rounded-xl w-full sm:w-auto flex items-center justify-center gap-2 font-bold"
                     >
                         <Loader2 size={16} className="animate-spin text-destructive mr-2" />
-                        {ocrCreditsRequired > 0 ? "Erkennung abbrechen" : "Korrektur abbrechen"}
+                        {abbruchText}
                     </Button>
                 ) : (
                     <>

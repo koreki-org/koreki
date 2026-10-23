@@ -3,6 +3,17 @@ import { BatchFile } from '../../types';
 import type { ProtokollEintrag } from '../../lib/ai-protocol';
 import type { LaufArt, LaufFortschritt } from '../../lib/restzeit';
 
+/** Was bei der Musterloesung gerade laeuft. Eine Restzeit gibt es hier nicht:
+ *  die Aufgabenerkennung ist ein einzelner Aufruf, vor dessen Ende nichts
+ *  gemessen ist. Deshalb zeigt die Anzeige, seit wann es laeuft. */
+export interface MusterFortschritt {
+    schritt: 'texterkennung' | 'aufgaben';
+    /** Nur bei gescannten PDFs, die Seite fuer Seite erkannt werden. */
+    seiten?: { fertig: number; gesamt: number };
+    /** Beginn des ganzen Vorgangs — bleibt ueber beide Schritte stehen. */
+    seit: number;
+}
+
 type Setter<T> = (val: T | ((prev: T) => T)) => void;
 
 interface BatchStateStore {
@@ -53,6 +64,10 @@ interface BatchStateStore {
     /** `dauerMs` nur bei Erfolg — siehe `LaufFortschritt.dauernMs`. */
     blattFertig: (dauerMs?: number) => void;
     beendeLauf: () => void;
+
+    musterFortschritt: MusterFortschritt | null;
+    meldeMusterSchritt: (schritt: MusterFortschritt['schritt'], seiten?: MusterFortschritt['seiten']) => void;
+    beendeMusterLauf: () => void;
 
     activeBatchController: AbortController | null;
     registerBatchController: (controller: AbortController) => void;
@@ -111,6 +126,12 @@ export const useBatchStore = create<BatchStateStore>((set) => ({
         }
     } : {}),
     beendeLauf: () => set({ laufFortschritt: null }),
+
+    musterFortschritt: null,
+    meldeMusterSchritt: (schritt, seiten) => set((state) => ({
+        musterFortschritt: { schritt, seiten, seit: state.musterFortschritt?.seit ?? Date.now() }
+    })),
+    beendeMusterLauf: () => set({ musterFortschritt: null }),
 
     activeBatchController: null,
     registerBatchController: (controller) => set({ activeBatchController: controller }),

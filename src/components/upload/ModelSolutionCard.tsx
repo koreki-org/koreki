@@ -32,6 +32,7 @@ import { useModelSolutionAutopilot } from '@/hooks/useModelSolutionAutopilot';
 import { useModelSolutionDerivations } from '@/hooks/useModelSolutionDerivations';
 import { buildDefaultGradingGraph } from '@/lib/model-solution-derivations';
 import { meldeErfolg, meldeFehler } from '@/lib/notify';
+import { MusterFortschritt } from './MusterFortschritt';
 
 
 
@@ -300,11 +301,9 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                     </div>
                 ) : (
                     <div className="flex-1 flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-xs font-medium text-muted-foreground px-1">
-                                {extractingLayout ? "Extraktion läuft..." : "Extrahiertes Dokument"}
-                            </span>
-                        </div>
+                        {extractingLayout
+                            ? <MusterFortschritt />
+                            : <p className="text-xs font-medium text-muted-foreground px-1 mb-2">Extrahiertes Dokument</p>}
                         <Textarea
                             value={modelSolution}
                             onChange={(e) => onModelSolutionChange && onModelSolutionChange(e.target.value)}

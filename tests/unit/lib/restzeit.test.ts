@@ -1,4 +1,4 @@
-import { schaetzeRestzeit, formatiereRestzeit } from '../../../src/lib/restzeit';
+import { schaetzeRestzeit, formatiereRestzeit, formatiereLaufzeit } from '../../../src/lib/restzeit';
 
 /**
  * Restzeit eines Stapellaufs (Layer 1)
@@ -43,5 +43,16 @@ describe('formatiereRestzeit', () => {
     it('nennt ab einer Stunde Stunden und Minuten', () => {
         expect(formatiereRestzeit(75 * 60_000)).toBe('noch ca. 1 Std. 15 Min.');
         expect(formatiereRestzeit(120 * 60_000)).toBe('noch ca. 2 Std.');
+    });
+});
+
+describe('formatiereLaufzeit', () => {
+    it('zeigt Minuten und zweistellige Sekunden', () => {
+        expect(formatiereLaufzeit(45_000)).toBe('läuft seit 0:45');
+        expect(formatiereLaufzeit(65_000)).toBe('läuft seit 1:05');
+    });
+
+    it('zeigt nie eine negative Zeit, auch wenn die Uhr zurueckspringt', () => {
+        expect(formatiereLaufzeit(-500)).toBe('läuft seit 0:00');
     });
 });

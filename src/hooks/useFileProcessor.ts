@@ -4,6 +4,7 @@ import { reindexBatchFiles, generateSplitBatchItems } from '../lib/logic';
 import { runExtractionStrategy } from '../lib/ai/extraction-logic';
 import { buildModelSolutionFromTasks } from '../lib/task-utils';
 import { useDashboardStore } from './store/useDashboardStore';
+import { useBatchStore } from './store/useBatchStore';
 
 // Sub-Hooks
 import { useBatchState } from './file-processor/useBatchState';
@@ -107,6 +108,9 @@ export const useFileProcessor = (
         if (!setModelSolution || !setTasksLayout) return;
         setIsLoadingModel(true);
         setModelSolution("");
+        const { meldeMusterSchritt, beendeMusterLauf } = useBatchStore.getState();
+        // Digitaler Text wird ohne KI ausgelesen — dann gibt es nur die Aufgabenerkennung.
+        if (isScan) meldeMusterSchritt('texterkennung');
         
         try {
             const { text, pageCount } = await runExtractionStrategy(file, {
@@ -114,7 +118,8 @@ export const useFileProcessor = (
                 needsPreview: false,
                 appMode: userData?.appMode,
                 settings,
-                isComplex: false // INDUSTRIAL FORCE: Musterlösung immer via Standard-OCR (Defensiv)
+                isComplex: false, // INDUSTRIAL FORCE: Musterlösung immer via Standard-OCR (Defensiv)
+                onSeite: (fertig, gesamt) => meldeMusterSchritt('texterkennung', { fertig, gesamt })
             });
             
             // Industrial Update: Track page count for subsequent re-extractions
@@ -155,6 +160,7 @@ export const useFileProcessor = (
             }
         } finally {
             setIsLoadingModel(false);
+            beendeMusterLauf();
         }
     }, [userData, settings, setUserData, setModelSolution, setTasksLayout, setIsLoadingModel, pipeline]);
 

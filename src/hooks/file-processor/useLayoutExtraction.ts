@@ -27,6 +27,7 @@ export function useLayoutExtraction({ userData, setIsLoadingModel }: UseLayoutEx
         const controller = new AbortController();
         useBatchStore.getState().registerBatchController(controller);
         const signal = controller.signal;
+        useBatchStore.getState().meldeMusterSchritt('aufgaben');
 
         try {
             const data = await performAIRequest('clean-and-analyze', {
@@ -55,6 +56,7 @@ export function useLayoutExtraction({ userData, setIsLoadingModel }: UseLayoutEx
             throw err;
         } finally {
             setIsLoadingModel(false);
+            useBatchStore.getState().beendeMusterLauf();
             useBatchStore.getState().clearBatchController();
         }
     }, [userData?.appMode, setIsLoadingModel]);

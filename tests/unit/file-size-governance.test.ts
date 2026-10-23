@@ -93,7 +93,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // Autopilot nach hooks/useModelSolutionAutopilot.ts, Ableitungen nach
     // hooks/useModelSolutionDerivations.ts. Hook-Aufrufe 16 -> 10, damit aus
     // HOOK_BASELINE verschwunden.
-    'components/upload/ModelSolutionCard.tsx': 549,
+    'components/upload/ModelSolutionCard.tsx': 548,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
     // +42 gegenueber 793: der Ansichtstyp SkillListenEintrag und die
@@ -125,7 +125,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // eigenen Schritt.
     // 495 -> 488: die beiden .koreki-Exporte standen zweimal ausgeschrieben da,
     // unterschieden durch ein einziges `true`.
-    'pages/app.tsx': 489,
+    'pages/app.tsx': 459,
     // +7: der Kommentar, warum beim Aktualisieren die bestehende Kennung
     // gewinnt. Ohne ihn wird die Zeile beim naechsten Aufraeumen entfernt.
     // 498 -> 468: Loeschen und Umbenennen gehen jetzt ueber den

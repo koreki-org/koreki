@@ -55,3 +55,13 @@ export function formatiereRestzeit(ms: number): string {
     const rest = minuten % 60;
     return rest === 0 ? `noch ca. ${stunden} Std.` : `noch ca. ${stunden} Std. ${rest} Min.`;
 }
+
+/**
+ * Wo es nichts hochzurechnen gibt — ein einzelner langer Aufruf —, sagt die
+ * Anzeige ehrlich, wie lange es schon laeuft, statt eine Restzeit zu raten.
+ */
+export function formatiereLaufzeit(ms: number): string {
+    const sekunden = Math.max(0, Math.floor(ms / 1000));
+    const rest = String(sekunden % 60).padStart(2, '0');
+    return `läuft seit ${Math.floor(sekunden / 60)}:${rest}`;
+}

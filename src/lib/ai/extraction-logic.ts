@@ -26,9 +26,11 @@ export async function runExtractionStrategy(
         sourceOverride?: { buffers: string[], mimeType: string, isScanned: boolean };
         isComplex?: boolean;
         signal?: AbortSignal;
+        /** Nur gescannte PDFs werden Seite fuer Seite erkannt — nur dort meldet sich das. */
+        onSeite?: (fertig: number, gesamt: number) => void;
     }
 ): Promise<OCRResult> {
-    const { isScan, needsPreview, appMode, settings, pageRange, sourceOverride, isComplex, signal } = options;
+    const { isScan, needsPreview, appMode, settings, pageRange, sourceOverride, isComplex, signal, onSeite } = options;
 
     // Lokales Ollama: Bilder auf Seitengroesse — sonst reicht der Grafikspeicher
     // des Bild-Encoders nicht (siehe ../bild-verkleinern). PDF-Seiten haben diese
@@ -83,6 +85,8 @@ export async function runExtractionStrategy(
 
         const pageCount = pageIndices.length;
         const previewDataUrls: string[] = [];
+        let fertigeSeiten = 0;
+        onSeite?.(0, pageCount);
 
         // 🚀 INDUSTRIAL PIPELINING: Render Page -> OCR immediately
         const textResults = await promisePool(pageIndices, 1, async (pageNum, idx) => {
@@ -93,7 +97,7 @@ export async function runExtractionStrategy(
             if (needsPreview) {
                 previewDataUrls[idx] = `data:image/jpeg;base64,${buffer}`;
             }
-            return await performOCRRequest(
+            const seitenText = await performOCRRequest(
                 [buffer], 
                 'image/jpeg', 
                 true, 
@@ -104,6 +108,8 @@ export async function runExtractionStrategy(
                 isComplex,
                 signal
             );
+            onSeite?.(++fertigeSeiten, pageCount);
+            return seitenText;
         });
 
         return {
