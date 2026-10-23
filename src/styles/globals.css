@@ -260,6 +260,19 @@ h1, h2, h3, h4, .logo-text-new {
   }
 }
 
+/* Ladebalken ohne bekanntes Ende: ein Stueck faehrt durch die Leiste.
+   Bewegt wird nur `transform`, damit nichts neu umbricht. Bei reduzierter
+   Bewegung (siehe unten) bleibt das Stueck links stehen. */
+@keyframes loadingBar {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(250%);
+  }
+}
+
 .animate-spin {
   animation: spin 1s linear infinite;
 }
@@ -283,6 +296,12 @@ h1, h2, h3, h4, .logo-text-new {
 
 .animate-scan {
   animation: scan 3s linear infinite;
+}
+
+/* Bis 23.10.2026 benutzt, aber nirgends definiert: der Balken stand still. */
+.animate-loading-bar {
+  width: 40%;
+  animation: loadingBar 1.4s ease-in-out infinite;
 }
 
 /* Custom Utilities */

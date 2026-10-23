@@ -16,7 +16,7 @@ const beschreibe = (lauf: Lauf): string => {
  * Gegenstueck zu `batch/parts/LaufFortschritt`: gleiche Stelle (unter dem
  * Kartenkopf), gleicher Aufbau. Statt der Restzeit steht hier die Laufzeit,
  * weil die Aufgabenerkennung ein einzelner Aufruf ist — siehe `MusterFortschritt`
- * im Batch-Store. Einen Balken gibt es nur, wo es Seiten zu zaehlen gibt.
+ * im Batch-Store. Der Balken zaehlt Seiten, wo es welche gibt, und laeuft sonst nur durch.
  */
 export const MusterFortschritt: React.FC = () => {
     const lauf = useBatchStore((state) => state.musterFortschritt);
@@ -45,7 +45,7 @@ export const MusterFortschritt: React.FC = () => {
                 <span className="font-medium text-foreground">{beschreibe(lauf)}</span>
                 <span className="text-muted-foreground tabular-nums">{formatiereLaufzeit(jetzt - lauf.seit)}</span>
             </div>
-            {seiten && seiten.gesamt > 1 && (
+            {seiten && seiten.gesamt > 1 ? (
                 <div
                     className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden"
                     role="progressbar"
@@ -55,6 +55,11 @@ export const MusterFortschritt: React.FC = () => {
                     aria-label={`${seiten.fertig} von ${seiten.gesamt} Seiten erkannt`}
                 >
                     <div className="h-full bg-primary" style={{ width: `${(seiten.fertig / seiten.gesamt) * 100}%` }} />
+                </div>
+            ) : (
+                // Ohne Seiten gibt es nichts zu zaehlen: der Balken zeigt nur, dass es laeuft.
+                <div className="mt-2 h-1.5 rounded-full bg-muted overflow-hidden" role="progressbar" aria-label="Läuft">
+                    <div className="h-full bg-primary rounded-full animate-loading-bar" />
                 </div>
             )}
         </div>
