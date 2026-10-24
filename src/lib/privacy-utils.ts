@@ -277,3 +277,57 @@ export async function applyRedactionsToPreviews(
     
     return results;
 }
+
+/**
+ * Legt einen frisch gezogenen Balken auf JEDES Blatt derselben Arbeit.
+ *
+ * Grund (24.10.2026): Ein Balken galt bis dahin nur für das Blatt, auf dem er
+ * gezogen wurde. Wer die Kopfzeile auf Blatt 1 schwärzte, schickte die Blätter
+ * 2–4 ungeschwärzt an die Texterkennung — und die Arbeit trug trotzdem die
+ * Kennzeichnung „geschwärzt“. Bei nur einer Arbeit im Stapel gab es nicht
+ * einmal den Haken, der das verhindert hätte.
+ *
+ * Der Balken wird über relative Anteile umgerechnet, weil Blätter derselben
+ * Arbeit unterschiedlich groß sein können (eingescannte Beiblätter im Querformat).
+ */
+export function verteileAufAlleBlaetter(
+    vorher: Record<number, RedactionRect[]>,
+    balken: RedactionRect,
+    quellBlatt: number,
+    groessen: Record<number, { width: number; height: number }>
+): Record<number, RedactionRect[]> {
+    const quelle = groessen[quellBlatt];
+    if (!quelle) return { ...vorher, [quellBlatt]: [...(vorher[quellBlatt] || []), balken] };
+    const [relativ] = toRelativeRects([balken], quelle.width, quelle.height);
+    const neu: Record<number, RedactionRect[]> = { ...vorher };
+    for (const blatt of Object.keys(groessen).map(Number)) {
+        const [pixel] = toPixelRects([relativ], groessen[blatt].width, groessen[blatt].height);
+        neu[blatt] = [...(neu[blatt] || []), blatt === quellBlatt ? balken : pixel];
+    }
+    return neu;
+}
+
+/**
+ * Die Blätter einer als geschwärzt geführten Arbeit, auf denen KEIN Balken liegt
+ * (1-basiert, für die Anzeige). Leer bei nicht geschwärzten Arbeiten — die fängt
+ * schon `istVollstaendigGeschwaerzt` ab.
+ */
+export function blaetterOhneSchwaerzung(item: BatchFile): number[] {
+    if (!item.isRedacted) return [];
+    const anzahl = item.redactedDataUrls?.length || item.pageCount || 1;
+    const fehlend: number[] = [];
+    for (let blatt = 0; blatt < anzahl; blatt++) {
+        if (!(item.redactionRects?.[blatt]?.length)) fehlend.push(blatt + 1);
+    }
+    return fehlend;
+}
+
+/**
+ * Ein Scan gilt nur dann als geschwärzt, wenn JEDES Blatt einen Balken trägt.
+ * Die eine Stelle, an der das entschieden wird — für den Zähler der Warnung vor
+ * dem Korrigieren und für den Knopf, der die erste betroffene Arbeit öffnet.
+ */
+export function istVollstaendigGeschwaerzt(item: BatchFile): boolean {
+    if (item.documentType !== 'scanned') return true;
+    return !!item.isRedacted && blaetterOhneSchwaerzung(item).length === 0;
+}

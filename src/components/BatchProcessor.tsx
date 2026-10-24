@@ -2,6 +2,7 @@ import React from 'react';
 import { Info, Highlighter, AlertTriangle } from 'lucide-react';
 import { BatchFile, Task, AppSettings } from '../types';
 import { VERTRAUEN_SCHWELLE } from '../lib/vertrauen';
+import { istVollstaendigGeschwaerzt } from '../lib/privacy-utils';
 import { Button } from './ui/Button';
 import { Card, CardContent } from './ui/Card';
 import ConfirmationModal from './ConfirmationModal';
@@ -98,7 +99,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     // erste noch ungeschwärzte Scan dient als Vorlage für alle weiteren.
     // `selected !== false` spiegelt `unredactedScansCount`: sonst öffnete der
     // Knopf eine abgewählte Arbeit, die die Warnung gar nicht ausgelöst hat.
-    const firstUnredactedScanIdx = batchFiles.findIndex(f => f.documentType === 'scanned' && !f.isRedacted && f.selected !== false);
+    const firstUnredactedScanIdx = batchFiles.findIndex(f => !istVollstaendigGeschwaerzt(f) && f.selected !== false);
 
     // Der stapelweite Wiederlauf setzt `result` und `grade` jeder fertigen Arbeit
     // zurueck (useBatchActions.onResetResults) und startet sofort neu. Damit faellt
@@ -148,7 +149,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                                     <Info size={18} className="mt-0.5 shrink-0" />
                                     <div>
                                         <p className="font-bold mb-1">Hinweis zur Anonymisierung</p>
-                                        <p>Du hast {unredactedScansCount} Scan(s) hochgeladen, aber noch nicht manuell geschwärzt. Bitte stelle sicher, dass keine personenbezogenen Daten (z.B. Namen) sichtbar sind.</p>
+                                        <p>{unredactedScansCount} gescannte Arbeit(en) sind nicht auf jedem Blatt geschwärzt. Bitte stelle sicher, dass auf keinem Blatt personenbezogene Daten (z.B. Namen) sichtbar sind.</p>
                                         {redactionDiscardsOcr && (
                                             <p className="mt-2 text-xxs font-medium opacity-90">
                                                 Achtung: Wer jetzt noch schwärzt, verwirft den bereits erkannten Text dieser Arbeiten — die Bilderkennung muss dafür erneut laufen und kostet erneut Credits.

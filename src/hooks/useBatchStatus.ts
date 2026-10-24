@@ -4,6 +4,7 @@ import { groupTasksByMain } from '../lib/task-utils';
 import { useBatchState } from './file-processor/useBatchState';
 import { isLocalInstance } from '../lib/env-context';
 import { apiClient } from '@/lib/api-client';
+import { istVollstaendigGeschwaerzt } from '@/lib/privacy-utils';
 
 /**
  * Industrial Batch Status Hook (Stage 11)
@@ -57,7 +58,8 @@ export const useBatchStatus = (
         const pendingCount = batchFiles.filter(f => f.status !== 'done' && f.selected !== false).length;
         const totalCount = batchFiles.length;
         const hasFinishedFiles = batchFiles.some(f => f.status === 'done');
-        const unredactedScansCount = batchFiles.filter(f => f.documentType === 'scanned' && !f.isRedacted && f.selected !== false).length;
+        // Auch eine Arbeit, bei der einzelne Blätter keinen Balken tragen, zählt — siehe istVollstaendigGeschwaerzt.
+        const unredactedScansCount = batchFiles.filter(f => !istVollstaendigGeschwaerzt(f) && f.selected !== false).length;
         const hasPendingOcr = batchFiles.some(f => f.documentType === 'scanned' && !f.ocrDone && f.selected !== false);
         
         return { totalPendingCredits, totalPossibleCredits, ocrCreditsRequired, pendingCount, totalCount, hasFinishedFiles, unredactedScansCount, hasPendingOcr };

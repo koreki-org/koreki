@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { BatchFile, Task } from '../types';
 import { hasOcrWarnings, splitTextByTasks } from '../lib/task-utils';
 import { brauchtPruefung } from '../lib/vertrauen';
+import { istVollstaendigGeschwaerzt, blaetterOhneSchwaerzung } from '../lib/privacy-utils';
 
 interface UseBatchItemDerivationsProps {
     item: BatchFile;
@@ -85,8 +86,11 @@ export const useBatchItemDerivations = ({
     const warnings: string[] = [];
     
     // Privacy Warning
-    if (item.documentType === 'scanned' && !item.isRedacted && !isDone) {
-        warnings.push("Dokument enthält evtl. noch Klarnamen (Anonymisierung prüfen).");
+    if (!istVollstaendigGeschwaerzt(item) && !isDone) {
+        const fehlend = blaetterOhneSchwaerzung(item);
+        warnings.push(fehlend.length
+            ? `Blatt ${fehlend.join(', ')} ohne Schwärzung — evtl. noch Klarnamen (Anonymisierung prüfen).`
+            : "Dokument enthält evtl. noch Klarnamen (Anonymisierung prüfen).");
     }
 
     return {

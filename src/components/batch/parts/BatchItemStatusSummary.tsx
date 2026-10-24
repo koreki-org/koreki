@@ -4,6 +4,7 @@ import { Badge } from '../../ui/Badge';
 import { BatchFile } from '../../../types';
 import { cn } from '@/lib/utils';
 import { zeigtCredits } from '@/lib/env-context';
+import { istVollstaendigGeschwaerzt } from '@/lib/privacy-utils';
 
 interface BatchItemStatusSummaryProps {
     item: BatchFile;
@@ -35,11 +36,15 @@ export const BatchItemStatusSummary: React.FC<BatchItemStatusSummaryProps> = ({
                 </Badge>
             )}
 
-            {item.isRedacted && (
+            {item.isRedacted && (istVollstaendigGeschwaerzt(item) ? (
                 <Badge className="bg-success/10 text-success border-transparent h-6 px-2 gap-1">
                     <Highlighter size={12} /> Geschwärzt
                 </Badge>
-            )}
+            ) : (
+                <Badge className="bg-warning/10 text-warning border-transparent h-6 px-2 gap-1">
+                    <Highlighter size={12} /> Teilweise geschwärzt
+                </Badge>
+            ))}
             {item.status === 'error' && (
                 <Badge className="bg-destructive/10 text-destructive border border-destructive/20 text-xs font-bold h-6 px-3 shadow-none gap-1.5 shrink-0 rounded-full" title={item.error || 'Fehler bei der Analyse'}>
                     <AlertCircle size={12} /> Fehler Details

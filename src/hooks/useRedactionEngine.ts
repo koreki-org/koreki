@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import * as pdfjs from 'pdfjs-dist';
-import { toPixelRects, toRelativeRects, RedactionRect as Rect, RedactionScope } from '../lib/privacy-utils';
+import { toPixelRects, toRelativeRects, verteileAufAlleBlaetter, RedactionRect as Rect, RedactionScope } from '../lib/privacy-utils';
 import { SEITEN_RENDER_FAKTOR } from '../lib/file-utils';
 
 // Configure worker to use local file
@@ -196,8 +196,9 @@ export const useRedactionEngine = (
      * @param scope Herkunft des neuen Balkens. Ergibt sich aus dem Haken
      * „Auf alle Scans übernehmen" IM MOMENT DES ZIEHENS — so lassen sich
      * gemeinsame und individuelle Schwärzungen in einem Durchgang setzen.
+     * @param aufAlleBlaetter Balken zugleich auf jedes Blatt dieser Arbeit legen.
      */
-    const handleEnd = (scope: RedactionScope = 'local') => {
+    const handleEnd = (scope: RedactionScope = 'local', aufAlleBlaetter = false) => {
         if (!isDrawing) return;
         setIsDrawing(false);
 
@@ -207,10 +208,9 @@ export const useRedactionEngine = (
         const h = Math.abs(startPos.y - currentPos.y);
 
         if (w > 2 && h > 2) {
-            setAllPageRects(prev => ({
-                ...prev,
-                [currentPage]: [...(prev[currentPage] || []), { x, y, w, h, scope }]
-            }));
+            setAllPageRects(prev => aufAlleBlaetter
+                ? verteileAufAlleBlaetter(prev, { x, y, w, h, scope }, currentPage, images)
+                : { ...prev, [currentPage]: [...(prev[currentPage] || []), { x, y, w, h, scope }] });
         }
     };
 

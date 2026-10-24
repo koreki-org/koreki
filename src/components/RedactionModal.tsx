@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { zeichneSchwaerzungsVorschau } from '@/lib/redaction-preview';
-import { X, Trash2, Check, RotateCcw, ChevronLeft, ChevronRight, PenTool, Loader2, Users, AlertTriangle } from 'lucide-react';
+import { X, Trash2, Check, RotateCcw, ChevronLeft, ChevronRight, PenTool, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from './ui/Button';
-import { Checkbox } from './ui/Checkbox';
+import { SchwaerzungsUmfang } from './redaction/SchwaerzungsUmfang';
 import { useRedactionEngine } from '../hooks/useRedactionEngine';
 import { RedactionRectMap, RedactionScope, buildRedactionTemplate } from '../lib/privacy-utils';
 import { meldeFehler } from '@/lib/notify';
@@ -48,7 +48,10 @@ interface RedactionModalProps {
 const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave, file, fileName, pageRange, initialRects, otherScanCount = 0, hasRecognizedText = false, otherRecognizedCount = 0 }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [tool, setTool] = useState<'pen' | 'hand'>('pen');
-    const [applyToAllScans, setApplyToAllScans] = useState(false);
+    const [aufAlleArbeitenHaken, setAufAlleArbeitenHaken] = useState(true);
+    const [aufAlleBlaetter, setAufAlleBlaetter] = useState(true);
+    useEffect(() => { if (isOpen) { setAufAlleArbeitenHaken(true); setAufAlleBlaetter(true); } }, [isOpen]); // Abwählen gilt nur für diesen Durchgang
+    const applyToAllScans = aufAlleArbeitenHaken && otherScanCount > 0; // ohne weitere Arbeiten nichts zu übertragen
 
     // --- STAGE 8: INDUSTRIAL REDACTION ENGINE ---
     const { state, handlers } = useRedactionEngine(isOpen, file, pageRange, initialRects);
@@ -197,26 +200,9 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                         </div>
                     )}
 
-                    {otherScanCount > 0 && (
-                        <label className="mt-4 pt-4 border-t border-primary/10 flex items-start gap-3 cursor-pointer select-none group">
-                            <Checkbox
-                                checked={applyToAllScans}
-                                onChange={(e) => setApplyToAllScans(e.target.checked)}
-                                className="mt-0.5"
-                            />
-                            <div className="min-w-0 flex flex-col">
-                                <span className="text-sm font-bold text-primary flex items-center gap-2">
-                                    <Users size={14} className="shrink-0" />
-                                    Auf alle {otherScanCount + 1} Scans übernehmen
-                                </span>
-                                <span className="text-xxs text-primary/70 font-medium leading-normal">
-                                    {applyToAllScans
-                                        ? 'Ab jetzt gezogene Balken gelten für alle Scans und werden farbig markiert. Vorher gezogene bleiben nur bei dieser Arbeit.'
-                                        : 'Balken, die Du bei gesetztem Haken ziehst, landen auf jeder Seite aller Scans. Bereits einzeln geschwärzte Stellen bleiben erhalten.'}
-                                </span>
-                            </div>
-                        </label>
-                    )}
+                    <SchwaerzungsUmfang blattAnzahl={Object.keys(images).length} weitereArbeiten={otherScanCount}
+                        aufAlleBlaetter={aufAlleBlaetter} setAufAlleBlaetter={setAufAlleBlaetter}
+                        aufAlleArbeiten={aufAlleArbeitenHaken} setAufAlleArbeiten={setAufAlleArbeitenHaken} />
                 </div>
 
                 {/* Canvas Container */}
@@ -231,10 +217,10 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                         ref={canvasRef}
                         onMouseDown={e => tool === 'pen' && handlers.handleStart(e, canvasRef.current, activeImage)}
                         onMouseMove={e => tool === 'pen' && handlers.handleMove(e, canvasRef.current, activeImage)}
-                        onMouseUp={() => handlers.handleEnd(drawScope)}
+                        onMouseUp={() => handlers.handleEnd(drawScope, aufAlleBlaetter)}
                         onTouchStart={e => tool === 'pen' && handlers.handleStart(e, canvasRef.current, activeImage)}
                         onTouchMove={e => tool === 'pen' && handlers.handleMove(e, canvasRef.current, activeImage)}
-                        onTouchEnd={() => handlers.handleEnd(drawScope)}
+                        onTouchEnd={() => handlers.handleEnd(drawScope, aufAlleBlaetter)}
                         className={`${tool === 'pen' ? 'cursor-crosshair touch-none' : 'cursor-grab active:cursor-grabbing touch-auto'} block max-w-full h-auto shadow-md bg-white rounded-md mx-auto transition-all`}
                     />
                 </div>
@@ -243,7 +229,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                 {otherScanCount > 0 && rects.length > 0 && (
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-xxs font-bold text-muted-foreground">
                         <span className="flex items-center gap-1.5">
-                            <span className="w-3 h-3 rounded-sm bg-primary shrink-0" /> Alle Scans
+                            <span className="w-3 h-3 rounded-sm bg-primary shrink-0" /> Alle Arbeiten
                         </span>
                         <span className="flex items-center gap-1.5">
                             <span className="w-3 h-3 rounded-sm bg-foreground shrink-0" /> Nur diese Arbeit
@@ -303,7 +289,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                         <Button onClick={() => void anwenden()} disabled={loading || Object.keys(images).length === 0} className="h-10 px-6 font-bold flex-1 sm:flex-none shadow-lg gap-2">
                             <Check size={18} />
                             {applyToAllScans
-                                ? `${templateSize} Balken auf ${otherScanCount + 1} Scans`
+                                ? `${templateSize} Balken auf ${otherScanCount + 1} Arbeiten`
                                 : 'Schwärzen anwenden'}
                         </Button>
                     </div>
