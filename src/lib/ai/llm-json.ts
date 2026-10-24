@@ -53,14 +53,26 @@ export function stripThinkingBlocks(raw: string): string {
 /**
  * Den JSON-Teil aus der Antwort herausschneiden.
  *
- * Erst der Markdown-Block, falls vorhanden — er ist die zuverlaessigste
- * Markierung. Sonst gierig von der ersten oeffnenden bis zur letzten
+ * Beginnt die Antwort mit einer Klammer, ist sie selbst das JSON. Sonst zuerst ein
+ * Markdown-Block mit JSON darin. Sonst gierig von der ersten oeffnenden bis zur letzten
  * schliessenden Klammer. Ob Objekt oder Feld entschieden wird, haengt daran,
  * was zuerst kommt.
  */
 export function extractJsonCandidate(text: string): string {
-    const markdown = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-    const body = markdown && markdown[1] ? markdown[1].trim() : text.trim();
+    // Beginnt die Antwort selbst mit `{` oder `[`, IST sie das JSON — ein Codeblock
+    // darin steht in einem Textwert. GEFUNDEN AM 24.10.2026: Eine Musterlösung mit
+    // Python-Code in Aufgabe 2c; die Analyse schrieb ihn korrekt als ```python … ```
+    // in "content", und die Blocksuche nahm genau diesen Code als Antwort. Jede
+    // Musterlösung mit Codeblock scheiterte so am Lesen.
+    //
+    // Sonst gilt nur ein Block ohne Sprachangabe oder mit `json`, dessen Inhalt
+    // mit `{` oder `[` beginnt — ein ```python-Block ist nie die Antwort.
+    const getrimmt = text.trim();
+    const block = /^[[{]/.test(getrimmt)
+        ? undefined
+        : Array.from(getrimmt.matchAll(/```([a-z]*)\s*([\s\S]*?)\s*```/gi))
+            .find(m => (m[1] === '' || m[1].toLowerCase() === 'json') && /^[[{]/.test(m[2].trim()));
+    const body = block ? block[2].trim() : getrimmt;
 
     const firstCurly = body.indexOf('{');
     const firstSquare = body.indexOf('[');
@@ -164,6 +176,14 @@ export function escapeInnerQuotes(jsonStr: string): string {
             deutschesZitatOffen = false;
             i++;
             continue;
+        }
+
+        // Ein MASKIERTES `\"` schliesst ein offenes „ ebenso — es ist schon gueltiges
+        // JSON und bleibt stehen. GEFUNDEN AM 24.10.2026: qwen3.8 schrieb in der Analyse
+        // `„… gar nichts.\"`. Das Zitat galt danach weiter als offen, und das ECHTE Ende
+        // des Textwerts wurde zu “ — die ganze Antwort war unlesbar.
+        if (deutschesZitatOffen && isEscaped) {
+            deutschesZitatOffen = false;
         }
 
         const { char: nextNonWhitespace, index: nextIdx } = nextNonWhitespaceFrom(i + 1);
