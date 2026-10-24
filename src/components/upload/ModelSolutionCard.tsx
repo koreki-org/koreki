@@ -14,6 +14,7 @@ import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
 import { PointInput } from '@/components/ui/PointInput';
 import { ModelSolutionTaskCard } from './ModelSolutionTaskCard';
 import { ModelSolutionAutopilotBar } from './ModelSolutionAutopilotBar';
+import { HauptaufgabeStamm } from './HauptaufgabeStamm';
 import { EditableMathArea } from '@/components/ui/EditableMathArea';
 import { cn } from '@/lib/utils';
 import { groupTasksByMain, splitTextByTasks, composeModelSolution } from '@/lib/task-utils';
@@ -255,8 +256,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             />
 
                             <AufgabenReiter namen={groupNames} aktiv={activeGroupName} onWaehle={setActiveGroupName} className="mb-2" />
-
-
+                            <HauptaufgabeStamm gruppe={groupedTasks[activeGroupName] ?? []} tasksLayout={tasksLayout} modelSolutionContext={modelSolutionContext} gesperrt={isLocked} onTasksChange={onTasksChange} onModelSolutionChange={onModelSolutionChange} />
                             <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                 {activeGroupName && groupedTasks[activeGroupName]?.map((task) => {
                                     const originalIdx = tasksLayout.findIndex(t => t === task);

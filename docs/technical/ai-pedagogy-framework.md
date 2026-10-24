@@ -3,7 +3,7 @@ title: "AI Pedagogy Framework (V13/VRE)"
 description: "Framework für faire, präzise und pädagogisch sinnvolle KI-Korrekturen via VRE Parameter-Steuerung"
 author: "@principal_architect"
 date: "2026-04-06"
-last_updated: "2026-08-25"
+last_updated: "2026-10-24"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -197,6 +197,73 @@ Um die mathematische Bewertung für Lehrkräfte intuitiv und nachvollziehbar zu 
 ### Phase 4: Der Punkte-Notizzettel (Bepunktung)
 *   **Dokumentiert in:** `math-scratchpad.md` (`skill-math-scratchpad`)
 *   **Fokus:** Arithmetische Korrektheit der Punktevergabe. Zwingt die KI zur Nutzung von `correctionNotes` als Notizzettel. Hier werden alle Kriterien-Ergebnisse und die bindenden Sandbox-Ergebnisse strukturiert aufgelistet und schrittweise addiert. Dies verhindert mathematische Additionsfehler der KI bei der Zuweisung von `pointsObtained`.
+
+---
+
+## 9. Gleichmäßige Bewertung: Was sie trägt und was nicht
+
+Gleichwertige Antworten sollen gleich viele Punkte bekommen — über die ganze Klasse. Was
+dabei für eine Lehrkraft gilt, gilt für das Modell nicht unbedingt. Grundlage dieses
+Abschnitts sind Messungen vom Oktober 2026 an Testantworten und an zwei echten,
+pseudonymisierten Klassenarbeiten mit den Punkten der Lehrkraft als Maßstab.
+
+### 9.1 Koreki bewertet jede Arbeit einzeln — nicht aufgabenweise
+
+Lehrkräfte korrigieren aufgabenweise, weil ihre Ungleichheit **über die Zeit** entsteht:
+Ermüdung, ein wandernder Maßstab, Heft 3 nicht mehr im Kopf, wenn Heft 25 dran ist. Das
+Modell hat dieses Problem nicht. Jede Arbeit läuft in einem frischen Aufruf mit
+identischer Anweisung, und mit festem Startwert bekommt dieselbe Arbeit immer dieselben
+Punkte. Seine Ungleichheit entsteht am **Wortlaut** gleichwertiger Antworten.
+
+Eine ganze Klasse in einem Aufruf je Aufgabe zu bewerten, bringt deshalb nicht den
+Vorteil, den es beim Menschen bringt — wohl aber dessen Nachteile:
+
+*   **Weniger Prüfung je Antwort.** Das Modell denkt bei 35 Antworten nicht länger als bei
+    10. Bei kurzen, sauberen Antworten reicht das; bei echten, langen Antworten urteilt es
+    pauschal und wird nachsichtig.
+*   **Die Reihenfolge färbt ab.** Dieselbe Klasse anders sortiert ergab bei rund einem
+    Viertel der Bewertungen andere Punkte. Eine Lehrkraft blättert zurück; das Modell
+    entscheidet im Lesefluss.
+*   **Ähnliche Texte verschwimmen.** Formulierungen wurden dem falschen Schüler
+    zugeschrieben, und gleichwertige Antworten bekamen fast wortgleiches Feedback.
+
+Mit Testantworten sah der Klassenaufruf trotzdem überlegen aus (92 % statt 58 % gleich
+bewertet). An echten Arbeiten lag er weiter vom Urteil der Lehrkraft entfernt als der
+heutige Weg. Kurz: Die Lehrkraft vergleicht gut und hält schlecht durch; das Modell hält
+perfekt durch und vergleicht schlecht, sobald es viele Texte zugleich im Blick hat.
+
+> [!IMPORTANT]
+> Wer aufgabenweise Bewertung wieder vorschlägt, misst an echten Arbeiten mit dem Soll einer
+> Lehrkraft — und an mehreren Reihenfolgen derselben Klasse. Ein Vergleich über das
+> *Gesamtbild* der Klasse (etwa als Prüfhilfe, die Auffälligkeiten nur markiert) ist davon
+> unberührt.
+
+### 9.2 Der Erfahrungsschatz überträgt den Maßstab seiner Beispiele
+
+Der Erfahrungsschatz wirkt stark — er änderte die Punkte bei der Mehrheit einer Klasse.
+Er wirkt aber in Richtung **seiner Beispiele**, nicht automatisch in Richtung der
+Lehrkraft:
+
+*   Stammen alle Beispiele einer Aufgabe aus schwachen Arbeiten, wird die ganze Klasse
+    strenger bewertet (gemessen: im Mittel fast einen Punkt).
+*   Eine Auswahl über das Punktespektrum — eine starke, eine mittlere, eine schwache
+    Antwort je Aufgabe — verschiebt den Maßstab nicht. Sie hilft dort, wo die Bewertung
+    ohne Beispiele danebenliegt, und kann stören, wo sie schon trifft.
+
+Für die Praxis: Beispiele so wählen, dass sie die Spannweite der Klasse abdecken, nicht
+die auffälligsten Fälle.
+
+### 9.3 Vollständiger Kontext je Arbeit
+
+Die Bewertung einer Teilaufgabe braucht deren Ausgangslage. Steht sie im Stamm der
+Hauptaufgabe (Text zwischen „Aufgabe 3“ und „a)“), muss er in der Musterlösung der
+Korrektur ankommen. Bis Oktober 2026 ging er bei der Analyse verloren; wie er heute
+transportiert wird, steht im [Korrektur-Workflow §3.2](./correction-workflow.md).
+
+Zusammen mit [§7](#7-der-erwartungshorizont-leistung-nennen-nicht-themengebiet) ergibt
+sich die Rangfolge der Hebel, die gemessen gewirkt haben: **scharfer Erwartungshorizont →
+vollständiger Kontext → ausgewogener Erfahrungsschatz.** Umbauten am Ablauf der Korrektur
+selbst haben in keiner Messung mehr gebracht.
 
 ---
 

@@ -3,7 +3,7 @@ title: "Teststrategie: Industrial Grade Stabilität 🛡️🦅"
 description: "Koreki Dokumentation: Teststrategie: Industrial Grade Stabilität 🛡️🦅"
 author: "@qa_engineer"
 date: "2026-04-23"
-last_updated: "2026-08-18"
+last_updated: "2026-10-24"
 status: "Approved"
 domain: "operations"
 security_classification: "Public"
@@ -182,6 +182,21 @@ Die häufigste Fehlerklasse dieses Projekts überhaupt.
 | Text zu Zahl wandeln | `mathPlugin` | `networkPlugin` |
 
 Dagegen hilft ein Wächter sehr wohl, wenn die Geschwister **benennbar** sind — siehe `profile-family-symmetry` in Layer 0. Wo sie es nicht sind, hilft nur: beim Beheben prüfen, ob dieselbe Regel woanders auch gelten müsste.
+
+---
+
+## 5c. KI-Qualität messen, ohne sich zu täuschen 🎯
+
+Messungen der Bewertungsqualität (Skripte unter `scratch/`, nicht versioniert) laufen gegen ein echtes Modell. Folgende Fallen haben schon einmal ein falsches Ergebnis geliefert:
+
+| Falle | Was passierte | Was stattdessen |
+|:---|:---|:---|
+| **Nur selbst gebaute Antworten** | Ein Ansatz sah mit sauberen Kurzantworten wie ein Durchbruch aus und kehrte sich an echten Klassenarbeiten um (Oktober 2026). | Vor jeder Architekturentscheidung echtes, pseudonymisiertes Material mit dem Soll einer Lehrkraft. |
+| **Wiederholen statt variieren** | Mit festem Startwert liefert dieselbe Eingabe dieselbe Ausgabe; zehn Läufe messen nichts. | Gleichwertige, *anders formulierte* Antworten bewerten lassen; bei Mehrfach-Eingaben die Reihenfolge variieren. |
+| **Korekis Aufbereitung umgehen** | Aufgaben von Hand zerlegt statt durch die Analyse — andere Teilaufgaben, anderer Kontext, anderes Ergebnis. | Musterlösung und Abgaben durch `clean-and-analyze` und `clean-and-map` schicken, wie im Produkt. |
+| **Profil-Standardwerte vergessen** | Ohne `enableThinking` und `maxTokens` wählt die Kontext-Automatik 8k und schneidet ab. | Testeinstellungen aus dem Standard-Profil (`useAiProfiles`) übernehmen. |
+| **Zu enges Antwortformat** | Ein Schema mit `integer` machte aus 1,5 Punkten „15“. | Punkte immer als `number`; Ausreißer über dem Maximum als Formatfehler behandeln, nicht als Bewertung. |
+| **Unter 10 Fällen je Zelle** | Ein Unterschied von drei Treffern auf zehn lag zweimal im Rauschen. | Unterschiede nur glauben, wenn sie über mehrere Fälle und Messungen stabil sind. |
 
 ---
 

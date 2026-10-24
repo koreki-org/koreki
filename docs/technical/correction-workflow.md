@@ -3,7 +3,7 @@ title: "Korrektur-Workflow (Technical Lifecycle)"
 description: "Technisches Architektur-Dokument: Korrektur-Workflow (Technical Lifecycle)"
 author: "@principal_architect"
 date: "2026-04-06"
-last_updated: "2026-08-25"
+last_updated: "2026-10-24"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -109,6 +109,32 @@ Drei Eigenschaften sind bewusst so gewählt:
 >
 > Der Verlust war **nicht** die Ursache der bekannten Nachsicht bei dünnen Antworten: Er
 > passierte, nachdem die Punkte feststanden.
+
+## 3.2 Die Musterlösung: gemeinsamer Rahmen und Stämme der Hauptaufgaben
+
+Nach der Analyse ersetzt Koreki die hochgeladene Musterlösung durch eine **zusammengesetzte
+Fassung** (`buildModelSolutionFromTasks`). Nur sie geht an die Korrektur — bei jedem Schüler.
+Was die Analyse keinem Feld zuordnet, fehlt dort also.
+
+Drei Ebenen hat die zusammengesetzte Fassung:
+
+| Ebene | gilt für | Feld | in der Oberfläche |
+|---|---|---|---|
+| Gemeinsamer Rahmen | Aufgaben aus mindestens zwei Hauptaufgaben | `context` → `modelSolutionContext` | Feld „Gemeinsamer Rahmen“ |
+| Stamm einer Hauptaufgabe | alle Teilaufgaben genau einer Hauptaufgabe | `hauptaufgaben[]` → `Task.hauptaufgabe` | „Ausgangslage …“ unter der Aufgaben-Leiste |
+| Inhalt der Teilaufgabe | eine Teilaufgabe | `tasks[].content` | Karte der Teilaufgabe |
+
+Der Stamm steht in der Musterlösung **einmal**, direkt vor der ersten Teilaufgabe seiner
+Hauptaufgabe (`### Aufgabe 3 – Ausgangslage ###`). Gespeichert ist er an jeder Teilaufgabe der
+Gruppe, damit er überall mitreist, wohin die Aufgabenliste reist (Store, Sitzungsexport,
+Musterlösungs-Export); geschrieben wird er nur über `setzeStamm`, das alle Mitglieder gemeinsam
+ändert.
+
+> [!WARNING]
+> Bis zum 24.10.2026 fiel der Stamm zwischen zwei Regeln durch: Die Analyse legte nur die
+> Teilaufgaben an, und der Rahmen war für Text gedacht, der für *alle* Aufgaben gilt. Bei zwei
+> echten Klassenarbeiten fehlte er in der Musterlösung der Korrektur. Warum der Kontext für
+> gleichmäßige Bewertung zählt: [AI Pedagogy Framework §9](./ai-pedagogy-framework.md).
 
 ---
 

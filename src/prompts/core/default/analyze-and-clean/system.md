@@ -38,11 +38,19 @@ Verteile den fachlichen Inhalt der Musterlösung PRÄZISE auf die jeweiligen Auf
 - Ein leeres "content" Feld bei einer Aufgabe ist ein Fehler, wenn im Gesamtdokument eine Lösung dafür existiert.
 
 WICHTIG (Gemeinsamer fachlicher Rahmen — Feld "context"):
-Manche Dokumente enthalten fachlichen Text, der zu keiner einzelnen Aufgabe gehört, sondern die Ausgangslage für mehrere Aufgaben beschreibt. Typische Formen: eine Szenario- oder Fallbeschreibung, ein übergreifender Arbeitsauftrag sowie Annahmen und Vereinfachungen, die für mehrere Aufgaben gelten (z. B. "X wird vernachlässigt", "gehen Sie von Y aus").
+Manche Dokumente enthalten fachlichen Text, der zu keiner einzelnen Aufgabe gehört, sondern die Ausgangslage für die ganze Arbeit beschreibt. Typische Formen: eine Szenario- oder Fallbeschreibung, ein übergreifender Arbeitsauftrag sowie Annahmen und Vereinfachungen, die für mehrere Hauptaufgaben gelten (z. B. "X wird vernachlässigt", "gehen Sie von Y aus").
 - Solcher Text gehört in das Feld "context" auf oberster Ebene, NICHT in "tasks[].content".
-- STRENGES KRITERIUM: In "context" gehört ausschließlich, worauf sich MINDESTENS ZWEI Aufgaben stützen. Alles, was nur eine einzige Aufgabe benötigt — auch Tabellen, Wertelisten, Abbildungen, Befehle und Vorgaben — bleibt vollständig im "content" genau dieser Aufgabe.
-- SELBSTPRÜFUNG (verbindlich): Jede Aufgabe muss allein aus ihrem eigenen "content" heraus lösbar bleiben. Verweist eine Aufgabe auf ein Bezugsobjekt (z. B. "die Liste unten", "die folgende Tabelle", "die Abbildung", "der Befehl oben"), MUSS dieses Bezugsobjekt im "content" eben dieser Aufgabe enthalten sein. Ein Verweis, der ins Leere zeigt, ist ein Fehler.
+- STRENGES KRITERIUM: In "context" gehört ausschließlich, worauf sich Aufgaben aus MINDESTENS ZWEI verschiedenen Hauptaufgaben stützen. Was nur die Teilaufgaben EINER Hauptaufgabe betrifft, ist deren Stamm (siehe unten). Alles, was nur eine einzige Aufgabe benötigt — auch Tabellen, Wertelisten, Abbildungen, Befehle und Vorgaben — bleibt vollständig im "content" genau dieser Aufgabe.
+- SELBSTPRÜFUNG (verbindlich): Jede Aufgabe muss aus ihrem eigenen "content" zusammen mit dem Stamm ihrer Hauptaufgabe und dem "context" lösbar bleiben. Verweist eine Aufgabe auf ein Bezugsobjekt (z. B. "die Liste unten", "die folgende Tabelle", "die Abbildung", "der Befehl oben"), MUSS dieses Bezugsobjekt in einer dieser drei Stellen enthalten sein — im "content", wenn nur diese Aufgabe es braucht. Ein Verweis, der ins Leere zeigt, ist ein Fehler.
 - IM ZWEIFEL gehört Text in die Aufgabe, nicht in den Rahmen.
+
+WICHTIG (Stamm einer Hauptaufgabe — Felder "hauptaufgaben" und "tasks[].hauptaufgabe"):
+Hat eine Hauptaufgabe Teilaufgaben, steht zwischen ihrer Überschrift und der ersten Teilaufgabe oft ein Text, der für alle ihre Teilaufgaben gilt: eine Ausgangslage, gegebene Werte, eine Tabelle, ein Befehl oder eine Vorgabe. Das ist der STAMM dieser Hauptaufgabe.
+- Den Stamm gibst du GENAU EINMAL aus, im Feld "hauptaufgaben" auf oberster Ebene: ein Eintrag je Hauptaufgabe mit "name" (die Bezeichnung der Hauptaufgabe, z. B. "Aufgabe 3") und "stamm" (der vollständige Stammtext, fachlich unverändert, ohne Gesamtpunktzahl der Hauptaufgabe).
+- Jede Teilaufgabe dieser Hauptaufgabe verweist darauf mit "hauptaufgabe": derselbe Name, zeichengenau.
+- Kopiere den Stamm NICHT in den "content" der Teilaufgaben. Dort steht nur, was zu genau dieser Teilaufgabe gehört.
+- Hat eine Hauptaufgabe keinen Stamm oder keine Teilaufgaben, lässt du sie in "hauptaufgaben" weg und setzt bei ihren Aufgaben "hauptaufgabe": null.
+- Der Stamm enthält nur Aufgabentext. Lösungen und Punktangaben zu einzelnen Teilaufgaben gehören in deren "content".
 - Nimm in "context" ausschließlich fachlich relevanten Rahmen auf. Formularfelder, Kopf- und Fußzeilen, Namens-, Datums- und Notenfelder gehören dort NICHT hinein — sie werden wie oben beschrieben ignoriert.
 - Existiert kein solcher Rahmen, gib "context": "" zurück. Erfinde niemals einen.
 
@@ -77,10 +85,14 @@ WICHTIG (Berechnungs-Struktur - suggestGraph):
 
 Antworte EXAKT im folgenden JSON-Format:
 {
-  "context": "Gemeinsamer fachlicher Rahmen aller Aufgaben, oder \"\" wenn es keinen gibt.",
+  "context": "Gemeinsamer fachlicher Rahmen der ganzen Arbeit, oder \"\" wenn es keinen gibt.",
+  "hauptaufgaben": [
+    { "name": "Bezeichnung der Hauptaufgabe (z.B. Aufgabe 1)", "stamm": "Stammtext, der für alle ihre Teilaufgaben gilt" }
+  ],
   "tasks": [
     {
       "name": "Eindeutiger Name (z.B. Aufgabe 1a)",
+      "hauptaufgabe": "Name aus \"hauptaufgaben\" oder null",
       "maxPoints": (Zahl),
       "content": "NUR der fachliche Inhalt (Frage & Antwort) dieser spezifischen Aufgabe.",
       "suggestGraph": (boolean),

@@ -4,6 +4,7 @@ import { performAIRequest } from '@/lib/ai/ai-orchestrator';
 import { alsAnfrageModus } from '@/lib/ai/app-mode';
 import { isRateLimitError, isAbortError, toErrorMessage } from '@/lib/error-message';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
+import { uebernimmHauptaufgaben } from '@/lib/hauptaufgaben';
 
 /**
  * Die Aufgabenstruktur aus der Musterloesung lesen.
@@ -39,7 +40,9 @@ export function useLayoutExtraction({ userData, setIsLoadingModel }: UseLayoutEx
             }, alsAnfrageModus(userData?.appMode), currentSettings, signal);
 
             if (data && Array.isArray(data.tasks)) {
-                data.tasks = data.tasks.map((task: Task) => ({
+                // Der Stamm einer Hauptaufgabe kommt einmal je Hauptaufgabe und wird hier an
+                // ihre Teilaufgaben gehängt — sonst fiele er wie bisher aus der Musterlösung.
+                data.tasks = uebernimmHauptaufgaben(data.tasks, data.hauptaufgaben).map((task: Task) => ({
                     ...task,
                     taskType: task.predictedPluginDomain === 'math' ? 'calc-trace' : 'default',
                     gradingGraph: undefined

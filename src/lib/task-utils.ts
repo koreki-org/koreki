@@ -1,4 +1,5 @@
 import { Task } from '../types';
+import { stammUeberschrift } from './hauptaufgaben';
 
 /**
  * Groups tasks by their main identifier (e.g., "Aufgabe 1a", "Aufgabe 1b" -> "Aufgabe 1").
@@ -185,9 +186,21 @@ export function splitTextByTasks(text: string, tasks: Task[]): string[] {
 
 /**
  * Joins task sections into a single string with human-readable headers.
+ *
+ * Gehört eine Teilaufgabe zu einer Hauptaufgabe mit Stamm, steht der Stamm EINMAL
+ * vor der ersten ihrer Teilaufgaben (siehe `lib/hauptaufgaben.ts`).
  */
 export function joinTaskSections(sections: string[], tasks: Task[]): string {
-    return sections.map((s, i) => `### ${tasks[i].name} ###\n${s}`).join('\n\n');
+    const schonGezeigt = new Set<string>();
+    return sections.map((s, i) => {
+        const h = tasks[i].hauptaufgabe;
+        let stamm = '';
+        if (h && !schonGezeigt.has(h.name)) {
+            schonGezeigt.add(h.name);
+            stamm = `${stammUeberschrift(h.name)}\n${h.stamm}\n\n`;
+        }
+        return `${stamm}### ${tasks[i].name} ###\n${s}`;
+    }).join('\n\n');
 }
 
 /** Überschrift des gemeinsamen Rahmens in der zusammengesetzten Musterlösung. */

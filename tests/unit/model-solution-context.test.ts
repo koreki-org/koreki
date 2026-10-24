@@ -91,9 +91,11 @@ describe('Analyse-Prompt: Vertrag für das context-Feld', () => {
         expect(analyzeCleanSystem).toContain('Erfinde niemals einen.');
     });
 
-    it('restricts the frame to material at least two tasks rely on', () => {
+    it('restricts the frame to material tasks of at least two main tasks rely on', () => {
         // Ohne harte Untergrenze zieht das Modell auch aufgabeneigene Tabellen in den Rahmen.
-        expect(analyzeCleanSystem).toContain('MINDESTENS ZWEI Aufgaben');
+        // Seit dem 24.10.2026 zählen Hauptaufgaben, nicht Aufgaben: Was nur die Teilaufgaben
+        // EINER Hauptaufgabe betrifft, ist deren Stamm (lib/hauptaufgaben.ts), kein Rahmen.
+        expect(analyzeCleanSystem).toContain('MINDESTENS ZWEI verschiedenen Hauptaufgaben');
     });
 
     it('demands that references inside a task resolve inside that task', () => {

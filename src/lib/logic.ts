@@ -74,6 +74,16 @@ export interface Task {
     suggestGraph?: boolean;
     predictedPluginDomain?: string | null;
     sandboxBypassed?: boolean;
+    /**
+     * Die Hauptaufgabe, zu der diese Teilaufgabe gehört, samt ihrem Stamm — dem Text
+     * zwischen Überschrift der Hauptaufgabe und erster Teilaufgabe. Siehe `lib/hauptaufgaben.ts`.
+     */
+    hauptaufgabe?: Hauptaufgabe;
+}
+
+export interface Hauptaufgabe {
+    name: string;
+    stamm: string;
 }
 
 export function calculatePercentageFromTasks(tasks: Task[]): number {
