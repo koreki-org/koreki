@@ -195,7 +195,7 @@ export function joinTaskSections(sections: string[], tasks: Task[]): string {
     return sections.map((s, i) => {
         const h = tasks[i].hauptaufgabe;
         let stamm = '';
-        if (h && !schonGezeigt.has(h.name)) {
+        if (h && h.stamm.trim() && !schonGezeigt.has(h.name)) {
             schonGezeigt.add(h.name);
             stamm = `${stammUeberschrift(h.name)}\n${h.stamm}\n\n`;
         }

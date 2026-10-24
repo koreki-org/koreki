@@ -62,15 +62,28 @@ export const STRUKTUR_AKTIONEN: AIAction[] = [
  *    Die Extraktion braucht den Denkschritt nicht, weil die Lehrkraft ihn
  *    eingeschaltet hat, sondern weil sie ohne ihn falsch abschreibt.
  *
- * 4. uebrige Struktur-Aktionen — nie, siehe `STRUKTUR_AKTIONEN`.
+ * 4. `clean-and-analyze` — wie im KI-Intelligenz-Modal, ungesetzt AN. Gemessen am
+ *    24.10.2026: Ohne Denkschritt schreibt das Modell die Analyse in einem Zug und
+ *    laesst erzaehlende Stamm-Texte von Hauptaufgaben fallen — an einer echten
+ *    Musterloesung qwen3.6 1–3 von 4 Staemmen, teils der falschen Teilaufgabe
+ *    zugeordnet. Mit Denkschritt an zwei echten Musterloesungen 8 von 8, woertlich
+ *    richtig, bei qwen3.6 und qwen3.8 (Ollama) wie bei Qwen3.6 ueber Mittwald; dazu
+ *    wurde der gemeinsame Rahmen des Demo-Szenarios erstmals erkannt. Preis bei
+ *    Ollama: die Analyse dauert einmal je Musterloesung ~2–4 min statt ~0,5–1,5 min
+ *    (Mittwald ~30 s). Mistral nicht gemessen (Kontingent erschoepft). Der Denktext
+ *    landet nicht im JSON: Ollama liefert ihn in einem eigenen Feld, der
+ *    OpenAI-kompatible Weg entfernt `<think>`-Bloecke beim Einlesen.
  *
- * 5. alles andere (`correction`, `second-opinion`, `student-simulator`) — was im
+ * 5. uebrige Struktur-Aktionen — nie, siehe `STRUKTUR_AKTIONEN`.
+ *
+ * 6. alles andere (`correction`, `second-opinion`, `student-simulator`) — was im
  *    KI-Intelligenz-Modal steht. Ungesetzt heisst AN, siehe `denkschrittAktiv`.
  */
 export function denktBeiAktion(action: AIAction, enableThinking?: boolean | null): boolean {
     if (action === 'vision') return false;
     if (action === 'anonymize') return false;
     if (action === 'calc-trace-extraction') return true;
+    if (action === 'clean-and-analyze') return denkschrittAktiv(enableThinking);
     if (STRUKTUR_AKTIONEN.includes(action)) return false;
     return denkschrittAktiv(enableThinking);
 }

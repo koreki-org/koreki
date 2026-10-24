@@ -121,8 +121,14 @@ Drei Ebenen hat die zusammengesetzte Fassung:
 | Ebene | gilt für | Feld | in der Oberfläche |
 |---|---|---|---|
 | Gemeinsamer Rahmen | Aufgaben aus mindestens zwei Hauptaufgaben | `context` → `modelSolutionContext` | Feld „Gemeinsamer Rahmen“ |
-| Stamm einer Hauptaufgabe | alle Teilaufgaben genau einer Hauptaufgabe | `hauptaufgaben[]` → `Task.hauptaufgabe` | „Ausgangslage …“ unter der Aufgaben-Leiste |
+| Stamm einer Hauptaufgabe | alle Teilaufgaben genau einer Hauptaufgabe | `tasks[].stamm` der ersten Teilaufgabe → `Task.hauptaufgabe` | „Ausgangslage …“ unter der Aufgaben-Leiste |
 | Inhalt der Teilaufgabe | eine Teilaufgabe | `tasks[].content` | Karte der Teilaufgabe |
+
+Die Analyse liefert den Stamm bei der **ersten** Teilaufgabe seiner Hauptaufgabe (`tasks[].stamm`),
+weil das Modell sein JSON in einem Zug schreibt und der Stamm im Dokument genau dort steht; eine
+vorab auszufüllende Stamm-Liste ließ erzählende Stämme fallen. Sie läuft dafür mit Denkschritt
+(siehe [AI-Provider-Infrastruktur](./ai-provider-infrastructure.md)). Übersieht sie einen Stamm,
+kann die Lehrkraft ihn unter der Aufgaben-Leiste nachtragen („Ausgangslage … hinzufügen“).
 
 Der Stamm steht in der Musterlösung **einmal**, direkt vor der ersten Teilaufgabe seiner
 Hauptaufgabe (`### Aufgabe 3 – Ausgangslage ###`). Gespeichert ist er an jeder Teilaufgabe der

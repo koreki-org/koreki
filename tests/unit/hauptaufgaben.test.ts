@@ -9,7 +9,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import type { Task } from '@/types';
-import { uebernimmHauptaufgaben, hauptaufgabenVon, setzeStamm, stammUeberschrift } from '@/lib/hauptaufgaben';
+import { uebernimmHauptaufgaben, hauptaufgabenVon, setzeStamm, stammUeberschrift, legeStammAn } from '@/lib/hauptaufgaben';
 import { composeModelSolution, joinTaskSections } from '@/lib/task-utils';
 
 const analyse = {
@@ -75,8 +75,32 @@ describe('Stamm einer Hauptaufgabe', () => {
      */
     it('die Analyse-Regel verlangt genau die Felder, die die Übernahme liest', () => {
         const regel = fs.readFileSync(path.join(__dirname, '../../src/prompts/core/default/analyze-and-clean/system.md'), 'utf-8');
-        expect(regel).toMatch(/"hauptaufgaben":\s*\[/);
-        expect(regel).toMatch(/"stamm":/);
         expect(regel).toMatch(/"hauptaufgabe":/);
+        expect(regel).toMatch(/"stamm":/);
+    });
+
+    it('liest den Stamm aus der ersten Teilaufgabe — der Weg der heutigen Analyse-Regel', () => {
+        const roh = [
+            { name: 'Aufgabe 3a', content: 'a', hauptaufgabe: 'Aufgabe 3', stamm: 'Ausgangslage B.' },
+            { name: 'Aufgabe 3b', content: 'b', hauptaufgabe: 'Aufgabe 3', stamm: '' },
+            { name: 'Aufgabe 4', content: 'c', hauptaufgabe: null, stamm: '' }
+        ];
+        const t = uebernimmHauptaufgaben(roh);
+        expect(t[0].hauptaufgabe).toEqual({ name: 'Aufgabe 3', stamm: 'Ausgangslage B.' });
+        expect(t[1].hauptaufgabe).toEqual(t[0].hauptaufgabe);
+        expect(t[2].hauptaufgabe).toBeUndefined();
+        // Das Rohfeld wandert nicht in die Aufgabenliste.
+        expect(t.every(x => !('stamm' in x))).toBe(true);
+    });
+
+    it('lässt die Lehrkraft einen übersehenen Stamm anlegen — leer erscheint er nicht in der Musterlösung', () => {
+        const ohne = [{ name: 'Aufgabe 7a', content: 'x' }, { name: 'Aufgabe 7b', content: 'y' }, { name: 'Aufgabe 8', content: 'z' }] as Task[];
+        const angelegt = legeStammAn(ohne, ohne.slice(0, 2), 'Aufgabe 7');
+        expect(hauptaufgabenVon(angelegt)).toEqual([{ name: 'Aufgabe 7', stamm: '' }]);
+        expect(angelegt[2].hauptaufgabe).toBeUndefined();
+        expect(composeModelSolution('', angelegt.map(t => t.content || ''), angelegt)).not.toContain('Ausgangslage');
+
+        const gefuellt = setzeStamm(angelegt, 'Aufgabe 7', 'Nachgetragen.');
+        expect(composeModelSolution('', gefuellt.map(t => t.content || ''), gefuellt)).toContain('Nachgetragen.');
     });
 });

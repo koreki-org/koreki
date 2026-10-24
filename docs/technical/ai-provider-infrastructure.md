@@ -3,7 +3,7 @@ title: "Unified AI Provider Infrastructure & Reasoning Mode"
 description: "Dokumentation der provider-agnostischen KI-Architektur, des Qwen 3.6 'Thinking Mode' und der tier-spezifischen Konfigurationslogik."
 author: "@principal_architect"
 date: "2026-04-30"
-last_updated: "2026-09-07"
+last_updated: "2026-10-24"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -144,7 +144,8 @@ Um die absolute Integrität von Schülerabgaben zu schützen und unerwünschte �
     > **Der Preis ist Rechenzeit: Faktor 4,4** (14,8 s → 64,7 s je Aufgabe). Bei 25 Schülern ist das der Unterschied zwischen etwa 6 und etwa 27 Minuten. Auf einem Rechner ohne GPU, wo bereits ohne Thinking 290–500 s je Korrektur anfallen, ist das nicht zumutbar — die Voreinstellung gehört deshalb an die verfügbare Rechenleistung gebunden, nicht global gesetzt. Gegen Mistral ist der Effekt ungemessen.
     >
     > Der Rückfallwert im Ollama-Pfad stand bis zum 25.08.2026 auf `false` und widersprach damit dieser Governance, dem Standardprofil und ADR 001. Ohne geladenes Profil lief die Korrektur also ohne Denkschritt.
-  * **Strukturelle Systemaktionen & Tool-Calling (Thinking AUS):** Für rein strukturelle Aktionen ist Thinking abgeschaltet — der Denktext landete sonst in genau dem JSON, das sie erzeugen sollen. Dies betrifft `generate-graph`, `refine-graph`, `generate-calc-trace`, `clean-and-map`, `clean-and-analyze` und `variable-extraction`, dazu `vision` und `anonymize`.
+  * **Strukturelle Systemaktionen & Tool-Calling (Thinking AUS):** Für rein strukturelle Aktionen ist Thinking abgeschaltet — der Denktext landete sonst in genau dem JSON, das sie erzeugen sollen. Dies betrifft `generate-graph`, `refine-graph`, `generate-calc-trace`, `clean-and-map` und `variable-extraction`, dazu `vision` und `anonymize`.
+    **Ausnahme `clean-and-analyze` (seit 24.10.2026):** folgt dem Modal wie die Korrektur, ungesetzt AN. Ohne Denkschritt schreibt das Modell die Analyse in einem Zug und lässt erzählende Stamm-Texte von Hauptaufgaben fallen (an einer echten Musterlösung qwen3.6 1–3 von 4, teils falsch zugeordnet). Mit Denkschritt an zwei echten Musterlösungen 8 von 8 — qwen3.6 und qwen3.8 über Ollama wie Qwen3.6 über Mittwald; Mistral nicht gemessen. Die Antwortgrenze von 8.192 Tokens für Aufbereitungsaktionen gilt deshalb nicht, sobald die Analyse denkt, und das Kontextfenster wird auf 32k gesetzt. Preis: bei Ollama ~2–4 Minuten statt ~0,5–1,5 einmal je Musterlösung, bei Mittwald ~30 Sekunden.
     **Ausnahme `calc-trace-extraction`:** denkt immer, unabhängig vom Modal (gemessen 04.09.2026 — ohne Denkschritt trägt das Modell den Wert der Formel statt den des Schülers ein). Diese Ausnahme galt bis zum 07.09.2026 nur bei Ollama; auf dem OpenAI-kompatiblen Weg wurde sie nicht gesendet, was Anhang IV Nummer 4 als offene Lücke führte.
     **Nachtrag 07.09.2026:** „standardmäßig global deaktiviert (sowohl bei Ollama als auch beim OpenAI-Provider)" beschrieb bis dahin eine Absicht, keinen Zustand. Beim OpenAI-Provider stand die Liste als Kommentar und wurde an keiner Stelle gesendet.
   * **vLLM-Konformität (Mittwald) — korrigiert am 07.09.2026:** Hier stand, der LiteLLM-Proxy stürze bei `chat_template_kwargs` ab, weshalb `openai-provider.ts` das Feld bewusst nicht mehr sende und sich auf das native Modellverhalten verlasse. **Nachgemessen widerlegt:** Er stürzt nicht, er befolgt das Feld. Der Satz hatte eine Folge, die niemand beabsichtigt hatte — „das native Modellverhalten" heißt bei Qwen 3.6 schlicht *immer denken*, auch dort, wo dieses Dokument zwei Zeilen weiter oben das Gegenteil vorschreibt. Das Feld wird seitdem verschachtelt gesendet, siehe Abschnitt 3.

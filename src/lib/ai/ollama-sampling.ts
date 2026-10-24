@@ -154,12 +154,6 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
     const { isVision, isSystemAction, isReasoningModel, isGemmaOrMoE, isQwen } = art;
     const modelLower = e.model.toLowerCase();
 
-    let targetMaxTokens = isVision
-        ? (settings.visionMaxTokens ?? 32768)
-        : (settings.maxTokens ?? 32768);
-    if (isSystemAction) {
-        targetMaxTokens = Math.min(targetMaxTokens, 8192);
-    }
 
     // Wer denkt bei welcher Aktion laut mit? Die Leiter steht seit dem 07.09.2026 in
     // `denkschritt.ts` und gilt fuer ALLE Anbieter-Familien — samt der Begruendungen,
@@ -170,6 +164,17 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
     // OpenAI-kompatible Weg braucht `chat_template_kwargs.enable_thinking`. Nur das
     // Feld unterscheidet sich, die Entscheidung nicht mehr.
     const think = denktBeiAktion(action, settings.enableThinking);
+
+    // Die Aufbereitung schreibt ohne Denken nur JSON — 8192 Tokens reichen. Denkt die
+    // Analyse (seit 24.10.2026, siehe denkschritt.ts), braucht sie Platz fuer den
+    // Denktext dazu: gemessen bis ~42.000 Zeichen Denken plus ~9.000 Zeichen Antwort.
+    const analyseDenkt = action === 'clean-and-analyze' && think;
+    let targetMaxTokens = isVision
+        ? (settings.visionMaxTokens ?? 32768)
+        : (settings.maxTokens ?? 32768);
+    if (isSystemAction && !analyseDenkt) {
+        targetMaxTokens = Math.min(targetMaxTokens, 8192);
+    }
 
     // Wer laut denkt, braucht Platz dafuer — sonst verliert eine lange Extraktion das
     // Ende ihrer Antwort, und das faellt als "Extraktion gescheitert" auf statt als
@@ -183,7 +188,8 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
     // aendern und hinterher nicht zu wissen, welches gewirkt hat.
     const shouldIncludeThink = settings.enableThinking === true
         || isReasoningModel
-        || action === 'calc-trace-extraction';
+        || action === 'calc-trace-extraction'
+        || analyseDenkt;
 
     // ─── Temperatur und top_p ────────────────────────────────────────────────
     let targetTemp: number;
@@ -281,6 +287,9 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
 
         if (action === 'calc-trace-extraction' || action === 'generate-calc-trace') {
             totalEstimated = Math.max(totalEstimated, 16384);
+        }
+        if (analyseDenkt) {
+            totalEstimated = Math.max(totalEstimated, 32768);
         }
 
         if (totalEstimated <= 8192) numCtx = 8192;

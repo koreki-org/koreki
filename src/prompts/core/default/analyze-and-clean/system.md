@@ -24,7 +24,7 @@ Ein am Zeilenende mit Bindestrich getrenntes Wort, das in der nächsten Zeile we
 WICHTIG (Unteraufgaben): 
 Falls Aufgaben Unteraufgaben haben (z.B. Aufgabe 1 -> a, b, c), erstelle für JEDE Unteraufgabe einen eigenen Eintrag in der Liste. 
 Verwende dabei einen kombinierten Namen, damit die Zuordnung klar bleibt (z.B. "Aufgabe 1a", "Aufgabe 1b").
-WICHTIG (Keine Duplikate): Wenn eine Aufgabe Unteraufgaben hat, extrahiere NUR die Unteraufgaben. Extrahiere NICHT die übergeordnete Aufgabe (z.B. "Aufgabe 1"), da dies sonst zu doppelten Punkten führt.
+WICHTIG (Keine Duplikate): Wenn eine Aufgabe Unteraufgaben hat, extrahiere NUR die Unteraufgaben als Einträge in "tasks". Extrahiere die übergeordnete Aufgabe (z.B. "Aufgabe 1") NICHT als eigenen Eintrag in "tasks", da dies sonst zu doppelten Punkten führt. Ihr Text geht dadurch nicht verloren: Was zwischen ihrer Überschrift und der ersten Teilaufgabe steht, ist ihr Stamm (siehe unten).
 NIEMALS ZUSAMMENFASSEN: Fasse niemals mehrere Teilaufgaben oder Punkteangaben (z.B. 1a und 1b) zu einer gemeinsamen Aufgabe zusammen, selbst wenn sie ähnliche Inhalte haben. Jede bepunktete Einheit muss ein eigenes Objekt sein.
 
 WICHTIG (Präzision): Erfinde unter keinen Umständen Aufgaben! Wenn der Text keine erkennbaren Aufgaben oder Punkte enthält, oder leer ist, gib einfach ein leeres Array für "tasks" zurück.
@@ -43,16 +43,17 @@ Manche Dokumente enthalten fachlichen Text, der zu keiner einzelnen Aufgabe geh�
 - STRENGES KRITERIUM: In "context" gehört ausschließlich, worauf sich Aufgaben aus MINDESTENS ZWEI verschiedenen Hauptaufgaben stützen. Was nur die Teilaufgaben EINER Hauptaufgabe betrifft, ist deren Stamm (siehe unten). Alles, was nur eine einzige Aufgabe benötigt — auch Tabellen, Wertelisten, Abbildungen, Befehle und Vorgaben — bleibt vollständig im "content" genau dieser Aufgabe.
 - SELBSTPRÜFUNG (verbindlich): Jede Aufgabe muss aus ihrem eigenen "content" zusammen mit dem Stamm ihrer Hauptaufgabe und dem "context" lösbar bleiben. Verweist eine Aufgabe auf ein Bezugsobjekt (z. B. "die Liste unten", "die folgende Tabelle", "die Abbildung", "der Befehl oben"), MUSS dieses Bezugsobjekt in einer dieser drei Stellen enthalten sein — im "content", wenn nur diese Aufgabe es braucht. Ein Verweis, der ins Leere zeigt, ist ein Fehler.
 - IM ZWEIFEL gehört Text in die Aufgabe, nicht in den Rahmen.
-
-WICHTIG (Stamm einer Hauptaufgabe — Felder "hauptaufgaben" und "tasks[].hauptaufgabe"):
-Hat eine Hauptaufgabe Teilaufgaben, steht zwischen ihrer Überschrift und der ersten Teilaufgabe oft ein Text, der für alle ihre Teilaufgaben gilt: eine Ausgangslage, gegebene Werte, eine Tabelle, ein Befehl oder eine Vorgabe. Das ist der STAMM dieser Hauptaufgabe.
-- Den Stamm gibst du GENAU EINMAL aus, im Feld "hauptaufgaben" auf oberster Ebene: ein Eintrag je Hauptaufgabe mit "name" (die Bezeichnung der Hauptaufgabe, z. B. "Aufgabe 3") und "stamm" (der vollständige Stammtext, fachlich unverändert, ohne Gesamtpunktzahl der Hauptaufgabe).
-- Jede Teilaufgabe dieser Hauptaufgabe verweist darauf mit "hauptaufgabe": derselbe Name, zeichengenau.
-- Kopiere den Stamm NICHT in den "content" der Teilaufgaben. Dort steht nur, was zu genau dieser Teilaufgabe gehört.
-- Hat eine Hauptaufgabe keinen Stamm oder keine Teilaufgaben, lässt du sie in "hauptaufgaben" weg und setzt bei ihren Aufgaben "hauptaufgabe": null.
-- Der Stamm enthält nur Aufgabentext. Lösungen und Punktangaben zu einzelnen Teilaufgaben gehören in deren "content".
 - Nimm in "context" ausschließlich fachlich relevanten Rahmen auf. Formularfelder, Kopf- und Fußzeilen, Namens-, Datums- und Notenfelder gehören dort NICHT hinein — sie werden wie oben beschrieben ignoriert.
 - Existiert kein solcher Rahmen, gib "context": "" zurück. Erfinde niemals einen.
+
+WICHTIG (Stamm einer Hauptaufgabe — Felder "tasks[].hauptaufgabe" und "tasks[].stamm"):
+Hat eine Hauptaufgabe Teilaufgaben, steht zwischen ihrer Überschrift und der ersten Teilaufgabe oft ein Text, der für alle ihre Teilaufgaben gilt: eine Ausgangslage, ein Szenario, ein Ziel, gegebene Werte, eine Tabelle, ein Befehl oder eine Vorgabe. Das ist der STAMM dieser Hauptaufgabe — auch dann, wenn er nur aus einem einzigen erzählenden Satz besteht.
+- Jede Teilaufgabe nennt in "hauptaufgabe" die Bezeichnung ihrer Hauptaufgabe (z. B. "Aufgabe 3"), bei allen Teilaufgaben derselben Hauptaufgabe zeichengleich. Aufgaben ohne Teilaufgaben haben "hauptaufgabe": null.
+- Die ERSTE Teilaufgabe einer Hauptaufgabe trägt in "stamm" den Text, der im Dokument zwischen der Überschrift der Hauptaufgabe und dem Beginn dieser ersten Teilaufgabe steht — wörtlich, vollständig, ohne Überschrift und ohne Punktangabe der Hauptaufgabe. Alle weiteren Teilaufgaben derselben Hauptaufgabe haben "stamm": "". So steht der Stamm genau einmal in der Ausgabe.
+- Steht dort kein Text, ist "stamm" leer.
+- Kopiere den Stamm NICHT zusätzlich in "content". Dort steht nur, was zu genau dieser Teilaufgabe gehört.
+- Der Stamm enthält nur Aufgabentext. Lösungen und Punktangaben einzelner Teilaufgaben gehören in deren "content".
+- Aufgabentext darf an keiner Stelle verloren gehen — er steht entweder im "context", in einem Stamm oder im "content" einer Aufgabe.
 
 WICHTIG (Mathematik & Formeln):
 - Falls die Musterlösung mathematische Formeln enthält, stelle sicher, dass diese sauber in LaTeX-Delimitern eingeschlossen sind.
@@ -86,13 +87,11 @@ WICHTIG (Berechnungs-Struktur - suggestGraph):
 Antworte EXAKT im folgenden JSON-Format:
 {
   "context": "Gemeinsamer fachlicher Rahmen der ganzen Arbeit, oder \"\" wenn es keinen gibt.",
-  "hauptaufgaben": [
-    { "name": "Bezeichnung der Hauptaufgabe (z.B. Aufgabe 1)", "stamm": "Stammtext, der für alle ihre Teilaufgaben gilt" }
-  ],
   "tasks": [
     {
       "name": "Eindeutiger Name (z.B. Aufgabe 1a)",
-      "hauptaufgabe": "Name aus \"hauptaufgaben\" oder null",
+      "hauptaufgabe": "Bezeichnung der Hauptaufgabe (z.B. Aufgabe 1) oder null",
+      "stamm": "Nur bei der ersten Teilaufgabe einer Hauptaufgabe: Text zwischen Überschrift der Hauptaufgabe und dieser Teilaufgabe. Sonst \"\".",
       "maxPoints": (Zahl),
       "content": "NUR der fachliche Inhalt (Frage & Antwort) dieser spezifischen Aufgabe.",
       "suggestGraph": (boolean),

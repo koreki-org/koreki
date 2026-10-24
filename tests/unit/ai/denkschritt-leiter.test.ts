@@ -42,7 +42,8 @@ const LEITER: [AIAction, boolean | 'modal'][] = [
     ['vision', false],
     ['anonymize', false],
     ['calc-trace-extraction', true],
-    ['clean-and-analyze', false],
+    // Seit 24.10.2026 wie im Modal: ohne Denkschritt fielen Stamm-Texte aus der Analyse.
+    ['clean-and-analyze', 'modal'],
     ['clean-and-map', false],
     ['variable-extraction', false],
     ['generate-graph', false],

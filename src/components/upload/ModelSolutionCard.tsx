@@ -256,7 +256,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             />
 
                             <AufgabenReiter namen={groupNames} aktiv={activeGroupName} onWaehle={setActiveGroupName} className="mb-2" />
-                            <HauptaufgabeStamm gruppe={groupedTasks[activeGroupName] ?? []} tasksLayout={tasksLayout} modelSolutionContext={modelSolutionContext} gesperrt={isLocked} onTasksChange={onTasksChange} onModelSolutionChange={onModelSolutionChange} />
+                            <HauptaufgabeStamm gruppe={groupedTasks[activeGroupName] ?? []} gruppenName={activeGroupName} tasksLayout={tasksLayout} modelSolutionContext={modelSolutionContext} gesperrt={isLocked} onTasksChange={onTasksChange} onModelSolutionChange={onModelSolutionChange} />
                             <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                 {activeGroupName && groupedTasks[activeGroupName]?.map((task) => {
                                     const originalIdx = tasksLayout.findIndex(t => t === task);

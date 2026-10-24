@@ -23,7 +23,10 @@ import type { Task } from '@/types';
  * Mitglieder gemeinsam ändert — damit kann er nicht auseinanderlaufen.
  */
 
-/** Was die Analyse liefert: je Hauptaufgabe ein Stamm, je Teilaufgabe der Name ihrer Hauptaufgabe. */
+/** Eine Aufgabe, wie die Analyse sie liefert — mit Rohfeldern für Hauptaufgabe und Stamm. */
+export type AnalyseAufgabe = Omit<Task, 'hauptaufgabe'> & { hauptaufgabe?: unknown; stamm?: unknown };
+
+/** Ältere Form der Analyse: Stämme als eigene Liste auf oberster Ebene. */
 export interface AnalyseHauptaufgabe {
     name?: unknown;
     stamm?: unknown;
@@ -34,20 +37,32 @@ const text = (wert: unknown): string => (typeof wert === 'string' ? wert.trim() 
 /**
  * Hängt die Stämme der Analyse an ihre Teilaufgaben.
  *
- * Die Analyse nennt den Stamm einmal und verweist aus jeder Teilaufgabe per Name
- * darauf. Eine Hauptaufgabe ohne Stamm oder ein Verweis ins Leere bleibt folgenlos —
- * die Teilaufgabe ist dann so wie vor dieser Erweiterung.
+ * Die Analyse schreibt den Stamm bei der ERSTEN Teilaufgabe seiner Hauptaufgabe
+ * (`stamm`), alle Teilaufgaben nennen ihre Hauptaufgabe (`hauptaufgabe`). WARUM
+ * DORT (24.10.2026): Die Analyse läuft ohne Denkschritt und schreibt ihr JSON in
+ * einem Zug von oben nach unten. Eine Stamm-Liste am Anfang verlangte, das ganze
+ * Dokument vorab nach Stämmen abzusuchen — Stämme mit Zahlen fand sie, erzählende
+ * Einleitungen ließ sie fallen. Bei der ersten Teilaufgabe steht der Stamm im
+ * Dokument direkt darüber.
+ *
+ * Die ältere Liste `hauptaufgaben` wird weiter gelesen, falls ein Modell sie liefert.
+ * Eine Hauptaufgabe ohne Stamm oder ein Verweis ins Leere bleibt folgenlos.
  */
-export function uebernimmHauptaufgaben(tasks: (Task & { hauptaufgabe?: unknown })[], hauptaufgaben: unknown): Task[] {
+export function uebernimmHauptaufgaben(tasks: AnalyseAufgabe[], hauptaufgaben?: unknown): Task[] {
     const staemme = new Map<string, string>();
+    for (const t of tasks) {
+        const name = text(t.hauptaufgabe);
+        const stamm = text(t.stamm);
+        if (name && stamm && !staemme.has(name)) staemme.set(name, stamm);
+    }
     if (Array.isArray(hauptaufgaben)) {
         for (const h of hauptaufgaben as AnalyseHauptaufgabe[]) {
             const name = text(h?.name);
             const stamm = text(h?.stamm);
-            if (name && stamm) staemme.set(name, stamm);
+            if (name && stamm && !staemme.has(name)) staemme.set(name, stamm);
         }
     }
-    return tasks.map(({ hauptaufgabe, ...rest }) => {
+    return tasks.map(({ hauptaufgabe, stamm: _roh, ...rest }) => {
         const name = text(hauptaufgabe);
         const stamm = staemme.get(name);
         return stamm ? { ...rest, hauptaufgabe: { name, stamm } } : rest;
@@ -65,6 +80,15 @@ export function hauptaufgabenVon(tasks: Task[]): { name: string; stamm: string }
         liste.push({ name: h.name, stamm: h.stamm });
     }
     return liste;
+}
+
+/**
+ * Legt für eine Gruppe von Teilaufgaben einen (zunächst leeren) Stamm an — für den
+ * Fall, dass die Analyse ihn übersehen hat. Die Lehrkraft trägt ihn dann selbst ein.
+ */
+export function legeStammAn(tasks: Task[], gruppe: Task[], name: string): Task[] {
+    const mitglieder = new Set(gruppe);
+    return tasks.map(t => (mitglieder.has(t) ? { ...t, hauptaufgabe: { name, stamm: '' } } : t));
 }
 
 /** Ändert den Stamm einer Hauptaufgabe — bei ALLEN ihren Teilaufgaben zugleich. */
