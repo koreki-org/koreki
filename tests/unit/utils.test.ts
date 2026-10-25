@@ -103,5 +103,20 @@ describe('Utils tests', () => {
             expect(exportedFile.file).toBeUndefined();
             expect(parsed.modelSolution).toBe('Musterlösung');
         });
+
+        it('schreibt den gemeinsamen Rahmen mit, den der Import wieder einliest', () => {
+            const { exportSessionToJson } = require('../../src/lib/utils');
+            const { useDashboardStore } = require('../../src/hooks/store/useDashboardStore');
+            useDashboardStore.getState().setModelSolutionContext('Szenario: smarte Thermostate');
+
+            let capturedData = '';
+            (global.Blob as any) = jest.fn().mockImplementation(([content]) => {
+                capturedData = content;
+                return { type: 'application/json' };
+            });
+
+            exportSessionToJson([], 'Musterlösung', []);
+            expect(JSON.parse(capturedData).modelSolutionContext).toBe('Szenario: smarte Thermostate');
+        });
     });
 });

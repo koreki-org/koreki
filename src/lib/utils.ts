@@ -4,6 +4,7 @@ import { extendTailwindMerge } from 'tailwind-merge';
 import { BatchFile } from '../types';
 import { downloadFile } from './file-utils';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
+import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 
 const customTwMerge = extendTailwindMerge({
     classGroups: {
@@ -38,6 +39,9 @@ export async function exportSessionToJson(
     const exportData: any = {
         version: '2.0',
         modelSolution,
+        // Der gemeinsame Rahmen steht nicht in den Aufgaben. Der Import las ihn schon
+        // immer ein, der Export schrieb ihn nie — nach dem Wiederladen fehlte er (25.10.2026).
+        modelSolutionContext: useDashboardStore.getState().modelSolutionContext,
         tasksLayout,
         batchFiles,
         timestamp: new Date().toISOString(),
