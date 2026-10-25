@@ -48,7 +48,7 @@ export function zeichneSchwaerzungsVorschau(
             ctx.fillStyle = isShared ? primary : '#0f172a';
             ctx.fillRect(r.x, r.y, r.w, r.h);
 
-            const label = isShared ? 'ALLE SCANS' : 'NUR HIER';
+            const label = isShared ? 'ALLE ARBEITEN' : 'NUR DIESE ARBEIT';
             ctx.font = `700 ${fontSize}px Inter, sans-serif`;
             const labelWidth = ctx.measureText(label).width;
 

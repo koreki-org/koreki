@@ -260,7 +260,7 @@ describe('useRedactionEngine - Industrial Hook Verification', () => {
             result.current.handlers.handleUndo();
         });
 
-        expect(result.current.state.allPageRects[0]).toEqual([]);
+        expect(result.current.state.allPageRects[0] ?? []).toEqual([]);
 
         // 5. Add a rect again, then Reset
         act(() => {
@@ -283,6 +283,6 @@ describe('useRedactionEngine - Industrial Hook Verification', () => {
             result.current.handlers.handleReset();
         });
 
-        expect(result.current.state.allPageRects[0]).toEqual([]);
+        expect(result.current.state.allPageRects[0] ?? []).toEqual([]);
     });
 });

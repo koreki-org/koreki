@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import * as pdfjs from 'pdfjs-dist';
 import { toPixelRects, toRelativeRects, verteileAufAlleBlaetter, RedactionRect as Rect, RedactionScope } from '../lib/privacy-utils';
 import { SEITEN_RENDER_FAKTOR } from '../lib/file-utils';
+import { useMitRueckgaengig } from './useMitRueckgaengig';
 
 // Configure worker to use local file
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
@@ -42,7 +43,9 @@ export const useRedactionEngine = (
 ) => {
     const [images, setImages] = useState<Record<number, HTMLImageElement>>({});
     const [currentPage, setCurrentPage] = useState(0);
-    const [allPageRects, setAllPageRects] = useState<Record<number, Rect[]>>({});
+    // Laden und Umrechnen ersetzen den Stand; nur Ziehen und Leeren sind Rückgängig-Schritte.
+    const { stand: allPageRects, aendere: aendereBalken, ersetze: setAllPageRects, rueckgaengig: handleUndo, kannRueckgaengig } =
+        useMitRueckgaengig<Record<number, Rect[]>>({});
     const [loading, setLoading] = useState(false);
     
     const [isDrawing, setIsDrawing] = useState(false);
@@ -208,28 +211,15 @@ export const useRedactionEngine = (
         const h = Math.abs(startPos.y - currentPos.y);
 
         if (w > 2 && h > 2) {
-            setAllPageRects(prev => aufAlleBlaetter
+            aendereBalken(prev => aufAlleBlaetter
                 ? verteileAufAlleBlaetter(prev, { x, y, w, h, scope }, currentPage, images)
                 : { ...prev, [currentPage]: [...(prev[currentPage] || []), { x, y, w, h, scope }] });
         }
     };
 
-    const handleUndo = () => {
-        setAllPageRects(prev => {
-            const pageRects = prev[currentPage] || [];
-            return {
-                ...prev,
-                [currentPage]: pageRects.slice(0, -1)
-            };
-        });
-    };
-
-    const handleReset = () => {
-        setAllPageRects(prev => ({
-            ...prev,
-            [currentPage]: []
-        }));
-    };
+    // Leert ALLE Blätter: Ein Balken liegt meist auf jedem Blatt, ein Leeren nur des
+    // sichtbaren ließe die übrigen unbemerkt stehen. Lässt sich zurücknehmen.
+    const handleReset = () => aendereBalken(prev => Object.values(prev).some(r => r?.length) ? {} : prev);
 
     // --- Final Anonymization Logic ---
     /**
@@ -291,7 +281,7 @@ export const useRedactionEngine = (
     };
 
     return {
-        state: { images, currentPage, setCurrentPage, allPageRects, loading, isDrawing, startPos, currentPos },
+        state: { images, currentPage, setCurrentPage, allPageRects, kannRueckgaengig, loading, isDrawing, startPos, currentPos },
         handlers: { handleStart, handleMove, handleEnd, handleUndo, handleReset, processAndAnonymize }
     };
 };

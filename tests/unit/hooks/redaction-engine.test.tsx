@@ -78,6 +78,6 @@ describe('useRedactionEngine (Industrial Math Tests) 🖋️📐', () => {
             result.current.handlers.handleUndo();
         });
 
-        expect(result.current.state.allPageRects[0]).toHaveLength(0);
+        expect(result.current.state.allPageRects[0] ?? []).toHaveLength(0);
     });
 });

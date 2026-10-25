@@ -27,7 +27,7 @@ export const SchwaerzungsUmfang: React.FC<SchwaerzungsUmfangProps> = ({
     if (blattAnzahl <= 1 && weitereArbeiten === 0) return null;
 
     return (
-        <div className="mt-4 pt-4 border-t border-primary/10 flex flex-col gap-3">
+        <div className="mt-3 pt-3 border-t border-primary/10 flex flex-wrap items-center gap-x-6 gap-y-2">
             {blattAnzahl > 1 && (
                 <label className="flex items-start gap-3 cursor-pointer select-none">
                     <Checkbox checked={aufAlleBlaetter} onChange={(e) => setAufAlleBlaetter(e.target.checked)} className="mt-0.5" />
@@ -46,7 +46,7 @@ export const SchwaerzungsUmfang: React.FC<SchwaerzungsUmfangProps> = ({
                     </span>
                 </label>
             )}
-            <span className="text-xs text-primary/70 font-medium leading-normal">
+            <span className="basis-full text-xs text-primary/70 font-medium leading-normal">
                 Die Haken gelten für Balken, die Du ab jetzt ziehst. Für eine einzelne Stelle — etwa einen Namen mitten in einer Antwort — vorher abwählen.
             </span>
         </div>

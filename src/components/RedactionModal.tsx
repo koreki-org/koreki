@@ -1,10 +1,10 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { zeichneSchwaerzungsVorschau } from '@/lib/redaction-preview';
-import { X, Trash2, Check, RotateCcw, ChevronLeft, ChevronRight, PenTool, Loader2, AlertTriangle } from 'lucide-react';
+import { X, Trash2, Check, RotateCcw, Hand, ChevronLeft, ChevronRight, PenTool, Loader2, AlertTriangle } from 'lucide-react';
 import { Button } from './ui/Button';
 import { SchwaerzungsUmfang } from './redaction/SchwaerzungsUmfang';
 import { useRedactionEngine } from '../hooks/useRedactionEngine';
-import { RedactionRectMap, RedactionScope, buildRedactionTemplate } from '../lib/privacy-utils';
+import { RedactionRectMap, RedactionScope } from '../lib/privacy-utils';
 import { meldeFehler } from '@/lib/notify';
 
 /**
@@ -55,7 +55,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
 
     // --- STAGE 8: INDUSTRIAL REDACTION ENGINE ---
     const { state, handlers } = useRedactionEngine(isOpen, file, pageRange, initialRects);
-    const { images, currentPage, setCurrentPage, allPageRects, loading, isDrawing, startPos, currentPos } = state;
+    const { images, currentPage, setCurrentPage, allPageRects, kannRueckgaengig, loading, isDrawing, startPos, currentPos } = state;
 
     const activeImage = images[currentPage];
     const rects = allPageRects[currentPage] || [];
@@ -92,10 +92,6 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
     // gesetztem Haken gezogen wurde, gilt als gemeinsame Vorlage.
     const drawScope: RedactionScope = applyToAllScans ? 'shared' : 'local';
 
-    // Was tatsächlich übertragen würde — vor dem Klick sichtbar, damit niemand
-    // versehentlich eine individuelle Stelle auf den ganzen Stapel legt.
-    const templateSize = buildRedactionTemplate(allPageRects).length;
-
     // 🏮 Nachträgliches Schwärzen entwertet eine bereits gelaufene Erkennung:
     // Der erkannte Text stammt vom ungeschwärzten Bild. Das kostet Credits und
     // manuelle Textkorrekturen — es gehört VOR den Klick, nicht danach.
@@ -129,7 +125,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
 
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center sm:p-4 bg-background/70 backdrop-blur-md animate-overlay-in" onClick={onClose}>
-            <div className="relative w-full max-w-[900px] h-full sm:h-auto sm:max-h-[90vh] flex flex-col bg-white sm:rounded-hero rounded-none p-4 sm:p-8 shadow-2xl border border-border animate-dialog-in mb-0" onClick={e => e.stopPropagation()}>
+            <div className="relative w-full max-w-[900px] h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto flex flex-col bg-white sm:rounded-hero rounded-none p-4 sm:p-8 shadow-2xl border border-border animate-dialog-in mb-0" onClick={e => e.stopPropagation()}>
 
                 <div className="flex justify-between items-center mb-4 sm:mb-6 w-full">
                     <div className="flex items-center gap-3 sm:gap-4">
@@ -162,7 +158,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                 </div>
 
                 {/* Info & Tool Selection */}
-                <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 mb-6">
+                <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 mb-4">
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <div className="min-w-0 text-sm text-primary leading-relaxed font-medium">
                             <p className="mb-1">Ziehe Rechtecke über die Stellen, die Du unkenntlich machen möchtest.</p>
@@ -175,7 +171,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                                 onClick={() => setTool('hand')}
                                 className={`flex h-auto items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${tool === 'hand' ? 'bg-primary text-white shadow-md hover:text-white hover:bg-primary' : 'text-muted-foreground hover:bg-foreground/5'}`}
                             >
-                                <RotateCcw size={14} className="rotate-45" /> Bewegen
+                                <Hand size={14} /> Bewegen
                             </Button>
                             <Button
                                 variant="ghost"
@@ -206,7 +202,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                 </div>
 
                 {/* Canvas Container */}
-                <div className="relative flex-1 min-h-[250px] overflow-auto bg-muted/10 rounded-xl p-2 sm:p-6 border border-border flex flex-col items-center shadow-inner scrollbar-thin">
+                <div className="relative flex-1 min-h-[140px] overflow-auto bg-muted/10 rounded-xl p-2 sm:p-6 border border-border flex flex-col items-center shadow-inner scrollbar-thin">
                     {loading && (
                         <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex flex-col items-center justify-center gap-4 rounded-xl">
                             <Loader2 size={40} className="text-primary animate-spin" />
@@ -225,62 +221,39 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                     />
                 </div>
 
-                {/* Legende — nur relevant, sobald es überhaupt zwei Herkünfte geben kann */}
-                {otherScanCount > 0 && rects.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-3 text-xxs font-bold text-muted-foreground">
-                        <span className="flex items-center gap-1.5">
-                            <span className="w-3 h-3 rounded-sm bg-primary shrink-0" /> Alle Arbeiten
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                            <span className="w-3 h-3 rounded-sm bg-foreground shrink-0" /> Nur diese Arbeit
-                        </span>
-                        <span className="italic font-medium opacity-70 hidden sm:inline">
-                            Im gespeicherten Dokument sind alle Balken schwarz.
-                        </span>
+                {/* Legende links, Seitenwahl rechts — die Seitenwahl stand in der Fußleiste und schob dort die Knöpfe übereinander (25.10.2026). */}
+                <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 mt-3 min-h-[32px]">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xxs font-bold text-muted-foreground">
+                        {otherScanCount > 0 && rects.length > 0 && (<>
+                            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-primary shrink-0" /> Alle Arbeiten</span>
+                            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-foreground shrink-0" /> Nur diese Arbeit</span>
+                            <span className="italic font-medium opacity-70 hidden sm:inline">Im gespeicherten Dokument sind alle Balken schwarz.</span>
+                        </>)}
                     </div>
-                )}
-
-                {/* Footer Actions
-                    🏮 Erst ab `lg` einreihig: Undo/Reset, Seitenwahl und die Aktionen sind
-                    allesamt `flex-none` und können daher nicht unter ihre Inhaltsbreite
-                    schrumpfen (zusammen ~675px). Der Modal-Innenraum misst aber nur
-                    `min(vw-32, 900) - 64` — unter ~771px Viewport lief der rechte Block
-                    deshalb aus dem Modal heraus und wurde abgeschnitten. */}
-                <div className="flex flex-wrap lg:flex-nowrap justify-between items-center mt-4 sm:mt-6 gap-3 sm:gap-4 border-t border-border pt-4 sm:pt-6">
-                    <div className="flex gap-2 w-full sm:w-auto">
-                        <Button variant="outline" onClick={handlers.handleUndo} disabled={rects.length === 0} className="flex-1 sm:flex-none h-9 sm:h-10 px-3 sm:px-4 gap-2 text-xs sm:text-sm">
-                            <RotateCcw size={16} /> Undo
-                        </Button>
-                        <Button variant="outline" onClick={handlers.handleReset} disabled={rects.length === 0} className="flex-1 sm:flex-none h-9 sm:h-10 px-3 sm:px-4 gap-2 text-xs sm:text-sm text-destructive hover:bg-destructive/10 border-destructive/20">
-                            <Trash2 size={16} /> Reset
-                        </Button>
-                    </div>
-
                     {Object.keys(images).length > 1 && (
-                        <div className="flex items-center justify-center gap-2 sm:gap-3 bg-muted/30 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-border shadow-sm order-first lg:order-none w-full lg:w-auto">
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-auto p-1.5 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-lg disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-                                onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
-                                disabled={currentPage === 0}
-                            >
-                                <ChevronLeft size={20} />
+                        <div className="flex items-center gap-1 ml-auto">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setCurrentPage(p => Math.max(0, p - 1))} disabled={currentPage === 0} title="Vorheriges Blatt">
+                                <ChevronLeft size={18} />
                             </Button>
-                            <span className="text-sm font-semibold text-foreground min-w-[80px] text-center">
-                                Seite {currentPage + 1} / {Object.keys(images).length}
-                            </span>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-auto p-1.5 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-lg disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
-                                onClick={() => setCurrentPage(p => Math.min(Object.keys(images).length - 1, p + 1))}
-                                disabled={currentPage === Object.keys(images).length - 1}
-                            >
-                                <ChevronRight size={20} />
+                            <span className="text-sm font-semibold text-foreground min-w-[80px] text-center">Blatt {currentPage + 1} / {Object.keys(images).length}</span>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground" onClick={() => setCurrentPage(p => Math.min(Object.keys(images).length - 1, p + 1))} disabled={currentPage === Object.keys(images).length - 1} title="Nächstes Blatt">
+                                <ChevronRight size={18} />
                             </Button>
                         </div>
                     )}
+                </div>
+
+                {/* Footer Actions — die Leinwand oben schrumpft, damit diese Leiste sichtbar bleibt (25.10.2026). */}
+                <div className="flex flex-wrap justify-between items-center mt-3 sm:mt-4 gap-3 sm:gap-4 border-t border-border pt-4 sm:pt-6">
+                    <div className="flex gap-2 w-full sm:w-auto">
+                        <Button variant="outline" onClick={handlers.handleUndo} disabled={!kannRueckgaengig} className="flex-1 sm:flex-none h-9 sm:h-10 px-3 sm:px-4 gap-2 text-xs sm:text-sm">
+                            <RotateCcw size={16} /> Rückgängig
+                        </Button>
+                        <Button variant="outline" onClick={handlers.handleReset} disabled={!Object.values(allPageRects).some(r => r?.length)} title="Entfernt die Balken auf allen Blättern" className="flex-1 sm:flex-none h-9 sm:h-10 px-3 sm:px-4 gap-2 text-xs sm:text-sm text-destructive hover:bg-destructive/10 border-destructive/20">
+                            <Trash2 size={16} /> Alle entfernen
+                        </Button>
+                    </div>
+
 
                     <div className="flex gap-3 w-full sm:w-auto justify-end">
                         <Button variant="outline" onClick={onClose} className="h-10 px-5 font-semibold hidden sm:flex">
@@ -288,9 +261,7 @@ const RedactionModal: React.FC<RedactionModalProps> = ({ isOpen, onClose, onSave
                         </Button>
                         <Button onClick={() => void anwenden()} disabled={loading || Object.keys(images).length === 0} className="h-10 px-6 font-bold flex-1 sm:flex-none shadow-lg gap-2">
                             <Check size={18} />
-                            {applyToAllScans
-                                ? `${templateSize} Balken auf ${otherScanCount + 1} Arbeiten`
-                                : 'Schwärzen anwenden'}
+                            {applyToAllScans ? `Auf alle ${otherScanCount + 1} Arbeiten anwenden` : 'Schwärzen anwenden'}
                         </Button>
                     </div>
                 </div>
