@@ -3,7 +3,7 @@ title: "Industrial OCR Integrity Standards"
 description: "Architektur und Protokolle zur Sicherstellung der 100%igen Transkriptions-Treue bei pädagogischen Scans."
 author: "@principal_architect"
 date: "2026-04-14"
-last_updated: "2026-06-10"
+last_updated: "2026-10-30"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -136,7 +136,9 @@ messages = [
 
 **Root Cause:** Die visuellen Merkmale von Buchstaben in Kursivschrift sind mehrdeutig. Das Modell wählt die statistisch wahrscheinlichste Wort-Interpretation und hat keinen Mechanismus zur Selbst-Überprüfung.
 
-**Architektonische Entscheidung:** Der `(?)`-Marker wird NICHT in der Vision-Schicht gesetzt, sondern ausschließlich in der `clean-and-map` Phase. Dies folgt dem **Single Responsibility Principle (SRP)**: Vision = reiner Sensor, Mapping = intelligente Analyse mit Konfidenz-Bewertung.
+**Verschärfte Form (gemessen 2026-10-30, Qwen 3.8):** Bei schwieriger Handschrift liefert das Modell flüssigen, plausiblen Text, den der Schüler nie geschrieben hat, ohne Marke (z. B. „die der Sensor erfasst" statt „die der Subscriber bekommt"). Das ist gefährlicher als sichtbarer Unsinn, weil die Lehrkraft es nicht bemerkt. Weder niedrigere Temperatur noch eine schärfere Anweisung („nur gesehene Buchstaben, sonst `(?)`") haben daran etwas geändert; die Anweisung wurde deshalb nicht übernommen.
+
+**Marker:** Der `(?)`-Marker wird in zwei Stufen gesetzt: Die Vision-Schicht markiert, was sie als unsicher erkennt, die `clean-and-map` Phase ergänzt Marken, die erst im Zusammenhang auffallen. (Hier stand, die Vision-Schicht setze keine Marker. Das gilt seit dem Punkt „Unsicherheitsmarke" in `vision/system.md` nicht mehr.)
 
 **Mitigation:** OCR-Verifikations-Screen + Confidence-Brake in der Korrektur-Phase.
 

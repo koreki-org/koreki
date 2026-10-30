@@ -66,7 +66,7 @@ describe('Die beiden Rollen sind getrennt', () => {
 });
 
 describe('Die Betriebsanleitung trennt beide Rollen', () => {
-    const anleitung = lies('src/legal/betriebsanleitung_v1.5.md');
+    const anleitung = lies('src/legal/betriebsanleitung_v1.6.md');
     const abschnittEins = anleitung.slice(anleitung.indexOf('## 1.'), anleitung.indexOf('## 2.'));
 
     it('nennt Anbieter und Betreiber getrennt', () => {
