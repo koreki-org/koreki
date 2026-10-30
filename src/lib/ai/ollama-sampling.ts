@@ -1,6 +1,6 @@
 import type { AppSettings } from '../../types';
 import type { AIAction } from './prompt-dispatch';
-import { FREETEXT_TEMPERATURE_MINIMUM, TEMPERATURE_MINIMUM, TOP_P_DEFAULT, VISION_TEMPERATURE_MINIMUM } from './temperature-guidance';
+import { FREETEXT_TEMPERATURE_MINIMUM, TEMPERATURE_MINIMUM, TOP_P_DEFAULT, visionTemperaturUntergrenze } from './temperature-guidance';
 import { denktBeiAktion, STRUKTUR_AKTIONEN } from './denkschritt';
 
 /**
@@ -134,6 +134,12 @@ export interface SamplingParameter {
     maxTokens: number;
     /** Was im Feld `think` an Ollama geht. */
     think: boolean;
+    /**
+     * Beim Abschreiben ist Wiederholung normal; die Bremse draengt das Modell dort
+     * zu anderen Woertern. Qwen liest deshalb ohne sie (siehe
+     * `visionTemperaturUntergrenze`), andere Modelle brauchen sie gegen Schleifen.
+     */
+    repeatPenalty: number;
     art: ModellArt;
 }
 
@@ -256,7 +262,7 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
     // ─── Stabilitaetsboden ───────────────────────────────────────────────────
     // Nicht die paedagogische Regel, sondern der Schutz vor Endlosschleifen.
     if (isVision) {
-        if (targetTemp < VISION_TEMPERATURE_MINIMUM) targetTemp = VISION_TEMPERATURE_MINIMUM;
+        targetTemp = Math.max(targetTemp, visionTemperaturUntergrenze('ollama', e.model));
     } else {
         // Freitext zuerst: Dort wiederholt Qwen bei <= 0.1 ganze Absaetze, bis der
         // Puffer voll ist. In strukturierter Ausgabe haelt das Schema dagegen — es
@@ -307,5 +313,6 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
         ? Math.min(targetMaxTokens, Math.max(1000, numCtx - estimatedTextTokens - imageTokens))
         : targetMaxTokens;
 
-    return { temperature: targetTemp, topP: targetTopP, numCtx, maxTokens, think, art };
+    const repeatPenalty = isVision ? (isQwen ? 1.0 : 1.2) : 1.15;
+    return { temperature: targetTemp, topP: targetTopP, numCtx, maxTokens, think, repeatPenalty, art };
 }

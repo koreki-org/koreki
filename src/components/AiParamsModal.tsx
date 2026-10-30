@@ -7,6 +7,8 @@ import { downloadFile } from '@/lib/file-utils';
 // Sub-Components
 import { AiProfileSidebar } from './settings/AiProfileSidebar';
 import { AiProfileEditor } from './settings/AiProfileModules';
+import { visionTemperaturUntergrenze } from '@/lib/ai/temperature-guidance';
+import { aktivesModell } from '@/lib/ai/gepruefte-konfiguration';
 
 // Hooks
 import { useAiProfiles } from '../hooks/useAiProfiles';
@@ -195,6 +197,7 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                             setVisionPresencePenalty={setVisionPresencePenalty}
                             
                             provider={settings.provider}
+                            visionMinimum={visionTemperaturUntergrenze(settings.provider, aktivesModell(settings))}
                             ollamaNumCtx={ollamaNumCtx}
                             setOllamaNumCtx={setOllamaNumCtx}
                         />

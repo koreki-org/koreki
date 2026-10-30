@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { FloatingActions } from '@/components/ui/FloatingActions';
 import { cn } from '@/lib/utils';
 import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
-import { describeTemperature, TEMPERATURE_MINIMUM, TOP_P_DEFAULT, VISION_TEMPERATURE_MINIMUM } from '@/lib/ai/temperature-guidance';
+import { describeTemperature, TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from '@/lib/ai/temperature-guidance';
 import { ParameterSlider } from './ParameterSlider';
 
 
@@ -45,7 +45,7 @@ interface EditorProps {
     visionPresencePenalty: number;
     setVisionPresencePenalty: (v: number) => void;
 
-    provider?: string;
+    provider?: string; visionMinimum?: number;
     ollamaNumCtx: number;
     setOllamaNumCtx: (v: number) => void;
 }
@@ -63,7 +63,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
     visionTopP, setVisionTopP,
     visionMaxTokens, setVisionMaxTokens,
     visionPresencePenalty, setVisionPresencePenalty,
-    provider,
+    provider, visionMinimum = 0,
     ollamaNumCtx,
     setOllamaNumCtx
 }) => {
@@ -253,15 +253,15 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                             <ParameterSlider
                                 label="Vision Temperatur"
                                 tooltipTitle="Vision Temperatur"
-                                tooltipContent="Steuert die Temperatur speziell für die Handschriften-Erkennung (OCR). Werte nahe 0.4 werden erzwungen, um lokale Schleifen bei unklaren Schriftzeichen zu verhindern."
+                                tooltipContent="Steuert die Temperatur speziell für die Handschriften-Erkennung (OCR). Für Qwen ist 0 am besten. Andere lokale Modelle brauchen mindestens 0.4, sonst bleiben sie bei unklaren Schriftzeichen hängen."
                                 value={visionTemperature}
                                 onChange={setVisionTemperature}
-                                min={istLokalerAnbieter ? String(VISION_TEMPERATURE_MINIMUM) : "0.0"}
+                                min={visionMinimum.toFixed(1)}
                                 max="2.0"
                                 step="0.1"
                                 decimals={1}
                                 description={describeTemperature(visionTemperature, 'vision')}
-                                defaultHint={istLokalerAnbieter ? String(VISION_TEMPERATURE_MINIMUM) : "0.0"}
+                                defaultHint={visionMinimum.toFixed(1)}
                             />
 
                             <ParameterSlider

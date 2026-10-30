@@ -3,7 +3,7 @@ title: "Unified AI Provider Infrastructure & Reasoning Mode"
 description: "Dokumentation der provider-agnostischen KI-Architektur, des Qwen 3.6 'Thinking Mode' und der tier-spezifischen Konfigurationslogik."
 author: "@principal_architect"
 date: "2026-04-30"
-last_updated: "2026-10-24"
+last_updated: "2026-10-30"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -69,7 +69,7 @@ Koreki optimiert die Inferenz-Parameter automatisch, sobald der **Thinking Mode*
     *   **Eine Quelle, keine Kopien:** Untergrenzen und Standardwerte stehen als Konstanten in [temperature-guidance.ts](../../src/lib/ai/temperature-guidance.ts). Oberfläche, beide Provider und der Prompt-Bau beziehen sie von dort. Zeigt der Regler eine Zahl an, die der Server anschließend anhebt, zählt die Oberfläche etwas an, das nie ankommt — genau dieser Zustand bestand vorher an drei Parametern gleichzeitig.
     *   **Korrektur:** `0.1`, zugleich Untergrenze. Kein providerspezifischer Sonderwert mehr — der OpenAI-Weg setzte hier bis dahin eigenmächtig `0.6`, sobald Thinking aktiv war.
     *   **Zweitmeinung:** Untergrenze `0.2`. Die einzige Aktion, die in Prosa antwortet; dort kann die Wiederholungsschleife tatsächlich auftreten, weil kein Schema die Ausgabe zum Ende zwingt.
-    *   **Bilderkennung:** Untergrenze `0.4` bei lokalen Modellen.
+    *   **Bilderkennung:** Untergrenze `0.4` bei lokalen Modellen, außer bei Qwen (seit 30.10.2026). Qwen liest mit Temperatur `0` und `repeat_penalty` `1.0` messbar besser (`qwen3.8` 9,4 % → 6,9 % Wortfehler, `qwen3.6` 13,4 % → 8,4 %; 27 Seiten ohne Hänger). `gemma4:12b` lief ohne Untergrenze in die Zeitgrenze und wiederholte Zeilen, deshalb bleiben dort `0.4` und `1.2`. Berechnung, Hook und Regler lesen dieselbe Funktion `visionTemperaturUntergrenze`. Gespeicherte Profile behalten ihren Wert; das Standard-Profil steht auf `0`. Auf dem Desktop geht die Bremse nur beim Lesen mit, für die Bewertung gilt dort weiter die Vorgabe von Ollama.
     *   **Kein modellspezifischer Boden mehr:** Der frühere Aufschlag für Gemma/MoE (`0.5`) ist entfallen. Er schützte vor derselben Schleife, traf aber auch die strukturierte Korrektur, wo sie nicht entstehen kann — und kostete dort Reproduzierbarkeit.
 
     > [!WARNING]

@@ -113,7 +113,7 @@ export async function executeOllamaRequest(
     }
 
     // 1.5. Sampling-Parameter — die Rechnung dahinter steht in ./ollama-sampling
-    const { temperature: targetTemp, topP: targetTopP, numCtx, maxTokens: finalMaxTokens, think: thinkValue, art } =
+    const { temperature: targetTemp, topP: targetTopP, numCtx, maxTokens: finalMaxTokens, think: thinkValue, repeatPenalty, art } =
         berechneSamplingParameter({
             action,
             model,
@@ -149,6 +149,9 @@ export async function executeOllamaRequest(
                 temperature: targetTemp,
                 topP: targetTopP,
                 numPredict: finalMaxTokens,
+                // Nur beim Lesen: Fuer die Bewertung gilt hier weiter Ollamas Vorgabe,
+                // sie zu aendern hiesse neu messen.
+                repeatPenalty: isVision ? repeatPenalty : undefined,
                 think: thinkValue
             });
 
@@ -238,7 +241,7 @@ export async function executeOllamaRequest(
                     temperature: targetTemp,
                     top_p: targetTopP,
                     num_predict: finalMaxTokens,
-                    repeat_penalty: isVision ? 1.2 : 1.15,
+                    repeat_penalty: repeatPenalty,
                     presence_penalty: settings.presencePenalty ?? 0.0,
                     // Gleiche Eingabe, gleiche Ausgabe — siehe SAMPLING_SEED.
                     ...(nutztFestenStartwert(action) ? { seed: SAMPLING_SEED } : {})

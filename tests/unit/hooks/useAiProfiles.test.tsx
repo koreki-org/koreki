@@ -74,6 +74,18 @@ describe('useAiProfiles Hook 🧪🛡️', () => {
         expect(resultOpenAI.current.visionTemperature).toBe(VISION_TEMPERATURE_MINIMUM);
     });
 
+    /** 30.10.2026: Qwen liest ohne Untergrenze besser — gemessen, siehe temperature-guidance.ts. */
+    it('laesst die Vision-Temperatur bei Qwen auf 0', () => {
+        mockSettings.provider = 'ollama';
+        mockSettings.ollamaModel = 'qwen3.8:27b-mtp-q4_K_M';
+        mockSettings.temperature = 0.0;
+        mockSettings.visionTemperature = 0.0;
+
+        const { result } = renderHook(() => useAiProfiles(mockSettings, mockOnSave, mockOnClose));
+        expect(result.current.visionTemperature).toBe(0);
+        delete mockSettings.ollamaModel;
+    });
+
     it('should NOT clamp temperature for other providers', () => {
         mockSettings.provider = 'mistral';
         mockSettings.temperature = 0.0;

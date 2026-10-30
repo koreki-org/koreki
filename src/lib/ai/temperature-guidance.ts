@@ -78,6 +78,25 @@ export const TOP_P_DEFAULT = 0.95;
 export const VISION_TEMPERATURE_MINIMUM = 0.4;
 
 /**
+ * Untergrenze fuer die Bilderkennung bei diesem Anbieter und Modell — die EINE
+ * Quelle fuer Berechnung, Hook und Regler im Intelligenz-Modal.
+ *
+ * Qwen braucht sie nicht. Gemessen am 30.10.2026 an einer echten Klassenarbeit
+ * (Referenz: 4 Seiten von Hand abgeschrieben, Fehler je Wort): `qwen3.8` 9,4 % mit
+ * Temperatur 0.4 und `repeat_penalty` 1.2, 6,9 % mit 0 und 1.0, dazu weniger frei
+ * Erfundenes; `qwen3.6` 13,4 % gegen 8,4 %. Alle 27 beschriebenen Seiten liefen bei
+ * beiden Modellen ohne Haenger durch.
+ *
+ * Fuer andere lokale Modelle bleibt sie: `gemma4:12b` lief ohne sie auf einer
+ * Seite in die Zeitgrenze und wiederholte auf einer anderen eine Zeile fuenfmal.
+ */
+export function visionTemperaturUntergrenze(anbieter: string | undefined, modell: string | undefined): number {
+    const lokal = anbieter === 'ollama' || anbieter === 'openai-compatible';
+    if (!lokal || (modell ?? '').toLowerCase().includes('qwen')) return 0;
+    return VISION_TEMPERATURE_MINIMUM;
+}
+
+/**
  * Beschreibt, was ein Temperaturwert praktisch bedeutet.
  *
  * Die Schwellen sind bewusst unterschiedlich: bei der Texterkennung geht es um

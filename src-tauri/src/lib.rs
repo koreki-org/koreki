@@ -13,6 +13,8 @@ struct OllamaOptions {
     top_p: Option<f32>,
     #[serde(skip_serializing_if = "Option::is_none")]
     num_predict: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    repeat_penalty: Option<f32>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -183,6 +185,7 @@ async fn execute_ollama_command(
     temperature: Option<f32>,
     top_p: Option<f32>,
     num_predict: Option<i32>,
+    repeat_penalty: Option<f32>,
     think: Option<bool>,
 ) -> Result<String, String> {
     let mut messages = Vec::new();
@@ -203,6 +206,7 @@ async fn execute_ollama_command(
             temperature,
             top_p,
             num_predict,
+            repeat_penalty,
         }),
     };
 

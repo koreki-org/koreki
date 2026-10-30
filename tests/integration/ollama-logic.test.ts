@@ -28,6 +28,22 @@ describe('Ollama Provider - Layer 2 Integration Tests', () => {
         mockIsDesktopTarget.mockReturnValue(true);
     });
 
+    /** 30.10.2026: Der Desktop-Weg trug die Bremse nicht — die Messung haette dort nicht gegolten. */
+    it('schickt die Wiederholungsbremse auf dem Desktop nur beim Lesen mit', async () => {
+        mockInvoke.mockResolvedValue('{"status": "success"}');
+        const qwen = { ...mockSettings, ollamaModel: 'qwen3.8:27b-mtp-q4_K_M' };
+
+        await executeOllamaRequest('vision', { promptText: 'Test', images: ['aGFsbG8='] } as any, qwen as any);
+        expect(mockInvoke).toHaveBeenLastCalledWith('execute_ollama_command', expect.objectContaining({
+            repeatPenalty: 1.0
+        }));
+
+        await executeOllamaRequest('correction', { promptText: 'Test' } as any, qwen as any);
+        expect(mockInvoke).toHaveBeenLastCalledWith('execute_ollama_command', expect.objectContaining({
+            repeatPenalty: undefined
+        }));
+    });
+
     it('should correctly map the Mistral Instruct model and enable JSON mode', async () => {
         mockInvoke.mockResolvedValueOnce('{"status": "success"}');
 
