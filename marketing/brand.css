@@ -118,6 +118,8 @@ h1 {
     font-family: 'Outfit', sans-serif; font-weight: 800;
     font-size: 90px; line-height: 0.98; letter-spacing: -0.038em;
 }
+/* Fuer Posts mit kurzer Botschaft, die sonst eine halbe Flaeche leer liessen */
+h1.xl { font-size: 160px; line-height: 0.95; }
 h1.m { font-size: 84px; }
 h1.s { font-size: 74px; }
 h1.xs { font-size: 62px; line-height: 1.02; }
@@ -258,6 +260,11 @@ h1.xs { font-size: 62px; line-height: 1.02; }
 .b2 { background: linear-gradient(140deg, #60A5FA, #2563EB); }
 .b3 { background: linear-gradient(140deg, #C084FC, #9333EA); }
 .mode p { font-size: 23px; line-height: 1.35; color: var(--muted); }
+/* Grosse Fassung fuer Posts, in denen die Liste die Hauptaussage traegt */
+.modes.lg { gap: 20px; }
+.modes.lg .mode { padding: 34px 36px; gap: 24px; }
+.modes.lg .badge { min-width: 220px; font-size: 24px; padding: 11px 22px; }
+.modes.lg .mode p { font-size: 26px; }
 .mode p b { color: var(--ink); font-weight: 600; }
 
 /* Kernaussage am Fuss eines Haltungs-Posts */
