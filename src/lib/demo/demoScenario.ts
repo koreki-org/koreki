@@ -72,7 +72,7 @@ export function buildDemoScenario(): DemoScenario {
             name: "Aufgabe 1",
             maxPoints: 3,
             taskType: 'calc-trace',
-            content: `### Aufgabe 1: Energieertrag der Solaranlage (AFB I) (3 P) ###\nFragestellung: Die Schule plant eine Photovoltaikanlage auf dem Dach der Sporthalle. Berechne den zu erwartenden jährlichen Energieertrag E. Gegeben: Modulfläche A = 40 m², Wirkungsgrad η = 20 % (0,2), mittlere Jahres-Sonneneinstrahlung H = 1200 kWh/m². Nutze die Formel E = A · η · H.\n\nMusterlösung: E = A · η · H = 40 m² · 0,2 · 1200 kWh/m² = 9600 kWh. Bewertung: 1 P Formel, 1 P Rechenweg, 1 P Ergebnis.`,
+            content: `Thema: Energieertrag der Solaranlage (AFB I), 3 P\nFragestellung: Die Schule plant eine Photovoltaikanlage auf dem Dach der Sporthalle. Berechne den zu erwartenden jährlichen Energieertrag E. Gegeben: Modulfläche A = 40 m², Wirkungsgrad η = 20 % (0,2), mittlere Jahres-Sonneneinstrahlung H = 1200 kWh/m². Nutze die Formel E = A · η · H.\n\nMusterlösung: E = A · η · H = 40 m² · 0,2 · 1200 kWh/m² = 9600 kWh. Bewertung: 1 P Formel, 1 P Rechenweg, 1 P Ergebnis.`,
             targetGoal: {
                 targetValue: '9600',
                 maxPoints: 3,
@@ -88,12 +88,12 @@ export function buildDemoScenario(): DemoScenario {
         {
             name: "Aufgabe 2",
             maxPoints: 6,
-            content: `### Aufgabe 2: Wirtschaftlichkeit der Anlage (AFB II) (6 P) ###\nFragestellung: Erläutere, warum sich die Investition in eine eigene Solaranlage für die Schule langfristig lohnen kann.\n\nMusterlösung: Erwartet wird eine begründete Erläuterung ökonomischer und pädagogischer Vorteile.\n- Kernmechanismus (2P): Der Nutzen entsteht vor allem durch Eigenverbrauch — die Schule muss weniger teuren Strom vom Netzbetreiber zukaufen, statt mit der Einspeisevergütung Gewinn zu erzielen (diese liegt heute unter dem Bezugspreis, nicht darüber).\n- Weiterer Vorteil (2P): Die Schule macht sich unabhängiger von steigenden Strompreisen — oder: Der Verkauf überschüssigen Stroms bringt weniger ein als der vermiedene Zukauf und trägt deshalb nur ergänzend bei.\n- Pädagogischer Nutzen (2P): Die Schule wirkt als Vorbild, und die Schülerinnen und Schüler lernen im Unterricht an der eigenen Anlage.`
+            content: `Thema: Wirtschaftlichkeit der Anlage (AFB II), 6 P\nFragestellung: Erläutere, warum sich die Investition in eine eigene Solaranlage für die Schule langfristig lohnen kann.\n\nMusterlösung: Erwartet wird eine begründete Erläuterung ökonomischer und pädagogischer Vorteile.\n- Kernmechanismus (2P): Der Nutzen entsteht vor allem durch Eigenverbrauch — die Schule muss weniger teuren Strom vom Netzbetreiber zukaufen, statt mit der Einspeisevergütung Gewinn zu erzielen (diese liegt heute unter dem Bezugspreis, nicht darüber).\n- Weiterer Vorteil (2P): Die Schule macht sich unabhängiger von steigenden Strompreisen — oder: Der Verkauf überschüssigen Stroms bringt weniger ein als der vermiedene Zukauf und trägt deshalb nur ergänzend bei.\n- Pädagogischer Nutzen (2P): Die Schule wirkt als Vorbild, und die Schülerinnen und Schüler lernen im Unterricht an der eigenen Anlage.`
         },
         {
             name: "Aufgabe 3",
             maxPoints: 6,
-            content: `### Aufgabe 3: Symbolwert vs. echter Klimaeffekt (AFB III) (6 P) ###\nFragestellung: Setze dich kritisch mit der Aussage auseinander: „Eine einzelne Solaranlage auf einem Schuldach ändert am Klimawandel gar nichts.“\n\nMusterlösung: Erwartet wird eine kritische Auseinandersetzung mit der Aussage.\n- Pro (2P): Der CO2-Beitrag einer einzelnen Anlage ist im Vergleich zu globalen Emissionen verschwindend gering.\n- Contra (2P): Symbol- und Vorbildwirkung sowie Bildungseffekt bei Schüler:innen — bzw. Skaleneffekt, wenn andere Schulen nachziehen.\n- Fazit (2P): Eine begründete Abwägung, die zeigt, dass der unmittelbare Klimaeffekt klein, der mittelbare Effekt (Bildung, Vorbild) aber relevant sein kann.`
+            content: `Thema: Symbolwert vs. echter Klimaeffekt (AFB III), 6 P\nFragestellung: Setze dich kritisch mit der Aussage auseinander: „Eine einzelne Solaranlage auf einem Schuldach ändert am Klimawandel gar nichts.“\n\nMusterlösung: Erwartet wird eine kritische Auseinandersetzung mit der Aussage.\n- Pro (2P): Der CO2-Beitrag einer einzelnen Anlage ist im Vergleich zu globalen Emissionen verschwindend gering.\n- Contra (2P): Symbol- und Vorbildwirkung sowie Bildungseffekt bei Schüler:innen — bzw. Skaleneffekt, wenn andere Schulen nachziehen.\n- Fazit (2P): Eine begründete Abwägung, die zeigt, dass der unmittelbare Klimaeffekt klein, der mittelbare Effekt (Bildung, Vorbild) aber relevant sein kann.`
         }
     ];
 
