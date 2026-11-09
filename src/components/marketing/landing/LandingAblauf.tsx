@@ -38,7 +38,7 @@ export const LandingAblauf: React.FC = () => (
             />
             <div className={cn(NACH_KOPF, RASTER, "md:grid-cols-3")}>
                 {schritte.map((s) => (
-                    <div key={s.nr} className="bg-card rounded-2xl shadow-card overflow-hidden flex flex-col">
+                    <div key={s.nr} className="bg-card rounded-2xl shadow-raised overflow-hidden flex flex-col">
                         {/* Ausschnitt statt Miniatur: links oben, gross genug zum Lesen */}
                         <div className="relative h-52 bg-background overflow-hidden border-b border-border/60">
                             <Produktbild

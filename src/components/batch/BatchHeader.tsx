@@ -67,7 +67,15 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
     const kosten = (n: number) => zeigtCredits(isPureMode) ? ` (${n} Credits)` : '';
 
     return (
-        <CardHeader className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6">
+        // `sticky`: Die Kopfzeile traegt die Knoepfe, mit denen man den Stapel
+        // startet und ausgibt. Seit die Liste nicht mehr selbst rollt, wuerden sie
+        // bei dreissig Arbeiten nach oben aus dem Bild wandern — man hakt unten an
+        // und muesste zum Starten zurueckrollen.
+        //
+        // Deckend, aber OHNE Trennlinie: Die Zeilen darunter stehen auf
+        // rgb(243,244,246), die Karte auf Weiss — zwoelf Punkte, die Flaeche trennt
+        // bereits. Eine Haarlinie waere ein zweites Mittel fuer dieselbe Aussage.
+        <CardHeader className="sticky top-0 z-20 rounded-t-hero bg-card flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6">
             <div>
                 <CardTitle className="text-2xl flex items-center gap-3">
                     Stapelverarbeitung
@@ -177,8 +185,8 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                     <span>Exportieren</span>
                                 </Button>
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:flex flex-col items-center z-50 animate-overlay-in pointer-events-none">
-                                    <div className="w-2.5 h-2.5 bg-white/95 border-l border-t border-border rotate-45 -mb-1.5 z-40"></div>
-                                    <div className="bg-white/95 backdrop-blur-md border border-border px-3.5 py-2 rounded-2xl shadow-xl whitespace-nowrap text-xs font-bold text-primary">
+                                    <div className="w-2.5 h-2.5 bg-card border-l border-t border-border rotate-45 -mb-1.5 z-40"></div>
+                                    <div className="bg-card border border-border px-3.5 py-2 rounded-2xl shadow-xl whitespace-nowrap text-xs font-bold text-primary">
                                         Schülerlösung als Zwischenstand exportieren (.koreki)
                                     </div>
                                 </div>
@@ -197,8 +205,8 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                     <Info size={14} className="opacity-60 shrink-0" />
                                 </Button>
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:flex flex-col items-center z-50 animate-overlay-in pointer-events-none">
-                                    <div className="w-2.5 h-2.5 bg-white/95 border-l border-t border-border rotate-45 -mb-1.5 z-40"></div>
-                                    <div className="bg-white/95 backdrop-blur-md border border-border px-3.5 py-2 rounded-2xl shadow-xl whitespace-nowrap text-xs font-bold text-primary">
+                                    <div className="w-2.5 h-2.5 bg-card border-l border-t border-border rotate-45 -mb-1.5 z-40"></div>
+                                    <div className="bg-card border border-border px-3.5 py-2 rounded-2xl shadow-xl whitespace-nowrap text-xs font-bold text-primary">
                                         Ohne PDFs (beim Import nachladbar)
                                     </div>
                                 </div>

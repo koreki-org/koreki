@@ -1,4 +1,4 @@
-import React, { ChangeEvent } from 'react';
+import React from 'react';
 import { Task, AppSettings, TasksLayoutSetter } from '../types';
 
 // Sub-Components
@@ -11,8 +11,9 @@ interface UploadGridProps {
     batchFilesCount: number;
     tasksLayout: Task[];
     extractingLayout: boolean;
-    onModelUpload: (e: ChangeEvent<HTMLInputElement>) => void;
-    onStudentUpload: (e: ChangeEvent<HTMLInputElement>) => void;
+    /** Die Dateien selbst — ob geklickt oder abgelegt, geht das Gitter nichts an. */
+    onModelUpload: (dateien: File[]) => void;
+    onStudentUpload: (dateien: File[]) => void;
     onReExtractLayout: () => void;
     onModelSolutionChange?: (newVal: string) => void;
     onModelSolutionContextChange?: (newVal: string) => void;

@@ -1,19 +1,21 @@
-import { useCallback, ChangeEvent } from 'react';
+import { useCallback } from 'react';
 import { BatchFile, Task, AppSettings } from '../../types';
-import { reindexBatchFiles, calculatePercentageFromTasks, calculateGrade } from '../../lib/logic';
+import { reindexBatchFiles, fuegeArbeitenHinzu, calculatePercentageFromTasks, calculateGrade } from '../../lib/logic';
 import { performAIRequest, performOCRRequest } from '../../lib/ai-logic';
 import { extractTextFromFile, convertPdfToImage } from '../../lib/file-utils';
 import { parseMoodleExcel, erklaereMoodleBefund } from '../../lib/excel';
 import { toErrorMessage } from '../../lib/error-message';
 import { meldeFehler, meldeHinweis } from '@/lib/notify';
+import { askConfirmation } from '@/lib/confirm-dialog';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
+import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { erzeugeKorrekturEintraege } from '@/lib/ai-protocol';
 
 export const useBatchActions = (
     state: any,
     userData: any,
     settings: AppSettings,
-    startExtraction: (items: BatchFile[]) => Promise<void>,
+    startExtraction: (items: BatchFile[], auchFertige?: boolean) => Promise<void>,
     setModelSolution?: React.Dispatch<React.SetStateAction<string>>,
     setTasksLayout?: React.Dispatch<React.SetStateAction<Task[]>>,
     setModelSolutionContext?: React.Dispatch<React.SetStateAction<string>>
@@ -32,7 +34,25 @@ export const useBatchActions = (
         });
     }, [setBatchFiles]);
 
+    /**
+     * Laedt eine ganze Sitzung aus einer `.koreki`-Datei.
+     *
+     * Das ERSETZT Musterloesung, Aufgaben, Arbeiten und Protokoll — genau wie
+     * „Neue Korrektur", und deshalb fragt es wie „Neue Korrektur". Gesperrt wird
+     * hier NICHT: „eine andere Sitzung weiterbearbeiten" ist eine legitime
+     * Absicht, auch mitten in einer Korrektur. Bis zum 09.11.2026 lief der Import
+     * wortlos durch — ein mit abgelegtes `.koreki` loeschte die laufende Arbeit.
+     */
     const handleKorekiImport = useCallback(async (file: File) => {
+        // Dieselbe Bedingung wie bei „Neue Korrektur" und „Demo laden": Eine
+        // geladene Musterloesung ohne Arbeiten ist auch etwas zu verlieren.
+        const hatInhalt = useBatchStore.getState().batchFiles.length > 0
+            || !!useDashboardStore.getState().modelSolution;
+        if (hatInhalt && !(await askConfirmation({
+            title: 'Sitzung laden',
+            message: `„${file.name}" ersetzt die aktuelle Korrektur vollständig — Musterlösung, Aufgaben, Arbeiten und Protokoll. Fortfahren?`
+        }))) return null;
+
         try {
             const text = await file.text();
             const data = JSON.parse(text);
@@ -62,9 +82,14 @@ export const useBatchActions = (
         }
     }, [setBatchFiles, setIsImportedSession, setModelSolution, setTasksLayout, setModelSolutionContext]);
 
-    const handleStudentUpload = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files) return;
-        const allFiles = Array.from(e.target.files);
+    /**
+     * Nimmt Schuelerarbeiten an — per Klick ODER per Ablegen; welcher Weg es war,
+     * aendert nichts, deshalb kommen die Dateien fertig herein statt als
+     * Eingabe-Ereignis. Angenommen wird ANGEHAENGT, nie ersetzt: s.
+     * `fuegeArbeitenHinzu`.
+     */
+    const handleStudentUpload = useCallback(async (allFiles: File[]) => {
+        if (allFiles.length === 0) return;
         
         // 1. Koreki Session Import
         const korekiFile = allFiles.find(f => f.name.toLowerCase().endsWith('.koreki'));
@@ -117,21 +142,39 @@ export const useBatchActions = (
             selected: true
         }));
 
-        const finalBatch = reindexBatchFiles([...moodleItems, ...standardItems]);
+        // 4. Anhaengen statt ersetzen. In zwei Schritten, weil die Grenze
+        //    zwischen Moodle- und Einzeldateien gebraucht wird: nur die
+        //    Einzeldateien stellen sich in die PDF-Typ-Warteschlange, und deren
+        //    Platznummern muessen in die ENDGUELTIGE Liste zeigen.
+        const bestand: BatchFile[] = useBatchStore.getState().batchFiles;
+        const nachMoodle = fuegeArbeitenHinzu(bestand, moodleItems);
+        const nachDateien = fuegeArbeitenHinzu(nachMoodle.liste, standardItems);
+        const finalBatch = nachDateien.liste;
         setBatchFiles(finalBatch);
 
-        // 4. Handle PDF Type Selection Queue
-        if (standardItems.length > 0) {
-            const queue = standardItems.map((item, i) => ({ 
-                idx: i + moodleItems.length, 
-                fileName: item.name 
-            }));
-            setPdfTypeQueue(queue);
+        const doppelt = [...nachMoodle.uebersprungen, ...nachDateien.uebersprungen];
+        if (doppelt.length > 0) {
+            meldeHinweis(
+                `${doppelt.length} Datei(en) waren bereits geladen und wurden übersprungen:\n\n` +
+                doppelt.join('\n')
+            );
         }
 
-        // 5. Industrial Pipeline Trigger (@principal_architect)
+        // 5. Handle PDF Type Selection Queue
+        const neueDateien = finalBatch.slice(nachMoodle.liste.length);
+        if (neueDateien.length > 0) {
+            setPdfTypeQueue(neueDateien.map((item, i) => ({
+                idx: nachMoodle.liste.length + i,
+                fileName: item.name
+            })));
+        }
+
+        // 6. Industrial Pipeline Trigger (@principal_architect)
         // For Moodle items, we skip the UI queue and start semantic mapping immediately.
-        if (moodleItems.length > 0) {
+        // `finalBatch` enthaelt seit dem Anhaengen auch Fertiges; die Schleife in
+        // `startExtraction` ueberspringt das, weil sie die Platznummern der
+        // GESAMTEN Liste braucht.
+        if (nachMoodle.liste.length > bestand.length) {
             setTimeout(() => startExtraction(finalBatch), 200);
         }
     }, [handleKorekiImport, setBatchFiles, setPdfTypeQueue, startExtraction]);
@@ -148,7 +191,9 @@ export const useBatchActions = (
                     matched++;
                 }
             });
-            if (matched > 0) setTimeout(() => startExtraction(next), 100);
+            // `true`: Die wiederverbundenen Eintraege sind FERTIG (aus dem Import),
+            // brauchen aber ihre Vorschaubilder. Der einzige Weg, der das darf.
+            if (matched > 0) setTimeout(() => startExtraction(next, true), 100);
             return next;
         });
     }, [setBatchFiles, startExtraction]);

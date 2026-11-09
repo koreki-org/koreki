@@ -88,7 +88,21 @@ export const useProcessingPipeline = (
     }, [userData, settings, tasksLayout, setUserData, setBatchFiles]);
 
 
-    const startExtraction = useCallback(async (items: BatchFile[]) => {
+    /**
+     * Liest den Stapel ein. `items` ist IMMER die gesamte Liste — die Schleife gibt
+     * ihre Platznummer weiter, eine Teilliste zeigte auf fremde Eintraege.
+     * Gearbeitet wird nur an dem, was `pending` ist.
+     *
+     * Wichtig, seit Arbeiten ANGEHAENGT statt ersetzt werden (09.11.2026): Die alte
+     * Bedingung liess jeden fertigen Eintrag OHNE Vorschau erneut durchlaufen —
+     * das trifft JEDEN Moodle-Eintrag und jede Textdatei. Eine nachgereichte
+     * Arbeit haette den ganzen Stapel erneut durch die KI geschickt.
+     *
+     * `auchFertige` ist die EINE Ausnahme: Nach dem Wiederverbinden einer
+     * importierten Sitzung sind die Eintraege fertig, haben aber keine Vorschau —
+     * Dateien lassen sich nicht mit exportieren.
+     */
+    const startExtraction = useCallback(async (items: BatchFile[], auchFertige = false) => {
         setIsLoadingBatch(true);
         const controller = new AbortController();
         useBatchStore.getState().registerBatchController(controller);
@@ -97,7 +111,8 @@ export const useProcessingPipeline = (
         try {
             for (let i = 0; i < items.length; i++) {
                 if (signal.aborted) break;
-                if (items[i].status !== 'pending' && items[i].previewDataUrls?.length) continue;
+                const nurVorschauFehlt = auchFertige && !!items[i].files?.length && !items[i].previewDataUrls?.length;
+                if (items[i].status !== 'pending' && !nurVorschauFehlt) continue;
                 setCurrentProcessingIndex(i);
                 
                 // Moodle/Digital Path: If no physical file but text is present, go straight to mapping

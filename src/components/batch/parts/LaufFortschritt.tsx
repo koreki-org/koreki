@@ -30,7 +30,7 @@ export const LaufFortschritt: React.FC = () => {
         : restzeit === null ? 'Restzeit wird berechnet …' : formatiereRestzeit(restzeit);
 
     return (
-        <div className="px-6 pb-6" role="status" aria-live="polite">
+        <div className="px-6 pt-5 pb-6" role="status" aria-live="polite">
             <div className="flex items-center justify-between gap-4 text-sm mb-2">
                 <span className="font-medium text-foreground">
                     {BEZEICHNUNG[lauf.art]}: Blatt {aktuell} von {lauf.gesamt}

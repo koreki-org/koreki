@@ -35,7 +35,7 @@ export const LandingEditionen: React.FC = () => (
                         key={e.name}
                         className={cn(
                             "bg-card rounded-hero p-6 md:p-8 flex flex-col",
-                            e.haupt ? "ring-2 ring-primary shadow-card" : "shadow-card"
+                            e.haupt ? "ring-2 ring-primary shadow-raised" : "shadow-raised"
                         )}
                     >
                         <p className="text-sm text-muted-foreground">{e.wer}</p>

@@ -20,6 +20,7 @@ import { useDashboardActions } from '@/hooks/useDashboardActions';
 import { useDashboardOrchestrator } from '@/hooks/useDashboardOrchestrator';
 import { useDemoScenario } from '@/hooks/useDemoScenario';
 import { useUploadSectionCollapse } from '@/hooks/useUploadSectionCollapse';
+import { useMusterloesungAnnahme } from '@/hooks/useMusterloesungAnnahme';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { buildModelSolutionFromTasks } from '@/lib/task-utils';
 import { performAIRequest } from '@/lib/ai/ai-orchestrator';
@@ -128,6 +129,15 @@ export default function Home() {
         showDemoHint
     });
 
+    /** Ab hier darf die Aufgabenstruktur nicht mehr wechseln — s. useMusterloesungAnnahme. */
+    const korrekturLaeuft = fileProcessor.batchFiles.some(f => f.status === 'done' || f.status === 'processing');
+    const musterloesungAnnehmen = useMusterloesungAnnahme({
+        hatMusterloesung: !!data.modelSolution,
+        gesperrt: korrekturLaeuft,
+        setPendingModelFile: data.setPendingModelFile,
+        setShowModelTypeModal: modals.setShowModelTypeModal,
+        handleModelUpload: fileProcessor.handleModelUpload
+    });
     const handleStartNew = async () => {
         if (fileProcessor.batchFiles.length > 0 || data.modelSolution) {
             if (await askConfirmation({ title: 'Neue Korrektur starten', message: 'Möchtest du wirklich alle aktuellen Daten löschen und eine neue Korrektur starten?' })) {
@@ -304,18 +314,8 @@ export default function Home() {
                         settings={aiSettings}
                         onGenerateGraph={handleGenerateGraphForTask}
                         onGenerateCalcTrace={handleGenerateCalcTraceForTask}
-                        onModelUpload={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                                if (file.type === 'application/pdf' || file.type.startsWith('image/') || file.name.toLowerCase().endsWith('.txt')) {
-                                    data.setPendingModelFile(file);
-                                    modals.setShowModelTypeModal(true);
-                                } else {
-                                    fileProcessor.handleModelUpload(file, false);
-                                }
-                            }
-                        }}
-                        onStudentUpload={(e) => fileProcessor.handleStudentUpload(e)}
+                        onModelUpload={musterloesungAnnehmen}
+                        onStudentUpload={fileProcessor.handleStudentUpload}
                         onReExtractLayout={async () => {
                             const res = await fileProcessor.cleanAndExtractLayout(data.modelSolution, aiSettings);
                             if (res) {
@@ -336,7 +336,7 @@ export default function Home() {
                         modelSolutionContext={data.modelSolutionContext}
                         onTasksChange={data.setTasksLayout}
                         isPureMode={userData?.appMode === 'PURE'}
-                        isLocked={fileProcessor.batchFiles.some(f => f.status === 'done' || f.status === 'processing')}
+                        isLocked={korrekturLaeuft}
                         modelSolution={data.modelSolution}
                         tasksLayout={data.tasksLayout}
                         extractingLayout={fileProcessor.isLoadingModel}

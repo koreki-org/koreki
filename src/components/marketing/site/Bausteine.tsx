@@ -91,7 +91,7 @@ interface ProduktbildProps {
 export const Produktbild: React.FC<ProduktbildProps> = ({ src, alt, className, klein }) => (
     <figure className={cn(
         "bg-card",
-        klein ? "rounded-xl p-1.5 shadow-card" : "rounded-2xl p-2 shadow-lift",
+        klein ? "rounded-xl p-1.5 shadow-raised" : "rounded-2xl p-2 shadow-lift",
         className
     )}>
         {/* eslint-disable-next-line @next/next/no-img-element -- statischer Export (Desktop) kennt keine Bildoptimierung */}
@@ -106,7 +106,7 @@ export const Produktbild: React.FC<ProduktbildProps> = ({ src, alt, className, k
 
 /** Weisse Kachel mit Kartenschatten. */
 export const Kachel: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
-    <div className={cn("bg-card rounded-2xl shadow-card p-6 md:p-8", className)}>{children}</div>
+    <div className={cn("bg-card rounded-2xl shadow-raised p-6 md:p-8", className)}>{children}</div>
 );
 
 /** Symbol in einer getoenten Flaeche, fuer Kacheln und Listen. */

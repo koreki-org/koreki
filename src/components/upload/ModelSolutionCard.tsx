@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import type { GradingGraph } from '../../lib/grading/types';
-import { FileText, FileUp, RefreshCw, Sparkles, Loader2, Layers, Trash2, Link2Off, HelpCircle, AlertCircle, ShieldCheck, ShieldAlert, Clock, ToggleLeft, ToggleRight, Download, X } from 'lucide-react';
+import { FileText, FileUp, Sparkles, Loader2, Layers, Trash2, Link2Off, HelpCircle, AlertCircle, ShieldCheck, ShieldAlert, Clock, ToggleLeft, ToggleRight, Download, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { Task, AppSettings, CustomSkillDefinition, TasksLayoutSetter } from '@/types';
 import { promisePool } from '../../lib/ai/promise-pool';
@@ -15,6 +15,7 @@ import { PointInput } from '@/components/ui/PointInput';
 import { ModelSolutionTaskCard } from './ModelSolutionTaskCard';
 import { ModelSolutionAutopilotBar } from './ModelSolutionAutopilotBar';
 import { HauptaufgabeStamm } from './HauptaufgabeStamm';
+import { UploadAblage } from './UploadAblage';
 import { EditableMathArea } from '@/components/ui/EditableMathArea';
 import { cn } from '@/lib/utils';
 import { groupTasksByMain, splitTextByTasks, composeModelSolution } from '@/lib/task-utils';
@@ -43,7 +44,8 @@ interface ModelSolutionCardProps {
     modelSolutionContext?: string;
     tasksLayout: Task[];
     extractingLayout: boolean;
-    onModelUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    /** Bekommt die Datei, gleich ob geklickt oder abgelegt. */
+    onModelUpload: (dateien: File[]) => void;
     onModelSolutionChange?: (newVal: string) => void;
     onModelSolutionContextChange?: (newVal: string) => void;
     onTasksChange?: TasksLayoutSetter;
@@ -80,7 +82,6 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
 
 
 
-    const modelInputRef = React.useRef<HTMLInputElement>(null);
 
     const hasModel = modelSolution || extractingLayout;
     const hasTaskStructure = tasksLayout.length > 0 && hasModel && !extractingLayout;
@@ -158,7 +159,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
     };
 
     return (
-        <Card className="flex flex-col border-border/50 bg-card/60 backdrop-blur-xl shadow-xl shadow-foreground/5 rounded-hero overflow-hidden">
+        <Card className="flex flex-col bg-card shadow-raised rounded-hero overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between gap-2 pb-3 border-b border-border/50">
                 <CardTitle className="text-lg sm:text-xl font-bold flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="p-2 bg-primary/10 rounded-xl text-primary shrink-0">
@@ -176,19 +177,6 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     {hasModel && (
                         <>
-                            <input data-testid="upload-musterloesung" type="file" accept=".pdf,.txt,.jpg,.jpeg,.png" ref={modelInputRef} onChange={onModelUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
-                            <Button
-                                variant="chip"
-                                size="xs"
-                                className="flex items-center gap-2 transition-all shrink-0"
-                                onClick={() => modelInputRef.current?.click()}
-                                title="Musterlösung ändern"
-                                aria-label="Musterlösung ändern"
-                            >
-                                <RefreshCw size={12} />
-                                <span className="hidden sm:inline">Ändern</span>
-                            </Button>
-
                             <Button
                                 variant="chip"
                                 size="xs"
@@ -214,16 +202,14 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
 
             <CollapsibleCardContent collapsed={collapsed} className="flex-grow pt-4">
                 {!hasModel ? (
-                    <div 
-                        onClick={() => modelInputRef.current?.click()}
-                        className="flex-1 border-2 border-dashed border-border/60 rounded-hero bg-muted/20 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
-                    >
-                        <input data-testid="upload-musterloesung" type="file" accept=".pdf,.txt,.jpg,.jpeg,.png" ref={modelInputRef} onChange={onModelUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
-                        <div className="bg-card p-4 rounded-2xl shadow-sm border border-border mb-4 group-hover/dropzone:scale-110 group-hover/dropzone:-translate-y-1 group-hover/dropzone:shadow-md transition-all duration-300">
-                            <FileUp size={36} className="text-primary" />
-                        </div>
-                        <p className="font-semibold text-foreground group-hover/dropzone:text-primary transition-colors">Musterlösung laden (Text (.txt), PDF, Bilder)</p>
-                    </div>
+                    <UploadAblage
+                        gross
+                        testId="upload-musterloesung"
+                        accept=".pdf,.txt,.jpg,.jpeg,.png"
+                        onFiles={onModelUpload}
+                        icon={<FileUp size={36} className="text-primary" />}
+                        titel="Musterlösung laden (Text (.txt), PDF, Bilder)"
+                    />
                 ) : hasTaskStructure ? (
                     <div className="space-y-6">
                         {/* Gemeinsamer Rahmen: gehört zu keiner Aufgabe und hätte sonst keinen sichtbaren Ort. */}
@@ -314,6 +300,16 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             placeholder={extractingLayout ? "Lese Inhalt..." : "Inhalt der Musterlösung hier bearbeiten..."}
                         />
                     </div>
+                )}
+                {hasModel && (
+                    <UploadAblage
+                        testId="upload-musterloesung"
+                        accept=".pdf,.txt,.jpg,.jpeg,.png"
+                        onFiles={onModelUpload}
+                        titel="Musterlösung ersetzen"
+                        gesperrt={isLocked}
+                        grund="Musterlösung gesperrt — es wurden bereits Arbeiten korrigiert"
+                    />
                 )}
             </CollapsibleCardContent>
             {editingGraphTaskIdx !== null && (() => {

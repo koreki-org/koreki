@@ -58,7 +58,7 @@ export const AiProfileSidebar: React.FC<SidebarProps> = ({
         }
     };
 
-    const { isDragging, dragProps, onFileInputChange } = useFileDropZone(importProfileFile);
+    const { isDragging, dragProps, onFileInputChange } = useFileDropZone(dateien => importProfileFile(dateien[0]));
 
     return (
         <div 

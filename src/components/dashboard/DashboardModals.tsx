@@ -114,7 +114,7 @@ interface DashboardModalsProps {
     
     // AI/Queue State
     pdfTypeQueue: { idx: number, fileName: string }[];
-    handlePDFTypeSelect: (type: 'typed' | 'scanned', applyToAll: boolean) => Promise<void>;
+    handlePDFTypeSelect: (type: 'typed' | 'scanned' | 'abbruch', applyToAll: boolean) => Promise<void>;
     handleAiOllamaSave: (url: string, model: string) => void;
     handleAiMistralSave: (key: string) => void;
     handleAiCustomSave: (url: string, key: string, model: string, thinking: boolean) => void;
@@ -356,7 +356,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
             {pdfTypeQueue.length > 0 && (
                 <PDFTypeModal
                     isOpen={pdfTypeQueue.length > 0}
-                    onClose={() => handlePDFTypeSelect('typed', false)} 
+                    onClose={() => handlePDFTypeSelect('abbruch', false)}
                     fileName={pdfTypeQueue[0].fileName}
                     onSelect={(type, applyToAll) => handlePDFTypeSelect(type, applyToAll)}
                     isPureMode={userData?.appMode === 'PURE'}

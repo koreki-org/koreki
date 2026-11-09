@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { BatchFile, Task } from '../types';
 import { buildDemoScenario } from '../lib/demo/demoScenario';
+import { askConfirmation } from '@/lib/confirm-dialog';
+import { useBatchStore } from '@/hooks/store/useBatchStore';
+import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 
 /** Wie lange der Demo-Hinweis stehen bleibt, bevor er sich selbst ausblendet. */
 const DEMO_HINT_DURATION_MS = 8000;
@@ -16,7 +19,7 @@ interface UseDemoScenarioResult {
     /** Der Hinweis-Banner ist sichtbar — die Demo wurde gerade geladen. */
     showDemoHint: boolean;
     /** Laedt das Demo-Szenario in die Oberflaeche und blendet den Hinweis ein. */
-    loadDemoData: () => void;
+    loadDemoData: () => Promise<void>;
     /** Blendet den Hinweis vorzeitig aus (Klick auf Schliessen). */
     dismissDemoHint: () => void;
 }
@@ -46,7 +49,23 @@ export const useDemoScenario = ({
         setShowDemoHint(false);
     }, []);
 
-    const loadDemoData = useCallback(() => {
+    /**
+     * Die Demo ERSETZT alles — Musterloesung, Aufgaben, Arbeiten. Der Knopf dafuer
+     * sitzt in der Kopfzeile, einen Finger neben den Export-Knoepfen, und war bis
+     * zum 09.11.2026 ungesichert: ein Fehlklick mitten in einer Korrektur loeschte
+     * die Arbeit wortlos, denn Schuelerdaten leben nur im Arbeitsspeicher.
+     *
+     * Gefragt wird nur, wenn es etwas zu verlieren gibt — auf einer leeren
+     * Oberflaeche ist die Demo genau das, was der Knopf verspricht.
+     */
+    const loadDemoData = useCallback(async () => {
+        const hatInhalt = useBatchStore.getState().batchFiles.length > 0
+            || !!useDashboardStore.getState().modelSolution;
+        if (hatInhalt && !(await askConfirmation({
+            title: 'Demo laden',
+            message: 'Das Demo-Szenario ersetzt die aktuelle Korrektur vollständig — Musterlösung, Aufgaben und Arbeiten. Fortfahren?'
+        }))) return;
+
         const scenario = buildDemoScenario();
 
         setModelSolution(scenario.modelSolution);

@@ -19,7 +19,7 @@ export const ModelProfiles: React.FC = () => (
         <p className="mt-1 text-sm text-muted-foreground">Empfehlungen für die Nutzung mit Ollama.</p>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
             {MODELLE.map((m, i) => (
-                <div key={m.name} className={cn("bg-card rounded-2xl p-6 shadow-card", i === 0 && "ring-2 ring-primary")}>
+                <div key={m.name} className={cn("bg-card rounded-2xl p-6 shadow-raised", i === 0 && "ring-2 ring-primary")}>
                     <span className={cn(
                         "inline-block rounded-full px-2.5 py-0.5 text-xs font-medium",
                         i === 0 ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"

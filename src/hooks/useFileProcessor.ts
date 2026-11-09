@@ -65,9 +65,30 @@ export const useFileProcessor = (
         removeFile
     } = actions;
 
-    // 4. Local Orchestration (Modals & Multi-step UI)
-    const handlePDFTypeSelect = useCallback(async (type: 'scanned' | 'typed', applyToAll: boolean) => {
+    /**
+     * Die Antwort auf „Dokumententyp wählen".
+     *
+     * `'abbruch'` ist eine vollwertige Antwort, keine Verlegenheit. Genau weil sie
+     * bis zum 09.11.2026 nicht ausdrueckbar war, bildete der Dialog sie auf
+     * `'typed'` ab: „Abbrechen", das × und ein Klick daneben WAEHLTEN stillschweigend
+     * digitalen Text und starteten beim letzten Dokument die Einlesung. Wer einen
+     * Scan so wegklickte, bekam ihn als Digitaltext verarbeitet und sah spaeter
+     * leeren oder wirren Text, ohne den Grund zu kennen.
+     *
+     * Abbrechen verwirft die noch offenen Arbeiten — es bricht den Upload ab, und
+     * genau so liest man den Knopf in dem Moment auch. Bereits beantwortete
+     * Arbeiten bleiben: Was entschieden ist, ist entschieden, und verarbeitet
+     * wurde noch nichts. Es geht nichts verloren, was nicht gerade erst abgelegt
+     * wurde.
+     */
+    const handlePDFTypeSelect = useCallback(async (type: 'scanned' | 'typed' | 'abbruch', applyToAll: boolean) => {
         if (!pdfTypeQueue || pdfTypeQueue.length === 0) return;
+        if (type === 'abbruch') {
+            const offen = new Set(pdfTypeQueue.map(q => q.idx));
+            setBatchFiles(reindexBatchFiles(batchFiles.filter((_, i) => !offen.has(i))));
+            setPdfTypeQueue([]);
+            return;
+        }
         const updatedBatch = [...batchFiles];
 
         if (applyToAll) {
@@ -107,7 +128,11 @@ export const useFileProcessor = (
     const handleModelUpload = useCallback(async (file: File, isScan: boolean) => {
         if (!setModelSolution || !setTasksLayout) return;
         setIsLoadingModel(true);
-        setModelSolution("");
+        // Die alte Musterloesung bleibt stehen, bis die neue gelesen IST. Bis zum
+        // 09.11.2026 wurde hier zuerst geleert — schlug die Texterkennung dann
+        // fehl (unleserlicher Scan, ausgelasteter Server), war die alte weg und
+        // nirgends wiederherstellbar: sie lebt nur im Arbeitsspeicher. Bei
+        // Erfolg ersetzt sie der Zweig unten, bei Misserfolg bleibt sie.
         const { meldeMusterSchritt, beendeMusterLauf } = useBatchStore.getState();
         // Digitaler Text wird ohne KI ausgelesen — dann gibt es nur die Aufgabenerkennung.
         if (isScan) meldeMusterSchritt('texterkennung');

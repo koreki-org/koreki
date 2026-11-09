@@ -123,12 +123,22 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     return (
         <div id="batch-processor-anchor" className="scroll-mt-10">
             {/* Info Badge */}
-            <div className="mb-6 flex items-center gap-3 bg-primary/5 border border-primary/10 text-primary p-4 rounded-xl shadow-sm backdrop-blur-xs">
+            <div className="mb-6 flex items-center gap-3 bg-primary/5 border border-primary/10 text-primary p-4 rounded-xl">
                 <Info size={18} className="text-primary" />
                 <span className="text-sm font-medium">Namen wurden für die KI pseudonymisiert. Der Export erfolgt automatisch mit Klarnamen.</span>
             </div>
 
-            <Card className="transition-all duration-500 overflow-visible relative border border-border/50 bg-card/70 backdrop-blur-xl shadow-2xl shadow-foreground/5 rounded-hero">
+            {/*
+              * Voll deckend: Die klebende Kopfzeile liegt IN dieser Karte, jede Deckkraft
+              * dort macht sie heller — gemessen rgb(255,255,255) gegen rgb(251,251,252),
+              * eine sichtbare Naht. Das Design System verlangt es ohnehin: Glas und
+              * Unschaerfe nur fuer Ebenen ueber dem Inhalt, nie fuer Inhaltskarten.
+              *
+              * `shadow-raised` statt `shadow-2xl`: Der Token traegt die Haarlinie selbst
+              * ("ersetzt Rand + shadow-sm", s. tailwind.config.js) — deshalb steht hier
+              * kein `border` mehr daneben. Zwei Mittel fuer dieselbe Aussage.
+              */}
+            <Card className="transition-all duration-500 overflow-visible relative bg-card shadow-raised rounded-hero">
                 {/* Privacy Confirmation System */}
                 <ConfirmationModal
                     isOpen={showConfirm !== null}
@@ -229,8 +239,15 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                         batchFiles={batchFiles} 
                     />
 
-                    {/* Industrial File List */}
-                    <div className="space-y-2 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                    {/*
+                      * Die Liste rollt NICHT selbst. Bis zum 09.11.2026 stand hier
+                      * `max-h-[500px] overflow-y-auto` — ab etwa acht Arbeiten ein zweiter
+                      * Rollbalken IN einer Seite, die ohnehin rollt (gemessen: 1084 px Inhalt,
+                      * 500 px sichtbar). Der Deckel war nie als Deckel gemeint: Er sollte
+                      * „Korrigieren" in Sichtweite halten. Das tut jetzt die klebende
+                      * Kopfzeile in BatchHeader — direkt, statt ueber eine feste Hoehe.
+                      */}
+                    <div className="space-y-2 pt-2">
                         {batchFiles.map((item, idx) => (
                             <BatchFileListItem
                                 key={idx}

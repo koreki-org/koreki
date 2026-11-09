@@ -61,7 +61,13 @@ const perFileRatchets = [
         'src/components/settings/SkillsModules.tsx': 2,
         'src/components/settings/SkillEditorPanel.tsx': 1,
         'src/components/settings/SkillEngineSection.tsx': 2,
-        'src/components/upload/ModelSolutionCard.tsx': 5,
+        // 5 -> 3: Die versteckte Dateieingabe stand hier ZWEIMAL (leere Karte und
+        // Knopf "Aendern"), in StudentWorkCard noch zweimal. Alle vier sind am
+        // 09.11.2026 in UploadAblage zusammengefallen — das Bauteil, das auch das
+        // Ablegen annimmt. Eine versteckte <input type="file"> kann das UI-Kit nicht
+        // liefern; sie ist der Dateidialog selbst, nicht ein sichtbares Bedienelement.
+        'src/components/upload/ModelSolutionCard.tsx': 3,
+        'src/components/upload/UploadAblage.tsx': 1,
         'src/components/upload/ModelSolutionTaskCard.tsx': 4,
         'src/components/batch/parts/GraphAiPanel.tsx': 3,
         'src/pages/desktop-setup.tsx': 3,
@@ -72,7 +78,6 @@ const perFileRatchets = [
         // Uebrig bleibt der Fokus-Umschalter, den BatchSolutionPanel genauso hat.
         'src/components/settings/ProfileModules.tsx': 2,
         'src/components/settings/UnifiedAiConfig.tsx': 2,
-        'src/components/upload/StudentWorkCard.tsx': 2,
         'src/components/avv-upload/StepUpload.tsx': 1,
         'src/components/batch/BatchHeader.tsx': 1,
         'src/components/batch/DigitalSlipsModal.tsx': 1,
@@ -107,7 +112,7 @@ const perFileRatchets = [
         'src/components/batch/CorrectionAnalytics.tsx': 8,
         'src/pages/desktop-setup.tsx': 8,
         'src/components/AiParamsModal.tsx': 7,
-        'src/components/batch/BatchHeader.tsx': 5,
+        'src/components/batch/BatchHeader.tsx': 1,
         'src/components/batch/parts/GraphEditorPanel.tsx': 7,
         'src/components/PromptSettingsModal.tsx': 7,
         'src/components/RedactionModal.tsx': 7,
@@ -121,7 +126,6 @@ const perFileRatchets = [
         'src/components/batch/GradingMemoryModal.tsx': 4,
         'src/components/batch/parts/GraphTestingPanel.tsx': 4,
         'src/components/PDFTypeModal.tsx': 4,
-        'src/components/ui/Badge.tsx': 3,
         'src/components/avv-upload/StepUpload.tsx': 3,
         'src/components/batch/GradingMemoryCalibrateScreen.tsx': 3,
         'src/components/batch/GradingMemoryStartScreen.tsx': 3,

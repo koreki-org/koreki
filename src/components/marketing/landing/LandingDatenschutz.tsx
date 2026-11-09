@@ -24,7 +24,7 @@ const Knoten: React.FC<KnotenProps> = ({ icon, titel, text, marke, markeTon, ges
         "flex items-center gap-3.5 rounded-xl p-4",
         gestrichelt ? "border border-dashed border-border" : "bg-background"
     )}>
-        <div className="w-10 h-10 rounded-xl bg-card shadow-card grid place-items-center text-foreground shrink-0">{icon}</div>
+        <div className="w-10 h-10 rounded-xl bg-card shadow-raised grid place-items-center text-foreground shrink-0">{icon}</div>
         <div className="min-w-0">
             <p className="text-sm font-semibold text-foreground">{titel}</p>
             <p className="text-xs text-muted-foreground">{text}</p>
@@ -56,7 +56,7 @@ export const LandingDatenschutz: React.FC = () => (
                 <ul className="mt-8">
                     {fakten.map(({ icon: Icon, titel, text }) => (
                         <li key={titel} className="flex gap-4 py-4 border-t border-primary/10">
-                            <div className="w-9 h-9 rounded-xl bg-card shadow-card grid place-items-center text-primary shrink-0">
+                            <div className="w-9 h-9 rounded-xl bg-card shadow-raised grid place-items-center text-primary shrink-0">
                                 <Icon size={17} />
                             </div>
                             <div>

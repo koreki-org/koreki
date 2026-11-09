@@ -78,7 +78,17 @@ module.exports = {
                 // Grosser, weicher Schatten fuer Produktbilder auf den Marketing-Seiten.
                 lift: "0 0 0 1px hsl(232 30% 20% / 0.06), 0 2px 4px hsl(232 40% 20% / 0.04), 0 12px 24px -6px hsl(232 40% 20% / 0.08), 0 40px 80px -20px hsl(239 50% 30% / 0.18)",
                 // Weicher, mehrschichtiger Kartenschatten: ersetzt Rand + shadow-sm.
-                card: "0 0 0 1px hsl(232 30% 20% / 0.06), 0 1px 2px hsl(232 40% 20% / 0.05), 0 4px 12px -4px hsl(232 40% 20% / 0.08)",
+                //
+                // Hiess bis zum 09.11.2026 `card` und war dadurch unsichtbar: `card`
+                // ist AUCH ein Farb-Token. Bei einem Namen, den beide Tabellen
+                // kennen, liest Tailwind `shadow-card` als SchattenFARBE und setzt
+                // `--tw-shadow: var(--tw-shadow-colored)` — die Geometrie blieb, die
+                // Farbe wurde Kartenweiss auf Weiss. Gemessen an der Karte
+                // „Schuelerarbeiten": `rgb(255,255,255) 0px 0px 0px 1px`.
+                // Alle 13 Stellen in 10 Dateien zeichneten nichts; genau deshalb
+                // wurde ueberall `shadow-xl`/`shadow-2xl` darueber gestapelt.
+                // Der Waechter `glass-shadow-governance` prueft die Kollision jetzt.
+                raised: "0 0 0 1px hsl(232 30% 20% / 0.06), 0 1px 2px hsl(232 40% 20% / 0.05), 0 4px 12px -4px hsl(232 40% 20% / 0.08)",
             },
             fontFamily: {
                 // Geist fuer Text und Bedienung, Outfit (Markenschrift) fuer

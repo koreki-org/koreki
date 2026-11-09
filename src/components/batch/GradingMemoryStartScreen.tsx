@@ -33,7 +33,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
 
     // Einheitlich mit den drei Profil-Seitenleisten: Dateien lassen sich auch
     // auf die Liste ablegen, nicht nur ueber den Knopf auswaehlen.
-    const { isDragging, dragProps } = useFileDropZone(importMemoryFile);
+    const { isDragging, dragProps } = useFileDropZone(dateien => importMemoryFile(dateien[0]));
 
     return (
                         <div className="flex-1 flex flex-col md:flex-row overflow-hidden">

@@ -1,18 +1,34 @@
-import React, { useState } from 'react';
-import { FolderOpen, Users, RefreshCw, FileUp } from 'lucide-react';
+import React from 'react';
+import { FolderOpen, Users, RefreshCw } from 'lucide-react';
 import { Task } from '@/types';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { CollapsibleCardContent, CollapseToggleButton } from '@/components/ui/CollapsibleCardContent';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
+import { UploadAblage } from './UploadAblage';
 import { zeigtCredits } from '@/lib/env-context';
+
+/**
+ * Die Karte der Schuelerarbeiten.
+ * 📂
+ *
+ * Hochladen heisst hier IMMER hinzufuegen. Bis zum 09.11.2026 ersetzte jeder
+ * weitere Upload die gesamte Liste, und der Knopf dafuer hiess "Ändern" — er
+ * stand direkt neben einer Liste, die man eigentlich wachsen lassen will. Wer
+ * eine Arbeit nachreichen wollte, verlor dreissig.
+ *
+ * Zum Wegnehmen gibt es zwei Wege, die es schon gab: den Muelleimer je Zeile in
+ * der Stapelliste darunter und "Neue Korrektur" in der Kopfzeile. Ein dritter,
+ * der versehentlich alles loescht, wird nicht gebraucht.
+ */
 
 interface StudentWorkCardProps {
     batchFilesCount: number;
     tasksLayout: Task[];
     extractingLayout: boolean;
-    onStudentUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    /** Bekommt die Dateien, gleich ob geklickt oder abgelegt. */
+    onStudentUpload: (dateien: File[]) => void;
     onReExtractLayout: () => void;
     isLocked?: boolean;
     collapsed?: boolean;
@@ -29,12 +45,11 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
     collapsed = false,
     onToggleCollapse
 }) => {
-    const studentInputRef = React.useRef<HTMLInputElement>(null);
-
     const hasStudents = batchFilesCount > 0;
+    const ARTEN = '.pdf,.jpg,.jpeg,.png,.txt,.xlsx,.csv,.koreki';
 
     return (
-        <Card className="flex flex-col border-border/50 bg-card/60 backdrop-blur-xl shadow-xl shadow-foreground/5 rounded-hero overflow-hidden">
+        <Card className="flex flex-col bg-card shadow-raised rounded-hero overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between gap-2 pb-3 border-b border-border/50">
                 <CardTitle className="text-lg sm:text-xl font-bold flex items-center gap-2 sm:gap-3 min-w-0">
                     <div className="p-2 bg-primary/10 rounded-xl text-primary shrink-0">
@@ -43,29 +58,13 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                     <span className="truncate">Schülerarbeiten</span>
                     <KorekiTooltip
                         title="Organisation"
-                        content="Laden Sie Dateien einzeln oder als Stapel hoch. Moodle-Exporte (XLSX/CSV) werden automatisch erkannt und digital verarbeitet."
+                        content="Lade Dateien einzeln oder als Stapel hoch — auch nachträglich, es kommt immer etwas dazu. Moodle-Exporte (XLSX/CSV) werden automatisch erkannt."
                         position="bottom"
                         align="left"
                         className="inline-flex shrink-0"
                     />
                 </CardTitle>
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                    {hasStudents && (
-                        <>
-                            <input data-testid="upload-schuelerarbeit" type="file" accept=".pdf,.jpg,.jpeg,.png,.txt,.xlsx,.csv" multiple ref={studentInputRef} onChange={onStudentUpload} onClick={(e) => (e.target as HTMLInputElement).value = ''} hidden />
-                            <Button
-                                variant="chip"
-                                size="xs"
-                                className="flex items-center gap-2 transition-all shrink-0"
-                                onClick={() => studentInputRef.current?.click()}
-                                title="Schülerarbeiten ändern"
-                                aria-label="Schülerarbeiten ändern"
-                            >
-                                <RefreshCw size={12} />
-                                <span className="hidden sm:inline">Ändern</span>
-                            </Button>
-                        </>
-                    )}
                     {onToggleCollapse && (
                         <CollapseToggleButton
                             collapsed={collapsed}
@@ -78,30 +77,18 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
 
             <CollapsibleCardContent collapsed={collapsed} className="flex-grow pt-4">
                 {!hasStudents ? (
-                    <div 
-                        onClick={() => studentInputRef.current?.click()}
-                        className="flex-1 border-2 border-dashed border-border/60 rounded-hero bg-muted/20 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-8 text-center group/dropzone min-h-[350px]"
-                    >
-                        <input
-                            data-testid="upload-schuelerarbeit"
-                            type="file"
-                            accept=".pdf,.jpg,.jpeg,.png,.txt,.xlsx,.csv"
-                            multiple
-                            ref={studentInputRef}
-                            onChange={onStudentUpload}
-                            onClick={(e) => (e.target as HTMLInputElement).value = ''}
-                            hidden
-                        />
-                        <div className="bg-card p-4 rounded-2xl shadow-sm border border-border mb-4 group-hover/dropzone:scale-110 group-hover/dropzone:-translate-y-1 group-hover/dropzone:shadow-md transition-all duration-300">
-                            <Users size={36} className="text-primary" />
-                        </div>
-                        <p className="font-semibold text-foreground group-hover/dropzone:text-primary transition-colors">
-                            Arbeiten auswählen (Excel/Moodle, Text (.txt), PDF, Bilder)
-                        </p>
-                    </div>
+                    <UploadAblage
+                        gross
+                        testId="upload-schuelerarbeit"
+                        accept={ARTEN}
+                        multiple
+                        onFiles={onStudentUpload}
+                        icon={<Users size={36} className="text-primary" />}
+                        titel="Arbeiten auswählen (Excel/Moodle, Text (.txt), PDF, Bilder)"
+                    />
                 ) : (
                     <div className="flex-1 flex flex-col">
-                        <div className="bg-primary/5 border border-primary/10 rounded-xl p-6 flex flex-col items-center justify-center text-center mb-6">
+                        <div className="bg-primary/5 border border-primary/10 rounded-xl p-6 flex flex-col items-center justify-center text-center">
                             <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center text-primary shadow-sm mb-3">
                                 <Users size={24} />
                             </div>
@@ -109,8 +96,16 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                             <p className="text-xs text-muted-foreground font-medium">Bereit für die Analyse</p>
                         </div>
 
+                        <UploadAblage
+                            testId="upload-schuelerarbeit"
+                            accept={ARTEN}
+                            multiple
+                            onFiles={onStudentUpload}
+                            titel="Weitere Arbeiten hinzufügen"
+                        />
+
                         {tasksLayout.length > 0 && (
-                            <div className="mt-auto">
+                            <div className="mt-6">
                                 <div className="flex items-center justify-between mb-3 px-1">
                                     <span className="text-xs font-medium text-muted-foreground">Erkannte Aufgabenstellung</span>
                                     <div className="flex flex-col items-end gap-1">
@@ -126,7 +121,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                                                 Aktualisieren
                                             </Button>
 
-                                            <KorekiTooltip 
+                                            <KorekiTooltip
                                                 title="Aufgaben-Sync"
                                                 content="Aktualisiert die Aufgabenstruktur basierend auf deiner Musterlösung, damit die Schüler nach dem aktuellen Stand korrigiert werden."
                                                 position="top"

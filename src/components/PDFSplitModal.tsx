@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { X, Scissors, Info, Plus, Trash2, FileSpreadsheet } from 'lucide-react';
+import { ExcelFormatHinweis } from '@/components/batch/ExcelFormatHinweis';
 import * as XLSX from 'xlsx';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
@@ -170,14 +171,17 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ fileName, totalPageCount,
                         <p className="text-muted-foreground text-sm m-0">
                             Datei: <strong className="text-foreground">{fileName}</strong> ({totalPageCount} Seiten)
                         </p>
-                        <Button
-                            variant="chip"
-                            size="xs"
-                            className="flex items-center gap-2 transition-all shadow-xs"
-                            onClick={() => fileInputRef.current?.click()}
-                        >
-                            <FileSpreadsheet size={14} /> Excel Import
-                        </Button>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                            <ExcelFormatHinweis />
+                            <Button
+                                variant="chip"
+                                size="xs"
+                                className="flex items-center gap-2 transition-all shadow-xs"
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                <FileSpreadsheet size={14} /> Excel Import
+                            </Button>
+                        </div>
                         <input
                             type="file"
                             ref={fileInputRef}

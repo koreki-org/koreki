@@ -151,6 +151,46 @@ export function reindexBatchFiles<T extends { name?: string }>(files: T[]): T[] 
 }
 
 /**
+ * Haengt neue Arbeiten an eine bestehende Liste an und meldet die Doppelgaenger.
+ *
+ * Bis zum 09.11.2026 ERSETZTE jeder weitere Upload die gesamte Liste. Wer eine
+ * nachgereichte Arbeit hinzufuegen wollte, verlor alle anderen — ohne Rueckfrage
+ * und ohne Weg zurueck, denn Schuelerdaten leben absichtlich nur im
+ * Arbeitsspeicher.
+ *
+ * Doppelte werden am Dateinamen erkannt, auch innerhalb EINER Ablage: dieselbe
+ * Datei zweimal zu greifen ist beim Ziehen leicht passiert. Eintraege ohne
+ * erkennbare Kennung (weder Datei noch urspruenglicher Name) laufen immer durch
+ * — lieber einer zu viel als eine stillschweigend verschluckte Arbeit.
+ *
+ * Die Nummerierung entsteht danach neu ueber `reindexBatchFiles`: Die Position
+ * in der Liste ist die Wahrheit, nicht die Reihenfolge der Uploads.
+ */
+export function fuegeArbeitenHinzu<T extends { files?: File[]; originalName?: string; name?: string }>(
+    vorhandene: T[],
+    neue: T[]
+): { liste: T[]; uebersprungen: string[] } {
+    const kennung = (eintrag: T): string =>
+        (eintrag.files?.[0]?.name ?? eintrag.originalName ?? '').trim().toLowerCase();
+
+    const belegt = new Set(vorhandene.map(kennung).filter(k => k !== ''));
+    const uebersprungen: string[] = [];
+    const angenommen: T[] = [];
+
+    for (const eintrag of neue) {
+        const k = kennung(eintrag);
+        if (k !== '' && belegt.has(k)) {
+            uebersprungen.push(eintrag.files?.[0]?.name ?? eintrag.originalName ?? '');
+            continue;
+        }
+        if (k !== '') belegt.add(k);
+        angenommen.push(eintrag);
+    }
+
+    return { liste: reindexBatchFiles([...vorhandene, ...angenommen]), uebersprungen };
+}
+
+/**
  * Generates new batch items from a split operation.
  */
 export function generateSplitBatchItems<T extends { name?: string; originalName?: string }>(

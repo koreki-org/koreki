@@ -66,7 +66,7 @@ export const SkillsSidebar: React.FC<SkillsSidebarProps> = ({
         }
     };
 
-    const { isDragging, dragProps, onFileInputChange } = useFileDropZone(importProfileFile);
+    const { isDragging, dragProps, onFileInputChange } = useFileDropZone(dateien => importProfileFile(dateien[0]));
 
     return (
         <div 

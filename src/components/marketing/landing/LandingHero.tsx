@@ -27,7 +27,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ aktion }) => (
         <div className="text-center">
             <Link
                 href="/desktop"
-                className="inline-flex items-center gap-2.5 rounded-full bg-card shadow-card pl-1.5 pr-3.5 py-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
+                className="inline-flex items-center gap-2.5 rounded-full bg-card shadow-raised pl-1.5 pr-3.5 py-1 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8"
             >
                 <span className="rounded-full bg-primary/10 text-primary text-xs font-medium px-2.5 py-0.5">Neu</span>
                 Koreki Desktop für Windows und Ubuntu

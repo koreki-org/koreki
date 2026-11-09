@@ -13,6 +13,12 @@ import React, { useCallback, useState } from 'react';
  * Kopien, und eine kaputte Datei brach den Vorgang still ab. Deshalb liegt die
  * Mechanik jetzt an einer Stelle, und die Seitenleisten geben nur noch an, was
  * mit der Datei passieren soll.
+ *
+ * Seit dem 09.11.2026 reicht die Zone ALLE abgelegten Dateien weiter, nicht nur
+ * die erste. Schuelerarbeiten kommen stapelweise, und ein Stapel, von dem nur
+ * das erste Blatt ankommt, waere schlimmer als gar keine Ablage: Der Verlust
+ * faellt erst auf, wenn man die Liste zaehlt. Wer nur eine Datei verarbeiten
+ * kann, nimmt sich `dateien[0]` — sichtbar an der Aufrufstelle.
  */
 
 export interface FileDropZone {
@@ -26,7 +32,7 @@ export interface FileDropZone {
         onDrop: (e: React.DragEvent) => void;
     };
     /**
-     * An das `<input type="file">` haengen — der zweite Weg zur selben Datei.
+     * An das `<input type="file">` haengen — der zweite Weg zu denselben Dateien.
      *
      * Lag zuvor als `handleFileChange` zeichengleich in jeder Seitenleiste, und
      * genau daran ist die CI gescheitert: Nachdem die Drag-Mechanik hierher
@@ -36,7 +42,9 @@ export interface FileDropZone {
     onFileInputChange: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
 }
 
-export function useFileDropZone(onFile: (file: File) => void | Promise<void>): FileDropZone {
+export function useFileDropZone(
+    onFiles: (dateien: File[]) => void | Promise<void>
+): FileDropZone {
     const [isDragging, setIsDragging] = useState(false);
 
     const halten = useCallback((e: React.DragEvent) => {
@@ -56,22 +64,22 @@ export function useFileDropZone(onFile: (file: File) => void | Promise<void>): F
         e.stopPropagation();
         setIsDragging(false);
 
-        const file = e.dataTransfer.files?.[0];
-        if (!file) return;
+        const dateien = Array.from(e.dataTransfer.files ?? []);
+        if (dateien.length === 0) return;
 
-        await onFile(file);
-    }, [onFile]);
+        await onFiles(dateien);
+    }, [onFiles]);
 
     const auswaehlen = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+        const dateien = Array.from(e.target.files ?? []);
+        if (dateien.length === 0) return;
 
-        await onFile(file);
+        await onFiles(dateien);
         // Zuruecksetzen, damit dieselbe Datei erneut gewaehlt werden kann. Ueber
         // das Ereignis statt ueber eine Referenz — so braucht die Seitenleiste
         // ihre `fileInputRef` nur noch zum Oeffnen des Dialogs.
         e.target.value = '';
-    }, [onFile]);
+    }, [onFiles]);
 
     return {
         isDragging,
