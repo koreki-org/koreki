@@ -1,0 +1,68 @@
+name: Koreki Desktop Build-Cache
+
+# Fuellt die Caches, die der Release-Build (desktop-release.yml) liest.
+#
+# WARUM ES DAS GIBT
+# GitHub gibt einen Cache nur an Laeufe auf DEMSELBEN Branch/Tag oder auf dem
+# Standard-Branch weiter. Jeder Release laeuft auf seinem eigenen Tag
+# (v0.9.101, v0.9.102 ...) — ein Cache, den ein Release anlegt, sieht der
+# naechste nie. Deshalb wird er hier auf `main` gefuellt, und zwar nur, wenn
+# sich die Abhaengigkeiten aendern.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src-tauri/Cargo.lock'
+      - 'src-tauri/Cargo.toml'
+      - 'package-lock.json'
+      - '.github/workflows/desktop-cache.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  vorwaermen:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node (fuellt den npm-Cache)
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install Rust Stable
+        uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
+        with:
+          toolchain: stable
+
+      # Gleicher shared-key wie im Release-Build, sonst passt der Schluessel nicht.
+      - name: Rust-Cache
+        uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          workspaces: src-tauri -> target
+          shared-key: desktop
+
+      - name: Install Linux Dependencies (Ubuntu only)
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: npm-Abhaengigkeiten laden
+        run: npm install --legacy-peer-deps
+
+      # Nur die Rust-Abhaengigkeiten werden gebraucht, nicht die Oberflaeche.
+      # tauri::generate_context! verlangt aber ein vorhandenes `out/`.
+      - name: Rust-Abhaengigkeiten uebersetzen
+        shell: bash
+        run: |
+          mkdir -p out && echo '<!doctype html>' > out/index.html
+          cd src-tauri && cargo build --release

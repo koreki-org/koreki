@@ -70,10 +70,15 @@ jobs:
 
       # Bereits kompilierte Rust-Bibliotheken wiederverwenden. Ohne Cache
       # uebersetzte jeder Build alle ~400 Abhaengigkeiten neu (7–8 Minuten).
+      # Gefuellt wird der Cache auf `main` (desktop-cache.yml) — einen Cache vom
+      # Tag des vorigen Releases saehe dieser Lauf nicht. Nur lesen, damit jeder
+      # Release-Tag nicht einen eigenen, nie wieder genutzten Cache anlegt.
       - name: Rust-Cache
         uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
         with:
           workspaces: src-tauri -> target
+          shared-key: desktop
+          save-if: false
 
       - name: Install Linux Dependencies (Ubuntu only)
         if: matrix.platform == 'ubuntu-latest'
