@@ -3,7 +3,7 @@ title: "Korrektur-Workflow (Technical Lifecycle)"
 description: "Technisches Architektur-Dokument: Korrektur-Workflow (Technical Lifecycle)"
 author: "@principal_architect"
 date: "2026-04-06"
-last_updated: "2026-10-24"
+last_updated: "2026-11-10"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -141,6 +141,30 @@ Musterlösungs-Export); geschrieben wird er nur über `setzeStamm`, das alle Mit
 > Teilaufgaben an, und der Rahmen war für Text gedacht, der für *alle* Aufgaben gilt. Bei zwei
 > echten Klassenarbeiten fehlte er in der Musterlösung der Korrektur. Warum der Kontext für
 > gleichmäßige Bewertung zählt: [AI Pedagogy Framework §9](./ai-pedagogy-framework.md).
+
+## 3.3 Zeichenaufgaben: Regeln nur bei Bedarf (seit 10.11.2026)
+
+Die Bilderkennung meldet jede Eintragung in einer Grafik als Zeile `[EINTRAGUNG: …]` (siehe
+[OCR Integrity Standards §3](./ocr-integrity-standards.md)). Zuordnung und Korrektur brauchen
+dafür eigene Regeln. Sie stehen **nicht** fest in deren Prompts, sondern in
+`src/prompts/core/default/eintragungen/`, und `mitZeichenRegel` (`src/lib/ai/eintragungen.ts`)
+hängt sie nur an, wenn der Schülertext eine solche Zeile enthält:
+
+| Phase | Regel (`eintragungen/…`) | Inhalt |
+|---|---|---|
+| Zuordnung | `zuordnung.md` | Die Zeile gehört zu der Aufgabe, die die Eintragung verlangt — nicht zu der, bei der die Grafik steht. |
+| Korrektur | `korrektur.md` | Je Merkmal der Musterlösung Soll / Ist / Abweichung / Toleranz im Notizzettel; Toleranz eine halbe Teilung des feinsten Gitters. Fehlt ein Ablesewert, sinkt die Sicherheit unter 70 statt Punkte zu kosten. |
+
+Eine Arbeit ohne Zeichnung bekommt damit exakt den bisherigen Prompt; die Regeln können die
+Bewertung gewöhnlicher Textaufgaben nicht verändern (Test: `tests/unit/ai/eintragungen-weiche.test.ts`).
+Die Musterlösung braucht keine eigene Regel: Lehrkräfte beschreiben die richtige Zeichnung in der
+Regel als Text („Gerade durch (5|20) und (10|40)“), und die Korrektur vergleicht damit.
+
+> [!WARNING]
+> Bis zum 10.11.2026 verwarf die Zuordnung den Inhalt jeder Aufgabe, deren Namen das Modell
+> veränderte — etwa „Aufgabe 3.1 (1 P)“ statt „Aufgabe 3.1“. qwen3.8 tat das regelmäßig; das
+> ganze Blatt galt dann als „[unbeantwortet]“. Die Zuordnung nutzt seitdem dieselbe Namensrettung
+> wie die Korrektur (`findeKiAufgabe`), und eine Punktangabe im Namen fällt vor dem Vergleich weg.
 
 ---
 

@@ -39,6 +39,7 @@ import calcTraceTemplate from '../../prompts/core/default/correction/math-engine
 import mathHybridHeader from '../../prompts/core/default/correction/math-engine/hybrid-header.md';
 import mathAutoHeader from '../../prompts/core/default/correction/math-engine/auto-header.md';
 import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from './temperature-guidance';
+import { mitZeichenRegel } from './eintragungen';
 
 import analyzeCleanSystemDefault from '../../prompts/core/default/analyze-and-clean/system.md';
 import analyzeCleanUserDefault from '../../prompts/core/default/analyze-and-clean/user.md';
@@ -133,6 +134,8 @@ export function buildCorrectionPrompt(
         system += buildGraphEngineReport(tasksLayout);
         system += buildCalcTraceEngineReport(tasksLayout);
     }
+
+    system = mitZeichenRegel(system, studentText, 'korrektur');
 
     user = setzeEin(user, '{{modelSolution}}', entschaerfeMarken(modelSolution));
  
@@ -260,6 +263,7 @@ export function buildCleanAndMapPrompt(studentText: string, tasksLayout?: Task[]
     if (model?.toLowerCase().includes('gemma')) {
         system = system + "\n\n" + gemma4AnalyzeMapGuard;
     }
+    system = mitZeichenRegel(system, studentText, 'zuordnung');
 
     const layoutString = tasksLayout 
         ? tasksLayout.map(t => `- ${t.name} (${t.maxPoints} P)`).join('\n')

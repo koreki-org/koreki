@@ -31,7 +31,7 @@ Koreki konsolidiert modellspezifische Prompts nach dem **Inheritance-Modell** (s
 ## 4. VRE Sampling Discipline (Variable Thermal Sizing)
 Die Trennung der Sampling-Strategie nach Task-Kontext ist Gesetz, nicht Konvention:
 - **Extraction-Fidelity (Vision/OCR/Mapping)**: Temperature **0.0**. Kein Interpretationsspielraum — jede Kreativität ist hier eine Halluzination.
-- **Grading-Kulanz (inhaltliche Korrektur)**: Temperature **0.7**, um semantische Äquivalenz zu erkennen.
+- **Inhaltliche Korrektur**: Temperatur aus dem KI-Profil, im Standardprofil **0.1** (`TEMPERATURE_MINIMUM`, `temperature-guidance.ts`) für reproduzierbare Benotung. Semantische Äquivalenz regeln die Prompts, nicht die Temperatur. (Bis 24.08.2026 stand hier 0.7.)
 - **Lokale Modelle (Ollama)**: Abweichende Mindesttemperaturen aus Inferenz-Stabilitätsgründen (Gemma/MoE 0.5, Qwen 0.3) sind dokumentierte Ausnahmen, keine generelle Aufweichung der Regel.
 
 Eine Prompt-Änderung, die diese Trennung verwischt (z. B. Kulanz in die Extraction-Phase einschleust), ist ein Layer-1-Verstoß.

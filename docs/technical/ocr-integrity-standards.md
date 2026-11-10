@@ -3,7 +3,7 @@ title: "Industrial OCR Integrity Standards"
 description: "Architektur und Protokolle zur Sicherstellung der 100%igen Transkriptions-Treue bei pädagogischen Scans."
 author: "@principal_architect"
 date: "2026-04-14"
-last_updated: "2026-10-30"
+last_updated: "2026-11-10"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -71,6 +71,17 @@ Das Modell erhält eine positive Definition von "gültiger Tinte" (= Tinte, die 
 4. **FEHLER-REPLIKATION**: Rechtschreibfehler werden exakt übernommen.
 5. **FORMATIERUNGS-VERBOT**: Kein Markdown, kein Fettdruck, keine Kursivschrift.
 6. **KEINE WISSENS-INJEKTION**: Das Modell ergänzt niemals Wörter aus seinem Fachwissen.
+
+### Eintragungen in Grafiken (seit 10.11.2026)
+Eine Zeichnung lässt sich nicht abschreiben. Zeichnet ein Schüler eine Linie, Kurve, einen Balken oder ein Kreuz in ein vorgedrucktes Diagramm, beschreibt die Bilderkennung jede Eintragung genau einmal als Zeile:
+
+```
+[EINTRAGUNG: Beschriftung "C" | gerade Linie | beginnt bei (0|0), durch (5|20), endet bei (10|40), zwischen A und B]
+```
+
+* **Abgelesen, nicht gedeutet:** Werte stammen nur aus der Lage der Tinte zu Achsen und Gitterlinien — nie aus Zahlen im Aufgabentext. Die Bilderkennung sieht die Musterlösung nicht und kann deshalb nicht auf den Sollwert hin „lesen“.
+* **Auch was gedruckt aussieht:** Eine Eintragung bleibt eine Eintragung, wenn sie einem gedruckten Objekt gleicht (z. B. ein ergänzter Balken in derselben Höhe wie sein Nachbar). Lücken, die die Grafik zum Ergänzen lässt, werden besonders geprüft.
+* **Ab hier gewöhnlicher Text:** Zuordnung und Korrektur behandeln die Zeile wie jede andere Antwort; ihre Zusatzregeln kommen nur bei Bedarf in den Prompt (siehe [Korrektur-Workflow §3.3](./correction-workflow.md)).
 
 ---
 
@@ -153,6 +164,11 @@ messages = [
 **Root Cause:** Unicode-Kreiszeichen sind im Trainingsdatensatz der Vision-Modelle unterrepräsentiert und visuell schwer von anderen Kreiszahlen zu unterscheiden, wenn der Kreis die Ziffer schneidet.
 
 **Lösung:** Im Vision-System-Prompt wird explizit verboten, Unicode-Kreissymbole zu verwenden. Stattdessen wird erzwungen, eingekreiste Zeichen als Standard-Zeichen mit Klammer zu transkribieren (z. B. `2)` statt `②`). Da der Mapper normale Nummerierungen wie `2)` bereits nativ verarbeitet, wird die Zuordnungszuverlässigkeit maximiert.
+
+### Limitation 5: Eintragungen in Grafiken sind modellabhängig (Stand: 2026-11-10)
+**Befund:** Gemessen an künstlichen Testbildern (Kennlinie, Funktionsgraph, Balkendiagramm; je richtig und falsch eingezeichnet). `qwen3.8` liest die Eintragungen genau ab und unterscheidet richtig von knapp falsch. `qwen3.6` liest Kreuze und Linien meist richtig, übernahm aber beim Balken den Sollwert aus dem Aufgabentext. Mistral Large meldete beim falschen Bild ebenfalls den Sollwert. Der Mistral-OCR-Endpunkt nimmt keine Anweisung entgegen und sieht Eintragungen gar nicht.
+
+**Folge:** Eine falsch eingezeichnete Linie kann bei diesen Modellen als richtig durchgehen. Zeichenaufgaben brauchen bis auf Weiteres die Durchsicht der Lehrkraft. Ein echter Scan (Bleistift, Radierspuren) ist noch nicht gemessen.
 
 ---
 
