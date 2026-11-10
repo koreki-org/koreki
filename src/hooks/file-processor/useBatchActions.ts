@@ -10,6 +10,7 @@ import { askConfirmation } from '@/lib/confirm-dialog';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { erzeugeKorrekturEintraege } from '@/lib/ai-protocol';
+import { verknuepfeDateien, meldeVerknuepfung } from '@/lib/dateien-verknuepfen';
 
 export const useBatchActions = (
     state: any,
@@ -129,7 +130,11 @@ export const useBatchActions = (
             !f.name.toLowerCase().endsWith('.csv')
         ).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
 
-        const standardItems: BatchFile[] = files.map((f, idx) => ({
+        // 3a. Fehlt einer importierten Arbeit genau diese Datei, bekommt sie sie, statt doppelt zu stehen.
+        const verknuepfung = verknuepfeDateien(useBatchStore.getState().batchFiles, files);
+        const bestand: BatchFile[] = verknuepfung.liste;
+
+        const standardItems: BatchFile[] = verknuepfung.uebrig.map((f, idx) => ({
             files: [f],
             name: `Schüler #${idx + 1 + moodleItems.length}`,
             originalName: f.name.replace(/\.[^/.]+$/, ""),
@@ -146,7 +151,6 @@ export const useBatchActions = (
         //    zwischen Moodle- und Einzeldateien gebraucht wird: nur die
         //    Einzeldateien stellen sich in die PDF-Typ-Warteschlange, und deren
         //    Platznummern muessen in die ENDGUELTIGE Liste zeigen.
-        const bestand: BatchFile[] = useBatchStore.getState().batchFiles;
         const nachMoodle = fuegeArbeitenHinzu(bestand, moodleItems);
         const nachDateien = fuegeArbeitenHinzu(nachMoodle.liste, standardItems);
         const finalBatch = nachDateien.liste;
@@ -169,33 +173,28 @@ export const useBatchActions = (
             })));
         }
 
-        // 6. Industrial Pipeline Trigger (@principal_architect)
-        // For Moodle items, we skip the UI queue and start semantic mapping immediately.
-        // `finalBatch` enthaelt seit dem Anhaengen auch Fertiges; die Schleife in
-        // `startExtraction` ueberspringt das, weil sie die Platznummern der
-        // GESAMTEN Liste braucht.
-        if (nachMoodle.liste.length > bestand.length) {
-            setTimeout(() => startExtraction(finalBatch), 200);
+        // 6. Moodle-Arbeiten gehen sofort in die Zuordnung, verknuepfte holen ihre Vorschau
+        //    nach. Nacheinander, weil beide ueber Platznummern schreiben; der Vorschau-Lauf
+        //    bekommt nur den Bestand — die neuen Dateien warten noch auf ihre Typfrage.
+        const moodleNeu = nachMoodle.liste.length > bestand.length;
+        if (verknuepfung.verknuepft > 0) meldeHinweis(meldeVerknuepfung(verknuepfung, 'hochladen'));
+        if (moodleNeu || verknuepfung.verknuepft > 0) {
+            setTimeout(async () => {
+                if (moodleNeu) await startExtraction(finalBatch);
+                if (verknuepfung.verknuepft > 0) await startExtraction(bestand, true);
+            }, 200);
         }
     }, [handleKorekiImport, setBatchFiles, setPdfTypeQueue, startExtraction]);
 
+    /** „Dateien verknüpfen" nach einem `.koreki`-Import; die Regeln stehen in `verknuepfeDateien`. */
     const handleRelinkFiles = useCallback(async (newFiles: File[]) => {
-        setBatchFiles((prev: BatchFile[]) => {
-            const next = [...prev];
-            let matched = 0;
-            next.forEach((item, idx) => {
-                if (item.files && item.files.length > 0) return;
-                const match = newFiles.find(f => f.name.includes(item.originalName || ''));
-                if (match) {
-                    next[idx] = { ...next[idx], files: [match] };
-                    matched++;
-                }
-            });
-            // `true`: Die wiederverbundenen Eintraege sind FERTIG (aus dem Import),
-            // brauchen aber ihre Vorschaubilder. Der einzige Weg, der das darf.
-            if (matched > 0) setTimeout(() => startExtraction(next, true), 100);
-            return next;
-        });
+        const verknuepfung = verknuepfeDateien(useBatchStore.getState().batchFiles, newFiles);
+        if (verknuepfung.verknuepft > 0) {
+            setBatchFiles(verknuepfung.liste);
+            // `true`: fertige Eintraege aus dem Import, denen nur die Vorschau fehlt.
+            setTimeout(() => startExtraction(verknuepfung.liste, true), 100);
+        }
+        meldeHinweis(meldeVerknuepfung(verknuepfung, 'verknuepfen'));
     }, [setBatchFiles, startExtraction]);
 
     const onToggleSelect = useCallback((idx: number) => {

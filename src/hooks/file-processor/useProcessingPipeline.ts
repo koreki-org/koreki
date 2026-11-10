@@ -98,9 +98,9 @@ export const useProcessingPipeline = (
      * das trifft JEDEN Moodle-Eintrag und jede Textdatei. Eine nachgereichte
      * Arbeit haette den ganzen Stapel erneut durch die KI geschickt.
      *
-     * `auchFertige` ist die EINE Ausnahme: Nach dem Wiederverbinden einer
-     * importierten Sitzung sind die Eintraege fertig, haben aber keine Vorschau —
-     * Dateien lassen sich nicht mit exportieren.
+     * `auchFertige` (nach dem Wiederverbinden eines Imports) holt NUR fehlende Vorschauen
+     * nach — sonst liefe eine offene Arbeit mit Text nebenbei in die KI (10.11.2026).
+     * Hier genuegt der vordere Teil der Liste: angehaengt wird hinten.
      */
     const startExtraction = useCallback(async (items: BatchFile[], auchFertige = false) => {
         setIsLoadingBatch(true);
@@ -112,7 +112,7 @@ export const useProcessingPipeline = (
             for (let i = 0; i < items.length; i++) {
                 if (signal.aborted) break;
                 const nurVorschauFehlt = auchFertige && !!items[i].files?.length && !items[i].previewDataUrls?.length;
-                if (items[i].status !== 'pending' && !nurVorschauFehlt) continue;
+                if (auchFertige ? !nurVorschauFehlt : items[i].status !== 'pending') continue;
                 setCurrentProcessingIndex(i);
                 
                 // Moodle/Digital Path: If no physical file but text is present, go straight to mapping

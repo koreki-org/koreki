@@ -96,12 +96,14 @@ const WEGE: Record<string, Weg> = {
             'Wird daraus je ein zweiter Aufrufweg, gehoert das Tor in den Hook.'
     },
     'hooks/file-processor/useBatchActions.ts': {
-        stellen: 3,
+        stellen: 4,
         tore: ['askConfirmation'],
         wege:
             '`handleKorekiImport` ersetzt die ganze Sitzung und fragt vorher. ' +
             '`handleStudentUpload` ersetzt NICHT — es haengt an (`fuegeArbeitenHinzu`), ' +
-            'der Bestand steckt im uebergebenen Wert.'
+            'der Bestand steckt im uebergebenen Wert. ' +
+            '`handleRelinkFiles` ersetzt NICHT — `verknuepfeDateien` gibt den ganzen Bestand ' +
+            'zurueck und setzt nur fehlende Dateien ein.'
     },
     'hooks/useDemoScenario.ts': {
         stellen: 2,
