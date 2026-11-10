@@ -2,16 +2,31 @@ name: Koreki Update-Kanal
 
 # Die installierten Desktop-Apps fragen NICHT `releases/latest` ab: GitHub
 # zaehlt Pre-Releases dort nicht mit, und Koreki veroeffentlicht bis auf
-# Weiteres nur Pre-Releases. Sie fragen stattdessen die latest.json im festen
-# Release `aktualisierung` ab (Adresse in src-tauri/tauri.conf.json).
+# Weiteres nur Pre-Releases. Sie fragen die latest.json im Branch
+# `update-kanal` ab (Adresse in src-tauri/tauri.conf.json):
+#   https://raw.githubusercontent.com/koreki-org/koreki/update-kanal/latest.json
+#
+# WARUM EIN BRANCH UND KEIN RELEASE
+# Bis zum 10.11.2026 lag der Kanal in einem festen Release `aktualisierung`.
+# Im Repo sind unveraenderliche Releases eingeschaltet: ein veroeffentlichter
+# Release nimmt keine Dateien mehr an. Der erste echte Lauf (v0.9.99) scheiterte
+# genau daran. Ein Branch ist veraenderlich, ohne dass dafuer der Schutz der
+# Releases fallen muss.
 #
 # Dieser Workflow kopiert die latest.json eines Releases genau in dem Moment
 # dorthin, in dem er veroeffentlicht wird. Das Veroeffentlichen bleibt damit
-# der Freigabe-Schritt: ein Entwurf erreicht keine App.
+# der Freigabe-Schritt: ein Entwurf erreicht keine App. Von Hand gestartet
+# (workflow_dispatch) setzt er den Kanal auf einen beliebigen veroeffentlichten
+# Release — so wird eine zurueckgezogene Version wieder abgeloest.
 
 on:
   release:
     types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Veroeffentlichter Release, auf den der Kanal zeigen soll (z. B. v0.9.100)'
+        required: true
 
 permissions:
   contents: write
@@ -22,13 +37,11 @@ concurrency:
 
 jobs:
   kanal:
-    # Der Kanal-Release selbst loest nichts aus.
-    if: github.event.release.tag_name != 'aktualisierung'
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       REPO: ${{ github.repository }}
-      TAG: ${{ github.event.release.tag_name }}
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
     steps:
       - name: latest.json des Releases holen
         run: |
@@ -38,14 +51,28 @@ jobs:
             exit 1
           fi
 
-      - name: Kanal anlegen, falls es ihn noch nicht gibt
+      - name: Kanal-Branch holen oder neu anlegen
         run: |
-          if ! gh release view aktualisierung --repo "$REPO" >/dev/null 2>&1; then
-            gh release create aktualisierung --repo "$REPO" \
-              --prerelease --latest=false \
-              --title "Update-Kanal (nicht zum Herunterladen)" \
-              --notes "Technischer Release: enthaelt nur die latest.json, die installierte Koreki-Desktop-Apps abfragen. Installer stehen an den versionierten Releases."
+          git init -q kanal
+          cd kanal
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git"
+          if git fetch -q --depth 1 origin update-kanal; then
+            git checkout -q -b update-kanal FETCH_HEAD
+          else
+            git checkout -q --orphan update-kanal
           fi
 
       - name: latest.json in den Kanal legen
-        run: gh release upload aktualisierung neu/latest.json --repo "$REPO" --clobber
+        run: |
+          cp neu/latest.json kanal/latest.json
+          cd kanal
+          git add latest.json
+          if git diff --cached --quiet; then
+            echo "Kanal zeigt bereits auf $TAG."
+            exit 0
+          fi
+          git commit -q -m "Update-Kanal: $TAG"
+          git push -q origin update-kanal
+          echo "Kanal zeigt jetzt auf $TAG."

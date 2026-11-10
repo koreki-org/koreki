@@ -14,7 +14,7 @@ Hintergrund und Checkliste: [docs/operations/release-process.md](../../../docs/o
 1. **Nur Pre-Releases**, bis Andreas ausdrücklich etwas anderes sagt. Nie `--prerelease=false`, nie `--latest`. *(Wächter: `tests/unit/release-governance.test.ts` prüft die Workflows)*
 2. **Release Notes gibt Andreas frei.** Claude entwirft sie, legt sie als Text vor und veröffentlicht erst nach einem klaren Ja. Eine Freigabe gilt für genau diesen Text und genau diese Version.
 
-**Veröffentlichen ist der eigentliche Freigabe-Schritt.** In dem Moment kopiert `update-channel.yml` die `latest.json` in den Kanal `aktualisierung`, und alle installierten Desktop-Apps zeigen beim nächsten Start „Neue Version“. Gleichzeitig startet der Docker-Build für Community.
+**Veröffentlichen ist der eigentliche Freigabe-Schritt.** In dem Moment kopiert `update-channel.yml` die `latest.json` in den Branch `update-kanal`, und alle installierten Desktop-Apps zeigen beim nächsten Start „Neue Version“. Gleichzeitig startet der Docker-Build für Community.
 
 ## Werkzeug
 
@@ -55,11 +55,13 @@ gh release edit v<neu> --repo koreki-org/koreki --notes-file <datei> --title "Ko
 
 ### 6. Nachprüfen
 - `gh run list --workflow update-channel.yml --limit 1` → erfolgreich.
-- `gh release download aktualisierung --pattern latest.json --output - | grep '"version"'` → zeigt `<neu>`.
+- `curl -s https://raw.githubusercontent.com/koreki-org/koreki/update-kanal/latest.json | grep '"version"'` → zeigt `<neu>` (die Adresse wird bis zu fünf Minuten zwischengespeichert).
 - `gh run list --workflow community-release.yml --limit 1` → erfolgreich; das Image heißt `ghcr.io/koreki-org/koreki:<neu>` (kein `latest` bei Pre-Releases).
 
 ## Was schiefgehen kann
 
-- **Falsch veröffentlicht:** `gh release edit v<neu> --draft=true` zieht den Release zurück. Der Kanal zeigt aber weiter auf ihn — die vorige `latest.json` von Hand wieder hochladen (`gh release download v<alt> --pattern latest.json`, dann `gh release upload aktualisierung latest.json --clobber`).
-- **Den Release `aktualisierung` nie löschen.** Seine Adresse ist in jede installierte App eingebaut.
+- **Veröffentlichte Releases sind unveränderlich** (Repo-Einstellung „immutable releases“): Dateien und Tag lassen sich danach nicht mehr ändern. Was am Entwurf fehlt, muss vor dem Veröffentlichen da sein.
+- **Falsch veröffentlicht:** Den Kanal auf die vorige Version zurücksetzen: `gh workflow run update-channel.yml -f tag=v<alt>`. Das Problem dann mit einer neuen Version beheben.
+- **Den Branch `update-kanal` nie löschen oder umbenennen.** Seine Adresse ist in jede installierte App eingebaut. Ausnahme: v0.9.99 fragt noch den alten Kanal-Release `aktualisierung` ab und findet dort nie etwas.
+- **„failed to decode base64 key: Invalid symbol 239“:** Vor dem Secret steht ein Byte-Order-Mark. Windows PowerShell 5.1 setzt es, wenn man den Schlüssel per Pipe an `gh` gibt (so geschehen am 10.11.2026). Das Secret immer aus der Datei setzen, in Git Bash: `gh secret set TAURI_SIGNING_PRIVATE_KEY --repo koreki-org/koreki < ~/.tauri/koreki-updater.key`.
 - **Signaturschlüssel verloren:** Kein Update erreicht mehr eine installierte App. Die Sicherung liegt bei Andreas im Passwort-Manager.

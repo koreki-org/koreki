@@ -12,8 +12,9 @@ import { join } from 'path';
  *
  * Daraus folgt eine technische Falle: GitHubs `releases/latest` zaehlt
  * Pre-Releases nicht mit. Ein Updater, der dort fragt, faende nie etwas. Er
- * fragt deshalb den festen Kanal `aktualisierung`, den update-channel.yml beim
- * Veroeffentlichen fuellt.
+ * fragt deshalb die latest.json im Branch `update-kanal`, die update-channel.yml
+ * beim Veroeffentlichen schreibt. Ein Branch, weil im Repo unveraenderliche
+ * Releases gelten: ein Kanal-RELEASE nahm keine neue Datei an (v0.9.99).
  *
  * Wer die Pre-Release-Regel aufhebt, aendert diesen Test bewusst mit — und den
  * Skill dazu.
@@ -37,11 +38,11 @@ describe('Release-Governance', () => {
         expect(release.bundle.createUpdaterArtifacts).toBe(true);
     });
 
-    it('der Updater fragt den festen Kanal, nicht releases/latest', () => {
+    it('der Updater fragt den Kanal-Branch, nicht releases/latest', () => {
         const conf = JSON.parse(lies('src-tauri/tauri.conf.json'));
         const endpunkte: string[] = conf.plugins.updater.endpoints;
         expect(endpunkte).toEqual([
-            'https://github.com/koreki-org/koreki/releases/download/aktualisierung/latest.json'
+            'https://raw.githubusercontent.com/koreki-org/koreki/update-kanal/latest.json'
         ]);
         expect(conf.plugins.updater.pubkey).toMatch(/^[A-Za-z0-9+/=]{40,}$/);
     });
@@ -51,7 +52,9 @@ describe('Release-Governance', () => {
         expect(existsSync(join(ROOT, pfad))).toBe(true);
         const wf = lies(pfad);
         expect(wf).toMatch(/release:\s*\n\s*types:\s*\[published\]/);
-        expect(wf).toContain('gh release upload aktualisierung');
+        expect(wf).toContain('git push -q origin update-kanal');
+        // Veroeffentlichte Releases sind unveraenderlich — dorthin hochladen scheitert.
+        expect(wf).not.toContain('gh release upload');
         expect(wf).not.toMatch(/^\s*push:\s*$/m); // Ausloeser `push:`, nicht `push: true` der Docker-Aktion
     });
 

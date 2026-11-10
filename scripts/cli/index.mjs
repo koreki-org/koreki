@@ -555,8 +555,8 @@ async function maybeOpenBrowser(platform, releasesUrl) {
 async function installFromRelease(assetPattern, installFn, releasesUrl, onNotFound) {
   // Note: intentionally NOT using /releases/latest — Koreki's releases are
   // currently tagged as prereleases, which that endpoint always excludes (404).
-  // Several releases are fetched because the newest one may be the technical
-  // update channel `aktualisierung` (only latest.json, no installers).
+  // Several releases are fetched because a release may carry no installer for
+  // this platform (e.g. the abandoned update-channel release `aktualisierung`).
   const apiUrl = 'https://api.github.com/repos/koreki-org/koreki/releases?per_page=10';
   const notFound = onNotFound || (() => printManualFallback(releasesUrl));
 

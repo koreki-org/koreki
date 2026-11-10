@@ -27,7 +27,7 @@ graph TD
     end
 
     G -->|Release Notes freigegeben, veröffentlicht| H{release: published}
-    H --> I[📡 latest.json in den Kanal aktualisierung]
+    H --> I[📡 latest.json in den Branch update-kanal]
     H --> D[🐳 Build Docker Image]
     D --> E[📤 ghcr.io, nur Versionstag]
 ```
@@ -83,14 +83,14 @@ GitHub Actions baut native Installer für Windows (`.exe`, `.msi`) und Linux (`.
 *   **Aktion erforderlich:** Release Notes entwerfen, freigeben lassen, dann per `gh release edit` veröffentlichen (Skill `release`).
 
 ### Selbst-Aktualisierung der Desktop-App (seit 10.11.2026)
-Installierte Desktop-Apps fragen beim Start einmal `https://github.com/koreki-org/koreki/releases/download/aktualisierung/latest.json` ab — den festen **Update-Kanal**, nicht `releases/latest`, weil GitHub Pre-Releases dort nicht mitzählt. `update-channel.yml` kopiert die `latest.json` beim Veröffentlichen eines Releases dorthin. Den Release `aktualisierung` nie löschen: seine Adresse steckt in jeder installierten App. Gibt es eine neuere Version, erscheint rechts oben die Pille „Neue Version“; installiert wird nur auf Klick in den Einstellungen, weil der Neustart die geladenen Arbeiten löscht (Code: `src/lib/desktop-update.ts`).
+Installierte Desktop-Apps fragen beim Start einmal `https://raw.githubusercontent.com/koreki-org/koreki/update-kanal/latest.json` ab — den **Update-Kanal**, nicht `releases/latest`, weil GitHub Pre-Releases dort nicht mitzählt. `update-channel.yml` schreibt die `latest.json` beim Veröffentlichen eines Releases in den Branch `update-kanal`. Ein Branch und kein Release, weil im Repo unveränderliche Releases gelten und ein Kanal-Release keine neue Datei annimmt (so gescheitert bei v0.9.99, die deshalb noch auf den toten Release `aktualisierung` zeigt). Den Branch nie löschen: seine Adresse steckt in jeder installierten App. Gibt es eine neuere Version, erscheint rechts oben die Pille „Neue Version“; installiert wird nur auf Klick in den Einstellungen, weil der Neustart die geladenen Arbeiten löscht (Code: `src/lib/desktop-update.ts`).
 
 *   **Freigabe = Veröffentlichen.** Ein Entwurf erreicht keine App. Erst das Veröffentlichen füllt den Kanal und verteilt die Version an alle Apps — vorher prüfen.
 *   **Signatur:** Der Workflow baut mit `--config src-tauri/tauri.release.conf.json` die Update-Pakete (`.sig`) und `latest.json`. Dafür braucht er die Secrets `TAURI_SIGNING_PRIVATE_KEY` (Inhalt der Schlüsseldatei) und `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (leer, solange der Schlüssel kein Passwort hat). Der öffentliche Schlüssel steht in `src-tauri/tauri.conf.json` unter `plugins.updater.pubkey`.
 *   **Schlüssel nie verlieren.** Ohne den privaten Schlüssel kann keine installierte App mehr aktualisiert werden; alle müssten von Hand neu installieren. Eine Sicherungskopie liegt außerhalb von Rechner und Repository (Passwort-Manager).
 *   **Lokale Builds** (`npm run build:desktop`) erzeugen keine Update-Pakete und brauchen keinen Schlüssel.
-*   **Linux:** Selbst-Aktualisierung nur für das AppImage, nicht für `.deb`/`.rpm`.
-*   **Altbestand:** Versionen bis 0.9.98 haben keinen Updater und müssen einmal von Hand aktualisiert werden.
+*   **Linux:** Die `latest.json` enthält AppImage, `.deb` und `.rpm`. Ob die Selbst-Aktualisierung bei `.deb`/`.rpm` klappt, ist ungetestet.
+*   **Altbestand:** Versionen bis 0.9.98 haben keinen Updater, 0.9.99 fragt den falschen Kanal. Beide müssen einmal von Hand auf 0.9.100 oder neuer aktualisiert werden.
 
 ## 🛡️ Permanent Release-Audit Guardrails (Checkliste vor jedem Release)
 
