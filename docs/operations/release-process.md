@@ -3,7 +3,7 @@ title: "📦 Koreki Release-Prozess (Community & Desktop)"
 description: "Leitfaden zur Erstellung von Versionen für die Open-Source Community und die Desktop-Applikation."
 author: "@principal_architect"
 date: "2026-04-23"
-last_updated: "2026-04-23"
+last_updated: "2026-11-10"
 status: "Active"
 domain: "operations"
 security_classification: "Public"
@@ -80,6 +80,16 @@ GitHub Actions baut native Installer für Windows (`.msi`) und macOS (`.dmg` fü
 *   **Ablage:** Die Dateien werden an einen neuen **Draft Release** auf GitHub angehängt.
 *   **Aktion erforderlich:** Der Draft Release muss manuell im GitHub UI geprüft und auf "Published" gesetzt werden.
 
+### Selbst-Aktualisierung der Desktop-App (seit 10.11.2026)
+Installierte Desktop-Apps fragen beim Start einmal `https://github.com/koreki-org/koreki/releases/latest/download/latest.json` ab. Gibt es eine neuere Version, erscheint rechts oben die Pille „Neue Version“; installiert wird nur auf Klick in den Einstellungen, weil der Neustart die geladenen Arbeiten löscht (Code: `src/lib/desktop-update.ts`).
+
+*   **Freigabe = Veröffentlichen.** `releases/latest` kennt keine Entwürfe. Erst das Veröffentlichen des Draft Release verteilt die Version an alle Apps — vorher prüfen.
+*   **Signatur:** Der Workflow baut mit `--config src-tauri/tauri.release.conf.json` die Update-Pakete (`.sig`) und `latest.json`. Dafür braucht er die Secrets `TAURI_SIGNING_PRIVATE_KEY` (Inhalt der Schlüsseldatei) und `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (leer, solange der Schlüssel kein Passwort hat). Der öffentliche Schlüssel steht in `src-tauri/tauri.conf.json` unter `plugins.updater.pubkey`.
+*   **Schlüssel nie verlieren.** Ohne den privaten Schlüssel kann keine installierte App mehr aktualisiert werden; alle müssten von Hand neu installieren. Eine Sicherungskopie liegt außerhalb von Rechner und Repository (Passwort-Manager).
+*   **Lokale Builds** (`npm run build:desktop`) erzeugen keine Update-Pakete und brauchen keinen Schlüssel.
+*   **Linux:** Selbst-Aktualisierung nur für das AppImage, nicht für `.deb`/`.rpm`.
+*   **Altbestand:** Versionen bis 0.9.98 haben keinen Updater und müssen einmal von Hand aktualisiert werden.
+
 ## 🛡️ Permanent Release-Audit Guardrails (Checkliste vor jedem Release)
 
 Um ein unaufgeräumtes Repository zu vermeiden, wird für einzelne Releases **keine separate Audit-Datei** mehr erstellt. Stattdessen führt der **Principal Architect** vor jedem `git push --tags` diese standardisierte Checkliste durch und dokumentiert die Freigabe direkt in der **GitHub Pull Request Beschreibung** oder im **Release-Changelog**.
@@ -91,6 +101,7 @@ Um ein unaufgeräumtes Repository zu vermeiden, wird für einzelne Releases **ke
 
 ### 2. 🏗️ Technische Integrität
 - [ ] **Versions-Synchronität:** Die Versionsnummer in `package.json` und `src-tauri/tauri.conf.json` ist absolut identisch.
+- [ ] **Update-Pakete:** Der Draft Release enthält `latest.json` und zu jedem Installer eine `.sig`-Datei. Fehlen sie, findet keine installierte App die Version.
 - [ ] **Tag-Format:** Die Versionsnummer ist rein numerisch (z.B. `0.9.57`). Suffixe wie `-beta` sind ausgeschlossen (Tauri-Windows-Kompatibilität).
 - [ ] **Relative Pfade:** Alle Verlinkungen im `README.md` und der Hauptdokumentation zeigen auf existierende, korrekte Pfade im Repository.
 

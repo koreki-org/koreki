@@ -26,6 +26,7 @@ jest.mock('@/lib/env-context', () => ({
     isLocalInstance: jest.fn(),
     isKeycloakAuth: jest.fn(),
     getAuthType: jest.fn(),
+    isDesktopTarget: jest.fn(),
 }));
 
 jest.mock('@/components/layout/HeaderBadges', () => ({

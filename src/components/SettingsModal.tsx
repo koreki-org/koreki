@@ -8,6 +8,7 @@ import packageJson from '../../package.json';
 
 // Sub-Components
 import { PrivacySection, AIProviderSection, AccountSection, DangerZoneSection } from './settings/SettingsSections';
+import { NeueVersionSection } from './settings/NeueVersionSection';
 
 // Hooks
 import { useSystemSettings } from '../hooks/useSystemSettings';
@@ -92,6 +93,10 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 {/* Content - Scrollable */}
                 <div className="flex-1 overflow-y-auto px-8 pb-4">
+                {/* Nur Desktop, nur mit neuer Version — sonst rendert er nichts. Ganz
+                    oben, weil die Kopfleisten-Pille genau hierher fuehrt. */}
+                <NeueVersionSection aktuelleVersion={packageJson.version} />
+
 
                 {/* Systemeinstellungen bleiben Admins vorbehalten. Fuer alle anderen enthaelt
                     der Dialog ausschliesslich die Konto-Loeschung: sie muss ohne Admin

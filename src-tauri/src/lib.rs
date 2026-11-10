@@ -423,9 +423,20 @@ fn open_devtools(window: tauri::WebviewWindow) {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-  tauri::Builder::default()
+  let builder = tauri::Builder::default()
     .plugin(tauri_plugin_log::Builder::default().build())
-    .plugin(tauri_plugin_shell::init())
+    .plugin(tauri_plugin_shell::init());
+
+  // Neue Versionen pruefen, laden und nach dem Einspielen neu starten.
+  // Installiert wird nie von selbst — nur, wenn die Lehrkraft es anstoesst
+  // (src/lib/desktop-update.ts). Die Pakete muessen mit dem Schluessel aus
+  // tauri.conf.json (`plugins.updater.pubkey`) signiert sein.
+  #[cfg(desktop)]
+  let builder = builder
+    .plugin(tauri_plugin_updater::Builder::new().build())
+    .plugin(tauri_plugin_process::init());
+
+  builder
     .invoke_handler(tauri::generate_handler![
         ping_ollama_command,
         get_ollama_models_command,

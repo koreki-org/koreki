@@ -49,6 +49,10 @@ jobs:
         uses: tauri-apps/tauri-action@84b9d35b5fc46c1e45415bdb6144030364f7ebc5 # v0.6.2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Signiert die Pakete fuer die Selbst-Aktualisierung. Ohne gueltige
+          # Signatur verweigert die installierte App das Update.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           # Force Desktop Mode for static export
           NEXT_PUBLIC_KOREKI_MODE: desktop
           NEXT_PUBLIC_KOREKI_DESKTOP: "true"
@@ -58,4 +62,8 @@ jobs:
           releaseBody: 'Professional AI-Assisted Grading for Educators. Download the installer for your OS below.'
           releaseDraft: true
           prerelease: false
-          args: ${{ matrix.args }}
+          # Update-Pakete + Signaturen nur im Release-Build. Lokal (`npm run
+          # build:desktop`) gibt es keinen privaten Schluessel; mit dem Schalter
+          # in tauri.conf.json wuerde dort jeder Build abbrechen. tauri-action
+          # legt aus den Signaturen die latest.json an, die die App abfragt.
+          args: --config src-tauri/tauri.release.conf.json ${{ matrix.args }}

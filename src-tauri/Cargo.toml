@@ -29,5 +29,11 @@ futures-util = "0.3"
 rfd = "0.14"
 keyring = "2.3.3"
 
+# Selbst-Aktualisierung gibt es nur auf dem Desktop; die mobilen Ziele
+# kennen das Plugin nicht.
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+
 [dev-dependencies]
 tokio = { version = "1", features = ["full"] }

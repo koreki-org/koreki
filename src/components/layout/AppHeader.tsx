@@ -4,6 +4,7 @@ import { Settings, LogOut, Loader2, HelpCircle, Sparkles, FileText, FileUp, Came
 import Logo from '../Logo';
 import { Button } from '../ui/Button';
 import { HeaderBadges } from './HeaderBadges';
+import { NeueVersionHinweis } from './NeueVersionHinweis';
 import { useGlobalStatus } from '../../hooks/useGlobalStatus';
 import { isLocalInstance, isKeycloakAuth, getAuthType } from '../../lib/env-context';
 import { User } from '../../types';
@@ -155,11 +156,11 @@ const Header: React.FC<HeaderProps> = ({
     activeGradingMemoryName,
     hasActiveWork
 }) => {
-    // --- STAGE 9: INDUSTRIAL GLOBAL STATUS ---
     const { refs, logic, actions } = useGlobalStatus(userData, onImportSession, onRelinkFiles);
 
     const renderQuickActions = (isMobile: boolean) => (
         <div className={`${isMobile ? 'flex lg:hidden' : 'hidden lg:flex'} items-center justify-end gap-1.5 sm:gap-2 shrink-0 ml-auto lg:ml-0`}>
+            <NeueVersionHinweis onOeffnen={onShowSettings} />
             <HeaderPortalTooltip title="Hilfe & Infos">
                 <Button 
                     variant="outline" 
@@ -170,7 +171,6 @@ const Header: React.FC<HeaderProps> = ({
                     <HelpCircle size={16} />
                 </Button>
             </HeaderPortalTooltip>
-            
             {(userData?.role === 'ADMIN' || getAuthType() === 'LOGTO' || (isLocalInstance() && !isKeycloakAuth())) && (
                 <HeaderPortalTooltip title={userData?.role === 'ADMIN' ? 'System-Einstellungen' : 'Konto & Einstellungen'}>
                     <Button 
