@@ -31,8 +31,8 @@ export const ExcelFormatHinweis: React.FC = () => (
                 <li><strong>Spalte C</strong> — Seiten, freiwillig</li>
             </ul>
             <p className="mt-2 mb-0">
-                Steht der ganze Name in Spalte A, wird er geteilt: „Meier, Anna" ebenso
-                wie „Anna Meier".
+                Steht der ganze Name in Spalte A, wird er geteilt: „Meier, Anna“ ebenso
+                wie „Anna Meier“.
             </p>
             <p className="mt-2 mb-0">
                 Wer keine Seitenzahl hat, bekommt die übrigen Seiten gleichmäßig
