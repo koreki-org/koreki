@@ -60,8 +60,11 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: 'Koreki Desktop ${{ github.ref_name }}'
           releaseBody: 'Professional AI-Assisted Grading for Educators. Download the installer for your OS below.'
+          # Entwurf + Pre-Release: Veroeffentlicht wird erst nach Freigabe der
+          # Release Notes (Skill `release`). Bis auf Widerruf nur Pre-Releases;
+          # tests/unit/release-governance.test.ts haelt beides fest.
           releaseDraft: true
-          prerelease: false
+          prerelease: true
           # Update-Pakete + Signaturen nur im Release-Build. Lokal (`npm run
           # build:desktop`) gibt es keinen privaten Schluessel; mit dem Schalter
           # in tauri.conf.json wuerde dort jeder Build abbrechen. tauri-action

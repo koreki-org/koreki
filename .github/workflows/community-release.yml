@@ -1,11 +1,12 @@
 name: Koreki Community Release (Docker)
 
+# Gebaut wird erst, wenn ein Release veroeffentlicht ist — nicht schon beim
+# Tag. So gilt fuer das Image dieselbe Freigabe wie fuer die Desktop-App
+# (Skill `release`, Waechter tests/unit/release-governance.test.ts).
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - 'v*'
-      - '[0-9]*'
+  release:
+    types: [published]
 
 jobs:
   build-and-push:
@@ -36,9 +37,13 @@ jobs:
         uses: docker/metadata-action@8e5442c4ef9f78752691e2d8f8d19755c6f78e81 # v5.5.1
         with:
           images: ghcr.io/${{ github.repository }}
+          # `latest` nur fuer echte Releases. Solange Koreki nur Pre-Releases
+          # veroeffentlicht, bekommt das Image nur seine Versionsnummer.
+          flavor: |
+            latest=false
           tags: |
             type=semver,pattern={{version}}
-            type=raw,value=latest
+            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
 
       - name: Build and Push Community Edition
         uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.1.0

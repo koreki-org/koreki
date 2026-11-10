@@ -1,0 +1,65 @@
+---
+name: release
+description: Neue Koreki-Version über die GitHub CLI veröffentlichen — Version setzen, Build abwarten, Release Notes zur Freigabe vorlegen, als Pre-Release veröffentlichen
+---
+
+# Skill: Release
+
+Gilt für Desktop (Tauri) und Community (Docker). SaaS wird nicht über Releases verteilt, sondern über Coolify bei jedem Push auf `main`.
+
+Hintergrund und Checkliste: [docs/operations/release-process.md](../../../docs/operations/release-process.md).
+
+## Zwei feste Regeln
+
+1. **Nur Pre-Releases**, bis Andreas ausdrücklich etwas anderes sagt. Nie `--prerelease=false`, nie `--latest`. *(Wächter: `tests/unit/release-governance.test.ts` prüft die Workflows)*
+2. **Release Notes gibt Andreas frei.** Claude entwirft sie, legt sie als Text vor und veröffentlicht erst nach einem klaren Ja. Eine Freigabe gilt für genau diesen Text und genau diese Version.
+
+**Veröffentlichen ist der eigentliche Freigabe-Schritt.** In dem Moment kopiert `update-channel.yml` die `latest.json` in den Kanal `aktualisierung`, und alle installierten Desktop-Apps zeigen beim nächsten Start „Neue Version“. Gleichzeitig startet der Docker-Build für Community.
+
+## Werkzeug
+
+GitHub CLI, angemeldet als `koreki-org`. Unter Windows liegt sie unter `C:\Program Files\GitHub CLI\gh.exe`, falls `gh` im aktuellen Terminal noch nicht im Pfad ist.
+
+## Ablauf
+
+### 1. Vorbereiten
+- `main` ist sauber und gepusht (`git status`, `git log origin/main..`).
+- Letzten Tag ermitteln: `git tag --sort=-creatordate | head -1`.
+- Neue Versionsnummer: rein numerisch (`0.9.99`), kein `-beta` — der Windows-Installer (MSI) bricht sonst ab.
+
+### 2. Version setzen, Tag pushen
+- `npm version <neu> --no-git-tag-version` (schreibt `package.json` und `package-lock.json`).
+- Dieselbe Nummer in `src-tauri/tauri.conf.json` → `"version"`. Beide müssen identisch sein; die App vergleicht ihre Version mit der aus `latest.json`.
+- Commit `chore: release v<neu>` direkt auf `main`, Tag `v<neu>`, dann **beide** pushen: `git push origin main` und `git push origin v<neu>`.
+
+### 3. Build abwarten
+- `gh run list --workflow desktop-release.yml --limit 1`, dann `gh run watch <id>` im Hintergrund.
+- Danach den Entwurf prüfen: `gh release view v<neu> --json assets --jq '.assets[].name'`. Erwartet:
+  - Windows: `*_x64-setup.exe` und `*.msi`, jeweils mit `.sig`
+  - Linux: `*.AppImage` mit `.sig`, dazu `.deb` und `.rpm`
+  - `latest.json`
+
+  Fehlen `.sig` oder `latest.json`, ist das Secret `TAURI_SIGNING_PRIVATE_KEY` falsch oder leer. **Nicht veröffentlichen.**
+
+### 4. Release Notes entwerfen und vorlegen
+- Grundlage: `git log v<alt>..v<neu> --oneline --no-merges`.
+- Für Lehrkräfte schreiben, nicht für Entwickler: Was kann ich jetzt, was ist behoben. Anrede du, kein Technikjargon, Begriffe aus `koreki-design-system` §2 (Expertise, Skills, Erfahrungsschatz, Intelligenz, Vorschlag).
+- Weglassen: interne Umbauten, Tests, Wächter, Abhängigkeiten, Compliance-Akte.
+- Aufbau: eine Zeile Überblick, dann „Neu“, „Verbessert“, „Behoben“ als kurze Listen. Leere Abschnitte entfallen.
+- Text in eine Datei im Scratchpad schreiben, **im Chat vollständig zeigen und auf Freigabe warten.** Änderungswünsche einarbeiten und erneut vorlegen.
+
+### 5. Veröffentlichen (nur nach Freigabe)
+```bash
+gh release edit v<neu> --repo koreki-org/koreki --notes-file <datei> --title "Koreki v<neu>" --draft=false --prerelease
+```
+
+### 6. Nachprüfen
+- `gh run list --workflow update-channel.yml --limit 1` → erfolgreich.
+- `gh release download aktualisierung --pattern latest.json --output - | grep '"version"'` → zeigt `<neu>`.
+- `gh run list --workflow community-release.yml --limit 1` → erfolgreich; das Image heißt `ghcr.io/koreki-org/koreki:<neu>` (kein `latest` bei Pre-Releases).
+
+## Was schiefgehen kann
+
+- **Falsch veröffentlicht:** `gh release edit v<neu> --draft=true` zieht den Release zurück. Der Kanal zeigt aber weiter auf ihn — die vorige `latest.json` von Hand wieder hochladen (`gh release download v<alt> --pattern latest.json`, dann `gh release upload aktualisierung latest.json --clobber`).
+- **Den Release `aktualisierung` nie löschen.** Seine Adresse ist in jede installierte App eingebaut.
+- **Signaturschlüssel verloren:** Kein Update erreicht mehr eine installierte App. Die Sicherung liegt bei Andreas im Passwort-Manager.

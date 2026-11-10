@@ -555,15 +555,19 @@ async function maybeOpenBrowser(platform, releasesUrl) {
 async function installFromRelease(assetPattern, installFn, releasesUrl, onNotFound) {
   // Note: intentionally NOT using /releases/latest — Koreki's releases are
   // currently tagged as prereleases, which that endpoint always excludes (404).
-  const apiUrl = 'https://api.github.com/repos/koreki-org/koreki/releases?per_page=1';
+  // Several releases are fetched because the newest one may be the technical
+  // update channel `aktualisierung` (only latest.json, no installers).
+  const apiUrl = 'https://api.github.com/repos/koreki-org/koreki/releases?per_page=10';
   const notFound = onNotFound || (() => printManualFallback(releasesUrl));
 
   console.log(c('cyan', '\n🔎 Checking latest release on GitHub...'));
   let release;
   try {
     const releases = await fetchJson(apiUrl);
-    release = Array.isArray(releases) ? releases[0] : null;
-    if (!release) throw new Error('No releases found');
+    release = Array.isArray(releases)
+      ? releases.find((r) => !r.draft && (r.assets || []).some((a) => assetPattern.test(a.name)))
+      : null;
+    if (!release) throw new Error('No release with a matching installer found');
   } catch (err) {
     console.log(c('red', `✖ Could not reach GitHub: ${err.message}`));
     notFound();
@@ -661,7 +665,7 @@ async function installLinuxDeb(debPath) {
 async function setupDesktopApp(platform) {
   console.log(c('bold', '💻 Koreki Desktop Application Installer'));
 
-  const releasesUrl = 'https://github.com/koreki-org/koreki/releases/latest';
+  const releasesUrl = 'https://github.com/koreki-org/koreki/releases';
 
   if (platform === 'win32') {
     await installFromRelease(/_x64-setup\.exe$/i, installWindows, releasesUrl);

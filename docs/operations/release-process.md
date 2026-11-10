@@ -21,15 +21,15 @@ graph TD
     A[👨‍💻 Entwickler] -->|npm version| B(Lokaler Tag v*.*.*)
     B -->|git push --tags| C{GitHub Actions}
     
-    subgraph "Community Release"
-        C --> D[🐳 Build Docker Image]
-        D -->|NEXT_PUBLIC_KOREKI_MODE=community| E[📤 Push to GHCR.io]
-    end
-    
     subgraph "Desktop Release"
-        C --> F[🏗️ Tauri Build Win/Mac]
-        F -->|NEXT_PUBLIC_KOREKI_MODE=desktop| G[🎁 GitHub Draft Release]
+        C --> F[🏗️ Tauri Build Win/Linux, signiert]
+        F --> G[🎁 Entwurf, Pre-Release]
     end
+
+    G -->|Release Notes freigegeben, veröffentlicht| H{release: published}
+    H --> I[📡 latest.json in den Kanal aktualisierung]
+    H --> D[🐳 Build Docker Image]
+    D --> E[📤 ghcr.io, nur Versionstag]
 ```
 
 ## 📋 Schritt-für-Schritt Anleitung
@@ -39,6 +39,8 @@ Bevor ein Release erstellt wird, müssen die Versionsnummern in den Konfiguratio
 
 1.  **`package.json`**: Update des `"version"` Feldes.
 2.  **`src-tauri/tauri.conf.json`**: Update des `"version"` Feldes (muss mit package.json übereinstimmen).
+
+> Seit 10.11.2026 läuft der ganze Ablauf über die GitHub CLI; Schritt für Schritt im Skill [`release`](../../.claude/skills/release/SKILL.md). Releases sind bis auf Widerruf **nur Pre-Releases**, und veröffentlicht wird erst, wenn Andreas die Release Notes freigegeben hat.
 
 ### 2. Git-Tag erstellen und pushen
 Der Release-Prozess wird ausschließlich durch das Pushen eines Tags ausgelöst, der dem Muster `v*` (z.B. `v0.9.10`) entspricht. 
@@ -72,18 +74,18 @@ docker compose -f docker-compose.community.yml up -d --build
 ## 🚀 Automatisierte Artefakte
 
 ### Community Edition (Docker)
-Das Docker-Image wird automatisch gebaut und unter `ghcr.io/koreki-org/koreki` veröffentlicht. *   **Tags:** Es werden sowohl der spezifische Versionstag als auch der `latest`-Tag aktualisiert.
+Das Docker-Image wird gebaut, sobald ein Release **veröffentlicht** ist (nicht schon beim Tag), und unter `ghcr.io/koreki-org/koreki` abgelegt. *   **Tags:** Immer der Versionstag; `latest` nur bei echten Releases, nicht bei Pre-Releases.
 *   **Modus:** Das Image ist vorkonfiguriert für `NEXT_PUBLIC_KOREKI_MODE=community` und `NEXT_PUBLIC_SINGLE_USER_MODE=true`.
 
 ### Desktop App (Tauri)
-GitHub Actions baut native Installer für Windows (`.msi`) und macOS (`.dmg` für Intel/Silicon).
-*   **Ablage:** Die Dateien werden an einen neuen **Draft Release** auf GitHub angehängt.
-*   **Aktion erforderlich:** Der Draft Release muss manuell im GitHub UI geprüft und auf "Published" gesetzt werden.
+GitHub Actions baut native Installer für Windows (`.exe`, `.msi`) und Linux (`.AppImage`, `.deb`, `.rpm`). macOS wird derzeit nicht gebaut.
+*   **Ablage:** Die Dateien werden an einen **Entwurf** angehängt, der als Pre-Release markiert ist.
+*   **Aktion erforderlich:** Release Notes entwerfen, freigeben lassen, dann per `gh release edit` veröffentlichen (Skill `release`).
 
 ### Selbst-Aktualisierung der Desktop-App (seit 10.11.2026)
-Installierte Desktop-Apps fragen beim Start einmal `https://github.com/koreki-org/koreki/releases/latest/download/latest.json` ab. Gibt es eine neuere Version, erscheint rechts oben die Pille „Neue Version“; installiert wird nur auf Klick in den Einstellungen, weil der Neustart die geladenen Arbeiten löscht (Code: `src/lib/desktop-update.ts`).
+Installierte Desktop-Apps fragen beim Start einmal `https://github.com/koreki-org/koreki/releases/download/aktualisierung/latest.json` ab — den festen **Update-Kanal**, nicht `releases/latest`, weil GitHub Pre-Releases dort nicht mitzählt. `update-channel.yml` kopiert die `latest.json` beim Veröffentlichen eines Releases dorthin. Den Release `aktualisierung` nie löschen: seine Adresse steckt in jeder installierten App. Gibt es eine neuere Version, erscheint rechts oben die Pille „Neue Version“; installiert wird nur auf Klick in den Einstellungen, weil der Neustart die geladenen Arbeiten löscht (Code: `src/lib/desktop-update.ts`).
 
-*   **Freigabe = Veröffentlichen.** `releases/latest` kennt keine Entwürfe. Erst das Veröffentlichen des Draft Release verteilt die Version an alle Apps — vorher prüfen.
+*   **Freigabe = Veröffentlichen.** Ein Entwurf erreicht keine App. Erst das Veröffentlichen füllt den Kanal und verteilt die Version an alle Apps — vorher prüfen.
 *   **Signatur:** Der Workflow baut mit `--config src-tauri/tauri.release.conf.json` die Update-Pakete (`.sig`) und `latest.json`. Dafür braucht er die Secrets `TAURI_SIGNING_PRIVATE_KEY` (Inhalt der Schlüsseldatei) und `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (leer, solange der Schlüssel kein Passwort hat). Der öffentliche Schlüssel steht in `src-tauri/tauri.conf.json` unter `plugins.updater.pubkey`.
 *   **Schlüssel nie verlieren.** Ohne den privaten Schlüssel kann keine installierte App mehr aktualisiert werden; alle müssten von Hand neu installieren. Eine Sicherungskopie liegt außerhalb von Rechner und Repository (Passwort-Manager).
 *   **Lokale Builds** (`npm run build:desktop`) erzeugen keine Update-Pakete und brauchen keinen Schlüssel.

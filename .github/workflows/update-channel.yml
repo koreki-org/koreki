@@ -1,0 +1,51 @@
+name: Koreki Update-Kanal
+
+# Die installierten Desktop-Apps fragen NICHT `releases/latest` ab: GitHub
+# zaehlt Pre-Releases dort nicht mit, und Koreki veroeffentlicht bis auf
+# Weiteres nur Pre-Releases. Sie fragen stattdessen die latest.json im festen
+# Release `aktualisierung` ab (Adresse in src-tauri/tauri.conf.json).
+#
+# Dieser Workflow kopiert die latest.json eines Releases genau in dem Moment
+# dorthin, in dem er veroeffentlicht wird. Das Veroeffentlichen bleibt damit
+# der Freigabe-Schritt: ein Entwurf erreicht keine App.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-kanal
+  cancel-in-progress: false
+
+jobs:
+  kanal:
+    # Der Kanal-Release selbst loest nichts aus.
+    if: github.event.release.tag_name != 'aktualisierung'
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      TAG: ${{ github.event.release.tag_name }}
+    steps:
+      - name: latest.json des Releases holen
+        run: |
+          mkdir neu
+          if ! gh release download "$TAG" --repo "$REPO" --pattern latest.json --dir neu; then
+            echo "::error::Release $TAG hat keine latest.json — wurde der Desktop-Build mit Signatur gebaut?"
+            exit 1
+          fi
+
+      - name: Kanal anlegen, falls es ihn noch nicht gibt
+        run: |
+          if ! gh release view aktualisierung --repo "$REPO" >/dev/null 2>&1; then
+            gh release create aktualisierung --repo "$REPO" \
+              --prerelease --latest=false \
+              --title "Update-Kanal (nicht zum Herunterladen)" \
+              --notes "Technischer Release: enthaelt nur die latest.json, die installierte Koreki-Desktop-Apps abfragen. Installer stehen an den versionierten Releases."
+          fi
+
+      - name: latest.json in den Kanal legen
+        run: gh release upload aktualisierung neu/latest.json --repo "$REPO" --clobber
