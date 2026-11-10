@@ -37,6 +37,12 @@ Verteile den fachlichen Inhalt der Musterlösung PRÄZISE auf die jeweiligen Auf
 - Wenn eine Aufgabe Unteraufgaben hat, teile den Text entsprechend auf die Unteraufgaben auf.
 - Ein leeres "content" Feld bei einer Aufgabe ist ein Fehler, wenn im Gesamtdokument eine Lösung dafür existiert.
 
+WICHTIG (Eintragungen in Grafiken - [EINTRAGUNG] Zeilen):
+Die vorgeschaltete Bilderkennung beschreibt, was von Hand in ein Diagramm oder eine Abbildung eingetragen wurde, als Zeile der Form "[EINTRAGUNG: Beschriftung … | Form | Lage]".
+- Eine solche Zeile ist Teil der Lösung. Übernimm sie wörtlich und vollständig in "content" — Werte, Beschriftung und (?) unverändert.
+- Sie gehört in den "content" der Aufgabe, die diese Eintragung verlangt — erkennbar am Arbeitsauftrag (zeichnen, eintragen, markieren, ergänzen) oder an der Beschriftung, die eine Aufgabe vorgibt —, NICHT in den Stamm oder "context", auch wenn die Grafik dort steht.
+- Verlangt keine Aufgabe die Eintragung erkennbar, gehört sie in den "content" der Aufgabe, bei der die Grafik steht.
+
 WICHTIG (Gemeinsamer fachlicher Rahmen — Feld "context"):
 Manche Dokumente enthalten fachlichen Text, der zu keiner einzelnen Aufgabe gehört, sondern die Ausgangslage für die ganze Arbeit beschreibt. Typische Formen: eine Szenario- oder Fallbeschreibung, ein übergreifender Arbeitsauftrag sowie Annahmen und Vereinfachungen, die für mehrere Hauptaufgaben gelten (z. B. "X wird vernachlässigt", "gehen Sie von Y aus").
 - Solcher Text gehört in das Feld "context" auf oberster Ebene, NICHT in "tasks[].content".

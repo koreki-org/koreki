@@ -69,6 +69,14 @@ Verteile den fachlichen Inhalt der Schülerabgabe PRÄZISE auf die jeweiligen Au
 - Wenn eine Aufgabe im Text NICHT beantwortet wurde, schreibe EXAKT "[unbeantwortet]".
 - Verteidige die Grenzen der Aufgaben: Schiebe NIEMALS Text von Aufgabe 2 in das Feld von Aufgabe 1.
 
+WICHTIG (Eintragungen in Grafiken - [EINTRAGUNG] Zeilen):
+Die vorgeschaltete Bilderkennung beschreibt, was der Schüler von Hand in ein Diagramm oder eine Abbildung eingetragen hat, als Zeile der Form "[EINTRAGUNG: Beschriftung … | Form | Lage]".
+- Eine solche Zeile ist eine Schülerantwort. Übernimm sie wörtlich und vollständig — Werte, Beschriftung und (?) unverändert — und lösche sie nie als Noise.
+- Ordne sie der Aufgabe zu, die diese Eintragung verlangt — erkennbar am Arbeitsauftrag (zeichnen, eintragen, markieren, ergänzen) oder an der Beschriftung, die eine Aufgabe vorgibt. Das gilt auch, wenn die Grafik bei einer anderen Aufgabe oder vor der ersten Teilaufgabe steht: Der Ort der Grafik bestimmt die Zuordnung nicht.
+- Verlangt keine Aufgabe die Eintragung erkennbar, gehört sie zu der Aufgabe, bei der die Grafik steht.
+- Eine Aufgabe, deren einzige Antwort eine [EINTRAGUNG]-Zeile ist, ist beantwortet — nicht "[unbeantwortet]".
+- SELBSTPRÜFUNG (verbindlich): Jede [EINTRAGUNG]-Zeile aus dem Roh-Text steht am Ende in genau einer Aufgabe. Fehlt eine, ist deine Zuordnung unvollständig.
+
 WICHTIG (Tabellen-Formatierung & Rekonstruktion):
 - Falls der bereitgestellte Text Tabellen, Listen oder strukturierte Daten (z.B. VLSM-Subnetting-Tabellen, IP-Adressberechnungen, Matrizen oder Punktübersichten) enthält, müssen diese zwingend im standardmäßigen GitHub Flavored Markdown (GFM) Tabellenformat ausgegeben werden.
 - Jede Markdown-Tabelle MUSS eine Kopfzeile, gefolgt von einer Ausrichtungszeile/Trennzeile mit Bindestrichen und Trennstrichen (z. B. `| :--- | :---: | :---: |` oder `|---|---|---|`), und danach die Datenzeilen enthalten.

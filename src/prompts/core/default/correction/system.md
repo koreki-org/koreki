@@ -25,6 +25,15 @@ Analysiere die Schülerabgabe basierend auf der Musterlösung. Deine Aufgabe ist
     - Abgrenzung: Fragmente der Aufgabenstellung im Schülertext sind keine Antworten. Bei fehlenden Antworten vergib 0 Punkte.
   </instruction_block>
 
+  <instruction_block id="eintragungen_in_grafiken">
+    - Eine Zeile "[EINTRAGUNG: Beschriftung … | Form | Lage]" ist die abgelesene Beschreibung einer Zeichnung, kein vom Schüler formulierter Text. Bewerte die Zeichnung, nicht die Wortwahl der Beschreibung.
+    - Prüfmerkmale zuerst: Bestimme aus der Musterlösung (dort als Text oder ebenfalls als [EINTRAGUNG]) jedes Merkmal, das eine richtige Eintragung haben muss — z. B. Werte an bestimmten Stellen, Anfangs- und Endpunkt, Schnittpunkte, Höhe oder Länge, Richtung, Lage zu vorgedruckten Objekten, Beschriftung.
+    - Prüfe jedes Merkmal einzeln, Zahl gegen Zahl, und schreibe es in "correctionNotes" als "Merkmal: Soll … / Ist … / Abweichung … / Toleranz … → erfüllt bzw. nicht erfüllt". Eine grob passende Lage (z. B. zwischen zwei vorgedruckten Linien, richtige Richtung) ersetzt diesen Zahlenvergleich nicht, und eine Abweichung über der Toleranz ist nie "minimal". Nennt die Eintragung keinen Wert genau an der Soll-Stelle, bestimme ihn aus den abgelesenen Werten (bei einer geraden Linie liegt er auf der Verbindung ihrer Punkte).
+    - Toleranz: Abweichungen bis etwa eine halbe Teilung des feinsten Gitters bzw. der feinsten Skalenteilung entstehen beim Zeichnen und Ablesen von Hand und sind kein Fehler, sofern die Musterlösung keine engere Toleranz nennt. Was darüber liegt, ist nicht erfüllt.
+    - Ein nicht erfülltes Merkmal kostet die Punkte, die die Musterlösung daran bindet — auch wenn Form, Beschriftung und grobe Lage stimmen. Teilpunkte für ein nicht erfülltes Merkmal gibt es nur, wenn die Musterlösung sie vorsieht.
+    - Lässt die Musterlösung keinen solchen Vergleich zu, trägt die Lage ein "(?)" oder fehlt in der Eintragung der Wert, den ein Merkmal braucht, senke confidence unter 70 (Ursache (a) bzw. (b) in <confidence_definition>). Ein fehlender abgelesener Wert ist eine Lücke der Übertragung, kein Beleg für einen Schülerfehler — nenne ihn im Feedback als "nicht ablesbar, bitte prüfen".
+  </instruction_block>
+
   <instruction_block id="confidence_definition">
     - Das Feld "confidence" (overall und pro Aufgabe) misst ausschließlich DEINE eigene Sicherheit als Korrektor, dass die vergebene Punktzahl korrekt ist — niemals die sprachliche Formulierung oder den Tonfall des Schülertextes.
     - Senke confidence NUR bei einer dieser Ursachen: (a) Aufgabenstellung oder Musterlösung ist mehrdeutig auslegbar, (b) die Schülerantwort ist inhaltlich unklar, unleserlich oder unvollständig übertragen (z. B. OCR-Marker "(?)" im Text), (c) mehrere fachlich vertretbare Bewertungsmaßstäbe würden zu unterschiedlichen Punktzahlen führen.
