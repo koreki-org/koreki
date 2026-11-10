@@ -33,7 +33,8 @@ GitHub CLI, angemeldet als `koreki-org`. Unter Windows liegt sie unter `C:\Progr
 - Commit `chore: release v<neu>` direkt auf `main`, Tag `v<neu>`, dann **beide** pushen: `git push origin main` und `git push origin v<neu>`.
 
 ### 3. Build abwarten
-- `gh run list --workflow desktop-release.yml --limit 1`, dann `gh run watch <id>` im Hintergrund.
+- `gh run list --workflow desktop-release.yml --limit 1`, dann `gh run watch <id>` im Hintergrund. Drei Jobs: `entwurf` legt den Entwurf an, `publish` baut Windows und Linux parallel hinein, `pruefen` schlägt fehl, wenn der `latest.json` eine Plattform fehlt. Dann nur den fehlenden Build neu starten (`gh run rerun <id> --failed`), nicht veröffentlichen.
+- Dauer: mit gefülltem Rust-Cache einige Minuten; der erste Lauf nach einer Änderung an `Cargo.lock` baut den Cache neu und braucht wieder rund zehn.
 - Danach den Entwurf prüfen: `gh release view v<neu> --json assets --jq '.assets[].name'`. Erwartet:
   - Windows: `*_x64-setup.exe` und `*.msi`, jeweils mit `.sig`
   - Linux: `*.AppImage` mit `.sig`, dazu `.deb` und `.rpm`

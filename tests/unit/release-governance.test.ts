@@ -26,8 +26,18 @@ const lies = (pfad: string) => readFileSync(join(ROOT, pfad), 'utf8');
 describe('Release-Governance', () => {
     it('Desktop-Releases entstehen als Entwurf und als Pre-Release', () => {
         const wf = lies('.github/workflows/desktop-release.yml');
-        expect(wf).toMatch(/^\s*releaseDraft:\s*true\s*$/m);
-        expect(wf).toMatch(/^\s*prerelease:\s*true\s*$/m);
+        // Der Job `entwurf` legt den Release an, bevor gebaut wird; die Builds
+        // laden nur noch hinein (releaseId). So koennen sie nicht gleichzeitig
+        // anlegen wollen (v0.9.100).
+        expect(wf).toContain('gh release create "$TAG" --repo "$REPO" --draft --prerelease');
+        expect(wf).toContain('releaseId: ${{ needs.entwurf.outputs.id }}');
+        expect(wf).not.toMatch(/prerelease:\s*false|--prerelease=false|--latest(?!=false)/);
+    });
+
+    it('ein Release mit unvollstaendiger latest.json faellt vor dem Veroeffentlichen auf', () => {
+        const wf = lies('.github/workflows/desktop-release.yml');
+        expect(wf).toMatch(/pruefen:\s*\n\s*needs: publish/);
+        expect(wf).toContain('for plattform in windows-x86_64 linux-x86_64');
     });
 
     it('Desktop-Releases werden signiert und bringen Update-Pakete mit', () => {
