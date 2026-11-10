@@ -5,7 +5,12 @@
  * WER die Punkte vergibt (Sandbox, Graph oder Modell) — hier geht es nur darum,
  * ZU WELCHER Aufgabe eine gelieferte Bewertung gehoert.
  */
-import { Task, AITask } from '../../types';
+import { Task } from '../../types';
+
+/** Was beide Phasen gemeinsam haben: eine Aufgabe, wie das Modell sie benannt hat. */
+interface Benannt {
+    name?: string;
+}
 
 /**
  * Der Kern eines Aufgabennamens.
@@ -14,17 +19,25 @@ import { Task, AITask } from '../../types';
  * fallen "Aufgabe 1a", "aufgabe 1a" und "1a)" auf denselben Kern "1a"
  * zusammen. Das ist bewusst KEIN Aehnlichkeitsmass: Es normalisiert nur die
  * Schreibweise, es raet nicht.
+ *
+ * Eine Punktangabe in Klammern ("(2 P)", "(Max: 4 P)", "(3 Punkte)") gehoert nicht
+ * zum Namen und faellt vorher weg. Die Prompts listen die Aufgaben selbst in dieser
+ * Form auf, und Modelle uebernehmen sie gelegentlich. Ohne diesen Schritt wurde aus
+ * "Aufgabe 1 (2 P)" der Kern "12p" — der passte auf "Aufgabe 1" UND "Aufgabe 12",
+ * die Rettung brach ab, und die Aufgabe blieb leer (10.11.2026: qwen3.8 in der
+ * Zuordnung, jede Aufgabe eines Blatts "[unbeantwortet]").
  */
 export function alsKern(name: string | undefined): string {
     return (name ?? '')
         .toLowerCase()
+        .replace(/\(\s*(max\.?\s*:?\s*)?\d+(?:[.,]\d+)?\s*(p|pkt|pkte|punkte?|pt|pts|points?)\.?\s*\)/g, '')
         .replace(/\b(aufgabe|teilaufgabe|task|exercise|nr|no)\b/g, '')
         .replace(/[^a-z0-9\u00e4\u00f6\u00fc\u00df]/g, '');
 }
 
 /** Ein geretteter Treffer und die Art, wie er gefunden wurde. */
-interface Rettung {
-    treffer: AITask;
+interface Rettung<T extends Benannt> {
+    treffer: T;
     /** `kern`: nur die Schreibweise wich ab. `anfang`: ein Name ist die Kurzform des anderen. */
     art: 'kern' | 'anfang';
 }
@@ -45,11 +58,11 @@ interface Rettung {
  * Eine falsch zugeordnete Bewertung waere schlimmer als gar keine, weil sie
  * plausibel aussieht.
  */
-export function findeVeraenderteAufgabe(
+export function findeVeraenderteAufgabe<T extends Benannt>(
     layoutTask: Task,
-    aiTasks: AITask[],
+    aiTasks: T[],
     allesLayout: Task[]
-): Rettung | undefined {
+): Rettung<T> | undefined {
     const kern = alsKern(layoutTask.name);
     if (!kern) return undefined;
 
@@ -85,13 +98,17 @@ export function findeVeraenderteAufgabe(
  * NACH den Engine-Zweigen. Eine Rechenketten- oder Graph-Aufgabe lief deshalb auch
  * dann in ihren Zweig, wenn gar keine KI-Aufgabe dazu vorlag: Die Zuordnung wurde nie
  * gerettet, der Fehlbefund nie gemeldet. Siehe den Kommentar an `mapLayoutTask`.
+ *
+ * Gilt fuer BEIDE Phasen — Korrektur und Zuordnung (`parseMappingResult`). Die
+ * Zuordnung hatte bis 10.11.2026 eine eigene, schwaechere Fassung, die nur Gross-
+ * und Kleinschreibung verzieh; jeder andere Namenszusatz loeschte dort den Inhalt.
  */
-export function findeKiAufgabe(
+export function findeKiAufgabe<T extends Benannt>(
     layoutTask: Task,
-    aiTasks: AITask[],
+    aiTasks: T[],
     allesLayout: Task[]
-): { aiTask?: AITask; hinweis?: string } {
-    const exakt = aiTasks.find((t: AITask) => t.name === layoutTask.name);
+): { aiTask?: T; hinweis?: string } {
+    const exakt = aiTasks.find(t => t.name === layoutTask.name);
     if (exakt) return { aiTask: exakt };
 
     const gerettet = findeVeraenderteAufgabe(layoutTask, aiTasks, allesLayout);

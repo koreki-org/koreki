@@ -19,6 +19,7 @@ import { extractStudentAST } from '../grading/calc-trace-extraction';
 import { shouldDisablePoints } from './prompt-builder';
 import { requireOpenAiConnection } from './provider-connection';
 import { mapLayoutTask, alsModellzahl } from './correction-mapping';
+import { findeKiAufgabe } from './aufgabenname-zuordnung';
 import { alsVertrauen } from '../vertrauen';
 import { istAbrechenbar } from './billing-gate';
 import { runLocalGradingEngines } from './local-grading-pass';
@@ -124,21 +125,12 @@ export function parseMappingResult<T extends MappingResult>(result: T, tasksLayo
 
     const aiTasks = result.tasks || [];
 
+    // Dieselbe Namensrettung wie in der Korrektur — siehe `findeKiAufgabe`.
     result.tasks = tasksLayout.map((layoutTask: Task) => {
-        const aiTask = aiTasks.find(t => t.name === layoutTask.name);
-        if (aiTask) return aiTask;
-
-        const layoutName = (layoutTask.name ?? '').toLowerCase().trim();
-        const nearMiss = layoutName
-            ? aiTasks.find(t => t.name?.toLowerCase().trim() === layoutName)
-            : undefined;
-
-        return {
-            name: layoutTask.name,
-            content: nearMiss
-                ? `[KI-FEHLER?] Name nicht exakt ("${nearMiss.name}" statt "${layoutTask.name}")]\n\n${nearMiss.content}`
-                : '[unbeantwortet]'
-        };
+        const { aiTask, hinweis } = findeKiAufgabe(layoutTask, aiTasks, tasksLayout);
+        if (!aiTask) return { name: layoutTask.name, content: '[unbeantwortet]' };
+        if (!hinweis) return aiTask;
+        return { name: layoutTask.name, content: `${hinweis}\n\n${aiTask.content ?? ''}` };
     });
 
     return result;
