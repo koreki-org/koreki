@@ -21,38 +21,9 @@ if (-not $nodeCmd) {
 
 Write-Host "OK Node.js detected." -ForegroundColor Green
 
-# Auto-update existing Koreki repo if found (prevents stale code issues)
-function Update-KorekiRepo {
-    param([string]$RepoPath)
-    if (Test-Path (Join-Path $RepoPath ".git")) {
-        Write-Host "Updating existing Koreki installation..." -ForegroundColor Cyan
-        try {
-            & git -C $RepoPath fetch origin main 2>&1 | Out-Null
-            & git -C $RepoPath reset --hard origin/main 2>&1 | Out-Null
-            Write-Host "Updated to latest version." -ForegroundColor Green
-        } catch {
-            Write-Host "Could not auto-update (offline?). Continuing with existing files." -ForegroundColor DarkGray
-        }
-    }
-}
-
-# Check common locations for existing repos and update them
-$candidates = @(
-    (Join-Path $PWD "koreki"),
-    (Join-Path ([Environment]::GetFolderPath("UserProfile")) "koreki-app"),
-    (Join-Path ([Environment]::GetFolderPath("UserProfile")) "koreki-app\koreki")
-)
-
-foreach ($candidate in $candidates) {
-    if (Test-Path (Join-Path $candidate "docker-compose.community-multi-full.yml")) {
-        Update-KorekiRepo $candidate
-    }
-}
-
-# Also update current directory if it IS the repo
-if (Test-Path (Join-Path $PWD "docker-compose.community-multi-full.yml")) {
-    Update-KorekiRepo $PWD
-}
+# Ein vorhandenes Koreki aktualisiert der CLI-Assistent selbst — auf die
+# freigegebene Version, nicht auf `main` (bis 10.11.2026 stand hier ein
+# eigener `git reset --hard origin/main`, der genau das unterlief).
 
 # Download and run the latest CLI wizard from GitHub
 $tempDir = [System.IO.Path]::GetTempPath()

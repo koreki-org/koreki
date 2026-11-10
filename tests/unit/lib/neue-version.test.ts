@@ -2,13 +2,13 @@ import {
     pruefeAufNeueVersion,
     installiereNeueVersion,
     fortschrittAus,
-    useDesktopUpdateStore,
+    useNeueVersionStore,
     __setzeZurueck
-} from '@/lib/desktop-update';
-import { isDesktopTarget } from '@/lib/env-context';
+} from '@/lib/neue-version';
+import { isDesktopTarget, isLocalInstance } from '@/lib/env-context';
 
 /**
- * Selbst-Aktualisierung der Desktop-App.
+ * Hinweis auf neue Versionen (Desktop installiert, Community zeigt den Befehl).
  *
  * Geprueft wird vor allem, was NICHT passieren darf: ausserhalb des Desktops
  * nachfragen, mehrfach nachfragen, oder von selbst installieren. Der Neustart
@@ -21,10 +21,12 @@ const relaunch = jest.fn();
 
 jest.mock('@tauri-apps/plugin-updater', () => ({ check: () => check() }));
 jest.mock('@tauri-apps/plugin-process', () => ({ relaunch: () => relaunch() }));
-jest.mock('@/lib/env-context', () => ({ isDesktopTarget: jest.fn() }));
+jest.mock('@/lib/env-context', () => ({ isDesktopTarget: jest.fn(), isLocalInstance: jest.fn() }));
+const apiGet = jest.fn();
+jest.mock('@/lib/api-client', () => ({ apiClient: { get: (url: string) => apiGet(url) } }));
 jest.mock('@/lib/logger', () => ({ logger: { warn: jest.fn(), error: jest.fn() } }));
 
-const zustand = () => useDesktopUpdateStore.getState().zustand;
+const zustand = () => useNeueVersionStore.getState().zustand;
 
 type Ereignis =
     | { event: 'Started'; data: { contentLength?: number } }
@@ -43,15 +45,35 @@ beforeEach(() => {
     __setzeZurueck();
     check.mockReset();
     relaunch.mockReset();
+    apiGet.mockReset();
     (isDesktopTarget as jest.Mock).mockReturnValue(true);
+    (isLocalInstance as jest.Mock).mockReturnValue(true);
 });
 
 describe('pruefeAufNeueVersion', () => {
-    it('fragt ausserhalb des Desktops gar nicht erst nach', async () => {
+    it('fragt im SaaS gar nicht erst nach', async () => {
         (isDesktopTarget as jest.Mock).mockReturnValue(false);
+        (isLocalInstance as jest.Mock).mockReturnValue(false);
         await pruefeAufNeueVersion();
         expect(check).not.toHaveBeenCalled();
+        expect(apiGet).not.toHaveBeenCalled();
         expect(zustand()).toEqual({ art: 'unbekannt' });
+    });
+
+    it('fragt in Community den eigenen Server, nicht das Desktop-Plugin', async () => {
+        (isDesktopTarget as jest.Mock).mockReturnValue(false);
+        apiGet.mockResolvedValue({ ok: true, json: async () => ({ aktuell: '0.9.100', neueste: '0.9.101' }) });
+        await pruefeAufNeueVersion();
+        expect(apiGet).toHaveBeenCalledWith('/api/neue-version');
+        expect(check).not.toHaveBeenCalled();
+        expect(zustand()).toEqual({ art: 'verfuegbar', version: '0.9.101' });
+    });
+
+    it('meldet in Community "aktuell", wenn der Server nichts Neueres kennt', async () => {
+        (isDesktopTarget as jest.Mock).mockReturnValue(false);
+        apiGet.mockResolvedValue({ ok: true, json: async () => ({ aktuell: '0.9.100', neueste: null }) });
+        await pruefeAufNeueVersion();
+        expect(zustand()).toEqual({ art: 'aktuell' });
     });
 
     it('meldet eine neuere Version', async () => {

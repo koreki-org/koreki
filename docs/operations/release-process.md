@@ -62,13 +62,16 @@ git push origin v0.9.10
 ```
 
 
-### 3. Community Edition aktualisieren (Lokal)
-Um eine bestehende lokale Community-Instanz auf den neuesten Stand des Repositories zu bringen:
+### 3. Community Edition aktualisieren
+Seit 10.11.2026 aktualisiert sich eine Community-Instanz auf die **freigegebene** Version, nicht auf `main`. Den Installer auf dem Server im Koreki-Ordner erneut ausführen und dieselbe Variante wählen, dann „Update“:
 
-```powershell
-git pull
-docker compose -f docker-compose.community.yml up -d --build
+```bash
+curl -fsSL https://raw.githubusercontent.com/koreki-org/koreki/main/scripts/install/install.sh | bash
 ```
+
+Der Installer liest die Version aus dem Update-Kanal (`update-kanal/latest.json`), wechselt das Repo auf deren Tag (`git checkout -f v…`) und baut neu. Die `.env` bleibt erhalten — bei Single wie bei Multi. Lokale Änderungen an versionierten Dateien (z. B. `nginx.conf`) gehen dabei verloren.
+
+**Hinweis in der App:** Admins einer Community-Instanz sehen rechts oben „Neue Version“, sobald der Kanal eine neuere Version meldet als die laufende. Der Server fragt den Kanal höchstens alle sechs Stunden (`/api/neue-version`, `src/lib/version-kanal.ts`); die Browser der Lehrkräfte sprechen nicht mit GitHub. In Multi sehen nur Admins den Hinweis.
 
 
 ## 🚀 Automatisierte Artefakte
@@ -83,7 +86,7 @@ GitHub Actions baut native Installer für Windows (`.exe`, `.msi`) und Linux (`.
 *   **Aktion erforderlich:** Release Notes entwerfen, freigeben lassen, dann per `gh release edit` veröffentlichen (Skill `release`).
 
 ### Selbst-Aktualisierung der Desktop-App (seit 10.11.2026)
-Installierte Desktop-Apps fragen beim Start einmal `https://raw.githubusercontent.com/koreki-org/koreki/update-kanal/latest.json` ab — den **Update-Kanal**, nicht `releases/latest`, weil GitHub Pre-Releases dort nicht mitzählt. `update-channel.yml` schreibt die `latest.json` beim Veröffentlichen eines Releases in den Branch `update-kanal`. Ein Branch und kein Release, weil im Repo unveränderliche Releases gelten und ein Kanal-Release keine neue Datei annimmt (so gescheitert bei v0.9.99, die deshalb noch auf den toten Release `aktualisierung` zeigt). Den Branch nie löschen: seine Adresse steckt in jeder installierten App. Gibt es eine neuere Version, erscheint rechts oben die Pille „Neue Version“; installiert wird nur auf Klick in den Einstellungen, weil der Neustart die geladenen Arbeiten löscht (Code: `src/lib/desktop-update.ts`).
+Installierte Desktop-Apps fragen beim Start einmal `https://raw.githubusercontent.com/koreki-org/koreki/update-kanal/latest.json` ab — den **Update-Kanal**, nicht `releases/latest`, weil GitHub Pre-Releases dort nicht mitzählt. `update-channel.yml` schreibt die `latest.json` beim Veröffentlichen eines Releases in den Branch `update-kanal`. Ein Branch und kein Release, weil im Repo unveränderliche Releases gelten und ein Kanal-Release keine neue Datei annimmt (so gescheitert bei v0.9.99, die deshalb noch auf den toten Release `aktualisierung` zeigt). Den Branch nie löschen: seine Adresse steckt in jeder installierten App. Gibt es eine neuere Version, erscheint rechts oben die Pille „Neue Version“; installiert wird nur auf Klick in den Einstellungen, weil der Neustart die geladenen Arbeiten löscht (Code: `src/lib/neue-version.ts`).
 
 *   **Freigabe = Veröffentlichen.** Ein Entwurf erreicht keine App. Erst das Veröffentlichen füllt den Kanal und verteilt die Version an alle Apps — vorher prüfen.
 *   **Signatur:** Der Workflow baut mit `--config src-tauri/tauri.release.conf.json` die Update-Pakete (`.sig`) und `latest.json`. Dafür braucht er die Secrets `TAURI_SIGNING_PRIVATE_KEY` (Inhalt der Schlüsseldatei) und `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (leer, solange der Schlüssel kein Passwort hat). Der öffentliche Schlüssel steht in `src-tauri/tauri.conf.json` unter `plugins.updater.pubkey`.

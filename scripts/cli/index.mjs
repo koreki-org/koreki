@@ -31,41 +31,56 @@ if (os.platform() === 'win32' && /\\system32/i.test(TARGET_DIR)) {
   process.chdir(TARGET_DIR);
 }
 
+// Update-Kanal: zeigt auf die zuletzt FREIGEGEBENE Version (dieselbe Quelle wie
+// die Desktop-App). Bis zum 10.11.2026 holte ein Update hier den aktuellen Stand
+// von `main` — also jeden Commit, auch nie freigegebene.
+const UPDATE_KANAL_URL = 'https://raw.githubusercontent.com/koreki-org/koreki/update-kanal/latest.json';
+
+// Tag der freigegebenen Version, z. B. "v0.9.100"; null, wenn nicht ermittelbar.
+async function freigegebenerTag() {
+  try {
+    const kanal = await fetchJson(UPDATE_KANAL_URL);
+    return kanal && /^\d+\.\d+\.\d+$/.test(kanal.version) ? `v${kanal.version}` : null;
+  } catch {
+    return null;
+  }
+}
+
+// Bringt ein vorhandenes Repo auf die freigegebene Version. Lokale Aenderungen an
+// versionierten Dateien gehen dabei verloren; .env ist nicht versioniert und bleibt.
+function aktualisiereAufFreigabe(dir, tag) {
+  if (!fs.existsSync(path.join(dir, '.git'))) return;
+  if (!tag) {
+    console.log(c('dim', 'ℹ Freigegebene Version nicht ermittelbar (offline?). Der vorhandene Stand bleibt.\n'));
+    return;
+  }
+  console.log(c('cyan', `🔄 Aktualisiere auf die freigegebene Version ${tag}...`));
+  try {
+    execSync(`git fetch --depth 1 origin tag ${tag}`, { cwd: dir, stdio: 'inherit' });
+    execSync(`git checkout -q -f ${tag}`, { cwd: dir, stdio: 'inherit' });
+    console.log(c('green', `✔ Koreki steht jetzt auf ${tag}.\n`));
+  } catch {
+    console.log(c('dim', 'ℹ Aktualisieren nicht moeglich. Der vorhandene Stand bleibt.\n'));
+  }
+}
+
 // Helper: Ensure repo files exist in target directory
-function ensureRepoFilesExist() {
-  const hasCompose = fs.existsSync(path.join(TARGET_DIR, 'docker-compose.community-multi-full.yml')) ||
-                     fs.existsSync(path.join(TARGET_DIR, 'docker-compose.yml'));
-                     
-  if (hasCompose) {
-    // Repo exists — pull latest changes to ensure fixes are applied
-    if (fs.existsSync(path.join(TARGET_DIR, '.git'))) {
-      console.log(c('cyan', '🔄 Updating existing Koreki installation to latest version...'));
-      try {
-        execSync('git fetch origin main', { cwd: TARGET_DIR, stdio: 'inherit' });
-        execSync('git reset --hard origin/main', { cwd: TARGET_DIR, stdio: 'inherit' });
-        console.log(c('green', '✔ Updated to latest version.\n'));
-      } catch {
-        console.log(c('dim', 'ℹ Could not auto-update (offline or uncommitted changes). Continuing with existing files.\n'));
-      }
-    }
+async function ensureRepoFilesExist() {
+  const hatCompose = (dir) =>
+    fs.existsSync(path.join(dir, 'docker-compose.community-multi-full.yml')) ||
+    fs.existsSync(path.join(dir, 'docker-compose.yml'));
+  const tag = await freigegebenerTag();
+
+  if (hatCompose(TARGET_DIR)) {
+    aktualisiereAufFreigabe(TARGET_DIR, tag);
     return;
   }
 
   const korekiFolder = path.join(TARGET_DIR, 'koreki');
-  if (fs.existsSync(path.join(korekiFolder, 'docker-compose.community-multi-full.yml')) ||
-      fs.existsSync(path.join(korekiFolder, 'docker-compose.yml'))) {
+  if (hatCompose(korekiFolder)) {
     TARGET_DIR = korekiFolder;
     process.chdir(TARGET_DIR);
-    // Pull latest in sub-folder repo too
-    if (fs.existsSync(path.join(TARGET_DIR, '.git'))) {
-      console.log(c('cyan', '🔄 Updating existing Koreki installation to latest version...'));
-      try {
-        execSync('git fetch origin main', { cwd: TARGET_DIR, stdio: 'inherit' });
-        execSync('git reset --hard origin/main', { cwd: TARGET_DIR, stdio: 'inherit' });
-      } catch {
-        console.log(c('dim', 'ℹ Could not auto-update. Continuing with existing files.\n'));
-      }
-    }
+    aktualisiereAufFreigabe(TARGET_DIR, tag);
     return;
   }
 
@@ -75,12 +90,12 @@ function ensureRepoFilesExist() {
   if (isCommandAvailable('git')) {
     let success = false;
     try {
-      execSync(`git clone --depth 1 ${REPO_URL} koreki`, { cwd: TARGET_DIR, stdio: 'inherit' });
+      execSync(`git clone --depth 1 ${tag ? `--branch ${tag} ` : ''}${REPO_URL} koreki`, { cwd: TARGET_DIR, stdio: 'inherit' });
       success = true;
     } catch {
       try {
         console.log(c('dim', 'HTTPS clone failed, trying SSH clone...'));
-        execSync(`git clone --depth 1 git@github.com:koreki-org/koreki.git koreki`, { cwd: TARGET_DIR, stdio: 'inherit' });
+        execSync(`git clone --depth 1 ${tag ? `--branch ${tag} ` : ''}git@github.com:koreki-org/koreki.git koreki`, { cwd: TARGET_DIR, stdio: 'inherit' });
         success = true;
       } catch {}
     }
@@ -232,23 +247,38 @@ Options:
   }
 }
 
+// Bestehende Konfiguration: aktualisieren (behalten) oder neu einrichten?
+// Liefert den Inhalt der .env zum Weiterverwenden, oder null fuer "neu".
+async function bestehendeKonfiguration(envPath) {
+  if (!fs.existsSync(envPath)) return null;
+  console.log(c('cyan', '\n📝 Existing Koreki installation detected.'));
+  const action = await askQuestion('Do you want to (U)pdate safely or (R)econfigure from scratch? [U/R]', 'U');
+  if (action.toLowerCase() !== 'u') return null;
+  console.log(c('green', '✔ Proceeding with safe update (config and passwords preserved)...'));
+  return fs.readFileSync(envPath, 'utf8');
+}
+
 // Option 1: Community Single
 async function setupCommunitySingle(isDryRun) {
   console.log(c('bold', '⚙️  Configuring Koreki Community (Single-User)...'));
 
-  const mistralKey = await askQuestion('Mistral API Key (Optional, press Enter to skip)', '');
-  
-  const envContent = `
+  await ensureRepoFilesExist();
+  const envPath = path.join(TARGET_DIR, '.env');
+  const composeFile = 'docker-compose.community.yml';
+
+  // Bis 10.11.2026 wurde die .env hier bei JEDEM Lauf neu geschrieben — ein
+  // Update loeschte den Mistral-Schluessel und alle eigenen Einstellungen.
+  let envContent = await bestehendeKonfiguration(envPath);
+  if (envContent === null) {
+    const mistralKey = await askQuestion('Mistral API Key (Optional, press Enter to skip)', '');
+    envContent = `
 # Koreki Community Single-User Configuration
 NEXT_PUBLIC_KOREKI_MODE=community
 NEXT_PUBLIC_SINGLE_USER_MODE=true
 MISTRAL_API_KEY=${mistralKey}
 NEXT_PUBLIC_ENABLE_PAID_MODES=false
 `;
-
-  ensureRepoFilesExist();
-  const envPath = path.join(TARGET_DIR, '.env');
-  const composeFile = 'docker-compose.community.yml';
+  }
 
   if (isDryRun) {
     console.log(c('yellow', '\n[DRY-RUN] Would write .env and run:'));
@@ -274,26 +304,20 @@ async function setupCommunityMulti(isDryRun) {
   console.log(c('bold', '⚙️  Configuring Koreki Community Multi-User (Keycloak & Gateway)...'));
 
   // Ensure we are in the correct directory (e.g., if cloned into a subfolder) BEFORE looking for .env
-  ensureRepoFilesExist();
+  await ensureRepoFilesExist();
 
   const envPath = path.join(TARGET_DIR, '.env');
   let envContent = '';
   let appUrl = 'http://localhost:8080';
   let isUpdate = false;
 
-  if (fs.existsSync(envPath)) {
-    console.log(c('cyan', '\n📝 Existing Koreki installation detected.'));
-    const action = await askQuestion('Do you want to (U)pdate safely or (R)econfigure from scratch? [U/R]', 'U');
-    if (action.toLowerCase() === 'u') {
-      isUpdate = true;
-      envContent = fs.readFileSync(envPath, 'utf8');
-      
-      // Extract APP_URL for the Keycloak realm injection later
-      const matchAppUrl = envContent.match(/^APP_URL=(.*)$/m);
-      if (matchAppUrl) appUrl = matchAppUrl[1].trim();
-
-      console.log(c('green', '✔ Proceeding with safe update (config and passwords preserved)...'));
-    }
+  const bestehend = await bestehendeKonfiguration(envPath);
+  if (bestehend !== null) {
+    isUpdate = true;
+    envContent = bestehend;
+    // Extract APP_URL for the Keycloak realm injection later
+    const matchAppUrl = envContent.match(/^APP_URL=(.*)$/m);
+    if (matchAppUrl) appUrl = matchAppUrl[1].trim();
   }
 
   let adminPassword = '*****'; // Masked for update console output
@@ -452,7 +476,7 @@ MISTRAL_API_KEY=${mistralKey}
 STRIPE_TEST_MODE=true
 `;
 
-  ensureRepoFilesExist();
+  await ensureRepoFilesExist();
   const envPath = path.join(TARGET_DIR, '.env');
   const composeFile = 'docker-compose.yml';
 

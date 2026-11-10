@@ -160,7 +160,7 @@ const Header: React.FC<HeaderProps> = ({
 
     const renderQuickActions = (isMobile: boolean) => (
         <div className={`${isMobile ? 'flex lg:hidden' : 'hidden lg:flex'} items-center justify-end gap-1.5 sm:gap-2 shrink-0 ml-auto lg:ml-0`}>
-            <NeueVersionHinweis onOeffnen={onShowSettings} />
+            <NeueVersionHinweis onOeffnen={onShowSettings} istAdmin={userData?.role === 'ADMIN'} />
             <HeaderPortalTooltip title="Hilfe & Infos">
                 <Button 
                     variant="outline" 
