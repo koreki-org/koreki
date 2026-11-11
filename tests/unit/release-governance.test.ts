@@ -63,6 +63,11 @@ describe('Release-Governance', () => {
         const wf = lies(pfad);
         expect(wf).toMatch(/release:\s*\n\s*types:\s*\[published\]/);
         expect(wf).toContain('git push -q origin update-kanal');
+        // Adressen auf den Tag festlegen und jede vor dem Veroeffentlichen
+        // abrufen: v0.9.101 zeigte auf releases/latest, das Pre-Releases nicht
+        // kennt — jede App bekam ein 404.
+        expect(wf).toContain('"/releases/download/\\($tag)/"');
+        expect(wf).toContain("curl -s -o /dev/null -w '%{http_code}' -I -L");
         // Veroeffentlichte Releases sind unveraenderlich — dorthin hochladen scheitert.
         expect(wf).not.toContain('gh release upload');
         expect(wf).not.toMatch(/^\s*push:\s*$/m); // Ausloeser `push:`, nicht `push: true` der Docker-Aktion

@@ -51,6 +51,32 @@ jobs:
             exit 1
           fi
 
+      # Seit die Builds per releaseId in einen vorab angelegten Entwurf laden,
+      # kennt tauri-action den Tag nicht und schreibt `releases/latest/download/`.
+      # Unter "latest" fuehrt GitHub keine Pre-Releases — v0.9.101 lieferte so
+      # jeder App ein 404. Die Adressen werden hier auf den Tag festgelegt.
+      - name: Download-Adressen auf den Tag festlegen
+        run: |
+          jq --arg tag "$TAG" '
+            .platforms |= with_entries(.value.url |= sub("/releases/(latest/download|download/[^/]+)/"; "/releases/download/\($tag)/"))
+          ' neu/latest.json > neu/latest.fest.json
+          mv neu/latest.fest.json neu/latest.json
+
+      # Erst veroeffentlichen, wenn jede Adresse wirklich eine Datei liefert —
+      # sonst steht der Fehler erst bei der Lehrkraft auf dem Bildschirm.
+      - name: Jede Download-Adresse erreichbar?
+        run: |
+          fehler=0
+          for url in $(jq -r '.platforms[].url' neu/latest.json | sort -u); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' -I -L "$url")
+            echo "$code $url"
+            [ "$code" = "200" ] || fehler=1
+          done
+          if [ "$fehler" != 0 ]; then
+            echo "::error::Mindestens eine Download-Adresse ist nicht erreichbar. Kanal bleibt unveraendert."
+            exit 1
+          fi
+
       - name: Kanal-Branch holen oder neu anlegen
         run: |
           git init -q kanal
