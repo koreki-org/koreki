@@ -71,6 +71,8 @@ curl -fsSL https://raw.githubusercontent.com/koreki-org/koreki/main/scripts/inst
 
 Der Installer liest die Version aus dem Update-Kanal (`update-kanal/latest.json`), wechselt das Repo auf deren Tag (`git checkout -f v…`) und baut neu. Die `.env` bleibt erhalten — bei Single wie bei Multi. Lokale Änderungen an versionierten Dateien (z. B. `nginx.conf`) gehen dabei verloren.
 
+**Neu einrichten (R)** heißt bei Multi: bei null anfangen. Der Installer verlangt dafür die Eingabe „löschen“ und entfernt erst dann Container und Volumes — alle Keycloak-Benutzer und App-Daten. Scheitert ein Start, löscht er nie von selbst (bis 11.11.2026 tat er das per `down -v` im Fehlerzweig, ausgelöst schon durch ein neues Datenbank-Passwort).
+
 **Hinweis in der App:** Admins einer Community-Instanz sehen rechts oben „Neue Version“, sobald der Kanal eine neuere Version meldet als die laufende. Der Server fragt den Kanal höchstens alle sechs Stunden (`/api/neue-version`, `src/lib/version-kanal.ts`); die Browser der Lehrkräfte sprechen nicht mit GitHub. In Multi sehen nur Admins den Hinweis.
 
 

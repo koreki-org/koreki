@@ -311,6 +311,7 @@ async function setupCommunityMulti(isDryRun) {
   let appUrl = 'http://localhost:8080';
   let isUpdate = false;
 
+  const gabEsSchon = fs.existsSync(envPath);
   const bestehend = await bestehendeKonfiguration(envPath);
   if (bestehend !== null) {
     isUpdate = true;
@@ -318,6 +319,23 @@ async function setupCommunityMulti(isDryRun) {
     // Extract APP_URL for the Keycloak realm injection later
     const matchAppUrl = envContent.match(/^APP_URL=(.*)$/m);
     if (matchAppUrl) appUrl = matchAppUrl[1].trim();
+  }
+
+  // "Neu einrichten" auf einer bestehenden Installation heisst: bei null
+  // anfangen. Das wird jetzt AUSDRUECKLICH bestaetigt und vor dem Start
+  // geloescht. Bis 11.11.2026 geschah es nur als Nebenwirkung: das neue
+  // Datenbank-Passwort passte nicht zur alten Datenbank, der Start scheiterte,
+  // und der Fehlerzweig loeschte wortlos alle Volumes — Keycloak-Benutzer und
+  // App-Daten eingeschlossen.
+  const vonVorn = gabEsSchon && !isUpdate;
+  if (vonVorn) {
+    console.log(c('red', '\n⚠️  Neu einrichten löscht ALLE Benutzer (Keycloak) und ALLE Daten dieser Installation.'));
+    console.log(c('red', '   Das lässt sich nicht rückgängig machen.'));
+    const bestaetigung = await askQuestion('Zum Fortfahren "löschen" eingeben, sonst Abbruch', '');
+    if (!['löschen', 'loeschen'].includes(bestaetigung.toLowerCase())) {
+      console.log(c('green', '✔ Abgebrochen. Es wurde nichts verändert.'));
+      return;
+    }
   }
 
   let adminPassword = '*****'; // Masked for update console output
@@ -424,6 +442,12 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
     return;
   }
 
+  // Mit der ALTEN .env loeschen: die Compose-Datei verlangt deren Passwoerter.
+  if (vonVorn) {
+    console.log(c('bold', '\n🗑️  Lösche die bisherige Installation (Container und Volumes)...'));
+    execSync(`docker compose -f ${composeFile} down -v`, { cwd: TARGET_DIR, stdio: 'inherit' });
+  }
+
   fs.writeFileSync(envPath, envContent.trim() + '\n');
   console.log(c('green', '\n✔ Created .env file successfully.'));
 
@@ -436,22 +460,18 @@ NEXT_PUBLIC_ENABLE_PAID_MODES=false
     console.log(`👉 Keycloak Admin UI:  ${c('bold', `${appUrl}/auth/admin`)}`);
     console.log(c('dim', 'Note: Keycloak may take 30-45 seconds to initialize on first launch.'));
   } catch (err) {
-    if (isUpdate) {
-      console.error(c('red', '\n❌ Failed to update and start Docker stack: ' + err.message));
-      console.log(c('yellow', 'Your data and configuration are safe. Check the logs with: docker compose logs'));
+    // Nie automatisch Volumes loeschen: darin liegen die Keycloak-Benutzer und
+    // die App-Daten. Bis 11.11.2026 stand hier ein `down -v` mit Neuversuch.
+    console.error(c('red', '\n❌ Failed to start Docker stack: ' + err.message));
+    console.log(c('yellow', 'Benutzer und Daten wurden NICHT gelöscht. Logs ansehen mit:'));
+    console.log(`   docker compose -f ${composeFile} logs keycloak koreki`);
+    if (gabEsSchon) {
+      console.log(c('dim', 'Wer bewusst bei null anfangen will: den Installer erneut starten und "Neu einrichten" (R) wählen.'));
     } else {
-      console.log(c('yellow', '\n⚠️  Initial launch encountered a database volume issue. Resetting stale volumes and retrying...'));
-      try {
-        execSync(`docker compose -f ${composeFile} down -v`, { cwd: TARGET_DIR, stdio: 'inherit' });
-        execSync(`docker compose -f ${composeFile} build --no-cache`, { cwd: TARGET_DIR, stdio: 'inherit' });
-        execSync(`docker compose -f ${composeFile} up -d`, { cwd: TARGET_DIR, stdio: 'inherit' });
-        console.log(c('green', '\n✅ Koreki Community Multi-User Stack is running!'));
-        console.log(`👉 App URL:            ${c('bold', appUrl)}`);
-        console.log(`👉 Keycloak Admin UI:  ${c('bold', `${appUrl}/auth/admin`)}`);
-        console.log(c('dim', 'Note: Keycloak may take 30-45 seconds to initialize on first launch.'));
-      } catch (retryErr) {
-        console.error(c('red', '\n❌ Failed to start Docker stack: ' + retryErr.message));
-      }
+      // Typischer Fall: Ordner geloescht und neu installiert, die Volumes einer
+      // frueheren Installation sind noch da und kennen ein anderes Passwort.
+      console.log(c('dim', 'Liegen hier noch Daten einer früheren Installation, passt deren Passwort nicht zur neuen .env.'));
+      console.log(c('dim', `Bewusst alles löschen (Benutzer und Daten!): docker compose -f ${composeFile} down -v`));
     }
   }
 }
