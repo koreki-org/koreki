@@ -9,7 +9,7 @@ const MinimalFooter: React.FC = () => {
         <footer className="mt-auto py-6 px-8 border-t border-border/50 bg-background/40 backdrop-blur-md">
             <div className="max-w-[1500px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-xs font-medium text-muted-foreground">
                 <div className="flex items-center gap-2">
-                    <span>&copy; {new Date().getFullYear()} Koreki. Open Source. Developed with</span>
+                    <span>&copy; {new Date().getFullYear()} Koreki. Quellcode einsehbar. Developed with</span>
                     <Heart size={10} className="text-primary fill-primary" />
                     <span>in Germany.</span>
                 </div>

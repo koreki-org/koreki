@@ -99,8 +99,8 @@ const SkillsSettingsModal: React.FC<SkillsSettingsModalProps> = ({
                             <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight truncate">Skills Center</h2>
-                            <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">Modulare KI-Bewertungs-Skills</p>
+                            <h2 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight truncate">Skills</h2>
+                            <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">Zuschaltbare Regeln für typische Aufgabenarten</p>
                         </div>
                     </div>
                     <Button variant="ghost" size="icon" className="rounded-full hover:bg-foreground/5 shrink-0" onClick={onClose}>

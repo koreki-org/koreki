@@ -95,7 +95,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
     return (
         <div className="space-y-6">
             <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground ml-1">KI Engine / Provider</label>
+                <label className="text-xs font-medium text-muted-foreground ml-1">KI-Anbieter</label>
                 <div className="grid grid-cols-3 gap-2">
                     {[
                         { id: 'mistral', label: 'Mistral API', icon: Globe },

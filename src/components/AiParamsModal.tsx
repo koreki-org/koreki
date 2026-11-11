@@ -127,8 +127,8 @@ export const AiParamsModal: React.FC<AiParamsModalProps> = ({
                             <img src="/logo.png" alt="Koreki Logo" className="w-full h-full object-cover" />
                         </div>
                         <div className="min-w-0">
-                            <h2 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight truncate">Inferenz Parameter-Center</h2>
-                            <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">Modelliere das Antwortverhalten der KI im Detail</p>
+                            <h2 className="text-lg sm:text-2xl font-bold text-foreground tracking-tight truncate">Intelligenz</h2>
+                            <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">Welches Modell korrigiert und wie genau</p>
                         </div>
                     </div>
                     <Button variant="ghost" size="icon" className="rounded-full hover:bg-foreground/5 shrink-0" onClick={onClose}>

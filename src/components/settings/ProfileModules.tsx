@@ -272,7 +272,7 @@ ${correctionPrompt}`;
                 ) : (
                     <h3 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-3">
                         {selectedProfile}
-                        {isSystemSelected && <Badge variant="outline" className="text-xxs bg-muted text-muted-foreground px-3 py-1 rounded-full border-transparent font-bold">SYSTEM</Badge>}
+                        {isSystemSelected && <Badge variant="outline" className="text-xxs bg-muted text-muted-foreground px-3 py-1 rounded-full border-transparent font-bold">Vorlage</Badge>}
                     </h3>
                 )}
             </div>

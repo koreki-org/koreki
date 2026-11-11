@@ -112,7 +112,7 @@ export const GradingMemoryEditorView: React.FC<GradingMemoryEditorViewProps> = (
                                                                  <span className="text-xs font-extrabold text-foreground">Fallbeispiel {index + 1} {resolvedTaskName ? `(${resolvedTaskName})` : ''}</span>
                                                                  <div className="flex items-center gap-2">
                                                                      <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded border border-primary/10">
-                                                                         Few-Shot #${index + 1}
+                                                                         Beispiel {index + 1}
                                                                      </span>
                                                                      <button 
                                                                          type="button"

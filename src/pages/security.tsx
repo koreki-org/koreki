@@ -97,7 +97,7 @@ export default function SecurityPage() {
                                 Für Schulen ohne eigenen Server bereiten wir einen gehosteten Dienst vor. Wenn deine Schule ihn mit erproben möchte, schreib uns.
                             </p>
                         </div>
-                        <a href={`mailto:${LEGAL_CONFIG.contact.email}`} className={cn(buttonVariants({ variant: 'default', size: 'lg' }), "h-12 shrink-0")}>
+                        <a href={`mailto:${LEGAL_CONFIG.provider.email}`} className={cn(buttonVariants({ variant: 'default', size: 'lg' }), "h-12 shrink-0")}>
                             <Mail size={17} /> Kontakt aufnehmen
                         </a>
                     </div>

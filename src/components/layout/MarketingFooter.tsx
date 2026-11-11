@@ -47,7 +47,7 @@ const MarketingFooter: React.FC = () => {
                         <div className={`${spalte} col-span-2 md:col-span-1`}>
                             <h4 className="font-medium text-foreground mb-1">Kontakt</h4>
                             {mode === 'saas' && <Link href="/contact" className={verweis}>Kontaktformular</Link>}
-                            <a href={`mailto:${LEGAL_CONFIG.contact.email}`} className={verweis}>{LEGAL_CONFIG.contact.email}</a>
+                            <a href={`mailto:${LEGAL_CONFIG.provider.email}`} className={verweis}>{LEGAL_CONFIG.provider.email}</a>
                         </div>
                     </div>
                 </div>

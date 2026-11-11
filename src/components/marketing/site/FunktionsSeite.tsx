@@ -35,7 +35,10 @@ export interface FunktionsSeiteProps {
     kicker: string;
     titel: string;
     text: string;
-    bild?: { src: string; alt: string };
+    /** `schmal`: Ausschnitt aus einem Fenster — nicht auf volle Breite aufblasen. */
+    bild?: { src: string; alt: string; schmal?: boolean };
+    /** Statt eines Bildes: eigener Inhalt unter dem Kopf (z. B. die drei Ablauf-Schritte). */
+    buehne?: React.ReactNode;
     punkte: FunktionsPunkt[];
     /** Optionaler Zusatzabschnitt unter den Punkten. */
     zusatz?: React.ReactNode;
@@ -62,7 +65,7 @@ export const FunktionsNavigation: React.FC = () => {
 };
 
 export const FunktionsSeite: React.FC<FunktionsSeiteProps> = ({
-    seitentitel, beschreibung, kicker, titel, text, bild, punkte, zusatz
+    seitentitel, beschreibung, kicker, titel, text, bild, buehne, punkte, zusatz
 }) => {
     const { pathname } = useRouter();
     const index = FUNKTIONEN.findIndex(f => f.href === pathname);
@@ -85,10 +88,11 @@ export const FunktionsSeite: React.FC<FunktionsSeiteProps> = ({
                         <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">{text}</p>
                     </div>
                 {bild && (
-                    <div className="mt-12">
+                    <div className={cn("mt-12", bild.schmal && "max-w-3xl mx-auto")}>
                         <Produktbild src={bild.src} alt={bild.alt} />
                     </div>
                 )}
+                {buehne && <div className="mt-12">{buehne}</div>}
             </Abschnitt>
 
             <Abschnitt>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { FunktionsSeite } from '@/components/marketing/site/FunktionsSeite';
+import { AblaufSchritte } from '@/components/marketing/landing/LandingAblauf';
 
 export default function WorkflowFeature() {
     return (
@@ -9,7 +10,7 @@ export default function WorkflowFeature() {
             kicker="Ablauf"
             titel="Von der Musterlösung bis zur fertigen Liste."
             text="Du lädst Musterlösung und Arbeiten hoch, prüfst die Vorschläge und gibst Liste und Rückmeldungen aus. Jeder Schritt bleibt sichtbar und änderbar."
-            bild={{ src: '/marketing/musterloesung.webp', alt: 'Musterlösung mit erkannter Aufgabenstruktur und Punkten' }}
+            buehne={<AblaufSchritte />}
             punkte={[
                 { titel: 'Musterlösung als Maßstab', text: 'Koreki erkennt Aufgaben und Punkte aus deinem Erwartungshorizont. Du kannst jede Aufgabe und jede Punktzahl anpassen, bevor korrigiert wird.' },
                 { titel: 'Ganze Stapel auf einmal', text: 'Lade die Arbeiten einer Klasse gemeinsam hoch. Ein eingescannter Stapel lässt sich in einzelne Arbeiten aufteilen.' },

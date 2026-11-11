@@ -9,6 +9,7 @@ export default function SkillsFeature() {
             kicker="Skills"
             titel="Bausteine für typische Aufgaben."
             text="Skills sind zuschaltbare Regeln für bestimmte Aufgabenarten. Sie sagen Koreki zum Beispiel, dass gleichwertige Rechenwege gleich viel zählen."
+            bild={{ src: '/marketing/skills.webp', schmal: true, alt: 'Skill-Sammlung „MINT Standard“ mit zuschaltbaren Regeln, etwa für Folgefehler und gleichwertige Formeln' }}
             punkte={[
                 { titel: 'Zuschalten statt erklären', text: 'Statt dieselbe Regel in jeder Expertise neu zu formulieren, schaltest du den passenden Skill einfach dazu.' },
                 { titel: 'Mitgelieferte Sammlungen', text: 'Für naturwissenschaftliche Fächer gibt es eine fertige Sammlung, die du unverändert nutzen oder anpassen kannst.' },

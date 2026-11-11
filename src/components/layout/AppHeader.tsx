@@ -231,7 +231,7 @@ const Header: React.FC<HeaderProps> = ({
                             label="Expertise"
                             value={activeProfileName || 'Standard'} 
                             onClick={onShowPrompts!} 
-                            description="Expert Center: Fachprofile & Prompts verwalten" 
+                            description="Fachprofile verwalten: worauf es in deinem Fach ankommt" 
                             isActive={!!activeProfileName && activeProfileName !== 'Standard'}
                         />
                         
@@ -240,7 +240,7 @@ const Header: React.FC<HeaderProps> = ({
                             label="Skills"
                             value={activeSkillsProfileName || 'MINT Standard'} 
                             onClick={onShowSkills!} 
-                            description="Skills Center: Modulare AI-Kompetenzen konfigurieren" 
+                            description="Zuschaltbare Regeln für typische Aufgabenarten" 
                             isActive={!!activeSkillsProfileName && activeSkillsProfileName !== 'MINT Standard'}
                         />
                         
@@ -249,7 +249,7 @@ const Header: React.FC<HeaderProps> = ({
                             label="Erfahrungsschatz"
                             value={activeGradingMemoryName || 'Standard-Korrektur'} 
                             onClick={onShowGradingMemory!} 
-                            description="GradingMemory: Korrektur-Erfahrung kalibrieren" 
+                            description="Bewertete Beispiele als Maßstab" 
                             isActive={!!activeGradingMemoryName && activeGradingMemoryName !== 'Standard-Korrektur'}
                         />
                         
@@ -258,7 +258,7 @@ const Header: React.FC<HeaderProps> = ({
                             label="Intelligenz"
                             value={activeAiProfileName || 'Standard'} 
                             onClick={onShowAiParams!} 
-                            description="Intelligenz: AI-Leistungskraft steuern" 
+                            description="Welches Modell korrigiert und wie genau" 
                             isActive={!!activeAiProfileName && activeAiProfileName !== 'Standard'}
                         />
                     </div>

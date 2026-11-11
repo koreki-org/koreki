@@ -119,10 +119,10 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                         </div>
                         <div className="min-w-0">
                             <h2 className="text-lg sm:text-2xl font-bold font-outfit text-foreground tracking-tight truncate">
-                                GradingMemory Center
+                                Erfahrungsschatz
                             </h2>
                             <p className="text-xxs sm:text-sm text-muted-foreground font-medium italic truncate">
-                                Kalibrierung von Few-Shot Beispielen
+                                Bewertete Beispiele als Maßstab
                             </p>
                         </div>
                     </div>
@@ -183,7 +183,7 @@ export const GradingMemoryModal: React.FC<GradingMemoryModalProps> = ({
                             </div>
                             <h3 className="text-lg md:text-xl font-bold text-foreground mb-2 font-outfit">Erfahrungsschatz erfolgreich kalibriert!</h3>
                             <p className="text-muted-foreground text-xs md:text-sm max-w-[500px] mb-6 font-medium">
-                                Der neue Erfahrungsschatz <strong>&quot;{profileName}&quot;</strong> wurde sicher gespeichert und ist ab sofort als aktives Few-Shot-Modul für deine Korrekturen vorausgewählt!
+                                Der neue Erfahrungsschatz <strong>&quot;{profileName}&quot;</strong> wurde sicher gespeichert und ist ab sofort für deine Korrekturen vorausgewählt.
                             </p>
                             <Button 
                                 onClick={onClose}

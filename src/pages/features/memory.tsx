@@ -9,7 +9,7 @@ export default function MemoryFeature() {
             kicker="Erfahrungsschatz"
             titel="Deine Beispiele werden zum Maßstab."
             text="Hast du eine Antwort bewertet, kannst du sie als Beispiel speichern. Koreki zieht diese Beispiele bei den nächsten Arbeiten heran."
-            bild={{ src: '/marketing/pruefansicht.webp', alt: 'Prüfansicht, aus der eine Bewertung in den Erfahrungsschatz übernommen werden kann' }}
+            bild={{ src: '/marketing/erfahrungsschatz.webp', alt: 'Prüfansicht mit Schülerlösung, Vorschlag und Rückmeldung; darunter der Knopf „In Erfahrungsschatz übernehmen“' }}
             punkte={[
                 { titel: 'Direkt aus der Prüfansicht', text: 'Eine Bewertung, die du geprüft oder angepasst hast, übernimmst du mit einem Klick in den Erfahrungsschatz.' },
                 { titel: 'Gute und lückenhafte Antworten', text: 'Speichere Beispiele für volle Punktzahl ebenso wie für typische Fehler – beides schärft den Maßstab.' },

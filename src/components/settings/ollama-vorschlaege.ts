@@ -15,8 +15,8 @@ export const OLLAMA_VORSCHLAEGE = [
     // Feste Kennung statt `qwen3.8:latest` — so wurde es am 20.10.2026 gemessen, und
     // ein beweglicher Bezeichner koennte das Modell unbemerkt austauschen.
     // Seit 21.10.2026 die Empfehlung (vorne); 3.6 bleibt geprueft, ohne Empfehlung.
-    { id: 'qwen3.8:27b-mtp-q4_K_M', name: 'Qwen 3.8', desc: 'Empfohlen (High Reasoning, kompakt)' },
-    { id: 'qwen3.6:35b', name: 'Qwen 3.6', desc: 'High Reasoning' },
+    { id: 'qwen3.8:27b-mtp-q4_K_M', name: 'Qwen 3.8', desc: 'Empfohlen (gründlich, kompakt)' },
+    { id: 'qwen3.6:35b', name: 'Qwen 3.6', desc: 'Gründlich' },
     { id: 'mistral-small3.2:latest', name: 'Mistral Small 3.2', desc: 'Schnell & Effizient' },
     { id: 'gemma4:31b', name: 'Gemma 31B', desc: 'Spezialist für Inhaltsanalyse' }
 ];

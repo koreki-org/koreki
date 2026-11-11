@@ -9,6 +9,7 @@ export default function ExpertiseFeature() {
             kicker="Expertise"
             titel="Dein Fach, deine Maßstäbe."
             text="Mit der Expertise beschreibst du in eigenen Worten, worauf du bei der Korrektur achtest. Koreki richtet seine Vorschläge danach aus."
+            bild={{ src: '/marketing/expertise.webp', schmal: true, alt: 'Expertise-Profil „Fachlehrer Mathematik“ mit der fachlichen Anweisung in eigenen Worten' }}
             punkte={[
                 { titel: 'In deinen eigenen Worten', text: 'Zum Beispiel: „Achte vor allem auf logische Korrektheit, Rechtschreibung ist zweitrangig.“ Kein Fachvokabular nötig.' },
                 { titel: 'Vorlagen zum Start', text: 'Mitgelieferte Profile, etwa für Mathematik, Informatik oder Wirtschaft, kannst du übernehmen und anpassen.' },

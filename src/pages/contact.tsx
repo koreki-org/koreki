@@ -226,9 +226,9 @@ export default function Contact() {
                         <div className="bg-primary rounded-2xl p-4 md:p-card-padding-sm text-primary-foreground shadow-xl transition-all duration-300">
                             <h3 className="text-lg font-bold mb-2 font-outfit">Lieber direkt?</h3>
                             <p className="text-primary-foreground/80 text-sm mb-6">Wir antworten normalerweise innerhalb von 24 Stunden.</p>
-                            <a href={`mailto:${LEGAL_CONFIG.contact.email}`} className="flex items-center gap-3 font-bold hover:opacity-80 transition-all duration-300">
+                            <a href={`mailto:${LEGAL_CONFIG.provider.email}`} className="flex items-center gap-3 font-bold hover:opacity-80 transition-all duration-300">
                                 <div className="p-2 bg-white/10 rounded-lg"><Mail className="w-5 h-5" /></div>
-                                {LEGAL_CONFIG.contact.email}
+                                {LEGAL_CONFIG.provider.email}
                             </a>
                         </div>
                     </div>

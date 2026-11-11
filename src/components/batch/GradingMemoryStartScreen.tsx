@@ -89,7 +89,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                     >
                                         <div className="flex flex-col">
                                             <span className="text-xs font-extrabold">Kein Erfahrungsschatz (Standard-Korrektur)</span>
-                                            <span className="text-xs opacity-80 font-semibold mt-0.5">Führt die Korrektur auf reinem Zero-Shot-Wege ohne fiktive Beispiele aus.</span>
+                                            <span className="text-xs opacity-80 font-semibold mt-0.5">Korrigiert nach Musterlösung und Expertise, ohne gespeicherte Beispiele.</span>
                                         </div>
                                         {!activeMemoryId && <Check size={16} className="text-primary" />}
                                     </div>
@@ -136,7 +136,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                                     )}
                                                 </span>
                                                 <span className="text-xs text-muted-foreground font-medium mt-1">
-                                                    {m.cases?.length || 0} Fallbeispiele (Few-Shot)
+                                                    {m.cases?.length || 0} Fallbeispiele
                                                 </span>
 
                                             </div>
@@ -231,7 +231,7 @@ export const GradingMemoryStartScreen: React.FC<GradingMemoryStartScreenProps> =
                                          </h3>
  
                                          <p className="text-foreground text-xs md:text-sm leading-relaxed font-medium">
-                                             KI-Modelle überlesen häufig kritische Zeichenabweichungen (z. B. IP-Adressen oder Ports). Mit <strong>GradingMemory</strong> trainierst du die KI interaktiv: Ein virtueller Schüler simuliert typische Fehlerbilder basierend auf deiner Musterlösung. Du benotest diese fiktiven Fälle einmalig und die KI nutzt diese fortan als exakte Few-Shot-Richtlinie.
+                                             KI-Modelle überlesen häufig kritische Zeichenabweichungen (z. B. IP-Adressen oder Ports). Mit dem <strong>Erfahrungsschatz</strong> gibst du der KI Beispiele vor: Ein virtueller Schüler simuliert typische Fehlerbilder basierend auf deiner Musterlösung. Du benotest diese fiktiven Fälle einmalig und die KI nutzt sie fortan als Maßstab.
                                          </p>
 
                                          <div className="bg-muted/50 border border-border p-5 rounded-xl flex flex-col gap-4 mt-2">

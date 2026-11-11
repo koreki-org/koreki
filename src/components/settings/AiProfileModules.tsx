@@ -84,7 +84,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                     ) : (
                         <h3 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-3 truncate">
                             {selectedProfile}
-                            {isSystemSelected && <Badge variant="outline" className="text-xxs bg-muted text-muted-foreground px-3 py-1 rounded-full border-transparent">SYSTEM</Badge>}
+                            {isSystemSelected && <Badge variant="outline" className="text-xxs bg-muted text-muted-foreground px-3 py-1 rounded-full border-transparent">Vorlage</Badge>}
                         </h3>
                     )}
                 </div>
@@ -136,7 +136,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
                     )}
                 >
                     <Eye size={14} className={activeTab === 'vision' ? "text-success" : "text-muted-foreground"} />
-                    Handschriften-OCR (Vision)
+                    Texterkennung (Handschrift)
                 </button>
             </div>
 
@@ -144,7 +144,7 @@ export const AiProfileEditor: React.FC<EditorProps> = ({
             <div className="flex-1 flex flex-col space-y-6">
                 <div className="flex justify-between items-center">
                     <label className="text-sm font-bold text-foreground flex items-center gap-2">
-                        <SlidersHorizontal size={18} className="text-primary" /> Parameter-Feintuning
+                        <SlidersHorizontal size={18} className="text-primary" /> Feineinstellung
                     </label>
                 </div>
 

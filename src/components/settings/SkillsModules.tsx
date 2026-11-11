@@ -270,7 +270,7 @@ Dieses Dokument enthält die deklarierten KI-Bewertungs-Skills für die automati
                             <h3 className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-3">
                                 {selectedProfile}
                             </h3>
-                            {isSystemSelected && <Badge variant="outline" className="text-xxs bg-muted text-muted-foreground px-3 py-1 rounded-full border-transparent font-bold">SYSTEM PRESET</Badge>}
+                            {isSystemSelected && <Badge variant="outline" className="text-xxs bg-muted text-muted-foreground px-3 py-1 rounded-full border-transparent font-bold">Vorlage</Badge>}
                         </div>
                     )}
                 </div>
