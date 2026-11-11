@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Github, Heart } from 'lucide-react';
 import { isLocalInstance } from '@/lib/env-context';
+import { openExternal } from '@/lib/os-utils';
 
 const MinimalFooter: React.FC = () => {
     return (
@@ -14,20 +15,15 @@ const MinimalFooter: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-8">
                     {/*
-                      * Alle Rechts- und Hilfetexte oeffnen in einem NEUEN Tab.
+                      * Impressum und Datenschutz oeffnen in einem NEUEN Tab — die
+                      * Betriebsanleitung darunter ausdruecklich NICHT.
                       *
-                      * Diese Fusszeile steht nur im `AppLayout`, also unter einer
-                      * laufenden Korrektur — und Schuelerdaten leben allein im
-                      * Arbeitsspeicher (`architectural-vision` §2). Es gibt kein
-                      * Rueckgaengig: Was beim Verlassen der Seite verloren geht, ist
-                      * weg. Im Browser haelt die clientseitige Navigation den Zustand
-                      * zwar (am 10.11.2026 nachgemessen), aber darauf darf die
-                      * Sicherheit der Daten nicht beruhen — ein Build, der daraus ein
-                      * echtes Neuladen macht, braucht niemanden zu fragen.
-                      *
-                      * Fachlich ist es ohnehin richtig: In einer Anleitung schlaegt
-                      * man nach, WAEHREND man arbeitet. Der AVV-Dialog und der
-                      * GitHub-Link daneben machen es seit jeher genauso.
+                      * Diese Fusszeile steht unter einer laufenden Korrektur, und
+                      * Schuelerdaten leben allein im Arbeitsspeicher
+                      * (`architectural-vision` §2): Was beim Verlassen der Seite
+                      * verloren geht, ist weg. Ein neuer Tab laesst die Korrektur
+                      * unberuehrt — hier ist er also richtig. Diese beiden Verweise
+                      * erscheinen ohnehin nur im SaaS, also in einem echten Browser.
                       */}
                     {!isLocalInstance() && (
                         <>
@@ -48,15 +44,42 @@ const MinimalFooter: React.FC = () => {
                      * Im SaaS bleibt der Weg über den AVV-Ablauf; dort wird die Anleitung
                      * beim Onboarding der Schule ausdrücklich vorgelegt und quittiert.
                      */}
+                    {/*
+                      * KEIN `target="_blank"` am Verweis darunter — und das ist der
+                      * Unterschied zu den beiden Verweisen oben.
+                      *
+                      * Dieser Link erscheint nur auf lokalen Instanzen, und dazu
+                      * gehoert die Desktop-App. Dort laeuft die Oberflaeche in EINEM
+                      * Tauri-Fenster: `src-tauri/src/lib.rs` registriert keinen
+                      * Handler fuer neue Fenster, und die Shell-Erweiterung oeffnet
+                      * nur externe Adressen im System-Browser — eine Seite aus dem
+                      * eigenen Buendel kann sie nicht. Ein `_blank` fuehrt dort also
+                      * ins Leere: Der Knopf tut nichts, und das ist schlimmer als der
+                      * Weg, den er ersetzen sollte.
+                      *
+                      * Die Korrektur ist trotzdem gesichert, auf zwei Wegen: Die
+                      * Navigation innerhalb von Koreki laeuft clientseitig und haelt
+                      * den Zustand (am 10.11.2026 im Browser nachgemessen), und fuer
+                      * das echte Neuladen fragt `useVerlassenWarnung`.
+                      */}
                     {isLocalInstance() && (
-                        <Link href="/app/compliance/manual" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                        <Link href="/app/compliance/manual" className="hover:text-foreground transition-colors">
                             Betriebsanleitung
                         </Link>
                     )}
-                    <a 
-                        href="https://github.com/koreki-org/koreki" 
-                        target="_blank" 
+                    {/*
+                      * Externe Adresse, deshalb ueber `openExternal` statt ueber
+                      * `target="_blank"`: In der Desktop-App nimmt das Fenster kein
+                      * `_blank` an (s. Begruendung an der Betriebsanleitung oben), die
+                      * Shell-Erweiterung dagegen reicht genau solche Adressen an den
+                      * System-Browser weiter. Das `href` bleibt stehen, damit
+                      * Rechtsklick und „Adresse kopieren" weiter funktionieren.
+                      */}
+                    <a
+                        href="https://github.com/koreki-org/koreki"
+                        target="_blank"
                         rel="noopener noreferrer"
+                        onClick={e => { e.preventDefault(); void openExternal('https://github.com/koreki-org/koreki'); }}
                         className="flex items-center gap-2 hover:text-foreground transition-colors"
                     >
                         <Github size={12} />
