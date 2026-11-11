@@ -37,7 +37,8 @@
     "test:injection": "cross-env TS_NODE_PROJECT=compliance/nachweise/robustheit/tsconfig.json ts-node -T -r tsconfig-paths/register compliance/nachweise/robustheit/run_injection_probe.ts",
     "test:modellwechsel": "cross-env TS_NODE_PROJECT=compliance/nachweise/modellwechsel/tsconfig.json ts-node -T -r tsconfig-paths/register compliance/nachweise/modellwechsel/run_gate.ts",
     "genauigkeit:pruefblatt": "cross-env TS_NODE_PROJECT=compliance/nachweise/genauigkeit/tsconfig.json ts-node -T -r tsconfig-paths/register compliance/nachweise/genauigkeit/erzeuge_pruefblatt.ts",
-    "genauigkeit:messen": "cross-env TS_NODE_PROJECT=compliance/nachweise/genauigkeit/tsconfig.json ts-node -T -r tsconfig-paths/register compliance/nachweise/genauigkeit/run_messung.ts"
+    "genauigkeit:messen": "cross-env TS_NODE_PROJECT=compliance/nachweise/genauigkeit/tsconfig.json ts-node -T -r tsconfig-paths/register compliance/nachweise/genauigkeit/run_messung.ts",
+    "docs:datenschutz-word": "cross-env TS_NODE_PROJECT=scripts/tsconfig.json ts-node -T scripts/datenschutz-word.ts"
   },
   "dependencies": {
     "@logto/next": "^4.2.9",

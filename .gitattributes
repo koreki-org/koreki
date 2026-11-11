@@ -11,3 +11,6 @@ keycloak/*.json linguist-generated=true
 *.sh text eol=lf
 Dockerfile text eol=lf
 *.dockerfile text eol=lf
+
+# Erzeugte Word-Dateien Byte fuer Byte vergleichbar halten (datenschutz-word-aktuell.test.ts)
+*.docx binary

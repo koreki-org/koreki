@@ -4,6 +4,7 @@ import { buttonVariants } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { isLocalInstance } from '@/lib/env-context';
 import { openExternal } from '@/lib/os-utils';
+import { DATENSCHUTZ_WORD_URL } from '@/lib/word/datenschutz-pfade';
 import { Abschnitt, AbschnittsKopf, Kachel, NACH_KOPF, RASTER } from './Bausteine';
 
 /*
@@ -42,7 +43,7 @@ export const SchulDatenschutzLink: React.FC<{ className?: string }> = ({ classNa
     );
 };
 
-const VORLAGEN_URL = 'https://github.com/koreki-org/koreki/blob/main/docs/user-guides/datenschutz-paket-schulen.md';
+const VORLAGEN_GITHUB = 'https://github.com/koreki-org/koreki/blob/main/docs/user-guides/datenschutz-paket-schulen.md';
 
 const VERSIONEN = [
     {
@@ -89,6 +90,9 @@ export function DatenschutzFuerSchulen() {
                 titel="Was deine Schule wissen muss."
                 text="Für Koreki Desktop und die Community Edition mit dem KI-Zugang von Mittwald, den deine Schule bucht."
             />
+            <p className="mt-4 text-sm/relaxed text-muted-foreground max-w-2xl">
+                Ganz ohne Cloud geht es auch: Mit einem lokalen Modell über Ollama verlassen die Arbeiten den Rechner bzw. das Schulnetz nicht. Dann entfällt der Vertrag mit Mittwald.
+            </p>
 
             <div className={cn(NACH_KOPF, RASTER, "md:grid-cols-2")}>
                 {VERSIONEN.map(v => (
@@ -121,13 +125,16 @@ export function DatenschutzFuerSchulen() {
                         {SCHRITTE.map(s => <li key={s}>{s}</li>)}
                     </ol>
                     <a
-                        href={VORLAGEN_URL}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        href={DATENSCHUTZ_WORD_URL}
+                        download
                         className={cn(buttonVariants({ variant: 'outline' }), "mt-6 h-11")}
                     >
-                        <FileText size={17} /> Vorlagen für Verzeichnis und Folgenabschätzung
+                        <FileText size={17} /> Vorlagen als Word-Datei
                     </a>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                        Mit Eintrag fürs Verarbeitungsverzeichnis und Bausteinen für die Folgenabschätzung. Auch{' '}
+                        <a href={VORLAGEN_GITHUB} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">als Webseite</a>.
+                    </p>
                 </Kachel>
             </div>
 

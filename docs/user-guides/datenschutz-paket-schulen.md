@@ -20,6 +20,8 @@ Für Schulleitung und Datenschutzbeauftragte. Gilt für **Koreki Desktop** (auf 
 * **Koreki selbst bekommt keine Schülerdaten.** Ein Vertrag mit Koreki ist deshalb nicht nötig.
 * **Die Note setzt immer die Lehrkraft.** Koreki macht Vorschläge; vor jedem Export bestätigt die Lehrkraft, dass sie geprüft hat.
 
+**Ganz ohne Cloud** geht es auch: Mit einem lokalen Modell über Ollama verlassen die Arbeiten den Rechner bzw. das Schulnetz nicht. Dann entfällt der Vertrag mit Mittwald.
+
 ## Wohin gehen die Daten?
 
 | | Koreki Desktop | Koreki Community |
@@ -84,3 +86,4 @@ Die ausführliche Beschreibung von Zweck, Grenzen und Genauigkeit steht in der *
 * Schlüssel: Desktop [`src/lib/ai/vault-service.ts`](../../src/lib/ai/vault-service.ts); Community [`src/lib/ai/provider-connection.ts`](../../src/lib/ai/provider-connection.ts) (`MITTWALD_API_KEY`) und [`src/lib/ai/client-settings-gate.ts`](../../src/lib/ai/client-settings-gate.ts)
 * Speicherorte Community: [Community Edition Persistence](../technical/community-edition-persistence.md)
 * Mittwald: [Data protection (AI Hosting)](https://developer.mittwald.de/docs/v2/platform/aihosting/access-and-usage/data-protection/), [Dienstleisterliste](https://www.mittwald.de/unsere-dienstleister), Stand 11.11.2026
+* **Word-Fassung** (`public/downloads/koreki-datenschutz-schulen.docx`, Download-Knopf auf /security): wird aus dieser Datei erzeugt, nie von Hand bearbeitet. Nach jeder Änderung `npm run docs:datenschutz-word` und beide Dateien committen; `tests/unit/datenschutz-word-aktuell.test.ts` hält sie gleich. Dieser Abschnitt „Quellen“ kommt nicht in die Word-Datei.
