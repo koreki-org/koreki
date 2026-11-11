@@ -56,7 +56,7 @@ export default function SecurityPage() {
                         Datenschutz, der im Code steht – nicht nur im Vertrag.
                     </h1>
                     <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-                        Koreki ist so gebaut, dass Schülerdaten so wenig wie möglich das Gerät verlassen – und wenn, dann ohne Namen.
+                        Koreki ist so gebaut, dass Schülerdaten so wenig wie möglich das Gerät verlassen – und Namen sich vorher entfernen lassen.
                     </p>
                 </div>
                     <div className={cn("mt-12", RASTER, "md:grid-cols-2 lg:grid-cols-3")}>

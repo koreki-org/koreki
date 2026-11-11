@@ -35,7 +35,7 @@ Der Grund ist nicht Bescheidenheit. Koreki bewegt sich in einem regulierten Feld
 
 **Die Regel, die trägt:** Belegbare Aussagen beschreiben, was das System *tut* oder *weiß* — nicht, wie gut sein Ergebnis ist.
 
-- *„unvoreingenommen"* ist belegbar: Namen werden vor der KI-Übergabe pseudonymisiert, das steht im Code.
+- *„unvoreingenommen"* ist belegbar: Dateinamen werden vor der KI-Übergabe pseudonymisiert, das steht im Code. **Namen im Text aber nicht** — die schwärzt die Lehrkraft selbst (Betriebsanleitung §9). „Keine Namen an die KI“ stand bis 11.11.2026 an fünf Stellen im Marketing und war falsch.
 - *„objektiv"* ist es nicht: Das behauptet Verzerrungsfreiheit im Ergebnis und ist messbar widerlegbar.
 
 ## 4. Ton gegenüber Lehrkräften

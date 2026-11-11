@@ -10,7 +10,7 @@ const editionen = [
         wer: 'Für einzelne Lehrkräfte',
         name: 'Koreki Desktop',
         text: 'Installieren wie jedes andere Programm und direkt loslegen.',
-        punkte: ['Windows 10/11 und Ubuntu', 'Lokales Modell oder eigener Mistral-Schlüssel', 'Kostenlos für den nicht-kommerziellen Einsatz'],
+        punkte: ['Windows 10/11 und Ubuntu', 'Lokales Modell oder eigener Schlüssel für Mittwald oder Mistral', 'Kostenlos für den nicht-kommerziellen Einsatz'],
         href: '/desktop',
         knopf: 'Herunterladen',
         haupt: true,

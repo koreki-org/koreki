@@ -5,7 +5,7 @@ import { Abschnitt, AbschnittsKopf } from '../site/Bausteine';
 
 const fakten = [
     { icon: Cpu, titel: 'Lokal, wenn du willst', text: 'Mit einem lokalen Modell über Ollama verlässt keine Arbeit dein Gerät.' },
-    { icon: ShieldCheck, titel: 'Keine Namen an die KI', text: 'Namen werden vor der Übergabe pseudonymisiert – auch bei einem Cloud-Modell.' },
+    { icon: ShieldCheck, titel: 'Pseudonyme statt Namen', text: 'Dateinamen werden zu „Schüler #1“. Namen auf dem Blatt schwärzt du einmal – für den ganzen Stapel.' },
     { icon: UserCheck, titel: 'Du entscheidest jede Note', text: 'Koreki macht ausschließlich Vorschläge. Nichts geht ohne deine Prüfung hinaus.' },
     { icon: Code2, titel: 'Nachprüfbar', text: 'Der Quellcode ist einsehbar (Lizenz: PolyForm Noncommercial).' },
 ];
@@ -70,10 +70,10 @@ export const LandingDatenschutz: React.FC = () => (
 
             <div className="bg-card rounded-hero shadow-lift p-6 md:p-8" aria-label="Weg der Daten">
                 <Knoten icon={<Laptop size={19} />} titel="Dein Rechner" text="Arbeiten, Musterlösung, Ergebnisse" marke="bleibt hier" markeTon="ok" />
-                <Verbindung text="Namen ersetzt: Lena M. → Schüler #14" />
+                <Verbindung text="Dateiname ersetzt: Lena_M.pdf → Schüler #14" />
                 <Knoten icon={<Cpu size={19} />} titel="Lokales Modell" text="Ollama, auf demselben Gerät" marke="offline möglich" markeTon="ok" />
                 <Verbindung text="oder" leise />
-                <Knoten icon={<Cloud size={19} />} titel="Mistral" text="mit deinem eigenen Schlüssel" marke="optional" markeTon="neutral" gestrichelt />
+                <Knoten icon={<Cloud size={19} />} titel="Mittwald oder Mistral" text="KI in der EU, mit deinem Schlüssel" marke="optional" markeTon="neutral" gestrichelt />
             </div>
         </div>
     </Abschnitt>

@@ -10,15 +10,15 @@ import { Abschnitt, AbschnittsKopf } from './Bausteine';
 const FRAGEN = [
     {
         frage: 'Braucht Koreki eine Internetverbindung?',
-        antwort: 'Nicht, wenn du ein lokales Modell über Ollama nutzt – dann läuft die Korrektur vollständig auf deinem Rechner oder dem Schulserver. Mit Mistral werden die Arbeiten ohne Namen an Mistral übertragen.',
+        antwort: 'Nicht, wenn du ein lokales Modell über Ollama nutzt – dann läuft die Korrektur vollständig auf deinem Rechner oder dem Schulserver. Mit Mittwald oder Mistral gehen die Arbeiten verschlüsselt an den Anbieter, die Dateinamen durch Pseudonyme ersetzt.',
     },
     {
         frage: 'Was passiert mit den Schülerdaten?',
-        antwort: 'Bei lokaler Nutzung bleiben sie auf deinem Gerät bzw. im Schulnetz. Namen werden vor jeder Übergabe an eine KI durch Platzhalter ersetzt. Koreki selbst erhebt keine Daten für eigene Zwecke.',
+        antwort: 'Bei lokaler Nutzung bleiben sie auf deinem Gerät bzw. im Schulnetz. Dateinamen werden vor jeder Übergabe an eine KI durch Platzhalter ersetzt, Namen auf dem Blatt kannst du schwärzen. Koreki selbst erhebt keine Daten für eigene Zwecke.',
     },
     {
         frage: 'Was kostet Koreki?',
-        antwort: 'Desktop-Version und Community Edition sind für den nicht-kommerziellen Einsatz kostenlos (Lizenz: PolyForm Noncommercial). Nutzt du Mistral, berechnet Mistral die Nutzung über deinen eigenen Schlüssel.',
+        antwort: 'Desktop-Version und Community Edition sind für den nicht-kommerziellen Einsatz kostenlos (Lizenz: PolyForm Noncommercial). Nutzt du Mittwald oder Mistral, rechnet der Anbieter über deinen eigenen Schlüssel ab.',
     },
     {
         frage: 'Vergibt Koreki die Noten?',

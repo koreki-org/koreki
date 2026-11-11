@@ -13,7 +13,7 @@ const BEREICHE = [
     { icon: GraduationCap, name: 'Expertise', href: '/features/expertise', text: 'Beschreib in eigenen Worten, worauf es in deinem Fach ankommt.' },
     { icon: Puzzle, name: 'Skills', href: '/features/skills', text: 'Zuschaltbare Regeln für typische Aufgabenarten, etwa gleichwertige Rechenwege.' },
     { icon: BookOpenCheck, name: 'Erfahrungsschatz', href: '/features/memory', text: 'Deine geprüften Bewertungen werden zum Maßstab für die nächsten Arbeiten.' },
-    { icon: Cpu, name: 'Intelligenz', href: '/features/intelligence', text: 'Lokales Modell über Ollama oder Mistral mit eigenem Schlüssel – du wählst.' },
+    { icon: Cpu, name: 'Intelligenz', href: '/features/intelligence', text: 'Lokales Modell über Ollama oder Mittwald bzw. Mistral mit eigenem Schlüssel – du wählst.' },
 ];
 
 /**

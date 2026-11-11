@@ -18,7 +18,7 @@ interface LandingHeroProps {
 
 const merkmale = [
     { icon: Laptop, text: 'Windows 10/11 · Ubuntu' },
-    { icon: ShieldCheck, text: 'Namen werden pseudonymisiert' },
+    { icon: ShieldCheck, text: 'Dateinamen werden pseudonymisiert' },
     { icon: Code2, text: 'Quellcode einsehbar' },
 ];
 
