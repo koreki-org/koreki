@@ -29,11 +29,24 @@ jobs:
           # Entwurf + Pre-Release: Veroeffentlicht wird erst nach Freigabe der
           # Release Notes (Skill `release`). Bis auf Widerruf nur Pre-Releases;
           # tests/unit/release-governance.test.ts haelt beides fest.
-          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+          #
+          # Ein frisch angelegter Entwurf erscheint erst Sekunden spaeter in der
+          # Release-Liste (v0.9.101 scheiterte genau daran). Deshalb wird seine
+          # Nummer mit Wiederholung gesucht.
+          finde() { gh api "repos/$REPO/releases" --paginate --jq ".[] | select(.tag_name == \"$TAG\") | .id" | head -1; }
+          if gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            id=""
+            for versuch in 1 2 3 4 5; do
+              id=$(finde); [ -n "$id" ] && break; sleep 3
+            done
+          else
             gh release create "$TAG" --repo "$REPO" --draft --prerelease \
               --title "Koreki $TAG" --notes "Entwurf — die Release Notes folgen nach der Freigabe."
+            id=""
+            for versuch in 1 2 3 4 5 6 7 8 9 10; do
+              id=$(finde); [ -n "$id" ] && break; sleep 3
+            done
           fi
-          id=$(gh api "repos/$REPO/releases" --paginate --jq ".[] | select(.tag_name == \"$TAG\") | .id" | head -1)
           test -n "$id"
           echo "id=$id" >> "$GITHUB_OUTPUT"
 
