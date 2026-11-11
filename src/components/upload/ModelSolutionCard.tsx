@@ -10,11 +10,11 @@ import { Button } from '@/components/ui/Button';
 import { AufgabenReiter } from '@/components/ui/AufgabenReiter';
 import { Badge } from '@/components/ui/Badge';
 import { Textarea } from '@/components/ui/Textarea';
-import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
 import { PointInput } from '@/components/ui/PointInput';
 import { ModelSolutionTaskCard } from './ModelSolutionTaskCard';
 import { ModelSolutionAutopilotBar } from './ModelSolutionAutopilotBar';
 import { HauptaufgabeStamm } from './HauptaufgabeStamm';
+import { MusterloesungAufbauHinweis } from './MusterloesungAufbauHinweis';
 import { UploadAblage } from './UploadAblage';
 import { EditableMathArea } from '@/components/ui/EditableMathArea';
 import { cn } from '@/lib/utils';
@@ -166,13 +166,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         <FileText size={18} />
                     </div>
                     <span className="truncate">Musterlösung</span>
-                    <KorekiTooltip
-                        title="PRO TIPP"
-                        content="Eine gute Musterlösung ist das Herzstück. Dokumentieren Sie hier alle Erwartungen und Punkte pro Teilaufgabe."
-                        position="bottom"
-                        align="left"
-                        className="inline-flex shrink-0"
-                    />
+                    <MusterloesungAufbauHinweis />
                 </CardTitle>
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                     {hasModel && (

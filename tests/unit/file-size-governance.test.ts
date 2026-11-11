@@ -95,7 +95,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // HOOK_BASELINE verschwunden.
     // 548 -> 544: Knopf "Aendern" und die zweite versteckte Dateieingabe sind
     // weg, die Ablageflaeche steckt in UploadAblage.
-    'components/upload/ModelSolutionCard.tsx': 544,
+    'components/upload/ModelSolutionCard.tsx': 538,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
     // +42 gegenueber 793: der Ansichtstyp SkillListenEintrag und die

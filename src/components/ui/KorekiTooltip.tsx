@@ -57,9 +57,19 @@ export const KorekiTooltip: React.FC<KorekiTooltipProps> = ({
                 <HelpCircle size={iconSize} />
             </Button>
             
+            {/*
+              * `font-sans font-normal` an der Blase: Sie steht im DOM dort, wo ihr
+              * Fragezeichen steht — und das steht oft in einem `CardTitle`, also in
+              * einem `h3`. Von dort erbte der ganze Hilfetext Outfit 700, die
+              * Markenschrift in Ueberschriftenstaerke (gemessen am Tooltip der
+              * Musterloesung, 11.11.2026). Das Design System haelt Outfit den
+              * Ueberschriften vor, Geist dem Text. Die Blase setzt beides deshalb
+              * selbst, statt es zu erben: Sie soll ueberall gleich aussehen, gleich
+              * wo ihr Ausloeser haengt.
+              */}
             {isVisible && (
                 <div className={cn(
-                    "absolute bg-white/95 backdrop-blur-md border border-border/50 p-4 rounded-2xl shadow-2xl z-[100] text-sm animate-overlay-in",
+                    "absolute bg-white/95 backdrop-blur-md border border-border/50 p-4 rounded-2xl shadow-2xl z-[100] text-sm font-sans font-normal animate-overlay-in",
                     alignClasses,
                     widthClass,
                     positionClasses

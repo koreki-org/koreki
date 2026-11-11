@@ -13,10 +13,26 @@ const MinimalFooter: React.FC = () => {
                     <span>in Germany.</span>
                 </div>
                 <div className="flex items-center gap-8">
+                    {/*
+                      * Alle Rechts- und Hilfetexte oeffnen in einem NEUEN Tab.
+                      *
+                      * Diese Fusszeile steht nur im `AppLayout`, also unter einer
+                      * laufenden Korrektur — und Schuelerdaten leben allein im
+                      * Arbeitsspeicher (`architectural-vision` §2). Es gibt kein
+                      * Rueckgaengig: Was beim Verlassen der Seite verloren geht, ist
+                      * weg. Im Browser haelt die clientseitige Navigation den Zustand
+                      * zwar (am 10.11.2026 nachgemessen), aber darauf darf die
+                      * Sicherheit der Daten nicht beruhen — ein Build, der daraus ein
+                      * echtes Neuladen macht, braucht niemanden zu fragen.
+                      *
+                      * Fachlich ist es ohnehin richtig: In einer Anleitung schlaegt
+                      * man nach, WAEHREND man arbeitet. Der AVV-Dialog und der
+                      * GitHub-Link daneben machen es seit jeher genauso.
+                      */}
                     {!isLocalInstance() && (
                         <>
-                            <Link href="/impressum" className="hover:text-foreground transition-colors">Impressum</Link>
-                            <Link href="/privacy" className="hover:text-foreground transition-colors">Datenschutz</Link>
+                            <Link href="/impressum" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Impressum</Link>
+                            <Link href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Datenschutz</Link>
                         </>
                     )}
                     {/*
@@ -33,7 +49,7 @@ const MinimalFooter: React.FC = () => {
                      * beim Onboarding der Schule ausdrücklich vorgelegt und quittiert.
                      */}
                     {isLocalInstance() && (
-                        <Link href="/app/compliance/manual" className="hover:text-foreground transition-colors">
+                        <Link href="/app/compliance/manual" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
                             Betriebsanleitung
                         </Link>
                     )}
