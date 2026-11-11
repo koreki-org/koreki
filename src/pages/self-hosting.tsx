@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Abschnitt, AbschnittsKopf, Kachel, NACH_KOPF, RASTER, Symbol } from '@/components/marketing/site/Bausteine';
 import { ModelProfiles } from '@/components/marketing/ModelProfiles';
 import { HaeufigeFragen } from '@/components/marketing/site/HaeufigeFragen';
+import { SchulDatenschutzLink } from '@/components/marketing/site/DatenschutzFuerSchulen';
 
 const VARIANTEN = [
     {
@@ -90,6 +91,9 @@ export default function SelfHostingPage() {
                     </div>
                     <p className="mt-10 text-sm text-muted-foreground">
                         Lieber ohne Server? <Link href="/desktop" className="text-primary hover:underline">Koreki Desktop</Link> läuft direkt auf deinem Rechner.
+                    </p>
+                    <p className="mt-3 text-sm text-muted-foreground">
+                        Und was euer Datenschutz wissen möchte: <SchulDatenschutzLink />
                     </p>
             </Abschnitt>
 

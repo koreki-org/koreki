@@ -5,6 +5,7 @@ import { useBatchState } from './file-processor/useBatchState';
 import { isLocalInstance } from '../lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { istVollstaendigGeschwaerzt } from '@/lib/privacy-utils';
+import { datenzielBestaetigung } from '@/lib/datenziel-hinweis';
 
 /**
  * Industrial Batch Status Hook (Stage 11)
@@ -104,14 +105,8 @@ export const useBatchStatus = (
         if (showConfirm === 'reset') {
             return "Möchten Sie die bereits korrigierten Aufgaben wirklich zurücksetzen? Die bisherigen Bewertungen und manuellen Änderungen gehen dabei verloren.";
         }
-        if (settings?.provider === 'ollama') {
-            return "Ich bestätige, dass ich die oben hochgeladenen Dokumente anonymisiert habe. Da Sie eine lokale KI-Instanz (Ollama) nutzen, verbleiben Ihre Daten vollständig innerhalb Ihrer Infrastruktur.";
-        }
-        if (settings?.provider === 'mistral') {
-            return "Ich bestätige, dass ich die oben hochgeladenen Dokumente anonymisiert habe. Mir ist bekannt, dass die Daten zur Verarbeitung an die europäische KI-Schnittstelle von Mistral AI (Paris, Frankreich) übertragen werden.";
-        }
-        return "Ich bestätige, dass ich die oben hochgeladenen Dokumente anonymisiert habe. Mir ist bekannt, dass die Daten an eine KI-Schnittstelle innerhalb der Europäischen Union übertragen werden.";
-    }, [settings?.provider, showConfirm]);
+        return datenzielBestaetigung(settings);
+    }, [settings, showConfirm]);
 
     const handleConfirmAction = useCallback(async () => {
         const action = showConfirm === 'ocr' ? 'OCR Start' : showConfirm === 'reset' ? 'Reset Results' : 'Correction Batch Start';

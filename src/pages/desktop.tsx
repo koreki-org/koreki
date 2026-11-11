@@ -7,9 +7,10 @@ import { isLocalInstance } from '@/lib/env-context';
 import MarketingLayout from '@/layouts/MarketingLayout';
 import { Button } from '@/components/ui/Button';
 import { Abschnitt, Kachel, Produktbild, Symbol } from '@/components/marketing/site/Bausteine';
+import { SchulDatenschutzLink } from '@/components/marketing/site/DatenschutzFuerSchulen';
 
 const MERKMALE = [
-    { icon: Cpu, titel: 'Lokal oder mit Mistral', text: 'Ein lokales Modell über Ollama oder Mistral mit deinem eigenen Schlüssel – du wählst.' },
+    { icon: Cpu, titel: 'Lokal oder in der EU', text: 'Ein lokales Modell über Ollama oder eine KI in der EU, etwa Mittwald oder Mistral, mit deinem Schlüssel oder dem deiner Schule.' },
     { icon: Laptop, titel: 'Windows und Ubuntu', text: 'Für Windows 10/11 und Ubuntu Desktop. Eine Version für macOS ist in Planung.' },
     { icon: KeyRound, titel: 'Schlüssel bleiben bei dir', text: 'API-Schlüssel werden nur auf deinem Gerät gespeichert, nie auf Servern von Koreki.' },
 ];
@@ -86,7 +87,8 @@ export default function DesktopOnboarding() {
                         <div className="mt-6 rounded-xl bg-warning/10 p-4 flex gap-3">
                             <ShieldAlert size={18} className="text-warning shrink-0 mt-0.5" />
                             <p className="text-xs/relaxed text-foreground">
-                                Bitte beachte die Datenschutzrichtlinien deiner Schule und schütze dein Gerät vor unbefugtem Zugriff.
+                                Bitte beachte die Datenschutzrichtlinien deiner Schule und schütze dein Gerät vor unbefugtem Zugriff.{' '}
+                                <SchulDatenschutzLink />
                             </p>
                         </div>
                         <p className="mt-4 text-xs/relaxed text-muted-foreground">

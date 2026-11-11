@@ -7,6 +7,7 @@ import { buttonVariants } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { LEGAL_CONFIG } from '@/config/legal-contact';
 import { Abschnitt, AbschnittsKopf, Kachel, NACH_KOPF, RASTER, Symbol } from '@/components/marketing/site/Bausteine';
+import { DatenschutzFuerSchulen } from '@/components/marketing/site/DatenschutzFuerSchulen';
 
 /*
  * Jede Massnahme hier steht im Code. Keine Zusage, die nur vertraglich waere,
@@ -16,7 +17,7 @@ const MASSNAHMEN = [
     {
         icon: User,
         titel: 'Pseudonyme schon beim Hochladen',
-        text: 'Dateinamen wie „Klausur_Max_Mustermann.pdf“ werden in deinem Browser zu „Schüler #1“, bevor die Datei weiterverarbeitet wird. Namen im Text werden vor jeder Übergabe an eine KI ersetzt.',
+        text: 'Dateinamen wie „Klausur_Max_Mustermann.pdf“ werden in deinem Browser zu „Schüler #1“, bevor die Datei weiterverarbeitet wird. Namen auf dem Blatt schwärzt du selbst – oder lässt gleich mit Nummer statt Namen schreiben.',
     },
     {
         icon: EyeOff,
@@ -31,7 +32,7 @@ const MASSNAHMEN = [
     {
         icon: KeyRound,
         titel: 'Schlüssel bleiben bei dir',
-        text: 'In Desktop-Version und Community Edition werden API-Schlüssel, etwa für Mistral, nur auf deinem Gerät gespeichert – nie auf Servern von Koreki.',
+        text: 'In Desktop-Version und Community Edition liegen API-Schlüssel, etwa für Mittwald oder Mistral, nur auf deinem Gerät oder dem Server deiner Schule – nie auf Servern von Koreki.',
     },
     {
         icon: UserCheck,
@@ -68,6 +69,8 @@ export default function SecurityPage() {
                         ))}
                     </div>
             </Abschnitt>
+
+            <DatenschutzFuerSchulen />
 
             <Abschnitt>
                     <AbschnittsKopf kicker="Verfügbar" titel="Zwei Versionen, beide lokal." />

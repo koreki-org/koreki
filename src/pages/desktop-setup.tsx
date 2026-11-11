@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import Logo from '@/components/Logo';
 import { ImageLightbox } from '@/components/marketing/ImageLightbox';
+import { SchulDatenschutzLink } from '@/components/marketing/site/DatenschutzFuerSchulen';
 
 export default function DesktopSetup() {
     const router = useRouter();
@@ -90,7 +91,7 @@ export default function DesktopSetup() {
                         Wähle deine <span className="text-gradient">KI-Strategie.</span>
                     </h1>
                     <p className="text-sm text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
-                        Entscheide dich für einen Cloud-Anbieter (Mistral) oder ein lokales Modell auf deinem Rechner (Ollama).
+                        Entscheide dich für einen Cloud-Anbieter in der EU (etwa Mittwald oder Mistral) oder ein lokales Modell auf deinem Rechner (Ollama).
                     </p>
                 </div>
 
@@ -147,11 +148,11 @@ export default function DesktopSetup() {
                                 </li>
                                 <li className="flex items-start gap-3 text-muted-foreground text-sm font-medium leading-tight">
                                     <CheckCircle2 size={16} className="text-success shrink-0 mt-0.5" />
-                                    <span>Anonymisierte Übertragung (Cloud EU)</span>
+                                    <span>Verschlüsselte Übertragung an Server in der EU</span>
                                 </li>
                                 <li className="flex items-start gap-3 text-warning text-xs font-bold leading-tight bg-warning/5 p-2 rounded-lg border border-warning/20">
                                     <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                                    <span>Bitte beachte die Datenschutzrichtlinien deiner Schule</span>
+                                    <span>Bitte beachte die Datenschutzrichtlinien deiner Schule. <SchulDatenschutzLink /></span>
                                 </li>
                             </ul>
                             <div className="pt-4 border-t border-border/50 flex flex-wrap gap-x-6 gap-y-2">

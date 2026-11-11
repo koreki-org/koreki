@@ -166,3 +166,6 @@ Admin-Rechte hängen an der Realm-Rolle `koreki-admin`. Im Keycloak Admin UI unt
 
 > [!IMPORTANT]
 > **Sicherheit:** Ändere vor dem Produktivgang unbedingt alle Passwörter (`KC_DB_PASSWORD`, `KC_ADMIN_PASSWORD`) in der `.env`!
+
+> [!NOTE]
+> **Datenschutz:** Was Schulleitung und Datenschutzbeauftragte vor dem Start erledigen müssen, mit Vorlage fürs Verarbeitungsverzeichnis und Bausteinen für die Folgenabschätzung: [Datenschutz für Schulen](./datenschutz-paket-schulen.md) · Kurzfassung unter [koreki.org/security#schulen](https://koreki.org/security#schulen).
