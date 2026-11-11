@@ -28,7 +28,7 @@ export const NeueVersionHinweis: React.FC<{ onOeffnen: () => void; istAdmin: boo
 
     return (
         <Button
-            variant="chip"
+            variant="erfolg"
             size="xs"
             onClick={onOeffnen}
             className="rounded-full shrink-0"

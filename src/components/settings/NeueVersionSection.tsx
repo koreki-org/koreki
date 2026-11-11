@@ -65,7 +65,7 @@ const DesktopAktualisieren: React.FC<{ zustand: UpdateZustand }> = ({ zustand })
                     </p>
                 ) : (
                     <Button
-                        variant={arbeitenGeladen ? 'destructive' : 'outline'}
+                        variant={arbeitenGeladen ? 'destructive' : 'erfolg'}
                         size="sm"
                         onClick={() => void installiereNeueVersion()}
                     >

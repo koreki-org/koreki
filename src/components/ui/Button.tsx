@@ -34,6 +34,9 @@ const buttonVariants = cva(
                 ghost: 'hover:bg-foreground/5 hover:text-accent-foreground',
                 link: 'underline-offset-4 hover:underline text-primary',
                 chip: 'bg-primary/5 text-primary hover:bg-primary/10',
+                // Gute Nachricht, die etwas zu tun anbietet (z. B. "Neue Version").
+                // Grün, damit sie sich vom Indigo der Aktionen abhebt.
+                erfolg: 'border border-success/30 bg-success/10 text-success hover:bg-success/15',
             },
             size: {
                 default: 'h-10 py-2 px-4',
