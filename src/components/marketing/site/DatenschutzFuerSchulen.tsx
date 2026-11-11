@@ -74,13 +74,11 @@ const FUER_BEIDE = [
 ];
 
 const SCHRITTE = [
-    'KI-Zugang bei Mittwald buchen und den Auftragsverarbeitungsvertrag im Kundenportal abschließen.',
-    'Das Verarbeitungsverzeichnis ergänzen.',
-    'Mit den Datenschutzbeauftragten klären, ob eine Datenschutz-Folgenabschätzung nötig ist.',
-    'Landesvorgaben prüfen: Freigabe durch Land oder Schulträger, Beteiligung des Personalrats.',
-    'Eltern und Schüler in den Datenschutzhinweisen der Schule informieren.',
-    'Lehrkräfte einweisen: Betriebsanleitung lesen, Namen auf dem Blatt schwärzen oder vermeiden.',
-    'Geräte mit Anmeldung und verschlüsselter Festplatte nutzen; in der Community Edition die Anmeldung über Keycloak einschalten.',
+    'KI-Zugang bei Mittwald buchen, Datenschutzvertrag abschließen.',
+    'Verarbeitungsverzeichnis ergänzen.',
+    'Datenschutzbeauftragte einbeziehen.',
+    'Eltern und Schüler informieren.',
+    'Lehrkräfte einweisen.',
 ];
 
 export function DatenschutzFuerSchulen() {
@@ -118,7 +116,7 @@ export function DatenschutzFuerSchulen() {
                     </ul>
                 </Kachel>
                 <Kachel>
-                    <h3 className="text-xl font-semibold tracking-tight text-foreground">In sieben Schritten startklar</h3>
+                    <h3 className="text-xl font-semibold tracking-tight text-foreground">In fünf Schritten startklar</h3>
                     <ol className="mt-4 space-y-3 text-sm/relaxed text-muted-foreground list-decimal pl-5 marker:text-primary marker:font-semibold">
                         {SCHRITTE.map(s => <li key={s}>{s}</li>)}
                     </ol>

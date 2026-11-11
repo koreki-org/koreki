@@ -38,15 +38,11 @@ Für Schulleitung und Datenschutzbeauftragte. Gilt für **Koreki Desktop** (auf 
 
 ## Was die Schule tun muss
 
-1. **KI-Zugang bei Mittwald buchen** und den AVV im Kundenportal abschließen. Darin prüfen, ob das KI-Hosting, Schülerarbeiten und Schülerinnen und Schüler erfasst sind; falls nicht, ergänzen lassen.
+1. **KI-Zugang bei Mittwald buchen**, Datenschutzvertrag abschließen.
 2. **Verarbeitungsverzeichnis ergänzen** (Vorlage unten).
-3. **Datenschutzbeauftragte fragen**, ob eine Datenschutz-Folgenabschätzung nötig ist. Wir empfehlen sie (KI, Minderjährige, Leistungsbewertung); die Bausteine unten decken das Meiste ab.
-4. **Landesvorgaben prüfen:** Verlangt das Land oder der Schulträger eine Freigabe? Ist der Personalrat zu beteiligen?
-5. **Eltern und Schüler informieren**, zum Beispiel in den Datenschutzhinweisen der Schule.
-6. **Lehrkräfte einweisen:** Betriebsanleitung lesen (in Koreki unten verlinkt), Namen schwärzen oder vermeiden.
-7. **Technik absichern:**
-   * *Desktop:* nur Geräte mit eigener Anmeldung und verschlüsselter Festplatte.
-   * *Community:* Anmeldung über Keycloak einschalten; den Betrieb ohne Anmeldung nicht für mehrere Lehrkräfte nutzen.
+3. **Datenschutzbeauftragte einbeziehen** (Bausteine für die Folgenabschätzung unten).
+4. **Eltern und Schüler informieren.**
+5. **Lehrkräfte einweisen** (Betriebsanleitung, Namen schwärzen oder vermeiden).
 
 ## Vorlage: Eintrag ins Verarbeitungsverzeichnis
 
@@ -71,7 +67,7 @@ Für Schulleitung und Datenschutzbeauftragte. Gilt für **Koreki Desktop** (auf 
 | **Handschrift falsch gelesen**, auch flüssig klingender Text, der nicht auf dem Blatt steht | Abgleich von erkanntem Text und Bild in der Ansicht „OCR Verifizierung“ |
 | **Ungleichbehandlung** wegen Sprachstil oder Herkunft | Stichproben des Herstellers; Lehrkraft prüft; Meldeweg bei Verdacht |
 | **Name gelangt an Mittwald** | Schwärzung; Nummern statt Namen; AVV mit Mittwald |
-| **Unbefugter Zugriff** auf Rechner oder Server | Anmeldung, Verschlüsselung, ein Konto je Lehrkraft |
+| **Unbefugter Zugriff** auf Rechner oder Server | eigene Anmeldung je Lehrkraft (am Rechner bzw. über Keycloak) |
 | **Beeinflussung** durch Anweisungen im Schülertext | abgesicherte Bewertungsanweisung, geprüft gegen sechs Angriffsarten |
 
 **Was Koreki mitbringt:** verschlüsselte Übertragung; kein Server des Herstellers; Inhalte nur im Arbeitsspeicher; Dateinamen automatisch ersetzt; KI-Ergebnisse als maschinell erzeugt gekennzeichnet; feste Modellversionen; keine Profilbildung über Schülerinnen und Schüler; keine Note ohne Freigabe der Lehrkraft.
