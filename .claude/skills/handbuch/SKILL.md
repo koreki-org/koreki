@@ -17,6 +17,16 @@ Gilt für alles unter [handbuch/](../../../handbuch/) und für jede Änderung an
 
 **Betriebsanleitung und Handbuch.** Die Betriebsanleitung (`src/legal/betriebsanleitung_v*.md`, Art. 13 KI-VO) ist die **verbindliche** Fassung. Sie ist versioniert, von Andreas freigegeben und wird mit der App ausgeliefert. Zuständig sind der `product-manager` und der Skill `eu-ai-act`. Für jede Tatsache mit rechtlichem Gewicht ist sie die Quelle: Zweck, Grenzen, Genauigkeit, menschliche Aufsicht, Kennzeichnung, Datenflüsse, Formate und Mengengrenzen. Das Handbuch darf solche Tatsachen in einfachen Worten wiederholen, ihr aber **nie widersprechen**. Ändert sich so eine Tatsache, kommt zuerst die Betriebsanleitung (neue Fassung mit Freigabe), danach das Handbuch. Das Handbuch darf auf die Betriebsanleitung verweisen, umgekehrt nie (Skill `eu-ai-act` §4). *(Wächter für die Werte, die im Code stehen: `tests/unit/angaben-synchron.test.ts`)*
 
+**Datenschutz-Unterlagen sind die zweite Quelle.** Für Datenflüsse, Auftragsverarbeitung und die Pflichten der Schule gilt dieselbe Regel wie für die Betriebsanleitung. Quelle sind diese Dokumente, das Handbuch folgt ihnen und widerspricht nie:
+
+| Dokument | Gilt für | Was dort steht |
+| :--- | :--- | :--- |
+| `docs/user-guides/datenschutz-paket-schulen.md` | Desktop, Community | Schritte für die Schule (Verarbeitungsverzeichnis, Folgenabschätzung, Eltern und Schüler informieren, Lehrkräfte einweisen). Daraus wird die Word-Datei erzeugt (`npm run docs:datenschutz-word`). |
+| `src/pages/privacy.tsx` | gehosteter Dienst | Datenschutzerklärung |
+| `src/legal/avv_v*.md`, `src/legal/tom_v*.md` | gehosteter Dienst | Auftragsverarbeitung, technische und organisatorische Maßnahmen |
+
+Berührt ein Handbuch-Kapitel diese Themen, betrifft das vor allem „Namen auf dem Blatt“, „KI verbinden“ und „Koreki für die ganze Schule“. Dann werden die Aussagen vor dem Schreiben mit diesen Dokumenten abgeglichen. Ändert sich ein Datenfluss im Code, zum Beispiel ein neuer KI-Anbieter oder ein neuer Empfänger, werden zuerst die Dokumente angepasst. Rechtstexte (Datenschutzerklärung, AVV, TOM) gibt Andreas frei, wie die Betriebsanleitung. Das Handbuch kommt danach. Die Rechtstexte bleiben förmlich (`koreki-design-system` §2). Das Handbuch duzt.
+
 Jeder Inhalt hat **genau einen** Ort. Berühren sich zwei, verweist einer auf den anderen — nie kopieren. Das Handbuch erklärt nie, warum etwas technisch so gebaut ist; `docs/` erklärt nie, wo man klickt. `docs/user-guides/` wird nicht weiter befüllt.
 
 ## 2. Wann das Handbuch mitgeändert wird
