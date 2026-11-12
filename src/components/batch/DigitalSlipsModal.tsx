@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { X, ShieldCheck, Sparkles, Download } from 'lucide-react';
+import { X, Sparkles, Download } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { jsPDF } from 'jspdf';
 import { BatchFile } from '../../types';
@@ -114,7 +114,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
             doc.setFont(font, 'normal');
             doc.setTextColor(148, 163, 184);
             doc.text('Scan QR-Code für detaillierte Analyse', margin + 8, currentY + 32);
-            doc.text(`Verschlüsseltes Feedback | ${KI_HINWEIS_KURZ}`, margin + 8, currentY + 36);
+            doc.text(KI_HINWEIS_KURZ, margin + 8, currentY + 36);
 
             currentY += slipHeight;
             count++;
@@ -229,9 +229,6 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
                                             <div className="space-y-1">
                                                 <p className="text-xs text-muted-foreground font-medium tracking-tighter">Zugangscode</p>
                                                 <p className="text-lg font-mono font-bold text-foreground tracking-widest">PIN: {pin}</p>
-                                            </div>
-                                             <div className="flex items-center gap-1 text-xxs text-success font-bold bg-success/5 border border-success/20 px-2 py-1 rounded-lg">
-                                                <ShieldCheck size={12} /> Verschlüsselt
                                             </div>
                                         </div>
                                     </div>

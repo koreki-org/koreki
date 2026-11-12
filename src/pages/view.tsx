@@ -242,13 +242,12 @@ export default function StudentFeedbackView() {
                         </Button>
                     </div>
 
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-success/10 text-success rounded-2xl border border-success/20 mb-4 shadow-sm">
-                        <ShieldCheck size={18} />
-                        <span className="text-sm font-bold">100% Sicher & Privat</span>
-                    </div>
+                    {/* Nur, was stimmt: Der Inhalt steckt im QR-Code (URL-Fragment)
+                        und wird nicht hochgeladen. Verschluesselt ist er nicht, der
+                        PIN ist nur eine Neugier-Bremse — siehe docs/features/digital-feedback-slips.md. */}
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                        Dieses Feedback wurde lokal auf deinem Gerät entschlüsselt.<br />
-                        Deine Daten wurden nicht auf Koreki-Servern gespeichert.
+                        Dein Feedback steckt im QR-Code und wird nur hier auf deinem Gerät angezeigt.<br />
+                        Es wurde nicht auf Koreki-Servern gespeichert.
                     </p>
                     <div className="mt-8 pt-8 border-t border-border/50">
                         <p className="text-xs text-muted-foreground mb-3">{KI_HINWEIS_KURZ}</p>
