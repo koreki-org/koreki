@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { DigitalSlipsModal } from '../../../src/components/batch/DigitalSlipsModal';
 import { BatchFile } from '../../../src/types';
 
@@ -8,6 +8,12 @@ import { downloadFile } from '../../../src/lib/file-utils';
 // Mock downloadFile
 jest.mock('../../../src/lib/file-utils', () => ({
     downloadFile: jest.fn().mockResolvedValue(undefined),
+}));
+
+// Schriftdateien laden ist Sache von tests/unit/pdf-font.test.ts; hier Rueckfall ohne Netz.
+jest.mock('../../../src/lib/pdf-font', () => ({
+    ...jest.requireActual('../../../src/lib/pdf-font'),
+    ladePdfSchrift: jest.fn().mockResolvedValue(null),
 }));
 
 // Mock window.print
@@ -53,7 +59,7 @@ describe('DigitalSlipsModal (Layer 2)', () => {
 
         const exportButton = screen.getByText('PDF Export');
         fireEvent.click(exportButton);
-        expect(downloadFile).toHaveBeenCalled();
+        await waitFor(() => expect(downloadFile).toHaveBeenCalled());
     });
 
     test('generates a stable PIN for the same student name', () => {

@@ -6,6 +6,7 @@ import { BatchFile } from '../../types';
 import { FeedbackData, encodeFeedback } from '@/lib/distribution';
 import { stripPangBlock } from '@/lib/pdf-utils';
 import { downloadFile } from '@/lib/file-utils';
+import { bindeSchriftEin, ladePdfSchrift } from '@/lib/pdf-font';
 import { KI_HINWEIS_KURZ, pdfKennzeichnung } from '@/lib/ai-disclosure';
 import { Button } from '../ui/Button';
 import Logo from '../Logo';
@@ -31,6 +32,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
 
     const handleDownloadPDF = async () => {
         const doc = new jsPDF();
+        const font = bindeSchriftEin(doc, await ladePdfSchrift());
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         const margin = 10;
@@ -55,13 +57,13 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
             doc.rect(margin, currentY, pageWidth - 2 * margin, slipHeight);
             
             // Student Name (Large & Bold) - Real Name used for Export!
-            doc.setFont('helvetica', 'bold');
+            doc.setFont(font, 'bold');
             doc.setFontSize(16);
             doc.setTextColor(30, 41, 59);
             doc.text(realName, margin + 8, currentY + 15);
 
             // Koreki Branding (Top Right)
-            doc.setFont('helvetica', 'bold');
+            doc.setFont(font, 'bold');
             doc.setFontSize(10);
             doc.setTextColor(15, 23, 42); // Slate 900
             const brandingText = 'Koreki';
@@ -76,7 +78,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
             const points = tasks.reduce((acc, t) => acc + Number(t.pointsObtained || 0), 0);
             const maxPoints = tasks.reduce((acc, t) => acc + Number(t.maxPoints || 0), 0);
             doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
+            doc.setFont(font, 'bold');
             doc.setTextColor(100, 116, 139);
             doc.text(`${points} / ${maxPoints} Punkte`, margin + 8, currentY + 22);
 
@@ -91,7 +93,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
             };
             const pin = getStablePin(realName);
             doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
+            doc.setFont(font, 'bold');
             doc.setTextColor(30, 41, 59);
             doc.text(`PIN: ${pin}`, margin + 8, currentY + 45);
 
@@ -109,7 +111,7 @@ export const DigitalSlipsModal: React.FC<DigitalSlipsModalProps> = ({ isOpen, on
 
             // Footer / Instructions
             doc.setFontSize(8);
-            doc.setFont('helvetica', 'normal');
+            doc.setFont(font, 'normal');
             doc.setTextColor(148, 163, 184);
             doc.text('Scan QR-Code für detaillierte Analyse', margin + 8, currentY + 32);
             doc.text(`Verschlüsseltes Feedback | ${KI_HINWEIS_KURZ}`, margin + 8, currentY + 36);

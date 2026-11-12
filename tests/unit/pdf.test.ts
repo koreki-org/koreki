@@ -5,6 +5,12 @@ import jsPDF from 'jspdf';
 import JSZip from 'jszip';
 import autoTable from 'jspdf-autotable';
 
+// Schriftdateien laden ist Sache von tests/unit/pdf-font.test.ts; hier Rueckfall ohne Netz.
+jest.mock('../../src/lib/pdf-font', () => ({
+    ...jest.requireActual('../../src/lib/pdf-font'),
+    ladePdfSchrift: jest.fn().mockResolvedValue(null),
+}));
+
 // Redundant local mocks removed. Using global mocks from jest.setup.js. 🏮🛡️
 jest.mock('../../src/lib/env-context', () => ({
     isDesktopTarget: jest.fn(() => false),

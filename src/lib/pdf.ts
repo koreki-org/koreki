@@ -7,6 +7,7 @@ import { toSafeString } from './validation';
 import { KI_HINWEIS_FUSSZEILE, pdfKennzeichnung } from './ai-disclosure';
 
 import { cleanDidacticalMarks, formatMarkdownTableForPDF, stripPangBlock } from './pdf-utils';
+import { bindeSchriftEin, ladePdfSchrift, PdfSchriftdaten } from './pdf-font';
 
 /**
  * Was `jspdf-autotable` und jsPDF zur Laufzeit anhaengen, aber nicht deklarieren.
@@ -33,8 +34,13 @@ const seitenzahl = (doc: jsPDF): number => (doc as PdfMitAutoTable).internal.get
 /**
  * Helper to generate a PDF blob for a single student.
  */
-const generateStudentPDF = (r: StudentResult, pointsMode: 'none' | 'total' | 'detailed' = 'detailed'): Blob => {
+const generateStudentPDF = (
+    r: StudentResult,
+    pointsMode: 'none' | 'total' | 'detailed',
+    schrift: PdfSchriftdaten | null
+): Blob => {
     const doc = new jsPDF();
+    const font = bindeSchriftEin(doc, schrift);
     const analysis = r.analysis || {};
     const name = toSafeString(r.studentName || 'Unbekannt');
     const brandColor = [37, 99, 235]; // Tailwind blue-600
@@ -42,7 +48,7 @@ const generateStudentPDF = (r: StudentResult, pointsMode: 'none' | 'total' | 'de
     // --- Header Section ---
     doc.setFontSize(22);
     doc.setTextColor( brandColor[0], brandColor[1], brandColor[2] );
-    doc.text('Koreki Feedback Report', 14, 22);
+    doc.text('Rückmeldung zur Arbeit', 14, 22);
     
     doc.setDrawColor( brandColor[0], brandColor[1], brandColor[2] );
     doc.setLineWidth(0.5);
@@ -58,9 +64,9 @@ const generateStudentPDF = (r: StudentResult, pointsMode: 'none' | 'total' | 'de
     // --- Summary Section ---
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont(font, 'bold');
     doc.text('Gesamtfeedback:', 14, 52);
-    doc.setFont('helvetica', 'normal');
+    doc.setFont(font, 'normal');
     
     const feedbackText = cleanDidacticalMarks(stripPangBlock(toSafeString(analysis.overallFeedback || 'Kein Gesamtfeedback vorhanden.')));
     const splitFeedback = doc.splitTextToSize(feedbackText, 180);
@@ -142,6 +148,7 @@ const generateStudentPDF = (r: StudentResult, pointsMode: 'none' | 'total' | 'de
                 halign: 'left'
             },
             styles: { 
+                font,
                 fontSize: 10, 
                 cellPadding: 5,
                 valign: 'top',
@@ -202,9 +209,10 @@ export const exportIndividualPDFs = async (
 
     const zip = new JSZip();
     const dateStr = new Date().toISOString().split('T')[0];
+    const schrift = await ladePdfSchrift();
 
     results.forEach((r, index) => {
-        const pdfBlob = generateStudentPDF(r, pointsMode);
+        const pdfBlob = generateStudentPDF(r, pointsMode, schrift);
         const safeName = toSafeString(r.studentName || 'Unbekannt').replace(/[<>:"/\\|?*\x00-\x1F]/g, '_');
         const fileName = `${index + 1}_Feedback_${safeName}_${dateStr}.pdf`;
         zip.file(fileName, pdfBlob);
@@ -219,13 +227,14 @@ export const exportIndividualPDFs = async (
  */
 export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<void> => {
     const doc = new jsPDF();
+    const font = bindeSchriftEin(doc, await ladePdfSchrift());
     const brandColor = [37, 99, 235]; // Tailwind blue-600
     const dateStr = new Date().toLocaleDateString('de-DE');
 
     // --- Header Section ---
     doc.setFontSize(22);
     doc.setTextColor(brandColor[0], brandColor[1], brandColor[2]);
-    doc.text('Koreki Analyse-Report', 14, 22);
+    doc.text('Klassenauswertung', 14, 22);
 
     doc.setDrawColor(brandColor[0], brandColor[1], brandColor[2]);
     doc.setLineWidth(0.5);
@@ -239,7 +248,7 @@ export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<v
     // --- Summary Cards (Top Stats) ---
     doc.setFontSize(14);
     doc.setTextColor(0, 0, 0);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont(font, 'bold');
     doc.text('Zusammenfassung', 14, 50);
 
     const summaryData = [
@@ -253,7 +262,7 @@ export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<v
         startY: 55,
         body: summaryData,
         theme: 'plain',
-        styles: { fontSize: 11, cellPadding: 3 },
+        styles: { font, fontSize: 11, cellPadding: 3 },
         columnStyles: { 0: { fontStyle: 'bold', cellWidth: 50 } }
     });
 
@@ -270,6 +279,7 @@ export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<v
         head: [['Note / Einschätzung', 'Anzahl']],
         body: distData,
         theme: 'striped',
+        styles: { font },
         headStyles: { fillColor: brandColor as [number, number, number] }
     });
 
@@ -290,6 +300,7 @@ export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<v
             head: [['#', 'Aufgabe', 'Erfolg', 'Status']],
             body: criticalData,
             theme: 'grid',
+            styles: { font },
             headStyles: { fillColor: [220, 38, 38] }, // Red-600
             columnStyles: { 0: { cellWidth: 10 }, 2: { cellWidth: 20 }, 3: { cellWidth: 25 } }
         });
@@ -298,7 +309,7 @@ export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<v
     // --- Full Task Analysis ---
     doc.addPage();
     doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
+    doc.setFont(font, 'bold');
     doc.text('Vollständige Aufgaben-Analyse', 14, 22);
 
     const fullTaskData = stats.analyzedTasks.map(t => [
@@ -312,6 +323,7 @@ export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<v
         head: [['Aufgabe', 'Ø Punkte', 'Erfolgsquote']],
         body: fullTaskData,
         theme: 'striped',
+        styles: { font },
         headStyles: { fillColor: brandColor as [number, number, number] }
     });
 
@@ -325,7 +337,7 @@ export const exportAnalyticsPDF = async (stats: CorrectionStatistics): Promise<v
         doc.text(KI_HINWEIS_FUSSZEILE, 14, 285);
     }
 
-    doc.setProperties(pdfKennzeichnung('Koreki Analyse-Report'));
+    doc.setProperties(pdfKennzeichnung('Klassenauswertung'));
 
     const blob = doc.output('blob');
     await downloadFile(blob, `Koreki_Analyse_${dateStr.replace(/\./g, '_')}.pdf`, 'application/pdf');
