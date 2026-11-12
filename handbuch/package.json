@@ -1,0 +1,14 @@
+{
+  "name": "koreki-handbuch",
+  "private": true,
+  "description": "Das Handbuch für Lehrkräfte unter hilfe.koreki.org — eigenes Paket, damit VitePress nicht in die App gerät.",
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "1.6.4"
+  }
+}

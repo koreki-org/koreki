@@ -1,0 +1,194 @@
+/*
+ * Koreki-Gestaltung für das Handbuch.
+ *
+ * Werte gespiegelt aus src/styles/globals.css (App) und marketing/brand.css
+ * (Marke). Wer dort etwas ändert, zieht es hier nach. Koreki ist hell — die
+ * dunkle Variante von VitePress ist in config.mts abgeschaltet.
+ *
+ * Schriften liegen selbst ausgeliefert unter public/fonts, wie in der App:
+ * kein Google Fonts, keine Verbindung zu Dritten.
+ */
+
+@font-face {
+  font-family: 'Geist';
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Geist';
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/geist-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Outfit';
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/outfit-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Outfit';
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/outfit-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  /* App-Tokens (globals.css) */
+  --k-background: hsl(220 20% 95%);
+  --k-card: #ffffff;
+  --k-foreground: hsl(232 45% 11%);
+  --k-muted: hsl(220 14% 96%);
+  --k-muted-foreground: hsl(228 12% 42%);
+  --k-border: hsl(220 13% 91%);
+  --k-primary: hsl(239 84% 64%);
+  --k-primary-dark: hsl(239 70% 54%);
+  --k-warning: hsl(35 92% 35%);
+  --k-success: hsl(142 76% 36%);
+  --k-destructive: hsl(0 84% 60%);
+
+  /* Schrift */
+  --vp-font-family-base: 'Geist', ui-sans-serif, system-ui, sans-serif;
+  --vp-font-family-heading: 'Outfit', 'Geist', ui-sans-serif, sans-serif;
+
+  /* Farben auf VitePress abbilden */
+  --vp-c-bg: var(--k-card);
+  --vp-c-bg-alt: var(--k-background);
+  --vp-c-bg-soft: var(--k-muted);
+  --vp-c-bg-elv: var(--k-card);
+  --vp-c-text-1: var(--k-foreground);
+  --vp-c-text-2: var(--k-muted-foreground);
+  --vp-c-divider: var(--k-border);
+  --vp-c-gutter: var(--k-border);
+
+  --vp-c-brand-1: var(--k-primary-dark);
+  --vp-c-brand-2: var(--k-primary);
+  --vp-c-brand-3: var(--k-primary);
+  --vp-c-brand-soft: hsl(239 84% 64% / 0.12);
+
+  --vp-c-tip-1: var(--k-primary-dark);
+  --vp-c-tip-soft: hsl(239 84% 64% / 0.08);
+  --vp-c-warning-1: var(--k-warning);
+  --vp-c-warning-soft: hsl(35 92% 45% / 0.10);
+  --vp-c-danger-1: hsl(0 72% 45%);
+  --vp-c-danger-soft: hsl(0 84% 60% / 0.08);
+
+  --vp-button-brand-bg: var(--k-primary);
+  --vp-button-brand-hover-bg: var(--k-primary-dark);
+  --vp-button-brand-active-bg: var(--k-primary-dark);
+  --vp-button-alt-bg: var(--k-card);
+  --vp-button-alt-border: var(--k-border);
+  --vp-button-alt-hover-bg: var(--k-card);
+  --vp-button-alt-hover-border: var(--k-primary);
+
+  /* Startseite: Markenverlauf Indigo → Violett → Pink, wie auf den Posts */
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(98deg, #6366F1 0%, #A855F7 48%, #DB2777 100%);
+}
+
+/* Überschriften in Outfit, wie in App und Marketing */
+.vp-doc h1,
+.vp-doc h2,
+.vp-doc h3,
+.VPHero .name,
+.VPHero .text,
+.VPFeature .title {
+  font-family: var(--vp-font-family-heading);
+}
+.vp-doc h1 { font-weight: 800; letter-spacing: -0.02em; }
+.vp-doc h2 { font-weight: 700; border-top: none; padding-top: 0; margin-top: 48px; }
+.vp-doc h3 { font-weight: 600; }
+
+/* Logo-Schriftzug mit farbigem Schlusspunkt (koreki-design-system §11) */
+.VPNavBarTitle .title {
+  font-family: var(--vp-font-family-heading);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  font-size: 20px;
+}
+.VPNavBarTitle .title span::after {
+  content: '.';
+  color: var(--k-primary);
+}
+
+/* Startseite: Lavendel-Schimmer der Posts (.kopfband in globals.css) */
+.VPHome {
+  background:
+    radial-gradient(120% 60% at 8% -5%, rgb(99 102 241 / 0.13) 0%, transparent 55%),
+    radial-gradient(90% 50% at 98% 30%, rgb(168 85 247 / 0.09) 0%, transparent 55%),
+    linear-gradient(180deg, #FCFCFE 0%, #F7F8FD 45%, var(--k-background) 100%);
+}
+.VPHero .name,
+.VPHero .text {
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.VPHero .tagline { color: var(--k-muted-foreground); }
+
+/* Startbild: ein echtes App-Bild, groß und gerahmt — kein Leuchtfleck dahinter */
+:root { --vp-home-hero-image-background-image: none; }
+@media (min-width: 960px) {
+  .VPHero .image-container { width: 560px; height: 360px; }
+  .VPHero .image-src { max-width: 560px; max-height: none; }
+}
+.VPHero .image-src {
+  border: 1px solid var(--k-border);
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgb(10 15 31 / 0.10);
+  background: var(--k-card);
+}
+
+/* Karten auf der Startseite: weiß, Haarlinie, höchstens shadow-sm */
+.VPFeature {
+  background: var(--k-card) !important;
+  border: 1px solid var(--k-border) !important;
+  box-shadow: 0 1px 2px rgb(10 15 31 / 0.04);
+  border-radius: 16px !important;
+}
+.VPFeature.link:hover { border-color: var(--k-primary) !important; }
+
+/* Kicker: kleine Überschrift in Versalien, gesperrt (nur Marketing/Handbuch-Start) */
+.kicker {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--k-primary-dark);
+}
+
+/* App-Bilder: Rahmen wie ein Fenster, damit das Bild nicht in der Seite verschwimmt */
+.vp-doc img.app-bild {
+  border: 1px solid var(--k-border);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgb(10 15 31 / 0.04);
+  margin: 16px 0 8px;
+}
+.vp-doc .bildtext {
+  font-size: 14px;
+  color: var(--k-muted-foreground);
+  margin-top: 0;
+}
+
+/* Hinweisboxen: Streifen links statt Vollfläche, wie die Toasts der App */
+.vp-doc .custom-block {
+  border: 1px solid var(--k-border);
+  border-left-width: 4px;
+  border-radius: 8px;
+}
+.vp-doc .custom-block.tip { border-left-color: var(--k-primary); }
+.vp-doc .custom-block.warning { border-left-color: var(--k-warning); }
+.vp-doc .custom-block.danger { border-left-color: var(--k-destructive); }
+.vp-doc .custom-block.info { border-left-color: var(--k-muted-foreground); }
+
+/* Seitenleiste und Inhaltsfläche */
+.VPSidebar { background: var(--k-background) !important; }
+.VPContent.has-sidebar { background: var(--k-card); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

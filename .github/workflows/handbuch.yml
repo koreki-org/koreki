@@ -1,0 +1,53 @@
+# Das Handbuch für Lehrkräfte (handbuch/) auf GitHub Pages, erreichbar unter
+# https://hilfe.koreki.org. Die Adresse steht in handbuch/public/CNAME.
+#
+# Einmalig nötig: Settings → Pages → Source = "GitHub Actions" und beim
+# DNS-Anbieter ein CNAME-Eintrag "hilfe" → "koreki-org.github.io".
+name: Handbuch
+
+on:
+  push:
+    branches: [main]
+    paths: ["handbuch/**", ".github/workflows/handbuch.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: handbuch
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0 # "Zuletzt geändert" liest das Datum aus der Git-Historie
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: handbuch/package-lock.json
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: handbuch/.vitepress/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
