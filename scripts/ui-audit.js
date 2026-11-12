@@ -141,7 +141,6 @@ const perFileRatchets = [
         'src/components/admin/WorkspaceManager.tsx': 2,
         'src/components/batch/AnalyticsModal.tsx': 2,
         'src/components/batch/DigitalSlipsModal.tsx': 2,
-        'src/components/QuickStartModal.tsx': 2,
         'src/components/SettingsModal.tsx': 2,
         'src/pages/register.tsx': 2,
         'src/components/admin/UserTable.tsx': 1,

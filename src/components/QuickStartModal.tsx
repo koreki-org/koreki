@@ -1,135 +1,91 @@
 import React from 'react';
-import { X, FileText, FolderOpen, Zap, ChevronRight, Highlighter, Sparkles, ShieldCheck, Languages, Wrench } from 'lucide-react';
-import Logo from './Logo';
+import { createPortal } from 'react-dom';
+import { X, BookOpen } from 'lucide-react';
 import { Button } from './ui/Button';
+import { useDialogA11y, useEscapeKey } from '@/hooks/useDialogA11y';
+import { oeffneHandbuch } from '@/lib/handbuch';
 
 interface QuickStartModalProps {
     onClose: () => void;
 }
 
+/**
+ * Die Kurzanleitung: der Ablauf in fünf Zeilen, für den Fall ohne Internet.
+ *
+ * Erklärt wird im Handbuch unter hilfe.koreki.org. Bis zum 12.11.2026 stand
+ * hier ein zweites, kleines Handbuch mit eigenen Begriffen („Fach-Prompts“,
+ * „Präzedenzfälle“), das neben dem echten auseinanderlief. Die Schritte hier
+ * folgen deshalb wörtlich den Überschriften von `handbuch/korrigieren/ablauf.md`
+ * — wer dort einen Schritt ändert, zieht ihn hier nach.
+ */
+const SCHRITTE: { titel: string; text: string }[] = [
+    { titel: 'Musterlösung laden', text: 'Koreki erkennt daraus Aufgaben und Punkte. Prüfe die Liste.' },
+    { titel: 'Schülerarbeiten hinzufügen', text: 'Eine Datei je Person, als PDF, Bild, Text oder Moodle-Export.' },
+    { titel: 'Scans lesen lassen', text: 'Bei Scans zuerst Namen schwärzen, dann die Bilderkennung starten.' },
+    { titel: 'Korrigieren lassen', text: 'Koreki schlägt für jede Aufgabe Punkte und ein Feedback vor.' },
+    { titel: 'Prüfen und exportieren', text: 'Du gehst die Vorschläge durch, änderst, was nicht passt, und exportierst.' },
+];
+
 const QuickStartModal: React.FC<QuickStartModalProps> = ({ onClose }) => {
-    return (
+    const { mounted, dialogRef } = useDialogA11y<HTMLDivElement>();
+    useEscapeKey(true, onClose);
+
+    if (!mounted) return null;
+
+    return createPortal(
         <div
             className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-background/40 backdrop-blur-glass animate-overlay-in"
             onClick={onClose}
         >
             <div
-                className="relative w-full max-w-[550px] bg-white rounded-hero p-6 shadow-glass border border-border animate-dialog-in my-auto max-h-[92vh] flex flex-col"
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="kurzanleitung-titel"
+                className="relative w-full max-w-md bg-card rounded-hero p-6 shadow-glass border border-border animate-dialog-in"
                 onClick={e => e.stopPropagation()}
             >
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="absolute h-auto top-4 right-4 z-10 p-2 text-muted-foreground hover:text-foreground hover:bg-foreground/5 rounded-full transition-all duration-200"
+                    aria-label="Schließen"
+                    className="absolute top-4 right-4 h-9 w-9 rounded-full text-muted-foreground hover:text-foreground"
                     onClick={onClose}
                 >
                     <X size={20} />
                 </Button>
 
-                <div className="flex flex-col items-center mb-6 text-center shrink-0 mt-2">
-                    <Logo
-                        size={36}
-                        showText
-                        textLarge
-                        className="mb-2"
-                        subtitle="KI-Assistent"
-                    />
-                    <div className="space-y-0.5">
-                        <p className="text-lg font-bold text-foreground tracking-tight">Willkommen bei Koreki!</p>
-                        <p className="text-xs text-muted-foreground font-medium">In nur <strong className="font-extrabold text-foreground">sechs</strong> einfachen Schritten zum Ziel.</p>
-                    </div>
-                </div>
+                <h2 id="kurzanleitung-titel" className="text-lg font-semibold text-foreground">Kurzanleitung</h2>
+                <p className="mt-1 text-sm text-muted-foreground">Eine Korrektur in fünf Schritten.</p>
 
-                <div className="overflow-y-auto scrollbar-thin p-1">
+                <ol className="mt-5 space-y-3">
+                    {SCHRITTE.map((schritt, i) => (
+                        <li key={schritt.titel} className="flex gap-3">
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                                {i + 1}
+                            </span>
+                            <div>
+                                <p className="text-sm font-medium text-foreground">{schritt.titel}</p>
+                                <p className="text-sm text-muted-foreground">{schritt.text}</p>
+                            </div>
+                        </li>
+                    ))}
+                </ol>
 
-                    <div className="space-y-2 mb-8">
-                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-card hover:border-primary/40 transition-all duration-300">
-                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
-                                <FileText size={18} />
-                            </div>
-                            <div className="space-y-0">
-                                <h3 className="font-bold text-foreground text-xs">1. Vorbereitung</h3>
-                                <p className="text-xxs text-muted-foreground leading-snug">
-                                    Musterlösung laden (KI erkennt Aufgaben/Punkte automatisch). Für Rechenaufgaben können optional Rechengraphen zur präzisen Erkennung von Folgefehler-Pfaden erstellt werden.
-                                </p>
-                            </div>
-                        </div>
+                <p className="mt-5 text-sm text-muted-foreground">
+                    Alles ausführlich, mit Bildern und Lösungen für häufige Probleme, steht im Handbuch.
+                </p>
 
-                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-card hover:border-primary/40 transition-all duration-300">
-                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
-                                <Wrench size={18} />
-                            </div>
-                            <div className="space-y-0">
-                                <h3 className="font-bold text-foreground text-xs">2. Didaktik & KI-Kalibrierung</h3>
-                                <p className="text-xxs text-muted-foreground leading-snug">
-                                    Konfiguriere im Header deine <strong className="font-extrabold text-foreground">Expertise</strong> (Fach-Prompts), aktiviere modulare <strong className="font-extrabold text-foreground">Skills</strong> (z. B. mathematische Äquivalenz), trainiere den <strong className="font-extrabold text-foreground">Erfahrungsschatz</strong> (Präzedenzfälle) oder wähle die passende <strong className="font-extrabold text-foreground">Intelligenz</strong> (Denktiefe der KI).
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-card hover:border-primary/40 transition-all duration-300">
-                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
-                                <FolderOpen size={18} />
-                            </div>
-                            <div className="space-y-0">
-                                <h3 className="font-bold text-foreground text-xs">3. Import & Moodle</h3>
-                                <p className="text-xxs text-muted-foreground leading-snug">
-                                    Schülerarbeiten als PDF oder Scans hochladen. Moodle XLSX-Exporte werden voll unterstützt.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-card hover:border-primary/40 transition-all duration-300">
-                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
-                                <ShieldCheck size={18} />
-                            </div>
-                            <div className="space-y-0">
-                                <h3 className="font-bold text-foreground text-xs">4. Anonymisierung</h3>
-                                <p className="text-xxs text-muted-foreground leading-snug">
-                                    Namen schützen. Handschriften, Namen und personenbezogene Daten bei Bedarf direkt im Scan schwärzen.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-card hover:border-primary/40 transition-all duration-300">
-                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
-                                <Languages size={18} />
-                            </div>
-                            <div className="space-y-0">
-                                <h3 className="font-bold text-foreground text-xs">5. Texterkennung (OCR)</h3>
-                                <p className="text-xxs text-muted-foreground leading-snug">
-                                    Handschriften digitalisieren. Die KI liest gedruckte und geschriebene Schülertexte zuverlässig aus.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="group flex items-center gap-4 p-3 bg-muted/30 border border-border rounded-xl hover:bg-card hover:border-primary/40 transition-all duration-300">
-                            <div className="w-10 h-10 bg-primary/10 text-primary rounded-lg flex items-center justify-center shrink-0">
-                                <Sparkles size={18} />
-                            </div>
-                            <div className="space-y-0">
-                                <h3 className="font-bold text-foreground text-xs">6. Auswertung & Export</h3>
-                                <p className="text-xxs text-muted-foreground leading-snug">
-                                    Korrekturen und automatische Korrekturzeichen prüfen, Schüler-Feedback ansehen und Statistiken exportieren.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex justify-center mt-6">
-                        <Button
-                            size="sm"
-                            onClick={onClose}
-                            className="w-full sm:w-auto px-10 py-5 rounded-xl font-bold text-base bg-primary hover:bg-primary/90 text-white border-none shadow-xl transition-all"
-                        >
-                            Alles klar, los geht&apos;s! <ChevronRight size={18} className="ml-2" />
-                        </Button>
-                    </div>
+                <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <Button variant="outline" onClick={onClose}>Schließen</Button>
+                    <Button onClick={() => { void oeffneHandbuch(); }} className="gap-2">
+                        <BookOpen size={16} /> Handbuch öffnen
+                    </Button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
-
 
 export default QuickStartModal;
