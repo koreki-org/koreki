@@ -85,19 +85,12 @@
   --vp-button-alt-border: var(--k-border);
   --vp-button-alt-hover-bg: var(--k-card);
   --vp-button-alt-hover-border: var(--k-primary);
-
-  /* Startseite: Markenverlauf Indigo → Violett → Pink, wie auf den Posts */
-  --vp-home-hero-name-color: transparent;
-  --vp-home-hero-name-background: linear-gradient(98deg, #6366F1 0%, #A855F7 48%, #DB2777 100%);
 }
 
 /* Überschriften in Outfit, wie in App und Marketing */
 .vp-doc h1,
 .vp-doc h2,
-.vp-doc h3,
-.VPHero .name,
-.VPHero .text,
-.VPFeature .title {
+.vp-doc h3 {
   font-family: var(--vp-font-family-heading);
 }
 .vp-doc h1 { font-weight: 800; letter-spacing: -0.02em; }
@@ -114,51 +107,6 @@
 .VPNavBarTitle .title span::after {
   content: '.';
   color: var(--k-primary);
-}
-
-/* Startseite: Lavendel-Schimmer der Posts (.kopfband in globals.css) */
-.VPHome {
-  background:
-    radial-gradient(120% 60% at 8% -5%, rgb(99 102 241 / 0.13) 0%, transparent 55%),
-    radial-gradient(90% 50% at 98% 30%, rgb(168 85 247 / 0.09) 0%, transparent 55%),
-    linear-gradient(180deg, #FCFCFE 0%, #F7F8FD 45%, var(--k-background) 100%);
-}
-.VPHero .name,
-.VPHero .text {
-  font-weight: 800;
-  letter-spacing: -0.03em;
-}
-.VPHero .tagline { color: var(--k-muted-foreground); }
-
-/* Startbild: ein echtes App-Bild, groß und gerahmt — kein Leuchtfleck dahinter */
-:root { --vp-home-hero-image-background-image: none; }
-@media (min-width: 960px) {
-  .VPHero .image-container { width: 560px; height: 360px; }
-  .VPHero .image-src { max-width: 560px; max-height: none; }
-}
-.VPHero .image-src {
-  border: 1px solid var(--k-border);
-  border-radius: 12px;
-  box-shadow: 0 24px 60px rgb(10 15 31 / 0.10);
-  background: var(--k-card);
-}
-
-/* Karten auf der Startseite: weiß, Haarlinie, höchstens shadow-sm */
-.VPFeature {
-  background: var(--k-card) !important;
-  border: 1px solid var(--k-border) !important;
-  box-shadow: 0 1px 2px rgb(10 15 31 / 0.04);
-  border-radius: 16px !important;
-}
-.VPFeature.link:hover { border-color: var(--k-primary) !important; }
-
-/* Kicker: kleine Überschrift in Versalien, gesperrt (nur Marketing/Handbuch-Start) */
-.kicker {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--k-primary-dark);
 }
 
 /* App-Bilder: Rahmen wie ein Fenster, damit das Bild nicht in der Seite verschwimmt */

@@ -1,37 +1,30 @@
----
-layout: home
-title: Koreki Hilfe
+# Was Koreki ist
 
-hero:
-  name: Das Handbuch
-  text: Korrigieren mit Koreki
-  tagline: Von der Installation bis zum Feedback für deine Klasse — Schritt für Schritt erklärt.
-  image:
-    src: /bilder/app-pruefansicht.png
-    alt: Die Prüfansicht von Koreki mit erkannter Schülerlösung und Vorschlag
-  actions:
-    - theme: brand
-      text: Los geht's
-      link: /erste-schritte/
-    - theme: alt
-      text: Eine Korrektur Schritt für Schritt
-      link: /korrigieren/ablauf
+Koreki ist dein KI-Korrektur Assistent. Du gibst ihm eine Musterlösung und die Arbeiten deiner Klasse. Koreki liest die Arbeiten, schlägt für jede Aufgabe Punkte vor und formuliert ein Feedback. **Du gehst die Vorschläge durch, änderst, was nicht passt, und gibst sie frei.**
 
-features:
-  - title: Installieren
-    details: Koreki auf deinem Rechner einrichten und eine KI verbinden — lokal auf deinem Gerät oder bei einem Anbieter in der EU.
-    link: /erste-schritte/installieren
-    linkText: Zur Anleitung
-  - title: Korrigieren
-    details: Musterlösung laden, Arbeiten hinzufügen, Vorschläge prüfen und das Feedback exportieren. Koreki schlägt vor, du entscheidest.
-    link: /korrigieren/ablauf
-    linkText: Zum Ablauf
-  - title: Bewertung anpassen
-    details: Expertise, Skills, Erfahrungsschatz und Intelligenz — damit die Vorschläge nach dir klingen.
-    link: /bewertung/
-    linkText: Stellschrauben
-  - title: Datenschutz
-    details: Was mit Namen auf den Blättern passiert — und was du selbst tun solltest.
-    link: /datenschutz/namen
-    linkText: Mehr erfahren
----
+![Die Prüfansicht: links die erkannte Schülerlösung, rechts der Vorschlag mit Punkten](/bilder/app-pruefansicht.png){.app-bild}
+<p class="bildtext">Die Prüfansicht: links, was Koreki aus der Arbeit gelesen hat, rechts der Vorschlag. Punkte und Text kannst du jederzeit ändern.</p>
+
+## Was Koreki für dich tut
+
+- **Arbeiten einlesen** — auch Scans und Fotos von Handschrift. Koreki macht daraus Text, den du nachlesen kannst.
+- **Gleicher Maßstab für alle** — die erste und die achtundzwanzigste Arbeit werden an derselben Musterlösung gemessen.
+- **Feedback vorschlagen** — für jede Aufgabe ein kurzer Text, den du übernehmen, kürzen oder ersetzen kannst.
+- **Exportieren** — eine Einschätzungsliste für dich und Rückmeldungen für deine Schülerinnen und Schüler.
+
+## Was Koreki nicht tut
+
+Koreki entscheidet keine Note. Jeder Wert ist ein **Vorschlag**, und vor jedem Export bestätigst du, dass du die Bewertungen geprüft hast. Wie du dabei vorgehst, steht unter [Vorschläge prüfen](/korrigieren/vorschlaege-pruefen).
+
+## Welche Ausgabe passt zu dir?
+
+| Ausgabe | Für wen | Wie |
+| :--- | :--- | :--- |
+| **Desktop** | Du allein, auf deinem Rechner | Programm für Windows und Linux |
+| **Community** | Eine Schule mit eigenem Server | Selbst betrieben mit Docker |
+
+Für den Anfang ist **Desktop** der einfachste Weg. Weiter geht es mit [Koreki installieren](/erste-schritte/installieren).
+
+::: tip Erst ausprobieren
+Auf der Startseite von Koreki gibt es den Knopf **Demo**. Er lädt eine fertige Beispielkorrektur, damit du siehst, wie ein Ergebnis aussieht — ganz ohne eigene Dateien.
+:::

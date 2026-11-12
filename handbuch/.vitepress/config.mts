@@ -25,7 +25,6 @@ export default defineConfig({
     siteTitle: 'Koreki',
 
     nav: [
-      { text: 'Handbuch', link: '/erste-schritte/' },
       { text: 'Webseite', link: 'https://koreki.org' },
       { text: 'Herunterladen', link: 'https://github.com/koreki-org/koreki/releases' },
     ],
@@ -34,7 +33,7 @@ export default defineConfig({
       {
         text: 'Erste Schritte',
         items: [
-          { text: 'Was Koreki ist', link: '/erste-schritte/' },
+          { text: 'Was Koreki ist', link: '/' },
           { text: 'Koreki installieren', link: '/erste-schritte/installieren' },
           { text: 'KI verbinden', link: '/erste-schritte/ki-verbinden' },
         ],
@@ -56,6 +55,12 @@ export default defineConfig({
         text: 'Datenschutz',
         items: [
           { text: 'Namen auf dem Blatt', link: '/datenschutz/namen' },
+        ],
+      },
+      {
+        text: 'Hilfe',
+        items: [
+          { text: 'Probleme lösen', link: '/probleme/' },
         ],
       },
     ],
