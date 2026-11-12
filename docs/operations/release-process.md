@@ -3,7 +3,7 @@ title: "📦 Koreki Release-Prozess (Community & Desktop)"
 description: "Leitfaden zur Erstellung von Versionen für die Open-Source Community und die Desktop-Applikation."
 author: "@principal_architect"
 date: "2026-04-23"
-last_updated: "2026-11-10"
+last_updated: "2026-11-12"
 status: "Active"
 domain: "operations"
 security_classification: "Public"
@@ -44,6 +44,9 @@ Bevor ein Release erstellt wird, müssen die Versionsnummern in den Konfiguratio
 
 ### 2. Git-Tag erstellen und pushen
 Der Release-Prozess wird ausschließlich durch das Pushen eines Tags ausgelöst, der dem Muster `v*` (z.B. `v0.9.10`) entspricht. 
+
+> [!NOTE]
+> **Welche Stelle steigt:** Seit 12.11.2026 gilt Semantic Versioning — neue Funktionen heben die mittlere Stelle (0.10.3 → 0.11.0), reine Fehlerbehebungen die letzte (0.11.0 → 0.11.1). Vor 1.0 heben auch brechende Änderungen nur die mittlere Stelle; der Schritt auf 1.0 ist eine Produktentscheidung. Einzelheiten im Skill `release`.
 
 > [!IMPORTANT]
 > **Windows/MSI Kompatibilität:** Tags und Versionsnummern in `package.json`/`tauri.conf.json` müssen **rein numerisch** sein (z.B. `0.9.10`). Buchstaben wie `-beta` führen zu Fehlern beim Erstellen der Windows-Installer (MSI).

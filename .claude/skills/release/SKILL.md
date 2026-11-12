@@ -26,6 +26,16 @@ GitHub CLI, angemeldet als `koreki-org`. Unter Windows liegt sie unter `C:\Progr
 - `main` ist sauber und gepusht (`git status`, `git log origin/main..`).
 - Letzten Tag ermitteln: `git tag --sort=-creatordate | head -1`.
 - Neue Versionsnummer: rein numerisch (`0.9.99`), kein `-beta` — der Windows-Installer (MSI) bricht sonst ab.
+- **Welche Stelle steigt** (Semantic Versioning, seit 12.11.2026), entschieden an dem, was Lehrkräfte merken — `git log v<alt>..HEAD`:
+
+  | Was seit dem letzten Release dazukam | Stelle | Beispiel |
+  | :--- | :--- | :--- |
+  | mindestens eine neue Funktion | mittlere, letzte auf 0 | 0.10.3 → 0.11.0 |
+  | nur Fehlerbehebungen und Verbesserungen | letzte | 0.11.0 → 0.11.1 |
+  | etwas, das Bestehendes bricht (z. B. `.koreki`-Dateien alter Versionen öffnen nicht mehr) | vor 1.0: mittlere, und die Release Notes sagen, was zu tun ist | 0.11.1 → 0.12.0 |
+
+  Die erste Stelle bleibt 0. Der Schritt auf 1.0 ist eine Produktentscheidung von Andreas, nichts, was aus Commits folgt. Bis einschließlich 0.9.102 stieg bei jedem Release nur die letzte Stelle.
+- **Kein Release nur für Handbuch oder Doku.** Das Handbuch geht über `handbuch.yml` bei jedem Push live; Doku-Änderungen reisen mit dem nächsten Release mit.
 
 ### 2. Version setzen, Tag pushen
 - `npm version <neu> --no-git-tag-version` (schreibt `package.json` und `package-lock.json`).
@@ -61,6 +71,7 @@ gh release edit v<neu> --repo koreki-org/koreki --notes-file <datei> --title "Ko
 
 ## Was schiefgehen kann
 
+- **Build scheitert, ohne dass sich unser Code geändert hat** (so am 12.11.2026: Rust 1.100 brach eine Linux-Abhängigkeit): Ursache im Workflow beheben und auf `main` pushen. Der Build liest den Workflow vom getaggten Stand — ein `rerun` hilft also nicht. Mit Andreas' Ja den **unveröffentlichten** Entwurf samt Tag löschen (`gh release delete v<neu> --yes --cleanup-tag`, lokal `git tag -d v<neu>`) und den Tag auf den reparierten Commit neu setzen und pushen. Die Versionsnummer bleibt. Rust steht deshalb in beiden Desktop-Workflows auf einer festen Version.
 - **Veröffentlichte Releases sind unveränderlich** (Repo-Einstellung „immutable releases“): Dateien und Tag lassen sich danach nicht mehr ändern. Was am Entwurf fehlt, muss vor dem Veröffentlichen da sein.
 - **Falsch veröffentlicht:** Den Kanal auf die vorige Version zurücksetzen: `gh workflow run update-channel.yml -f tag=v<alt>`. Das Problem dann mit einer neuen Version beheben.
 - **Den Branch `update-kanal` nie löschen oder umbenennen.** Seine Adresse ist in jede installierte App eingebaut. Ausnahme: v0.9.99 fragt noch den alten Kanal-Release `aktualisierung` ab und findet dort nie etwas.
