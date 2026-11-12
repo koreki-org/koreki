@@ -19,6 +19,10 @@ interface PopoverMenuProps {
     className?: string;
     triggerClassName?: string;
     emptyLabel?: string;
+    /** Ruhige Zeile unter den Eintraegen, z. B. die Versionsnummer. Nicht anklickbar. */
+    footer?: React.ReactNode;
+    /** Name des Knopfs fuer Screenreader, wenn der Trigger nur ein Symbol ist. */
+    triggerAriaLabel?: string;
 }
 
 /**
@@ -37,6 +41,8 @@ export const PopoverMenu: React.FC<PopoverMenuProps> = ({
     className,
     triggerClassName,
     emptyLabel = 'Keine Einträge',
+    footer,
+    triggerAriaLabel,
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -75,6 +81,7 @@ export const PopoverMenu: React.FC<PopoverMenuProps> = ({
                 type="button"
                 variant="ghost"
                 aria-haspopup="menu"
+                aria-label={triggerAriaLabel}
                 aria-expanded={isOpen}
                 onClick={(e) => {
                     e.stopPropagation();
@@ -126,6 +133,11 @@ export const PopoverMenu: React.FC<PopoverMenuProps> = ({
                                 <span className="truncate">{item.label}</span>
                             </Button>
                         ))
+                    )}
+                    {footer && (
+                        <div className="mt-1 border-t border-border px-3 pt-2 pb-1 text-xs text-muted-foreground">
+                            {footer}
+                        </div>
                     )}
                 </div>
             )}

@@ -6,6 +6,7 @@ export const BatchHelpContent: React.FC = () => {
     return (
         <KorekiTooltip 
             title="Anleitung & Workflow"
+            handbuch="korrigieren"
             content={(
                 <div className="space-y-2.5">
                     <div className="flex gap-3">

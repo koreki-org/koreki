@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Settings, LogOut, Loader2, HelpCircle, Sparkles, FileText, FileUp, Camera, PlusCircle, SlidersHorizontal, BookOpen, Brain, GraduationCap, Wrench } from 'lucide-react';
+import { Settings, LogOut, Loader2, Sparkles, FileText, FileUp, Camera, PlusCircle, SlidersHorizontal, BookOpen, Brain, GraduationCap, Wrench } from 'lucide-react';
 import Logo from '../Logo';
 import { Button } from '../ui/Button';
 import { HeaderBadges } from './HeaderBadges';
 import { NeueVersionHinweis } from './NeueVersionHinweis';
+import { HilfeMenu } from './HilfeMenu';
 import { useGlobalStatus } from '../../hooks/useGlobalStatus';
 import { isLocalInstance, isKeycloakAuth, getAuthType } from '../../lib/env-context';
 import { User } from '../../types';
@@ -161,16 +162,7 @@ const Header: React.FC<HeaderProps> = ({
     const renderQuickActions = (isMobile: boolean) => (
         <div className={`${isMobile ? 'flex lg:hidden' : 'hidden lg:flex'} items-center justify-end gap-1.5 sm:gap-2 shrink-0 ml-auto lg:ml-0`}>
             <NeueVersionHinweis onOeffnen={onShowSettings} istAdmin={userData?.role === 'ADMIN'} />
-            <HeaderPortalTooltip title="Hilfe & Infos">
-                <Button 
-                    variant="outline" 
-                    size="icon" 
-                    onClick={onShowHelp} 
-                    className="border-0 bg-transparent text-muted-foreground hover:bg-card hover:text-foreground rounded-lg h-7 w-7 sm:h-8 sm:w-8 transition-colors shrink-0"
-                >
-                    <HelpCircle size={16} />
-                </Button>
-            </HeaderPortalTooltip>
+            <HilfeMenu onKurzanleitung={onShowHelp} />
             {(userData?.role === 'ADMIN' || getAuthType() === 'LOGTO' || (isLocalInstance() && !isKeycloakAuth())) && (
                 <HeaderPortalTooltip title={userData?.role === 'ADMIN' ? 'System-Einstellungen' : 'Konto & Einstellungen'}>
                     <Button 

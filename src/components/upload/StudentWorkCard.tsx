@@ -58,6 +58,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                     <span className="truncate">Schülerarbeiten</span>
                     <KorekiTooltip
                         title="Organisation"
+                        handbuch="schuelerarbeiten"
                         content="Lade Dateien einzeln oder als Stapel hoch — auch nachträglich, es kommt immer etwas dazu. Moodle-Exporte (XLSX/CSV) werden automatisch erkannt."
                         position="bottom"
                         align="left"

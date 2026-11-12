@@ -51,6 +51,7 @@ const Ebene: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 export const MusterloesungAufbauHinweis: React.FC = () => (
     <KorekiTooltip
         title="Aufbau einer Musterlösung"
+        handbuch="musterloesung"
         position="bottom"
         align="left"
         widthClass="w-[22rem]"
