@@ -1,35 +1,35 @@
 {
-  "version": "0.9.101",
+  "version": "0.9.102",
   "notes": "",
-  "pub_date": "2026-11-11T13:24:04.561Z",
+  "pub_date": "2026-11-12T19:36:37.378Z",
   "platforms": {
-    "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSnBYZlY1enVWM3dDZEc0aEdlMzdMajVSVDZlRWVRYW91M2dFVnBGYzFkNzlNd0R4M1NBY3M4c3E1Y0UyL29LMk1VR3FFSmd1Q092cWptNjZ0b0ZOdVFFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NDAzNDEzCWZpbGU6a29yZWtpXzAuOS4xMDFfeDY0X2VuLVVTLm1zaQpveldvVytrODdzcHIyTHZQeStqV3Fmc2gzWEMvTllpblNpNTdtVHczcUFvVlk4bkxoamh3MmpVb0xlTThsbVhjNTRjQWlPRmJaZFN4a3hVK01LaG9BUT09Cg==",
-      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.101/koreki_0.9.101_x64_en-US.msi"
-    },
-    "windows-x86_64-msi": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSnBYZlY1enVWM3dDZEc0aEdlMzdMajVSVDZlRWVRYW91M2dFVnBGYzFkNzlNd0R4M1NBY3M4c3E1Y0UyL29LMk1VR3FFSmd1Q092cWptNjZ0b0ZOdVFFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NDAzNDEzCWZpbGU6a29yZWtpXzAuOS4xMDFfeDY0X2VuLVVTLm1zaQpveldvVytrODdzcHIyTHZQeStqV3Fmc2gzWEMvTllpblNpNTdtVHczcUFvVlk4bkxoamh3MmpVb0xlTThsbVhjNTRjQWlPRmJaZFN4a3hVK01LaG9BUT09Cg==",
-      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.101/koreki_0.9.101_x64_en-US.msi"
-    },
-    "windows-x86_64-nsis": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSnJGREhnU1JWOTZPbHdrTXUyS2FSTXkxQnhPNXZJRDRiaGR0LzNNK1N2UldOenU2WWUvWmpDdjFvVGcrQzZDcmlaRnpIalNTUzRyejB0RnlzVXlUYlE0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NDAzNDE0CWZpbGU6a29yZWtpXzAuOS4xMDFfeDY0LXNldHVwLmV4ZQpkVENSMGFQVUlqK3NIMkk5Rm0rWHJYaHM3eCs0cU9kclJtMUpzMWZ5eWhKSU1rakpJNGZaRTFzQitkUFNnZEVwZzdscVZRbkNiQ3hoZ29tbHJjWGhBQT09Cg==",
-      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.101/koreki_0.9.101_x64-setup.exe"
-    },
     "linux-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSmpVSjNBUktLUGZjcFpxMnlPL1JJS1FFZzN6blNQVjEwVE1kanVuaGMraHpocGdVWDRiQUpXRGV3d3pJSGhvdHJZc1JVQTdxRUJRT2h4dTVVRzRUWFE0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NDAzNDM2CWZpbGU6a29yZWtpXzAuOS4xMDFfYW1kNjQuQXBwSW1hZ2UKSThZWFNYZHdoaFgvOStWNGl4OGJYcUc4bDYxS2xINVdLdjgvM1pzUmM1L3hYQ0h6RjFKME90QTZtUUU2RXpheEJsMzRLd2ZzMGlDTDdTcjY0TnRPQUE9PQo=",
-      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.101/koreki_0.9.101_amd64.AppImage"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSnVaTk9QUXorVUZocnVuR29wWnVSZ0ZhZnlnbWNNdno3WUhNSVZ5RXNWOGVtcEhRMHlTcFI2MHQ3N3ZhY0FnczhYcC9NdVVTQTJYRWNRalpJVWk2Y0FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NTEyMTQxCWZpbGU6a29yZWtpXzAuOS4xMDJfYW1kNjQuQXBwSW1hZ2UKVnorWnB3VXdTNGdIVlhTWlJtRUdoTkp2TGQ5N21veHNHOFhvUmVZM3loRUdBWUVzS3J4dlBTV0ZXb0h3VVZZa3RodVY1aFArb21zL3pUUlFFSWY2REE9PQo=",
+      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.102/koreki_0.9.102_amd64.AppImage"
     },
     "linux-x86_64-appimage": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSmpVSjNBUktLUGZjcFpxMnlPL1JJS1FFZzN6blNQVjEwVE1kanVuaGMraHpocGdVWDRiQUpXRGV3d3pJSGhvdHJZc1JVQTdxRUJRT2h4dTVVRzRUWFE0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NDAzNDM2CWZpbGU6a29yZWtpXzAuOS4xMDFfYW1kNjQuQXBwSW1hZ2UKSThZWFNYZHdoaFgvOStWNGl4OGJYcUc4bDYxS2xINVdLdjgvM1pzUmM1L3hYQ0h6RjFKME90QTZtUUU2RXpheEJsMzRLd2ZzMGlDTDdTcjY0TnRPQUE9PQo=",
-      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.101/koreki_0.9.101_amd64.AppImage"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSnVaTk9QUXorVUZocnVuR29wWnVSZ0ZhZnlnbWNNdno3WUhNSVZ5RXNWOGVtcEhRMHlTcFI2MHQ3N3ZhY0FnczhYcC9NdVVTQTJYRWNRalpJVWk2Y0FBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NTEyMTQxCWZpbGU6a29yZWtpXzAuOS4xMDJfYW1kNjQuQXBwSW1hZ2UKVnorWnB3VXdTNGdIVlhTWlJtRUdoTkp2TGQ5N21veHNHOFhvUmVZM3loRUdBWUVzS3J4dlBTV0ZXb0h3VVZZa3RodVY1aFArb21zL3pUUlFFSWY2REE9PQo=",
+      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.102/koreki_0.9.102_amd64.AppImage"
     },
     "linux-x86_64-deb": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSm50TUF3TXhQQlpRUk5xL2h6QnpxcS9Idnh2OTA3Ulk3WXRlOWVYQURla0c4UFF4V1FnbVc5Vmw3SEdEaFNDK2RUUHpNaHJPcUg1ZlljbndsS0wyL2dnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NDAzNDM2CWZpbGU6a29yZWtpXzAuOS4xMDFfYW1kNjQuZGViCk9mZEtBWDY4MTZOd1ZnT2xrOUdQeC8vV0ZzNXBTeDdyYVhVWFlQc05nZCtBVmtndlpnQ1NMdkJITG9tYUJOaCtZbEwwTXlnQS9tVHNvbmk3Zkx6WUJ3PT0K",
-      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.101/koreki_0.9.101_amd64.deb"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSm4vR1RCNk94dmZ2REh3MDd0QVZvWEtWblhyMTJ2RE5ubkwrZXg0bm9XM0lteWhrZHhZbFE4M3JVNlc0cm5yRUZ4S1FhUytEZFRVNVhwV2ZhelVUUndBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NTEyMTQxCWZpbGU6a29yZWtpXzAuOS4xMDJfYW1kNjQuZGViCmtUME80SGpRNG9RaUpsblY4QUdvYUVlZklnOHR3R05XSUloWFg0eVVxZVJOamZHYUFPaEZJTW1wZGhhUlg2NGdkVWxTUHBWN0oxcjUvQWduMk5CZ0JnPT0K",
+      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.102/koreki_0.9.102_amd64.deb"
     },
     "linux-x86_64-rpm": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSnRjUjBScU5IcTdkWEZuQ0F5Y2tKS2QrdTlEY2p3OTJxd0VnMFI3MS9LanMzTzl5b3d5UlRzWk5HcUxLV3JXTDZpaU1RQkkxTnBrTzZLcDlGaUJ4Y3dZPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NDAzNDM2CWZpbGU6a29yZWtpLTAuOS4xMDEtMS54ODZfNjQucnBtCkN4cktaTHBQeElnajRRdm94TktSSGp1ZXNTTFRNU0RYS2VqaEJzTG5nTFIyczhXT2lRdVpvbjJDS0tDQ00ybTkzdWtZQ01URFhpQ0NWYTJka0VNQUFBPT0K",
-      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.101/koreki-0.9.101-1.x86_64.rpm"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSmpqaHJMbStMcHY1SSsyT3F1SHpmRlA4WSs2ck0wK3Y3NDFaZHA1ZVN5MTE5bEt4UUVnbG12S2ZVNkF2OWkxWG5JS2xwTExXNVpkcEg2SlloY1hKQUFNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NTEyMTQxCWZpbGU6a29yZWtpLTAuOS4xMDItMS54ODZfNjQucnBtClI4UjJoTEUwMjFoM3grT0tsM1lENmgzYUJvMTBySG9RTnBQdnQ0ciszUG5MNTRwS29SRDJXMlVJOTJkRUNHaVY0dXMxdjVuWmE2YzRKaldQc2U0ckFBPT0K",
+      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.102/koreki-0.9.102-1.x86_64.rpm"
+    },
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSmpIUXhUN2xLeG5panhxZ3duaS84SXRHcE9lVnpqemg2TEtMVldjSzJlZjYxRFo0amdZWHFEU0MwSnFkM2VSclQ0L3JMdVN0MmJZRytvZis2akg3WGcwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NTEyMTkzCWZpbGU6a29yZWtpXzAuOS4xMDJfeDY0X2VuLVVTLm1zaQpJUzR0NEdya0tlVUtJdmVhRnd6a0RQN2RBZGJJMHhrSkcvNU5uSEZTblNCNzk1WEZNVEZNNGZKeVhaclJRMlNqK2FkR1VVSmF3TFJ4Q1RGcXhIdGhBZz09Cg==",
+      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.102/koreki_0.9.102_x64_en-US.msi"
+    },
+    "windows-x86_64-msi": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSmpIUXhUN2xLeG5panhxZ3duaS84SXRHcE9lVnpqemg2TEtMVldjSzJlZjYxRFo0amdZWHFEU0MwSnFkM2VSclQ0L3JMdVN0MmJZRytvZis2akg3WGcwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NTEyMTkzCWZpbGU6a29yZWtpXzAuOS4xMDJfeDY0X2VuLVVTLm1zaQpJUzR0NEdya0tlVUtJdmVhRnd6a0RQN2RBZGJJMHhrSkcvNU5uSEZTblNCNzk1WEZNVEZNNGZKeVhaclJRMlNqK2FkR1VVSmF3TFJ4Q1RGcXhIdGhBZz09Cg==",
+      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.102/koreki_0.9.102_x64_en-US.msi"
+    },
+    "windows-x86_64-nsis": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVSVHI4ZEp1cWthSmd2aGZ5NEtpcHltN3F3SlJLSkZWbkl0UFY3NzNkREMvbUxtVUlKQllGSm5NalZwMEN2VlVtWFZZUE1aVTFKWGpJMlZrREhoUm0rZWl2dHNLOUdSRVE0PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzk0NTEyMTkzCWZpbGU6a29yZWtpXzAuOS4xMDJfeDY0LXNldHVwLmV4ZQp2M1pCbUlHVDY2emtQMHRjbkdNOXZHaEc4R0lRZFM5WmptU3BhQnBhR2VWMUJZenFOSUFqTi9kM2ZqaXFJM1E5ZUtWVTZrc0JzeXRia1MvUURIVTNCQT09Cg==",
+      "url": "https://github.com/koreki-org/koreki/releases/download/v0.9.102/koreki_0.9.102_x64-setup.exe"
     }
   }
 }
