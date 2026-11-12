@@ -4,6 +4,7 @@ import { Instagram, Linkedin, Github } from 'lucide-react';
 import Logo from '../Logo';
 import { LEGAL_CONFIG } from '@/config/legal-contact';
 import { getKorekiMode } from '@/lib/env-context';
+import { HANDBUCH_URL } from '@/lib/handbuch';
 
 const spalte = "flex flex-col gap-2.5 text-sm";
 const verweis = "text-muted-foreground hover:text-foreground transition-colors";
@@ -38,6 +39,7 @@ const MarketingFooter: React.FC = () => {
                             <Link href="/security" className={verweis}>Datenschutz</Link>
                             {mode === 'saas' && <Link href="/desktop" className={verweis}>Desktop</Link>}
                             {mode === 'saas' && <Link href="/self-hosting" className={verweis}>Für Schulen</Link>}
+                            <a href={HANDBUCH_URL} target="_blank" rel="noopener noreferrer" className={verweis}>Hilfe & Handbuch</a>
                         </div>
                         <div className={spalte}>
                             <h4 className="font-medium text-foreground mb-1">Rechtliches</h4>

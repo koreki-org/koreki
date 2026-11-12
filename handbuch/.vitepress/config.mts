@@ -47,6 +47,12 @@ export default defineConfig({
         ],
       },
       {
+        text: 'Bewertung anpassen',
+        items: [
+          { text: 'Expertise, Skills, Erfahrungsschatz', link: '/bewertung/' },
+        ],
+      },
+      {
         text: 'Datenschutz',
         items: [
           { text: 'Namen auf dem Blatt', link: '/datenschutz/namen' },

@@ -5,6 +5,8 @@
 
 Koreki ist das hochprofessionelle Werkzeug zur Korrektur von Klassenarbeiten, das pädagogische Expertise mit modernster KI-Intelligenz vereint. Es entlastet den Korrekturprozess, ohne die fachliche Kontrolle aus der Hand zu geben.
 
+> 📖 **Neu hier?** Das [Handbuch](https://hilfe.koreki.org) führt Schritt für Schritt von der Installation bis zum Feedback.
+
 ---
 
 ## 🏛️ Die drei Säulen von Koreki
@@ -89,11 +91,11 @@ Koreki verfolgt eine klare **Open-Core & Dual-Licensing** Strategie:
 ---
 
 ## 📄 Dokumentation
+- **[Handbuch für Lehrkräfte — hilfe.koreki.org](https://hilfe.koreki.org)**: Installieren, KI verbinden, Korrektur Schritt für Schritt
 - [Technisches Architektur-Dokument](docs/technical/architecture.md)
 - [Datenschutz & Datenfluss](docs/technical/privacy-data-flow.md)
 - [Contributing Guidelines & CLA](CONTRIBUTING.md)
 - [Sicherheitsrichtlinie](SECURITY.md)
-- [Quickstart Guide für Lehrer](docs/user-guides/quickstart.md)
 
 ---
 

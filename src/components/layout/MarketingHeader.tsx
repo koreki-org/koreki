@@ -7,6 +7,7 @@ import { Button, buttonVariants } from '../ui/Button';
 import { useAuth } from '../../hooks/useAuth';
 import { cn } from '@/lib/utils';
 import { getKorekiMode } from '@/lib/env-context';
+import { HANDBUCH_URL } from '@/lib/handbuch';
 
 /**
  * Kopfleiste der Marketing-Seiten: schmal, ueber die volle Breite, leicht
@@ -31,8 +32,15 @@ const MarketingHeader: React.FC = () => {
         ...(mode === 'saas' ? [
             { name: 'Desktop', href: '/desktop' },
             { name: 'Für Schulen', href: '/self-hosting' }
-        ] : [])
+        ] : []),
+        { name: 'Hilfe', href: HANDBUCH_URL }
     ];
+
+    // Das Handbuch liegt auf eigener Adresse (hilfe.koreki.org) und oeffnet in
+    // einem neuen Tab — die Marketing-Seite bleibt, wo sie war.
+    const extern = (href: string) => href.startsWith('http')
+        ? { target: '_blank', rel: 'noopener noreferrer' }
+        : {};
 
     const eingeloggt = !authLoading && !!userData;
     const hauptaktion = mode === 'saas'
@@ -52,6 +60,7 @@ const MarketingHeader: React.FC = () => {
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                {...extern(item.href)}
                                 className={cn(
                                     "px-3 py-2 rounded-lg text-sm transition-colors",
                                     router.pathname === item.href
@@ -101,6 +110,7 @@ const MarketingHeader: React.FC = () => {
                         <Link
                             key={item.href}
                             href={item.href}
+                            {...extern(item.href)}
                             onClick={() => setIsMenuOpen(false)}
                             className={cn(
                                 "px-3 py-3 rounded-lg text-base",

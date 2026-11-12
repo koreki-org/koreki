@@ -23,13 +23,13 @@ features:
     link: /erste-schritte/installieren
     linkText: Zur Anleitung
   - title: Korrigieren
-    details: Musterlösung laden, Arbeiten hinzufügen, Vorschläge prüfen und das Feedback exportieren.
+    details: Musterlösung laden, Arbeiten hinzufügen, Vorschläge prüfen und das Feedback exportieren. Koreki schlägt vor, du entscheidest.
     link: /korrigieren/ablauf
     linkText: Zum Ablauf
-  - title: Vorschläge prüfen
-    details: Koreki macht Vorschläge, du entscheidest. Worauf du beim Durchsehen achtest.
-    link: /korrigieren/vorschlaege-pruefen
-    linkText: Worauf achten
+  - title: Bewertung anpassen
+    details: Expertise, Skills, Erfahrungsschatz und Intelligenz — damit die Vorschläge nach dir klingen.
+    link: /bewertung/
+    linkText: Stellschrauben
   - title: Datenschutz
     details: Was mit Namen auf den Blättern passiert — und was du selbst tun solltest.
     link: /datenschutz/namen
