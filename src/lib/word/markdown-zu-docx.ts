@@ -228,10 +228,12 @@ export async function markdownZuDocx(md: string, meta: DocxMeta): Promise<Uint8A
 
     // Fester Zeitstempel für jeden Archiv-Eintrag: dieselbe Quelle ergibt
     // dieselben Bytes, sonst könnte der Wächter-Test nicht vergleichen.
-    // ZIP speichert Ortszeit (DOS-Format): Mitternacht in der jeweiligen
-    // Zeitzone ergibt überall dieselben Felder, ein UTC-Zeitpunkt nicht.
+    // JSZip schreibt die DOS-Zeitfelder mit `getUTC*`. Der Zeitpunkt muss
+    // also in UTC feststehen: Mitternacht in Ortszeit ergab auf dem Rechner
+    // (MEZ) andere Bytes als in der CI (UTC) — der Wächter war dort rot
+    // (12.11.2026), lokal grün.
     const [jahr, monat, tag] = meta.datum.split('-').map(Number);
-    const date = new Date(jahr, monat - 1, tag);
+    const date = new Date(Date.UTC(jahr, monat - 1, tag));
     const zip = new JSZip();
     zip.file('[Content_Types].xml', CONTENT_TYPES, { date, createFolders: false });
     zip.file('_rels/.rels', PAKET_RELS, { date, createFolders: false });
