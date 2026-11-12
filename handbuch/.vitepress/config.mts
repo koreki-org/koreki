@@ -59,6 +59,12 @@ export default defineConfig({
         ],
       },
       {
+        text: 'Für die IT der Schule',
+        items: [
+          { text: 'Koreki für die ganze Schule', link: '/schule/' },
+        ],
+      },
+      {
         text: 'Hilfe',
         items: [
           { text: 'Probleme lösen', link: '/probleme/' },
