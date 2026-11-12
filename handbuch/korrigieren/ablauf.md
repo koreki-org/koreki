@@ -7,7 +7,7 @@ Eine Korrektur hat fünf Schritte: Musterlösung laden, Arbeiten hinzufügen, Sc
 
 ## 1. Musterlösung laden {#musterloesung}
 
-Klicke links auf **Musterlösung** und wähle deine Datei — Text (`.txt`), PDF oder Bild.
+Klicke links auf **Musterlösung** und wähle deine Datei: PDF, Bild (JPG, PNG) oder Text (TXT, MD). Andere Formate wie Word lehnt Koreki mit einer Meldung ab — speichere sie vorher als PDF.
 
 Koreki liest die Musterlösung und erkennt daraus die **Aufgabenstruktur**: welche Aufgaben es gibt und wie viele Punkte jede bringt. Prüfe diese Liste, bevor du weitermachst. Was hier fehlt, kann Koreki später nicht bewerten.
 
@@ -19,7 +19,7 @@ Gibt es etwas, das für alle Aufgaben gilt — ein Szenario, gemeinsame Annahmen
 
 ## 2. Schülerarbeiten hinzufügen {#schuelerarbeiten}
 
-Klicke rechts auf **Schülerarbeiten** und wähle die Arbeiten aus. Möglich sind PDF, Bilder, Text und Excel. Ein Export aus Moodle (Excel oder CSV) wird automatisch erkannt.
+Klicke rechts auf **Schülerarbeiten** und wähle die Arbeiten aus. Möglich sind PDF, Bilder (JPG, PNG), Text (TXT, MD) und ein Export aus Moodle (XLSX oder CSV), den Koreki automatisch erkennt. Kann Koreki eine Datei nicht lesen, nennt es sie dir.
 
 - **Eine Datei je Schülerin oder Schüler.** Mehrseitige Arbeiten am besten als ein PDF.
 - **Du kannst jederzeit weitere Arbeiten hinzufügen** — sie kommen zu den vorhandenen dazu.

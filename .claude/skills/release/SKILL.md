@@ -35,6 +35,7 @@ GitHub CLI, angemeldet als `koreki-org`. Unter Windows liegt sie unter `C:\Progr
   | etwas, das Bestehendes bricht (z. B. `.koreki`-Dateien alter Versionen öffnen nicht mehr) | vor 1.0: mittlere, und die Release Notes sagen, was zu tun ist | 0.11.1 → 0.12.0 |
 
   Die erste Stelle bleibt 0. Der Schritt auf 1.0 ist eine Produktentscheidung von Andreas, nichts, was aus Commits folgt. Bis einschließlich 0.9.102 stieg bei jedem Release nur die letzte Stelle.
+- **Betriebsanleitung prüfen, bevor die Version gesetzt wird.** Sie wird mit der App ausgeliefert; was im Build fehlt, fehlt beim Nutzer. Für jede Änderung aus `git log v<alt>..HEAD` fragen: *Berührt sie eine Angabe der Betriebsanleitung?* Gemeint sind Zweck, Grenzen, Genauigkeit, menschliche Aufsicht (Bestätigung vor dem Export), Kennzeichnung, Datenflüsse und Anbieter, Formate und Mengengrenzen. Lautet die Antwort bei einer Änderung ja, entwirft Claude die nächste Fassung (`src/legal/betriebsanleitung_v<n+1>.md`) nach Skill `eu-ai-act` und legt sie Andreas vor. Erst nach seiner Freigabe wird sie committet, und erst dann geht es mit der Version weiter. Lautet die Antwort überall nein, steht das als eine Zeile in der Vorlage der Release Notes, damit Andreas es sieht. Dasselbe gilt für das Handbuch, aber ohne Freigabe (Skill `handbuch`).
 - **Kein Release nur für Handbuch oder Doku.** Das Handbuch geht über `handbuch.yml` bei jedem Push live; Doku-Änderungen reisen mit dem nächsten Release mit.
 
 ### 2. Version setzen, Tag pushen

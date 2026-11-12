@@ -83,6 +83,14 @@ Am 03.09.2026 war die Betriebsanleitung zwar in jeder Betriebsart ausgeliefert, 
 
 **Bei jeder Änderung an ausgelieferten Rechtsdokumenten:** Prüfe, ob sie in **allen** Betriebsarten erreichbar sind — Desktop, Community und gehosteter Dienst. Die Betriebsart erkennt `isLocalInstance()` in `src/lib/env-context.ts`.
 
+### Betriebsanleitung und Handbuch
+
+Neben der Betriebsanleitung gibt es das Handbuch unter hilfe.koreki.org (Skill `handbuch`). Die Betriebsanleitung beantwortet, *was das System darf und kann, wo seine Grenzen liegen und wer verantwortlich ist*. Das Handbuch beantwortet, *wo man klickt*. Wo sich beide berühren, ist die Betriebsanleitung die Quelle, und das Handbuch folgt ihr. Die Betriebsanleitung verweist nie auf das Handbuch (§4).
+
+**Wann eine neue Fassung fällig ist:** sobald eine Code-Änderung eine ihrer Angaben berührt. Gemeint sind Zweck, Grenzen, Genauigkeit, Aufsicht, Kennzeichnung, Datenflüsse, Formate und Mengengrenzen. Geprüft wird das spätestens vor jedem Release (Skill `release`, Schritt 1). Eine neue Fassung ist eine neue Datei `betriebsanleitung_v<n+1>.md`. Alte Fassungen bleiben unverändert liegen. Die neue Fassung gibt Andreas frei, danach wird die Landkarte (`compliance/README.md`) auf sie umgestellt.
+
+Werte, die im Code als Konstante stehen (Dateiformate, Größengrenze), prüft `tests/unit/angaben-synchron.test.ts` gegen die neueste Fassung und gegen das Handbuch. Für Fließtext gibt es keinen Wächter. Dort hilft nur der Prüfschritt im Release.
+
 ## 9. Rollen nicht vermischen
 
 Die Verordnung kennt **Anbieter** und **Betreiber** mit sehr unterschiedlichen Pflichten. Selbstbetrieb macht eine Schule **nicht** zum Anbieter; die Rolle geht nur über bei eigenem Namen oder eigener Marke, wesentlicher Veränderung oder geänderter Zweckbestimmung (Artikel 25).

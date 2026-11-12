@@ -15,6 +15,8 @@ Gilt für alles unter [handbuch/](../../../handbuch/) und für jede Änderung an
 | `docs/` | Entwickler | *Wie ist es gebaut, und warum?* |
 | `compliance/` (privat) | Behörden, Betreiber | bleibt eigenständig, verweist nicht auf die beiden anderen |
 
+**Betriebsanleitung und Handbuch.** Die Betriebsanleitung (`src/legal/betriebsanleitung_v*.md`, Art. 13 KI-VO) ist die **verbindliche** Fassung. Sie ist versioniert, von Andreas freigegeben und wird mit der App ausgeliefert. Zuständig sind der `product-manager` und der Skill `eu-ai-act`. Für jede Tatsache mit rechtlichem Gewicht ist sie die Quelle: Zweck, Grenzen, Genauigkeit, menschliche Aufsicht, Kennzeichnung, Datenflüsse, Formate und Mengengrenzen. Das Handbuch darf solche Tatsachen in einfachen Worten wiederholen, ihr aber **nie widersprechen**. Ändert sich so eine Tatsache, kommt zuerst die Betriebsanleitung (neue Fassung mit Freigabe), danach das Handbuch. Das Handbuch darf auf die Betriebsanleitung verweisen, umgekehrt nie (Skill `eu-ai-act` §4). *(Wächter für die Werte, die im Code stehen: `tests/unit/angaben-synchron.test.ts`)*
+
 Jeder Inhalt hat **genau einen** Ort. Berühren sich zwei, verweist einer auf den anderen — nie kopieren. Das Handbuch erklärt nie, warum etwas technisch so gebaut ist; `docs/` erklärt nie, wo man klickt. `docs/user-guides/` wird nicht weiter befüllt.
 
 ## 2. Wann das Handbuch mitgeändert wird
