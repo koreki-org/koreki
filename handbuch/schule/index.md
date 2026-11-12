@@ -102,4 +102,4 @@ Starte das Gateway neu:
 docker compose -f docker-compose.community-multi-full.yml restart gateway
 ```
 
-Weitere technische Einzelheiten stehen im [Repository](https://github.com/koreki-org/koreki/blob/main/docs/user-guides/community-multi-user-setup.md).
+Weitere technische Einzelheiten stehen im [Repository](https://github.com/koreki-org/koreki/blob/main/docs/operations/community-multi-user-setup.md).

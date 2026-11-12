@@ -1,119 +1,62 @@
-# Koreki 🏮
-### KI-gestützte Korrektur für Lehrkräfte | Sicher. Pädagogisch. Präzise.
+# Koreki
 
-![Koreki Dashboard](public/screenshots/4_koreki_app_overview.png)
+**Dein KI-Korrektur Assistent.** Koreki liest die Arbeiten deiner Klasse, schlägt für jede Aufgabe Punkte und ein Feedback vor — und du entscheidest. Läuft auf deinem Rechner oder dem Server deiner Schule, auf Wunsch mit einer lokalen KI, sodass keine Arbeit das Gerät verlässt.
 
-Koreki ist das hochprofessionelle Werkzeug zur Korrektur von Klassenarbeiten, das pädagogische Expertise mit modernster KI-Intelligenz vereint. Es entlastet den Korrekturprozess, ohne die fachliche Kontrolle aus der Hand zu geben.
+![Koreki: links die erkannte Schülerlösung, rechts der Vorschlag mit Punkten und Feedback](handbuch/public/bilder/app-pruefansicht.png)
 
-> 📖 **Neu hier?** Das [Handbuch](https://hilfe.koreki.org) führt Schritt für Schritt von der Installation bis zum Feedback.
+📖 **Handbuch:** [hilfe.koreki.org](https://hilfe.koreki.org) — installieren, KI verbinden, Korrektur Schritt für Schritt, Probleme lösen.
+🌐 **Webseite:** [koreki.org](https://koreki.org)
 
 ---
 
-## 🏛️ Die drei Säulen von Koreki
+## Ausgaben
 
-Koreki passt sich Ihrer Infrastruktur an – nicht umgekehrt.
-
-| Edition | Zielgruppe | Status | Deployment |
+| Ausgabe | Für wen | Status | Wie |
 | :--- | :--- | :--- | :--- |
-| **Koreki Desktop** | Einzellehrer | **Verfügbar** | Windows & macOS App (Tauri) |
-| **Koreki Community** | Schulen & IT-Beauftragte | **Verfügbar** | Self-Hosted (Docker) |
-| **Koreki SaaS** | Schulen & Institutionen | **Public Trial** | Managed Cloud (koreki.org) |
+| **Desktop** | einzelne Lehrkräfte | verfügbar | Programm für Windows und Linux — [Download](https://github.com/koreki-org/koreki/releases) |
+| **Community** | Schulen | verfügbar | selbst betrieben mit Docker — [Anleitung](https://hilfe.koreki.org/schule/) |
+| **SaaS** | Schulen und Institutionen | Public Trial | gehostet unter koreki.org |
 
 > [!CAUTION]
-> **SaaS-Trial:** Die SaaS-Version dient aktuell ausschließlich zu Evaluationszwecken. Es dürfen **keine echten Schülerdaten** hochgeladen werden. Für den produktiven Einsatz mit Klardaten nutzen Sie bitte die **Desktop** oder **Community** Edition.
+> **SaaS-Trial:** Die gehostete Version dient ausschließlich der Erprobung. Es dürfen **keine echten Schülerdaten** hochgeladen werden. Für den Einsatz mit echten Arbeiten: Desktop oder Community.
 
----
+### Community in einem Befehl
 
-## ✨ Hauptfunktionen
+Voraussetzungen: Docker mit Docker Compose, Node.js 18+, Git. Einzelheiten im [Handbuch](https://hilfe.koreki.org/schule/).
 
-- **Expert Center**: Verwalte pädagogische Korrektur-Profile (z.B. "Informatik-Fokus", "Milde Bewertung") und weise sie mit einem Klick zu.
-- **Intelligente Stapelverarbeitung**: Lade ganze Klassenordner als PDF, TXT oder Bilder hoch. Koreki verarbeitet sie parallel.
-- **Transparente KI-Verlässlichkeit**: Jedes Ergebnis enthält einen **Confidence-Score**. Ergebnisse mit geringer Konfidenz werden sofort zur manuellen Prüfung markiert (**"Review empfohlen!"**).
-- **Datenhoheit**: Volle Unterstützung für **lokale KI-Modelle** (via Ollama). Nutzen Sie optimierte Presets für **Qwen 2.5/2.2**, **Mistral Small** und **Gemma 4** oder binden Sie **beliebige benutzerdefinierte Modelle** (Custom Models) ein.
-- **Privatsphäre-Garantie**: Die Community Edition enthält **keine Telemetrie** und baut keine ungefragten Verbindungen zu Koreki-Servern auf ("No Phoning Home").
-
-### Einblicke
-| Expert Center | Intelligente OCR |
-| :--- | :--- |
-| ![Expert Center](public/screenshots/4a_koreki_expert_center.png) | ![OCR Plausibilität](public/screenshots/10_Koreki_OCR_mit_Plausibilitätsprüfung.png) |
-
----
-
-## 🏮 Koreki Community Edition (Self-Hosted)
-
-Die Community Edition ist für Schulen optimiert, die maximale Datenhoheit wünschen und Koreki auf eigenen Servern betreiben möchten.
-
-### Schnellstart in 60 Sekunden (1-Befehl-Setup)
-Voraussetzung: [Docker](https://www.docker.com/) & Docker Compose.
-
-**Für Windows (PowerShell):**
 ```powershell
+# Windows (PowerShell)
 iwr -useb https://get.koreki.org | iex
 ```
 
-**Für Linux / macOS (Terminal):**
 ```bash
+# Linux / macOS
 curl -fsSL https://get.koreki.org/sh | bash
 ```
 
-*Der interaktive Setup-Wizard führt Sie automatisch durch die Auswahl (Single-User, Multi-User mit Keycloak oder SaaS), konfiguriert Keycloak Redirect-URIs dynamisch und unterstützt den Betrieb hinter Reverse Proxies (HAProxy, Traefik). Bei wiederholter Ausführung aktualisiert sich der Installer automatisch auf die neueste Version.*
+---
+
+## Für Entwickler
+
+- **Stack:** Next.js und React, Tailwind CSS, Prisma (PostgreSQL / SQLite), Tauri (Desktop). KI über Ollama (lokal), Mittwald oder Mistral.
+- **Starten:** `npm install`, dann `npm run dev` (Web) oder `npm run dev:desktop` (Desktop).
+- **Dokumentation:** [Architektur](docs/technical/architecture.md) · [Datenschutz & Datenfluss](docs/technical/privacy-data-flow.md) · [Community-Betrieb (technisch)](docs/operations/community-multi-user-setup.md) · alles Weitere unter [`docs/`](docs/)
+- **Mitmachen:** [Contributing & CLA](CONTRIBUTING.md) · [Sicherheitslücke melden](SECURITY.md)
 
 ---
 
-## 💻 Koreki Desktop App
+## Lizenz
 
-Für die maximale Privatsphäre direkt auf dem eigenen Rechner.
-- Läuft komplett lokal (optional mit Ollama).
-- Kein Internet-Upload von Schülerdaten notwendig bei Nutzung lokaler Modelle.
-- [Download Releases](https://github.com/koreki-org/koreki/releases)
+Für Lehrkräfte und Schulen ist Koreki für den eigenen pädagogischen Gebrauch kostenlos — [Polyform Non-Commercial License 1.0.0](LICENSE). Kommerzielle Nutzung, etwa als gehosteter Dienst für Dritte, braucht eine eigene Vereinbarung: [info@koreki.org](mailto:info@koreki.org).
 
----
+## Rechtlicher Hinweis
 
-## 🤝 Partnerschaften & Kommerzielle Nutzung
+Koreki *unterstützt* die Korrektur. Die pädagogische Verantwortung und die Notengebung liegen ausschließlich bei der Lehrkraft.
 
-Koreki verfolgt eine klare **Open-Core & Dual-Licensing** Strategie:
-
-1.  **Für Lehrkräfte & Schulen (Nicht-Kommerziell)**: Die Nutzung der Community & Desktop Edition ist für den eigenen pädagogischen Gebrauch vollkommen kostenlos (siehe [Polyform Non-Commercial License 1.0.0](LICENSE)).
-2.  **Für IT-Dienstleister (Hosting-Partner)**: 
-    > [!IMPORTANT]
-    > **Wir suchen Partner!** Sie sind ein IT-Dienstleister für Schulen und möchten Koreki als Managed Service (SaaS/On-Prem) anbieten? 
-    > Wir bieten attraktive **White-Label- und Hosting-Lizenzen** sowie Support-Pakete an. Eine kommerzielle Nutzung ohne entsprechende Lizenzvereinbarung ist untersagt.
-    *   **Kontakt**: [info@koreki.org](mailto:info@koreki.org) oder via GitHub Issues.
+1. **Haftung:** Die Software wird „wie besehen“ (AS IS) bereitgestellt. Der Entwickler haftet nicht für Schäden, Datenverlust oder Fehlbewertungen durch ihre Nutzung.
+2. **Datenschutz (DSGVO):** Bei Desktop und Community liegt die Verantwortung für den datenschutzkonformen Betrieb — einschließlich nötiger Auftragsverarbeitungsverträge mit KI-Anbietern wie Mittwald oder Mistral — beim Betreiber (Schule oder Lehrkraft).
+3. **Keine Rechtsberatung:** Die Hinweise zur DSGVO sind keine Rechtsberatung.
 
 ---
 
-## 🛠️ Technik-Stack
-- **Frontend**: Next.js 15+ (React 19) & Tailwind CSS
-- **KI-Kern**: Mistral AI (API) & Ollama (Local)
-- **Datenbank**: PostgreSQL / SQLite (via Prisma)
-- **Desktop**: Rust / Tauri Framework
-
----
-
-## 📄 Dokumentation
-- **[Handbuch für Lehrkräfte — hilfe.koreki.org](https://hilfe.koreki.org)**: Installieren, KI verbinden, Korrektur Schritt für Schritt
-- [Technisches Architektur-Dokument](docs/technical/architecture.md)
-- [Datenschutz & Datenfluss](docs/technical/privacy-data-flow.md)
-- [Contributing Guidelines & CLA](CONTRIBUTING.md)
-- [Sicherheitsrichtlinie](SECURITY.md)
-
----
-
-## 📣 Auf dem Laufenden bleiben
-
-- **Website**: [koreki.org](https://koreki.org)
-- **LinkedIn**: [Koreki](https://www.linkedin.com/company/koreki-org/) — Datenhoheit, Regulatorik und Einsatz an Schulen
-- **Instagram**: [@koreki_org](https://www.instagram.com/koreki_org/) — Einblicke für Lehrkräfte
-
----
-
-## ⚖️ Rechtlicher Hinweis & Haftungsausschluss
-
-**WICHTIG:** Koreki ist ein Werkzeug zur *Unterstützung* des Korrekturprozesses. Die finale pädagogische Verantwortung und die Notengebung liegen ausschließlich bei der Lehrkraft.
-
-1. **Haftung**: Die Software wird "wie besehen" (AS IS) zur Verfügung gestellt. Der Entwickler übernimmt keine Haftung für Schäden, Datenverlust oder Fehlbewertungen, die durch die Nutzung der Software entstehen.
-2. **Datenschutz (DSGVO)**: Bei Nutzung der Community oder Desktop Edition liegt die Verantwortung für den datenschutzkonformen Betrieb (inkl. Abschluss notwendiger AVVs mit Drittanbietern wie Mistral) beim jeweiligen Betreiber (Schule/Lehrkraft). 
-3. **Keine Rechtsberatung**: Die bereitgestellten Informationen zur DSGVO stellen keine Rechtsberatung dar.
-
----
-*Koreki – Entwickelt mit ❤️ und KI-Unterstützung für Lehrkräfte, die mehr Zeit für ihre Schüler und weniger für das Rotstiftschwingen haben wollen.*
+[LinkedIn](https://www.linkedin.com/company/koreki-org/) · [Instagram](https://www.instagram.com/koreki_org/)

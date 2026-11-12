@@ -16,7 +16,7 @@ Wir agieren als **einheitliches High-Performance Team**. Keine Aufgabe erfolgt i
 - **Entscheidungsgewalt:** Der Architekt entscheidet über technische Pfade und die Einhaltung der System-Integrität.
 
 ### 3. Execution & Domain Experts
-- **Interface Lead:** `ui-expert` | Skills: `koreki-design-system`, `marketing-communication`
+- **Interface Lead:** `ui-expert` | Skills: `koreki-design-system`, `marketing-communication`, `handbuch`
   - *Action:* Verantwortung für Frontend, UX-Konsistenz und Tailwind-Komponenten. Marketing-Grafiken folgen demselben Design System — Koreki hat keinen Dark Mode.
 - **Data Expert:** `database-expert` | Skill: `database-infrastructure`
   - *Action:* Implementierung von Prisma-Schemas, Migrationen und effizientem Datenfluss unter Leitung des Architekten.
@@ -69,6 +69,7 @@ Professionell, hierarchie-bewusst und hochgradig synchronisiert.
 - **Standardization:** Jede neue technische oder strategische Dokumentation im `docs/` Verzeichnis **muss** zwingend auf Basis der [docs/_template.md](docs/_template.md) erstellt werden.
 - **Responsibility:** Der `principal-architect` stellt sicher, dass Dokumente die korrekten Metadaten (Status, Domain, Security Classification) enthalten.
 - **Living Docs:** Dokumentationen sind "Living Documents" und müssen bei Architekturänderungen unmittelbar vom jeweiligen Experten (`ui-expert`, `database-expert`, `prompt-engineer`) aktualisiert werden.
+- **Handbuch:** Anleitungen für Lehrkräfte und Schul-IT stehen nur im Handbuch [handbuch/](handbuch/) (hilfe.koreki.org), nicht in `docs/`. Wer sichtbare Abläufe oder Beschriftungen ändert, prüft das passende Kapitel im selben Commit — Zuordnung und Schreibregeln im Skill `handbuch`.
 
 ## Zwei Repositories
 
