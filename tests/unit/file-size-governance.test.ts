@@ -95,7 +95,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // HOOK_BASELINE verschwunden.
     // 548 -> 544: Knopf "Aendern" und die zweite versteckte Dateieingabe sind
     // weg, die Ablageflaeche steckt in UploadAblage.
-    'components/upload/ModelSolutionCard.tsx': 538,
+    'components/upload/ModelSolutionCard.tsx': 537,
     // +1 fuer den Typ-Import, der ein `useState<any>` durch CustomSkillDefinition
     // ersetzt (noImplicitAny-Durchgang). Ein `any` weniger ist die Zeile wert.
     // +42 gegenueber 793: der Ansichtstyp SkillListenEintrag und die
@@ -127,7 +127,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // eigenen Schritt.
     // 495 -> 488: die beiden .koreki-Exporte standen zweimal ausgeschrieben da,
     // unterschieden durch ein einziges `true`.
-    'pages/app.tsx': 459,
+    'pages/app.tsx': 458,
     // +7: der Kommentar, warum beim Aktualisieren die bestehende Kennung
     // gewinnt. Ohne ihn wird die Zeile beim naechsten Aufraeumen entfernt.
     // 498 -> 468: Loeschen und Umbenennen gehen jetzt ueber den

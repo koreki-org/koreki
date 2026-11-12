@@ -135,8 +135,7 @@ export default function Home() {
         hatMusterloesung: !!data.modelSolution,
         gesperrt: korrekturLaeuft,
         setPendingModelFile: data.setPendingModelFile,
-        setShowModelTypeModal: modals.setShowModelTypeModal,
-        handleModelUpload: fileProcessor.handleModelUpload
+        setShowModelTypeModal: modals.setShowModelTypeModal
     });
     const handleStartNew = async () => {
         if (fileProcessor.batchFiles.length > 0 || data.modelSolution) {

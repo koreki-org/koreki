@@ -16,6 +16,7 @@ import { ModelSolutionAutopilotBar } from './ModelSolutionAutopilotBar';
 import { HauptaufgabeStamm } from './HauptaufgabeStamm';
 import { MusterloesungAufbauHinweis } from './MusterloesungAufbauHinweis';
 import { UploadAblage } from './UploadAblage';
+import { MUSTERLOESUNG_ENDUNGEN, TEXT_ENDUNGEN_ANZEIGE } from '@/lib/upload-dateiarten';
 import { EditableMathArea } from '@/components/ui/EditableMathArea';
 import { cn } from '@/lib/utils';
 import { groupTasksByMain, splitTextByTasks, composeModelSolution } from '@/lib/task-utils';
@@ -35,8 +36,6 @@ import { useModelSolutionDerivations } from '@/hooks/useModelSolutionDerivations
 import { buildDefaultGradingGraph } from '@/lib/model-solution-derivations';
 import { meldeErfolg, meldeFehler } from '@/lib/notify';
 import { MusterFortschritt } from './MusterFortschritt';
-
-
 
 interface ModelSolutionCardProps {
     modelSolution: string;
@@ -199,10 +198,10 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                     <UploadAblage
                         gross
                         testId="upload-musterloesung"
-                        accept=".pdf,.txt,.jpg,.jpeg,.png"
+                        accept={MUSTERLOESUNG_ENDUNGEN}
                         onFiles={onModelUpload}
                         icon={<FileUp size={36} className="text-primary" />}
-                        titel="Musterlösung laden (Text (.txt), PDF, Bilder)"
+                        titel={`Musterlösung laden (Text (${TEXT_ENDUNGEN_ANZEIGE}), PDF, Bilder)`}
                     />
                 ) : hasTaskStructure ? (
                     <div className="space-y-6">
@@ -298,7 +297,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                 {hasModel && (
                     <UploadAblage
                         testId="upload-musterloesung"
-                        accept=".pdf,.txt,.jpg,.jpeg,.png"
+                        accept={MUSTERLOESUNG_ENDUNGEN}
                         onFiles={onModelUpload}
                         titel="Musterlösung ersetzen"
                         gesperrt={isLocked}

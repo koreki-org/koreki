@@ -11,6 +11,7 @@ import { useBatchStore } from '@/hooks/store/useBatchStore';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { erzeugeKorrekturEintraege } from '@/lib/ai-protocol';
 import { verknuepfeDateien, meldeVerknuepfung } from '@/lib/dateien-verknuepfen';
+import { istLesbaresDokument, SCHUELERARBEIT_ENDUNGEN } from '@/lib/upload-dateiarten';
 
 export const useBatchActions = (
     state: any,
@@ -120,15 +121,15 @@ export const useBatchActions = (
             }
         }
 
-        // 3. Standard File Upload (PDF, Images, TXT)
-        const files = allFiles.filter(f => 
-            (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf') ||
-            f.type === 'text/plain' || f.name.toLowerCase().endsWith('.txt') ||
-            f.type.startsWith('image/')) && 
-            !f.name.toLowerCase().endsWith('.koreki') &&
-            !f.name.toLowerCase().endsWith('.xlsx') &&
-            !f.name.toLowerCase().endsWith('.csv')
-        ).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+        // 3. Einzelne Dokumente (PDF, Bilder, Text); Unlesbares wird genannt, nicht still verworfen.
+        const files = allFiles
+            .filter(istLesbaresDokument)
+            .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+        const unbekannt = allFiles.filter(f => !istLesbaresDokument(f) && !/\.(xlsx|csv)$/i.test(f.name));
+        if (unbekannt.length > 0) meldeHinweis(
+            `${unbekannt.length} Datei(en) kann Koreki nicht lesen und hat sie ausgelassen:\n\n` +
+            `${unbekannt.map(f => f.name).join('\n')}\n\nMöglich sind: ${SCHUELERARBEIT_ENDUNGEN.split(',').join(', ')}`
+        );
 
         // 3a. Fehlt einer importierten Arbeit genau diese Datei, bekommt sie sie, statt doppelt zu stehen.
         const verknuepfung = verknuepfeDateien(useBatchStore.getState().batchFiles, files);
@@ -169,7 +170,7 @@ export const useBatchActions = (
         if (neueDateien.length > 0) {
             setPdfTypeQueue(neueDateien.map((item, i) => ({
                 idx: nachMoodle.liste.length + i,
-                fileName: item.name
+                fileName: item.files?.[0]?.name ?? item.name
             })));
         }
 

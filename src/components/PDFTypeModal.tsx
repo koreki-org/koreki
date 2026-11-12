@@ -4,6 +4,7 @@ import { FileText, Camera, Check, X } from 'lucide-react';
 import { Button } from './ui/Button';
 import { cn } from '@/lib/utils';
 import { zeigtCredits } from '@/lib/env-context';
+import { istTextDatei, TEXT_ENDUNGEN_ANZEIGE } from '@/lib/upload-dateiarten';
 
 interface PDFTypeModalProps {
     isOpen: boolean;
@@ -71,7 +72,7 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                         </div>
                         <span className="font-semibold text-foreground">Digitaler Text / PDF</span>
                         <span className="mt-1 text-sm text-muted-foreground whitespace-normal">
-                            Text-Dateien (.txt) oder einfache PDFs mit direkt kopierbarem Text.
+                            Text-Dateien ({TEXT_ENDUNGEN_ANZEIGE}) oder einfache PDFs mit direkt kopierbarem Text.
                         </span>
                         {zeigtCredits(isPureMode) && (
                             <div className="mt-4 px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">
@@ -113,11 +114,11 @@ const PDFTypeModal: React.FC<PDFTypeModalProps> = ({ isOpen, onClose, onSelect, 
                         </div>
                         <span className="text-sm text-muted-foreground">Diese Wahl für alle Dokumente in diesem Upload anwenden</span>
                     </label>
-                    {fileName.toLowerCase().endsWith('.txt') && (
+                    {istTextDatei({ name: fileName, type: '' }) && (
                         <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-3">
                             <FileText size={16} className="text-primary mt-0.5 shrink-0" />
                             <p className="text-sm text-primary leading-relaxed font-medium">
-                                💡 <strong className="font-bold">Hinweis:</strong> Dies ist eine <strong className="font-bold">.txt-Datei</strong>. Sie liegt bereits als digitaler Text vor und benötigt keinen Scan-Pfad.
+                                💡 <strong className="font-bold">Hinweis:</strong> Dies ist eine <strong className="font-bold">Text-Datei</strong>. Sie liegt bereits als digitaler Text vor und benötigt keinen Scan-Pfad.
                             </p>
                         </div>
                     )}

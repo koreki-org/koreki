@@ -1,6 +1,7 @@
 import React from 'react';
 import { FolderOpen, Users, RefreshCw } from 'lucide-react';
 import { Task } from '@/types';
+import { SCHUELERARBEIT_ENDUNGEN, TEXT_ENDUNGEN_ANZEIGE } from '@/lib/upload-dateiarten';
 import { Card, CardHeader, CardTitle } from '@/components/ui/Card';
 import { CollapsibleCardContent, CollapseToggleButton } from '@/components/ui/CollapsibleCardContent';
 import { Button } from '@/components/ui/Button';
@@ -46,7 +47,6 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
     onToggleCollapse
 }) => {
     const hasStudents = batchFilesCount > 0;
-    const ARTEN = '.pdf,.jpg,.jpeg,.png,.txt,.xlsx,.csv,.koreki';
 
     return (
         <Card className="flex flex-col bg-card shadow-raised rounded-hero overflow-hidden">
@@ -81,11 +81,11 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                     <UploadAblage
                         gross
                         testId="upload-schuelerarbeit"
-                        accept={ARTEN}
+                        accept={SCHUELERARBEIT_ENDUNGEN}
                         multiple
                         onFiles={onStudentUpload}
                         icon={<Users size={36} className="text-primary" />}
-                        titel="Arbeiten auswählen (Excel/Moodle, Text (.txt), PDF, Bilder)"
+                        titel={`Arbeiten auswählen (Excel/Moodle, Text (${TEXT_ENDUNGEN_ANZEIGE}), PDF, Bilder)`}
                     />
                 ) : (
                     <div className="flex-1 flex flex-col">
@@ -99,7 +99,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
 
                         <UploadAblage
                             testId="upload-schuelerarbeit"
-                            accept={ARTEN}
+                            accept={SCHUELERARBEIT_ENDUNGEN}
                             multiple
                             onFiles={onStudentUpload}
                             titel="Weitere Arbeiten hinzufügen"

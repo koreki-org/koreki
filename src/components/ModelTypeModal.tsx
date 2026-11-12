@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { FileText, Camera, X } from 'lucide-react';
 import { Button } from './ui/Button';
 import { zeigtCredits } from '@/lib/env-context';
+import { istTextDatei, TEXT_ENDUNGEN_ANZEIGE } from '@/lib/upload-dateiarten';
 
 interface ModelTypeModalProps {
     isOpen: boolean;
@@ -68,7 +69,7 @@ const ModelTypeModal: React.FC<ModelTypeModalProps> = ({ isOpen, onClose, onSele
                         </div>
                         <h3 className="font-bold text-base text-foreground mb-2">Digitaler Text / PDF</h3>
                         <p className="text-sm text-muted-foreground mb-4 whitespace-normal">
-                            Text-Dateien (.txt) oder einfache PDFs mit direkt kopierbarem Text.
+                            Text-Dateien ({TEXT_ENDUNGEN_ANZEIGE}) oder einfache PDFs mit direkt kopierbarem Text.
                         </p>
                         {zeigtCredits(isPureMode) && (
                             <div className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full">
@@ -100,11 +101,11 @@ const ModelTypeModal: React.FC<ModelTypeModalProps> = ({ isOpen, onClose, onSele
                     </Button>
                 </div>
 
-                {fileName.toLowerCase().endsWith('.txt') && (
+                {istTextDatei({ name: fileName, type: '' }) && (
                     <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl flex items-start gap-3">
                         <FileText size={18} className="text-primary mt-0.5 shrink-0" />
                         <p className="text-sm text-primary leading-relaxed font-medium">
-                            💡 <strong className="font-bold">Hinweis:</strong> Dies ist eine <strong className="font-bold">.txt-Datei</strong>. Sie liegt bereits als digitaler Text vor. Für das beste Ergebnis wählen Sie bitte <strong className="font-bold">&quot;Digital / Getippt&quot;</strong>.
+                            💡 <strong className="font-bold">Hinweis:</strong> Dies ist eine <strong className="font-bold">Text-Datei</strong>. Sie liegt bereits als digitaler Text vor. Für das beste Ergebnis wählen Sie bitte <strong className="font-bold">&quot;Digital / Getippt&quot;</strong>.
                         </p>
                     </div>
                 )}

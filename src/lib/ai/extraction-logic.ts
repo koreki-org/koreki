@@ -3,6 +3,7 @@ import { performOCRRequest } from '../ai-logic';
 import { promisePool } from '../ai/promise-pool';
 import * as pdfjsLib from 'pdfjs-dist';
 import { verkleinereFuerLokaleBilderkennung } from '../bild-verkleinern';
+import { istTextDatei } from '../upload-dateiarten';
 
 export interface OCRResult {
     text: string;
@@ -62,7 +63,9 @@ export async function runExtractionStrategy(
     }
 
     // --- CASE A: Digital Documents (Non-Scanned) ---
-    if (!isScan) {
+    // Reiner Text ist nie ein Scan, auch wenn im Dialog „Scan" gewaehlt wurde:
+    // Sonst ginge die Textdatei als Bild an die Texterkennung.
+    if (!isScan || istTextDatei(file)) {
         const res = await extractTextFromFile(file, false, pageRange, { skipPreview: !needsPreview });
         return {
             text: res.text,

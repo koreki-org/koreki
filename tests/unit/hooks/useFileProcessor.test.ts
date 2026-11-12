@@ -81,7 +81,7 @@ describe('useFileProcessor Hook', () => {
         });
 
         expect(result.current.pdfTypeQueue.length).toBe(1);
-        expect(result.current.pdfTypeQueue[0].fileName).toBe('Schüler #1');
+        expect(result.current.pdfTypeQueue[0].fileName).toBe('test.pdf') // der Dateiname, damit der Dialog sagen kann, welche Datei gemeint ist;
     });
 
     it('haengt weitere Arbeiten an, statt die geladenen zu ersetzen', async () => {

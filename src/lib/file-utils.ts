@@ -385,6 +385,7 @@ const mimeTypeFromExtension = (filename: string): string => {
         case 'pdf': return 'application/pdf';
         case 'koreki': return 'application/json';
         case 'txt': return 'text/plain';
+        case 'md': return 'text/markdown';
         case 'png': return 'image/png';
         case 'jpg':
         case 'jpeg': return 'image/jpeg';

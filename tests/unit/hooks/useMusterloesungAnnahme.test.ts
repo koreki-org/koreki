@@ -29,18 +29,15 @@ describe('useMusterloesungAnnahme', () => {
     const fragen = askConfirmation as jest.MockedFunction<typeof askConfirmation>;
     let setPendingModelFile: jest.Mock;
     let setShowModelTypeModal: jest.Mock;
-    let handleModelUpload: jest.Mock;
 
     const bauen = (hatMusterloesung: boolean, gesperrt: boolean) => {
         setPendingModelFile = jest.fn();
         setShowModelTypeModal = jest.fn();
-        handleModelUpload = jest.fn();
         return renderHook(() => useMusterloesungAnnahme({
             hatMusterloesung,
             gesperrt,
             setPendingModelFile,
-            setShowModelTypeModal,
-            handleModelUpload
+            setShowModelTypeModal
         }));
     };
 
@@ -75,7 +72,6 @@ describe('useMusterloesungAnnahme', () => {
 
         expect(setPendingModelFile).not.toHaveBeenCalled();
         expect(setShowModelTypeModal).not.toHaveBeenCalled();
-        expect(handleModelUpload).not.toHaveBeenCalled();
     });
 
     it('sperrt waehrend einer laufenden Korrektur — und fragt dabei NICHT', async () => {
@@ -88,7 +84,6 @@ describe('useMusterloesungAnnahme', () => {
         // eine neue Korrektur.
         expect(fragen).not.toHaveBeenCalled();
         expect(setPendingModelFile).not.toHaveBeenCalled();
-        expect(handleModelUpload).not.toHaveBeenCalled();
         // Aber die Sperre sagt, warum — sonst wirkt sie wie ein Defekt.
         expect(meldeHinweis).toHaveBeenCalled();
     });
@@ -114,6 +109,30 @@ describe('useMusterloesungAnnahme', () => {
         expect(setPendingModelFile).toHaveBeenCalledWith(
             expect.objectContaining({ name: 'eins.txt' })
         );
+    });
+
+    it('nimmt Markdown an wie reinen Text', async () => {
+        const { result } = bauen(false, false);
+        // Windows meldet fuer .md meist keinen MIME-Typ — erkannt wird am Namen.
+        const md = new File(['# Aufgabe 1'], 'muster.md', { type: '' });
+
+        await act(async () => { await result.current([md]); });
+
+        expect(setPendingModelFile).toHaveBeenCalledWith(md);
+        expect(setShowModelTypeModal).toHaveBeenCalledWith(true);
+    });
+
+    it('weist eine Datei ab, die Koreki nicht lesen kann — statt sie als Text zu lesen', async () => {
+        const { result } = bauen(false, false);
+        const word = new File(['PK'], 'muster.docx', {
+            type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        });
+
+        await act(async () => { await result.current([word]); });
+
+        expect(setPendingModelFile).not.toHaveBeenCalled();
+        expect(setShowModelTypeModal).not.toHaveBeenCalled();
+        expect(meldeHinweis).toHaveBeenCalledWith(expect.stringContaining('muster.docx'));
     });
 
     it('tut bei einer leeren Ablage nichts', async () => {

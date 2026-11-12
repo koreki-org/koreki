@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { askConfirmation } from '@/lib/confirm-dialog';
 import { meldeHinweis } from '@/lib/notify';
+import { istLesbaresDokument, MUSTERLOESUNG_ENDUNGEN } from '@/lib/upload-dateiarten';
 
 /**
  * Entscheidet, was mit einer neu angebotenen Musterloesung geschieht.
@@ -36,16 +37,13 @@ interface MusterloesungAnnahmeMittel {
     /** Merkt die Datei fuer den Dialog "Scan oder digitaler Text?". */
     setPendingModelFile: (datei: File) => void;
     setShowModelTypeModal: (zeigen: boolean) => void;
-    /** Liest direkt ein, wenn die Art schon feststeht. */
-    handleModelUpload: (datei: File, istScan: boolean) => void | Promise<void>;
 }
 
 export function useMusterloesungAnnahme({
     hatMusterloesung,
     gesperrt,
     setPendingModelFile,
-    setShowModelTypeModal,
-    handleModelUpload
+    setShowModelTypeModal
 }: MusterloesungAnnahmeMittel) {
     return useCallback(async (dateien: File[]) => {
         const datei = dateien[0];
@@ -60,6 +58,16 @@ export function useMusterloesungAnnahme({
                 `Es wird nur „${datei.name}" geladen — eine Musterlösung ist ein einzelnes Dokument. ` +
                 `Mehrseitige Vorlagen gehören in EINE PDF.`
             );
+        }
+
+        // Nur was Koreki lesen kann. Bis zum 12.11.2026 lief jede andere Datei
+        // als Text durch — eine Word-Datei kam als Zeichensalat bei der KI an.
+        if (!istLesbaresDokument(datei)) {
+            meldeHinweis(
+                `„${datei.name}" kann Koreki nicht lesen. Möglich sind: ${MUSTERLOESUNG_ENDUNGEN.split(',').join(', ')}. ` +
+                `Word-Dateien bitte als PDF speichern.`
+            );
+            return;
         }
 
         if (gesperrt) {
@@ -78,13 +86,7 @@ export function useMusterloesungAnnahme({
 
         // Scan oder digitaler Text? Das entscheidet ueber Texterkennung und
         // damit ueber Credits, also fragt der Dialog — nicht wir.
-        const name = datei.name.toLowerCase();
-        if (datei.type === 'application/pdf' || datei.type.startsWith('image/') || name.endsWith('.txt')) {
-            setPendingModelFile(datei);
-            setShowModelTypeModal(true);
-            return;
-        }
-
-        await handleModelUpload(datei, false);
-    }, [hatMusterloesung, gesperrt, setPendingModelFile, setShowModelTypeModal, handleModelUpload]);
+        setPendingModelFile(datei);
+        setShowModelTypeModal(true);
+    }, [hatMusterloesung, gesperrt, setPendingModelFile, setShowModelTypeModal]);
 }
