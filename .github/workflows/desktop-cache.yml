@@ -38,10 +38,16 @@ jobs:
           node-version: 24
           cache: npm
 
-      - name: Install Rust Stable
+      # Rust FEST auf eine Version, nicht `stable`. Mit Rust 1.100 (09.11.2026)
+      # aenderte sich die Typ-Ableitung; ashpd 0.8.1 (Linux-Dateidialog, ueber
+      # rfd) kompiliert damit nicht mehr, und der Linux-Build von v0.9.102 brach
+      # ab, obwohl sich am Code nichts geaendert hatte. Anheben bewusst und in
+      # BEIDEN Workflows (desktop-release.yml, desktop-cache.yml) — sonst passt
+      # der Rust-Cache nicht.
+      - name: Install Rust 1.99.1
         uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
         with:
-          toolchain: stable
+          toolchain: 1.99.1
 
       # Gleicher shared-key wie im Release-Build, sonst passt der Schluessel nicht.
       - name: Rust-Cache
