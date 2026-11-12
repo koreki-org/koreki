@@ -43,6 +43,7 @@ export default defineConfig({
         items: [
           { text: 'Eine Korrektur Schritt für Schritt', link: '/korrigieren/ablauf' },
           { text: 'Vorschläge prüfen', link: '/korrigieren/vorschlaege-pruefen' },
+          { text: 'Exportieren', link: '/korrigieren/exportieren' },
         ],
       },
       {

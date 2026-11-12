@@ -62,7 +62,7 @@ Wenn alles stimmt, exportierst du:
 - **Einzel-Feedbacks** — eine Rückmeldung je Schülerin oder Schüler.
 - **Digitale Slips** — Rückmeldezettel zum Weitergeben.
 
-Vor dem ersten Export fragt Koreki einmal nach, ob du die Bewertungen geprüft hast. Im Export stehen wieder die echten Namen, damit du alles zuordnen kannst.
+Vor dem ersten Export fragt Koreki einmal nach, ob du die Bewertungen geprüft hast. Im Export stehen wieder die echten Namen, damit du alles zuordnen kannst. Was in welcher Datei steht, erklärt [Exportieren](/korrigieren/exportieren).
 
 ::: tip Später weitermachen
 Mit **Exportieren** an der Stapelverarbeitung sicherst du den Zwischenstand als `.koreki`-Datei. Über **Importieren** auf der Startseite lädst du ihn wieder.
