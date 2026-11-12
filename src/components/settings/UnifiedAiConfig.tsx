@@ -100,7 +100,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                     {[
                         { id: 'mistral', label: 'Mistral API', icon: Globe },
                         { id: 'ollama', label: 'Ollama Lokal', icon: Cpu },
-                        { id: 'openai-compatible', label: 'OpenAI Kompatibel', icon: Server }
+                        { id: 'openai-compatible', label: 'OpenAI Kompatibel', hinweis: 'z. B. Mittwald', icon: Server }
                     ].map(p => (
                         <Button
                             key={p.id}
@@ -112,6 +112,7 @@ export const UnifiedAiConfig: React.FC<UnifiedAiConfigProps> = ({ settings, onSa
                         >
                             <p.icon size={16} className={settings.provider === p.id ? 'text-primary' : 'text-muted-foreground/50'} />
                             <span className={`text-xxs font-bold ${settings.provider === p.id ? 'text-primary' : 'text-muted-foreground'}`}>{p.label}</span>
+                            {'hinweis' in p && <span className="text-xs text-muted-foreground leading-none">{p.hinweis}</span>}
                             {/*
                               * Nur ueber lokales Ollama gibt es ueberhaupt eine gemessene
                               * Kombination; WELCHES Modell es sein muss, steht dort in der

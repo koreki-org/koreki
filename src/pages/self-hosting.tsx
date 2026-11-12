@@ -15,7 +15,7 @@ const VARIANTEN = [
         name: 'Community Single',
         wer: 'Für einzelne Lehrkräfte oder kleine Teams',
         text: 'Ein Rechner, ein Nutzer – etwa auf dem eigenen PC, einem NAS oder Heimserver.',
-        punkte: ['Keine Anmeldung nötig', 'Daten im lokalen Dateisystem', 'Ollama oder Mistral mit eigenem Schlüssel'],
+        punkte: ['Keine Anmeldung nötig', 'Daten im lokalen Dateisystem', 'Ollama oder Mittwald bzw. Mistral mit eigenem Schlüssel'],
     },
     {
         name: 'Community Multi',

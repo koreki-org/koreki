@@ -79,7 +79,7 @@ export default function DesktopOnboarding() {
                             <Symbol className="w-9 h-9"><BookOpen size={17} /></Symbol>
                             <div className="flex-1">
                                 <p className="text-sm font-medium text-foreground">Einrichtungsanleitung</p>
-                                <p className="text-xs text-muted-foreground">Ollama oder Mistral in wenigen Schritten verbinden</p>
+                                <p className="text-xs text-muted-foreground">Ollama, Mittwald oder Mistral in wenigen Schritten verbinden</p>
                             </div>
                             <ArrowRight size={16} className="text-muted-foreground" />
                         </Link>

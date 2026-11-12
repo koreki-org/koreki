@@ -77,7 +77,7 @@ export default function AGB() {
                 <main className="flex-grow max-w-[800px]">
                     <header className="mb-12">
                         <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-2 tracking-tight">Allgemeine Geschäftsbedingungen</h1>
-                        <p className="text-muted-foreground text-base">Stand: März 2026</p>
+                        <p className="text-muted-foreground text-base">Stand: November 2026</p>
                     </header>
 
                     <div className="flex flex-col gap-8">
@@ -122,7 +122,7 @@ export default function AGB() {
                             <ul className="list-disc leading-relaxed text-muted-foreground pl-6 mb-6 flex flex-col gap-3">
                                 <li><strong>Datenminimierung:</strong> Koreki anonymisiert/pseudonymisiert Dokumententitel standardmäßig im Browser, bevor Daten verarbeitet werden. Optional können Bildbereiche manuell geschwärzt werden.</li>
                                 <li><strong>Standard-Mode:</strong> Für die serverseitige Verarbeitung kann ein Vertrag zur Auftragsverarbeitung (AVV) gemäß Art. 28 DSGVO abgeschlossen werden. Ein Mustervertrag steht im Kontobereich zur Verfügung.</li>
-                                <li><strong>PURE-Mode:</strong> Nutzer des &quot;PURE-Mode&quot; stimmen zu, dass die Datenkommunikation direkt zwischen dem Endgerät des Nutzers (Browser) und dem API-Schnittstellen-Anbieter (Mistral, EU-Server) stattfindet, ohne Zwischenspeicherung auf Koreki-Servern. </li>
+                                <li><strong>PURE-Mode:</strong> Nutzer des &quot;PURE-Mode&quot; stimmen zu, dass die Datenkommunikation direkt zwischen dem Endgerät des Nutzers (Browser) und dem API-Schnittstellen-Anbieter (Mistral AI oder Mittwald, jeweils Server in der EU) stattfindet, ohne Zwischenspeicherung auf Koreki-Servern. </li>
                             </ul>
                             <p className="leading-relaxed text-muted-foreground">Weitere Details regelt die <Link href="/privacy" className="text-accent-1 hover:underline">Datenschutzerklärung</Link>.</p>
                         </section>

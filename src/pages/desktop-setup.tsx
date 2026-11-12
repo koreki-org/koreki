@@ -60,7 +60,7 @@ export default function DesktopSetup() {
         <MarketingLayout hideHeader={isLocalInstance()} hideFooter={isLocalInstance()}>
             <Head>
                 <title>Setup Guide | Koreki Desktop</title>
-                <meta name="description" content="Anleitung zur Einrichtung von Koreki Desktop – Mistral API vs. Ollama." />
+                <meta name="description" content="Anleitung zur Einrichtung von Koreki Desktop – lokales Modell über Ollama oder KI in der EU über Mittwald bzw. Mistral." />
             </Head>
 
             {/* Lightbox Zoom Overlay */}

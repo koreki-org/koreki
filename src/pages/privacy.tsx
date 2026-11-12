@@ -70,7 +70,7 @@ export default function Privacy() {
                 <main className="flex-grow max-w-[800px]">
                     <header className="mb-12">
                         <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-2 tracking-tight">Datenschutzerklärung</h1>
-                        <p className="text-muted-foreground text-base">Stand: April 2026</p>
+                        <p className="text-muted-foreground text-base">Stand: November 2026</p>
                     </header>
 
                     <div className="flex flex-col gap-8">
@@ -96,7 +96,7 @@ export default function Privacy() {
                             </p>
                             <ul className="list-disc leading-relaxed text-muted-foreground pl-6 mb-6 flex flex-col gap-3">
                                 <li><strong>Server-Logs:</strong> Beim Aufruf der Seite speichert unser Hoster (IONOS) kurzzeitig Verbindungsdaten (IP-Adresse, Zeitstempel), um den Betrieb sicherzustellen und Angriffe abzuwehren. Diese werden nach 7 Tagen gelöscht.</li>
-                                <li><strong>KI-Analyse:</strong> Die von Ihnen eingegebenen Texte/Bilder werden zur Analyse an die API von <strong>Mistral AI</strong> (Standort: EU/Frankreich) gesendet.</li>
+                                <li><strong>KI-Analyse:</strong> Die von Ihnen eingegebenen Texte/Bilder werden zur Analyse je nach Einstellung an die API von <strong>Mistral AI</strong> (Paris, Frankreich) oder der <strong>Mittwald CM Service GmbH &amp; Co. KG</strong> (Espelkamp, Deutschland) gesendet. Beide verarbeiten auf Servern in der EU.</li>
                                 <li><strong>Login:</strong> Wir nutzen Logto zur Authentifizierung. Es wird lediglich Ihre E-Mail-Adresse gespeichert, um Ihnen Zugang zur Demo zu ermöglichen.</li>
                                 <li><strong>Nutzungs-Monitoring:</strong> Wir erfassen die Menge der verbrauchten Recheneinheiten (Token) pro Nutzer. Dies dient ausschließlich der Fair-Use-Kontrolle, um den Missbrauch der geteilten Ressourcen zu verhindern. Diese Daten werden strikt getrennt von Ihren Inhalten verarbeitet.</li>
                                 <li><strong>Compliance- \u0026 Audit-Logs:</strong> Zur rechtssicheren Dokumentation speichern wir Ihre Bestätigung des Anonymisierungs-Disclaimers sowie sicherheitsrelevante Ereignisse (z. B. erfolgreiche Logins). Dabei werden der Zeitpunkt, die E-Mail-Adresse und die Quell-IP-Adresse erfasst, um Missbrauch vorzubeugen und die Einhaltung unserer Nutzungsbedingungen nachzuweisen.</li>
