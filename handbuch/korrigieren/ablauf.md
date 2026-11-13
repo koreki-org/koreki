@@ -19,13 +19,23 @@ Gibt es etwas, das für alle Aufgaben gilt — ein Szenario, gemeinsame Annahmen
 
 ## 2. Schülerarbeiten hinzufügen {#schuelerarbeiten}
 
-Klicke rechts auf **Schülerarbeiten** und wähle die Arbeiten aus. Möglich sind PDF, Bilder (JPG, PNG), Text (TXT, MD) und ein Export aus Moodle (XLSX oder CSV), den Koreki automatisch erkennt. Kann Koreki eine Datei nicht lesen, nennt es sie dir.
+Klicke rechts auf **Schülerarbeiten** und wähle die Arbeiten aus. Möglich sind PDF, Bilder (JPG, PNG), Text (TXT, MD), ein Export aus Moodle (XLSX oder CSV), den Koreki automatisch erkennt, und ein ZIP mit einem Ordner je Schülerin oder Schüler. Kann Koreki eine Datei nicht lesen, nennt es sie dir.
 
-- **Eine Datei je Schülerin oder Schüler.** Mehrseitige Arbeiten am besten als ein PDF.
+- **Eine Datei je Schülerin oder Schüler** — oder ein ZIP, siehe unten. Mehrseitige Arbeiten am besten als ein PDF.
 - **Du kannst jederzeit weitere Arbeiten hinzufügen** — sie kommen zu den vorhandenen dazu.
 - **Scans:** gerade, gleichmäßig hell, ohne Schatten über der Schrift. Je besser der Scan, desto weniger musst du später nachlesen.
 
 Bei einem PDF fragt Koreki, was darin steckt: **Digitaler Text / PDF** (am Rechner geschrieben) oder **Scan / Bilder / Handschrift**. Diese Wahl entscheidet, ob Koreki die Arbeit erst lesen muss. Hast du dich vertan, klickst du in der Liste auf das Abzeichen **Scan** oder **Digital** der Arbeit und stellst es um.
+
+::: tip Mehrere Dateien je Schülerin oder Schüler (ZIP)
+Gibt jede Person mehrere Dateien ab, etwa eine Prüfung mit einer Datei je Aufgabe, packst du alle Abgaben in ein ZIP: **ein Ordner je Schülerin oder Schüler**. Du kannst auch mehrere ZIPs auf einmal wählen, dann ist jedes ZIP eine Person. Koreki fügt die Dateien jeder Person zu **einer** Arbeit zusammen. Vor jeder Datei steht eine Seite mit ihrem Namen.
+
+- Gelesen werden PDF, Bilder, Text und Quelltext, zum Beispiel Python, Java oder SQL. Quelltext übernimmt Koreki wörtlich, mit Einrückung.
+- Dateien, die bei allen gleich sind, lässt Koreki weg. Das sind meist die bereitgestellten Vorlagen. Erkennen kann Koreki das erst ab zwei Personen im ZIP.
+- Word, Excel und andere Formate lässt Koreki weg.
+- **Lies die Meldung nach dem Hochladen.** Dort steht, was weggefallen ist. Fehlt dort eine Abgabe, fehlt sie auch in der Korrektur.
+- Enthält ein PDF Tabellen, wähle **Scan / Bilder / Handschrift**. Als Bild gelesen bleiben die Spalten in der Regel richtig zugeordnet.
+:::
 
 ::: tip Alle Arbeiten in einem PDF?
 Hast du die ganze Klasse in einem einzigen PDF gescannt, teilst du es mit der **Schere** an der Arbeit in einzelne Arbeiten auf: Du ordnest jeder Schülerin und jedem Schüler die passenden Seiten zu.

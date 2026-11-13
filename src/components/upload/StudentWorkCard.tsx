@@ -85,7 +85,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                         multiple
                         onFiles={onStudentUpload}
                         icon={<Users size={36} className="text-primary" />}
-                        titel={`Arbeiten auswählen (Excel/Moodle, Text (${TEXT_ENDUNGEN_ANZEIGE}), PDF, Bilder)`}
+                        titel={`Arbeiten auswählen (Excel/Moodle, Text (${TEXT_ENDUNGEN_ANZEIGE}), PDF, Bilder, ZIP)`}
                     />
                 ) : (
                     <div className="flex-1 flex flex-col">

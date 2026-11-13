@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { BatchFile, Task, AppSettings } from '../../types';
-import { reindexBatchFiles, fuegeArbeitenHinzu, calculatePercentageFromTasks, calculateGrade } from '../../lib/logic';
+import { reindexBatchFiles, fuegeArbeitenHinzu, neueArbeit, calculatePercentageFromTasks, calculateGrade } from '../../lib/logic';
+import { leseZipArbeiten } from '../../lib/zip-abgaben';
 import { performAIRequest, performOCRRequest } from '../../lib/ai-logic';
 import { extractTextFromFile, convertPdfToImage } from '../../lib/file-utils';
 import { parseMoodleExcel, erklaereMoodleBefund } from '../../lib/excel';
@@ -11,7 +12,7 @@ import { useBatchStore } from '@/hooks/store/useBatchStore';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { erzeugeKorrekturEintraege } from '@/lib/ai-protocol';
 import { verknuepfeDateien, meldeVerknuepfung } from '@/lib/dateien-verknuepfen';
-import { istLesbaresDokument, SCHUELERARBEIT_ENDUNGEN } from '@/lib/upload-dateiarten';
+import { istLesbaresDokument, istZipDatei, SCHUELERARBEIT_ENDUNGEN } from '@/lib/upload-dateiarten';
 
 export const useBatchActions = (
     state: any,
@@ -125,7 +126,7 @@ export const useBatchActions = (
         const files = allFiles
             .filter(istLesbaresDokument)
             .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
-        const unbekannt = allFiles.filter(f => !istLesbaresDokument(f) && !/\.(xlsx|csv)$/i.test(f.name));
+        const unbekannt = allFiles.filter(f => !istLesbaresDokument(f) && !/\.(xlsx|csv|zip)$/i.test(f.name));
         if (unbekannt.length > 0) meldeHinweis(
             `${unbekannt.length} Datei(en) kann Koreki nicht lesen und hat sie ausgelassen:\n\n` +
             `${unbekannt.map(f => f.name).join('\n')}\n\nMöglich sind: ${SCHUELERARBEIT_ENDUNGEN.split(',').join(', ')}`
@@ -135,18 +136,16 @@ export const useBatchActions = (
         const verknuepfung = verknuepfeDateien(useBatchStore.getState().batchFiles, files);
         const bestand: BatchFile[] = verknuepfung.liste;
 
-        const standardItems: BatchFile[] = verknuepfung.uebrig.map((f, idx) => ({
-            files: [f],
-            name: `Schüler #${idx + 1 + moodleItems.length}`,
-            originalName: f.name.replace(/\.[^/.]+$/, ""),
-            status: 'pending',
-            result: null,
-            error: null,
-            documentType: 'unknown',
-            pageCount: 1,
-            ocrDone: false,
-            selected: true
-        }));
+        // 3b. ZIP: ein Ordner je Pruefling, gebuendelt zu EINER Arbeit (zip-abgaben.ts).
+        const zips = allFiles.filter(istZipDatei);
+        const zip = zips.length === 0 ? undefined : await leseZipArbeiten(zips)
+            .catch(err => { meldeFehler(`Das ZIP ließ sich nicht lesen.\n\n${toErrorMessage(err)}`); return undefined; });
+        if (zip) meldeHinweis(zip.meldung);
+
+        const standardItems: BatchFile[] = [
+            ...verknuepfung.uebrig.map(f => neueArbeit(f, 0)),
+            ...(zip?.arbeiten ?? []).map(a => neueArbeit(a.datei, 0, a.name, a.textBeilagen))
+        ].map((arbeit, idx) => ({ ...arbeit, name: `Schüler #${idx + 1 + moodleItems.length}` }));
 
         // 4. Anhaengen statt ersetzen. In zwei Schritten, weil die Grenze
         //    zwischen Moodle- und Einzeldateien gebraucht wird: nur die

@@ -17,7 +17,7 @@ import { useBatchStore } from '../store/useBatchStore';
 import { isDesktopTarget } from '../../lib/env-context';
 import { apiClient } from '../../lib/api-client';
 import { toErrorMessage, isAbortError, isRateLimitError } from '../../lib/error-message';
-
+import { mitTextBeilagen } from '../../lib/abgabe-buendeln';
 
 /**
  * Der Ausschnitt des Batch-Zustands, den die Verarbeitung braucht.
@@ -57,10 +57,10 @@ export const useProcessingPipeline = (
         sourceMetadata: Partial<BatchFile> = {},
         signal?: AbortSignal
     ) => {
-        if (!textToMap || tasksLayout.length === 0) return;
- 
+        const text = mitTextBeilagen(textToMap, useBatchStore.getState().batchFiles[index]?.textBeilagen);
+        if (!text || tasksLayout.length === 0) return;
         const cleanData = await performAIRequest('clean-and-map', {
-            text: textToMap, 
+            text, 
             isInclusive: false, 
             tasksLayout, 
             pageCount,
@@ -75,7 +75,7 @@ export const useProcessingPipeline = (
                 next[index] = { 
                     ...next[index], 
                     ...sourceMetadata,
-                    fileText: textToMap, 
+                    fileText: text, 
                     tasks: structuredTasks, 
                     ocrDone: true, 
                     status: 'pending' // Let User review it first

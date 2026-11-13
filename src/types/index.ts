@@ -217,6 +217,12 @@ export interface BatchFile {
     hasLowConfidenceOcr?: boolean;
     tasks?: Task[];
     previewDataUrls?: string[]; // Multiple preview images for PDFs or original images
+    /**
+     * Text- und Quelltextdateien einer ZIP-Abgabe, woertlich. Werden an den
+     * erkannten Text gehaengt statt durch die Bilderkennung zu gehen
+     * (`abgabe-buendeln.ts`).
+     */
+    textBeilagen?: string;
     splitInfo?: {
         originalIdx: number;
         originalName: string;

@@ -2,6 +2,7 @@ import { diffWords, type Change } from 'diff';
 import { alsModellzahl } from './zahlen';
 import type { TargetGoal, CalcTraceResult, CalcTraceTemplate } from './grading/calc-trace-types';
 import type { GradingGraph, GradingResult } from './grading/types';
+import type { BatchFile } from '../types';
 
 /**
  * Compares two strings and returns an array of diff objects.
@@ -188,6 +189,27 @@ export function fuegeArbeitenHinzu<T extends { files?: File[]; originalName?: st
     }
 
     return { liste: reindexBatchFiles([...vorhandene, ...angenommen]), uebersprungen };
+}
+
+/**
+ * Eine frisch hochgeladene Arbeit — eine einzelne Datei oder die gebuendelte
+ * Abgabe eines Prueflings aus einem ZIP (`zip-abgaben.ts`). Eine Stelle fuer
+ * beide, damit sie nicht auseinanderlaufen.
+ */
+export function neueArbeit(datei: File, nummer: number, originalName?: string, textBeilagen?: string): BatchFile {
+    return {
+        files: [datei],
+        name: `Schüler #${nummer}`,
+        originalName: originalName ?? datei.name.replace(/\.[^/.]+$/, ""),
+        textBeilagen,
+        status: 'pending',
+        result: null,
+        error: null,
+        documentType: 'unknown',
+        pageCount: 1,
+        ocrDone: false,
+        selected: true
+    };
 }
 
 /**

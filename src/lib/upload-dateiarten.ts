@@ -43,8 +43,28 @@ export const istLesbaresDokument = (datei: DateiKennung): boolean =>
 /** Fuer den Dateidialog der Musterloesung. */
 export const MUSTERLOESUNG_ENDUNGEN = ['.pdf', ...TEXT_ENDUNGEN, '.jpg', '.jpeg', '.png'].join(',');
 
-/** Fuer den Dateidialog der Schuelerarbeiten: dazu Moodle-Export und gespeicherte Sitzung. */
-export const SCHUELERARBEIT_ENDUNGEN = [MUSTERLOESUNG_ENDUNGEN, '.xlsx', '.csv', '.koreki'].join(',');
+/**
+ * Fuer den Dateidialog der Schuelerarbeiten: dazu Moodle-Export, gespeicherte
+ * Sitzung und ZIP mit einem Ordner je Pruefling (`zip-abgaben.ts`).
+ */
+export const SCHUELERARBEIT_ENDUNGEN = [MUSTERLOESUNG_ENDUNGEN, '.xlsx', '.csv', '.koreki', '.zip'].join(',');
+
+export const istZipDatei = (datei: DateiKennung): boolean =>
+    datei.type === 'application/zip' || datei.type === 'application/x-zip-compressed' || endetAuf(datei.name, ['.zip']);
+
+/**
+ * Quelltext, wie ihn Pruefungen im IT-Bereich abgeben lassen. Nur INNERHALB
+ * eines ZIPs angenommen und dort als Text gelesen, Einrueckung inklusive —
+ * durch die Bilderkennung ginge sie verloren. Einzeln hochgeladen bleibt es
+ * bei den Formaten oben.
+ */
+const CODE_ENDUNGEN = [
+    '.py', '.java', '.c', '.h', '.cpp', '.hpp', '.cs', '.js', '.ts', '.php', '.sql',
+    '.html', '.css', '.sh', '.ps1', '.bat', '.kt', '.swift', '.go', '.rb', '.vb',
+    '.json', '.xml', '.yaml', '.yml', '.ini', '.cfg', '.conf', '.log', '.csv'
+] as const;
+
+export const istCodeDatei = (datei: DateiKennung): boolean => endetAuf(datei.name, CODE_ENDUNGEN);
 
 /** Fuer Beschriftungen: „Text (.txt, .md)". */
 export const TEXT_ENDUNGEN_ANZEIGE = TEXT_ENDUNGEN.join(', ');
