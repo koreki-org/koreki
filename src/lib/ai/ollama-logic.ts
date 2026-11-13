@@ -11,6 +11,7 @@ import { parseLlmJson, LlmJsonParseError } from './llm-json';
 import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
 import { berechneSamplingParameter, mitJsonVorgabe } from './ollama-sampling';
 import { leseOllamaStream } from './ollama-stream';
+import { istLaengenabbruch, vermerkeAbbruch } from './laengengrenze';
 import { nutztFestenStartwert, SAMPLING_SEED } from './temperature-guidance';
 import { pruefeWerkzeugAufruf, MAX_TOOL_RETRIES } from './tool-validation';
 
@@ -208,6 +209,7 @@ export async function executeOllamaRequest(
     }
     
     let fullContent = '';
+    let abbruchgrund: string | undefined;
     let toolRetryCount = 0;
 
     while (toolRetryCount <= MAX_TOOL_RETRIES) {
@@ -258,11 +260,12 @@ export async function executeOllamaRequest(
         let toolCalls: OllamaWerkzeugAufruf[] = [];
 
         if (isStreaming) {
-            fullContent = await leseOllamaStream(response.body);
+            ({ text: fullContent, abbruchgrund } = await leseOllamaStream(response.body));
         } else {
             const data = await response.json();
             fullContent = data.message?.content || '';
             toolCalls = data.message?.tool_calls || [];
+            abbruchgrund = data.done_reason;
         }
 
         // Werkzeug-Umlauf. Die Pruefung selbst steht in ./tool-validation und
@@ -293,7 +296,12 @@ export async function executeOllamaRequest(
         break;
     }
 
-    return processOllamaResponse(fullContent, action, model);
+    if (istLaengenabbruch(abbruchgrund)) {
+        logger.warn('[Ollama] Antwort an der Laengengrenze abgeschnitten', {
+            action, model, numPredict: finalMaxTokens, numCtx, zeichen: fullContent.length
+        });
+    }
+    return vermerkeAbbruch(processOllamaResponse(fullContent, action, model), abbruchgrund);
 
 }
 

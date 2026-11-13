@@ -29,6 +29,7 @@ import type { ChatNachricht, ChatAnfrage, ChatAntwort, AntwortFormat, TokenVerbr
 import { pruefeWerkzeugAufruf } from './tool-validation';
 import { ueberDesktopProxy } from './desktop-proxy';
 import { parseLlmJson } from './llm-json';
+import { istLaengenabbruch, vermerkeAbbruch } from './laengengrenze';
 import { nutztFestenStartwert, SAMPLING_SEED } from './temperature-guidance';
 
 /**
@@ -212,6 +213,7 @@ export async function executeMistralRequest(
 
     let responseContent: string | null = null;
     let responseUsage: TokenVerbrauch | undefined = undefined;
+    let abbruchgrund: string | undefined;
     let toolRetryCount = 0;
     const maxToolRetries = 3;
 
@@ -274,6 +276,10 @@ export async function executeMistralRequest(
         }
 
         responseContent = content;
+        abbruchgrund = data.choices?.[0]?.finish_reason;
+        if (istLaengenabbruch(abbruchgrund)) {
+            logger.warn('[Mistral] Antwort an der Laengengrenze abgeschnitten', { action, zeichen: content?.length ?? 0 });
+        }
         break;
     }
 
@@ -317,10 +323,10 @@ export async function executeMistralRequest(
     // andere Frage als wie — und nur die zweite war hier falsch.
     if (responseFormat?.type === 'json_object' || responseFormat?.type === 'json_schema') {
         try {
-            return {
+            return vermerkeAbbruch({
                 ...parseLlmJson<Record<string, unknown>>(content),
                 usage: responseUsage // Pass usage data for billing
-            };
+            }, abbruchgrund);
         } catch (e) {
             logger.error('JSON Parse Fatal Error: Mistral-Antwort konnte nicht gelesen werden', {
                 contentLength: content?.length || 0
@@ -329,10 +335,10 @@ export async function executeMistralRequest(
         }
     }
 
-    return { 
+    return vermerkeAbbruch({
         text: content,
-        usage: responseUsage 
-    };
+        usage: responseUsage
+    }, abbruchgrund);
 }
 
 /**

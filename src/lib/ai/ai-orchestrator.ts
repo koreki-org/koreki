@@ -19,6 +19,7 @@ import { extractStudentAST } from '../grading/calc-trace-extraction';
 import { shouldDisablePoints } from './prompt-builder';
 import { requireOpenAiConnection } from './provider-connection';
 import { mapLayoutTask, alsModellzahl } from './correction-mapping';
+import { beschrifteAbgeschnittene, ohneAngefangeneAufgabe } from './laengengrenze';
 import { findeKiAufgabe } from './aufgabenname-zuordnung';
 import { alsVertrauen } from '../vertrauen';
 import { istAbrechenbar } from './billing-gate';
@@ -45,8 +46,16 @@ export function parseCorrectionResult(
     }
 
     if (tasksLayout && Array.isArray(tasksLayout) && tasksLayout.length > 0) {
-        const aiTasks = analysis.tasks || [];
-        const ergebnisse = tasksLayout.map((layoutTask: Task) => mapLayoutTask(layoutTask, aiTasks, tasksLayout, schuelertext));
+        // An der Laengengrenze abgeschnitten: Teilantwort behalten, angefangene Aufgabe
+        // verwerfen, fehlende ehrlich benennen — siehe laengengrenze.ts.
+        const abgeschnitten = analysis.antwortAbgeschnitten === true;
+        const aiTasks = ohneAngefangeneAufgabe(analysis.tasks || [], abgeschnitten);
+        const ergebnisse = beschrifteAbgeschnittene(
+            tasksLayout.map((layoutTask: Task) => mapLayoutTask(layoutTask, aiTasks, tasksLayout, schuelertext)),
+            abgeschnitten
+        );
+        // Verbraucht: ein zweiter Durchlauf darf nicht noch eine Aufgabe verwerfen.
+        delete analysis.antwortAbgeschnitten;
         const mappedTasks = ergebnisse.map(e => e.task);
 
         // Zaehler und Nenner muessen DIESELBEN Aufgaben umfassen.

@@ -53,10 +53,10 @@ describe.each([
 ])('leseOllamaStream (%s)', (_name, alsStream) => {
     /** Wie Ollama: die Pakete, dann die Abschlusszeile. */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const lese = (pakete: string[]) => leseOllamaStream(alsStream([...pakete, abschluss]) as any);
+    const lese = (pakete: string[]) => leseOllamaStream(alsStream([...pakete, abschluss]) as any).then(a => a.text);
     /** Ohne Abschlusszeile — der Server hat den Strom mittendrin beendet. */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const leseAbgebrochen = (pakete: string[]) => leseOllamaStream(alsStream(pakete) as any);
+    const leseAbgebrochen = (pakete: string[]) => leseOllamaStream(alsStream(pakete) as any).then(a => a.text);
 
     it('setzt saubere Zeilen zusammen', async () => {
         expect(await lese([zeile('Hallo '), zeile('Welt')])).toBe('Hallo Welt');
@@ -83,7 +83,7 @@ describe.each([
     it('wertet die letzte Zeile ohne Zeilenumbruch aus', async () => {
         const ohneUmbruch = (zeile('Schluss') + abschluss).trimEnd();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(await leseOllamaStream(alsStream([ohneUmbruch]) as any)).toBe('Schluss');
+        expect((await leseOllamaStream(alsStream([ohneUmbruch]) as any)).text).toBe('Schluss');
     });
 
     /** Ollama mischt Statusobjekte ohne `message` in den Strom. */
@@ -145,11 +145,24 @@ describe.each([
     it('nimmt auch einen Abschluss wegen der Laengengrenze als Abschluss', async () => {
         const laenge = JSON.stringify({ done: true, done_reason: 'length' }) + '\n';
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        expect(await leseOllamaStream(alsStream([zeile('Teil'), laenge]) as any)).toBe('Teil');
+        expect((await leseOllamaStream(alsStream([zeile('Teil'), laenge]) as any)).text).toBe('Teil');
+    });
+
+    /**
+     * ...aber der Grund reist mit. Bis zum 13.11.2026 ging er hier verloren, und eine
+     * an der Grenze abgeschnittene Korrektur sah aus wie eine vollstaendige
+     * (siehe laengengrenze.ts).
+     */
+    it('meldet, warum Ollama die Antwort beendet hat', async () => {
+        const laenge = JSON.stringify({ done: true, done_reason: 'length' }) + '\n';
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((await leseOllamaStream(alsStream([zeile('Teil'), laenge]) as any)).abbruchgrund).toBe('length');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        expect((await leseOllamaStream(alsStream([zeile('Ganz'), abschluss]) as any)).abbruchgrund).toBe('stop');
     });
 });
 
 it('liefert ohne Antwortkoerper eine leere Zeichenkette', async () => {
-    expect(await leseOllamaStream(null)).toBe('');
-    expect(await leseOllamaStream(undefined)).toBe('');
+    expect((await leseOllamaStream(null)).text).toBe('');
+    expect((await leseOllamaStream(undefined)).text).toBe('');
 });

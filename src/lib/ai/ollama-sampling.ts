@@ -154,6 +154,13 @@ export const TOKEN_PRO_BILD = 8000;
  */
 export const ZEICHEN_PRO_TOKEN = 2.8;
 
+/**
+ * So viel Platz fuer Denktext plus Antwort braucht ein denkendes Modell
+ * mindestens, bevor Koreki das Fenster auf 64k vergroessert. Gemessen am
+ * 13.11.2026: 13 Teilaufgaben brauchten rund 17.000 Tokens; 20.000 laesst Luft.
+ */
+export const MINDEST_AUSGABE_BEIM_DENKEN = 20000;
+
 export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter {
     const { action, settings, promptOptions, promptCharCount, imageCount, hasResponseSchema } = e;
     const art = bestimmeModellArt(action, e.model);
@@ -301,6 +308,21 @@ export function berechneSamplingParameter(e: SamplingEingabe): SamplingParameter
         if (totalEstimated <= 8192) numCtx = 8192;
         else if (totalEstimated <= 16384) numCtx = 16384;
         else numCtx = 32768;
+
+        // 64k-STUFE (13.11.2026). Prompt und Ausgabe teilen sich EIN Fenster. Bei
+        // einer Pruefung mit 13 Teilaufgaben blieben im 32k-Fenster 15.254 Tokens
+        // fuer Denken UND Antwort; das Modell dachte alle Aufgaben durch und wurde
+        // beim Aufschreiben abgeschnitten (mitgeschnitten, `done_reason: length`).
+        // Gebraucht haette es rund 17.000. Die Stufe greift nur, wenn ein denkendes
+        // Modell im 32k-Fenster weniger als MINDEST_AUSGABE_BEIM_DENKEN uebrig
+        // haette — kurze Arbeiten bleiben, wo sie waren. Gemessen am KI-Server: 64k
+        // statt 32k kostet qwen3.8 +600 MiB, qwen3.6:35b +900 MiB, beide ganz im
+        // Grafikspeicher, Ladezeit unveraendert.
+        const ausgabeIm32k = 32768 - estimatedTextTokens - imageTokens;
+        const braucht = Math.min(targetMaxTokens, MINDEST_AUSGABE_BEIM_DENKEN);
+        if (numCtx === 32768 && (think || needsMoreBuffer) && ausgabeIm32k < braucht) {
+            numCtx = 65536;
+        }
     }
 
     // Cloud-Varianten kennen `num_ctx` nicht und brechen bei abweichenden

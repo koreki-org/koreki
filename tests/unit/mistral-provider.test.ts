@@ -118,6 +118,16 @@ describe('Mistral Provider (Bridge) - Unit Tests', () => {
             expect(res.usage.total_tokens).toBe(100);
         });
 
+        /** Dieselbe Regel wie bei Ollama und OpenAI (laengengrenze.ts) — Mistral meldet beide Grenzen. */
+        it.each(['length', 'model_length'])('vermerkt eine abgeschnittene Antwort (%s)', async (grund) => {
+            mockFetchWithRetry.mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ choices: [{ message: { content: '{"tasks": [{"name": "A1"' }, finish_reason: grund }] })
+            });
+            const res = await executeMistralRequest('correction', { modelSolution: '', studentText: '' }, API_KEY);
+            expect(res.antwortAbgeschnitten).toBe(true);
+        });
+
         it('should throw error on invalid JSON', async () => {
             mockFetchWithRetry.mockResolvedValueOnce({
                 ok: true,

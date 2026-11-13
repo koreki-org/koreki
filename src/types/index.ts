@@ -360,4 +360,6 @@ export interface AIAnalysisResult {
     confidence?: number;
     expertProfile?: string;
     overallFeedback?: string;
+    /** Die Antwort endete an der Laengengrenze — siehe `lib/ai/laengengrenze.ts`. */
+    antwortAbgeschnitten?: boolean;
 }

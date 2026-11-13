@@ -3,7 +3,7 @@ title: "Unified AI Provider Infrastructure & Reasoning Mode"
 description: "Dokumentation der provider-agnostischen KI-Architektur, des Qwen 3.6 'Thinking Mode' und der tier-spezifischen Konfigurationslogik."
 author: "@principal_architect"
 date: "2026-04-30"
-last_updated: "2026-10-30"
+last_updated: "2026-11-13"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -150,6 +150,8 @@ Um die absolute Integrität von Schülerabgaben zu schützen und unerwünschte �
     **Nachtrag 07.09.2026:** „standardmäßig global deaktiviert (sowohl bei Ollama als auch beim OpenAI-Provider)" beschrieb bis dahin eine Absicht, keinen Zustand. Beim OpenAI-Provider stand die Liste als Kommentar und wurde an keiner Stelle gesendet.
   * **vLLM-Konformität (Mittwald) — korrigiert am 07.09.2026:** Hier stand, der LiteLLM-Proxy stürze bei `chat_template_kwargs` ab, weshalb `openai-provider.ts` das Feld bewusst nicht mehr sende und sich auf das native Modellverhalten verlasse. **Nachgemessen widerlegt:** Er stürzt nicht, er befolgt das Feld. Der Satz hatte eine Folge, die niemand beabsichtigt hatte — „das native Modellverhalten" heißt bei Qwen 3.6 schlicht *immer denken*, auch dort, wo dieses Dokument zwei Zeilen weiter oben das Gegenteil vorschreibt. Das Feld wird seitdem verschachtelt gesendet, siehe Abschnitt 3.
   * **Wo `enableThinking` wirkt:** beim Ollama- und beim OpenAI-kompatiblen Weg als echter Schalter am Anbieter, zusätzlich überall bei den Inferenz-Parametern (`max_tokens`). Bei Mistral nur Letzteres — dort kennt der Code kein Denkschritt-Feld.
+  * **Kontextfenster bei langen Prüfungen — 64k-Stufe (seit 13.11.2026):** Prompt und Ausgabe teilen sich bei Ollama EIN Fenster (`num_ctx`), die Ausgabe bekommt den Rest. Die automatische Stufung (8k / 16k / 32k) endete bei 32k. An einer IHK-Zwischenprüfung mit 13 Teilaufgaben (Prompt ≈ 13.900 Tokens) blieben so 15.254 Tokens für Denken und Antwort; `qwen3.8` dachte alle Aufgaben durch und wurde beim Aufschreiben in Aufgabe 3.3 abgeschnitten (Mitschnitt: `done_reason: length`). Gebraucht waren 15.754. Seitdem gilt: Denkt das Modell und blieben im 32k-Fenster weniger als `MINDEST_AUSGABE_BEIM_DENKEN` (20.000) Tokens für die Ausgabe, wird `num_ctx` auf 65.536 gesetzt. Kurze Arbeiten bleiben bei 32k, eine ausdrücklich eingestellte Kontextgröße gilt unverändert. Gemessen auf dem KI-Server: +600 MiB (`qwen3.8`) bzw. +900 MiB (`qwen3.6:35b`) Grafikspeicher, beides vollständig auf der GPU, Ladezeit unverändert. Auf kleineren GPUs ungemessen — dort lagert Ollama notfalls aus und wird langsamer statt abzuschneiden.
+  * **Abgeschnittene Antworten (seit 13.11.2026):** Alle drei Anbieter melden das Erreichen der Längengrenze (`done_reason` bzw. `finish_reason` = `length`, bei Mistral auch `model_length`). Die Teilantwort bleibt erhalten (Entscheidung 18.08.2026: „acht von zehn Aufgaben bewertet“ statt Totalverlust), wird aber am Ergebnis vermerkt (`antwortAbgeschnitten`). Die Zuordnung verwirft die zuletzt angefangene Aufgabe — deren Punkte können fehlen und würden sonst als 0 gelesen — und beschriftet alle nicht bewerteten Aufgaben mit „Längengrenze abgeschnitten, bitte erneut korrigieren“ statt „nicht erkannt“. Code: `src/lib/ai/laengengrenze.ts`.
 
 ---
 

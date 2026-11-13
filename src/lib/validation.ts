@@ -168,6 +168,9 @@ export const AIAnalysisResultSchema = z.object({
             ),
         }).passthrough()
     ).optional()),
+    // Gesetzt vom Anbieter-Weg, nicht vom Modell: die Antwort endete an der
+    // Laengengrenze (siehe lib/ai/laengengrenze.ts). Nur ein echtes `true` zaehlt.
+    antwortAbgeschnitten: z.preprocess((val) => val === true ? true : undefined, z.boolean().optional()),
 }).passthrough();
 
 

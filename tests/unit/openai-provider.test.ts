@@ -137,6 +137,26 @@ describe('OpenAI Provider (Bridge) - Unit Tests', () => {
             expect(res.tasks[0].name).toBe('Task 1');
         });
 
+        /** Die Reparatur rettet die Teilantwort — der Abbruch muss trotzdem mitreisen (laengengrenze.ts). */
+        it('vermerkt eine an der Laengengrenze abgeschnittene Antwort', async () => {
+            mockFetchWithRetry.mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ choices: [{ message: { content: '{"tasks": [{"name": "Task 1"' }, finish_reason: 'length' }] })
+            });
+            const res = await executeOpenAIRequest('correction', { modelSolution: '', studentText: '' }, URL, API_KEY, { model: MODEL });
+            expect(res.antwortAbgeschnitten).toBe(true);
+            expect(res.tasks[0].name).toBe('Task 1');
+        });
+
+        it('vermerkt nichts bei regulaerem Ende', async () => {
+            mockFetchWithRetry.mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ choices: [{ message: { content: '{"tasks": []}' }, finish_reason: 'stop' }] })
+            });
+            const res = await executeOpenAIRequest('correction', { modelSolution: '', studentText: '' }, URL, API_KEY, { model: MODEL });
+            expect(res.antwortAbgeschnitten).toBeUndefined();
+        });
+
         it('should allocate at least 16384 max_tokens when Thinking Mode is active', async () => {
             mockFetchWithRetry.mockResolvedValueOnce({
                 ok: true,

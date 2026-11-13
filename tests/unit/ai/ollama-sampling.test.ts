@@ -1,4 +1,4 @@
-import { berechneSamplingParameter, bestimmeModellArt } from '../../../src/lib/ai/ollama-sampling';
+import { berechneSamplingParameter, bestimmeModellArt, MINDEST_AUSGABE_BEIM_DENKEN } from '../../../src/lib/ai/ollama-sampling';
 import type { AppSettings } from '../../../src/types';
 import type { AIAction } from '../../../src/lib/ai/prompt-dispatch';
 import { FREETEXT_TEMPERATURE_MINIMUM, TEMPERATURE_MINIMUM } from '@/lib/ai/temperature-guidance';
@@ -309,6 +309,35 @@ describe('Kontextfenster', () => {
         const r = rechne('correction', 'llama3', { ollamaNumCtx: 8192 }, { promptCharCount: 100000 });
         expect(r.maxTokens).toBeGreaterThanOrEqual(1000);
         expect(r.numCtx).toBe(8192);
+    });
+
+    /**
+     * 64k-STUFE (13.11.2026). Eine Pruefung mit 13 Teilaufgaben: rund 49.000 Zeichen
+     * Prompt liessen im 32k-Fenster nur 15.254 Tokens fuer Denken und Antwort, die
+     * Antwort wurde abgeschnitten. Ein denkendes Modell bekommt dann 64k.
+     */
+    describe('64k-Stufe fuer denkende Modelle', () => {
+        const pruefung = { promptCharCount: 49000 };
+
+        it('vergroessert das Fenster, wenn der Platz zum Denken nicht reicht', () => {
+            const r = rechne('correction', 'qwen3.8:27b-mtp-q4_K_M', { enableThinking: true }, pruefung);
+            expect(r.numCtx).toBe(65536);
+            expect(r.maxTokens).toBeGreaterThanOrEqual(MINDEST_AUSGABE_BEIM_DENKEN);
+        });
+
+        it('laesst kurze Arbeiten bei 32k', () => {
+            expect(rechne('correction', 'qwen3.8:27b-mtp-q4_K_M', { enableThinking: true }, { promptCharCount: 20000 }).numCtx)
+                .toBe(32768);
+        });
+
+        it('vergroessert nicht, wenn das Modell nicht denkt', () => {
+            expect(rechne('correction', 'llama3', { enableThinking: false }, pruefung).numCtx).toBe(32768);
+        });
+
+        it('nimmt eine ausdrueckliche Kontextgroesse weiter unveraendert an', () => {
+            expect(rechne('correction', 'qwen3.8:27b-mtp-q4_K_M', { enableThinking: true, ollamaNumCtx: 32768 }, pruefung).numCtx)
+                .toBe(32768);
+        });
     });
 
     it('deckelt Struktur-Aktionen bei 8192 Antwort-Token', () => {

@@ -69,10 +69,11 @@ type WebStreamKoerper = { getReader: () => ReadableStreamDefaultReader<Uint8Arra
  * `message` in den Strom, und eine abgeschnittene Zeile ist normal — die
  * gehoert dem naechsten Durchlauf.
  */
-function sammleAusZeilen(zeilen: string[]): { text: string; abgeschlossen: boolean; fehler?: string } {
+function sammleAusZeilen(zeilen: string[]): { text: string; abgeschlossen: boolean; fehler?: string; abbruchgrund?: string } {
     let text = '';
     let abgeschlossen = false;
     let fehler: string | undefined;
+    let abbruchgrund: string | undefined;
     for (const zeile of zeilen) {
         const sauber = zeile.trim();
         if (!sauber) continue;
@@ -81,13 +82,26 @@ function sammleAusZeilen(zeilen: string[]): { text: string; abgeschlossen: boole
             if (geparst.message?.content) {
                 text += geparst.message.content;
             }
-            if (geparst.done === true) abgeschlossen = true;
+            if (geparst.done === true) {
+                abgeschlossen = true;
+                if (typeof geparst.done_reason === 'string') abbruchgrund = geparst.done_reason;
+            }
             if (typeof geparst.error === 'string') fehler = geparst.error;
         } catch {
             // Kein vollstaendiges JSON-Objekt — nichts beizutragen.
         }
     }
-    return { text, abgeschlossen, fehler };
+    return { text, abgeschlossen, fehler, abbruchgrund };
+}
+
+/** Die zusammengesetzte Antwort und, warum Ollama sie beendet hat. */
+export interface OllamaAntwort {
+    text: string;
+    /**
+     * `done_reason` der Abschlusszeile: `stop` regulaer, `length` an der
+     * Laengengrenze abgeschnitten (siehe `laengengrenze.ts`).
+     */
+    abbruchgrund?: string;
 }
 
 /**
@@ -97,19 +111,21 @@ function sammleAusZeilen(zeilen: string[]): { text: string; abgeschlossen: boole
  * @throws OllamaAbbruchFehler wenn die Abschlusszeile fehlt.
  * @param koerper Der Rumpf der `fetch`-Antwort, in welcher Form auch immer.
  */
-export async function leseOllamaStream(koerper: unknown): Promise<string> {
-    if (!koerper) return '';
+export async function leseOllamaStream(koerper: unknown): Promise<OllamaAntwort> {
+    if (!koerper) return { text: '' };
 
     let text = '';
     let rest = '';
     let abgeschlossen = false;
     let fehler: string | undefined;
+    let abbruchgrund: string | undefined;
 
     const uebernimm = (zeilen: string[]): void => {
         const ergebnis = sammleAusZeilen(zeilen);
         text += ergebnis.text;
         abgeschlossen = abgeschlossen || ergebnis.abgeschlossen;
         fehler = ergebnis.fehler ?? fehler;
+        abbruchgrund = ergebnis.abbruchgrund ?? abbruchgrund;
     };
 
     const verarbeite = (stueck: string): void => {
@@ -137,5 +153,5 @@ export async function leseOllamaStream(koerper: unknown): Promise<string> {
     uebernimm([rest]);
     if (fehler) throw new AIProviderError('Ollama', 500, fehler);
     if (!abgeschlossen) throw new OllamaAbbruchFehler(text.length);
-    return text;
+    return { text, abbruchgrund };
 }

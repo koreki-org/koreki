@@ -24,6 +24,7 @@ import type { ChatNachricht, ChatAnfrage, ChatAntwort, TokenVerbrauch } from './
 import { pruefeWerkzeugAufruf } from './tool-validation';
 import { denktBeiAktion } from './denkschritt';
 import { addiereVerbrauch, antwortAusFortsetzung, baueFortsetzung, denktextAus, istDenkabbruch } from './denkabbruch';
+import { istLaengenabbruch, vermerkeAbbruch } from './laengengrenze';
 
 /**
  * Leer ist auch der leere String.
@@ -399,13 +400,20 @@ export async function executeOpenAIRequest(
 
     let content = responseContent;
 
+    // Teilantwort an der Laengengrenze: behalten, aber vermerken — siehe laengengrenze.ts.
+    if (istLaengenabbruch(abbruchgrund)) {
+        logger.warn('[OpenAI] Antwort an der Laengengrenze abgeschnitten', {
+            action, model: targetModel, zeichen: content.length
+        });
+    }
+
     // 4. Robust JSON Parsing
     if (action !== 'vision' && action !== 'second-opinion') {
         try {
-            return {
+            return vermerkeAbbruch({
                 ...parseLlmJson<Record<string, unknown>>(content),
                 usage: responseUsage
-            };
+            }, abbruchgrund);
         } catch (e) {
             logger.error("JSON Parse Fatal Error: AI response could not be parsed as JSON", {
                 contentLength: content?.length || 0
@@ -414,8 +422,8 @@ export async function executeOpenAIRequest(
         }
     }
 
-    return { 
+    return vermerkeAbbruch({
         text: content,
-        usage: responseUsage 
-    };
+        usage: responseUsage
+    }, abbruchgrund);
 }
