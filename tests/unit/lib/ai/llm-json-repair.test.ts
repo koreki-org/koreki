@@ -212,3 +212,65 @@ describe('Deutsche Anfuehrungszeichen mit geradem Schlusszeichen', () => {
         expect(escapeInnerQuotes('{"a": "x", "b": "y"}')).toBe('{"a": "x", "b": "y"}');
     });
 });
+
+/**
+ * Maskiertes Anfuehrungszeichen vor einem Komma (13.11.2026).
+ *
+ * In Musterloesungen mit Code steht `\",` ueberall: `VALUES (\"Eis\",300)`,
+ * `print(\"Text\",zone)`. Die Reparatur hielt das fuer ein Stringende, entfernte
+ * den Backslash und zerbrach die Antwort — die Aufgabenerkennung einer
+ * IHK-Pruefung scheiterte zweimal identisch. Ausgeloest wird die Reparatur von
+ * einem ANDEREN Fehler in derselben Antwort (hier: ungeschuetzte Zitatzeichen),
+ * deshalb tragen die Beispiele beides.
+ */
+describe('Maskiertes Anfuehrungszeichen vor Komma', () => {
+    const sql = 'INSERT INTO WARE VALUES (\\"Eis\\",300,-20, 1, \\"S-KC-10\\");';
+    const python = 'print(\\"Kosten in Zone\\",zone,\\"betragen\\",betrag)';
+
+    it('laesst Code mit maskierten Zeichen vor Kommata unberuehrt', () => {
+        const gueltig = `{"tasks":[{"name":"2.1","content":"${sql}"},{"name":"2.2","content":"${python}"}]}`;
+        expect(escapeInnerQuotes(gueltig)).toBe(gueltig);
+    });
+
+    it('liest den Code, auch wenn die Antwort anderswo repariert werden muss', () => {
+        const roh = `{"tasks":[{"name":"1.1","content":"Der Plan sagt "vergleichen" dazu."},`
+            + `{"name":"2.1","content":"${sql}"},{"name":"2.2","content":"${python}","maxPoints":12}]}`;
+        const j = parseLlmJson<{ tasks: { name: string; content: string; maxPoints?: number }[] }>(roh);
+        expect(j.tasks.map(t => t.name)).toEqual(['1.1', '2.1', '2.2']);
+        expect(j.tasks[1].content).toBe('INSERT INTO WARE VALUES ("Eis",300,-20, 1, "S-KC-10");');
+        expect(j.tasks[2].content).toBe('print("Kosten in Zone",zone,"betragen",betrag)');
+        expect(j.tasks[2].maxPoints).toBe(12);
+    });
+
+    /** Was die Regel vorher abfing, faengt sie weiter ab: ein faelschlich maskiertes Stringende. */
+    it('beendet einen String weiterhin, wenn danach der naechste Schluessel kommt', () => {
+        expect(escapeInnerQuotes('{"feedback": "Gut gemacht.\\", "confidence": 90}'))
+            .toBe('{"feedback": "Gut gemacht.", "confidence": 90}');
+    });
+});
+
+/**
+ * Schluessel und Werte in einfachen Anfuehrungszeichen (13.11.2026).
+ *
+ * `qwen3.8` schrieb in einer langen Korrektur einmal `'name': 'Aufgabe 5.3.2',`
+ * — vermutlich die Prompt-Regel „eigene Zitate nur in '…'" auf das JSON selbst
+ * uebertragen. Ausserhalb eines Strings ist `'` in JSON nie gueltig.
+ */
+describe('Einfache Anfuehrungszeichen als JSON-String', () => {
+    it('liest einen Eintrag mit einfachen Anfuehrungszeichen um Schluessel und Wert', () => {
+        const j = parseLlmJson<{ tasks: { name: string; pointsObtained: number }[] }>(
+            '{"tasks": [{"name": "A1", "pointsObtained": 2},\n{\n\'name\': \'A2\',\n"pointsObtained": 3}]}'
+        );
+        expect(j.tasks).toEqual([{ name: 'A1', pointsObtained: 2 }, { name: 'A2', pointsObtained: 3 }]);
+    });
+
+    it('behaelt Apostrophe und doppelte Anfuehrungszeichen im Wert', () => {
+        const j = parseLlmJson<{ f: string; p: number }>('{\'f\': \'Lenas Satz: er sagt "ja" und Schüler\'s Text\', "p": 1}');
+        expect(j).toEqual({ f: 'Lenas Satz: er sagt "ja" und Schüler\'s Text', p: 1 });
+    });
+
+    it('laesst einfache Anfuehrungszeichen INNERHALB eines Strings in Ruhe', () => {
+        const gueltig = '{"feedback": "Zitat: \'Serverkapazität\' – erklärt."}';
+        expect(escapeInnerQuotes(gueltig)).toBe(gueltig);
+    });
+});

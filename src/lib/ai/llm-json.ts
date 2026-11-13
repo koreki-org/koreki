@@ -127,9 +127,54 @@ export function escapeInnerQuotes(jsonStr: string): string {
         return { char: '', index: -1 };
     };
 
+    /**
+     * Steht nach dem Komma an `kommaIdx` der Anfang des naechsten Eintrags? Im Objekt
+     * ein Schluessel (`"…":`), im Feld ein String. Nur dann kann ein MASKIERTES `\"`
+     * davor ein Stringende sein, das das Modell faelschlich maskiert hat.
+     */
+    const folgtEintrag = (kommaIdx: number): boolean => {
+        const { char: naechstes, index } = nextNonWhitespaceFrom(kommaIdx + 1);
+        if (naechstes !== '"') return false;
+        if (containers[containers.length - 1] === '[') return true;
+        for (let m = index + 1; m < jsonStr.length; m++) {
+            if (jsonStr[m] === '"' && jsonStr[m - 1] !== '\\') return nextNonWhitespaceFrom(m + 1).char === ':';
+        }
+        return false;
+    };
+
     let i = 0;
     while (i < jsonStr.length) {
         const char = jsonStr[i];
+
+        // EINFACHE ANFUEHRUNGSZEICHEN ALS JSON-STRING (13.11.2026). Ausserhalb eines
+        // Strings ist `'` in JSON nie erlaubt. `qwen3.8` schrieb in einer Korrektur
+        // mit 13 Aufgaben einmal `'name': 'Aufgabe 5.3.2',` — vermutlich die Regel
+        // „eigene Zitate nur in '…'" aus correction/system.md, auf das JSON selbst
+        // uebertragen. Die ganze Korrektur war unlesbar. Steht ein `'` dort, wo ein
+        // Schluessel oder Wert beginnt, und schliesst ein `'` mit passendem Zeichen
+        // dahinter (`:` beim Schluessel, `,` `}` `]` beim Wert), wird daraus ein
+        // gewoehnlicher String. Apostrophe im Inneren (`Schüler's`) stoeren nicht:
+        // sie haben kein solches Zeichen hinter sich.
+        if (!inString && char === "'") {
+            const oben = containers[containers.length - 1];
+            const istSchluessel = oben === '{' && (lastMeaningful === '{' || lastMeaningful === ',');
+            const istWert = lastMeaningful === ':' || (oben === '[' && (lastMeaningful === '[' || lastMeaningful === ','));
+            let ende = -1;
+            for (let m = i + 1; (istSchluessel || istWert) && m < jsonStr.length && jsonStr[m] !== '\n'; m++) {
+                if (jsonStr[m] !== "'") continue;
+                const danach = nextNonWhitespaceFrom(m + 1).char;
+                if (istSchluessel ? danach === ':' : (danach === ',' || danach === '}' || danach === ']')) {
+                    ende = m;
+                    break;
+                }
+            }
+            if (ende !== -1) {
+                result += '"' + jsonStr.slice(i + 1, ende).replace(/(?<!\\)"/g, '\\"') + '"';
+                lastMeaningful = '"';
+                i = ende + 1;
+                continue;
+            }
+        }
 
         if (char !== '"') {
             result += char;
@@ -191,6 +236,17 @@ export function escapeInnerQuotes(jsonStr: string): string {
         let isStructural = stringIsKey
             ? nextNonWhitespace === ':'
             : nextNonWhitespace === ',' || nextNonWhitespace === '}' || nextNonWhitespace === ']';
+
+        // MASKIERTES `\"` VOR EINEM KOMMA (13.11.2026). Es ist gueltiges JSON und gehoert
+        // in den String — ein Stringende ist es nur, wenn danach wirklich der naechste
+        // Eintrag beginnt. Bis hierhin genuegte das Komma: Jede Musterloesung mit Code
+        // zerbrach, denn dort steht es ueberall — `VALUES (\"Schokoladeneis\",300, …)`,
+        // `print(\"Die Kosten …\",Zone, …)`. Die Reparatur entfernte den Backslash, der
+        // String endete mitten im Code, und die Aufgabenerkennung einer IHK-Pruefung
+        // scheiterte zweimal identisch (nachgestellt am Mitschnitt).
+        if (isStructural && isEscaped && !stringIsKey && nextNonWhitespace === ',' && !folgtEintrag(nextIdx)) {
+            isStructural = false;
+        }
 
         // Fehlendes Komma zwischen Wert und folgendem Schlüssel: "...wert" "key": ...
         let nextKeyMatched = false;
