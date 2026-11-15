@@ -6,6 +6,7 @@ import rehypeKatex from 'rehype-katex';
 import rehypeRaw from 'rehype-raw';
 import { cn } from '@/lib/utils';
 import { OCR_MARKE, OCR_MARKE_MIT_WORT } from '@/lib/task-utils';
+import { ausserhalbVonCode } from '@/lib/markdown-codebloecke';
 
 /**
  * Detects and formats markdown tables that have been squashed into a single line
@@ -265,6 +266,14 @@ export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }
                     code: ({ node, ...props }) => (
                         <code className="font-mono bg-muted/60 rounded px-1 py-0.5" {...props} />
                     ),
+                    // Codeblock (Quelltext aus ZIP-Abgaben, s. markdown-codebloecke.ts):
+                    // Einrueckung erhalten, lange Zeilen scrollen statt umbrechen —
+                    // ein Umbruch saehe in Python aus wie eine neue Zeile. Das
+                    // innere `code` verliert seine Inline-Pille, sonst klebte sie
+                    // an jedem Block.
+                    pre: ({ node, ...props }) => (
+                        <pre className="font-mono text-xs/relaxed whitespace-pre overflow-x-auto bg-muted/60 rounded-lg p-3 mb-3 last:mb-0 [&>code]:bg-transparent [&>code]:p-0" {...props} />
+                    ),
                     table: ({ node, ...props }) => (
                         <div className="overflow-x-auto mb-4 rounded-lg border border-border shadow-sm">
                             <table className="min-w-full divide-y divide-border" {...props} />
@@ -275,7 +284,7 @@ export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }
                     td: ({ node, ...props }) => <td className="px-4 py-2 border-t border-border text-xs" {...props} />,
                 }}
             >
-                {processContent(formatSquashedTables(preprocessMarkdown(content)))}
+                {ausserhalbVonCode(content || '', t => processContent(formatSquashedTables(preprocessMarkdown(t))))}
             </ReactMarkdown>
         </div>
     );

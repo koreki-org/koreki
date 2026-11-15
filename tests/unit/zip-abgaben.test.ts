@@ -141,14 +141,16 @@ describe('buendleAbgabe', () => {
     it('haengt Quelltext woertlich an, statt ihn ins PDF zu legen', async () => {
         const code = 'def kosten(km):\n    if km <= 50:\n        return 2.5 * km';
         const b = await buendleAbgabe('lena', [datei('a.pdf', await pdf(1), 'application/pdf'), datei('kosten.py', code, 'text/plain')]);
-        expect(b!.textBeilagen).toBe(`${dateiKopf('kosten.py')}\n${code}`);
+        // Im Codeblock, damit die Anzeige `#` nicht als Ueberschrift deutet und
+        // die Einrueckung nicht verschluckt (markdown-codebloecke.ts, 15.11.2026).
+        expect(b!.textBeilagen).toBe(`${dateiKopf('kosten.py')}\n\`\`\`python\n${code}\n\`\`\``);
         expect((await PDFDocument.load(await b!.datei.arrayBuffer())).getPageCount()).toBe(2);
     });
 
     it('macht aus reinem Text eine Textdatei', async () => {
         const b = await buendleAbgabe('lena', [datei('a.sql', 'SELECT 1;', 'text/plain')]);
         expect(b!.datei.name).toBe('lena.txt');
-        expect(await b!.datei.text()).toBe(`${dateiKopf('a.sql')}\nSELECT 1;`);
+        expect(await b!.datei.text()).toBe(`${dateiKopf('a.sql')}\n\`\`\`sql\nSELECT 1;\n\`\`\``);
         expect(b!.textBeilagen).toBeUndefined();
     });
 

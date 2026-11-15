@@ -1,6 +1,8 @@
 import {
     istTextDatei,
     istLesbaresDokument,
+    istCodeDatei,
+    codeSprache,
     MUSTERLOESUNG_ENDUNGEN,
     SCHUELERARBEIT_ENDUNGEN
 } from '../../src/lib/upload-dateiarten';
@@ -38,5 +40,28 @@ describe('upload-dateiarten', () => {
         expect(SCHUELERARBEIT_ENDUNGEN.split(',')).toEqual(
             expect.arrayContaining(['.md', '.txt', '.pdf', '.xlsx', '.csv', '.koreki'])
         );
+    });
+
+    /**
+     * Sprache fuer den Codeblock. Die Tabelle ist die einzige Quelle — die
+     * Endungsliste wird daraus abgeleitet, also kann keine Endung als Code
+     * erkannt werden und trotzdem ohne Sprache dastehen.
+     */
+    it('kennt zu jeder Code-Endung eine Sprache, unabhaengig von der Schreibweise', () => {
+        expect(codeSprache('kosten.py')).toBe('python');
+        expect(codeSprache('KOSTEN.PY')).toBe('python');
+        expect(codeSprache('Main.java')).toBe('java');
+        expect(codeSprache('abfrage.sql')).toBe('sql');
+        expect(codeSprache('start.ps1')).toBe('powershell');
+        for (const name of ['a.py', 'a.cpp', 'a.yml', 'a.log', 'a.csv']) {
+            expect(istCodeDatei(d(name))).toBe(true);
+            expect(codeSprache(name)).not.toBeNull();
+        }
+    });
+
+    it('gibt Text und Markdown keine Sprache — die sollen gedeutet werden', () => {
+        expect(codeSprache('loesung.md')).toBeNull();
+        expect(codeSprache('arbeit.txt')).toBeNull();
+        expect(codeSprache('scan.pdf')).toBeNull();
     });
 });

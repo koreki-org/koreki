@@ -58,13 +58,32 @@ export const istZipDatei = (datei: DateiKennung): boolean =>
  * durch die Bilderkennung ginge sie verloren. Einzeln hochgeladen bleibt es
  * bei den Formaten oben.
  */
-const CODE_ENDUNGEN = [
-    '.py', '.java', '.c', '.h', '.cpp', '.hpp', '.cs', '.js', '.ts', '.php', '.sql',
-    '.html', '.css', '.sh', '.ps1', '.bat', '.kt', '.swift', '.go', '.rb', '.vb',
-    '.json', '.xml', '.yaml', '.yml', '.ini', '.cfg', '.conf', '.log', '.csv'
-] as const;
+const CODE_SPRACHEN: Readonly<Record<string, string>> = {
+    '.py': 'python', '.java': 'java', '.c': 'c', '.h': 'c', '.cpp': 'cpp', '.hpp': 'cpp',
+    '.cs': 'csharp', '.js': 'javascript', '.ts': 'typescript', '.php': 'php', '.sql': 'sql',
+    '.html': 'html', '.css': 'css', '.sh': 'bash', '.ps1': 'powershell', '.bat': 'bat',
+    '.kt': 'kotlin', '.swift': 'swift', '.go': 'go', '.rb': 'ruby', '.vb': 'vbnet',
+    '.json': 'json', '.xml': 'xml', '.yaml': 'yaml', '.yml': 'yaml', '.ini': 'ini',
+    '.cfg': 'ini', '.conf': 'ini', '.log': 'text', '.csv': 'csv'
+};
+
+/** Abgeleitet, nicht daneben gepflegt: Endung und Sprache koennen nicht auseinanderlaufen. */
+const CODE_ENDUNGEN = Object.keys(CODE_SPRACHEN);
 
 export const istCodeDatei = (datei: DateiKennung): boolean => endetAuf(datei.name, CODE_ENDUNGEN);
+
+/**
+ * Sprache fuer den Codeblock (` ```python `), `null` bei Nicht-Quelltext.
+ *
+ * Die Angabe steuert heute nur die Kennzeichnung im Markdown. Sie ist trotzdem
+ * schon da, weil eine spaetere Syntax-Faerbung sie genau so braucht — und weil
+ * sie der KI sagt, welche Sprache sie vor sich hat, statt es sie raten zu lassen.
+ */
+export const codeSprache = (name: string): string | null => {
+    const klein = name.toLowerCase();
+    const endung = CODE_ENDUNGEN.find(e => klein.endsWith(e));
+    return endung ? CODE_SPRACHEN[endung] : null;
+};
 
 /** Fuer Beschriftungen: „Text (.txt, .md)". */
 export const TEXT_ENDUNGEN_ANZEIGE = TEXT_ENDUNGEN.join(', ');

@@ -17,7 +17,8 @@
  *   ohne KI.
  */
 import { PDFDocument, PDFFont, StandardFonts, rgb } from 'pdf-lib';
-import { istBildDatei, istPdfDatei } from './upload-dateiarten';
+import { codeSprache, istBildDatei, istPdfDatei } from './upload-dateiarten';
+import { alsCodeblock } from './markdown-codebloecke';
 
 export interface GebuendelteAbgabe {
     datei: File;
@@ -73,8 +74,15 @@ export async function buendleAbgabe(name: string, dateien: File[]): Promise<Gebu
     const dokumente = dateien.filter(d => istPdfDatei(d) || istBildDatei(d));
     const texte = dateien.filter(d => !dokumente.includes(d));
 
+    // Quelltext zwischen Zaeune (`markdown-codebloecke.ts`), sonst deutet die
+    // Anzeige `#` als Ueberschrift und verschluckt die Einrueckung. Text und
+    // Markdown bleiben ohne Zaun — die sollen ja gedeutet werden.
     const textteile: string[] = [];
-    for (const t of texte) textteile.push(`${dateiKopf(t.name)}\n${await t.text()}`);
+    for (const t of texte) {
+        const inhalt = await t.text();
+        const sprache = codeSprache(t.name);
+        textteile.push(`${dateiKopf(t.name)}\n${sprache ? alsCodeblock(inhalt, sprache) : inhalt}`);
+    }
     const textBeilagen = textteile.length > 0 ? textteile.join('\n\n') : undefined;
 
     const unlesbar: string[] = [];

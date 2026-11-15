@@ -91,4 +91,32 @@ describe('MathMarkdown Component (Layer 1)', () => {
             expect(rows[3]).toBe("| Aussteller | 100 | 172.16.4.0 | /25 | 172.16.4.1 | 172.16.4.126 | 172.16.4.127 |");
         });
     });
+
+    /**
+     * Quelltext im Codeblock geht unberuehrt an den Renderer (15.11.2026).
+     *
+     * Die Vorverarbeitung arbeitet zeilenweise und kennt keine Zaeune. Ohne den
+     * Schutz wurde aus `liste[i]` ein rotes Korrekturzeichen „i", aus einer
+     * Zeile mit vier Strichen eine „zerquetschte Tabelle", und jede Zeile bekam
+     * zwei Leerzeichen fuer den Markdown-Umbruch angehaengt.
+     */
+    it('reicht Codebloecke unveraendert durch und bereitet nur den Text drumherum auf', () => {
+        const code = [
+            '```python',
+            '# Rabatt berechnen',
+            'def preis(liste, i):',
+            '    if a || b || c || d:',
+            '        return liste[i]',
+            '```'
+        ].join('\n');
+        render(<MathMarkdown content={`Siehe [f] unten.\n${code}`} />);
+
+        const ausgabe = screen.getByTestId('markdown');
+        // Der Block kommt zeichengleich an — Einrueckung, Striche, Klammern.
+        expect(ausgabe.textContent).toContain(code);
+        // Nur EIN Korrekturzeichen: das im Text, keines aus `liste[i]`.
+        expect(ausgabe.innerHTML.match(/bg-destructive\/10/g)).toHaveLength(1);
+        // Keine Tabelle aus der Code-Zeile mit vier Strichen.
+        expect(ausgabe.textContent).not.toContain('| --- |');
+    });
 });
