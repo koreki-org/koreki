@@ -34,6 +34,15 @@ Das Modell ist mehrere Gigabyte groß; der Download dauert eine Weile.
 
 Bei Mittwald oder Mistral: Der Schlüssel ist ungültig, abgelaufen oder das Guthaben beim Anbieter ist aufgebraucht. Erstelle beim Anbieter einen neuen Schlüssel und trage ihn in den Einstellungen ein.
 
+### „Der KI-Server … ist nicht erreichbar“
+
+Koreki kommt nicht bis zum KI-Server durch. Hinter dem Satz steht immer, woran es lag:
+
+- **Beim Verbindungsaufbau kam keine Antwort:** Der Server ist aus oder vom Netz getrennt. Liegt er in der Schule und du arbeitest von zu Hause, prüfe die VPN-Verbindung.
+- **Der Server lehnt die Verbindung ab:** Der Rechner ist erreichbar, aber der KI-Dienst läuft nicht. Bei Ollama: Starte die Ollama-App dort.
+- **Die Adresse ist unbekannt:** Prüfe in den Einstellungen die **Ollama Adresse** auf Tippfehler.
+- **5 Minuten lang keine Antwort** oder **Verbindung mitten in der Arbeit getrennt:** Der Server ist ausgelastet, etwa weil gerade jemand anderes korrigiert, oder er wurde neu gestartet. Warte und versuche es erneut.
+
 ### „Der KI-Anbieter ist derzeit nicht erreichbar“
 
 Der Anbieter ist kurz überlastet oder deine Internetverbindung ist weg. Warte einen Moment und versuche es erneut.

@@ -1,4 +1,5 @@
 import { apiClient } from '../api-client';
+import { alsVerbindungsfehler } from './verbindungsfehler';
 
 /**
  * Feste Modellversionen — bewusst KEINE `-latest`-Kennungen.
@@ -69,7 +70,8 @@ export async function fetchWithRetry(url: string, options: any, retries = 5, del
       await sleep(nextDelay);
       return fetchWithRetry(url, options, retries - 1, nextDelay);
     }
-    throw err;
+    // Netzfehler mit Grund statt „fetch failed" — siehe verbindungsfehler.ts.
+    throw alsVerbindungsfehler(err, url);
   } finally {
     clearTimeout(timeoutId);
   }

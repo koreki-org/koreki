@@ -12,6 +12,7 @@ import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
 import { berechneSamplingParameter, mitJsonVorgabe } from './ollama-sampling';
 import { leseOllamaStream } from './ollama-stream';
 import { istLaengenabbruch, vermerkeAbbruch } from './laengengrenze';
+import { fetchMitVerbindungsfehler } from './verbindungsfehler';
 import { nutztFestenStartwert, SAMPLING_SEED } from './temperature-guidance';
 import { pruefeWerkzeugAufruf, MAX_TOOL_RETRIES } from './tool-validation';
 
@@ -227,7 +228,7 @@ export async function executeOllamaRequest(
             ? undefined 
             : 'json';
 
-        const response = await fetch(`${baseUrl}/api/chat`, {
+        const response = await fetchMitVerbindungsfehler(`${baseUrl}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             signal,
