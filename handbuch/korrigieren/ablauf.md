@@ -25,16 +25,19 @@ Klicke rechts auf **Schülerarbeiten** und wähle die Arbeiten aus. Möglich sin
 - **Du kannst jederzeit weitere Arbeiten hinzufügen** — sie kommen zu den vorhandenen dazu.
 - **Scans:** gerade, gleichmäßig hell, ohne Schatten über der Schrift. Je besser der Scan, desto weniger musst du später nachlesen.
 
-Bei einem PDF fragt Koreki, was darin steckt: **Digitaler Text / PDF** (am Rechner geschrieben) oder **Scan / Bilder / Handschrift**. Diese Wahl entscheidet, ob Koreki die Arbeit erst lesen muss. Hast du dich vertan, klickst du in der Liste auf das Abzeichen **Scan** oder **Digital** der Arbeit und stellst es um.
+Bei einem einzelnen PDF fragt Koreki, was darin steckt: **Digitaler Text / PDF** (am Rechner geschrieben) oder **Scan / Bilder / Handschrift**. Diese Wahl entscheidet, ob Koreki die Arbeit erst lesen muss. Hast du dich vertan, klickst du in der Liste auf das Abzeichen **Scan** oder **Digital** der Arbeit und stellst es um.
 
 ::: tip Mehrere Dateien je Schülerin oder Schüler (ZIP)
 Gibt jede Person mehrere Dateien ab, etwa eine Prüfung mit einer Datei je Aufgabe, packst du alle Abgaben in ein ZIP: **ein Ordner je Schülerin oder Schüler**. Du kannst auch mehrere ZIPs auf einmal wählen, dann ist jedes ZIP eine Person. Koreki fügt die Dateien jeder Person zu **einer** Arbeit zusammen. Vor jeder Datei steht eine Seite mit ihrem Namen.
 
-- Gelesen werden PDF, Bilder, Text und Quelltext, zum Beispiel Python, Java oder SQL. Quelltext übernimmt Koreki wörtlich, mit Einrückung.
-- Dateien, die bei allen gleich sind, lässt Koreki weg. Das sind meist die bereitgestellten Vorlagen. Erkennen kann Koreki das erst ab zwei Personen im ZIP.
-- Word, Excel und andere Formate lässt Koreki weg.
-- **Lies die Meldung nach dem Hochladen.** Dort steht, was weggefallen ist. Fehlt dort eine Abgabe, fehlt sie auch in der Korrektur.
-- Enthält ein PDF Tabellen, wähle **Scan / Bilder / Handschrift**. Als Bild gelesen bleiben die Spalten in der Regel richtig zugeordnet.
+Vorher zeigt Koreki das Fenster **Abgaben prüfen**: je Person eine Zeile, aufgeklappt die Ordner und Dateien mit Haken.
+
+- Angehakt ist, was nach eigener Abgabe aussieht: PDF, Bilder, Text und Quelltext, zum Beispiel Python, Java oder SQL. Quelltext übernimmt Koreki wörtlich, mit Einrückung.
+- Abgewählt sind Dateien, die bei allen gleich sind, meist die bereitgestellten Vorlagen. Erkennen kann Koreki das erst ab zwei Personen im ZIP. Bei einer einzigen Person wählst du die Vorlagen selbst ab.
+- Word, Excel und andere Formate kann Koreki nicht lesen. Sie stehen ausgegraut in der Liste.
+- **Ein Ordner-Haken gilt für alle Personen.** Liegt im Abgabeordner zum Beispiel noch der Ordner einer anderen Prüfung, wählst du ihn einmal ab, nicht für jede Person einzeln. Ein Haken an einer Datei gilt nur für diese eine Person.
+- Erst **Prüflinge übernehmen** legt die Arbeiten an. **Abbrechen** übernimmt aus dem ZIP nichts.
+- Koreki fragt bei einem ZIP nicht, ob die Dateien digital oder gescannt sind. Es liest PDFs und Bilder immer als **Scan**, damit Tabellen, Screenshots und Fotos nicht verloren gehen. Das dauert etwas länger. Text und Quelltext übernimmt Koreki davon unberührt wörtlich.
 :::
 
 ::: tip Alle Arbeiten in einem PDF?

@@ -28,6 +28,12 @@ export interface Meldung {
     id: number;
     art: MeldungsArt;
     text: string;
+    /**
+     * Steht, bis sie weggeklickt wird — auch als Erfolg oder Hinweis. Fuer
+     * Berichte, die man lesen MUSS, etwa was beim ZIP-Upload weggelassen wurde
+     * (15.11.2026: nach 8 s verschwunden, bevor er gelesen war).
+     */
+    bleibt?: boolean;
 }
 
 /**
@@ -49,7 +55,7 @@ const UEBERLEBT_NEULADEN = 'koreki:meldung-nach-neuladen';
 
 interface NotifyStore {
     meldungen: Meldung[];
-    melde: (art: MeldungsArt, text: string) => void;
+    melde: (art: MeldungsArt, text: string, bleibt?: boolean) => void;
     verwirf: (id: number) => void;
     leere: () => void;
 }
@@ -59,12 +65,12 @@ let naechsteId = 1;
 export const useNotifyStore = create<NotifyStore>((set) => ({
     meldungen: [],
 
-    melde: (art, text) => set((stand) => ({
+    melde: (art, text, bleibt) => set((stand) => ({
         // Dieselbe Meldung nicht doppelt stapeln: Wer zweimal auf einen
         // gesperrten Knopf drueckt, soll nicht zwei gleiche Zettel bekommen.
         meldungen: stand.meldungen.some(m => m.art === art && m.text === text)
             ? stand.meldungen
-            : [...stand.meldungen, { id: naechsteId++, art, text }]
+            : [...stand.meldungen, { id: naechsteId++, art, text, ...(bleibt ? { bleibt } : {}) }]
     })),
 
     verwirf: (id) => set((stand) => ({
@@ -75,10 +81,10 @@ export const useNotifyStore = create<NotifyStore>((set) => ({
 }));
 
 /** Aus Hooks und `lib/` aufrufbar, ohne dass die Stelle eine Komponente sein muss. */
-const melde = (art: MeldungsArt, text: string): void => useNotifyStore.getState().melde(art, text);
+const melde = (art: MeldungsArt, text: string, bleibt?: boolean): void => useNotifyStore.getState().melde(art, text, bleibt);
 
 export const meldeErfolg = (text: string): void => melde('erfolg', text);
-export const meldeHinweis = (text: string): void => melde('hinweis', text);
+export const meldeHinweis = (text: string, optionen?: { bleibt?: boolean }): void => melde('hinweis', text, optionen?.bleibt);
 export const meldeFehler = (text: string): void => melde('fehler', text);
 
 /**

@@ -6,7 +6,8 @@ import { PDFDocument } from 'pdf-lib';
 
 // jest.setup.js ersetzt jszip global durch eine Attrappe — hier wird echt gelesen.
 jest.unmock('jszip');
-import { leseZipAbgaben, leseZipArbeiten } from '@/lib/zip-abgaben';
+import { leseZipAbgaben, standardAuswahl, buendleAuswahl, alsZipArbeit } from '@/lib/zip-abgaben';
+import type { ZipBefund } from '@/lib/zip-abgaben';
 import { buendleAbgabe, mitTextBeilagen, dateiKopf } from '@/lib/abgabe-buendeln';
 
 /**
@@ -44,6 +45,13 @@ async function prueflingsOrdner(person: string, abgabe: Uint8Array): Promise<Rec
     };
 }
 
+const namen = (befund: ZipBefund) => befund.prueflinge.map(p => p.name);
+/** Die Dateinamen, die der Vorschlag fuer einen Pruefling anhakt. */
+const vorgeschlagen = (befund: ZipBefund, name: string) =>
+    standardAuswahl(befund)[name].map(pfad => pfad.split('/').pop());
+const art = (befund: ZipBefund, name: string, datei: string) =>
+    befund.prueflinge.find(p => p.name === name)!.dateien.find(d => d.datei.name === datei)!.art;
+
 describe('leseZipAbgaben', () => {
     it('macht aus jedem Ordner einen Pruefling, auch unter einem umschliessenden Ordner', async () => {
         const zip = await zipDatei('Winter.zip', {
@@ -51,23 +59,26 @@ describe('leseZipAbgaben', () => {
             ...Object.fromEntries(Object.entries(await prueflingsOrdner('max', await pdf(3))).map(([p, d]) => [`Winter 2026/${p}`, d]))
         });
         const befund = await leseZipAbgaben([zip]);
-        expect(befund.abgaben.map(a => a.name)).toEqual(['lena', 'max']);
+        expect(namen(befund)).toEqual(['lena', 'max']);
+        expect(befund.quelle).toBe('Winter.zip');
     });
 
-    it('laesst Vorlagen weg, die bei allen gleich sind — und nur die', async () => {
+    /** Alles bleibt sichtbar — entschieden wird im Fenster. Der Vorschlag laesst Vorlagen weg. */
+    it('kennzeichnet Vorlagen, die bei allen gleich sind — und nur die', async () => {
         const zip = await zipDatei('a.zip', { ...(await prueflingsOrdner('lena', await pdf(1))), ...(await prueflingsOrdner('max', await pdf(3))) });
         const befund = await leseZipAbgaben([zip]);
-        const lena = befund.abgaben.find(a => a.name === 'lena')!;
-        expect(lena.dateien.map(d => d.name)).toEqual(['lena_aufgabe2.pdf', 'transportkosten.py']);
-        expect(befund.vorlagen).toEqual(expect.arrayContaining([
-            'transfer/sca/Bereitgestellte Dateien/Aufgabe2/Preisliste.pdf',
-            'transfer/sca/Bereitgestellte Dateien/Aufgabe1/Kalkulation.xlsx'
-        ]));
+        expect(befund.prueflinge[0].dateien).toHaveLength(5);
+        expect(art(befund, 'lena', 'Preisliste.pdf')).toBe('vorlage');
+        expect(art(befund, 'lena', 'lena_aufgabe2.pdf')).toBe('abgabe');
+        expect(vorgeschlagen(befund, 'lena')).toEqual(['lena_aufgabe2.pdf', 'transportkosten.py']);
     });
 
-    it('nennt Dateien, deren Format Koreki nicht lesen kann', async () => {
+    it('kennzeichnet Dateien, deren Format Koreki nicht lesen kann', async () => {
         const zip = await zipDatei('a.zip', { ...(await prueflingsOrdner('lena', await pdf(1))), ...(await prueflingsOrdner('max', await pdf(3))) });
-        expect((await leseZipAbgaben([zip])).ausgelassen).toEqual(['lena: Kalkulation.ods', 'max: Kalkulation.ods']);
+        const befund = await leseZipAbgaben([zip]);
+        expect(art(befund, 'lena', 'Kalkulation.ods')).toBe('unlesbar');
+        // Die Vorlage in einem fremden Format ist zuerst unlesbar, nicht Vorlage — waehlbar ist sie so oder so nicht.
+        expect(art(befund, 'lena', 'Kalkulation.xlsx')).toBe('unlesbar');
     });
 
     /** Identische Abgaben zweier Personen sind keine Vorlage — bei drei Personen nicht verwechselbar. */
@@ -77,16 +88,16 @@ describe('leseZipAbgaben', () => {
             'a/abgabe.pdf': gleich, 'b/abgabe.pdf': gleich, 'c/abgabe.pdf': await pdf(1)
         });
         const befund = await leseZipAbgaben([zip]);
-        expect(befund.vorlagen).toEqual([]);
-        expect(befund.abgaben.map(a => a.dateien.length)).toEqual([1, 1, 1]);
+        expect(befund.prueflinge.map(p => p.dateien[0].art)).toEqual(['abgabe', 'abgabe', 'abgabe']);
     });
 
     it('nimmt bei mehreren ZIPs jedes als einen Pruefling', async () => {
         const lena = await zipDatei('lena-exam.zip', await prueflingsOrdner('lena-exam', await pdf(1)));
         const max = await zipDatei('max-exam.zip', await prueflingsOrdner('max-exam', await pdf(2)));
         const befund = await leseZipAbgaben([lena, max]);
-        expect(befund.abgaben.map(a => a.name)).toEqual(['lena-exam', 'max-exam']);
-        expect(befund.abgaben[0].dateien.map(d => d.name)).toEqual(['lena-exam_aufgabe2.pdf', 'transportkosten.py']);
+        expect(namen(befund)).toEqual(['lena-exam', 'max-exam']);
+        expect(befund.quelle).toBe('2 ZIP-Dateien');
+        expect(vorgeschlagen(befund, 'lena-exam')).toEqual(['lena-exam_aufgabe2.pdf', 'transportkosten.py']);
     });
 
     it('liest innere ZIPs auf oberster Ebene als Pruefling und meldet Doppelte', async () => {
@@ -98,7 +109,7 @@ describe('leseZipAbgaben', () => {
             'Bewertung.xlsx': 'noten'
         });
         const befund = await leseZipAbgaben([zip]);
-        expect(befund.abgaben.map(a => a.name)).toEqual(['lena', 'max']);
+        expect(namen(befund)).toEqual(['lena', 'max']);
         expect(befund.doppelt).toEqual(['lena']);
         expect(befund.ausserhalb).toEqual(['Bewertung.xlsx']);
     });
@@ -106,9 +117,9 @@ describe('leseZipAbgaben', () => {
     it('nimmt ein ZIP mit nur einem Ordner als einen Pruefling', async () => {
         const zip = await zipDatei('lena-exam.zip', await prueflingsOrdner('lena-exam', await pdf(1)));
         const befund = await leseZipAbgaben([zip]);
-        expect(befund.abgaben.map(a => a.name)).toEqual(['lena-exam']);
-        // Ein Pruefling allein: Vorlagen sind nicht erkennbar und bleiben drin.
-        expect(befund.abgaben[0].dateien.map(d => d.name)).toContain('Preisliste.pdf');
+        expect(namen(befund)).toEqual(['lena-exam']);
+        // Ein Pruefling allein: Vorlagen sind nicht erkennbar — das Fenster zeigt sie, die Lehrkraft waehlt ab.
+        expect(vorgeschlagen(befund, 'lena-exam')).toContain('Preisliste.pdf');
     });
 
     it('uebergeht Beiwerk des Betriebssystems', async () => {
@@ -117,8 +128,8 @@ describe('leseZipAbgaben', () => {
             '__MACOSX/lena/._abgabe.pdf': 'x', 'lena/.DS_Store': 'x'
         });
         const befund = await leseZipAbgaben([zip]);
-        expect(befund.abgaben.map(a => a.name)).toEqual(['lena', 'max']);
-        expect(befund.ausgelassen).toEqual([]);
+        expect(namen(befund)).toEqual(['lena', 'max']);
+        expect(befund.prueflinge[0].dateien.map(d => d.pfad)).toEqual(['abgabe.pdf']);
     });
 });
 
@@ -177,14 +188,42 @@ describe('mitTextBeilagen', () => {
     });
 });
 
-describe('leseZipArbeiten', () => {
-    it('liefert je Pruefling eine Arbeit und eine Meldung, die das Weggelassene nennt', async () => {
+describe('buendleAuswahl', () => {
+    it('buendelt je Pruefling genau die ausgewaehlten Dateien', async () => {
         const zip = await zipDatei('Abgaben.zip', { ...(await prueflingsOrdner('lena', await pdf(1))), ...(await prueflingsOrdner('max', await pdf(3))) });
-        const { arbeiten, meldung } = await leseZipArbeiten([zip]);
+        const befund = await leseZipAbgaben([zip]);
+        const { arbeiten, nichtZuOeffnen } = await buendleAuswahl(befund, standardAuswahl(befund));
         expect(arbeiten.map(a => [a.name, a.datei.name])).toEqual([['lena', 'lena.pdf'], ['max', 'max.pdf']]);
         expect(arbeiten[0].textBeilagen).toContain('    return x  # lena');
-        expect(meldung).toContain('2 Prüfling(e) übernommen');
-        expect(meldung).toContain('bereitgestellte Dateien');
-        expect(meldung).toContain('lena: Kalkulation.ods');
+        expect(nichtZuOeffnen).toEqual([]);
+    });
+
+    it('laesst Prueflinge ohne Auswahl weg und nimmt Unlesbares nie', async () => {
+        const zip = await zipDatei('Abgaben.zip', { ...(await prueflingsOrdner('lena', await pdf(1))), ...(await prueflingsOrdner('max', await pdf(3))) });
+        const befund = await leseZipAbgaben([zip]);
+        const { arbeiten } = await buendleAuswahl(befund, {
+            lena: ['transfer/sca/_collect/APT1/Kalkulation.ods', 'transfer/sca/_collect/APT1/transportkosten.py'],
+            max: []
+        });
+        expect(arbeiten.map(a => a.name)).toEqual(['lena']);
+        // Nur die .py ist uebrig — daraus wird eine Textdatei, die .ods kam nicht hinein.
+        expect(arbeiten[0].datei.name).toBe('lena.txt');
+    });
+});
+
+describe('alsZipArbeit', () => {
+    /**
+     * Keine Typ-Frage fuer ZIP-Abgaben (15.11.2026): „Digital" verlöre still jede
+     * Seite ohne Textebene — Screenshots, Fotos, Scans — und wuerfelte Tabellen.
+     */
+    it('legt eine ZIP-Abgabe als Scan an, mit Namen und Text-Beilagen', () => {
+        const datei = new File(['%PDF'], 'lena.pdf', { type: 'application/pdf' });
+        const beilage = '=== Datei: a.py ===\nx = 1';
+        const arbeit = alsZipArbeit({ name: 'lena', datei, textBeilagen: beilage });
+        expect(arbeit.documentType).toBe('scanned');
+        expect(arbeit.originalName).toBe('lena');
+        expect(arbeit.files).toEqual([datei]);
+        expect(arbeit.textBeilagen).toBe(beilage);
+        expect(arbeit.status).toBe('pending');
     });
 });

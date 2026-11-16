@@ -15,36 +15,49 @@
  *   Pruefling. Ein einzelner umschliessender Ordner („Winter 2026/") wird
  *   uebersprungen. Liegt darin nur EIN Ordner, ist das ZIP selbst ein Pruefling.
  *
- * Was zaehlt zur Abgabe?
- * - VORLAGEN: Eine Datei, die bei ALLEN Pruefligen inhaltsgleich vorkommt, hat
- *   niemand selbst geschrieben — es sind die bereitgestellten Dateien. Sie fallen
- *   weg. Erst ab zwei Pruefligen erkennbar; bei einem bleibt alles drin.
+ * Was zaehlt zur Abgabe? Das entscheidet die Lehrkraft im Fenster „Abgaben
+ * pruefen" (15.11.2026; vorher eine lange Meldung, die sich selbst schloss).
+ * Vorgeschlagen ist:
+ * - VORLAGEN abgewaehlt: Eine Datei, die bei ALLEN Pruefligen inhaltsgleich
+ *   vorkommt, hat niemand selbst geschrieben — es sind die bereitgestellten
+ *   Dateien. Erst ab zwei Pruefligen erkennbar.
  * - Lesbar sind PDF, Bilder, Text und Quelltext. Alles andere (Word, Excel, ODS …)
- *   faellt weg und wird genannt.
+ *   ist nicht waehlbar.
  */
 import JSZip from 'jszip';
 import { istBildDatei, istCodeDatei, istPdfDatei, istTextDatei, istZipDatei } from './upload-dateiarten';
 import { buendleAbgabe } from './abgabe-buendeln';
+import { neueArbeit } from './logic';
+import type { BatchFile } from '../types';
 
-/** Eine Abgabe: der Name des Ordners oder ZIPs und die lesbaren Dateien, sortiert nach Pfad. */
-export interface ZipAbgabe {
+/** Was eine Datei in einer Abgabe ist — daraus folgt, ob sie anfangs angehakt ist. */
+export type ZipDateiArt = 'abgabe' | 'vorlage' | 'unlesbar';
+
+export interface ZipDatei {
+    /** Pfad innerhalb des Prueflings. */
+    pfad: string;
+    art: ZipDateiArt;
+    datei: File;
+}
+
+export interface ZipPruefling {
     name: string;
-    dateien: File[];
+    /** Alle Dateien, sortiert nach Pfad — auch Vorlagen und Unlesbares, damit man sie sieht. */
+    dateien: ZipDatei[];
 }
 
 export interface ZipBefund {
-    abgaben: ZipAbgabe[];
-    /** Bei allen Pruefligen inhaltsgleich — weggelassen (Pfad beim ersten Pruefling). */
-    vorlagen: string[];
-    /** „Pruefling: Datei" — Dateiart nicht lesbar, weggelassen. */
-    ausgelassen: string[];
-    /** Prueflinge ohne eine einzige lesbare Datei. */
-    ohneAbgabe: string[];
+    /** Wie die Quelle heisst: „Abgaben.zip" oder „3 ZIP-Dateien". */
+    quelle: string;
+    prueflinge: ZipPruefling[];
     /** Dateien, die keinem Pruefling gehoeren (oberste Ebene des ZIPs). */
     ausserhalb: string[];
     /** Pruefling stand zweimal im ZIP (z. B. als Ordner und als ZIP) — der erste gilt. */
     doppelt: string[];
 }
+
+/** Je Pruefling die Pfade, die uebernommen werden. */
+export type ZipAuswahl = Record<string, string[]>;
 
 interface Eintrag {
     /** Pfad innerhalb des Prueflings. */
@@ -97,7 +110,7 @@ const istLesbar = (name: string): boolean => {
 };
 
 /** Ein ZIP aus mehreren Pruefligen in Prueflinge zerlegen. */
-async function zerlegeSammelZip(eintraege: Eintrag[], zipName: string, befund: ZipBefund): Promise<Map<string, Eintrag[]>> {
+async function zerlegeSammelZip(eintraege: Eintrag[], zipName: string, befund: Pick<ZipBefund, 'ausserhalb' | 'doppelt'>): Promise<Map<string, Eintrag[]>> {
     let liste = eintraege;
     const oberste = new Set(liste.map(e => e.pfad.split('/')[0]));
     let huelle: string | undefined;
@@ -135,26 +148,25 @@ async function zerlegeSammelZip(eintraege: Eintrag[], zipName: string, befund: Z
     return prueflinge;
 }
 
-/** Vorlagen erkennen: inhaltsgleich bei allen Pruefligen. */
-function entferneVorlagen(prueflinge: Map<string, Eintrag[]>, befund: ZipBefund): void {
-    if (prueflinge.size < 2) return;
+/** Inhaltsschluessel, die bei ALLEN Pruefligen vorkommen — die bereitgestellten Dateien. */
+function vorlagenSchluessel(prueflinge: Map<string, Eintrag[]>): Set<string> {
+    if (prueflinge.size < 2) return new Set();
     const zaehler = new Map<string, number>();
     prueflinge.forEach(eintraege => {
         Array.from(new Set(eintraege.map(e => inhaltsschluessel(e.daten))))
             .forEach(s => zaehler.set(s, (zaehler.get(s) ?? 0) + 1));
     });
-    const vorlage = (e: Eintrag) => zaehler.get(inhaltsschluessel(e.daten)) === prueflinge.size;
-    const erster = Array.from(prueflinge.values())[0];
-    befund.vorlagen.push(...erster.filter(vorlage).sort(nachPfad).map(e => e.pfad));
-    prueflinge.forEach((eintraege, name) => prueflinge.set(name, eintraege.filter(e => !vorlage(e))));
+    return new Set(Array.from(zaehler.entries()).filter(([, n]) => n === prueflinge.size).map(([s]) => s));
 }
 
 /**
- * Liest ZIP-Dateien als Schuelerabgaben. Ein ZIP = Sammlung mit einem Ordner je
- * Pruefling; mehrere ZIPs = ein Pruefling je ZIP.
+ * Liest ZIP-Dateien als Schuelerabgaben — noch ohne etwas wegzulassen. Was
+ * uebernommen wird, entscheidet die Lehrkraft im Fenster „Abgaben pruefen"
+ * (`zip-pruefung.ts`); `standardAuswahl` ist der Vorschlag.
  */
 export async function leseZipAbgaben(zips: File[]): Promise<ZipBefund> {
-    const befund: ZipBefund = { abgaben: [], vorlagen: [], ausgelassen: [], ohneAbgabe: [], ausserhalb: [], doppelt: [] };
+    const quelle = zips.length === 1 ? zips[0].name : `${zips.length} ZIP-Dateien`;
+    const befund: ZipBefund = { quelle, prueflinge: [], ausserhalb: [], doppelt: [] };
 
     let prueflinge = new Map<string, Eintrag[]>();
     if (zips.length === 1) {
@@ -167,22 +179,26 @@ export async function leseZipAbgaben(zips: File[]): Promise<ZipBefund> {
         }
     }
 
-    entferneVorlagen(prueflinge, befund);
+    const vorlagen = vorlagenSchluessel(prueflinge);
+    const art = (e: Eintrag): ZipDateiArt =>
+        !istLesbar(e.pfad) ? 'unlesbar' : vorlagen.has(inhaltsschluessel(e.daten)) ? 'vorlage' : 'abgabe';
 
-    for (const [name, eintraege] of Array.from(prueflinge.entries())) {
-        const lesbar = eintraege.filter(e => istLesbar(e.pfad)).sort(nachPfad);
-        befund.ausgelassen.push(...eintraege.filter(e => !istLesbar(e.pfad)).map(e => `${name}: ${dateiname(e.pfad)}`));
-        if (lesbar.length === 0) {
-            befund.ohneAbgabe.push(name);
-            continue;
-        }
-        befund.abgaben.push({
-            name,
-            dateien: lesbar.map(e => new File([new Uint8Array(e.daten)], dateiname(e.pfad), { type: mimeTyp(e.pfad) }))
-        });
-    }
-    befund.abgaben.sort((a, b) => a.name.localeCompare(b.name, 'de', { numeric: true }));
+    prueflinge.forEach((eintraege, name) => befund.prueflinge.push({
+        name,
+        dateien: eintraege.slice().sort(nachPfad).map(e => ({
+            pfad: e.pfad,
+            art: art(e),
+            datei: new File([new Uint8Array(e.daten)], dateiname(e.pfad), { type: mimeTyp(e.pfad) })
+        }))
+    }));
+    befund.prueflinge.sort((a, b) => a.name.localeCompare(b.name, 'de', { numeric: true }));
     return befund;
+}
+
+/** Der Vorschlag: angehakt ist, was nach eigener Abgabe aussieht. */
+export function standardAuswahl(befund: ZipBefund): ZipAuswahl {
+    return Object.fromEntries(befund.prueflinge.map(p =>
+        [p.name, p.dateien.filter(d => d.art === 'abgabe').map(d => d.pfad)]));
 }
 
 /** Eine gebuendelte Abgabe, bereit als Arbeit im Stapel. */
@@ -192,40 +208,34 @@ export interface ZipArbeit {
     textBeilagen?: string;
 }
 
-/** Hoechstens so viele Namen je Liste in der Meldung — der Rest als Zahl. */
-const LISTE_MAX = 8;
-
-const liste = (titel: string, eintraege: string[]): string => {
-    if (eintraege.length === 0) return '';
-    const sichtbar = eintraege.slice(0, LISTE_MAX).join(', ');
-    const rest = eintraege.length > LISTE_MAX ? ` und ${eintraege.length - LISTE_MAX} weitere` : '';
-    return `\n\n${titel} (${eintraege.length}): ${sichtbar}${rest}`;
-};
-
 /**
- * Liest die ZIPs, buendelt jede Abgabe zu einer Datei und sagt, was dabei
- * weggefallen ist. Die Meldung ist Pflicht, nicht Beiwerk: Wer eine Abgabe
- * vermisst, muss sehen, warum.
+ * Buendelt je Pruefling die ausgewaehlten Dateien zu einer Arbeit. Prueflinge
+ * ohne Auswahl fallen weg; was sich nicht oeffnen liess, steht in `nichtZuOeffnen`.
  */
-export async function leseZipArbeiten(zips: File[]): Promise<{ arbeiten: ZipArbeit[]; meldung: string }> {
-    const befund = await leseZipAbgaben(zips);
+export async function buendleAuswahl(befund: ZipBefund, auswahl: ZipAuswahl): Promise<{ arbeiten: ZipArbeit[]; nichtZuOeffnen: string[] }> {
     const arbeiten: ZipArbeit[] = [];
     const nichtZuOeffnen: string[] = [];
-
-    for (const abgabe of befund.abgaben) {
-        const buendel = await buendleAbgabe(abgabe.name, abgabe.dateien);
-        nichtZuOeffnen.push(...(buendel?.unlesbar ?? []).map(d => `${abgabe.name}: ${d}`));
-        if (buendel) arbeiten.push({ name: abgabe.name, datei: buendel.datei, textBeilagen: buendel.textBeilagen });
-        else befund.ohneAbgabe.push(abgabe.name);
+    for (const p of befund.prueflinge) {
+        const gewaehlt = new Set(auswahl[p.name] ?? []);
+        // Unlesbares nie — auch wenn es jemand in die Auswahl schreibt.
+        const dateien = p.dateien.filter(d => gewaehlt.has(d.pfad) && d.art !== 'unlesbar').map(d => d.datei);
+        if (dateien.length === 0) continue;
+        const buendel = await buendleAbgabe(p.name, dateien);
+        nichtZuOeffnen.push(...(buendel?.unlesbar ?? []).map(d => `${p.name}: ${d}`));
+        if (buendel) arbeiten.push({ name: p.name, datei: buendel.datei, textBeilagen: buendel.textBeilagen });
     }
+    return { arbeiten, nichtZuOeffnen };
+}
 
-    const quelle = zips.length === 1 ? `„${zips[0].name}"` : `${zips.length} ZIP-Dateien`;
-    const meldung = `${quelle}: ${arbeiten.length} Prüfling(e) übernommen — die Dateien jedes Prüflings sind zu einer Arbeit zusammengefasst.`
-        + liste('Weggelassen, weil bei allen Prüflingen gleich (bereitgestellte Dateien)', befund.vorlagen)
-        + liste('Weggelassen, weil Koreki das Format nicht lesen kann', befund.ausgelassen)
-        + liste('Ließ sich nicht öffnen', nichtZuOeffnen)
-        + liste('Ohne lesbare Abgabe, nicht übernommen', befund.ohneAbgabe)
-        + liste('Doppelt im ZIP, nur einmal übernommen', befund.doppelt)
-        + liste('Liegt in keinem Prüflingsordner, nicht übernommen', befund.ausserhalb);
-    return { arbeiten, meldung };
+/**
+ * Eine gebuendelte Abgabe als Arbeit im Stapel — immer als Scan, ohne Rueckfrage.
+ *
+ * Die Frage „Digitaler Text oder Scan?" ergibt hier keinen Sinn (15.11.2026):
+ * Text und Quelltext gehen ohnehin woertlich mit (`textBeilagen`), es geht nur
+ * um das zusammengefuegte PDF. Und dort verlöre „Digital" still jede Seite ohne
+ * Textebene — Fotos, Screenshots, Scans — und wuerfelte Tabellen durcheinander.
+ * Umstellen laesst es sich wie jede Arbeit am Abzeichen.
+ */
+export function alsZipArbeit(arbeit: ZipArbeit): BatchFile {
+    return { ...neueArbeit(arbeit.datei, 0, arbeit.name, arbeit.textBeilagen), documentType: 'scanned', estimatedCredits: 2 };
 }

@@ -92,6 +92,20 @@ describe('ToastHost', () => {
         expect(screen.getByText('bleibt stehen')).toBeInTheDocument();
     });
 
+    /** Ein Bericht, den man lesen muss (ZIP-Upload), bleibt wie ein Fehler — aber in der Tonlage Hinweis. */
+    it('laesst einen Hinweis mit „bleibt" stehen, ein gewoehnlicher geht', () => {
+        render(<ToastHost />);
+        act(() => {
+            meldeHinweis('Bericht', { bleibt: true });
+            meldeHinweis('gewoehnlich');
+        });
+
+        act(() => { jest.advanceTimersByTime((STANDZEIT.hinweis as number) + 100); });
+
+        expect(screen.getByText('Bericht')).toBeInTheDocument();
+        expect(screen.queryByText('gewoehnlich')).not.toBeInTheDocument();
+    });
+
     it('laesst sich von Hand schliessen', () => {
         render(<ToastHost />);
         act(() => { meldeFehler('weg damit'); });

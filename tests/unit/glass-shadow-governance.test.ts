@@ -85,6 +85,7 @@ const SCHWEBENDE: Record<string, string> = {
     'components/OnboardingModal.tsx': 'Modal',
     'components/PDFSplitModal.tsx': 'Modal',
     'components/PDFTypeModal.tsx': 'Modal',
+    'components/upload/ZipPruefDialog.tsx': 'Modal (Abgaben aus einem ZIP pruefen)',
     'components/PromptSettingsModal.tsx': 'Modal',
     'components/PureKeyModal.tsx': 'Modal',
     'components/QuickStartModal.tsx': 'Modal',

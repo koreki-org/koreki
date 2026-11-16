@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
 import { BatchFile, Task, AppSettings } from '../../types';
 import { reindexBatchFiles, fuegeArbeitenHinzu, neueArbeit, calculatePercentageFromTasks, calculateGrade } from '../../lib/logic';
-import { leseZipArbeiten } from '../../lib/zip-abgaben';
+import { alsZipArbeit } from '../../lib/zip-abgaben';
+import { uebernimmZip } from '../../lib/zip-pruefung';
 import { performAIRequest, performOCRRequest } from '../../lib/ai-logic';
 import { extractTextFromFile, convertPdfToImage } from '../../lib/file-utils';
 import { parseMoodleExcel, erklaereMoodleBefund } from '../../lib/excel';
@@ -136,15 +137,14 @@ export const useBatchActions = (
         const verknuepfung = verknuepfeDateien(useBatchStore.getState().batchFiles, files);
         const bestand: BatchFile[] = verknuepfung.liste;
 
-        // 3b. ZIP: ein Ordner je Pruefling, gebuendelt zu EINER Arbeit (zip-abgaben.ts).
+        // 3b. ZIP: ein Ordner je Pruefling; die Lehrkraft prueft die Auswahl im Fenster (zip-pruefung.ts).
         const zips = allFiles.filter(istZipDatei);
-        const zip = zips.length === 0 ? undefined : await leseZipArbeiten(zips)
+        const zipArbeiten = zips.length === 0 ? undefined : await uebernimmZip(zips)
             .catch(err => { meldeFehler(`Das ZIP ließ sich nicht lesen.\n\n${toErrorMessage(err)}`); return undefined; });
-        if (zip) meldeHinweis(zip.meldung);
 
         const standardItems: BatchFile[] = [
             ...verknuepfung.uebrig.map(f => neueArbeit(f, 0)),
-            ...(zip?.arbeiten ?? []).map(a => neueArbeit(a.datei, 0, a.name, a.textBeilagen))
+            ...(zipArbeiten ?? []).map(alsZipArbeit)
         ].map((arbeit, idx) => ({ ...arbeit, name: `Schüler #${idx + 1 + moodleItems.length}` }));
 
         // 4. Anhaengen statt ersetzen. In zwei Schritten, weil die Grenze
@@ -164,23 +164,20 @@ export const useBatchActions = (
             );
         }
 
-        // 5. Handle PDF Type Selection Queue
-        const neueDateien = finalBatch.slice(nachMoodle.liste.length);
-        if (neueDateien.length > 0) {
-            setPdfTypeQueue(neueDateien.map((item, i) => ({
-                idx: nachMoodle.liste.length + i,
-                fileName: item.files?.[0]?.name ?? item.name
-            })));
-        }
+        // 5. Typ-Frage nur fuer Arbeiten ohne Typ — ZIP-Abgaben sind schon Scan (alsZipArbeit).
+        const offen = finalBatch.map((item, idx) => ({ idx, fileName: item.files?.[0]?.name ?? item.name, item }))
+            .slice(nachMoodle.liste.length).filter(({ item }) => item.documentType === 'unknown');
+        if (offen.length > 0) setPdfTypeQueue(offen.map(({ idx, fileName }) => ({ idx, fileName })));
+        const nurZip = !!zipArbeiten?.length && offen.length === 0;
 
         // 6. Moodle-Arbeiten gehen sofort in die Zuordnung, verknuepfte holen ihre Vorschau
         //    nach. Nacheinander, weil beide ueber Platznummern schreiben; der Vorschau-Lauf
         //    bekommt nur den Bestand — die neuen Dateien warten noch auf ihre Typfrage.
         const moodleNeu = nachMoodle.liste.length > bestand.length;
         if (verknuepfung.verknuepft > 0) meldeHinweis(meldeVerknuepfung(verknuepfung, 'hochladen'));
-        if (moodleNeu || verknuepfung.verknuepft > 0) {
+        if (moodleNeu || nurZip || verknuepfung.verknuepft > 0) {
             setTimeout(async () => {
-                if (moodleNeu) await startExtraction(finalBatch);
+                if (moodleNeu || nurZip) await startExtraction(finalBatch);
                 if (verknuepfung.verknuepft > 0) await startExtraction(bestand, true);
             }, 200);
         }

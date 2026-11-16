@@ -37,12 +37,12 @@ const MeldungMitUhr: React.FC<{ meldung: Meldung; verwirf: (id: number) => void 
     verwirf
 }) => {
     useEffect(() => {
-        const standzeit = STANDZEIT[meldung.art];
+        const standzeit = meldung.bleibt ? null : STANDZEIT[meldung.art];
         if (standzeit === null) return;
 
         const uhr = window.setTimeout(() => verwirf(meldung.id), standzeit);
         return () => window.clearTimeout(uhr);
-    }, [meldung.id, meldung.art, verwirf]);
+    }, [meldung.id, meldung.art, meldung.bleibt, verwirf]);
 
     return <Toast art={meldung.art} text={meldung.text} onSchliessen={() => verwirf(meldung.id)} />;
 };
