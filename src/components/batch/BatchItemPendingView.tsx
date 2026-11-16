@@ -4,6 +4,7 @@ import { Badge } from '../ui/Badge';
 import { AufgabenReiter } from '../ui/AufgabenReiter';
 import { EditableMathArea } from '../ui/EditableMathArea';
 import { BatchScanViewer } from './parts/BatchScanViewer';
+import { ZuordnungsHinweis } from './parts/ZuordnungsHinweis';
 import { BatchFile, Task } from '../../types';
 import { hasOcrWarnings } from '../../lib/task-utils';
 import { cn } from '@/lib/utils';
@@ -58,7 +59,8 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                         onWaehle={onSetActiveGroupName}
                         warnung={(name) => groupedTasks[name].some(task => {
                             const sIdx = tasksLayout.findIndex(t => t.name === task.name);
-                            return hasOcrWarnings(studentSections[sIdx] || '');
+                            return hasOcrWarnings(studentSections[sIdx] || '')
+                                || !!item.tasks?.find(t => t.name === task.name)?.zuordnungsHinweis;
                         })}
                         className="mb-4 shrink-0"
                     />
@@ -70,7 +72,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                             const sectionHasUncertainty = hasOcrWarnings(sectionText);
 
                             return (
-                                <div key={task.name} className="group">
+                                <div key={task.name} className="group space-y-3">
                                     <EditableMathArea
                                         leftAction={
                                             <>
@@ -97,6 +99,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                                         className="w-full"
                                         initialEditMode={sectionHasUncertainty}
                                     />
+                                    <ZuordnungsHinweis text={item.tasks?.find(t => t.name === task.name)?.zuordnungsHinweis} />
                                 </div>
                             );
                         })}

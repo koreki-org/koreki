@@ -117,6 +117,8 @@ export function parseCorrectionResult(
 export interface MappedTask {
     name?: string;
     content?: string;
+    /** Siehe `Task.zuordnungsHinweis` — nie Teil von `content`. */
+    zuordnungsHinweis?: string;
 }
 
 export interface MappingResult {
@@ -138,8 +140,11 @@ export function parseMappingResult<T extends MappingResult>(result: T, tasksLayo
     result.tasks = tasksLayout.map((layoutTask: Task) => {
         const { aiTask, hinweis } = findeKiAufgabe(layoutTask, aiTasks, tasksLayout);
         if (!aiTask) return { name: layoutTask.name, content: '[unbeantwortet]' };
-        if (!hinweis) return aiTask;
-        return { name: layoutTask.name, content: `${hinweis}\n\n${aiTask.content ?? ''}` };
+        // Der Name kommt IMMER aus der Musterloesung — auch bei geretteten Treffern
+        // ohne Hinweis. Sonst stuende "Aufgabe 3.1 (3 P)" in der Arbeit, und jede
+        // spaetere Suche nach "Aufgabe 3.1" ginge ins Leere.
+        const gerettet = { ...aiTask, name: layoutTask.name };
+        return hinweis ? { ...gerettet, zuordnungsHinweis: hinweis } : gerettet;
     });
 
     return result;

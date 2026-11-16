@@ -75,8 +75,9 @@ describe('AI Orchestrator (Layer 1 Unit)', () => {
             expect(result.tasks[0].name).toBe('Aufgabe 1'); // Reverts to layout name
             expect(result.tasks[0].pointsObtained).toBe(7);
             expect(result.tasks[0].content).toBe('Antwort mit Tippfehler im Namen');
-            expect(result.tasks[0].feedback).toContain('[KI-FEHLER?]');
-            expect(result.tasks[0].feedback).toContain('Fast richtig');
+            // Nur Schreibweise: kein Hinweis, das Feedback bleibt wie geliefert.
+            expect(result.tasks[0].feedback).toBe('Fast richtig');
+            expect(result.tasks[0].zuordnungsHinweis).toBeUndefined();
         });
 
         it('should handle hard missing tasks by returning zero points and empty content', () => {

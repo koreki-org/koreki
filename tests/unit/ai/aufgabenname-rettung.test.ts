@@ -42,8 +42,26 @@ describe('Rettung eines veraenderten Aufgabennamens', () => {
             const { task } = mapLayoutTask(alles[0], ki, alles);
 
             expect(task.pointsObtained).toBe(2);
-            expect(task.feedback).toContain('Gut gemacht.');
-            expect(task.feedback).toContain('[KI-FEHLER?]');
+            // Der Hinweis steht NEBEN dem Feedback — das Feedback geht an den Schueler.
+            expect(task.feedback).toBe('Gut gemacht.');
+            expect(task.zuordnungsHinweis).toContain('„a)“');
+        });
+
+        /**
+         * Nur die Schreibweise weicht ab — der Fall vom 16.11.2026: die Punktangabe
+         * aus der Aufgabenliste mitkopiert. Eindeutig, also ohne Hinweis.
+         */
+        it('blosse Schreibweise: gerettet, ohne Hinweis', () => {
+            const alles = [layout('Aufgabe 3.1'), layout('Aufgabe 3.2')];
+            const ki = [kiAufgabe('Aufgabe 3.1 (3 P)', 2), kiAufgabe('aufgabe 3.2', 1)];
+
+            const erste = mapLayoutTask(alles[0], ki, alles).task;
+            const zweite = mapLayoutTask(alles[1], ki, alles).task;
+
+            expect([erste.pointsObtained, zweite.pointsObtained]).toEqual([2, 1]);
+            expect(erste.zuordnungsHinweis).toBeUndefined();
+            expect(zweite.zuordnungsHinweis).toBeUndefined();
+            expect(erste.feedback).toBe('Gut gemacht.');
         });
 
         it('das Modell verlaengert den Namen um die Aufgabenstellung', () => {
@@ -78,6 +96,20 @@ describe('Rettung eines veraenderten Aufgabennamens', () => {
         it('Aufgabe 1 nimmt sich nicht die Bewertung von Aufgabe 11', () => {
             const alles = [layout('Aufgabe 1'), layout('Aufgabe 11')];
             const ki = [kiAufgabe('Aufgabe 11', 2)];
+
+            const { task } = mapLayoutTask(alles[0], ki, alles);
+
+            expect(task.pointsObtained).toBe(0);
+            expect(task.feedback).toContain(NICHT_ERKANNT);
+        });
+
+        /**
+         * Seit die blosse Schreibweise ohne Hinweis durchgeht, braucht auch sie die
+         * Gegenprobe: "3.1" und "31" haben denselben Kern.
+         */
+        it('gleicher Kern bei zwei Aufgaben der Musterloesung — dann keine', () => {
+            const alles = [layout('Aufgabe 3.1'), layout('Aufgabe 31')];
+            const ki = [kiAufgabe('Aufgabe 3.1 (2 P)', 2)];
 
             const { task } = mapLayoutTask(alles[0], ki, alles);
 
@@ -134,7 +166,7 @@ describe('Rettung eines veraenderten Aufgabennamens', () => {
         const { task } = mapLayoutTask(alles[0], ki, alles);
 
         expect(task.pointsObtained).toBe(2);
-        expect(task.feedback).not.toContain('[KI-FEHLER?]');
+        expect(task.zuordnungsHinweis).toBeUndefined();
     });
 
     /** Ohne die Liste aller Aufgaben verhaelt sich die Funktion wie zuvor. */

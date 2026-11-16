@@ -111,7 +111,7 @@ describe('AI Logic tests', () => {
 
         const final = parseCorrectionResult(aiResult, layout);
         expect(final.tasks[0].name).toBe('Mathematik 1'); // Realigned
-        expect(final.tasks[0].feedback).toContain('[KI-FEHLER?] Name nicht exakt');
+        expect(final.tasks[0].zuordnungsHinweis).toBeUndefined(); // only spelling differs
         expect(final.confidence).toBe(0.98); // No brake for case mismatch
       });
 

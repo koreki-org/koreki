@@ -107,11 +107,22 @@ describe('Namensrettung gilt auch fuer Engine-Aufgaben', () => {
      * Engine-Zweigen. Fuer Aufgaben ohne Engine griff sie seit dem 03.09.2026.
      */
     it('rettet eine Rechenketten-Aufgabe mit gekuerztem Namen', () => {
+        const ki = [kiAufgabe({ name: 'Aufgabe 1 Berechne', pointsObtained: 2 })];
+
+        const { task, mappingError } = mapLayoutTask(RECHENAUFGABE, ki, [RECHENAUFGABE]);
+
+        expect(task.zuordnungsHinweis).toContain('bitte prüfen');
+        expect(task.feedback).toContain('CalcTrace Engine');
+        expect(mappingError).toBeUndefined();
+    });
+
+    /** "1" statt "Aufgabe 1" ist nur Schreibweise: gerettet, ohne Hinweis (16.11.2026). */
+    it('rettet eine Rechenketten-Aufgabe mit anderer Schreibweise ohne Hinweis', () => {
         const ki = [kiAufgabe({ name: '1', pointsObtained: 2 })];
 
         const { task, mappingError } = mapLayoutTask(RECHENAUFGABE, ki, [RECHENAUFGABE]);
 
-        expect(task.feedback).toContain('[KI-FEHLER?]');
+        expect(task.zuordnungsHinweis).toBeUndefined();
         expect(task.feedback).toContain('CalcTrace Engine');
         expect(mappingError).toBeUndefined();
     });
@@ -120,7 +131,7 @@ describe('Namensrettung gilt auch fuer Engine-Aufgaben', () => {
     it('setzt beim exakten Treffer keinen Hinweis', () => {
         const { task } = mapLayoutTask(RECHENAUFGABE, [kiAufgabe({})], [RECHENAUFGABE]);
 
-        expect(task.feedback).not.toContain('[KI-FEHLER?]');
+        expect(task.zuordnungsHinweis).toBeUndefined();
         expect(task.feedback).toContain('CalcTrace Engine');
     });
 

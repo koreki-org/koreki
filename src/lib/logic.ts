@@ -76,6 +76,15 @@ export interface Task {
     predictedPluginDomain?: string | null;
     sandboxBypassed?: boolean;
     /**
+     * Die KI hat diese Aufgabe unter einem gekuerzten oder erweiterten Namen
+     * geliefert; die Zuordnung war eindeutig, soll aber angesehen werden. Gesetzt
+     * von `findeKiAufgabe` in Zuordnung und Bewertung.
+     *
+     * Ein eigenes Feld, damit der Hinweis weder im Schuelertext (geht an die
+     * Bewertung) noch im Feedback (geht an den Schueler) landet.
+     */
+    zuordnungsHinweis?: string;
+    /**
      * Die Hauptaufgabe, zu der diese Teilaufgabe gehört, samt ihrem Stamm — dem Text
      * zwischen Überschrift der Hauptaufgabe und erster Teilaufgabe. Siehe `lib/hauptaufgaben.ts`.
      */

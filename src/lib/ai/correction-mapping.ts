@@ -440,14 +440,12 @@ export function mapMissingTask(layoutTask: Task): TaskMappingResult {
     };
 }
 
-/** Den Rettungs-Hinweis vor die Rueckmeldung setzen, ohne sie sonst anzutasten. */
+/**
+ * Den Rettungs-Hinweis an die Aufgabe haengen — als eigenes Feld, nicht vor das
+ * Feedback: Das Feedback geht an den Schueler (siehe `findeKiAufgabe`).
+ */
 function mitHinweis(ergebnis: TaskMappingResult, hinweis: string): TaskMappingResult {
-    return {
-        ...ergebnis,
-        task: { ...ergebnis.task, feedback: `${hinweis}
-
-${ergebnis.task.feedback || ''}` }
-    };
+    return { ...ergebnis, task: { ...ergebnis.task, zuordnungsHinweis: hinweis } };
 }
 
 /**

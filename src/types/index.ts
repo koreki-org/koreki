@@ -358,6 +358,8 @@ export interface AITask {
      * (e.g. AST extraction failed or produced an empty AST). The client uses this flag to render
      * a manual-review warning banner in the UI. */
     sandboxBypassed?: boolean;
+    /** Gesetzt von `findeKiAufgabe`, nie vom Modell — siehe `Task.zuordnungsHinweis`. */
+    zuordnungsHinweis?: string;
 }
 
 export interface AIAnalysisResult {

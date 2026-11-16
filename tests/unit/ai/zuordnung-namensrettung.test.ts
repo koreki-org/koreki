@@ -11,12 +11,12 @@
  * nutzt jetzt dieselbe. Dazu faellt die Punktangabe vor dem Vergleich weg: Mit ihr
  * wurde "Aufgabe 1 (2 P)" zum Kern "12p" und passte auf "Aufgabe 1" UND "Aufgabe 12".
  */
-import { parseMappingResult } from '../../../src/lib/ai/ai-orchestrator';
+import { parseMappingResult, type MappingResult } from '../../../src/lib/ai/ai-orchestrator';
 import { alsKern } from '../../../src/lib/ai/aufgabenname-zuordnung';
 import type { Task } from '../../../src/types';
 
 const layout = (...namen: string[]) => namen.map(name => ({ name, maxPoints: 2 } as Task));
-const antwort = (...paare: [string, string][]) => ({ tasks: paare.map(([name, content]) => ({ name, content })) });
+const antwort = (...paare: [string, string][]): MappingResult => ({ tasks: paare.map(([name, content]) => ({ name, content })) });
 
 describe('Punktangabe im Aufgabennamen', () => {
     it.each([
@@ -46,7 +46,20 @@ describe('parseMappingResult rettet veraenderte Namen wie die Korrektur', () => 
         expect(ergebnis.tasks?.map(t => t.name)).toEqual(['Aufgabe 3.1', 'Aufgabe 3.2']);
         expect(ergebnis.tasks?.[0].content).toContain('m = 1');
         expect(ergebnis.tasks?.[1].content).toContain('[EINTRAGUNG');
-        expect(ergebnis.tasks?.[0].content).toContain('[KI-FEHLER?]');
+        // Blosse Schreibweise: kein Hinweis — und schon gar nicht im Schuelertext,
+        // den die Bewertung woertlich ans Modell schickt (16.11.2026).
+        expect(ergebnis.tasks?.[0]).toEqual({ name: 'Aufgabe 3.1', content: 'm = 1' });
+    });
+
+    it('gekuerzter Name: Hinweis im eigenen Feld, Schuelertext unberuehrt', () => {
+        const ergebnis = parseMappingResult(
+            antwort(['a)', 'Zwei Ursachen sind ...'], ['b)', 'Das Buendnis ...']),
+            layout('a) Zwei Ursachen', 'b) Buendnissystem')
+        );
+
+        expect(ergebnis.tasks?.[0].name).toBe('a) Zwei Ursachen');
+        expect(ergebnis.tasks?.[0].content).toBe('Zwei Ursachen sind ...');
+        expect(ergebnis.tasks?.[0].zuordnungsHinweis).toContain('bitte prüfen');
     });
 
     /** Der gefaehrliche Fall, den die Punktangabe vorher erst erzeugt hat. */
@@ -67,11 +80,10 @@ describe('parseMappingResult rettet veraenderte Namen wie die Korrektur', () => 
         expect(ergebnis.tasks?.[0]).toEqual({ name: 'Aufgabe 1', content: 'Text' });
     });
 
-    it('nur Gross-/Kleinschreibung abweichend: weiterhin gerettet, mit Hinweis', () => {
+    it('nur Gross-/Kleinschreibung abweichend: gerettet, Name aus der Musterloesung', () => {
         const ergebnis = parseMappingResult(antwort(['aufgabe 1', 'Text']), layout('Aufgabe 1'));
 
-        expect(ergebnis.tasks?.[0].content).toContain('[KI-FEHLER?] Name nicht exakt');
-        expect(ergebnis.tasks?.[0].content).toContain('Text');
+        expect(ergebnis.tasks?.[0]).toEqual({ name: 'Aufgabe 1', content: 'Text' });
     });
 
     it('mehrdeutig: keine Zuordnung, sondern "[unbeantwortet]"', () => {

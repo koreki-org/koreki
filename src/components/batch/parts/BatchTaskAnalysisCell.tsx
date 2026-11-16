@@ -7,6 +7,7 @@ import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
 import Dropdown from '@/components/ui/Dropdown';
 import { BatchFile, Task } from '../../../types';
 import { VertrauensChip } from './VertrauensChip';
+import { ZuordnungsHinweis } from './ZuordnungsHinweis';
 import { useTaskReviewActions } from '@/hooks/useTaskReviewActions';
 import { useSecondOpinion } from '@/hooks/useSecondOpinion';
 import { schuelerAntwort } from '@/lib/schueler-antwort';
@@ -94,6 +95,7 @@ export const BatchTaskAnalysisCell: React.FC<BatchTaskAnalysisCellProps> = ({
                 placeholder="Feedback ..."
                 className="w-full"
             />
+            <ZuordnungsHinweis text={aiResult?.zuordnungsHinweis} />
             {aiResult?.sandboxBypassed && (
                 <div className="bg-destructive/10 text-destructive border border-destructive/20 rounded-xl p-3 flex items-start gap-2 text-xs font-semibold">
                     <AlertCircle size={16} className="shrink-0 mt-0.5" />

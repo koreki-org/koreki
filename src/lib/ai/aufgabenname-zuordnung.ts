@@ -67,9 +67,17 @@ export function findeVeraenderteAufgabe<T extends Benannt>(
     if (!kern) return undefined;
 
     // Stufe 1 — gleicher Kern, nur andere Schreibweise.
+    //
+    // Mit derselben Gegenprobe wie Stufe 2: "Aufgabe 3.1" und "Aufgabe 31" haben
+    // denselben Kern "31". Seit ein Treffer dieser Stufe keinen Hinweis mehr
+    // erzeugt (16.11.2026), muss er dafuer auch in beide Richtungen eindeutig sein —
+    // eine stille Verwechslung waere schlimmer als eine laute.
     const gleicherKern = aiTasks.filter(t => alsKern(t.name) === kern);
-    if (gleicherKern.length === 1) return { treffer: gleicherKern[0], art: 'kern' };
     if (gleicherKern.length > 1) return undefined;
+    if (gleicherKern.length === 1) {
+        const gleicheImLayout = allesLayout.filter(l => alsKern(l.name) === kern);
+        return gleicheImLayout.length === 1 ? { treffer: gleicherKern[0], art: 'kern' } : undefined;
+    }
 
     // Stufe 2 — der eine Name ist die Kurzform des anderen.
     const passt = (a: string, b: string) => a.length > 0 && b.length > 0 && (a.startsWith(b) || b.startsWith(a));
@@ -93,6 +101,15 @@ export function findeVeraenderteAufgabe<T extends Benannt>(
  * ist die Bewertung brauchbar und nur der Name schief, im zweiten fehlt sie ganz und
  * das ganze Dokument braucht einen Blick.
  *
+ * DER HINWEIS IST EIN EIGENES FELD, kein Text. Bis zum 16.11.2026 stand er als
+ * "[KI-FEHLER?] Name nicht exakt (...)" VOR dem Inhalt — in der Zuordnung also im
+ * Schuelertext, den die Bewertung wortwoertlich ans Modell schickt
+ * (`baueSchuelertext`), in der Bewertung im Feedback an den Schueler. Und er kam
+ * auch dann, wenn das Modell nur die Punktangabe aus der Aufgabenliste mitkopiert
+ * hatte ("Aufgabe 3.1 (3 P)") — bei jeder Teilaufgabe eines Blatts. Jetzt gilt:
+ * - blosse Schreibweise (`kern`): kein Hinweis, die Zuordnung ist eindeutig;
+ * - gekuerzter oder erweiterter Name (`anfang`): Hinweis, die Lehrkraft schaut nach.
+ *
  * EIGENE FUNKTION SEIT DEM 05.09.2026 — und das ist der Kern der Reparatur. Die
  * Rettung steckte vorher in `mapMissingTask`, und `mapLayoutTask` erreichte die erst
  * NACH den Engine-Zweigen. Eine Rechenketten- oder Graph-Aufgabe lief deshalb auch
@@ -115,9 +132,8 @@ export function findeKiAufgabe<T extends Benannt>(
     if (!gerettet) return {};
 
     const treffer = gerettet.treffer;
-    const hinweis = gerettet.art === 'kern'
-        ? `[KI-FEHLER?] Name nicht exakt ("${treffer.name}" statt "${layoutTask.name}")`
-        : `[KI-FEHLER?] Name gekuerzt oder erweitert ("${treffer.name}" statt "${layoutTask.name}") — Zuordnung war eindeutig, bitte pruefen`;
+    if (gerettet.art === 'kern') return { aiTask: treffer };
 
+    const hinweis = `Die KI hat diese Aufgabe als „${treffer.name ?? ''}“ zurückgegeben. Die Zuordnung war eindeutig — bitte prüfen.`;
     return { aiTask: treffer, hinweis };
 }
