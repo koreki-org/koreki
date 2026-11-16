@@ -65,6 +65,8 @@ Bei schwer lesbarer Handschrift kann die KI ein Wort falsch lesen und dabei etwa
 
 Unter **Stapelverarbeitung** stehen alle Arbeiten. Klicke auf **Korrigieren**. Koreki liest jede Arbeit und macht für jede Aufgabe einen Vorschlag. Du kannst den Lauf jederzeit abbrechen.
 
+Solange Bilderkennung oder Korrektur laufen, lassen sich Arbeiten weder löschen noch mit der **Schere** aufteilen. Beides verschiebt die Liste, und ein Ergebnis könnte sonst bei der falschen Arbeit landen. Musst du vorher etwas ändern, brich den Lauf ab.
+
 ## 5. Prüfen und exportieren {#exportieren}
 
 Öffne jede Arbeit und sieh dir die Vorschläge an. Links steht, was Koreki aus der Arbeit gelesen hat, rechts der Vorschlag mit Punkten und Feedback. Punkte und Texte kannst du direkt ändern. Worauf du dabei achtest, steht unter [Vorschläge prüfen](/korrigieren/vorschlaege-pruefen).

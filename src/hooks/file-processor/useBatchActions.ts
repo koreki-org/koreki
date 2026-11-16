@@ -14,6 +14,7 @@ import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { erzeugeKorrekturEintraege } from '@/lib/ai-protocol';
 import { verknuepfeDateien, meldeVerknuepfung } from '@/lib/dateien-verknuepfen';
 import { istLesbaresDokument, istZipDatei, SCHUELERARBEIT_ENDUNGEN } from '@/lib/upload-dateiarten';
+import { listeWaehrendLaufGesperrt } from './lauf-sperre';
 
 export const useBatchActions = (
     state: any,
@@ -32,6 +33,7 @@ export const useBatchActions = (
     } = state;
 
     const removeFile = useCallback((index: number) => {
+        if (listeWaehrendLaufGesperrt()) return;
         setBatchFiles((prev: BatchFile[]) => {
             const updated = prev.filter((_, idx) => idx !== index);
             return reindexBatchFiles(updated);

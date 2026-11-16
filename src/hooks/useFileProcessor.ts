@@ -12,6 +12,7 @@ import { useBatchActions } from './file-processor/useBatchActions';
 import { useProcessingPipeline } from './file-processor/useProcessingPipeline';
 import { toErrorMessage, isRateLimitError } from '../lib/error-message';
 import { meldeFehler, meldeHinweis } from '@/lib/notify';
+import { listeWaehrendLaufGesperrt } from './file-processor/lauf-sperre';
 
 export const useFileProcessor = (
     userData: any,
@@ -112,6 +113,8 @@ export const useFileProcessor = (
 
     const executeSplit = useCallback((students: { firstName?: string, lastName?: string, name?: string, pageCount: number }[]) => {
         if (splitIdx === null) return;
+        // Aufteilen ersetzt eine Zeile durch mehrere — jede folgende verschiebt sich.
+        if (listeWaehrendLaufGesperrt()) { setSplitIdx(null); return; }
         const target = batchFiles[splitIdx];
         if (!target.files || target.files.length === 0) return;
 

@@ -15,6 +15,7 @@ import { BatchItemStatusSummary } from './parts/BatchItemStatusSummary';
 import { BatchItemRunActions } from './parts/BatchItemRunActions';
 import { MobileViewSelector } from './parts/MobileViewSelector';
 import { useOllamaToken } from '@/hooks/useOllamaToken';
+import { LAUF_SPERRE_HINWEIS } from '@/hooks/file-processor/lauf-sperre';
 
 interface BatchFileListItemProps {
     item: BatchFile;
@@ -147,7 +148,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                 <div className="flex items-center gap-2 shrink-0">
                     {!isProcessing && item.status === 'pending' && (
                         <>
-                            {item.pageCount && item.pageCount > 1 && <Button variant="outline" size="icon" onClick={(e) => { e.stopPropagation(); onSplit(idx); }} className="h-8 w-8 text-primary border-primary/20 bg-primary/10 hover:bg-primary hover:text-white transition-all"><Scissors size={14}/></Button>}
+                            {item.pageCount && item.pageCount > 1 && <Button variant="outline" size="icon" disabled={loading} title={loading ? LAUF_SPERRE_HINWEIS : undefined} aria-label="Aufteilen" onClick={(e) => { e.stopPropagation(); onSplit(idx); }} className="h-8 w-8 text-primary border-primary/20 bg-primary/10 hover:bg-primary hover:text-white transition-all"><Scissors size={14}/></Button>}
                             {item.documentType === 'scanned' && <Button variant="outline" size="icon" onClick={(e) => { e.stopPropagation(); onRedact(idx); }} className="h-8 w-8 text-primary border-primary/20 bg-primary/5 hover:bg-primary hover:text-white transition-all rounded-lg"><Highlighter size={14}/></Button>}
                         </>
                     )}
@@ -165,7 +166,8 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                         </div>
                     )}
                     <BatchItemRunActions item={item} idx={idx} loading={loading} isProcessing={isProcessing} onProcessSingleFile={onProcessSingleFile} onProcessSingleOCR={onProcessSingleOCR} canRerunSingleOcr={canRerunSingleOcr} />
-                    {!isProcessing && <Button variant="ghost" size="icon" onClick={() => onRemoveFile(idx)} className="h-8 w-8 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/5 transition-all rounded-lg"><Trash2 size={14}/></Button>}
+                    {/* Waehrend eines Laufs aus, nicht weg: siehe `lauf-sperre.ts`. */}
+                    {!isProcessing && <Button variant="ghost" size="icon" disabled={loading} title={loading ? LAUF_SPERRE_HINWEIS : undefined} aria-label="Arbeit löschen" onClick={() => onRemoveFile(idx)} className="h-8 w-8 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/5 transition-all rounded-lg"><Trash2 size={14}/></Button>}
                     {(item.fileText || item.tasks) && <Button variant="ghost" size="icon" onClick={() => onToggleExpand(isExpanded ? null : idx)} aria-label="Details" className="h-8 w-8 text-muted-foreground transition-transform duration-300 rounded-lg" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}><ChevronDown size={18} /></Button>}
                 </div>
             </div>
