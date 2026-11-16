@@ -56,6 +56,8 @@ Gemäß [Prompt Architecture V2](../../../docs/technical/prompt-architecture-v2.
 
 Neue oder geänderte Instruktionstexte gehören in die Content-Library, nicht als zusätzliche Template-Literale in die Engine — auch nicht "vorübergehend".
 
+**Bausteine statt Kopien.** Eine Regel, die in mehreren Prompts gelten muss, steht genau einmal unter `src/prompts/core/default/bausteine/<name>.md` und wird mit `{{baustein:<name>}}` eingebunden (`src/lib/ai/prompt-bausteine.ts`). Wer eine Regel in einem Prompt ändert, prüft, ob ein paralleler Prompt dieselbe braucht — Musterlösung und Schülerarbeit sind die typischen Geschwister. *(Wächter: `tests/unit/prompt-baustein-governance.test.ts`, Liste `PFLICHT`. Details: `docs/technical/prompt-architecture-v2.md` §2.3.)*
+
 ## 8. Format- & Integritäts-Guards
 Diese bestehenden Mechanismen dürfen durch Prompt-Änderungen nicht geschwächt werden:
 - **Fidelity Guard**: Schülerfehler dürfen von der KI nicht gedanklich korrigiert werden.

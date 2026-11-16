@@ -10,6 +10,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { buildCleanAndMapPrompt, buildCorrectionPrompt } from '../../../src/lib/ai/prompt-builder';
 import { enthaeltEintragung, mitZeichenRegel } from '../../../src/lib/ai/eintragungen';
+import { mitBausteinen } from '../../../src/lib/ai/prompt-bausteine';
 import type { Task } from '../../../src/types';
 
 const PROMPTS = path.join(__dirname, '../../../src/prompts/core/default');
@@ -31,7 +32,8 @@ describe('enthaeltEintragung', () => {
 
 describe('Zuordnung', () => {
     it('ohne Zeichnung: der unveraenderte Prompt', () => {
-        expect(buildCleanAndMapPrompt(OHNE, layout).system).toBe(lies('analyze-and-map/system.md'));
+        // Die Vorlage MIT eingesetzten Bausteinen — die stehen immer da (16.11.2026).
+        expect(buildCleanAndMapPrompt(OHNE, layout).system).toBe(mitBausteinen(lies('analyze-and-map/system.md')));
     });
 
     it('mit Zeichnung: die Zuordnungsregel ist angehaengt', () => {

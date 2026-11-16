@@ -40,6 +40,7 @@ import mathHybridHeader from '../../prompts/core/default/correction/math-engine/
 import mathAutoHeader from '../../prompts/core/default/correction/math-engine/auto-header.md';
 import { TEMPERATURE_MINIMUM, TOP_P_DEFAULT } from './temperature-guidance';
 import { mitZeichenRegel } from './eintragungen';
+import { mitBausteinen } from './prompt-bausteine';
 
 import analyzeCleanSystemDefault from '../../prompts/core/default/analyze-and-clean/system.md';
 import analyzeCleanUserDefault from '../../prompts/core/default/analyze-and-clean/user.md';
@@ -226,7 +227,7 @@ export function buildCorrectionPrompt(
  * HMR Trigger: 2026-06-20T15:25:00
  */
 export function buildCleanAndAnalyzePrompt(modelSolution: string, model?: string): StructuredPrompt {
-    let system = analyzeCleanSystemDefault;
+    let system = mitBausteinen(analyzeCleanSystemDefault);
     let user = analyzeCleanUserDefault;
 
     if (model?.toLowerCase().includes('gemma')) {
@@ -257,7 +258,7 @@ export function buildCleanAndAnalyzePrompt(modelSolution: string, model?: string
  * Builds the prompt for cleaning raw student text (digital PDFs).
  */
 export function buildCleanAndMapPrompt(studentText: string, tasksLayout?: Task[], model?: string): StructuredPrompt {
-    let system = analyzeMapSystemDefault;
+    let system = mitBausteinen(analyzeMapSystemDefault);
     let user = analyzeMapUserDefault;
 
     if (model?.toLowerCase().includes('gemma')) {
@@ -265,8 +266,11 @@ export function buildCleanAndMapPrompt(studentText: string, tasksLayout?: Task[]
     }
     system = mitZeichenRegel(system, studentText, 'zuordnung');
 
-    const layoutString = tasksLayout 
-        ? tasksLayout.map(t => `- ${t.name} (${t.maxPoints} P)`).join('\n')
+    // Nur die Namen, ohne Punktangabe: Die Zuordnung braucht keine Punkte, und
+    // Modelle uebernahmen die gezeigte Form "Aufgabe 3.1 (3 P)" als Namen — gegen
+    // die ausdrueckliche Anweisung im Antwortformat (10.11. und 16.11.2026).
+    const layoutString = tasksLayout
+        ? tasksLayout.map(t => `- ${t.name}`).join('\n')
         : '';
     
     user = setzeEin(user, '{{tasksLayout}}', layoutString);

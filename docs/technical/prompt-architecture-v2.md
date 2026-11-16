@@ -3,7 +3,7 @@ title: "Prompt Architecture V2: Modular Identity & Skill Library"
 description: "Migration der hardcodeten Expert-Profiles und Skills in ein einheitliches, Markdown-basiertes Library-System."
 author: "@principal_architect"
 date: "2026-05-14"
-last_updated: "2026-05-14"
+last_updated: "2026-11-16"
 status: "Draft"
 domain: "technical"
 security_classification: "Internal"
@@ -29,6 +29,7 @@ Das neue System trennt messerscharf zwischen der **Engine** (wie wird verarbeite
 src/prompts/
 ├── core/                        # Die "Engine" (Logik-Rahmen)
 │   ├── default/                 # Basis-Prompts (Correction, Vision, OCR)
+│   │   └── bausteine/           # Regeln, die in mehreren Prompts gelten (s. 2.3)
 │   └── specialized/             # Modell-spezifische Overrides (Gemma, Qwen)
 ├── identities/                  # Die pädagogischen Personen/Profile (Wer)
 └── skills/                      # Die modularen Korrektur-Regeln (Was)
@@ -44,6 +45,20 @@ graph TD
     B --> F[Final Prompt Assembly]
     F --> G[LLM Provider]
 ```
+
+### 2.3 Bausteine (seit 16.11.2026)
+Eine Regel, die in mehreren Prompts gelten muss, steht genau einmal unter `core/default/bausteine/<name>.md`. Eine Vorlage bindet sie mit der Zeile `{{baustein:<name>}}` ein; `mitBausteinen` (`src/lib/ai/prompt-bausteine.ts`) setzt den Inhalt beim Zusammenbau ein. Das Modell sieht weiterhin einen einzigen Prompt.
+
+Anlass war die Formel-Regel (`formeln.md`): Sie stand nur im Prompt der Musterlösung, nicht in der Zuordnung der Schülerarbeiten. Formeln ohne `$` stellt die Oberfläche als Rohtext dar. Im selben Zug wurde die Tabellen-Regel (`tabellen.md`) zum Baustein; sie stand wortgleich in beiden Prompts, nur ohne etwas, das sie zusammenhält.
+
+| Baustein | Eingebunden in |
+| :--- | :--- |
+| `formeln` | `analyze-and-clean`, `analyze-and-map` |
+| `tabellen` | `analyze-and-clean`, `analyze-and-map` |
+
+Welche Vorlage welchen Baustein tragen muss, legt `tests/unit/prompt-baustein-governance.test.ts` fest (Liste `PFLICHT`). Der Test prüft auch, dass jede Vorlage mit Platzhalter dort samt ihrem Aufbau eingetragen ist — sonst stünde der Platzhalter wörtlich im Prompt.
+
+Abgrenzung zu `core/default/eintragungen/`: Jene Regeln hängt `mitZeichenRegel` nur an, wenn der Text eine Zeichnung enthält. Ein Baustein steht immer da, an der Stelle, die die Vorlage bestimmt.
 
 ---
 

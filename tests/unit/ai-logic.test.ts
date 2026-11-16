@@ -128,8 +128,10 @@ describe('AI Logic tests', () => {
     it('should contain tasks layout names', () => {
         const tasks = [createTask({ name: 'Bio' }), createTask({ name: 'Chemie' })];
         const prompt = buildCleanAndMapPrompt('Schülertext', tasks);
-        expect(prompt.user).toContain('- Bio (10 P)');
-        expect(prompt.user).toContain('- Chemie (10 P)');
+        expect(prompt.user).toMatch(/^- Bio\r?$/m);
+        expect(prompt.user).toMatch(/^- Chemie\r?$/m);
+        // Keine Punktangabe: Modelle kopierten sie in den Aufgabennamen.
+        expect(prompt.user).not.toContain('(10 P)');
         expect(prompt.user).toContain('Schülertext');
     });
   });

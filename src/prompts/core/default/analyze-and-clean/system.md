@@ -55,21 +55,12 @@ Hat eine Hauptaufgabe Teilaufgaben, steht zwischen ihrer Überschrift und der er
 - Der Stamm enthält nur Aufgabentext. Lösungen und Punktangaben einzelner Teilaufgaben gehören in deren "content".
 - Aufgabentext darf an keiner Stelle verloren gehen — er steht entweder im "context", in einem Stamm oder im "content" einer Aufgabe.
 
-WICHTIG (Mathematik & Formeln):
-- Falls die Musterlösung mathematische Formeln enthält, stelle sicher, dass diese sauber in LaTeX-Delimitern eingeschlossen sind.
-- Nutze `$...$` für Inline-Formeln und `$$...$$` für freigestellte Formeln auf eigener Zeile.
+{{baustein:formeln}}
 - Erhalte die fachliche Korrektheit der LaTeX-Syntax (z.B. Brüche, Summen, Integrale).
-- ACHTUNG (JSON-Maskierung & Delimiter): Da du ein JSON-Objekt ausgibst, musst du JEDEN Backslash vor LaTeX-Befehlen doppelt maskieren (z. B. `\\frac`, `\\text`, `\\Omega`, `\\alpha`) UND die Formeln zwingend in `$` bzw. `$$` einschließen.
-  * FALSCH: `"content": "E = m \\times c^2 = 10,\\text{kg} \\times 90,\\frac{\\text{m}^2}{\\text{s}^2}"`
-  * RICHTIG: `"content": "$E = m \\times c^2 = 10,\\text{kg} \\times 90,\\frac{\\text{m}^2}{\\text{s}^2}$"`
 - ACHTUNG (Anführungszeichen): Gerade Anführungszeichen (") aus dem Dokument übernimmst du in "content" und "context" unverändert, maskierst sie im JSON-Wert aber als \" — sonst endet der Wert an dieser Stelle. Ersetze sie NICHT durch andere Zeichen.
 
 
-WICHTIG (Tabellen-Formatierung & Rekonstruktion):
-- Falls der bereitgestellte Text Tabellen, Listen oder strukturierte Daten (z.B. VLSM-Subnetting-Tabellen, IP-Adressberechnungen, Matrizen oder Punktübersichten) enthält, müssen diese zwingend im standardmäßigen GitHub Flavored Markdown (GFM) Tabellenformat ausgegeben werden.
-- Jede Markdown-Tabelle MUSS eine Kopfzeile, gefolgt von einer Ausrichtungszeile/Trennzeile mit Bindestrichen und Trennstrichen (z. B. `| :--- | :---: | :---: |` oder `|---|---|---|`), und danach die Datenzeilen enthalten.
-- Falls die Daten durch den PDF-Extraktor oder OCR in einer Zeile zusammengequetscht wurden (z.B. nebeneinander stehende Werte getrennt durch Leerzeichen oder fehlende Zeilenumbrüche), musst du diese semantisch rekonstruieren und in eine saubere, mehrzeilige GFM-Tabelle mit passenden Spaltentrennern (`|`) umwandeln.
-- Lass niemals die Ausrichtungszeile weg, da die Tabelle sonst im User Interface nicht korrekt gerendert wird!
+{{baustein:tabellen}}
 
 WICHTIG (Bewertungsschema erhalten):
 - Behalte JEDE einzelne Punktangabe im "content" Feld (z.B. "1 Pkt für Definition", "2 Pkt für Beispiel").
