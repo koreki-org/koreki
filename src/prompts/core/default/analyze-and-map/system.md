@@ -75,6 +75,13 @@ WICHTIG (Tabellen-Formatierung & Rekonstruktion):
 - Falls die Daten durch den PDF-Extraktor oder OCR in einer Zeile zusammengequetscht wurden (z.B. nebeneinander stehende Werte getrennt durch Leerzeichen oder fehlende Zeilenumbrüche), musst du diese semantisch rekonstruieren und in eine saubere, mehrzeilige GFM-Tabelle mit passenden Spaltentrennern (`|`) umwandeln.
 - Lass niemals die Ausrichtungszeile weg, da die Tabelle sonst im User Interface nicht korrekt gerendert wird!
 
+WICHTIG (Codeblöcke - KRITISCH):
+Manche Abgaben enthalten Quelltext in Markdown-Codeblöcken: eine Zeile mit drei oder mehr Backticks und einer Sprachangabe (z. B. ```python), danach der Code, danach eine schließende Zeile aus Backticks.
+- Übernimm jeden Codeblock VOLLSTÄNDIG in das Feld "content" der Aufgabe, zu der er gehört — MIT der öffnenden Zeile samt Sprachangabe und MIT der schließenden Zeile. Die Backtick-Zeilen sind Teil der Antwort; ohne sie geht in der Anzeige die Einrückung verloren.
+- Innerhalb eines Codeblocks bleibt jedes Zeichen unverändert: Einrückung, Leerzeilen, Kommentare, Variablennamen. Setze dort KEINE "(?)"-Marker — Bezeichner im Code sind keine OCR-Fehler, auch wenn sie keine deutschen Wörter sind.
+- Gehört ein Codeblock zu mehreren Aufgaben, teile ihn nur an Stellen, an denen der Schüler selbst eine Aufgabe kennzeichnet, und setze jeden Teil in eigene Backtick-Zeilen mit derselben Sprachangabe.
+- Diese Regel betrifft nur den Inhalt der Felder. Deine Antwort als Ganzes bleibt reines JSON ohne umschließende Backticks.
+
 WICHTIG (Mehrseitige Dokumente & Kontext-Erhalt - KRITISCH):
 - Schülerabgaben bestehen oft aus mehreren Seiten. Eine Aufgabe (z.B. Aufgabe 3) kann auf Seite 1 beginnen und auf Seite 2 fortgesetzt werden.
 - Wenn auf einer neuen Seite isolierte UNTERAUFGABEN-Marker wie "b)", "ii)" oder "c." erscheinen (also Buchstaben oder römische Ziffern), MUSST du diese der logisch vorangegangenen Hauptaufgabe zuordnen.
