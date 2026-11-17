@@ -3,6 +3,8 @@ import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import BatchProcessor from '../../src/components/BatchProcessor';
 import { createBatchFile } from '../../src/test/factories';
 import '@testing-library/jest-dom';
+import { useBatchStore } from '../../src/hooks/store/useBatchStore';
+import { useBatchStore } from '../../src/hooks/store/useBatchStore';
 
 // Isolated Mocking for Industrial Integrity 🏮🛡️
 jest.mock('../../src/hooks/useAuth', () => ({
@@ -18,7 +20,11 @@ jest.mock('../../src/hooks/useAuth', () => ({
 
 describe('BatchProcessor Integration (Steel Thread A)', () => {
 
-    afterEach(cleanup);
+    afterEach(() => {
+        cleanup();
+        // Die geoeffnete Arbeit lebt im Store (Seitenleiste) und ueberdauert sonst den Test.
+        useBatchStore.setState({ batchFiles: [], aufgeklappteArbeit: null, einrichtungOffen: false });
+    });
 
     const onProcessMock = jest.fn();
     const defaultProps = {
@@ -67,7 +73,7 @@ describe('BatchProcessor Integration (Steel Thread A)', () => {
         // 1. Initial Render
         render(<BatchProcessor {...defaultProps} />);
         
-        expect(screen.getByText('Stapelverarbeitung')).toBeInTheDocument();
+        expect(screen.getByText('Alle Arbeiten')).toBeInTheDocument();
         expect(screen.getByText('S1')).toBeInTheDocument();
         expect(screen.getByText('S2')).toBeInTheDocument();
 
@@ -115,10 +121,12 @@ describe('BatchProcessor Integration (Steel Thread A)', () => {
             onUpdateText: onUpdateTextMock
         };
 
+        // Die Ansicht liest die Arbeiten aus dem Store — in der App sind es dieselben wie in den Props.
+        useBatchStore.setState({ batchFiles: doneProps.batchFiles });
         render(<BatchProcessor {...doneProps} />);
 
-        // 1. Expand the student item
-        const expandBtn = screen.getByLabelText('Details');
+        // 1. Open the student on the full surface
+        const expandBtn = screen.getByLabelText('Öffnen');
         fireEvent.click(expandBtn);
 
         // 2. Find the points input for 'Aufgabe 1'
