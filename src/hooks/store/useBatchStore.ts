@@ -87,7 +87,12 @@ const createSetter = <K extends keyof BatchStateStore>(set: any, key: K) =>
 
 export const useBatchStore = create<BatchStateStore>((set) => ({
     batchFiles: [],
-    setBatchFiles: createSetter(set, 'batchFiles'),
+    // Schrumpft die Liste (Loeschen, Neue Korrektur), zeigt der gemerkte Index
+    // womoeglich auf eine ANDERE Arbeit — dann lieber zurueck in den Ueberblick.
+    setBatchFiles: (val) => set((state) => {
+        const batchFiles = typeof val === 'function' ? val(state.batchFiles) : val;
+        return batchFiles.length < state.batchFiles.length ? { batchFiles, aufgeklappteArbeit: null } : { batchFiles };
+    }),
     
     isImportedSession: false,
     setIsImportedSession: createSetter(set, 'isImportedSession'),

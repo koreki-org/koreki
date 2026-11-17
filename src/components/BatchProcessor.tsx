@@ -1,11 +1,9 @@
-import React from 'react';
-import { Info, Highlighter, AlertTriangle } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Info } from 'lucide-react';
 import { BatchFile, Task, AppSettings } from '../types';
 import { VERTRAUEN_SCHWELLE } from '../lib/vertrauen';
-import { istVollstaendigGeschwaerzt } from '../lib/privacy-utils';
-import { Button } from './ui/Button';
 import { Card, CardContent } from './ui/Card';
-import ConfirmationModal from './ConfirmationModal';
+import { StapelRueckfrage } from './batch/StapelRueckfrage';
 import { ExportToolbar } from './batch/ExportToolbar';
 import { BatchHeader } from './batch/BatchHeader';
 import { LaufFortschritt } from './batch/parts/LaufFortschritt';
@@ -13,6 +11,7 @@ import { BatchFileListItem } from './batch/BatchFileListItem';
 import { AnalyticsModal } from './batch/AnalyticsModal';
 import { DigitalSlipsModal } from './batch/DigitalSlipsModal';
 import { useBatchStatus } from '../hooks/useBatchStatus';
+import { useFokusArbeit } from '../hooks/useFokusArbeit';
 
 /**
  * Industrial Batch Processor (Stage 11)
@@ -95,21 +94,8 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     const { groupedTasks, groupNames, CONFIRM_TEXT } = logic;
     const { handleConfirmAction, handleReviewPointChange, handleReviewFeedbackChange, handleReviewPointAndFeedbackChange, getPreviewUrl } = handlers;
 
-    // Einstieg für die Sammel-Schwärzung aus der Datenschutz-Warnung heraus: der
-    // erste noch ungeschwärzte Scan dient als Vorlage für alle weiteren.
-    // `selected !== false` spiegelt `unredactedScansCount`: sonst öffnete der
-    // Knopf eine abgewählte Arbeit, die die Warnung gar nicht ausgelöst hat.
-    const firstUnredactedScanIdx = batchFiles.findIndex(f => !istVollstaendigGeschwaerzt(f) && f.selected !== false);
-
-    // Der stapelweite Wiederlauf setzt `result` und `grade` jeder fertigen Arbeit
-    // zurueck (useBatchActions.onResetResults) und startet sofort neu. Damit faellt
-    // auch jede von Hand geaenderte Punktzahl und Rueckmeldung weg. Die Zeilen-
-    // Rueckfrage benennt das seit dem 20.08.2026 — der Stapel-Dialog sprach bis
-    // dahin nur vom Datenschutz und verwarf die Pruefarbeit wortlos.
-    const bewerteteArbeiten = batchFiles.filter(f => f.status === 'done').length;
-
-    // Nachträgliches Schwärzen entwertet eine bereits gelaufene Bilderkennung.
-    const redactionDiscardsOcr = batchFiles.some(f => f.documentType === 'scanned' && !f.isRedacted && f.ocrDone && f.selected !== false);
+    const fokus = useFokusArbeit();
+    useEffect(() => { if (fokus !== null) window.scrollTo({ top: 0 }); }, [fokus]);
 
     // Ohne genannten Wert bleibt der Punkt grau. Der Vorgabewert 0 faerbte ihn
     // rot und behauptete damit dasselbe wie das frueher angezeigte "0 %".
@@ -119,6 +105,52 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
         if (conf >= 50) return "bg-warning text-white";
         return "bg-destructive text-white";
     };
+
+    // Eine Zeile des Stapels — im Ueberblick fuer jede Arbeit, in der Pruefansicht fuer genau eine.
+    const zeile = (item: BatchFile, idx: number) => (
+        <BatchFileListItem
+            key={idx}
+            item={item}
+            idx={idx}
+            currentProcessingIndex={currentProcessingIndex}
+            loading={loading}
+            expandedIdx={expandedIdx}
+            onToggleExpand={setExpandedIdx}
+            onToggleSelect={onToggleSelect}
+            onToggleType={onToggleType}
+            onRemoveFile={onRemoveFile}
+            onSplit={onSplit}
+            onRedact={onRedact}
+            onUpdateText={onUpdateText}
+            previewUrl={getPreviewUrl(idx, item)}
+            showScan={showScan[idx] || false}
+            onToggleScan={(i) => setShowScan(prev => ({ ...prev, [i]: !prev[i] }))}
+            mobileViewMode={mobileViewMode}
+            onSetMobileViewMode={setMobileViewMode}
+            tasksLayout={tasksLayout}
+            groupNames={groupNames}
+            activeGroupName={activeGroupName}
+            onSetActiveGroupName={setActiveGroupName}
+            groupedTasks={groupedTasks}
+            getConfidenceColor={getConfidenceColor}
+            handleReviewPointChange={handleReviewPointChange}
+            handleReviewFeedbackChange={handleReviewFeedbackChange}
+            handleReviewPointAndFeedbackChange={handleReviewPointAndFeedbackChange}
+            onProcessSingleFile={onProcessSingleFile}
+            onProcessSingleOCR={onProcessSingleOCR}
+            /* 🏮 Einzel-Nachlauf freigeben, sobald überhaupt schon
+               eine Erkennung gelaufen ist. Die frühere Bedingung
+               („ALLE Scans erkannt") ließ den Knopf stapelweit
+               verschwinden, sobald ein einzelnes Dokument seine
+               Erkennung wieder verlor — etwa durch nachträgliches
+               Schwärzen. Übrig blieb nur der große Stapellauf. */
+            canRerunSingleOcr={!loading && batchFiles.some(f => f.documentType === 'scanned' && f.ocrDone)}
+            settings={settings}
+            fokusModus={fokus === idx}
+        />
+    );
+
+    if (fokus !== null) return <div id="batch-processor-anchor">{zeile(batchFiles[fokus], fokus)}</div>;
 
     return (
         <div id="batch-processor-anchor" className="scroll-mt-10">
@@ -139,51 +171,8 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
               * kein `border` mehr daneben. Zwei Mittel fuer dieselbe Aussage.
               */}
             <Card className="transition-all duration-500 overflow-visible relative bg-card shadow-raised rounded-hero">
-                {/* Privacy Confirmation System */}
-                <ConfirmationModal
-                    isOpen={showConfirm !== null}
-                    title={showConfirm === 'reset' ? "Bewertungen verwerfen und neu korrigieren" : "Datenschutz-Bestätigung"}
-                    message={
-                        <>
-                            {showConfirm === 'reset' && bewerteteArbeiten > 0 && (
-                                <div className="mb-4 p-4 bg-destructive/5 border border-destructive/20 rounded-xl text-destructive text-sm flex items-start gap-3">
-                                    <AlertTriangle size={18} className="mt-0.5 shrink-0" />
-                                    <div>
-                                        <p className="font-bold mb-1">Bewertungen werden verworfen</p>
-                                        <p>Die Bewertungen von {bewerteteArbeiten} Arbeit(en) werden gelöscht und neu erzeugt — auch deine Änderungen an Punkten und Rückmeldungen. Deine Korrekturen am Schülertext bleiben erhalten.</p>
-                                    </div>
-                                </div>
-                            )}
-                            {unredactedScansCount > 0 && (
-                                <div className="mb-4 p-4 bg-warning/5 border border-warning/20 rounded-xl text-warning text-sm flex items-start gap-3">
-                                    <Info size={18} className="mt-0.5 shrink-0" />
-                                    <div>
-                                        <p className="font-bold mb-1">Hinweis zur Anonymisierung</p>
-                                        <p>{unredactedScansCount} gescannte Arbeit(en) sind nicht auf jedem Blatt geschwärzt. Bitte stelle sicher, dass auf keinem Blatt personenbezogene Daten (z.B. Namen) sichtbar sind.</p>
-                                        {redactionDiscardsOcr && (
-                                            <p className="mt-2 text-xxs font-medium opacity-90">
-                                                Achtung: Wer jetzt noch schwärzt, verwirft den bereits erkannten Text dieser Arbeiten — die Bilderkennung muss dafür erneut laufen und kostet erneut Credits.
-                                            </p>
-                                        )}
-                                        {firstUnredactedScanIdx >= 0 && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={() => { setShowConfirm(null); onRedact(firstUnredactedScanIdx); }}
-                                                className="mt-3 h-8 gap-2 text-xs font-bold border-warning/30 text-warning hover:bg-warning hover:text-warning-foreground transition-all"
-                                            >
-                                                <Highlighter size={14} /> Jetzt schwärzen
-                                            </Button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                            <p className="leading-relaxed text-foreground/80">{CONFIRM_TEXT}</p>
-                        </>
-                    }
-                    onConfirm={handleConfirmAction}
-                    onCancel={() => setShowConfirm(null)}
-                />
+                <StapelRueckfrage batchFiles={batchFiles} showConfirm={showConfirm} unredactedScansCount={unredactedScansCount}
+                    confirmText={CONFIRM_TEXT} onConfirm={handleConfirmAction} onCancel={() => setShowConfirm(null)} onRedact={onRedact} />
 
                 {/* Batch Controller Header */}
                 <BatchHeader 
@@ -248,47 +237,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                       * Kopfzeile in BatchHeader — direkt, statt ueber eine feste Hoehe.
                       */}
                     <div className="space-y-2 pt-2">
-                        {batchFiles.map((item, idx) => (
-                            <BatchFileListItem
-                                key={idx}
-                                item={item}
-                                idx={idx}
-                                currentProcessingIndex={currentProcessingIndex}
-                                loading={loading}
-                                expandedIdx={expandedIdx}
-                                onToggleExpand={setExpandedIdx}
-                                onToggleSelect={onToggleSelect}
-                                onToggleType={onToggleType}
-                                onRemoveFile={onRemoveFile}
-                                onSplit={onSplit}
-                                onRedact={onRedact}
-                                onUpdateText={onUpdateText}
-                                previewUrl={getPreviewUrl(idx, item)}
-                                showScan={showScan[idx] || false}
-                                onToggleScan={(i) => setShowScan(prev => ({ ...prev, [i]: !prev[i] }))}
-                                mobileViewMode={mobileViewMode}
-                                onSetMobileViewMode={setMobileViewMode}
-                                tasksLayout={tasksLayout}
-                                groupNames={groupNames}
-                                activeGroupName={activeGroupName}
-                                onSetActiveGroupName={setActiveGroupName}
-                                groupedTasks={groupedTasks}
-                                getConfidenceColor={getConfidenceColor}
-                                handleReviewPointChange={handleReviewPointChange}
-                                handleReviewFeedbackChange={handleReviewFeedbackChange}
-                                handleReviewPointAndFeedbackChange={handleReviewPointAndFeedbackChange}
-                                onProcessSingleFile={onProcessSingleFile}
-                                onProcessSingleOCR={onProcessSingleOCR}
-                                /* 🏮 Einzel-Nachlauf freigeben, sobald überhaupt schon
-                                   eine Erkennung gelaufen ist. Die frühere Bedingung
-                                   („ALLE Scans erkannt") ließ den Knopf stapelweit
-                                   verschwinden, sobald ein einzelnes Dokument seine
-                                   Erkennung wieder verlor — etwa durch nachträgliches
-                                   Schwärzen. Übrig blieb nur der große Stapellauf. */
-                                canRerunSingleOcr={!loading && batchFiles.some(f => f.documentType === 'scanned' && f.ocrDone)}
-                                settings={settings}
-                            />
-                        ))}
+                        {batchFiles.map(zeile)}
                     </div>
                 </CardContent>
             </Card>

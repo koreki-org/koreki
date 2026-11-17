@@ -14,6 +14,7 @@ import { BatchItemDoneView } from './BatchItemDoneView';
 import { BatchItemStatusSummary } from './parts/BatchItemStatusSummary';
 import { BatchItemRunActions } from './parts/BatchItemRunActions';
 import { MobileViewSelector } from './parts/MobileViewSelector';
+import { FokusNavigation } from './parts/FokusNavigation';
 import { useOllamaToken } from '@/hooks/useOllamaToken';
 import { LAUF_SPERRE_HINWEIS } from '@/hooks/file-processor/lauf-sperre';
 
@@ -49,6 +50,8 @@ interface BatchFileListItemProps {
     /** Eine Bilderkennung ist bereits gelaufen — Einzel-Nachläufe sind erlaubt. */
     canRerunSingleOcr?: boolean;
     settings?: AppSettings;
+    /** Pruefansicht: diese Arbeit hat die ganze Flaeche (s. `useFokusArbeit`). */
+    fokusModus?: boolean;
 }
 
 /**
@@ -62,7 +65,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
         item, idx, currentProcessingIndex, loading, expandedIdx, onToggleExpand,
         onToggleSelect, onToggleType, onRemoveFile, onSplit, onRedact, 
         mobileViewMode, onSetMobileViewMode, onProcessSingleFile,
-        onProcessSingleOCR, canRerunSingleOcr
+        onProcessSingleOCR, canRerunSingleOcr, fokusModus = false
     } = props;
 
     const { 
@@ -98,14 +101,16 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
             // Die Flaeche haengt bewusst NICHT an `isExpanded`: Ein Element, das
             // beim Anklicken die Farbe wechselt, liest sich als Fehler, nicht als
             // Struktur (gemeldet am 08.09.2026).
-            "group rounded-xl border bg-muted transition-all duration-300",
+            // Pruefansicht: kein Behaelter — die Seite ist die Flaeche, die Textbloecke liegen weiss darauf.
+            fokusModus ? "group" : cn("group rounded-xl border bg-muted transition-all duration-300",
             idx === currentProcessingIndex ? "border-primary/40" : (isDone ? "border-success/40" : "border-border hover:border-primary/30"),
             isExpanded && "shadow-md",
-            (itemHasWarnings || (warnings && warnings.length > 0)) && "border-warning/50"
+            (itemHasWarnings || (warnings && warnings.length > 0)) && "border-warning/50")
         )}>
             {/* ITEM HEADER */}
-            <div className="flex items-center justify-between p-2 sm:p-3 gap-2 sm:gap-4 relative">
+            <div className={cn("flex items-center justify-between gap-2 sm:gap-4 relative", fokusModus ? "pb-2 border-b border-border" : "p-2 sm:p-3")}>
                 <div className="flex items-center gap-3 min-w-0 flex-1">
+                    {fokusModus && <FokusNavigation />}
                     <div className="flex-shrink-0 flex items-center gap-2 w-5 justify-center">
                         {isProcessing ? (
                             <Loader2 size={16} className="animate-spin text-primary" />
@@ -169,7 +174,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                     <BatchItemRunActions item={item} idx={idx} loading={loading} isProcessing={isProcessing} onProcessSingleFile={onProcessSingleFile} onProcessSingleOCR={onProcessSingleOCR} canRerunSingleOcr={canRerunSingleOcr} />
                     {/* Waehrend eines Laufs aus, nicht weg: siehe `lauf-sperre.ts`. */}
                     {!isProcessing && <Button variant="ghost" size="icon" disabled={loading} title={loading ? LAUF_SPERRE_HINWEIS : undefined} aria-label="Arbeit löschen" onClick={() => onRemoveFile(idx)} className="h-8 w-8 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/5 transition-all rounded-lg"><Trash2 size={14}/></Button>}
-                    {(item.fileText || item.tasks) && <Button variant="ghost" size="icon" onClick={() => onToggleExpand(isExpanded ? null : idx)} aria-label="Details" className="h-8 w-8 text-muted-foreground transition-transform duration-300 rounded-lg" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}><ChevronDown size={18} /></Button>}
+                    {!fokusModus && (item.fileText || item.tasks) && <Button variant="ghost" size="icon" onClick={() => onToggleExpand(isExpanded ? null : idx)} aria-label="Details" className="h-8 w-8 text-muted-foreground transition-transform duration-300 rounded-lg" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}><ChevronDown size={18} /></Button>}
                 </div>
             </div>
 
@@ -184,7 +189,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                   * Kopfzeile sieht dagegen aus wie ein Darstellungsfehler; genau das
                   * war am 07.09.2026 der erste Versuch.
                   */
-                <div className="p-3 border-t border-border">
+                <div className={fokusModus ? "pt-3" : "p-3 border-t border-border"}>
                     <MobileViewSelector mobileViewMode={mobileViewMode} onSetMobileViewMode={onSetMobileViewMode} isDone={isDone} />
                     
                     {isDone ? (

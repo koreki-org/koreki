@@ -4,6 +4,7 @@ import { Task, AppSettings, TasksLayoutSetter } from '../types';
 // Sub-Components
 import { ModelSolutionCard } from './upload/ModelSolutionCard';
 import { StudentWorkCard } from './upload/StudentWorkCard';
+import { useFokusArbeit } from '../hooks/useFokusArbeit';
 
 interface UploadGridProps {
     modelSolution: string;
@@ -49,8 +50,10 @@ const UploadGrid: React.FC<UploadGridProps> = ({
     collapsed = false,
     onToggleCollapse
 }) => {
+    // In der Pruefansicht nur versteckt, nicht abgebaut: Die Karten behalten ihren Zustand.
+    const fokus = useFokusArbeit();
     return (
-        <div className={`grid grid-cols-1 md:grid-cols-2 items-stretch ${collapsed ? 'gap-4 mb-4' : 'gap-8 mb-8'}`}>
+        <div className={`grid grid-cols-1 md:grid-cols-2 items-stretch ${collapsed ? 'gap-4 mb-4' : 'gap-8 mb-8'} ${fokus !== null ? 'hidden' : ''}`}>
             {/* Musterlösung Card */}
             <ModelSolutionCard
                 modelSolution={modelSolution}
