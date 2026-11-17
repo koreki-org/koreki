@@ -48,6 +48,23 @@ try {
             //      dieser Eintrag sofort weg — nicht geprueft, sondern entfernt.
             'braces',
 
+            // --- picomatch, eingetragen am 17.11.2026 ------------------------
+            // EINE Meldung (GHSA-fc5q-39xc-vjpf, HIGH): ReDoS durch wiederholte
+            // Extglobs in einem Muster. Derselbe Fall wie braces oben:
+            // picomatch kommt nur ueber Bauwerkzeuge herein (tailwindcss ->
+            // chokidar / micromatch, jest-util, tinyglobby fuer ESLint). Die
+            // Muster schreiben wir selbst, kein Nutzereinfluss, kein
+            // Anfragepfad; `npm audit --omit=dev` meldet picomatch nicht.
+            //
+            // Kein Fix moeglich: betroffen ist `<=4.0.7`, die neueste Version.
+            // npm schlaegt tailwindcss@4 vor — derselbe Hauptversionssprung.
+            //
+            // ABBAUBEDINGUNG — es genuegt eine:
+            //   1. `npm view picomatch versions` zeigt eine Version > 4.0.7,
+            //      die npm audit nicht beanstandet. Aktualisieren, Eintrag weg.
+            //   2. Kein Paket bringt picomatch mehr mit (`npm ls picomatch`).
+            'picomatch',
+
             // ABGEBAUT AM 29.10.2026: die Prisma-Kette (deepmerge-ts,
             // @prisma/config, prisma) und mysql2. Prisma 7.10.1 bringt
             // deepmerge-ts 8.0.2 und ein repariertes mysql2 mit; npm audit
