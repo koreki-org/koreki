@@ -274,3 +274,46 @@ describe('Einfache Anfuehrungszeichen als JSON-String', () => {
         expect(escapeInnerQuotes(gueltig)).toBe(gueltig);
     });
 });
+
+/**
+ * Schluessel ohne oeffnendes Anfuehrungszeichen (17.11.2026).
+ *
+ * `qwen3.8` schrieb in Korrekturen `name": "Aufgabe 3.2"`. Acht Arbeiten einer
+ * Klasse scheiterten mit „Expected property name or '}'" in Spalte 7 — der
+ * Einrueckung eines Schluessels. Beispiel ausgedacht, Muster aus dem Mitschnitt.
+ */
+describe('Schluessel ohne oeffnendes Anfuehrungszeichen', () => {
+    const antwort = [
+        '{',
+        '  "tasks": [',
+        '    {',
+        '      "name": "Aufgabe 1",',
+        '      "pointsObtained": 2',
+        '    },',
+        '    {',
+        '      name": "Aufgabe 2",',
+        '      "feedback": "Ansatz richtig, Einheit fehlt.",',
+        '      pointsObtained: 1',
+        '    }',
+        '  ]',
+        '}'
+    ].join('\n');
+
+    it('liest die ganze Antwort, statt zu scheitern', () => {
+        const j = parseLlmJson<{ tasks: { name: string; feedback?: string; pointsObtained: number }[] }>(antwort);
+        expect(j.tasks).toEqual([
+            { name: 'Aufgabe 1', pointsObtained: 2 },
+            { name: 'Aufgabe 2', feedback: 'Ansatz richtig, Einheit fehlt.', pointsObtained: 1 }
+        ]);
+    });
+
+    it('laesst Woerter mit Doppelpunkt INNERHALB eines Strings in Ruhe', () => {
+        const gueltig = '{"feedback": "Hinweis: name\\": steht so im Text, Ergebnis: 5"}';
+        expect(escapeInnerQuotes(gueltig)).toBe(gueltig);
+    });
+
+    it('laesst Werte ohne Anfuehrungszeichen unangetastet', () => {
+        const gueltig = '{"a": true, "b": null, "c": [false, 1]}';
+        expect(escapeInnerQuotes(gueltig)).toBe(gueltig);
+    });
+});

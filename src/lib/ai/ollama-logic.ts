@@ -354,9 +354,10 @@ function processOllamaResponse(content: string | null | undefined, action: AIAct
     } catch (e) {
         // Nur den Parse-Fehler mit dem Anbieternamen versehen. Die
         // Struktur-Pruefung darunter wirft eigene, praezisere Meldungen —
-        // die duerfen nicht ueberschrieben werden.
+        // die duerfen nicht ueberschrieben werden. Die Rohantwort reist mit,
+        // damit sie zur Fehlersuche abgelegt werden kann (rohantwort-mitschnitt.ts).
         if (e instanceof LlmJsonParseError) {
-            throw new Error(`Ollama ${e.message}`);
+            throw new LlmJsonParseError(`Ollama ${e.message}`, e.rawResponse);
         }
         throw e;
     }

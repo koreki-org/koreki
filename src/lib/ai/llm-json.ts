@@ -176,6 +176,20 @@ export function escapeInnerQuotes(jsonStr: string): string {
             }
         }
 
+        // SCHLUESSEL OHNE OEFFNENDES `"` (17.11.2026): qwen3.8 schrieb `name": "A 3.2"`;
+        // acht Korrekturen einer Klasse scheiterten so (Mitschnitt). Ein Bezeichner mit
+        // `":` oder `:` dahinter wird an Schluesselposition zum Schluessel.
+        if (!inString && /[A-Za-z_]/.test(char) && containers[containers.length - 1] === '{') {
+            const fehlt = lastMeaningful === '{' || lastMeaningful === ','
+                ? /^([A-Za-z_][A-Za-z0-9_]*)"?(?=\s*:)/.exec(jsonStr.slice(i, i + 64)) : null;
+            if (fehlt) {
+                result += `"${fehlt[1]}"`;
+                lastMeaningful = '"';
+                i += fehlt[0].length;
+                continue;
+            }
+        }
+
         if (char !== '"') {
             result += char;
             if (inString) {

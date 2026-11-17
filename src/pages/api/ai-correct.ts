@@ -6,6 +6,7 @@ import { runLocalGradingEngines } from '@/lib/ai/local-grading-pass';
 import { executeMistralRequest } from '@/lib/ai/mistral-provider';
 import { executeOpenAIRequest } from '@/lib/ai/openai-provider';
 import { executeOllamaRequest } from '@/lib/ai/ollama-logic';
+import { legeRohantwortAb } from '@/lib/ai/rohantwort-mitschnitt';
 import { CorrectionSchema } from '@/lib/validation';
 import { AppSettings } from '@/types';
 import { checkAiBudget, checkCompliance, checkCreditsAvailable, performBillingAction } from '@/lib/billing';
@@ -195,6 +196,7 @@ export default withSecurity(async (req: AuthenticatedRequest, res: NextApiRespon
 
     } catch (error) {
         logger.error('AI Correct Error', { endpoint: req.url, message: toErrorMessage(error) });
+        await legeRohantwortAb(error, 'ai-correct');
         const { status, message } = resolveAiHttpError(error, 'Fehler bei der KI-Analyse.');
         res.status(status).json({ error: message });
     }
