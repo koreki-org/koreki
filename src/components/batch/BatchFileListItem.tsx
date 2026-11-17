@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-    CheckCircle, AlertCircle, AlertTriangle, ChevronDown, Scissors, 
+    CheckCircle, AlertCircle, AlertTriangle, ChevronRight, Scissors, 
     Trash2, Highlighter, Loader2
 } from 'lucide-react';
 import { BatchFile, Task, AppSettings } from '../../types';
@@ -174,12 +174,13 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                     <BatchItemRunActions item={item} idx={idx} loading={loading} isProcessing={isProcessing} onProcessSingleFile={onProcessSingleFile} onProcessSingleOCR={onProcessSingleOCR} canRerunSingleOcr={canRerunSingleOcr} />
                     {/* Waehrend eines Laufs aus, nicht weg: siehe `lauf-sperre.ts`. */}
                     {!isProcessing && <Button variant="ghost" size="icon" disabled={loading} title={loading ? LAUF_SPERRE_HINWEIS : undefined} aria-label="Arbeit löschen" onClick={() => onRemoveFile(idx)} className="h-8 w-8 text-muted-foreground/50 hover:text-destructive hover:bg-destructive/5 transition-all rounded-lg"><Trash2 size={14}/></Button>}
-                    {!fokusModus && (item.fileText || item.tasks) && <Button variant="ghost" size="icon" onClick={() => onToggleExpand(isExpanded ? null : idx)} aria-label="Details" className="h-8 w-8 text-muted-foreground transition-transform duration-300 rounded-lg" style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}><ChevronDown size={18} /></Button>}
+                    {/* Oeffnet die Arbeit auf der ganzen Flaeche — in jedem Zustand (17.11.2026). */}
+                    {!fokusModus && <Button variant="ghost" size="icon" onClick={() => onToggleExpand(idx)} aria-label="Öffnen" title="Öffnen" className="h-8 w-8 text-muted-foreground rounded-lg"><ChevronRight size={18} /></Button>}
                 </div>
             </div>
 
             {/* EXPANDED CONTENT AREA */}
-            {isExpanded && (item.fileText || item.tasks) && (
+            {fokusModus && (
                 /*
                   * Zwei Toene mit Absicht: weisse Titelleiste, Behaelter im Seitenton.
                   *

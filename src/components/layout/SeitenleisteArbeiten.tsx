@@ -4,13 +4,14 @@ import { Button } from '../ui/Button';
 import { cn } from '@/lib/utils';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
 import { brauchtPruefung } from '@/lib/vertrauen';
+import { useWechsleAnsicht } from '@/hooks/useFokusArbeit';
 import type { BatchFile } from '../../types';
 
 /**
  * Die Arbeiten des Stapels als Liste in der Seitenleiste — das Gegenstueck zu
  * "Letzte Elemente" bei Claude (17.11.2026).
  *
- * Ein Klick klappt die Arbeit in der Stapelverarbeitung auf und rollt zu ihr.
+ * Ein Klick oeffnet die Arbeit auf der ganzen Flaeche.
  * Der Punkt sagt dasselbe wie die Zeile im Stapel: gruen fertig, gelb
  * "Bitte prüfen", rot Fehler, grau noch offen.
  */
@@ -23,23 +24,17 @@ const punktFarbe = (f: BatchFile): string => {
 export const SeitenleisteArbeiten: React.FC = () => {
     const arbeiten = useBatchStore(s => s.batchFiles);
     const aufgeklappt = useBatchStore(s => s.aufgeklappteArbeit);
-    const setAufgeklappt = useBatchStore(s => s.setAufgeklappteArbeit);
+    const wechsle = useWechsleAnsicht();
     if (arbeiten.length === 0) return null;
-
-    const oeffne = (idx: number) => {
-        setAufgeklappt(idx);
-        // Erst nach dem Aufklappen steht die Arbeit an ihrer endgueltigen Stelle.
-        setTimeout(() => document.getElementById(`arbeit-${idx}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-    };
 
     return (
         <>
-            <p className="px-3 pt-4 pb-1 text-xs text-muted-foreground">Arbeiten · {arbeiten.length}</p>
+            <p className="px-3 pt-4 pb-1 text-xs text-muted-foreground">Arbeiten</p>
             {arbeiten.map((f, idx) => (
                 <Button
                     key={idx}
                     variant="ghost"
-                    onClick={() => oeffne(idx)}
+                    onClick={() => wechsle(idx)}
                     className={cn("h-8 w-full justify-start gap-2.5 px-3 text-sm font-normal", aufgeklappt === idx && "bg-primary/10 text-primary")}
                 >
                     {f.status === 'processing'

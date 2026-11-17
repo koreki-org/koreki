@@ -60,10 +60,10 @@ Bei schwer lesbarer Handschrift kann die KI ein Wort falsch lesen und dabei etwa
 
 ## 4. Korrigieren lassen {#korrigieren}
 
-![Die Stapelverarbeitung mit zwei Arbeiten, bereit zur Korrektur](/bilder/app-stapel.png){.app-bild}
+![Alle Arbeiten mit zwei Arbeiten, bereit zur Korrektur](/bilder/app-stapel.png){.app-bild}
 <p class="bildtext">Alle angehakten Arbeiten werden mit „Korrigieren“ bearbeitet. Mit dem Pfeil rechts korrigierst du eine einzelne.</p>
 
-Unter **Stapelverarbeitung** stehen alle Arbeiten. Klicke auf **Korrigieren**. Koreki liest jede Arbeit und macht für jede Aufgabe einen Vorschlag. Du kannst den Lauf jederzeit abbrechen.
+Unter **Alle Arbeiten** stehen deine Arbeiten. Klicke auf **Korrigieren**. Koreki liest jede Arbeit und macht für jede Aufgabe einen Vorschlag. Du kannst den Lauf jederzeit abbrechen.
 
 Solange Bilderkennung oder Korrektur laufen, lassen sich Arbeiten weder löschen noch mit der **Schere** aufteilen. Beides verschiebt die Liste, und ein Ergebnis könnte sonst bei der falschen Arbeit landen. Musst du vorher etwas ändern, brich den Lauf ab.
 
@@ -80,5 +80,5 @@ Wenn alles stimmt, exportierst du:
 Vor dem ersten Export fragt Koreki einmal nach, ob du die Bewertungen geprüft hast. Im Export stehen wieder die echten Namen, damit du alles zuordnen kannst. Was in welcher Datei steht, erklärt [Exportieren](/korrigieren/exportieren).
 
 ::: tip Später weitermachen
-Mit **Exportieren** an der Stapelverarbeitung sicherst du den Zwischenstand als `.koreki`-Datei. Über **Importieren** auf der Startseite lädst du ihn wieder.
+Mit **Exportieren** unter **Alle Arbeiten** sicherst du den Zwischenstand als `.koreki`-Datei. Über **Importieren** auf der Startseite lädst du ihn wieder.
 :::

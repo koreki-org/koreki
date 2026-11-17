@@ -206,7 +206,7 @@ const Header: React.FC<HeaderProps> = ({
 
     return (
         <header className="mb-4 md:mb-5 flex flex-col gap-4 w-full">
-            <AppSeitenleiste eintraege={profile} onNeueKorrektur={onReset} onDemo={onLoadDemo} onImportieren={actions.triggerImport}
+            <AppSeitenleiste eintraege={profile} onDemo={onLoadDemo} onImportieren={actions.triggerImport}
                 fuss={<><HeaderBadges userData={userData} upgrading={upgrading} onUpgrade={onUpgrade} onUnlockExpert={onUnlockExpert} />{renderQuickActions(true)}</>} />
             {/* Ab `md` traegt die Seitenleiste diese Leiste (17.11.2026); hier nur noch mobil. */}
             <div className="md:hidden w-full bg-card/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 flex flex-row items-center justify-between gap-3 transition-all duration-300">

@@ -4,7 +4,8 @@ import { Task, AppSettings, TasksLayoutSetter } from '../types';
 // Sub-Components
 import { ModelSolutionCard } from './upload/ModelSolutionCard';
 import { StudentWorkCard } from './upload/StudentWorkCard';
-import { useFokusArbeit } from '../hooks/useFokusArbeit';
+import { useAnsicht } from '../hooks/useFokusArbeit';
+import { EinrichtungKopf } from './upload/EinrichtungKopf';
 
 interface UploadGridProps {
     modelSolution: string;
@@ -27,6 +28,8 @@ interface UploadGridProps {
     onGenerateCalcTrace?: (taskIndex: number, taskText: string, userNotes?: string) => Promise<any>;
     collapsed?: boolean;
     onToggleCollapse?: () => void;
+    /** Alles verwerfen (mit Rueckfrage) — fuer die Kopfzeile der Einrichtung. */
+    onNeuBeginnen?: () => void;
 }
 
 const UploadGrid: React.FC<UploadGridProps> = ({
@@ -47,13 +50,18 @@ const UploadGrid: React.FC<UploadGridProps> = ({
     appMode,
     onGenerateGraph,
     onGenerateCalcTrace,
-    collapsed = false,
-    onToggleCollapse
+    onNeuBeginnen
 }) => {
-    // In der Pruefansicht nur versteckt, nicht abgebaut: Die Karten behalten ihren Zustand.
-    const fokus = useFokusArbeit();
+    // Die Karten stehen nur in der Ansicht "Einrichtung" (s. `useAnsicht`) — sonst
+    // versteckt, nicht abgebaut: Sie behalten ihren Zustand. Seit die Einrichtung
+    // eine eigene Ansicht ist, klappen sie nicht mehr zu (17.11.2026); `collapsed`
+    // gehoerte zu der Zeit, als sie ueber dem Stapel standen.
+    const ansicht = useAnsicht();
+    const collapsed = false;
+    const onToggleCollapse = undefined;
     return (
-        <div className={`grid grid-cols-1 md:grid-cols-2 items-stretch ${collapsed ? 'gap-4 mb-4' : 'gap-8 mb-8'} ${fokus !== null ? 'hidden' : ''}`}>
+        <div className={`grid grid-cols-1 md:grid-cols-2 items-stretch gap-8 mb-8 ${ansicht !== 'einrichtung' ? 'hidden' : ''}`}>
+            <EinrichtungKopf onNeuBeginnen={onNeuBeginnen} />
             {/* Musterlösung Card */}
             <ModelSolutionCard
                 modelSolution={modelSolution}

@@ -4,7 +4,7 @@ Koreki macht Vorschläge. **Die Bewertung triffst du.** Die Vorschläge klingen 
 
 ![Die Prüfansicht mit erkannter Schülerlösung links und Vorschlag rechts](/bilder/app-pruefansicht.png){.app-bild}
 
-Eine fertige Arbeit öffnest du in der Seitenleiste unter **Arbeiten** oder mit dem Pfeil nach unten an ihrer Zeile in der Stapelverarbeitung. Sie hat dann die ganze Fläche für sich. Mit den Pfeilen oben links wechselst du zur vorigen oder nächsten fertigen Arbeit, **Alle Arbeiten** bringt dich zurück zum Stapel.
+Jede Arbeit öffnest du einzeln: in der Seitenleiste unter **Arbeiten** oder mit dem Pfeil am Ende ihrer Zeile unter **Alle Arbeiten**. Sie hat dann die ganze Fläche für sich. Ist sie noch nicht korrigiert, prüfst du dort den erkannten Text; ist sie fertig, die Vorschläge. Mit den Pfeilen oben links wechselst du zur vorigen oder nächsten Arbeit, **Alle Arbeiten** bringt dich zurück zur Liste.
 
 ## So gehst du vor
 

@@ -1,6 +1,6 @@
 # Exportieren
 
-Wenn du die Vorschläge geprüft hast, gibt es drei Wege, die Ergebnisse aus Koreki herauszuholen: eine **Liste für dich**, **Rückmeldungen für die Klasse** und **digitale Rückgabe-Zettel**. Alle Knöpfe stehen über den Arbeiten in der Stapelverarbeitung.
+Wenn du die Vorschläge geprüft hast, gibt es drei Wege, die Ergebnisse aus Koreki herauszuholen: eine **Liste für dich**, **Rückmeldungen für die Klasse** und **digitale Rückgabe-Zettel**. Alle Knöpfe stehen oben unter **Alle Arbeiten**.
 
 ::: info Einmal bestätigen
 Vor dem ersten Export fragt Koreki: *„Bitte bestätige, dass du sie geprüft hast — die Verantwortung für die Noten liegt bei dir.“* Die Bestätigung gilt, bis du neu korrigieren lässt.
@@ -56,7 +56,7 @@ Der PIN hält Neugierige davon ab, beim Scannen sofort alles zu sehen. Er ist ab
 
 Koreki speichert deine Korrektur nicht von selbst — schließt du das Programm, ist sie weg. Willst du später weitermachen, sichere den Zwischenstand:
 
-- **Korrektur exportieren** an der Stapelverarbeitung speichert die Arbeiten mit allen Vorschlägen und deinen Änderungen als `.koreki`-Datei.
+- **Korrektur exportieren** unter **Alle Arbeiten** speichert die Arbeiten mit allen Vorschlägen und deinen Änderungen als `.koreki`-Datei.
 - **Exportieren** an der Musterlösung speichert nur die Musterlösung — praktisch, wenn du dieselbe Arbeit in einer Parallelklasse schreibst.
 
 Über **Importieren** auf der Startseite lädst du eine `.koreki`-Datei wieder.

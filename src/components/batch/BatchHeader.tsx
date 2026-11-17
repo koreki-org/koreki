@@ -78,7 +78,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
         <CardHeader className="sticky top-0 z-20 rounded-t-hero bg-card flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 py-3 md:px-6">
             <div>
                 <CardTitle className="text-xl flex items-center gap-3">
-                    Stapelverarbeitung
+                    Alle Arbeiten
                     <BatchHelpContent />
                 </CardTitle>
             </div>

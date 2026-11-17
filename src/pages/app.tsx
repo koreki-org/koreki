@@ -341,7 +341,7 @@ export default function Home() {
                         extractingLayout={fileProcessor.isLoadingModel}
                         batchFilesCount={fileProcessor.batchFiles.length}
                         collapsed={isUploadSectionCollapsed}
-                        onToggleCollapse={() => setIsUploadSectionCollapsed(v => !v)}
+                        onNeuBeginnen={handleStartNew}
                     />
 
                     {fileProcessor.batchFiles.length > 0 && (() => {

@@ -11,7 +11,8 @@ import { BatchFileListItem } from './batch/BatchFileListItem';
 import { AnalyticsModal } from './batch/AnalyticsModal';
 import { DigitalSlipsModal } from './batch/DigitalSlipsModal';
 import { useBatchStatus } from '../hooks/useBatchStatus';
-import { useFokusArbeit } from '../hooks/useFokusArbeit';
+import { useFokusArbeit, useAnsicht } from '../hooks/useFokusArbeit';
+import { EinrichtungLink } from './batch/parts/EinrichtungLink';
 
 /**
  * Industrial Batch Processor (Stage 11)
@@ -95,6 +96,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     const { handleConfirmAction, handleReviewPointChange, handleReviewFeedbackChange, handleReviewPointAndFeedbackChange, getPreviewUrl } = handlers;
 
     const fokus = useFokusArbeit();
+    const ansicht = useAnsicht();
     useEffect(() => { if (fokus !== null) window.scrollTo({ top: 0 }); }, [fokus]);
 
     // Ohne genannten Wert bleibt der Punkt grau. Der Vorgabewert 0 faerbte ihn
@@ -150,14 +152,15 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
         />
     );
 
-    if (fokus !== null) return <div id="batch-processor-anchor">{zeile(batchFiles[fokus], fokus)}</div>;
+    // Laeuft die Arbeit gerade, steht der Fortschritt des Laufs ueber ihr.
+    if (fokus !== null) return <div id="batch-processor-anchor">{batchFiles[fokus].status === 'processing' && <LaufFortschritt />}{zeile(batchFiles[fokus], fokus)}</div>;
 
     return (
-        <div id="batch-processor-anchor" className="scroll-mt-10">
-            {/* Info Badge */}
+        <div id="batch-processor-anchor" className={ansicht === 'einrichtung' ? 'hidden' : 'scroll-mt-10'}>
             <div className="mb-2 px-1 flex items-center gap-2 text-xs text-muted-foreground">
                 <Info size={14} className="text-primary shrink-0" />
                 <span>Namen wurden für die KI pseudonymisiert. Der Export erfolgt automatisch mit Klarnamen.</span>
+                <EinrichtungLink />
             </div>
 
             {/*

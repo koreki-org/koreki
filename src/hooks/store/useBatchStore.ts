@@ -41,9 +41,12 @@ interface BatchStateStore {
     redactIdx: number | null;
     setRedactIdx: Setter<number | null>;
 
-    /** Die aufgeklappte Arbeit. Im Store, weil auch die Seitenleiste sie setzt (17.11.2026). */
+    /** Die Arbeit, die gerade die Flaeche hat (`null`: keine). Im Store, weil auch die Seitenleiste sie setzt (17.11.2026). */
     aufgeklappteArbeit: number | null;
     setAufgeklappteArbeit: Setter<number | null>;
+    /** Die Lehrkraft hat "Neue Korrektur" gewaehlt, obwohl schon Arbeiten da sind — s. `useAnsicht`. */
+    einrichtungOffen: boolean;
+    setEinrichtungOffen: Setter<boolean>;
 
     ocrStrategy: 'standard' | 'handwriting';
     setOcrStrategy: Setter<'standard' | 'handwriting'>;
@@ -91,7 +94,9 @@ export const useBatchStore = create<BatchStateStore>((set) => ({
     // womoeglich auf eine ANDERE Arbeit — dann lieber zurueck in den Ueberblick.
     setBatchFiles: (val) => set((state) => {
         const batchFiles = typeof val === 'function' ? val(state.batchFiles) : val;
-        return batchFiles.length < state.batchFiles.length ? { batchFiles, aufgeklappteArbeit: null } : { batchFiles };
+        if (batchFiles.length >= state.batchFiles.length) return { batchFiles };
+        // Leer (Neue Korrektur): Die naechsten Arbeiten sollen wieder in "Alle Arbeiten" landen.
+        return { batchFiles, aufgeklappteArbeit: null, ...(batchFiles.length === 0 ? { einrichtungOffen: false } : {}) };
     }),
     
     isImportedSession: false,
@@ -117,6 +122,8 @@ export const useBatchStore = create<BatchStateStore>((set) => ({
 
     aufgeklappteArbeit: null,
     setAufgeklappteArbeit: createSetter(set, 'aufgeklappteArbeit'),
+    einrichtungOffen: false,
+    setEinrichtungOffen: createSetter(set, 'einrichtungOffen'),
 
     ocrStrategy: 'standard',
     setOcrStrategy: createSetter(set, 'ocrStrategy'),

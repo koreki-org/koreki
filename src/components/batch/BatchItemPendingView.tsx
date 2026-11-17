@@ -50,7 +50,7 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                     {/* RESTORATION: Image 2 Header Title */}
                     <div className="flex items-center gap-2 mb-3 px-1 pt-4 shrink-0">
                         <FileText size={14} className="text-muted-foreground" />
-                        <span className="text-xs font-medium text-muted-foreground">OCR Verifizierung</span>
+                        <span className="text-xs font-medium text-muted-foreground">Erkannter Text · hier prüfen und verbessern</span>
                     </div>
 
                     <AufgabenReiter

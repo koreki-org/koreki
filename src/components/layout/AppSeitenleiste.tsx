@@ -1,15 +1,16 @@
 import React, { useEffect } from 'react';
-import { PanelLeft, PlusCircle, Sparkles, FileUp } from 'lucide-react';
+import { PanelLeft, PlusCircle, Sparkles, FileUp, List } from 'lucide-react';
 import { Button } from '../ui/Button';
 import Logo from '../Logo';
 import { cn } from '@/lib/utils';
 import { useSeitenleisteStore } from '@/hooks/store/useSeitenleisteStore';
+import { useBatchStore } from '@/hooks/store/useBatchStore';
+import { useAnsicht, useWechsleAnsicht } from '@/hooks/useFokusArbeit';
 import { SeitenleisteArbeiten } from './SeitenleisteArbeiten';
 import type { ProfilEintrag } from './profil-eintraege';
 
 interface AppSeitenleisteProps {
     eintraege: ProfilEintrag[];
-    onNeueKorrektur?: () => void;
     onDemo: () => void;
     onImportieren: () => void;
     /** Konto-Zeile unten: Edition bzw. Credits, Hilfe, Einstellungen. */
@@ -29,9 +30,13 @@ interface AppSeitenleisteProps {
  */
 const zeile = "h-9 w-full justify-start gap-3 px-3 text-sm font-normal";
 
-export const AppSeitenleiste: React.FC<AppSeitenleisteProps> = ({ eintraege, onNeueKorrektur, onDemo, onImportieren, fuss }) => {
+export const AppSeitenleiste: React.FC<AppSeitenleisteProps> = ({ eintraege, onDemo, onImportieren, fuss }) => {
     const { offen, setOffen, ladeGemerkt } = useSeitenleisteStore();
     useEffect(() => { ladeGemerkt(); }, [ladeGemerkt]);
+    const ansicht = useAnsicht();
+    const wechsle = useWechsleAnsicht();
+    const anzahl = useBatchStore(s => s.batchFiles.length);
+    const aktiv = (ja: boolean) => ja && "bg-primary/10 text-primary";
 
     const umschalter = (
         <Button variant="ghost" size="icon" onClick={() => setOffen(!offen)} aria-expanded={offen}
@@ -50,8 +55,9 @@ export const AppSeitenleiste: React.FC<AppSeitenleisteProps> = ({ eintraege, onN
                 <Logo showText={true} size={22} />
             </div>
             <nav className="flex-1 min-h-0 overflow-y-auto px-2 pb-2">
-                <Button variant="ghost" onClick={onNeueKorrektur} className={zeile}><PlusCircle size={16} /> Neue Korrektur</Button>
-                <Button variant="ghost" onClick={onDemo} className={zeile}><Sparkles size={16} /> Demo</Button>
+                <Button variant="ghost" onClick={() => wechsle('einrichtung')} className={cn(zeile, aktiv(ansicht === 'einrichtung'))}><PlusCircle size={16} /> Neue Korrektur</Button>
+                {anzahl > 0 && <Button variant="ghost" onClick={() => wechsle('alle')} className={cn(zeile, aktiv(ansicht === 'alle'))}><List size={16} /> Alle Arbeiten<span className="ml-auto text-xs text-muted-foreground">{anzahl}</span></Button>}
+                <Button variant="ghost" onClick={() => { wechsle('alle'); onDemo(); }} className={zeile}><Sparkles size={16} /> Demo</Button>
                 <Button variant="ghost" onClick={onImportieren} className={zeile}><FileUp size={16} /> Importieren</Button>
 
                 <p className="px-3 pt-4 pb-1 text-xs text-muted-foreground">Bewertung</p>
