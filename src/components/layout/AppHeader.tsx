@@ -12,6 +12,7 @@ import { useGlobalStatus } from '../../hooks/useGlobalStatus';
 import { isLocalInstance, isKeycloakAuth, getAuthType } from '../../lib/env-context';
 import { User } from '../../types';
 import { cn } from '@/lib/utils';
+import { useSeitenleisteStore } from '@/hooks/store/useSeitenleisteStore';
 
 interface HeaderProps {
     userData: User | null;
@@ -162,6 +163,7 @@ const Header: React.FC<HeaderProps> = ({
     hasActiveWork
 }) => {
     const { refs, logic, actions } = useGlobalStatus(userData, onImportSession, onRelinkFiles);
+    const leisteOffen = useSeitenleisteStore(s => s.offen); // Offen traegt sie die drei Knoepfe — dann nicht doppelt.
     const profile = profilEintraege({
         expertise: activeProfileName, skills: activeSkillsProfileName, erfahrungsschatz: activeGradingMemoryName, intelligenz: activeAiProfileName,
         onExpertise: onShowPrompts, onSkills: onShowSkills, onErfahrungsschatz: onShowGradingMemory, onIntelligenz: onShowAiParams
@@ -236,11 +238,10 @@ const Header: React.FC<HeaderProps> = ({
                 <div className="flex items-center shrink-0">{renderQuickActions()}</div>
             </div>
 
-            {/* The Classic Center Branding & Action Layer */}
             {/* Liegt Arbeit vor, schrumpft die Buehne auf eine Zeile; ab `md` traegt die Seitenleiste ihre Knoepfe (17.11.2026). */}
             <div className={cn("flex items-center", hasActiveWork ? "md:hidden flex-col justify-center gap-3" : "flex-col text-center mt-5 md:mt-1")}>
                 <Logo showText={true} textLarge={!hasActiveWork} size={hasActiveWork ? 28 : 40} subtitle={hasActiveWork ? undefined : "Dein KI-Korrektur Assistent"} />
-                <div className={cn("flex flex-row gap-2 sm:gap-2.5 w-full max-w-[480px] px-4 sm:px-0", !hasActiveWork && "mt-3 md:mt-4 mx-auto")}>
+                <div className={cn("flex flex-row gap-2 sm:gap-2.5 w-full max-w-[480px] px-4 sm:px-0", !hasActiveWork && "mt-3 md:mt-4 mx-auto", leisteOffen && "md:hidden")}>
                     <Button
                         variant="outline"
                         size="lg"
