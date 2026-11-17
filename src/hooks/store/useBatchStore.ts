@@ -40,7 +40,11 @@ interface BatchStateStore {
     
     redactIdx: number | null;
     setRedactIdx: Setter<number | null>;
-    
+
+    /** Die aufgeklappte Arbeit. Im Store, weil auch die Seitenleiste sie setzt (17.11.2026). */
+    aufgeklappteArbeit: number | null;
+    setAufgeklappteArbeit: Setter<number | null>;
+
     ocrStrategy: 'standard' | 'handwriting';
     setOcrStrategy: Setter<'standard' | 'handwriting'>;
     
@@ -105,7 +109,10 @@ export const useBatchStore = create<BatchStateStore>((set) => ({
     
     redactIdx: null,
     setRedactIdx: createSetter(set, 'redactIdx'),
-    
+
+    aufgeklappteArbeit: null,
+    setAufgeklappteArbeit: createSetter(set, 'aufgeklappteArbeit'),
+
     ocrStrategy: 'standard',
     setOcrStrategy: createSetter(set, 'ocrStrategy'),
 

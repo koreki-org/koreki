@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Settings, LogOut, Loader2, Sparkles, FileText, FileUp, Camera, PlusCircle, SlidersHorizontal, BookOpen, Brain, GraduationCap, Wrench } from 'lucide-react';
+import { Settings, LogOut, Sparkles, FileUp, Camera, PlusCircle } from 'lucide-react';
 import Logo from '../Logo';
+import { AppSeitenleiste } from './AppSeitenleiste';
+import { profilEintraege } from './profil-eintraege';
 import { Button } from '../ui/Button';
 import { HeaderBadges } from './HeaderBadges';
 import { NeueVersionHinweis } from './NeueVersionHinweis';
@@ -56,7 +58,7 @@ export const HeaderPortalTooltip: React.FC<{
     description?: string;
 }> = ({ children, title, description }) => {
     const [isHovered, setIsHovered] = useState(false);
-    const [coords, setCoords] = useState({ top: 0, left: 0 });
+    const [coords, setCoords] = useState({ top: 0, left: 0, oben: false });
     const triggerRef = useRef<HTMLDivElement>(null);
     const [mounted, setMounted] = useState(false);
 
@@ -67,7 +69,9 @@ export const HeaderPortalTooltip: React.FC<{
     const handleMouseEnter = () => {
         if (triggerRef.current) {
             const rect = triggerRef.current.getBoundingClientRect();
-            setCoords({ top: rect.bottom + 8, left: rect.left + rect.width / 2 });
+            // Unten in der Seitenleiste ist unter dem Ausloeser kein Platz: dann darueber.
+            const oben = rect.bottom + 80 > window.innerHeight;
+            setCoords({ top: oben ? rect.top - 8 : rect.bottom + 8, left: Math.max(rect.left + rect.width / 2, 120), oben });
         }
         setIsHovered(true);
     };
@@ -83,7 +87,7 @@ export const HeaderPortalTooltip: React.FC<{
             {mounted && isHovered && typeof document !== 'undefined' && createPortal(
                 <div 
                     className="fixed z-[9999] bg-white/95 backdrop-blur-md border border-border/50 px-3.5 py-2.5 rounded-xl shadow-2xl animate-overlay-in pointer-events-none whitespace-nowrap"
-                    style={{ top: coords.top, left: coords.left, transform: 'translateX(-50%)' }}
+                    style={{ top: coords.top, left: coords.left, transform: coords.oben ? 'translate(-50%, -100%)' : 'translateX(-50%)' }}
                 >
                     <p className="text-primary font-bold text-xs">{title}</p>
                     {description && <p className="text-muted-foreground text-xs mt-0.5">{description}</p>}
@@ -158,11 +162,15 @@ const Header: React.FC<HeaderProps> = ({
     hasActiveWork
 }) => {
     const { refs, logic, actions } = useGlobalStatus(userData, onImportSession, onRelinkFiles);
+    const profile = profilEintraege({
+        expertise: activeProfileName, skills: activeSkillsProfileName, erfahrungsschatz: activeGradingMemoryName, intelligenz: activeAiProfileName,
+        onExpertise: onShowPrompts, onSkills: onShowSkills, onErfahrungsschatz: onShowGradingMemory, onIntelligenz: onShowAiParams
+    });
 
-    const renderQuickActions = (isMobile: boolean) => (
-        <div className={`${isMobile ? 'flex lg:hidden' : 'hidden lg:flex'} items-center justify-end gap-1.5 sm:gap-2 shrink-0 ml-auto lg:ml-0`}>
+    const renderQuickActions = (inSeitenleiste = false) => (
+        <div className="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0 ml-auto">
             <NeueVersionHinweis onOeffnen={onShowSettings} istAdmin={userData?.role === 'ADMIN'} />
-            <HilfeMenu onKurzanleitung={onShowHelp} />
+            <HilfeMenu onKurzanleitung={onShowHelp} inSeitenleiste={inSeitenleiste} />
             {(userData?.role === 'ADMIN' || getAuthType() === 'LOGTO' || (isLocalInstance() && !isKeycloakAuth())) && (
                 <HeaderPortalTooltip title={userData?.role === 'ADMIN' ? 'System-Einstellungen' : 'Konto & Einstellungen'}>
                     <Button 
@@ -196,8 +204,10 @@ const Header: React.FC<HeaderProps> = ({
 
     return (
         <header className="mb-4 md:mb-5 flex flex-col gap-4 w-full">
-            {/* Strictly Single-Row Navigation Bar */}
-            <div className="w-full bg-card/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 flex flex-row items-center justify-between gap-3 transition-all duration-300">
+            <AppSeitenleiste eintraege={profile} onNeueKorrektur={onReset} onDemo={onLoadDemo} onImportieren={actions.triggerImport}
+                fuss={<><HeaderBadges userData={userData} upgrading={upgrading} onUpgrade={onUpgrade} onUnlockExpert={onUnlockExpert} />{renderQuickActions(true)}</>} />
+            {/* Ab `md` traegt die Seitenleiste diese Leiste (17.11.2026); hier nur noch mobil. */}
+            <div className="md:hidden w-full bg-card/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 flex flex-row items-center justify-between gap-3 transition-all duration-300">
                 
                 {/* Left Side: Badges & Profile Config Buttons */}
                 <div 
@@ -214,58 +224,21 @@ const Header: React.FC<HeaderProps> = ({
                         onUnlockExpert={onUnlockExpert}
                     />
 
-                    <div className="h-4 w-px bg-border hidden lg:block shrink-0" />
-
-                    {/* Classic Labeled Configuration Pill Row - strictly horizontal on desktop */}
-                    <div className="flex flex-row flex-nowrap shrink-0 items-center justify-start gap-1.5 sm:gap-2 w-auto bg-card/70 backdrop-blur-xl p-1.5 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 md:bg-transparent md:backdrop-blur-none md:p-0 md:rounded-none md:border-0 md:shadow-none md:ring-0">
-                        <ProfileConfigButton 
-                            icon={<GraduationCap size={14} />} 
-                            label="Expertise"
-                            value={activeProfileName || 'Standard'} 
-                            onClick={onShowPrompts!} 
-                            description="Fachprofile verwalten: worauf es in deinem Fach ankommt" 
-                            isActive={!!activeProfileName && activeProfileName !== 'Standard'}
-                        />
-                        
-                        <ProfileConfigButton 
-                            icon={<Wrench size={14} />} 
-                            label="Skills"
-                            value={activeSkillsProfileName || 'MINT Standard'} 
-                            onClick={onShowSkills!} 
-                            description="Zuschaltbare Regeln für typische Aufgabenarten" 
-                            isActive={!!activeSkillsProfileName && activeSkillsProfileName !== 'MINT Standard'}
-                        />
-                        
-                        <ProfileConfigButton 
-                            icon={<BookOpen size={14} />} 
-                            label="Erfahrungsschatz"
-                            value={activeGradingMemoryName || 'Standard-Korrektur'} 
-                            onClick={onShowGradingMemory!} 
-                            description="Bewertete Beispiele als Maßstab" 
-                            isActive={!!activeGradingMemoryName && activeGradingMemoryName !== 'Standard-Korrektur'}
-                        />
-                        
-                        <ProfileConfigButton 
-                            icon={<Brain size={14} />} 
-                            label="Intelligenz"
-                            value={activeAiProfileName || 'Standard'} 
-                            onClick={onShowAiParams!} 
-                            description="Welches Modell korrigiert und wie genau" 
-                            isActive={!!activeAiProfileName && activeAiProfileName !== 'Standard'}
-                        />
+                    <div className="flex flex-row flex-nowrap shrink-0 items-center gap-1.5">
+                        {profile.map(e => (
+                            <ProfileConfigButton key={e.schluessel} icon={e.icon} label={e.label} value={e.wert}
+                                onClick={e.onOeffnen} description={e.beschreibung} isActive={e.aktiv} />
+                        ))}
                     </div>
                 </div>
 
                 {/* Right Side: Quick Action Utilities */}
-                <div className="flex items-center shrink-0">
-                    {renderQuickActions(true)}
-                    {renderQuickActions(false)}
-                </div>
+                <div className="flex items-center shrink-0">{renderQuickActions()}</div>
             </div>
 
             {/* The Classic Center Branding & Action Layer */}
-            {/* Liegt Arbeit vor, schrumpft die Buehne auf eine Zeile: 160 px mehr fuer die Pruefansicht (17.11.2026). */}
-            <div className={cn("flex items-center", hasActiveWork ? "flex-row justify-center gap-6" : "flex-col text-center mt-5 md:mt-1")}>
+            {/* Liegt Arbeit vor, schrumpft die Buehne auf eine Zeile; ab `md` traegt die Seitenleiste ihre Knoepfe (17.11.2026). */}
+            <div className={cn("flex items-center", hasActiveWork ? "md:hidden flex-col justify-center gap-3" : "flex-col text-center mt-5 md:mt-1")}>
                 <Logo showText={true} textLarge={!hasActiveWork} size={hasActiveWork ? 28 : 40} subtitle={hasActiveWork ? undefined : "Dein KI-Korrektur Assistent"} />
                 <div className={cn("flex flex-row gap-2 sm:gap-2.5 w-full max-w-[480px] px-4 sm:px-0", !hasActiveWork && "mt-3 md:mt-4 mx-auto")}>
                     <Button

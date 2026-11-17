@@ -7,6 +7,8 @@ import { openExternal } from '@/lib/os-utils';
 interface HilfeMenuProps {
     /** Oeffnet die Kurzanleitung in der App — sie bleibt der Weg, wenn kein Internet da ist. */
     onKurzanleitung: () => void;
+    /** Unten in der Seitenleiste: nach oben und nach rechts aufklappen. */
+    inSeitenleiste?: boolean;
 }
 
 /**
@@ -17,7 +19,7 @@ interface HilfeMenuProps {
  * Arbeitsspeicher. Die Versionsnummer steht darunter, weil sie bei jeder
  * Fehlermeldung als Erstes gebraucht wird.
  */
-export const HilfeMenu: React.FC<HilfeMenuProps> = ({ onKurzanleitung }) => {
+export const HilfeMenu: React.FC<HilfeMenuProps> = ({ onKurzanleitung, inSeitenleiste = false }) => {
     const eintraege: PopoverMenuItem[] = [
         {
             key: 'handbuch',
@@ -44,7 +46,8 @@ export const HilfeMenu: React.FC<HilfeMenuProps> = ({ onKurzanleitung }) => {
             trigger={<HelpCircle size={16} />}
             triggerAriaLabel="Hilfe"
             items={eintraege}
-            align="right"
+            align={inSeitenleiste ? 'left' : 'right'}
+            nachOben={inSeitenleiste}
             widthClass="w-56"
             className="shrink-0"
             triggerClassName="h-7 w-7 sm:h-8 sm:w-8 rounded-lg text-muted-foreground hover:bg-card hover:text-foreground transition-colors"

@@ -40,4 +40,4 @@ Bevor du echte Arbeiten an einen Anbieter schickst, kläre mit deiner Schule, ob
 | Grafikkarte nötig | ja | nein |
 | Einrichtung | Programm und Modell laden | Schlüssel eintragen |
 
-Du kannst den Weg später jederzeit in den Einstellungen wechseln (Zahnrad oben rechts).
+Du kannst den Weg später jederzeit in den Einstellungen wechseln (Zahnrad unten in der Seitenleiste, auf dem Handy oben rechts).

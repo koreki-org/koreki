@@ -151,7 +151,7 @@ export default function Home() {
 
     return (
         <AuthGuard>
-            <AppLayout>
+            <AppLayout mitSeitenleiste>
                 <div className="transition-all duration-300 relative">
                 <div className="max-w-[1800px] mx-auto px-4 pt-4 pb-6 md:pt-2 md:px-8 md:pb-8 relative z-10">
                     <Head>

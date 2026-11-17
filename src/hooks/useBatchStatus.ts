@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from 'react';
 import { BatchFile, Task, AppSettings } from '../types';
 import { groupTasksByMain } from '../lib/task-utils';
 import { useBatchState } from './file-processor/useBatchState';
+import { useBatchStore } from './store/useBatchStore';
 import { isLocalInstance } from '../lib/env-context';
 import { apiClient } from '@/lib/api-client';
 import { istVollstaendigGeschwaerzt } from '@/lib/privacy-utils';
@@ -23,7 +24,8 @@ export const useBatchStatus = (
     onResetResults?: () => void
 ) => {
     // --- UI Visibility States ---
-    const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+    const expandedIdx = useBatchStore(s => s.aufgeklappteArbeit);
+    const setExpandedIdx = useBatchStore(s => s.setAufgeklappteArbeit);
     const [showScan, setShowScan] = useState<Record<number, boolean>>({});
     const [showConfirm, setShowConfirm] = useState<'ocr' | 'process' | 'reset' | null>(null);
     const [mobileViewMode, setMobileViewMode] = useState<'text' | 'image'>('image');

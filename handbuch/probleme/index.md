@@ -85,7 +85,7 @@ Ist Koreki durchweg zu streng, zu großzügig oder gewichtet falsch, liegt das s
 
 ## Problem melden {#melden}
 
-Hilft nichts davon, melde das Problem: in Koreki über das **?** oben rechts und **Problem melden**. Es öffnet sich eine Seite auf GitHub.
+Hilft nichts davon, melde das Problem: in Koreki über das **?** unten in der Seitenleiste (auf dem Handy oben rechts) und **Problem melden**. Es öffnet sich eine Seite auf GitHub.
 
 Hilfreich sind:
 

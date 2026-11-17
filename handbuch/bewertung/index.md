@@ -2,7 +2,7 @@
 
 Koreki korrigiert von Anfang an brauchbar: nach deiner Musterlösung und mit sinnvollen Vorgaben. Wenn du willst, dass die Vorschläge mehr nach dir klingen, gibt es vier Stellschrauben. **Keine davon musst du einstellen.**
 
-Du findest alle vier oben in der Leiste von Koreki. Dort steht immer, was gerade gilt:
+Du findest alle vier in der Seitenleiste unter **Bewertung**, auf dem Handy oben in der Leiste. Die Seitenleiste öffnest du mit dem Symbol oben links. Neben jeder Stellschraube steht, was gerade gilt; farbig heißt: Hier ist etwas anderes eingestellt als die Vorgabe.
 
 | Stellschraube | Was sie bestimmt | Beispiel |
 | :--- | :--- | :--- |

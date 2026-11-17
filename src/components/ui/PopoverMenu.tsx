@@ -15,6 +15,8 @@ interface PopoverMenuProps {
     trigger: React.ReactNode;
     items: PopoverMenuItem[];
     align?: 'left' | 'right' | 'center';
+    /** Nach oben aufklappen — fuer Ausloeser am unteren Rand, etwa unten in der Seitenleiste. */
+    nachOben?: boolean;
     widthClass?: string;
     className?: string;
     triggerClassName?: string;
@@ -37,6 +39,7 @@ export const PopoverMenu: React.FC<PopoverMenuProps> = ({
     trigger,
     items,
     align = 'right',
+    nachOben = false,
     widthClass = 'w-64',
     className,
     triggerClassName,
@@ -99,7 +102,9 @@ export const PopoverMenu: React.FC<PopoverMenuProps> = ({
                 <div
                     role="menu"
                     className={cn(
-                        'absolute z-[100] top-full mt-2 rounded-hero border border-border/50 bg-white/95 backdrop-blur-md p-1.5 shadow-2xl',
+                        'absolute z-[100] rounded-hero',
+                        nachOben ? 'bottom-full mb-2' : 'top-full mt-2',
+                        ' border border-border/50 bg-white/95 backdrop-blur-md p-1.5 shadow-2xl',
                         'max-h-[280px] overflow-y-auto custom-scrollbar',
                         'animate-overlay-in',
                         alignClasses,

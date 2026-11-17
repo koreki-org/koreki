@@ -86,7 +86,8 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
           * das Haken-Symbol sagen "fertig" ohnehin schon; eine gruene Flaeche war die
           * dritte Wiederholung derselben Information.
           */
-        <div className={cn(
+        <div id={`arbeit-${idx}`} className={cn(
+            "scroll-mt-24",
             // Die Schuelerzeile ist ein BEHAELTER, kein Blatt: dauerhaft grau, in
             // beiden Zustaenden gleich. Was darin liegt, ist hell.
             //
