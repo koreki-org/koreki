@@ -123,9 +123,9 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     return (
         <div id="batch-processor-anchor" className="scroll-mt-10">
             {/* Info Badge */}
-            <div className="mb-6 flex items-center gap-3 bg-primary/5 border border-primary/10 text-primary p-4 rounded-xl">
-                <Info size={18} className="text-primary" />
-                <span className="text-sm font-medium">Namen wurden für die KI pseudonymisiert. Der Export erfolgt automatisch mit Klarnamen.</span>
+            <div className="mb-2 px-1 flex items-center gap-2 text-xs text-muted-foreground">
+                <Info size={14} className="text-primary shrink-0" />
+                <span>Namen wurden für die KI pseudonymisiert. Der Export erfolgt automatisch mit Klarnamen.</span>
             </div>
 
             {/*
@@ -209,7 +209,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                 />
                 <LaufFortschritt />
 
-                <CardContent>
+                <CardContent className="px-3 pb-3 md:px-4 md:pb-4">
                     {/* Action Toolbar */}
                     {hasFinishedFiles && (
                         <ExportToolbar 

@@ -264,10 +264,10 @@ const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* The Classic Center Branding & Action Layer */}
-            <div className="flex flex-col items-center text-center mt-5 md:mt-1">
-                <Logo showText={true} textLarge={true} size={40} subtitle="Dein KI-Korrektur Assistent" />
-                
-                <div className="flex flex-row gap-2 sm:gap-2.5 mt-3 md:mt-4 w-full max-w-[480px] mx-auto px-4 sm:px-0">
+            {/* Liegt Arbeit vor, schrumpft die Buehne auf eine Zeile: 160 px mehr fuer die Pruefansicht (17.11.2026). */}
+            <div className={cn("flex items-center", hasActiveWork ? "flex-row justify-center gap-6" : "flex-col text-center mt-5 md:mt-1")}>
+                <Logo showText={true} textLarge={!hasActiveWork} size={hasActiveWork ? 28 : 40} subtitle={hasActiveWork ? undefined : "Dein KI-Korrektur Assistent"} />
+                <div className={cn("flex flex-row gap-2 sm:gap-2.5 w-full max-w-[480px] px-4 sm:px-0", !hasActiveWork && "mt-3 md:mt-4 mx-auto")}>
                     <Button
                         variant="outline"
                         size="lg"
@@ -299,19 +299,18 @@ const Header: React.FC<HeaderProps> = ({
 
             {/* Contextual Warning: Missing Files */}
             {isImportedSession && hasMissingFiles && (
-                <div className="flex flex-col sm:flex-row items-center gap-4 mt-4 p-4 bg-primary/5 border border-primary/10 rounded-2xl shadow-sm max-w-[800px] mx-auto w-full">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-card rounded-xl shadow-sm">
-                            <Camera size={18} className="text-primary" />
-                        </div>
-                        <span className="text-xxs sm:text-sm font-semibold text-primary text-left">
+                <div className="flex flex-col sm:flex-row items-center gap-3 px-4 py-2 bg-primary/5 border border-primary/10 rounded-xl max-w-[800px] mx-auto w-full">
+                    <div className="flex items-center gap-2">
+                        <Camera size={16} className="text-primary shrink-0" />
+                        <span className="text-xs font-medium text-primary text-left">
                             Vorschau vervollständigen: Lade die Original-PDFs nach, um Dokumente im Split-Screen zu sehen.
                         </span>
                     </div>
                     <div className="shrink-0 ml-auto sm:ml-0">
                         <Button
-                            variant="default"
-                            className="px-4 py-1.5 h-auto text-xs font-medium rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground transition-all shadow-lg"
+                            variant="outline"
+                            size="sm"
+                            className="h-7 px-3 text-xs"
                             onClick={actions.triggerRelink}
                         >
                             Dateien verknüpfen

@@ -50,7 +50,7 @@ const UploadGrid: React.FC<UploadGridProps> = ({
     onToggleCollapse
 }) => {
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch mb-8">
+        <div className={`grid grid-cols-1 md:grid-cols-2 items-stretch ${collapsed ? 'gap-4 mb-4' : 'gap-8 mb-8'}`}>
             {/* Musterlösung Card */}
             <ModelSolutionCard
                 modelSolution={modelSolution}

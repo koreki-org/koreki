@@ -71,7 +71,7 @@ export const BatchItemDoneView: React.FC<BatchItemDoneViewProps> = (props) => {
 
     /** Eine Rasterzeile: zwei Spalten, ausser eine Seite ist maximiert. */
     const zeile = cn(
-        "grid grid-cols-1 gap-6 sm:gap-8 transition-all duration-300",
+        "grid grid-cols-1 gap-3 sm:gap-4 transition-all duration-300",
         focusedPanel ? "md:grid-cols-1" : "md:grid-cols-2"
     );
     /* Auf schmalen Geraeten zeigt der Umschalter genau eine Seite; ab `md` sind
@@ -106,7 +106,7 @@ export const BatchItemDoneView: React.FC<BatchItemDoneViewProps> = (props) => {
         <div>
             <BatchDoneHeader {...props} />
 
-            <div className={cn(zeile, "mt-4")}>
+            <div className={cn(zeile, "mt-2")}>
                 <div className={linkeZelle}>
                     <BatchPanelKopf
                         icon={<FileText size={14} className="text-muted-foreground" />}
@@ -134,14 +134,14 @@ export const BatchItemDoneView: React.FC<BatchItemDoneViewProps> = (props) => {
                     <div className={linkeZelle}>
                         <BatchScanViewer item={item} previewUrl={previewUrl} />
                     </div>
-                    <div className={cn(rechteZelle, "space-y-4")}>
+                    <div className={cn(rechteZelle, "space-y-3")}>
                         {aufgaben.map(task => (
                             <div key={task.name}>{einschaetzung(task)}</div>
                         ))}
                     </div>
                 </div>
             ) : (
-                <div className="space-y-6">
+                <div className="space-y-3">
                     {aufgaben.map(task => (
                         <div key={task.name} className={zeile}>
                             <div className={linkeZelle}>

@@ -61,7 +61,7 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
     return (
         <div className={cn("relative group w-full", className)}>
             {/* Header / Actions */}
-            <div className="flex items-center justify-between mb-2 px-4 min-h-[46px]">
+            <div className="flex items-center justify-between mb-1 px-4 min-h-[36px]">
                 {leftAction ? (
                     <div className="flex items-center gap-2 flex-1 min-w-0">
                         {leftAction}
@@ -106,7 +106,7 @@ export const EditableMathArea: React.FC<EditableMathAreaProps> = ({
               * grauer Behaelter, heller Block, Feld darin.
               */}
             <div className={cn(
-                'relative min-h-[100px] w-full rounded-xl overflow-hidden border shadow-sm transition-colors',
+                'relative min-h-[64px] w-full rounded-xl overflow-hidden border shadow-sm transition-colors',
                 // Die Flaeche bleibt WEISS, auch beim Bearbeiten. Hier stand kurz
                 // `bg-muted`, und das Feld sah dadurch aus wie abgeschaltet
                 // (gemeldet am 08.09.2026): Eine graue Fuellung ist die uebliche

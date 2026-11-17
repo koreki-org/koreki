@@ -55,7 +55,7 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
      * Kopfzeilen, bevor die erste Zeile Schuelertext kam.
      */
     return (
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-5 w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3 w-full">
             {/* LEFT SIDE: Task Navigation */}
             <AufgabenReiter namen={groupNames} aktiv={activeGroupName} onWaehle={onSetActiveGroupName} />
 

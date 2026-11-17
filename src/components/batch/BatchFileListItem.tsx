@@ -156,7 +156,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                         <div className="flex items-center gap-2">
                             {reviewRecommended && (
                                 <Badge className="hidden sm:flex bg-warning/10 text-warning border-warning/20 h-7 px-3 text-xs font-medium tracking-tight gap-1.5 shadow-sm rounded-lg">
-                                    <AlertTriangle size={12} className="text-warning" /> Review
+                                    <AlertTriangle size={12} className="text-warning" /> Bitte prüfen
                                 </Badge>
                             )}
                             <div className="flex items-center gap-3">
@@ -183,7 +183,7 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
                   * Kopfzeile sieht dagegen aus wie ein Darstellungsfehler; genau das
                   * war am 07.09.2026 der erste Versuch.
                   */
-                <div className="p-4 border-t border-border">
+                <div className="p-3 border-t border-border">
                     <MobileViewSelector mobileViewMode={mobileViewMode} onSetMobileViewMode={onSetMobileViewMode} isDone={isDone} />
                     
                     {isDone ? (

@@ -75,9 +75,9 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
         // Deckend, aber OHNE Trennlinie: Die Zeilen darunter stehen auf
         // rgb(243,244,246), die Karte auf Weiss — zwoelf Punkte, die Flaeche trennt
         // bereits. Eine Haarlinie waere ein zweites Mittel fuer dieselbe Aussage.
-        <CardHeader className="sticky top-0 z-20 rounded-t-hero bg-card flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6">
+        <CardHeader className="sticky top-0 z-20 rounded-t-hero bg-card flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 py-3 md:px-6">
             <div>
-                <CardTitle className="text-2xl flex items-center gap-3">
+                <CardTitle className="text-xl flex items-center gap-3">
                     Stapelverarbeitung
                     <BatchHelpContent />
                 </CardTitle>

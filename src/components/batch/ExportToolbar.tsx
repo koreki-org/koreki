@@ -81,7 +81,7 @@ export const ExportToolbar: React.FC<ExportToolbarProps> = ({
     }, []);
 
     return (
-        <div className="flex gap-2 flex-wrap mb-6 pb-6 border-b border-border/40">
+        <div className="flex gap-2 flex-wrap mb-3 pb-3 border-b border-border/40">
             <Button 
                 variant="outline" 
                 size="sm" 
