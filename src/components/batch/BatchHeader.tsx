@@ -64,7 +64,8 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
         : laufArt === 'korrektur' ? 'Korrektur abbrechen'
         : laufArt === 'texterkennung' || ocrCreditsRequired > 0 ? 'Erkennung abbrechen'
         : 'Korrektur abbrechen';
-    const kosten = (n: number) => zeigtCredits(isPureMode) ? ` (${n} Credits)` : '';
+    // Geschuetztes Leerzeichen: "(2 Credits)" bricht nie zwischen Zahl und Wort um.
+    const kosten = (n: number) => zeigtCredits(isPureMode) ? ` (${n} Credits)` : '';
 
     return (
         // `sticky`: Die Kopfzeile traegt die Knoepfe, mit denen man den Stapel

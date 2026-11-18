@@ -55,7 +55,7 @@ export const BatchItemStatusSummary: React.FC<BatchItemStatusSummaryProps> = ({
                         ? <><Camera size={14}/>{zeigtCredits() ? `${item.estimatedCredits} Credits` : 'Scan'}</>
                         : item.documentType === 'unknown'
                         ? <><FileQuestion size={14}/>Typ wählen</>
-                        : <><FileText size={14}/>Digital{zeigtCredits() ? ` (${item.estimatedCredits} Credits)` : ''}</>}
+                        : <><FileText size={14}/>Digital{zeigtCredits() ? ` (${item.estimatedCredits} Credits)` : ''}</>}
                 </Badge>
             )}
 

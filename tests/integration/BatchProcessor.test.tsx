@@ -78,7 +78,8 @@ describe('BatchProcessor Integration (Steel Thread A)', () => {
 
         // 2. Locate Start Button in Header
         // In BatchHeader: {pendingCount === 0 ? "Alle korrigiert" : "Korrigieren ({totalPendingCredits} Credits)"}
-        const startBtn = screen.getByText(/Korrigieren \(2 Credits\)/i);
+        // `\s`: Zwischen Zahl und "Credits" steht ein geschuetztes Leerzeichen.
+        const startBtn = screen.getByText(/Korrigieren \(2\sCredits\)/i);
         expect(startBtn).toBeInTheDocument();
 
         // 3. Click Start -> Should open ConfirmationModal

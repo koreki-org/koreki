@@ -27,7 +27,10 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
     const router = useRouter();
 
     return (
-        <div className="flex gap-2 items-center shrink-0">
+        // `contents`: Die Abzeichen reihen sich in die Konto-Zeile der Seitenleiste ein und
+        // brechen dort mit um. Als eigener, nicht schrumpfender Block ragten Credits,
+        // Aufladen und Admin-Knopf im SaaS rechts aus der 256 px breiten Leiste (18.11.2026).
+        <div className="contents">
             {/* Branding Badge (Institutional Tenancy) - ONLY rendered locally, hidden in SaaS for space */}
             {isLocalInstance() && userData?.activeWorkspaceType === 'ORGANIZATION' && (
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full border border-primary/20 group transition-all">
