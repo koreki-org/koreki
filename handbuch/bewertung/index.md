@@ -39,7 +39,7 @@ Skills sind **fertige Regeln für bestimmte Aufgabenarten**, die du zuschaltest,
 
 Einige Beispiele aus dem, was Koreki mitbringt:
 
-- **Folgefehler** — wer mit einem falschen Zwischenergebnis richtig weiterrechnet, bekommt die Punkte für den weiteren Weg.
+- **Folgefehler** — wer mit einem falschen Zwischenergebnis richtig weiterrechnet, bekommt die Punkte für den weiteren Weg. Dafür braucht die Musterlösung einen eigenen Punkt fürs Einsetzen, siehe [Eine gute Musterlösung](/korrigieren/ablauf#musterloesung).
 - **Mathematische Äquivalenz** — andere Formelzeichen und gleichwertige Ansätze zählen als richtig.
 - **Rechenweg und Ergebnis getrennt** — richtiges Einsetzen von Werten und Einheiten wird gewertet, auch wenn danach ein Rechenfehler passiert.
 - **Rechtschreibung ignorieren** — nur der Inhalt zählt.

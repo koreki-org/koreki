@@ -3,7 +3,7 @@ title: "CalcTrace Engine V9: Natively Unit-Aware Hybrid Grading Sandbox"
 description: "Technische Dokumentation des KI-gestützten, deterministischen Evaluierungssystems für MINT-Fächer mit nativer physikalischer und monetärer Unit-Awareness in der mathjs Sandbox (CalcTrace V9)."
 author: "@principal_architect"
 date: "2026-07-15"
-last_updated: "2026-09-03"
+last_updated: "2026-11-18"
 status: "Approved"
 domain: "technical"
 security_classification: "Internal"
@@ -322,9 +322,38 @@ kann: `proofA` bestätigt, dass der Schüler seinen eigenen Weg fehlerfrei gerec
 davon, ob das Ziel getroffen wurde. Genau das ist die Tatsache, auf die sich eine Folgefehler-Kulanz
 stützt.
 
-`proofB` bleibt davon unberührt: Es sagt aus, ob der Musterwert dasteht, und nichts darüber hinaus.
-Ein Ergebnis-Kriterium fällt bei einem Folgefehler also weiterhin — die Kulanz muss über die
-Kriterien wirken, die dem Modell gehören.
+`proofB` sagt aus, ob der Musterwert dasteht, und nichts darüber hinaus. Bei „Ziel verfehlt, eigener
+Weg fehlerfrei" fällt es deshalb **kein** Urteil, sondern geht ans Modell (seit 04.09.2026, „Der dritte
+Zustand" in 3.5) — und dort entscheidet der Skill `skill-consecutive-errors`. *(Bis zum 18.11.2026
+stand hier, das Ergebnis-Kriterium falle bei einem Folgefehler „weiterhin". Das widersprach dem
+Nachtrag vom 04.09. und dem Code.)*
+
+#### Welches Schema die Musterlösung braucht, damit Folgefehler greifen
+
+Der Skill zieht Punkte **beim fehlerhaften Vor-Schritt** ab und gibt den Rest. Das setzt voraus, dass
+es diesen Vor-Schritt als Kriterium **gibt**. Fehlt er, findet der Fehler keine Stelle, an der er
+Punkte kostet. Für eine Rechenaufgabe mit gegebenen Werten heißt das:
+
+| Kriterium | `source` | Falsch abgeschriebener Wert, richtig weitergerechnet |
+| :--- | :--- | :--- |
+| Formel | `llm` | 1 |
+| Einsetzen der gegebenen Werte | `llm` | **0** — hier sitzt der Fehler |
+| Rechnung und Ergebnis (richtig gerechnet, folgerichtig) | `proofA` | 1 — von der Sandbox belegt |
+
+Ein eigener Ergebnis-Punkt (`proofB`) ist in diesem Schema überflüssig: Stimmen Werte und Rechnung,
+steht das Ergebnis zwangsläufig da; ein falsches Ergebnis bei richtigen Werten **ist** ein
+Rechenfehler und kostet den dritten Punkt — bindend, ohne Rückfrage ans Modell.
+
+**Gegenbeispiel (so stand es bis zum 18.11.2026 in der Demo):** Formel (`llm`) / Rechenweg (`proofA`)
+/ Ergebnis (`proofB`). Ein falsch abgeschriebener Wert kostet dort nirgends etwas: Der Rechenweg ist
+fehlerfrei, das Ergebnis geht als „unentschieden" ans Modell, und der Skill verlangt die Kulanz. Gemessen
+mit Mittwald (Qwen3.6): 3 von 3 in drei von vier Läufen, 2 von 3 im vierten — also weder richtig noch
+stabil. Mit dem Schema oben ist der dritte Punkt eine Tatsache der Sandbox.
+
+Was die Lehrkraft in ihre Musterlösung schreiben muss, steht im Handbuch unter „Eine gute
+Musterlösung“ (`handbuch/korrigieren/ablauf.md`). Die Zuordnung zu `proofA` trifft die Extraktion
+(`calc-trace-generation/system.md`): Sie nimmt `proofA` für Punkte, die ausdrücklich das fehlerfreie
+Rechnen belohnen („richtig gerechnet“).
 
 > [!NOTE]
 > Am 03.09.2026 stand hier ein **Gedächtnis über Aufgabengrenzen**: Die falschen Zwischenwerte einer

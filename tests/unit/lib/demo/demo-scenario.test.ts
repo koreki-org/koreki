@@ -12,9 +12,14 @@ jest.mock('@/lib/logger', () => ({
  * Kippt eine der zugesagten Punktzahlen, faellt das erst im Gespraech auf.
  *
  * Geprueft wird deshalb die Zusage, die im Kopf von demoScenario.ts steht — vor allem
- * die 2 von 3 Punkten bei Schueler #2. Sie haengt an einer Feinheit: Der Schueler darf
- * sich NICHT verrechnen, sondern muss einen Eingangswert falsch ablesen. Verrechnet er
- * sich, meldet die Sandbox einen Rechenfehler und beide deterministischen Punkte fallen.
+ * die 2 von 3 Punkten bei Schueler #2: Formel 1, Einsetzen 0 (1000 statt 1200 abgelesen),
+ * Rechnung und Ergebnis 1 (folgerichtig, von der Sandbox belegt).
+ *
+ * Bis zum 18.11.2026 pruefte dieser Test fuer Schueler #2 nur "Ergebnis-Kriterium nicht
+ * erfuellt" — das gilt auch fuer den Zustand `unentschieden`, in dem die Sandbox den
+ * Punkt gar nicht entscheidet, sondern dem Modell ueberlaesst. Seit dem 04.09.2026 war
+ * genau das der Fall, und die Demo vergab 3 statt 2 Punkte, ohne dass hier etwas fiel.
+ * Deshalb wird jetzt jedes Engine-Urteil der Demo auf `unentschieden` geprueft.
  *
  * Die AST-Extraktion selbst ist KI-gestuetzt und hier nicht Gegenstand — der Test setzt
  * den Rechenweg so an, wie er im Demo-Text steht, und prueft die Engine-Urteile darauf.
@@ -26,9 +31,10 @@ describe('Demo-Szenario: zugesagte Punktzahlen', () => {
 
     const urteile = (ast: StudentASTStep[]) => {
         const result = evaluateCalcTrace(ast, target);
+        const rechnung = resolveEngineVerdict('proofA', 0, result);
         return {
-            rechenweg: resolveEngineVerdict('proofA', 0, result).erfuellt,
-            ergebnis: resolveEngineVerdict('proofB', 0, result).erfuellt,
+            rechnung: rechnung.erfuellt,
+            unentschieden: !!rechnung.unentschieden,
             sandboxErrors: result.sandboxErrors
         };
     };
@@ -38,21 +44,26 @@ describe('Demo-Szenario: zugesagte Punktzahlen', () => {
         expect(scenario.studentBatchFiles.map(f => f.name)).toEqual(['Schüler #1', 'Schüler #2']);
     });
 
-    it('haelt die Kriterien-Aufteilung 1 P Formel / 1 P Rechenweg / 1 P Ergebnis', () => {
-        const sources = (target.criteria || []).map(c => c.source);
-        expect(sources).toEqual(['llm', 'proofA', 'proofB']);
+    it('haelt das Schema 1 P Formel / 1 P Einsetzen / 1 P Rechnung und Ergebnis', () => {
+        expect((target.criteria || []).map(c => [c.id, c.source])).toEqual([
+            ['formel', 'llm'], ['einsetzen', 'llm'], ['rechnung', 'proofA']
+        ]);
         expect((target.criteria || []).every(c => c.punktwert === 1)).toBe(true);
     });
 
+    it('hat kein Ergebnis-Kriterium gegen die Musterloesung (proofB) — es ginge beim Folgefehler ans Modell', () => {
+        expect((target.criteria || []).some(c => c.source === 'proofB')).toBe(false);
+    });
+
     describe('Schueler #1 — vollstaendig richtig', () => {
-        it('erreicht beide deterministischen Punkte', () => {
-            const { rechenweg, ergebnis, sandboxErrors } = urteile([
+        it('erhaelt den Punkt fuer Rechnung und Ergebnis von der Sandbox', () => {
+            const { rechnung, unentschieden, sandboxErrors } = urteile([
                 { id: 'step_1', formula: '40 m² * 0.2 * 1200 kWh/m²', result: 9600, unit: 'kWh' }
             ]);
 
             expect(sandboxErrors).toEqual([]);
-            expect(rechenweg).toBe(true);
-            expect(ergebnis).toBe(true);
+            expect(rechnung).toBe(true);
+            expect(unentschieden).toBe(false);
         });
     });
 
@@ -61,12 +72,12 @@ describe('Demo-Szenario: zugesagte Punktzahlen', () => {
             { id: 'step_1', formula: '40 m² * 0.2 * 1000 kWh/m²', result: 8000, unit: 'kWh' }
         ];
 
-        it('behaelt den Rechenweg-Punkt, weil er sich nicht verrechnet hat', () => {
-            expect(urteile(ast).rechenweg).toBe(true);
+        it('behaelt den Punkt fuer Rechnung und Ergebnis, weil er folgerichtig gerechnet hat', () => {
+            expect(urteile(ast).rechnung).toBe(true);
         });
 
-        it('verliert den Ergebnis-Punkt, weil 8000 nicht der Zielwert ist', () => {
-            expect(urteile(ast).ergebnis).toBe(false);
+        it('wird dabei von der Sandbox entschieden, nicht ans Modell abgegeben', () => {
+            expect(urteile(ast).unentschieden).toBe(false);
         });
 
         it('loest dabei keinen Rechenfehler aus', () => {
@@ -82,16 +93,14 @@ describe('Demo-Szenario: zugesagte Punktzahlen', () => {
         });
     });
 
-    describe('Gegenprobe: ein echter Verrechner waere KEINE 2 von 3', () => {
-        it('kostet beide deterministischen Punkte', () => {
-            // Richtige Werte, aber falsch ausgerechnet — genau der Fall, der fuer die
-            // Demo NICHT taugt.
-            const { rechenweg, ergebnis } = urteile([
+    describe('Gegenprobe: ein echter Verrechner', () => {
+        it('verliert Rechnung und Ergebnis — bindend, ohne Rueckfrage ans Modell', () => {
+            const { rechnung, unentschieden } = urteile([
                 { id: 'step_1', formula: '40 m² * 0.2 * 1200 kWh/m²', result: 8600, unit: 'kWh' }
             ]);
 
-            expect(rechenweg).toBe(false);
-            expect(ergebnis).toBe(false);
+            expect(rechnung).toBe(false);
+            expect(unentschieden).toBe(false);
         });
     });
 

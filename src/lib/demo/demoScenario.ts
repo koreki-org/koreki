@@ -8,10 +8,13 @@ import { buildModelSolutionFromTasks } from '@/lib/task-utils';
  * Ein gemeinsamer Rahmen, drei fachlich unterschiedliche Aufgaben (Physik/Mathe,
  * Wirtschaft, Ethik) mit steigendem AFB.
  *
- * Aufgabe 1 haengt bewusst an der CalcTrace-Engine (siehe src/lib/grading/CalcTrace.ts):
- * 1P Formel (llm-bewertet), 1P Rechenweg (proofA, deterministisch), 1P Ergebnis
- * (proofB, deterministisch) — zwei der drei Kriterien sind damit sandbox-gepruefte
- * Fakten statt KI-Ermessen, was das Risiko einer schiefen Demo-Bewertung senkt.
+ * Aufgabe 1 haengt bewusst an der CalcTrace-Engine (siehe src/lib/grading/CalcTrace.ts)
+ * und folgt dem Schema Formel / Einsetzen / Rechnung und Ergebnis (18.11.2026):
+ * 1P Formel (llm), 1P Einsetzen der gegebenen Werte (llm — die Sandbox kennt die
+ * gegebenen Werte nicht), 1P Rechnung und Ergebnis (proofA, deterministisch: eigener
+ * Weg fehlerfrei gerechnet). Ein eigener Ergebnis-Punkt (proofB) faellt weg: Stimmen
+ * Werte und Rechnung, steht das Ergebnis zwangslaeufig da; ein falsches Ergebnis bei
+ * richtigen Werten IST ein Rechenfehler und kostet den dritten Punkt.
  *
  * Zwei Schueler mit gegenlaeufigem Profil — erst dadurch zeigt der Stapel, wozu er da
  * ist: Der eine rechnet sauber und irrt fachlich, der andere umgekehrt.
@@ -36,18 +39,18 @@ import { buildModelSolutionFromTasks } from '@/lib/task-utils';
  * die exakte Zahl bleibt Sache des Modells, weil keine Sandbox sie belegt. Zugesichert
  * ist nur, dass sie sich zwischen zwei Laeufen nicht mehr aendert.
  *
- * Schueler #2 erreicht in Aufgabe 1 deterministisch 2 von 3 Punkten. Entscheidend ist
- * die ART des Fehlers, gemessen an der Engine:
+ * Schueler #2 erreicht in Aufgabe 1 2 von 3 Punkten: Er liest H = 1000 statt 1200
+ * kWh/m² ab (Einsetzen 0) und rechnet damit fehlerfrei weiter (Rechnung und Ergebnis 1,
+ * von der Sandbox belegt) — ein Folgefehler, einmal bestraft. Aufgabe 2 beantwortet er
+ * vollstaendig, Aufgabe 3 gar nicht.
  *
- *   - Ein echter Verrechner (richtige Werte, falsches Ergebnis) kostet BEIDE
- *     deterministischen Punkte — die Sandbox meldet "Formel ergibt X, Schueler
- *     notierte Y", damit faellt proofA UND proofB.
- *   - Ein falsch abgelesener Eingangswert (hier 1000 statt 1200 kWh/m²) laesst den
- *     Rechenweg in sich fehlerfrei: proofA haelt, nur proofB faellt.
- *
- * Genau deshalb liest Schueler #2 falsch ab, statt sich zu verrechnen — nur so ergibt
- * sich 2/3, und es zeigt die Folgefehler-Logik: Methode richtig, Ergebnis falsch,
- * Teilpunkt trotzdem. Aufgabe 2 beantwortet er vollstaendig, Aufgabe 3 gar nicht.
+ * BIS ZUM 18.11.2026 stand hier Formel / Rechenweg (proofA) / Ergebnis (proofB) mit dem
+ * Versprechen "deterministisch 2/3". Das galt nur bis zum 04.09.2026: Seitdem urteilt
+ * die Sandbox beim verfehlten Ziel mit fehlerfreiem eigenem Weg nicht mehr (siehe
+ * `EngineVerdict.unentschieden`), der Ergebnis-Punkt ging ans Modell, und der Skill
+ * "Folgefehler" verlangt ihn dort "zwingend". Den falsch eingesetzten Wert konnte dann
+ * kein Kriterium erfassen — gemessen mit Mittwald (Qwen3.6): 3 von 3 in drei von vier
+ * Laeufen, 2 von 3 im vierten.
  *
  * ZUR FORMULIERUNG DER PUNKTEBLOECKE (24.08.2026): Jeder Block nennt die geforderte
  * LEISTUNG, nicht das Themengebiet. Der Block "Paedagogischer Nutzen" hiess frueher
@@ -73,9 +76,9 @@ export interface DemoScenario {
  */
 export const studentTextNele = `=== TASK: Aufgabe 1 ===\nIch nutze die Formel E = A · η · H.\nEinsetzen: E = 40 m² · 0,2 · 1200 kWh/m²\nE = 9600 kWh\n\n=== TASK: Aufgabe 2 ===\nEine Solaranlage lohnt sich vor allem, weil man den Strom teurer verkaufen kann, als man ihn selbst einkaufen müsste. Für den Strom, den die Schule ins Netz einspeist, gibt es mehr Geld, als sie für Strom vom Anbieter zahlen würde — deswegen macht man damit Gewinn, egal wie viel man selbst verbraucht. Je mehr man einspeist, desto mehr verdient die Schule — deshalb sollte sie den Strom gar nicht selbst verbrauchen, sondern alles ins Netz geben.\n\n=== TASK: Aufgabe 3 ===\nDie Aussage stimmt teilweise. Eine einzelne Anlage auf einem Dach spart nur sehr wenig CO2 im Vergleich zu dem, was weltweit ausgestoßen wird. Trotzdem finde ich, dass es nicht „gar nichts“ bringt: Wenn viele Schulen das machen, kommt schon mehr zusammen, und die Schüler lernen dabei, wie sowas funktioniert. Das kann später mal wichtiger sein als der direkte CO2-Effekt.`;
 
-// Aufgabe 1: Formel korrekt genannt, Rechenweg in sich fehlerfrei — aber mit
-// H = 1000 statt 1200 kWh/m² aus der Aufgabenstellung abgelesen. Ergebnis-Punkt
-// faellt, Rechenweg-Punkt haelt (siehe Kopf der Datei).
+// Aufgabe 1: Formel korrekt genannt, Rechnung in sich fehlerfrei — aber mit
+// H = 1000 statt 1200 kWh/m² aus der Aufgabenstellung abgelesen. Einsetzen-Punkt
+// faellt, Rechnung-und-Ergebnis-Punkt haelt (siehe Kopf der Datei).
 export const studentTextJonas = `=== TASK: Aufgabe 1 ===\nFormel: E = A · η · H\nEinsetzen: E = 40 m² · 0,2 · 1000 kWh/m²\nE = 8000 kWh\n\n=== TASK: Aufgabe 2 ===\nDer größte Vorteil ist, dass die Schule den Strom, den sie selbst erzeugt, auch direkt selbst verbraucht. Dadurch muss sie weniger teuren Strom vom Netzbetreiber einkaufen, und genau diese Ersparnis macht den Hauptteil des Nutzens aus. Für überschüssigen Strom gibt es zwar eine Einspeisevergütung, die liegt heute aber unter dem Preis, den man für Netzstrom zahlt — damit allein würde sich die Anlage also nicht rechnen.\n\nAußerdem macht sich die Schule unabhängiger von steigenden Strompreisen, weil ein Teil des Verbrauchs vom eigenen Dach kommt und nicht mehr eingekauft werden muss.\n\nDazu kommt der pädagogische Nutzen: Die Schule zeigt, dass sie das Thema Klimaschutz ernst nimmt, und wir können im Unterricht direkt an einer echten Anlage lernen, wie sowas funktioniert.\n\n=== TASK: Aufgabe 3 ===\nWeiß ich leider nicht.`;
 
 export function buildDemoScenario(): DemoScenario {
@@ -84,16 +87,16 @@ export function buildDemoScenario(): DemoScenario {
             name: "Aufgabe 1",
             maxPoints: 3,
             taskType: 'calc-trace',
-            content: `Thema: Energieertrag der Solaranlage (AFB I), 3 P\nFragestellung: Die Schule plant eine Photovoltaikanlage auf dem Dach der Sporthalle. Berechne den zu erwartenden jährlichen Energieertrag E. Gegeben: Modulfläche A = 40 m², Wirkungsgrad η = 20 % (0,2), mittlere Jahres-Sonneneinstrahlung H = 1200 kWh/m². Nutze die Formel E = A · η · H.\n\nMusterlösung: E = A · η · H = 40 m² · 0,2 · 1200 kWh/m² = 9600 kWh. Bewertung: 1 P Formel, 1 P Rechenweg, 1 P Ergebnis.`,
+            content: `Thema: Energieertrag der Solaranlage (AFB I), 3 P\nFragestellung: Die Schule plant eine Photovoltaikanlage auf dem Dach der Sporthalle. Berechne den zu erwartenden jährlichen Energieertrag E. Gegeben: Modulfläche A = 40 m², Wirkungsgrad η = 20 % (0,2), mittlere Jahres-Sonneneinstrahlung H = 1200 kWh/m². Nutze die Formel E = A · η · H.\n\nMusterlösung: E = A · η · H = 40 m² · 0,2 · 1200 kWh/m² = 9600 kWh. Bewertung: 1 P Formel, 1 P Einsetzen der gegebenen Werte (A = 40 m², η = 0,2, H = 1200 kWh/m²), 1 P Rechnung und Ergebnis (richtig gerechnet, folgerichtig aus den eingesetzten Werten).`,
             targetGoal: {
                 targetValue: '9600',
                 maxPoints: 3,
                 unit: 'kWh',
-                gradingRubric: '1 P Formel, 1 P Rechenweg, 1 P Ergebnis',
+                gradingRubric: '1 P Formel, 1 P Einsetzen der gegebenen Werte, 1 P Rechnung und Ergebnis (folgerichtig)',
                 criteria: [
                     { id: 'formel', label: 'Formel E = A · η · H korrekt genannt', punktwert: 1, source: 'llm', targetIndex: 0 },
-                    { id: 'rechenweg', label: 'Rechenweg fehlerfrei', punktwert: 1, source: 'proofA', targetIndex: 0 },
-                    { id: 'ergebnis', label: 'Endergebnis 9600 kWh erreicht', punktwert: 1, source: 'proofB', targetIndex: 0 }
+                    { id: 'einsetzen', label: 'Gegebene Werte eingesetzt (A = 40 m², η = 0,2, H = 1200 kWh/m²)', punktwert: 1, source: 'llm', targetIndex: 0 },
+                    { id: 'rechnung', label: 'Rechnung und Ergebnis (folgerichtig aus den eingesetzten Werten)', punktwert: 1, source: 'proofA', targetIndex: 0 }
                 ]
             }
         },

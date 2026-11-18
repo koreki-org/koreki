@@ -13,6 +13,12 @@ Koreki liest die Musterlösung und erkennt daraus die **Aufgabenstruktur**: welc
 
 ::: tip Eine gute Musterlösung
 Koreki kann nur Punkte vergeben, die in der Musterlösung stehen. Schreib hinein, **wofür** es jeden Punkt gibt — nicht nur das Endergebnis. Nummeriere die Teilaufgaben so, wie sie auf dem Aufgabenblatt stehen.
+
+Bei Rechenaufgaben bewährt sich diese Aufteilung:
+
+> 1 P Formel, 1 P Einsetzen der gegebenen Werte, 1 P richtig gerechnet (auch mit falsch eingesetzten Werten)
+
+Nur so kann der Skill **Folgefehler** richtig arbeiten. Wer einen gegebenen Wert falsch abschreibt und damit richtig weiterrechnet, verliert dann genau den Punkt fürs Einsetzen. Steht stattdessen nur „1 P Rechenweg, 1 P Ergebnis“ da, gibt es keinen Punkt, an dem der Fehler zählt, und die Arbeit bekommt womöglich volle Punktzahl.
 :::
 
 Gibt es etwas, das für alle Aufgaben gilt — ein Szenario, gemeinsame Annahmen —, trägst du es unter **Gemeinsamer Rahmen** ein. Gibt es so etwas nicht, bleibt das Feld leer.

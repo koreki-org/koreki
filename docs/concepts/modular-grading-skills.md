@@ -3,7 +3,7 @@ title: "Modulare AI Grading-Skills für präzise, föderale & fachspezifische Ko
 description: "Technisches und konzeptionelles Design zur Einführung wiederverwendbarer und zustandsspezifischer Prompt-Module (Skills) in Korekis KI-Bewertungs-Pipeline."
 author: "@principal_architect"
 date: "2026-05-12"
-last_updated: "2026-05-12"
+last_updated: "2026-11-18"
 status: "Draft"
 domain: "technical"
 security_classification: "Internal"
@@ -21,7 +21,7 @@ Die Anforderungen an schulische Korrekturen in Deutschland weichen stark voneina
 1. **Bundesland-Spezifika (Föderalismus):** Jedes Bundesland nutzt eigene Regelungen für Korrekturzeichen (z. B. bayerische Symbole `R`, `Gr`, `Z`, `Sb` im Gegensatz zu den NRW-Klassikern `Orth`, `Synt`, `Lex`).
 2. **Fachspezifische Kernlogiken:** 
    * In **Mathematik und Physik** ist das präzise Erkennen und faire Bewerten von **Folgefehlern** (consecutive errors) die größte Herausforderung für Sprachmodelle.
-   * **Reichweite des Skills (Stand 03.09.2026):** `skill-consecutive-errors` ist eine Anweisung an das Modell und wirkt deshalb bei Kriterien mit `source: 'llm'` — das sind alle außer den beiden Sandbox-Beweisen. Die Folgefehler-Beurteilung liegt damit **vollständig** bei diesem Skill; die Engine versucht sie nicht mehr selbst (ein am 03.09.2026 eingeführtes Gedächtnis über Aufgabengrenzen wurde am selben Tag wieder entfernt, siehe [CalcTrace Engine, Abschnitt 3.6](../technical/calc-trace-engine.md)). Was die Engine beiträgt, ist die Tatsachengrundlage: `proofA` belegt, dass der Schüler seinen **eigenen** Weg fehlerfrei gerechnet hat, auch wenn er das Ziel verfehlt. Ein `proofB`-Kriterium fällt bei einem Folgefehler dagegen weiterhin — der Musterwert steht dann nun einmal nicht da.
+   * **Reichweite des Skills (Stand 03.09.2026):** `skill-consecutive-errors` ist eine Anweisung an das Modell und wirkt deshalb bei Kriterien mit `source: 'llm'` — das sind alle außer den beiden Sandbox-Beweisen. Die Folgefehler-Beurteilung liegt damit **vollständig** bei diesem Skill; die Engine versucht sie nicht mehr selbst (ein am 03.09.2026 eingeführtes Gedächtnis über Aufgabengrenzen wurde am selben Tag wieder entfernt, siehe [CalcTrace Engine, Abschnitt 3.6](../technical/calc-trace-engine.md)). Was die Engine beiträgt, ist die Tatsachengrundlage: `proofA` belegt, dass der Schüler seinen **eigenen** Weg fehlerfrei gerechnet hat, auch wenn er das Ziel verfehlt. Ein `proofB`-Kriterium wird in diesem Fall nicht von der Engine entschieden, sondern dem Modell vorgelegt (seit 04.09.2026). **Wirken kann der Skill nur, wenn die Musterlösung einen eigenen Punkt für das Einsetzen der gegebenen Werte hat** — sonst kostet ein falsch abgeschriebener Wert nirgends etwas. Empfohlenes Schema und Messung: [CalcTrace Engine, Abschnitt 3.6](../technical/calc-trace-engine.md).
    * In **Naturwissenschaften** führt das Fehlen von physikalischen Einheiten (z. B. `m/s`, `kg`) oft zu systematischen Teilabzügen.
    * In **Sprachen/Geisteswissenschaften** muss zwischen inhaltlicher Substanz, korrekten Zitationen und sprachlicher/grammatikalischer Qualität differenziert werden.
 3. **Pädagogische Feedback-Kultur:** Unterschiedliche Schulen verlangen andere Feedback-Methoden (z. B. das strukturierte „Sandwich-Feedback“ oder „Growth-Mindset-Kommentare“).
