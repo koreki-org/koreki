@@ -16,7 +16,7 @@ const schritte = [
         titel: 'Arbeiten der Klasse hochladen',
         text: 'Getippt oder gescannt. Dateinamen werden vor der Übergabe an die KI durch Platzhalter ersetzt.',
         bild: '/marketing/stapel.webp',
-        alt: 'Stapel mit den Arbeiten der Klasse, bereit zur Korrektur',
+        alt: 'Alle Arbeiten der Klasse in einer Liste, bereit zur Korrektur',
         breite: 'w-[190%]',
     },
     {

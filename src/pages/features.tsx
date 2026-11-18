@@ -41,7 +41,7 @@ export default function FeaturesPage() {
                         </p>
                     </div>
                 <div className="mt-12">
-                    <Produktbild src="/marketing/uebersicht.webp" alt="Koreki mit Musterlösung, Schülerarbeiten und Stapelverarbeitung" />
+                    <Produktbild src="/marketing/uebersicht.webp" alt="Koreki mit Seitenleiste und der Liste aller Arbeiten, bereit zur Korrektur" />
                 </div>
             </Abschnitt>
 

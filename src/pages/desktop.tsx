@@ -103,7 +103,7 @@ export default function DesktopOnboarding() {
                     ohne Produktbild, damit nichts zum Scrollen zwingt. */}
                 {!lokal && (
                     <div className="mt-12">
-                        <Produktbild src="/marketing/uebersicht.webp" alt="Koreki Desktop mit Musterlösung, Schülerarbeiten und Stapelverarbeitung" />
+                        <Produktbild src="/marketing/uebersicht.webp" alt="Koreki Desktop mit Seitenleiste und der Liste aller Arbeiten, bereit zur Korrektur" />
                     </div>
                 )}
             </Abschnitt>

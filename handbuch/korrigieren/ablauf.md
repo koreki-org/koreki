@@ -61,7 +61,7 @@ Bei schwer lesbarer Handschrift kann die KI ein Wort falsch lesen und dabei etwa
 ## 4. Korrigieren lassen {#korrigieren}
 
 ![Alle Arbeiten mit zwei Arbeiten, bereit zur Korrektur](/bilder/app-stapel.png){.app-bild}
-<p class="bildtext">Alle angehakten Arbeiten werden mit „Korrigieren“ bearbeitet. Mit dem Pfeil rechts korrigierst du eine einzelne.</p>
+<p class="bildtext">Alle angehakten Arbeiten werden mit „Korrigieren“ bearbeitet. Mit dem Dreieck korrigierst du eine einzelne, der Pfeil am Zeilenende öffnet sie.</p>
 
 Unter **Alle Arbeiten** stehen deine Arbeiten. Klicke auf **Korrigieren**. Koreki liest jede Arbeit und macht für jede Aufgabe einen Vorschlag. Du kannst den Lauf jederzeit abbrechen.
 

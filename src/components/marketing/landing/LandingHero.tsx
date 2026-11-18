@@ -67,10 +67,10 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ aktion }) => (
         <div className="mt-12">
             <Produktbild
                 src="/marketing/startbildschirm.webp"
-                alt="Startbildschirm von Koreki mit Musterlösung, Schülerarbeiten und den eigenen Profilen in der Kopfleiste"
+                alt="Startbildschirm von Koreki: links die Seitenleiste mit den Profilen, rechts die Felder für Musterlösung und Schülerarbeiten"
             />
             <p className="mt-4 text-center text-sm text-muted-foreground">
-                Echte Ansicht aus Koreki: Musterlösung links, Arbeiten der Klasse rechts – oben die eigenen Profile.
+                Echte Ansicht aus Koreki: Musterlösung und Arbeiten der Klasse – links in der Seitenleiste die eigenen Profile.
             </p>
         </div>
     </Abschnitt>
