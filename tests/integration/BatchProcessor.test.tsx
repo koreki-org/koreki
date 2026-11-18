@@ -4,7 +4,6 @@ import BatchProcessor from '../../src/components/BatchProcessor';
 import { createBatchFile } from '../../src/test/factories';
 import '@testing-library/jest-dom';
 import { useBatchStore } from '../../src/hooks/store/useBatchStore';
-import { useBatchStore } from '../../src/hooks/store/useBatchStore';
 
 // Isolated Mocking for Industrial Integrity 🏮🛡️
 jest.mock('../../src/hooks/useAuth', () => ({
