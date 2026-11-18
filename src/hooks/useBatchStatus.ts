@@ -9,6 +9,17 @@ import { istVollstaendigGeschwaerzt } from '@/lib/privacy-utils';
 import { datenzielBestaetigung } from '@/lib/datenziel-hinweis';
 
 /**
+ * Vorschau-Adressen hochgeladener Bilder — je Datei EINE, gemerkt an der Datei
+ * selbst, nicht an ihrer Position in der Liste (sonst zeigte Position 0 nach
+ * einem Austausch der Arbeiten das alte Bild). Modulweit, weil die Ansicht beim
+ * Wechsel zwischen „Alle Arbeiten“ und einer Arbeit neu aufgebaut wird.
+ *
+ * Die Adressen beginnen mit `blob:` — die CSP muss das fuer Bilder erlauben
+ * (`img-src`, Waechter: `tests/unit/csp-blob-vorschau.test.ts`).
+ */
+const vorschauUrls = new Map<File, string>();
+
+/**
  * Industrial Batch Status Hook (Stage 11)
  * 📊🛡️🏛️
  * Encapsulates batch-wide metrics (Credits, Pending Counts), 
@@ -29,7 +40,6 @@ export const useBatchStatus = (
     const [showScan, setShowScan] = useState<Record<number, boolean>>({});
     const [showConfirm, setShowConfirm] = useState<'ocr' | 'process' | 'reset' | null>(null);
     const [mobileViewMode, setMobileViewMode] = useState<'text' | 'image'>('image');
-    const [previewUrls, setPreviewUrls] = useState<Record<number, string>>({});
     const [activeGroupName, setActiveGroupName] = useState<string>("");
     const [showAnalytics, setShowAnalytics] = useState<boolean>(false);
     const [showDigitalSlips, setShowDigitalSlips] = useState<boolean>(false);
@@ -37,12 +47,19 @@ export const useBatchStatus = (
     // --- Global State Interop ---
     const { ocrStrategy, setOcrStrategy } = useBatchState();
 
-    // --- Cleanup Preview URLs on Unmount ---
+    // Freigegeben wird eine Adresse erst, wenn ihre Datei die Liste verlassen hat.
+    // Bis zum 18.11.2026 hing das Aufraeumen an der Adressliste selbst: Jede neue
+    // Adresse gab alle vorigen frei, sodass nur das LETZTE Foto eines Uploads eine
+    // Vorschau haette zeigen koennen. Aufraeumen beim Abbau der Ansicht ginge
+    // ebenso schief — die Ansicht wird beim Blaettern neu aufgebaut.
     useEffect(() => {
-        return () => {
-            Object.values(previewUrls).forEach(url => URL.revokeObjectURL(url));
-        };
-    }, [previewUrls]);
+        const vorhanden = new Set(batchFiles.flatMap(f => f.files ?? []));
+        vorschauUrls.forEach((url, datei) => {
+            if (vorhanden.has(datei)) return;
+            URL.revokeObjectURL(url);
+            vorschauUrls.delete(datei);
+        });
+    }, [batchFiles]);
 
     // --- Derived Metrics (Arithmetical Precision) ---
     const metrics = useMemo(() => {
@@ -173,19 +190,19 @@ export const useBatchStatus = (
         onUpdateText(idx, item.fileText || '', newTasks);
     }, [batchFiles, onUpdateText]);
 
-    const getPreviewUrl = useCallback((idx: number, item: BatchFile) => {
+    const getPreviewUrl = useCallback((_idx: number, item: BatchFile) => {
         if (item.redactedDataUrls && item.redactedDataUrls.length > 0) return item.redactedDataUrls[0];
         if (item.previewDataUrls && item.previewDataUrls.length > 0) return item.previewDataUrls[0];
-        if (previewUrls[idx]) return previewUrls[idx];
 
         const firstFile = item.files?.[0];
-        if (firstFile && firstFile.type.startsWith('image/')) {
-            const url = URL.createObjectURL(firstFile);
-            setPreviewUrls(prev => ({ ...prev, [idx]: url }));
-            return url;
+        if (!firstFile || !firstFile.type.startsWith('image/')) return null;
+        let url = vorschauUrls.get(firstFile);
+        if (!url) {
+            url = URL.createObjectURL(firstFile);
+            vorschauUrls.set(firstFile, url);
         }
-        return null;
-    }, [previewUrls]);
+        return url;
+    }, []);
 
     return {
         state: { 

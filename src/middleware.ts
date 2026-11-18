@@ -61,7 +61,7 @@ export function middleware(request: NextRequest) {
         ...extraConnects
     ].filter(Boolean).join(' ');
     
-    const csp = `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://auth.koreki.org ${oidcOrigin}; connect-src ${connectSrc}; frame-src 'self' https://auth.koreki.org ${oidcOrigin};`;
+    const csp = `default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://auth.koreki.org ${oidcOrigin}; connect-src ${connectSrc}; frame-src 'self' https://auth.koreki.org ${oidcOrigin};`;
     
     response.headers.set('Content-Security-Policy', csp);
     
