@@ -8,6 +8,8 @@ import { Button } from '../ui/Button';
 import { HeaderBadges } from './HeaderBadges';
 import { NeueVersionHinweis } from './NeueVersionHinweis';
 import { HilfeMenu } from './HilfeMenu';
+import { DemoMenu } from './DemoMenu';
+import type { DemoArt } from '@/lib/demo/demoHandschrift';
 import { useGlobalStatus } from '../../hooks/useGlobalStatus';
 import { isLocalInstance, isKeycloakAuth, getAuthType } from '../../lib/env-context';
 import { User } from '../../types';
@@ -25,7 +27,7 @@ interface HeaderProps {
     onShowAiParams?: () => void;
     onShowGradingMemory?: () => void;
     onLogout: () => void;
-    onLoadDemo: () => void;
+    onLoadDemo: (art: DemoArt) => void;
     onShowHelp: () => void;
     onUnlockExpert?: () => void;
     onImportSession?: (file: File) => void;
@@ -169,14 +171,9 @@ const Header: React.FC<HeaderProps> = ({
             {!hasActiveWork && <div className="flex flex-col items-center text-center mt-2 md:mt-1">
                 <Logo showText={true} textLarge={true} size={40} subtitle="Dein KI-Korrektur Assistent" />
                 <div className={cn("flex flex-row gap-2 sm:gap-2.5 w-full max-w-[480px] mt-3 md:mt-4 mx-auto", leisteOffen && "md:hidden")}>
-                    <Button
-                        variant="outline"
-                        size="lg"
-                        onClick={onLoadDemo}
-                        className="flex-1 rounded-full px-2 sm:px-4 h-10 text-xs sm:text-sm text-foreground"
-                    >
-                        <Sparkles size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Demo
-                    </Button>
+                    <DemoMenu onDemo={onLoadDemo} className="flex-1" align="center"
+                        triggerClassName="w-full h-10 rounded-full border border-border bg-card px-2 sm:px-4 text-xs sm:text-sm text-foreground hover:bg-card hover:border-foreground/30"
+                        trigger={<><Sparkles size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Demo</>} />
 
                     <Button
                         variant="default"

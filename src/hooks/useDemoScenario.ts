@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { BatchFile, Task } from '../types';
 import { buildDemoScenario } from '../lib/demo/demoScenario';
+import { ladeHandschriftArbeiten, type DemoArt } from '../lib/demo/demoHandschrift';
+import { logger } from '@/lib/logger';
+import { meldeFehler } from '@/lib/notify';
 import { askConfirmation } from '@/lib/confirm-dialog';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
@@ -18,8 +21,10 @@ interface UseDemoScenarioParams {
 interface UseDemoScenarioResult {
     /** Der Hinweis-Banner ist sichtbar — die Demo wurde gerade geladen. */
     showDemoHint: boolean;
+    /** Welche Fassung zuletzt geladen wurde — der Hinweis erklaert jeweils den naechsten Schritt. */
+    demoArt: DemoArt;
     /** Laedt das Demo-Szenario in die Oberflaeche und blendet den Hinweis ein. */
-    loadDemoData: () => Promise<void>;
+    loadDemoData: (art?: DemoArt) => Promise<void>;
     /** Blendet den Hinweis vorzeitig aus (Klick auf Schliessen). */
     dismissDemoHint: () => void;
 }
@@ -38,6 +43,7 @@ export const useDemoScenario = ({
     setBatchFiles
 }: UseDemoScenarioParams): UseDemoScenarioResult => {
     const [showDemoHint, setShowDemoHint] = useState(false);
+    const [demoArt, setDemoArt] = useState<DemoArt>('getippt');
     const hintTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => () => {
@@ -58,7 +64,7 @@ export const useDemoScenario = ({
      * Gefragt wird nur, wenn es etwas zu verlieren gibt — auf einer leeren
      * Oberflaeche ist die Demo genau das, was der Knopf verspricht.
      */
-    const loadDemoData = useCallback(async () => {
+    const loadDemoData = useCallback(async (art: DemoArt = 'getippt') => {
         const hatInhalt = useBatchStore.getState().batchFiles.length > 0
             || !!useDashboardStore.getState().modelSolution;
         if (hatInhalt && !(await askConfirmation({
@@ -67,16 +73,28 @@ export const useDemoScenario = ({
         }))) return;
 
         const scenario = buildDemoScenario();
+        // Die Blaetter kommen VOR dem Ersetzen: Fehlt eines, bleibt alles, wie es war.
+        let arbeiten = scenario.studentBatchFiles;
+        if (art === 'handschrift') {
+            try {
+                arbeiten = await ladeHandschriftArbeiten();
+            } catch (err) {
+                logger.error('Handschrift-Demo nicht geladen', { message: String(err) });
+                meldeFehler('Die Handschrift-Demo konnte nicht geladen werden.');
+                return;
+            }
+        }
 
         setModelSolution(scenario.modelSolution);
         setModelSolutionContext(scenario.modelSolutionContext);
         setTasksLayout(scenario.tasksLayout);
-        setBatchFiles(scenario.studentBatchFiles);
+        setBatchFiles(arbeiten);
+        setDemoArt(art);
 
         setShowDemoHint(true);
         if (hintTimeout.current) clearTimeout(hintTimeout.current);
         hintTimeout.current = setTimeout(() => setShowDemoHint(false), DEMO_HINT_DURATION_MS);
     }, [setModelSolution, setModelSolutionContext, setTasksLayout, setBatchFiles]);
 
-    return { showDemoHint, loadDemoData, dismissDemoHint };
+    return { showDemoHint, demoArt, loadDemoData, dismissDemoHint };
 };

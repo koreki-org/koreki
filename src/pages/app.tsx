@@ -116,7 +116,7 @@ export default function Home() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
-    const { showDemoHint, loadDemoData, dismissDemoHint } = useDemoScenario({
+    const { showDemoHint, demoArt, loadDemoData, dismissDemoHint } = useDemoScenario({
         setModelSolution: data.setModelSolution,
         setModelSolutionContext: data.setModelSolutionContext,
         setTasksLayout: data.setTasksLayout,
@@ -230,7 +230,7 @@ export default function Home() {
                         onShowGradingMemory={() => setShowGradingMemory(true)}
                     />
 
-                    <DemoHintBanner isOpen={showDemoHint} onDismiss={dismissDemoHint} />
+                    <DemoHintBanner isOpen={showDemoHint} art={demoArt} onDismiss={dismissDemoHint} />
 
                     <DashboardModals
                         userData={userData!}

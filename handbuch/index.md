@@ -26,5 +26,5 @@ Koreki entscheidet keine Note. Jeder Wert ist ein **Vorschlag**, und vor jedem E
 Für den Anfang ist **Desktop** der einfachste Weg. Weiter geht es mit [Koreki installieren](/erste-schritte/installieren).
 
 ::: tip Erst ausprobieren
-Auf der Startseite von Koreki gibt es den Knopf **Demo**. Er lädt eine fertige Beispielkorrektur, damit du siehst, wie ein Ergebnis aussieht — ganz ohne eigene Dateien.
+Auf der Startseite von Koreki gibt es den Knopf **Demo**. Er lädt ein Beispiel mit Musterlösung und zwei Arbeiten, ganz ohne eigene Dateien. Du wählst **Getippte Arbeiten**, um gleich zu korrigieren, oder **Handschriftliche Scans**, um vorher die Bilderkennung zu sehen. Die Handschrift ist nachgemacht, keine echte Schülerarbeit.
 :::
