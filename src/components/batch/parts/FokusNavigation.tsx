@@ -25,7 +25,7 @@ export const FokusNavigation: React.FC = () => {
     };
 
     return (
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0 basis-full md:basis-auto">
             <Button variant="ghost" size="sm" onClick={zurueck} className="h-8 gap-1.5 px-2 text-xs text-muted-foreground">
                 <ArrowLeft size={14} /> Alle Arbeiten
             </Button>

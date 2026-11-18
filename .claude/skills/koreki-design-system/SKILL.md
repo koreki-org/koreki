@@ -103,7 +103,7 @@ Verboten: `rounded-3xl` und alle Werte in eckigen Klammern.
 ## 5. Tiefe und Bewegung
 
 - **Schatten:** Karten tragen sich über die Fläche (Abschnitt 3), Schatten höchstens `shadow-sm`. Modals `shadow-glass`, verankerte Popover `shadow-xl`.
-- **Glas und Unschärfe** nur für Ebenen, die über Inhalt schweben: Modal-Hintergrund (`backdrop-blur-glass`), die schwebende Kopfleiste (nur mobil — am Rechner übernimmt die Seitenleiste ihre Aufgaben). Nie für Inhaltskarten. Verankerte Listen und Menüs (Vorbild `ui/Dropdown.tsx`) sind undurchsichtig: `bg-card`, Haarlinie, `shadow-xl`.
+- **Glas und Unschärfe** nur für Ebenen, die über Inhalt schweben: Modal-Hintergrund (`backdrop-blur-glass`). Die schwebende Kopfleiste gibt es seit 18.11.2026 nicht mehr — ihre Aufgaben trägt die Seitenleiste. Nie für Inhaltskarten. Verankerte Listen und Menüs (Vorbild `ui/Dropdown.tsx`) sind undurchsichtig: `bg-card`, Haarlinie, `shadow-xl`.
 - **Animation:** nur Klassen aus `globals.css` oder Tailwind selbst. Übergänge 150–300 ms, nur Farbe und Deckkraft. `prefers-reduced-motion` respektieren. *(Wächter: `tests/unit/animation-governance.test.ts`)*
   - **Ebenen über dem Inhalt** blenden ein: Hintergrund, Menü, Tooltip mit `animate-overlay-in` (150 ms), die Dialog-Karte mit `animate-dialog-in` (180 ms, leichtes Größerwerden).
   - **Inhalt bewegt sich nicht** — Karten, Listen, Einstellungen sind einfach da.
@@ -150,7 +150,7 @@ Bänder statt Einzelwerte; eine neue Ebene wird einem Band zugeordnet, keine neu
 ## 10. Layouts und Umfang
 
 - `AppLayout` für App, Admin, Login/Registrierung; `MarketingLayout` für öffentliche Seiten.
-- **Die Korrektur-Seite** (`/app`, seit 18.11.2026) hat links eine Seitenleiste nach dem Vorbild von Claude (`layout/AppSeitenleiste.tsx`, ab `md`; offen oder zu wird im Browser gemerkt) und rechts **genau eine von drei Ansichten** (`useAnsicht` in `hooks/useFokusArbeit.ts`):
+- **Die Korrektur-Seite** (`/app`, seit 18.11.2026) hat links eine Seitenleiste nach dem Vorbild von Claude (`layout/AppSeitenleiste.tsx`, ab `md`; offen oder zu wird im Browser gemerkt). Auf dem Handy ist es **dieselbe** Leiste (`SeitenleisteNav`) als Schublade hinter **☰** in einer schmalen Kopfzeile (`MobilLeiste.tsx`) — keine eigenen Knöpfe oder Profil-Schalter fürs Handy. Rechts steht **genau eine von drei Ansichten** (`useAnsicht` in `hooks/useFokusArbeit.ts`):
 
 | Ansicht | Inhalt | Erreicht über |
 |---|---|---|

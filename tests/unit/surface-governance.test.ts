@@ -54,16 +54,11 @@ const HARTE_FARBEN_BASELINE: string[] = [
  * Altlasten mit vier Abgrenzungsmitteln an einem Element, eingefroren am
  * 08.09.2026. NUR ENTFERNEN, NIE ERGAENZEN.
  *
- * Die Kopfleiste trägt `bg-card/70` + `border` + `shadow-xl` + `ring-1`. Sie
- * ist als schwebende Glas-Leiste gedacht, und Glasmorphismus ist für schwebende
- * Elemente ausdrücklich erlaubt (`koreki-design-system` §5) — vier Mittel
- * bleiben trotzdem drei zu viel. Eine der beiden Stellen hebt ausserdem alles
- * ab `md:` wieder auf (`md:border-0 md:shadow-none md:ring-0`), gilt also nur
- * mobil. Der Umbau der Navigation war nicht Teil des Auftrags.
+ * Der einzige Eintrag war die schwebende Kopfleiste (`AppHeader.tsx`, Rand UND
+ * Toenung UND Schatten UND Ring). Sie ist am 18.11.2026 mit der Seitenleiste
+ * entfallen; die Liste ist leer und bleibt es.
  */
-const VIER_MITTEL_BASELINE: string[] = [
-    'components/layout/AppHeader.tsx',
-];
+const VIER_MITTEL_BASELINE: string[] = [];
 
 /**
  * `bg-*`-Klassen, die keine Farbe meinen. Tailwind benutzt dasselbe Präfix für

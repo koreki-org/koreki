@@ -4,11 +4,10 @@ import { GraduationCap, Wrench, BookOpen, Brain } from 'lucide-react';
 /**
  * Die vier Profil-Familien als EINE Liste.
  *
- * Seit dem 17.11.2026 erscheinen sie an zwei Stellen: in der Seitenleiste
- * (ab `md`) und als Schalter in der Kopfleiste (darunter). Beide lesen diese
- * Liste — sonst stuende jeder Vorgabewert ("MINT Standard",
- * "Standard-Korrektur" …) zweimal da, und eine Familie bekaeme irgendwann an
- * einer Stelle einen anderen Namen als an der anderen.
+ * Seit dem 18.11.2026 erscheinen sie nur noch in der Seitenleiste — am
+ * Rechner daneben, auf dem Handy als Schublade. Die Liste bleibt trotzdem
+ * hier: Jeder Vorgabewert ("MINT Standard", "Standard-Korrektur" …) steht
+ * genau einmal.
  */
 export interface ProfilEintrag {
     schluessel: string;

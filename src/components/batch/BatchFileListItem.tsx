@@ -108,9 +108,10 @@ export const BatchFileListItem: React.FC<BatchFileListItemProps> = (props) => {
             (itemHasWarnings || (warnings && warnings.length > 0)) && "border-warning/50")
         )}>
             {/* ITEM HEADER */}
-            <div className={cn("flex items-center justify-between gap-2 sm:gap-4 relative", fokusModus ? "pb-2 border-b border-border" : "p-2 sm:p-3")}>
+            {/* Auf dem Handy steht die Navigation einer offenen Arbeit in eigener Zeile — sonst fehlt der Name. */}
+            <div className={cn("flex items-center justify-between gap-2 sm:gap-4 relative", fokusModus ? "flex-wrap md:flex-nowrap pb-2 border-b border-border" : "p-2 sm:p-3")}>
+                {fokusModus && <FokusNavigation />}
                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                    {fokusModus && <FokusNavigation />}
                     <div className="flex-shrink-0 flex items-center gap-2 w-5 justify-center">
                         {isProcessing ? (
                             <Loader2 size={16} className="animate-spin text-primary" />

@@ -15,10 +15,19 @@ interface SeitenleisteStore {
     setOffen: (offen: boolean) => void;
     /** Einmal nach dem Laden — auf dem Server gibt es keinen Browser-Speicher. */
     ladeGemerkt: () => void;
+    /**
+     * Unter `md` liegt die Leiste als Schublade UEBER dem Inhalt (18.11.2026).
+     * Ein eigener Wert, nicht gemerkt: Eine Schublade, die beim naechsten Start
+     * schon offen ueber der Arbeit liegt, verdeckt genau das, was man sehen will.
+     */
+    mobilOffen: boolean;
+    setMobilOffen: (offen: boolean) => void;
 }
 
 export const useSeitenleisteStore = create<SeitenleisteStore>((set) => ({
     offen: false,
+    mobilOffen: false,
+    setMobilOffen: (mobilOffen) => set({ mobilOffen }),
     setOffen: (offen) => {
         set({ offen });
         try {

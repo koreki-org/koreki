@@ -9,29 +9,30 @@ interface MobileViewSelectorProps {
 }
 
 /**
- * MobileViewSelector
- * 📱 Segmented Control for split-screen switching on small devices.
+ * Umschalter zwischen den beiden Spalten auf dem Handy, wo sie nicht nebeneinander passen.
+ * Beschriftet wie die Spalten selbst — „Text“ und „Vorschlag“ bzw. „Scan“ —, in
+ * Satzschreibung (bis 18.11.2026 stand hier „TEXT / KORREKTUR“ in Versalien).
  */
 export const MobileViewSelector: React.FC<MobileViewSelectorProps> = ({
     mobileViewMode, onSetMobileViewMode, isDone
 }) => {
     return (
-        <div className="flex sm:hidden bg-muted/20 p-1 mt-4 rounded-xl border border-border/50 shrink-0 shadow-inner">
+        <div className="flex md:hidden bg-muted p-1 mb-3 rounded-lg shrink-0">
             <Button 
                 variant="ghost" 
                 onClick={() => onSetMobileViewMode('text')} 
-                className={cn("flex-1 h-auto py-2 text-xxs font-bold rounded-lg transition-all", 
-                    mobileViewMode === 'text' ? "bg-background text-primary shadow-sm" : "text-muted-foreground")}
+                className={cn("flex-1 h-auto py-1.5 text-xs font-medium rounded-md transition-colors", 
+                    mobileViewMode === 'text' ? "bg-card text-foreground shadow-sm" : "text-muted-foreground")}
             >
-                {isDone ? "TEXT" : "TEXT"}
+                Text
             </Button>
             <Button 
                 variant="ghost" 
                 onClick={() => onSetMobileViewMode('image')} 
-                className={cn("flex-1 h-auto py-2 text-xxs font-bold rounded-lg transition-all", 
-                    mobileViewMode === 'image' ? "bg-background text-primary shadow-sm" : "text-muted-foreground")}
+                className={cn("flex-1 h-auto py-1.5 text-xs font-medium rounded-md transition-colors", 
+                    mobileViewMode === 'image' ? "bg-card text-foreground shadow-sm" : "text-muted-foreground")}
             >
-                {isDone ? "KORREKTUR" : "SCAN"}
+                {isDone ? "Vorschlag" : "Scan"}
             </Button>
         </div>
     );

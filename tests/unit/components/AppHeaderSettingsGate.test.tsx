@@ -12,10 +12,11 @@ import { isLocalInstance, isKeycloakAuth, getAuthType } from '@/lib/env-context'
  * greifen: in einer Schulinstanz (Keycloak) verwaltet der Identity Provider die
  * Konten, dort bleibt das Zahnrad Sache des Admins.
  *
- * Hinweis zur Zaehlweise: Der Header rendert seine Schnellzugriffe zweimal —
- * einmal fuer Mobil, einmal fuer Desktop; welcher sichtbar ist, entscheidet CSS.
- * Deshalb wird auf "mindestens einer" bzw. "keiner" geprueft, nicht auf genau
- * einen. Eine Zaehlung auf 1 waere an das Layout gekoppelt und truegerisch.
+ * Hinweis zur Zaehlweise: Seit dem 18.11.2026 steht das Zahnrad nur noch in
+ * der Seitenleiste (am Rechner daneben, auf dem Handy als Schublade). Der Test
+ * oeffnet sie deshalb vorher — ueber den gemerkten Wert, den die Leiste beim
+ * Laden selbst liest. Geprueft wird weiter auf "mindestens einer" bzw. "keiner":
+ * eine Zaehlung auf 1 waere an das Layout gekoppelt und truegerisch.
  *
  * Der letzte Fall prueft die Falle: die Bedingung "nicht Keycloak" ist
  * NICHT deckungsgleich mit "SaaS" — eine Community-Instanz mit AUTH_TYPE=NONE
@@ -60,7 +61,10 @@ const renderHeader = (rolle: string) =>
     );
 
 describe('AppHeader — Zahnrad nur im SaaS fuer alle (Layer 2)', () => {
-    beforeEach(() => jest.clearAllMocks());
+    beforeEach(() => {
+        jest.clearAllMocks();
+        localStorage.setItem('koreki_seitenleiste_offen', '1');
+    });
 
     it('zeigt es im SaaS auch einem normalen Nutzer', () => {
         setzeUmgebung({ authType: 'LOGTO', lokal: false, keycloak: false });

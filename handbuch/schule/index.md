@@ -64,7 +64,7 @@ Weitere Lehrkräfte legst du in derselben Benutzerverwaltung an (**Users** → *
 
 ## KI anbinden {#ki}
 
-Bei mehreren Lehrkräften stellst du die KI **einmal zentral** ein: Melde dich mit Administratorrechten an und öffne das Zahnrad (**System-Einstellungen**) unten in der Seitenleiste, auf dem Handy oben rechts. Alle Lehrkräfte nutzen dann diesen Zugang.
+Bei mehreren Lehrkräften stellst du die KI **einmal zentral** ein: Melde dich mit Administratorrechten an und öffne das Zahnrad (**System-Einstellungen**) unten in der Seitenleiste, auf dem Handy über **☰**. Alle Lehrkräfte nutzen dann diesen Zugang.
 
 - **Ollama auf einem eigenen KI-Rechner:** Trage dessen Adresse ein, etwa `http://192.168.1.50:11434`. Ollama muss dafür im Netz erreichbar sein, nicht nur auf dem Rechner selbst — dazu startet man Ollama mit `OLLAMA_HOST=0.0.0.0`.
 - **Ollama auf demselben Server wie Koreki:** Koreki läuft in Docker und erreicht `localhost` des Servers nicht. Unter Docker Desktop (Windows, macOS) lautet die Adresse in der Regel `http://host.docker.internal:11434`; unter Linux nimmst du die IP des Servers.

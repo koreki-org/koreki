@@ -13,6 +13,7 @@ import { isLocalInstance, isKeycloakAuth, getAuthType } from '../../lib/env-cont
 import { User } from '../../types';
 import { cn } from '@/lib/utils';
 import { useSeitenleisteStore } from '@/hooks/store/useSeitenleisteStore';
+import { useWechsleAnsicht } from '@/hooks/useFokusArbeit';
 
 interface HeaderProps {
     userData: User | null;
@@ -27,7 +28,6 @@ interface HeaderProps {
     onLoadDemo: () => void;
     onShowHelp: () => void;
     onUnlockExpert?: () => void;
-    onReset?: () => void;
     onImportSession?: (file: File) => void;
     onRelinkFiles?: (files: File[]) => void;
     isImportedSession?: boolean;
@@ -39,20 +39,7 @@ interface HeaderProps {
     hasActiveWork?: boolean;
 }
 
-interface ProfileConfigButtonProps {
-    icon: React.ReactNode;
-    label: string;
-    value: string;
-    onClick: () => void;
-    description?: string;
-    isActive?: boolean;
-}
-
-/**
- * Labeled Configuration Pill Button
- * 💎 Shows both the category label and the active dynamic value with strict text truncation.
- * In mobile view, collapses to a square icon button with a pulse indicator for active states.
- */
+/** Tooltip fuer die Knoepfe der Konto-Zeile — per Portal, damit die Seitenleiste ihn nicht abschneidet. */
 export const HeaderPortalTooltip: React.FC<{
     children: React.ReactNode;
     title: string;
@@ -99,40 +86,6 @@ export const HeaderPortalTooltip: React.FC<{
     );
 };
 
-const ProfileConfigButton: React.FC<ProfileConfigButtonProps> = ({ 
-    icon, 
-    label, 
-    value, 
-    onClick, 
-    description,
-    isActive = false 
-}) => {
-    return (
-        <HeaderPortalTooltip title={`${label}: ${value}`} description={description}>
-            <button
-                type="button"
-                onClick={onClick}
-                className={cn(
-                    "relative rounded-full px-3 py-1.5 h-8 text-xs flex items-center justify-center md:justify-start gap-1.5 transition-all duration-200 shrink-0 border outline-none select-none cursor-pointer w-8 h-8 md:w-[145px] lg:w-[165px] xl:w-[185px]",
-                    isActive 
-                        ? "bg-primary/10 border-primary/30 text-primary shadow-xs hover:bg-primary/15" 
-                        : "bg-muted/40 hover:bg-foreground/5 text-muted-foreground border-border/40 hover:border-border hover:text-foreground shadow-2xs"
-                )}
-            >
-                <span className={cn("shrink-0 transition-colors", isActive ? "text-primary" : "text-muted-foreground/70")}>
-                    {icon}
-                </span>
-                <span className="hidden md:inline font-normal text-muted-foreground shrink-0">
-                    {label}:
-                </span>
-                <span className={cn("hidden md:inline truncate flex-1 min-w-0 transition-colors font-semibold text-left", isActive ? "text-primary" : "text-foreground")}>
-                    {value}
-                </span>
-            </button>
-        </HeaderPortalTooltip>
-    );
-};
-
 /**
  * Industrial App Header (Stage 9 - Optimized Single Row)
  * 🏮🛡️🏛️
@@ -151,7 +104,6 @@ const Header: React.FC<HeaderProps> = ({
     onLoadDemo,
     onShowHelp,
     onUnlockExpert,
-    onReset,
     onImportSession,
     onRelinkFiles,
     isImportedSession,
@@ -164,15 +116,16 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
     const { refs, logic, actions } = useGlobalStatus(userData, onImportSession, onRelinkFiles);
     const leisteOffen = useSeitenleisteStore(s => s.offen); // Offen traegt sie die drei Knoepfe — dann nicht doppelt.
+    const wechsle = useWechsleAnsicht(); // "Neue Korrektur" oeffnet die Einrichtung, wie in der Seitenleiste — verwirft nichts.
     const profile = profilEintraege({
         expertise: activeProfileName, skills: activeSkillsProfileName, erfahrungsschatz: activeGradingMemoryName, intelligenz: activeAiProfileName,
         onExpertise: onShowPrompts, onSkills: onShowSkills, onErfahrungsschatz: onShowGradingMemory, onIntelligenz: onShowAiParams
     });
 
-    const renderQuickActions = (inSeitenleiste = false) => (
+    const renderQuickActions = () => (
         <div className="flex items-center justify-end gap-1.5 sm:gap-2 shrink-0 ml-auto">
             <NeueVersionHinweis onOeffnen={onShowSettings} istAdmin={userData?.role === 'ADMIN'} />
-            <HilfeMenu onKurzanleitung={onShowHelp} inSeitenleiste={inSeitenleiste} />
+            <HilfeMenu onKurzanleitung={onShowHelp} inSeitenleiste />
             {(userData?.role === 'ADMIN' || getAuthType() === 'LOGTO' || (isLocalInstance() && !isKeycloakAuth())) && (
                 <HeaderPortalTooltip title={userData?.role === 'ADMIN' ? 'System-Einstellungen' : 'Konto & Einstellungen'}>
                     <Button 
@@ -207,41 +160,15 @@ const Header: React.FC<HeaderProps> = ({
     return (
         <header className="mb-4 md:mb-5 flex flex-col gap-4 w-full">
             <AppSeitenleiste eintraege={profile} onDemo={onLoadDemo} onImportieren={actions.triggerImport}
-                fuss={<><HeaderBadges userData={userData} upgrading={upgrading} onUpgrade={onUpgrade} onUnlockExpert={onUnlockExpert} />{renderQuickActions(true)}</>} />
-            {/* Ab `md` traegt die Seitenleiste diese Leiste (17.11.2026); hier nur noch mobil. */}
-            <div className="md:hidden w-full bg-card/70 backdrop-blur-xl p-2.5 sm:p-3 rounded-2xl border border-border shadow-xl shadow-foreground/5 ring-1 ring-border/5 flex flex-row items-center justify-between gap-3 transition-all duration-300">
-                
-                {/* Left Side: Badges & Profile Config Buttons */}
-                <div 
-                    className="flex flex-row items-center gap-2 sm:gap-3 flex-1 min-w-0 overflow-x-auto no-scrollbar py-0.5 pr-8"
-                    style={{ 
-                        maskImage: 'linear-gradient(to right, black 0%, black calc(100% - 30px), transparent 100%)', 
-                        WebkitMaskImage: 'linear-gradient(to right, black 0%, black calc(100% - 30px), transparent 100%)' 
-                    }}
-                >
-                    <HeaderBadges
-                        userData={userData}
-                        upgrading={upgrading}
-                        onUpgrade={onUpgrade}
-                        onUnlockExpert={onUnlockExpert}
-                    />
-
-                    <div className="flex flex-row flex-nowrap shrink-0 items-center gap-1.5">
-                        {profile.map(e => (
-                            <ProfileConfigButton key={e.schluessel} icon={e.icon} label={e.label} value={e.wert}
-                                onClick={e.onOeffnen} description={e.beschreibung} isActive={e.aktiv} />
-                        ))}
-                    </div>
-                </div>
-
-                {/* Right Side: Quick Action Utilities */}
-                <div className="flex items-center shrink-0">{renderQuickActions()}</div>
-            </div>
-
-            {/* Liegt Arbeit vor, schrumpft die Buehne auf eine Zeile; ab `md` traegt die Seitenleiste ihre Knoepfe (17.11.2026). */}
-            <div className={cn("flex items-center", hasActiveWork ? "md:hidden flex-col justify-center gap-3" : "flex-col text-center mt-5 md:mt-1")}>
-                <Logo showText={true} textLarge={!hasActiveWork} size={hasActiveWork ? 28 : 40} subtitle={hasActiveWork ? undefined : "Dein KI-Korrektur Assistent"} />
-                <div className={cn("flex flex-row gap-2 sm:gap-2.5 w-full max-w-[480px] px-4 sm:px-0", !hasActiveWork && "mt-3 md:mt-4 mx-auto", leisteOffen && "md:hidden")}>
+                fuss={<><HeaderBadges userData={userData} upgrading={upgrading} onUpgrade={onUpgrade} onUnlockExpert={onUnlockExpert} />{renderQuickActions()}</>} />
+            {/*
+              * Die Buehne steht nur noch auf dem leeren Start (18.11.2026). Sobald Arbeit
+              * vorliegt, tragen Seitenleiste bzw. Schublade ihre Knoepfe — auch auf dem
+              * Handy, wo sie vorher auf jeder Ansicht ein zweites Mal standen.
+              */}
+            {!hasActiveWork && <div className="flex flex-col items-center text-center mt-2 md:mt-1">
+                <Logo showText={true} textLarge={true} size={40} subtitle="Dein KI-Korrektur Assistent" />
+                <div className={cn("flex flex-row gap-2 sm:gap-2.5 w-full max-w-[480px] mt-3 md:mt-4 mx-auto", leisteOffen && "md:hidden")}>
                     <Button
                         variant="outline"
                         size="lg"
@@ -254,7 +181,7 @@ const Header: React.FC<HeaderProps> = ({
                     <Button
                         variant="default"
                         size="lg"
-                        onClick={onReset}
+                        onClick={() => wechsle('einrichtung')}
                         className="flex-1 rounded-full px-2 sm:px-4 h-10 text-xs sm:text-sm whitespace-nowrap"
                     >
                         <PlusCircle size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Neue Korrektur
@@ -269,7 +196,7 @@ const Header: React.FC<HeaderProps> = ({
                         <FileUp size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Importieren
                     </Button>
                 </div>
-            </div>
+            </div>}
 
             {/* Contextual Warning: Missing Files */}
             {isImportedSession && hasMissingFiles && (

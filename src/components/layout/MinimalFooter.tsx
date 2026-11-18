@@ -6,14 +6,14 @@ import { openExternal } from '@/lib/os-utils';
 
 const MinimalFooter: React.FC = () => {
     return (
-        <footer className="mt-auto py-6 px-8 border-t border-border/50 bg-background/40 backdrop-blur-md">
-            <div className="max-w-[1500px] mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-xs font-medium text-muted-foreground">
-                <div className="flex items-center gap-2">
+        <footer className="mt-auto py-6 px-4 md:px-8 border-t border-border/50">
+            <div className="max-w-[1500px] mx-auto flex flex-col md:flex-row justify-between items-center gap-4 md:gap-6 text-xs font-medium text-muted-foreground">
+                <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-center">
                     <span>&copy; {new Date().getFullYear()} Koreki. Quellcode einsehbar. Developed with</span>
                     <Heart size={10} className="text-primary fill-primary" />
                     <span>in Germany.</span>
                 </div>
-                <div className="flex items-center gap-8">
+                <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
                     {/*
                       * Impressum und Datenschutz oeffnen in einem NEUEN Tab — die
                       * Betriebsanleitung darunter ausdruecklich NICHT.

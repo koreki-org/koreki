@@ -45,7 +45,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
             {isLocalInstance() ? (
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full border border-primary/20 shadow-2xs shrink-0">
                     <ShieldCheck size={14} className="text-primary shrink-0" />
-                    <span className="text-xs font-medium whitespace-nowrap hidden sm:inline">
+                    <span className="text-xs font-medium whitespace-nowrap">
                         Community Edition
                     </span>
                 </div>
@@ -53,7 +53,7 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                 <div className="flex items-center gap-2 sm:gap-3 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/20 text-primary shadow-xs shrink-0 whitespace-nowrap">
                      <Crown size={14} className="text-primary sm:w-[16px] sm:h-[16px]" />
                      <span className="font-bold text-xs sm:text-sm">{userData?.credits || 0}</span> 
-                     <span className="hidden sm:inline text-xs sm:text-xs font-semibold opacity-80">Credits</span>
+                     <span className="text-xs font-semibold opacity-80">Credits</span>
                 </div>
             )}
 
@@ -70,8 +70,8 @@ export const HeaderBadges: React.FC<HeaderBadgesProps> = ({
                         <Loader2 size={14} className="animate-spin shrink-0" />
                     ) : (
                         <span className="font-bold tracking-wide text-xs whitespace-nowrap flex items-center justify-center">
-                            <span className="sm:hidden">+</span>
-                            <span className="hidden sm:inline">+ Aufladen</span>
+                            
+                            <span>+ Aufladen</span>
                         </span>
                     )}
                 </Button>

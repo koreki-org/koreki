@@ -106,7 +106,7 @@ const SCHWEBENDE: Record<string, string> = {
     'components/ui/PopoverMenu.tsx': 'Verankertes Menue',
     'components/ui/Toast.tsx': 'Meldung ueber dem Inhalt',
     'components/ui/FloatingActions.tsx': 'Schwebende Werkzeugleiste am Textabschnitt',
-    'components/layout/AppHeader.tsx': 'Die schwebende Kopfleiste — §5 erlaubt sie ausdruecklich'
+    'components/layout/AppHeader.tsx': 'Traegt nur noch den Tooltip der Konto-Zeile (HeaderPortalTooltip, per Portal ueber allem); die schwebende Kopfleiste ist seit 18.11.2026 entfallen'
 };
 
 interface Altlast {
@@ -126,8 +126,8 @@ interface Altlast {
  *
  * Drei Gruppen fallen auf, falls jemand sie anfasst:
  *  - `CorrectionAnalytics.tsx` (5x Glas): Auswertungs-Kacheln, reiner Inhalt.
- *  - `MarketingHeader.tsx` / `MinimalFooter.tsx`: Unschaerfe an Kopf und Fuss,
- *    hinter denen nichts durchscrollt — Aufwand ohne Bild.
+ *  - `MarketingHeader.tsx`: Unschaerfe am Kopf, hinter dem nichts
+ *    durchscrollt — Aufwand ohne Bild. (`MinimalFooter.tsx` am 18.11.2026 behoben.)
  *  - `GlobalBillingSettings.tsx` (2x): Inhaltskarten im Modal-Glas
  *    (`shadow-glass backdrop-blur-glass`), der deutlichste Fall der Liste.
  */
@@ -146,7 +146,6 @@ const ALTLASTEN: Record<string, Altlast> = {
     'components/batch/parts/GraphEditorPanel.tsx': { glas: 0, schatten: 1 },
     'components/layout/HeaderBadges.tsx': { glas: 0, schatten: 1 },
     'components/layout/MarketingHeader.tsx': { glas: 1, schatten: 0 },
-    'components/layout/MinimalFooter.tsx': { glas: 1, schatten: 0 },
     'components/settings/AiProfileSidebar.tsx': { glas: 1, schatten: 0 },
     'components/settings/GlobalBillingSettings.tsx': { glas: 2, schatten: 0 },
     'components/settings/MistralConfig.tsx': { glas: 0, schatten: 1 },
