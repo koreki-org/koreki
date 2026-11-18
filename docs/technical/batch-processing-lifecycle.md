@@ -3,7 +3,7 @@ title: "Batch-Processing Lifecycle & UI State Management"
 description: "Technische Guideline zur Architektur der Stapelverarbeitung, Datenreinigung beim Splitting und Performance-Bypasses."
 author: "@principal_architect & @ui_expert"
 date: "2026-04-15"
-last_updated: "2026-08-27"
+last_updated: "2026-11-18"
 status: "Approved"
 domain: "technical"
 security_classification: "Public"
@@ -107,6 +107,13 @@ Zwei Schritte sind seither Teil des Lebenszyklus:
 Für den Zustand heißt das: `status === 'done'` bedeutet weiterhin ausschließlich „die KI ist fertig". Ein Prüfzustand je Arbeit existiert bewusst nicht; die Bestätigung gilt dem Stapel.
 
 ---
+
+### F) Ansichten statt Aufklappen (seit 18.11.2026)
+
+Die Liste der Arbeiten heißt in der Oberfläche **Alle Arbeiten** und klappt nichts mehr auf. Welche Arbeit offen ist, steht im Store (`aufgeklappteArbeit` in `useBatchStore`), nicht mehr lokal in der Liste — die Seitenleiste liest denselben Wert. `einrichtungOffen` hält die Einrichtung offen, auch wenn schon Arbeiten geladen sind.
+
+* `setBatchFiles` setzt `aufgeklappteArbeit` zurück, sobald die Liste schrumpft (eine Arbeit wurde entfernt), und bei leerer Liste auch `einrichtungOffen`. Ein Index darf nie auf eine andere Arbeit zeigen als die, die geöffnet wurde.
+* Welche Ansicht gilt, entscheidet allein `useAnsicht` (`src/hooks/useFokusArbeit.ts`); gewechselt wird über `useWechsleAnsicht`. Die Regeln für die Gestaltung stehen in `koreki-design-system` §10.
 
 ## 4. Security & Compliance (Mandatory for Industrial Grade)
 > [!IMPORTANT]

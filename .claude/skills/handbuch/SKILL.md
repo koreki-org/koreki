@@ -35,11 +35,12 @@ Wer einen **sichtbaren Ablauf oder eine Beschriftung** ändert, prüft das passe
 
 | Bereich der App | Kapitel |
 | :--- | :--- |
-| Musterlösung, Upload, Stapelverarbeitung, Bilderkennung, Schwärzen | `korrigieren/ablauf.md`, `datenschutz/namen.md` |
-| Prüfansicht, „Bitte prüfen“, KI-Vertrauen | `korrigieren/vorschlaege-pruefen.md` |
+| Musterlösung, Upload, Alle Arbeiten, Bilderkennung, Schwärzen | `korrigieren/ablauf.md`, `datenschutz/namen.md` |
+| Prüfansicht, Öffnen und Blättern, „Bitte prüfen“, KI-Vertrauen | `korrigieren/vorschlaege-pruefen.md` |
 | Export-Leiste, Slips, `.koreki` | `korrigieren/exportieren.md` |
 | Expertise, Skills, Erfahrungsschatz, Intelligenz (alle vier Familien) | `bewertung/index.md` |
 | KI-Setup, Ollama, Mittwald, Mistral | `erste-schritte/ki-verbinden.md`, `probleme/index.md` |
+| Seitenleiste (Einträge, Profile, **?**, Zahnrad) | `korrigieren/vorschlaege-pruefen.md`, `bewertung/index.md`, `probleme/index.md`, `schule/index.md` |
 | Fehlermeldungen an Lehrkräfte | `probleme/index.md` |
 | Installer (`scripts/cli`), Docker, Keycloak | `schule/index.md`, `erste-schritte/installieren.md` |
 | Kurzanleitung (`QuickStartModal.tsx`) | folgt wörtlich den Schritten in `korrigieren/ablauf.md` |

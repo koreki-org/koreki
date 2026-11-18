@@ -219,7 +219,8 @@ Ein `BatchFile` durchläuft den Lifecycle: `pending` → (OCR) → (Cleaning) �
 ┌─────────────────────────────────────────────────────────────┐
 │  BROWSER (Zustand Stores — In-Memory, vergänglich)          │
 ├─────────────────────────────────────────────────────────────┤
-│  useBatchStore    → batchFiles[], processingIndex           │
+│  useBatchStore    → batchFiles[], processingIndex,          │
+│                     aufgeklappteArbeit, einrichtungOffen    │
 │  useDashboardStore → modelSolution, tasksLayout, pureApiKey │
 │                                                             │
 │  ⚠️ F5/Refresh = alles weg! Das ist Absicht (DSGVO).       │
@@ -483,7 +484,7 @@ npm run security-check  # Security Audit (obligatorisch vor Release)
 
 ### Dein erster Tag: 5 Schritte
 
-1. **App lokal starten** und den Demo-Modus testen (Button im Header)
+1. **App lokal starten** und den Demo-Modus testen (Eintrag **Demo** in der Seitenleiste)
 2. **`app.tsx`** lesen — es ist nur ein Thin Controller, der Hooks zusammensteckt
 3. **`useProcessingPipeline.ts`** lesen — hier passiert die eigentliche Arbeit
 4. **Einen Prompt ändern** in `src/prompts/core/default/correction/system.md` und sehen, wie es die Bewertung verändert
