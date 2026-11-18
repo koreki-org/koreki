@@ -57,7 +57,8 @@ export const MobilLeiste: React.FC<MobilLeisteProps> = ({ fuss, ...nav }) => {
 
             {mounted && offen && createPortal(
                 <div className="md:hidden fixed inset-0 z-[1000]">
-                    <button type="button" aria-label="Menü schließen" onClick={schliessen} className="absolute inset-0 w-full h-full bg-foreground/40 animate-overlay-in cursor-default" />
+                    {/* Abdunklung: ein Tipp daneben schliesst. Kein eigener Knopf — fuer Tastatur und Vorlesen gibt es X und Escape. */}
+                    <div aria-hidden="true" onClick={schliessen} className="absolute inset-0 bg-foreground/40 animate-overlay-in" />
                     <aside ref={dialogRef} role="dialog" aria-modal="true" aria-label="Menü"
                         className="absolute left-0 top-0 bottom-0 w-72 max-w-[85vw] flex flex-col bg-card border-r border-border animate-overlay-in">
                         <div className="flex items-center gap-2 px-2 pt-2 pb-2">
