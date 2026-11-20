@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Download, Laptop, ShieldCheck, Code2 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
-import { Abschnitt, Markenverlauf, Produktbild } from '../site/Bausteine';
+import { Abschnitt, Markenverlauf, Produktvideo } from '../site/Bausteine';
 
 export interface Hauptaktion {
     href: string;
@@ -65,12 +65,13 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ aktion }) => (
         </div>
 
         <div className="mt-12">
-            <Produktbild
-                src="/marketing/startbildschirm.webp"
-                alt="Startbildschirm von Koreki: links die Seitenleiste mit den Profilen, rechts die Felder für Musterlösung und Schülerarbeiten"
+            <Produktvideo
+                src="/marketing/produktvideo.mp4"
+                standbild="/marketing/produktvideo-standbild.webp"
+                titel="Koreki in 45 Sekunden"
             />
             <p className="mt-4 text-center text-sm text-muted-foreground">
-                Echte Ansicht aus Koreki: Musterlösung und Arbeiten der Klasse – links in der Seitenleiste die eigenen Profile.
+                Koreki in 45 Sekunden: von der Musterlösung bis zum begründeten Vorschlag – mit echten Ansichten aus der App.
             </p>
         </div>
     </Abschnitt>

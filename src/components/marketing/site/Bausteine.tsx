@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef, useState } from 'react';
+import { Play } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 /**
@@ -103,6 +104,58 @@ export const Produktbild: React.FC<ProduktbildProps> = ({ src, alt, className, k
         />
     </figure>
 );
+
+interface ProduktvideoProps {
+    src: string;
+    /**
+     * Standbild vor dem Start, am besten das erste Bild des Videos, damit es beim Klick nicht springt.
+     * Große Schrift und Fotos bleiben scharf. Kleiner App-Text aus einem 1080p-Video wirkt dagegen verwaschen.
+     */
+    standbild: string;
+    titel: string;
+}
+
+/**
+ * Ein Produktvideo im Rahmen des Produktbilds. Startet nur auf Klick und mit
+ * Ton; geladen wird erst dann (`preload="none"`). Die Datei liegt auf der
+ * eigenen Seite — ein YouTube-Einbett schickte schon beim Seitenaufruf Daten an Google.
+ */
+export const Produktvideo: React.FC<ProduktvideoProps> = ({ src, standbild, titel }) => {
+    const video = useRef<HTMLVideoElement>(null);
+    const [gestartet, setGestartet] = useState(false);
+    const abspielen = () => {
+        // Verweigert der Browser den Start, bleiben wenigstens die eigenen Bedienelemente.
+        video.current?.play().catch(() => setGestartet(true));
+    };
+
+    return (
+        <figure className="relative bg-card rounded-2xl p-2 shadow-lift">
+            <video
+                ref={video}
+                src={src}
+                poster={standbild}
+                preload="none"
+                playsInline
+                controls={gestartet}
+                aria-label={titel}
+                onPlay={() => setGestartet(true)}
+                className="block w-full h-auto aspect-video rounded-xl border border-border/60 bg-background"
+            />
+            {!gestartet && (
+                <button
+                    type="button"
+                    onClick={abspielen}
+                    aria-label={`${titel} abspielen`}
+                    className="group absolute inset-2 flex items-center justify-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                    <span className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors duration-200 group-hover:bg-primary/90">
+                        <Play size={30} className="ml-1" fill="currentColor" />
+                    </span>
+                </button>
+            )}
+        </figure>
+    );
+};
 
 /** Weisse Kachel mit Kartenschatten. */
 export const Kachel: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
