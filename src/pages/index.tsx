@@ -46,7 +46,7 @@ export default function LandingPage() {
                 />
             </Head>
 
-            <LandingHero aktion={aktion} />
+            <LandingHero aktion={aktion} video={mode === 'saas'} />
             <LandingAblauf />
             <LandingFunktionen />
             <LandingDatenschutz />

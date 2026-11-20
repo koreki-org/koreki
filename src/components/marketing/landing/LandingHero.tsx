@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { ArrowRight, Download, Laptop, ShieldCheck, Code2 } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
-import { Abschnitt, Markenverlauf, Produktvideo } from '../site/Bausteine';
+import { Abschnitt, Markenverlauf, Produktbild, Produktvideo } from '../site/Bausteine';
 
 export interface Hauptaktion {
     href: string;
@@ -14,6 +14,12 @@ export interface Hauptaktion {
 
 interface LandingHeroProps {
     aktion: Hauptaktion;
+    /**
+     * Produktvideo nur im gehosteten Dienst. Es zeigt Credits und „Aufladen“,
+     * die es in einer eigenen Installation nicht gibt. Dort steht der Screenshot
+     * der Community Edition.
+     */
+    video: boolean;
 }
 
 const merkmale = [
@@ -22,7 +28,7 @@ const merkmale = [
     { icon: Code2, text: 'Quellcode einsehbar' },
 ];
 
-export const LandingHero: React.FC<LandingHeroProps> = ({ aktion }) => (
+export const LandingHero: React.FC<LandingHeroProps> = ({ aktion, video }) => (
     <Abschnitt kopfband className="pt-12 md:pt-16">
         <div className="text-center">
             <Link
@@ -65,13 +71,22 @@ export const LandingHero: React.FC<LandingHeroProps> = ({ aktion }) => (
         </div>
 
         <div className="mt-12">
-            <Produktvideo
-                src="/marketing/produktvideo.mp4"
-                standbild="/marketing/produktvideo-standbild.webp"
-                titel="Koreki in 45 Sekunden"
-            />
+            {video ? (
+                <Produktvideo
+                    src="/marketing/produktvideo.mp4"
+                    standbild="/marketing/produktvideo-standbild.webp"
+                    titel="Koreki in 45 Sekunden"
+                />
+            ) : (
+                <Produktbild
+                    src="/marketing/startbildschirm.webp"
+                    alt="Startbildschirm von Koreki: links die Seitenleiste mit den Profilen, rechts die Felder für Musterlösung und Schülerarbeiten"
+                />
+            )}
             <p className="mt-4 text-center text-sm text-muted-foreground">
-                Koreki in 45 Sekunden: von der Musterlösung bis zum begründeten Vorschlag – mit echten Ansichten aus der App.
+                {video
+                    ? 'Koreki in 45 Sekunden: von der Musterlösung bis zum begründeten Vorschlag – mit echten Ansichten aus der App.'
+                    : 'Echte Ansicht aus Koreki: Musterlösung und Arbeiten der Klasse – links in der Seitenleiste die eigenen Profile.'}
             </p>
         </div>
     </Abschnitt>
