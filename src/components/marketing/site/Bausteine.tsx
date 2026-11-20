@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Play } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 
 /**
@@ -142,16 +143,16 @@ export const Produktvideo: React.FC<ProduktvideoProps> = ({ src, standbild, tite
                 className="block w-full h-auto aspect-video rounded-xl border border-border/60 bg-background"
             />
             {!gestartet && (
-                <button
-                    type="button"
+                <Button
+                    variant="ghost"
                     onClick={abspielen}
                     aria-label={`${titel} abspielen`}
-                    className="group absolute inset-2 flex items-center justify-center rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="group absolute inset-2 h-auto p-0 rounded-xl"
                 >
                     <span className="flex h-20 w-20 items-center justify-center rounded-full bg-primary text-primary-foreground transition-colors duration-200 group-hover:bg-primary/90">
                         <Play size={30} className="ml-1" fill="currentColor" />
                     </span>
-                </button>
+                </Button>
             )}
         </figure>
     );
