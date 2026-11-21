@@ -136,7 +136,7 @@ const ALTLASTEN: Record<string, Altlast> = {
     'components/avv-upload/StepDownload.tsx': { glas: 0, schatten: 1 },
     'components/avv-upload/StepSuccess.tsx': { glas: 0, schatten: 1 },
     'components/avv-upload/StepUpload.tsx': { glas: 0, schatten: 2 },
-    'components/batch/BatchHeader.tsx': { glas: 0, schatten: 2 },
+    'components/batch/BatchHeader.tsx': { glas: 0, schatten: 1 },
     'components/batch/CorrectionAnalytics.tsx': { glas: 5, schatten: 0 },
     'components/batch/ExportToolbar.tsx': { glas: 1, schatten: 1 },
     'components/batch/GradingMemoryCalibrateScreen.tsx': { glas: 0, schatten: 2 },

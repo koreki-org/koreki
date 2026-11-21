@@ -28,6 +28,7 @@ jest.mock('lucide-react', () => ({
     ToggleLeft: () => <div data-testid="toggleleft-icon" />,
     ToggleRight: () => <div data-testid="toggleright-icon" />,
     Download: () => <div data-testid="download-icon" />,
+    Save: () => <div data-testid="save-icon" />,
     ChevronDown: () => <div data-testid="chevron-down-icon" />,
     ChevronUp: () => <div data-testid="chevron-up-icon" />
 }));

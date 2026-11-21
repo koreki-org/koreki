@@ -4,6 +4,7 @@ import { buildDemoScenario } from '../lib/demo/demoScenario';
 import { ladeHandschriftArbeiten, type DemoArt } from '../lib/demo/demoHandschrift';
 import { logger } from '@/lib/logger';
 import { meldeFehler } from '@/lib/notify';
+import { wartetAufLauf } from '@/lib/laufender-vorgang';
 import { askConfirmation } from '@/lib/confirm-dialog';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
@@ -65,6 +66,7 @@ export const useDemoScenario = ({
      * Oberflaeche ist die Demo genau das, was der Knopf verspricht.
      */
     const loadDemoData = useCallback(async (art: DemoArt = 'getippt') => {
+        if (wartetAufLauf()) return;
         const hatInhalt = useBatchStore.getState().batchFiles.length > 0
             || !!useDashboardStore.getState().modelSolution;
         if (hatInhalt && !(await askConfirmation({

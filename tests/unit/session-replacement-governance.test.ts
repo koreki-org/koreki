@@ -84,16 +84,24 @@ interface Weg {
 
 const WEGE: Record<string, Weg> = {
     'pages/app.tsx': {
-        stellen: 3,
-        tore: ['askConfirmation', 'korrekturLaeuft'],
+        stellen: 1,
+        tore: ['korrekturLaeuft'],
         wege:
-            '`handleStartNew` leert Stapel und Struktur und fragt vorher (askConfirmation). ' +
             '`korrekturLaeuft` geht als `isLocked` ins Upload-Gitter. ' +
-            'ACHTUNG, von Hand geprueft: `onReExtractLayout` (Zeile ~322) ersetzt die Struktur ' +
+            'ACHTUNG, von Hand geprueft: `onReExtractLayout` ersetzt die Struktur ' +
             'und ist NUR in der Oberflaeche gesperrt (`disabled={extractingLayout || isLocked}`). ' +
             'Das ist vertretbar, weil die neue Struktur aus der GELADENEN Musterloesung ' +
             'abgeleitet wird — der Knopf heisst „Aktualisieren" und nennt seinen Credit-Preis. ' +
-            'Wird daraus je ein zweiter Aufrufweg, gehoert das Tor in den Hook.'
+            'Wird daraus je ein zweiter Aufrufweg, gehoert das Tor in den Hook. ' +
+            'Bis 21.11.2026 stand hier auch `handleStartNew`; es ist nach `useNeueKorrektur` gezogen.'
+    },
+    'hooks/useNeueKorrektur.ts': {
+        stellen: 2,
+        tore: ['askChoice'],
+        wege:
+            '„Neue Korrektur“ leert Stapel und Struktur — erst nach der Rueckfrage ' +
+            'Speichern / Nicht speichern / Abbrechen (askChoice), und bei „Speichern“ nur, ' +
+            'wenn wirklich gespeichert wurde (Desktop: Dialog abgebrochen → nichts verworfen).'
     },
     'hooks/file-processor/useBatchActions.ts': {
         stellen: 4,
@@ -215,6 +223,21 @@ describe('Session Replacement Governance', () => {
 
         if (ohneTor.length > 0) {
             throw new Error('TOR FEHLT:\n  - ' + ohneTor.join('\n  - '));
+        }
+    });
+
+    /**
+     * Die Wege, die die GANZE Sitzung ersetzen, warten einen laufenden Vorgang
+     * ab (21.11.2026). Sonst schreibt eine noch laufende Bilderkennung ihre
+     * Ergebnisse per Platznummer in die neue, leere Korrektur. Ein neuer
+     * Ganz-Ersetzer gehoert hier hinein.
+     */
+    it('laesst keinen Ganz-Ersetzer mitten in einem Lauf zu', () => {
+        const GANZ_ERSETZER = ['hooks/useNeueKorrektur.ts', 'hooks/file-processor/useBatchActions.ts', 'hooks/useDemoScenario.ts'];
+        const ohneRiegel = GANZ_ERSETZER.filter(datei =>
+            !ohneKommentare(readFileSync(join(SRC_DIR, datei), 'utf8')).includes('wartetAufLauf('));
+        if (ohneRiegel.length > 0) {
+            throw new Error('RIEGEL FEHLT — vor dem Ersetzen `wartetAufLauf()` fragen (lib/laufender-vorgang.ts):\n  - ' + ohneRiegel.join('\n  - '));
         }
     });
 

@@ -86,5 +86,5 @@ Wenn alles stimmt, exportierst du:
 Vor dem ersten Export fragt Koreki einmal nach, ob du die Bewertungen geprüft hast. Im Export stehen wieder die echten Namen, damit du alles zuordnen kannst. Was in welcher Datei steht, erklärt [Exportieren](/korrigieren/exportieren).
 
 ::: tip Später weitermachen
-Mit **Exportieren** unter **Alle Arbeiten** sicherst du den Zwischenstand als `.koreki`-Datei. Über **Importieren** auf der Startseite lädst du ihn wieder.
+Mit **Korrektur speichern** unter **Alle Arbeiten** sicherst du den Zwischenstand als `.koreki`-Datei. Über **Öffnen** lädst du ihn wieder. Bevor **Neue Korrektur** etwas verwirft, fragt Koreki, ob du speichern willst. Mehr dazu unter [Speichern und später weitermachen](/korrigieren/exportieren#zwischenstand).
 :::

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import type { GradingGraph } from '../../lib/grading/types';
-import { FileText, FileUp, Sparkles, Loader2, Layers, Trash2, Link2Off, HelpCircle, AlertCircle, ShieldCheck, ShieldAlert, Clock, ToggleLeft, ToggleRight, Download, X } from 'lucide-react';
+import { FileText, FileUp, Sparkles, Loader2, Layers, Trash2, Link2Off, HelpCircle, AlertCircle, ShieldCheck, ShieldAlert, Clock, ToggleLeft, ToggleRight, Save, X } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { Task, AppSettings, CustomSkillDefinition, TasksLayoutSetter } from '@/types';
 import { promisePool } from '../../lib/ai/promise-pool';
@@ -175,11 +175,11 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                                 size="xs"
                                 className="flex items-center gap-2 transition-all animate-fade-in shrink-0"
                                 onClick={handleExportModelSolution}
-                                title="Musterlösung als Zwischenstand exportieren (.koreki)"
-                                aria-label="Musterlösung exportieren"
+                                title="Musterlösung speichern (.koreki) — über „Öffnen“ lädst du sie wieder"
+                                aria-label="Musterlösung speichern"
                             >
-                                <Download size={12} />
-                                <span className="hidden sm:inline">Exportieren</span>
+                                <Save size={12} />
+                                <span className="hidden sm:inline">Speichern</span>
                             </Button>
                         </>
                     )}

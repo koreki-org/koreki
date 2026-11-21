@@ -1,5 +1,5 @@
 import React from 'react';
-import { Loader2, PenLine, Brain, Download, Info } from 'lucide-react';
+import { Loader2, PenLine, Brain, Save, Info } from 'lucide-react';
 import { CardHeader, CardTitle } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { cn } from '@/lib/utils';
@@ -28,7 +28,6 @@ interface BatchHeaderProps {
     isPureMode?: boolean;
     onExportSL?: () => void;
     onExportKoreki?: () => void;
-    hasPendingOcr?: boolean;
 }
 
 export const BatchHeader: React.FC<BatchHeaderProps> = ({
@@ -49,8 +48,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
     totalPossibleCredits = 0,
     isPureMode = false,
     onExportSL,
-    onExportKoreki,
-    hasPendingOcr = false
+    onExportKoreki
 }) => {
     const lockStrategy = loading || isStrategyLocked;
     const isReCorrectionMode = pendingCount === 0 && hasFinishedFiles;
@@ -174,41 +172,31 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                                 Bilderkennung{kosten(ocrCreditsRequired)}
                             </Button>
                         )}
-                        {onExportSL && !hasFinishedFiles && !hasPendingOcr && (
+                        {/*
+                          * „Korrektur speichern“ (21.11.2026) — vorher zwei Knoepfe:
+                          * „Exportieren“ vor und „Korrektur exportieren“ nach dem
+                          * Korrigieren, beide fuer dieselbe .koreki-Datei. Speichern
+                          * heisst wie in Word: meine Korrektur, spaeter weiter; Exportieren
+                          * bleibt fuer Ergebnisse an andere (Liste, Feedbacks, Slips).
+                          * Gespeichert werden kann jederzeit — nur nicht, waehrend etwas
+                          * laeuft, sonst steht ein halber Lauf in der Datei.
+                          */}
+                        {(onExportKoreki || onExportSL) && (
                             <div className="relative group flex items-center w-full sm:w-auto">
                                 <Button
                                     variant="outline"
-                                    className="w-full sm:w-auto"
-                                    onClick={onExportSL}
-                                    disabled={loading}
-                                >
-                                    <Download size={14} />
-                                    <span>Exportieren</span>
-                                </Button>
-                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:flex flex-col items-center z-50 animate-overlay-in pointer-events-none">
-                                    <div className="w-2.5 h-2.5 bg-card border-l border-t border-border rotate-45 -mb-1.5 z-40"></div>
-                                    <div className="bg-card border border-border px-3.5 py-2 rounded-2xl shadow-xl whitespace-nowrap text-xs font-bold text-primary">
-                                        Schülerlösung als Zwischenstand exportieren (.koreki)
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        {onExportKoreki && hasFinishedFiles && (
-                            <div className="relative group flex items-center w-full sm:w-auto">
-                                <Button
-                                    variant="outline"
-                                    onClick={onExportKoreki}
+                                    onClick={hasFinishedFiles ? onExportKoreki : onExportSL}
                                     disabled={loading}
                                     className="whitespace-nowrap shrink-0 w-full sm:w-auto"
                                 >
-                                    <Download size={14} />
-                                    <span>Korrektur exportieren</span>
+                                    <Save size={14} />
+                                    <span>Korrektur speichern</span>
                                     <Info size={14} className="opacity-60 shrink-0" />
                                 </Button>
                                 <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2.5 hidden group-hover:flex flex-col items-center z-50 animate-overlay-in pointer-events-none">
                                     <div className="w-2.5 h-2.5 bg-card border-l border-t border-border rotate-45 -mb-1.5 z-40"></div>
                                     <div className="bg-card border border-border px-3.5 py-2 rounded-2xl shadow-xl whitespace-nowrap text-xs font-bold text-primary">
-                                        Ohne PDFs (beim Import nachladbar)
+                                        Ohne PDFs (beim Öffnen nachladbar)
                                     </div>
                                 </div>
                             </div>

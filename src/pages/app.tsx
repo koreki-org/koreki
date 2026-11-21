@@ -28,13 +28,13 @@ import { performAIRequest } from '@/lib/ai/ai-orchestrator';
 // Libs
 import { exportTeacherList, exportStudentSummaries, exportIndividualFeedbacks } from '@/lib/excel';
 import { exportIndividualPDFs } from '@/lib/pdf';
-import { exportSessionToJson } from '@/lib/utils';
 import { AlertTriangle } from 'lucide-react';
 import { isDesktopTarget } from '@/lib/env-context';
 import AuthGuard from '@/components/guards/AuthGuard';
 import { toErrorMessage } from '@/lib/error-message';
 import { useTaskEngineGeneration } from '@/hooks/useTaskEngineGeneration';
-import { askConfirmation } from '@/lib/confirm-dialog';
+import { useNeueKorrektur } from '@/hooks/useNeueKorrektur';
+import { useSitzungExport } from '@/hooks/useSitzungExport';
 
 export default function Home() {
     // Core Auth & Logic Hooks
@@ -137,17 +137,18 @@ export default function Home() {
         setPendingModelFile: data.setPendingModelFile,
         setShowModelTypeModal: modals.setShowModelTypeModal
     });
-    const handleStartNew = async () => {
-        if (fileProcessor.batchFiles.length > 0 || data.modelSolution) {
-            if (await askConfirmation({ title: 'Neue Korrektur starten', message: 'Möchtest du wirklich alle aktuellen Daten löschen und eine neue Korrektur starten?' })) {
-                fileProcessor.setBatchFiles([]);
-                data.setModelSolution("");
-                data.setModelSolutionContext("");
-                data.setTasksLayout([]);
-                setIsUploadSectionCollapsed(false);
-            }
-        }
-    };
+    const exportiereSitzung = useSitzungExport({
+        batchFiles: fileProcessor.batchFiles, modelSolution: data.modelSolution, tasksLayout: data.tasksLayout,
+        activePromptProfileId: aiSettings.activePromptProfileId, activeAiProfileId: aiSettings.activeAiProfileId,
+        sessionProfileName, sessionAiProfileName, activeGradingMemoryName
+    });
+    const neueKorrektur = useNeueKorrektur({
+        hatArbeit: fileProcessor.batchFiles.length > 0 || !!data.modelSolution,
+        speichern: () => exportiereSitzung(!fileProcessor.batchFiles.some(f => f.status === 'done')), // Dateiname wie „Korrektur speichern“
+        setBatchFiles: fileProcessor.setBatchFiles, setTasksLayout: data.setTasksLayout,
+        setModelSolution: data.setModelSolution, setModelSolutionContext: data.setModelSolutionContext,
+        nachDemVerwerfen: () => setIsUploadSectionCollapsed(false)
+    });
 
     return (
         <AuthGuard>
@@ -172,6 +173,7 @@ export default function Home() {
                         activeAiProfileName={sessionAiProfileName}
                         activeGradingMemoryName={activeGradingMemoryName}
                         onLoadDemo={loadDemoData}
+                        onNeueKorrektur={neueKorrektur}
                         hasActiveWork={!!data.modelSolution || fileProcessor.batchFiles.length > 0}
                         onImportSession={async (file) => {
                             const imported = await fileProcessor.handleKorekiImport(file);
@@ -340,7 +342,6 @@ export default function Home() {
                         extractingLayout={fileProcessor.isLoadingModel}
                         batchFilesCount={fileProcessor.batchFiles.length}
                         collapsed={isUploadSectionCollapsed}
-                        onNeuBeginnen={handleStartNew}
                     />
 
                     {fileProcessor.batchFiles.length > 0 && (() => {
@@ -374,40 +375,6 @@ export default function Home() {
                                 analysis: f.result!,
                                 grade: f.grade
                             };
-                        };
-                        /**
-                         * Die Sitzung als .koreki-Datei ausgeben.
-                         *
-                         * `alsSchuelerloesung` unterscheidet die beiden
-                         * Schaltflaechen — sonst sind sie identisch. Sie standen
-                         * bis 18.08.2026 zweimal ausgeschrieben da, 20 Zeilen
-                         * wortgleich: wer eine der uebergebenen Einstellungen
-                         * ergaenzt haette, haette sie in genau einem der beiden
-                         * Exporte ergaenzt, ohne dass etwas aufgefallen waere.
-                         */
-                        const exportiereSitzung = (alsSchuelerloesung: boolean) => {
-                            let cases = undefined;
-                            try {
-                                const stored = localStorage.getItem('koreki_active_grading_memory_cases');
-                                if (stored) cases = JSON.parse(stored);
-                            } catch {
-                                // Kein lesbarer Erfahrungsschatz — der Export laeuft ohne.
-                            }
-                            exportSessionToJson(
-                                fileProcessor.batchFiles,
-                                data.modelSolution,
-                                data.tasksLayout,
-                                {
-                                    activeProfileId: aiSettings.activePromptProfileId,
-                                    activeProfileName: sessionProfileName,
-                                    activeAiProfileId: aiSettings.activeAiProfileId,
-                                    activeAiProfileName: sessionAiProfileName,
-                                    activeGradingMemoryId: localStorage.getItem('koreki_active_grading_memory_id') || undefined,
-                                    activeGradingMemoryName: activeGradingMemoryName,
-                                    activeGradingMemoryCases: cases
-                                },
-                                alsSchuelerloesung
-                            );
                         };
                         return (
                             <BatchProcessor

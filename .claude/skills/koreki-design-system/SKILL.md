@@ -50,6 +50,8 @@ Koreki soll aussehen wie ein Werkzeug, dem eine Schulleitung Schülerarbeiten an
 | Texterkennung | Texterkennung | OCR (höchstens einmal in Klammern) |
 | Liste der geladenen Arbeiten | Alle Arbeiten | Stapelverarbeitung, Batch, Stapel (als Bezeichnung) |
 | Hinweis geringer Sicherheit | „Bitte prüfen" | Konfidenz, Review empfohlen |
+| Eigene Korrektur als `.koreki` sichern / wieder laden | Speichern / Öffnen (wie in Word) | Exportieren, Importieren, Sitzung laden |
+| Ergebnisse an andere (Liste, Feedbacks, Slips) | Exportieren | Speichern |
 | Selbstauskunft der KI (ab 90 %, grau) | „KI-Vertrauen 95 %" | Konfidenz, „95 % sicher" (klingt nach gemessener Trefferquote) |
 
 - **Kein Technikjargon** in Ansichten für Lehrkräfte: Inferenz, Zero-Shot, Sandbox, Knoten, Deduction, PII, Prompt, Token. Wo die Sache nötig ist, die Eigenschaft beschreiben.
@@ -154,12 +156,12 @@ Bänder statt Einzelwerte; eine neue Ebene wird einem Band zugeordnet, keine neu
 
 | Ansicht | Inhalt | Erreicht über |
 |---|---|---|
-| Einrichtung | Musterlösung und Schülerarbeiten laden | „Neue Korrektur“; von selbst, solange Arbeiten oder Musterlösung fehlen |
+| Einrichtung | Musterlösung und Schülerarbeiten laden | „Einrichtung“ in der Seitenleiste (sobald etwas geladen ist); „Neue Korrektur“; von selbst, solange Arbeiten oder Musterlösung fehlen |
 | Alle Arbeiten | schlichte Liste, Korrigieren, Export | Seitenleiste, „← Alle Arbeiten“, „Weiter zu Alle Arbeiten“ |
 | Eine Arbeit | eine Arbeit auf der ganzen Fläche, ‹ › blättert durch alle | Pfeil am Zeilenende, Eintrag unter „Arbeiten“ in der Seitenleiste |
 
   - Gewechselt wird nur über `useWechsleAnsicht` — kein zweiter Weg, der den Zustand anders setzt.
-  - **Navigation verwirft nie etwas.** „Neue Korrektur“ öffnet die Einrichtung; Zurücksetzen gibt es nur über „Neu beginnen“ mit Rückfrage (Wächter: `session-replacement-governance.test.ts`).
+  - **Navigation verwirft nie etwas.** Die Einträge der Seitenleiste wechseln nur die Ansicht. Die eine Ausnahme ist „Neue Korrektur“: Es verhält sich wie „Neu“ in Word und fragt, sobald etwas geladen ist — Speichern … / Nicht speichern / Abbrechen (`useNeueKorrektur`, seit 21.11.2026; vorher öffnete es nur die Einrichtung, und verworfen wurde über „Neu beginnen“). Bei „Speichern“ wird nur verworfen, wenn wirklich gespeichert wurde. Läuft eine Bilderkennung, Korrektur oder Analyse, fragen „Neue Korrektur“, „Öffnen“ und „Demo“ gar nicht erst, sondern bitten zu warten (`wartetAufLauf`). Wächter: `session-replacement-governance.test.ts`.
   - Die Liste klappt nichts auf. Was eine Arbeit zeigt — Texterkennung prüfen, Lauf, Vorschläge —, steht in der Ansicht „Eine Arbeit“.
 - Größengrenzen *(Wächter: `tests/unit/file-size-governance.test.ts`)*: 300 Zeilen für `components/`, `hooks/`, `pages/`; max. 10 Hook-Aufrufe pro Komponente. Logik in Hooks bzw. `src/lib/`.
 

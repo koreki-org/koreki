@@ -28,8 +28,6 @@ interface UploadGridProps {
     onGenerateCalcTrace?: (taskIndex: number, taskText: string, userNotes?: string) => Promise<any>;
     collapsed?: boolean;
     onToggleCollapse?: () => void;
-    /** Alles verwerfen (mit Rueckfrage) — fuer die Kopfzeile der Einrichtung. */
-    onNeuBeginnen?: () => void;
 }
 
 const UploadGrid: React.FC<UploadGridProps> = ({
@@ -49,8 +47,7 @@ const UploadGrid: React.FC<UploadGridProps> = ({
     settings,
     appMode,
     onGenerateGraph,
-    onGenerateCalcTrace,
-    onNeuBeginnen
+    onGenerateCalcTrace
 }) => {
     // Die Karten stehen nur in der Ansicht "Einrichtung" (s. `useAnsicht`) — sonst
     // versteckt, nicht abgebaut: Sie behalten ihren Zustand. Seit die Einrichtung
@@ -61,7 +58,7 @@ const UploadGrid: React.FC<UploadGridProps> = ({
     const onToggleCollapse = undefined;
     return (
         <div className={`grid grid-cols-1 md:grid-cols-2 items-stretch gap-8 mb-8 ${ansicht !== 'einrichtung' ? 'hidden' : ''}`}>
-            <EinrichtungKopf onNeuBeginnen={onNeuBeginnen} />
+            <EinrichtungKopf />
             {/* Musterlösung Card */}
             <ModelSolutionCard
                 modelSolution={modelSolution}

@@ -18,30 +18,43 @@ import { create } from 'zustand';
 export interface ConfirmationRequest {
     title: string;
     message: string;
+    /** Beschriftung des Hauptknopfs; ohne Angabe „Bestätigen“. */
+    bestaetigen?: string;
+    /**
+     * Eine dritte Antwort zwischen Abbrechen und Bestaetigen — nur ueber
+     * `askChoice`. Vorbild ist Word beim Schliessen: Speichern, Nicht
+     * speichern, Abbrechen (21.11.2026, „Neue Korrektur“).
+     */
+    zweiteWahl?: string;
 }
+
+/** Die Antwort auf eine Rueckfrage. `zweite` gibt es nur bei `askChoice`. */
+export type Wahl = 'bestaetigt' | 'zweite' | 'abgebrochen';
 
 interface ConfirmStore {
     request: ConfirmationRequest | null;
     /** Loest das laufende Versprechen auf; null, solange nichts gefragt wird. */
-    pendingAnswer: ((confirmed: boolean) => void) | null;
-    ask: (request: ConfirmationRequest) => Promise<boolean>;
-    answer: (confirmed: boolean) => void;
+    pendingAnswer: ((wahl: Wahl) => void) | null;
+    ask: (request: ConfirmationRequest) => Promise<Wahl>;
+    /** `true`/`false` fuer Bestaetigen/Abbrechen, `'zweite'` fuer die dritte Antwort. */
+    answer: (antwort: boolean | 'zweite') => void;
 }
 
 export const useConfirmStore = create<ConfirmStore>((set, get) => ({
     request: null,
     pendingAnswer: null,
 
-    ask: (request) => new Promise<boolean>((resolve) => {
+    ask: (request) => new Promise<Wahl>((resolve) => {
         // Eine noch offene Frage wird verneint, nicht verdraengt: sonst wartet
         // ihr Aufrufer fuer immer auf eine Antwort, die nie mehr kommt, und der
         // angefangene Vorgang bleibt auf halbem Weg stehen.
-        get().pendingAnswer?.(false);
+        get().pendingAnswer?.('abgebrochen');
         set({ request, pendingAnswer: resolve });
     }),
 
-    answer: (confirmed) => {
-        get().pendingAnswer?.(confirmed);
+    answer: (antwort) => {
+        const wahl: Wahl = antwort === 'zweite' ? 'zweite' : antwort ? 'bestaetigt' : 'abgebrochen';
+        get().pendingAnswer?.(wahl);
         set({ request: null, pendingAnswer: null });
     }
 }));
@@ -52,7 +65,15 @@ export const useConfirmStore = create<ConfirmStore>((set, get) => ({
  * Das ist der Grund fuer einen Speicher statt eines React-Kontexts: die
  * Rueckfragen stehen in Hooks und in `lib/`, nicht in der Darstellung.
  */
-export const askConfirmation = (request: ConfirmationRequest): Promise<boolean> =>
+export const askConfirmation = async (request: ConfirmationRequest): Promise<boolean> =>
+    (await useConfirmStore.getState().ask(request)) === 'bestaetigt';
+
+/**
+ * Rueckfrage mit drei Antworten: Bestaetigen, die zweite Wahl, Abbrechen.
+ * Escape und Klick neben den Dialog zaehlen als Abbrechen — nie als eine der
+ * beiden Handlungen.
+ */
+export const askChoice = (request: ConfirmationRequest & { zweiteWahl: string }): Promise<Wahl> =>
     useConfirmStore.getState().ask(request);
 
 /**

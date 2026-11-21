@@ -91,7 +91,7 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
     );
 
     const { expandedIdx, setExpandedIdx, showScan, setShowScan, showConfirm, setShowConfirm, mobileViewMode, setMobileViewMode, activeGroupName, setActiveGroupName, ocrStrategy, setOcrStrategy, showAnalytics, setShowAnalytics, showDigitalSlips, setShowDigitalSlips } = state;
-    const { totalPendingCredits, totalPossibleCredits, ocrCreditsRequired, pendingCount, totalCount, hasFinishedFiles, unredactedScansCount, hasPendingOcr } = metrics;
+    const { totalPendingCredits, totalPossibleCredits, ocrCreditsRequired, pendingCount, totalCount, hasFinishedFiles, unredactedScansCount } = metrics;
     const { groupedTasks, groupNames, CONFIRM_TEXT } = logic;
     const { handleConfirmAction, handleReviewPointChange, handleReviewFeedbackChange, handleReviewPointAndFeedbackChange, getPreviewUrl } = handlers;
 
@@ -197,7 +197,6 @@ const BatchProcessor: React.FC<BatchProcessorProps> = ({
                     isPureMode={isPureMode}
                     onExportSL={onExportSL}
                     onExportKoreki={onExportKoreki}
-                    hasPendingOcr={hasPendingOcr}
                 />
                 <LaufFortschritt />
 

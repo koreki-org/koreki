@@ -56,6 +56,7 @@ const renderHeader = (rolle: string) =>
             onShowSettings={jest.fn()}
             onLogout={jest.fn()}
             onLoadDemo={jest.fn()}
+            onNeueKorrektur={jest.fn()}
             onShowHelp={jest.fn()}
         />
     );

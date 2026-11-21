@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Settings, LogOut, Sparkles, FileUp, Camera, PlusCircle } from 'lucide-react';
+import { Settings, LogOut, Sparkles, FolderOpen, Camera, PlusCircle } from 'lucide-react';
 import Logo from '../Logo';
 import { AppSeitenleiste } from './AppSeitenleiste';
 import { profilEintraege } from './profil-eintraege';
@@ -15,7 +15,6 @@ import { isLocalInstance, isKeycloakAuth, getAuthType } from '../../lib/env-cont
 import { User } from '../../types';
 import { cn } from '@/lib/utils';
 import { useSeitenleisteStore } from '@/hooks/store/useSeitenleisteStore';
-import { useWechsleAnsicht } from '@/hooks/useFokusArbeit';
 
 interface HeaderProps {
     userData: User | null;
@@ -28,6 +27,8 @@ interface HeaderProps {
     onShowGradingMemory?: () => void;
     onLogout: () => void;
     onLoadDemo: (art: DemoArt) => void;
+    /** „Neue Korrektur“ — fragt vor dem Verwerfen (s. `useNeueKorrektur`). */
+    onNeueKorrektur: () => void;
     onShowHelp: () => void;
     onUnlockExpert?: () => void;
     onImportSession?: (file: File) => void;
@@ -104,6 +105,7 @@ const Header: React.FC<HeaderProps> = ({
     onShowGradingMemory,
     onLogout,
     onLoadDemo,
+    onNeueKorrektur,
     onShowHelp,
     onUnlockExpert,
     onImportSession,
@@ -118,7 +120,6 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
     const { refs, logic, actions } = useGlobalStatus(userData, onImportSession, onRelinkFiles);
     const leisteOffen = useSeitenleisteStore(s => s.offen); // Offen traegt sie die drei Knoepfe — dann nicht doppelt.
-    const wechsle = useWechsleAnsicht(); // "Neue Korrektur" oeffnet die Einrichtung, wie in der Seitenleiste — verwirft nichts.
     const profile = profilEintraege({
         expertise: activeProfileName, skills: activeSkillsProfileName, erfahrungsschatz: activeGradingMemoryName, intelligenz: activeAiProfileName,
         onExpertise: onShowPrompts, onSkills: onShowSkills, onErfahrungsschatz: onShowGradingMemory, onIntelligenz: onShowAiParams
@@ -161,7 +162,7 @@ const Header: React.FC<HeaderProps> = ({
 
     return (
         <header className="mb-4 md:mb-5 flex flex-col gap-4 w-full">
-            <AppSeitenleiste eintraege={profile} onDemo={onLoadDemo} onImportieren={actions.triggerImport}
+            <AppSeitenleiste eintraege={profile} onDemo={onLoadDemo} onImportieren={actions.triggerImport} onNeueKorrektur={onNeueKorrektur}
                 fuss={<><HeaderBadges userData={userData} upgrading={upgrading} onUpgrade={onUpgrade} onUnlockExpert={onUnlockExpert} />{renderQuickActions()}</>} />
             {/*
               * Die Buehne steht nur noch auf dem leeren Start (18.11.2026). Sobald Arbeit
@@ -178,7 +179,7 @@ const Header: React.FC<HeaderProps> = ({
                     <Button
                         variant="default"
                         size="lg"
-                        onClick={() => wechsle('einrichtung')}
+                        onClick={onNeueKorrektur}
                         className="flex-1 rounded-full px-2 sm:px-4 h-10 text-xs sm:text-sm whitespace-nowrap"
                     >
                         <PlusCircle size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Neue Korrektur
@@ -190,7 +191,7 @@ const Header: React.FC<HeaderProps> = ({
                         onClick={actions.triggerImport}
                         className="flex-1 rounded-full px-2 sm:px-4 h-10 text-xs sm:text-sm text-foreground"
                     >
-                        <FileUp size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Importieren
+                        <FolderOpen size={14} className="mr-1 sm:mr-1.5 inline shrink-0" /> Öffnen
                     </Button>
                 </div>
             </div>}

@@ -8,6 +8,7 @@ import { extractTextFromFile, convertPdfToImage } from '../../lib/file-utils';
 import { parseMoodleExcel, erklaereMoodleBefund } from '../../lib/excel';
 import { toErrorMessage } from '../../lib/error-message';
 import { meldeFehler, meldeHinweis } from '@/lib/notify';
+import { wartetAufLauf } from '@/lib/laufender-vorgang';
 import { askConfirmation } from '@/lib/confirm-dialog';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
 import { useDashboardStore } from '@/hooks/store/useDashboardStore';
@@ -50,12 +51,13 @@ export const useBatchActions = (
      * wortlos durch — ein mit abgelegtes `.koreki` loeschte die laufende Arbeit.
      */
     const handleKorekiImport = useCallback(async (file: File) => {
+        if (wartetAufLauf()) return null;
         // Dieselbe Bedingung wie bei „Neue Korrektur" und „Demo laden": Eine
         // geladene Musterloesung ohne Arbeiten ist auch etwas zu verlieren.
         const hatInhalt = useBatchStore.getState().batchFiles.length > 0
             || !!useDashboardStore.getState().modelSolution;
         if (hatInhalt && !(await askConfirmation({
-            title: 'Sitzung laden',
+            title: 'Korrektur öffnen',
             message: `„${file.name}" ersetzt die aktuelle Korrektur vollständig — Musterlösung, Aufgaben, Arbeiten und Protokoll. Fortfahren?`
         }))) return null;
 
@@ -135,14 +137,14 @@ export const useBatchActions = (
             `${unbekannt.map(f => f.name).join('\n')}\n\nMöglich sind: ${SCHUELERARBEIT_ENDUNGEN.split(',').join(', ')}`
         );
 
-        // 3a. Fehlt einer importierten Arbeit genau diese Datei, bekommt sie sie, statt doppelt zu stehen.
-        const verknuepfung = verknuepfeDateien(useBatchStore.getState().batchFiles, files);
-        const bestand: BatchFile[] = verknuepfung.liste;
-
-        // 3b. ZIP: ein Ordner je Pruefling; die Lehrkraft prueft die Auswahl im Fenster (zip-pruefung.ts).
+        // 3a. ZIP: ein Ordner je Pruefling; die Lehrkraft prueft die Auswahl im Fenster (zip-pruefung.ts).
         const zips = allFiles.filter(istZipDatei);
         const zipArbeiten = zips.length === 0 ? undefined : await uebernimmZip(zips)
             .catch(err => { meldeFehler(`Das ZIP ließ sich nicht lesen.\n\n${toErrorMessage(err)}`); return undefined; });
+
+        // 3b. Fehlt einer importierten Arbeit diese Datei, bekommt sie sie. Bestand erst NACH dem letzten `await` lesen (laufender-vorgang.ts).
+        const verknuepfung = verknuepfeDateien(useBatchStore.getState().batchFiles, files);
+        const bestand: BatchFile[] = verknuepfung.liste;
 
         const standardItems: BatchFile[] = [
             ...verknuepfung.uebrig.map(f => neueArbeit(f, 0)),

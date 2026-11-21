@@ -17,6 +17,9 @@ export const ConfirmationHost: React.FC = () => {
             isOpen={request !== null}
             title={request?.title ?? ''}
             message={request?.message ?? ''}
+            bestaetigen={request?.bestaetigen}
+            zweiteWahl={request?.zweiteWahl}
+            onZweite={() => answer('zweite')}
             onConfirm={() => answer(true)}
             onCancel={() => answer(false)}
         />

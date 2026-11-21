@@ -260,7 +260,10 @@ export const downloadFile = async (
     data: Uint8Array | Blob | string,
     fileName: string,
     mimeType: string
-): Promise<void> => {
+): Promise<boolean> => {
+    // Rueckgabe: ob gespeichert wurde. Nur der Desktop kennt ein Nein — dort
+    // kann die Lehrkraft den Speichern-Dialog abbrechen. Wer danach etwas
+    // verwirft („Neue Korrektur“ → Speichern), MUSS darauf achten.
     try {
         if (isDesktopTarget()) {
             const { invoke } = await import('@tauri-apps/api/core');
@@ -283,7 +286,7 @@ export const downloadFile = async (
             if (!success) {
                 logger.warn("Desktop save cancelled or failed");
             }
-            return;
+            return success;
         }
 
         // --- SaaS / Browser Path ---
@@ -314,6 +317,7 @@ export const downloadFile = async (
             }
             window.URL.revokeObjectURL(url);
         }, 100);
+        return true;
     } catch (error) {
         logger.error("Download failed", { message: String(error) });
         throw new Error("Dateidownload fehlgeschlagen.");

@@ -35,7 +35,7 @@ export async function exportSessionToJson(
         activeGradingMemoryCases?: any[];
     },
     isStudentSolution: boolean = false
-) {
+): Promise<boolean> {
     const exportData: any = {
         version: '2.0',
         modelSolution,
@@ -72,7 +72,7 @@ export async function exportSessionToJson(
         ? `koreki-sl-${yyyy}-${mm}-${dd}_${hh}${min}.koreki`
         : `koreki-session-${yyyy}-${mm}-${dd}.koreki`;
 
-    await downloadFile(data, filename, 'application/json;charset=utf-8');
+    return downloadFile(data, filename, 'application/json;charset=utf-8');
 }
 
 

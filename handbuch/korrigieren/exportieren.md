@@ -52,14 +52,26 @@ Jede Rückmeldung trägt den Hinweis *„KI-generiert, von der Lehrkraft freigeg
 Der PIN hält Neugierige davon ab, beim Scannen sofort alles zu sehen. Er ist aber kein Schutz wie ein Passwort: Wer den QR-Code hat, kann die Rückmeldung mit etwas Technik auch ohne PIN auslesen. Gib jeden Zettel deshalb nur der Person, der er gehört — genau wie die korrigierte Arbeit.
 :::
 
-## Zwischenstand sichern {#zwischenstand}
+## Speichern und später weitermachen {#zwischenstand}
 
-Koreki speichert deine Korrektur nicht von selbst — schließt du das Programm, ist sie weg. Willst du später weitermachen, sichere den Zwischenstand:
+Koreki speichert deine Korrektur nicht von selbst — schließt du das Programm, ist sie weg. **Exportieren** gibt Ergebnisse an andere weiter (Liste, Rückmeldungen, Slips). **Speichern** sichert deine Korrektur, damit du später weitermachen kannst:
 
-- **Korrektur exportieren** unter **Alle Arbeiten** speichert die Arbeiten mit allen Vorschlägen und deinen Änderungen als `.koreki`-Datei.
-- **Exportieren** an der Musterlösung speichert nur die Musterlösung — praktisch, wenn du dieselbe Arbeit in einer Parallelklasse schreibst.
+- **Korrektur speichern** unter **Alle Arbeiten** legt die Arbeiten mit allen Vorschlägen und deinen Änderungen als `.koreki`-Datei ab. Das geht jederzeit, auch vor dem Korrigieren — nur nicht, während gerade eine Bilderkennung oder Korrektur läuft.
+- **Speichern** an der Musterlösung legt nur die Musterlösung ab — praktisch, wenn du dieselbe Arbeit in einer Parallelklasse schreibst.
 
-Über **Importieren** auf der Startseite lädst du eine `.koreki`-Datei wieder.
+PDFs und Fotos stecken nicht in der Datei, nur ihr erkannter Text. Brauchst du die Scans nach dem Öffnen wieder, lädst du sie über **Dateien verknüpfen** nach.
+
+Über **Öffnen** in der Seitenleiste oder auf der Startseite lädst du eine `.koreki`-Datei wieder.
+
+Klickst du auf **Neue Korrektur**, während noch eine Korrektur geladen ist, fragt Koreki wie Word beim Schließen nach:
+
+- **Speichern …** sichert die Korrektur, genau wie **Korrektur speichern**, und beginnt dann neu.
+- **Nicht speichern** verwirft die Korrektur und beginnt neu.
+- **Abbrechen** lässt alles, wie es ist.
+
+Läuft gerade eine Bilderkennung, Korrektur oder die Analyse der Musterlösung, fragt Koreki nicht, sondern bittet dich zu warten oder den Lauf abzubrechen. Dasselbe gilt für **Öffnen** und **Demo**.
+
+Musterlösung und Arbeiten der laufenden Korrektur siehst du jederzeit unter **Einrichtung** in der Seitenleiste. Dort lädst du auch weitere Arbeiten nach.
 
 ::: warning Die Datei enthält Schülerarbeiten
 Eine `.koreki`-Datei mit Korrektur enthält die Arbeiten und Bewertungen deiner Klasse. Bewahre sie so auf wie die Klassenarbeiten selbst — nicht in einem öffentlichen Ordner und nicht als Anhang an eine Problem-Meldung.

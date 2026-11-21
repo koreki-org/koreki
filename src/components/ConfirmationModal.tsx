@@ -8,6 +8,11 @@ interface ConfirmationModalProps {
     isOpen: boolean;
     title: string;
     message: React.ReactNode;
+    /** Beschriftung des Hauptknopfs; ohne Angabe „Bestätigen“. */
+    bestaetigen?: string;
+    /** Dritte Antwort zwischen Abbrechen und Bestaetigen (s. `askChoice`). */
+    zweiteWahl?: string;
+    onZweite?: () => void;
     onConfirm: () => void;
     onCancel: () => void;
 }
@@ -27,6 +32,9 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     isOpen,
     title,
     message,
+    bestaetigen,
+    zweiteWahl,
+    onZweite,
     onConfirm,
     onCancel
 }) => {
@@ -64,12 +72,17 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-2">
+                <div className="flex flex-wrap justify-end gap-3 pt-2">
                     <Button variant="outline" onClick={onCancel} className="px-6 font-semibold">
                         Abbrechen
                     </Button>
+                    {zweiteWahl && onZweite && (
+                        <Button data-testid="zweite-wahl" variant="outline" onClick={onZweite} className="px-6 font-semibold">
+                            {zweiteWahl}
+                        </Button>
+                    )}
                     <Button data-testid="bestaetigen" onClick={onConfirm} className="px-6 font-bold shadow-lg">
-                        Bestätigen
+                        {bestaetigen ?? 'Bestätigen'}
                     </Button>
                 </div>
             </div>

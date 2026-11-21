@@ -30,7 +30,7 @@ export const useGlobalStatus = (
         if (!onImportSession) return;
         const files = await selectFiles({ 
             multiple: false, 
-            accept: ".koreki,.pdf,.jpg,.jpeg,.png" 
+            accept: ".koreki" // Oeffnen kann nur .koreki — PDF und Bilder boten nur eine Sackgasse an (21.11.2026)
         });
         if (files.length > 0) {
             onImportSession(files[0]);

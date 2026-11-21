@@ -127,7 +127,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // eigenen Schritt.
     // 495 -> 488: die beiden .koreki-Exporte standen zweimal ausgeschrieben da,
     // unterschieden durch ein einziges `true`.
-    'pages/app.tsx': 457,
+    'pages/app.tsx': 424,
     // +7: der Kommentar, warum beim Aktualisieren die bestehende Kennung
     // gewinnt. Ohne ihn wird die Zeile beim naechsten Aufraeumen entfernt.
     // 498 -> 468: Loeschen und Umbenennen gehen jetzt ueber den

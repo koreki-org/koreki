@@ -162,11 +162,28 @@ describe('BatchProcessor Integration (Steel Thread A)', () => {
         // 1. Verify Export Toolbar is visible (Conditional rendering check)
         expect(screen.getByText(/Einschätzungsliste/i)).toBeInTheDocument();
 
-        // 2. Click 'Korrektur exportieren'
-        const exportBtn = screen.getByText(/Korrektur exportieren/i);
+        // 2. Click 'Korrektur speichern' (bis 21.11.2026 „Korrektur exportieren“)
+        const exportBtn = screen.getByText(/Korrektur speichern/i);
         fireEvent.click(exportBtn);
 
         // 3. Verify callback
         expect(onExportKorekiMock).toHaveBeenCalled();
+    });
+
+    /**
+     * Ein Knopf fuer dieselbe .koreki-Datei, vor UND nach dem Korrigieren
+     * (21.11.2026). Vorher hiess er davor „Exportieren“ und danach
+     * „Korrektur exportieren“ — und fehlte, solange die Bilderkennung offen war.
+     */
+    it('zeigt „Korrektur speichern“ schon vor dem Korrigieren, mit Dateiname als Schuelerloesung', () => {
+        const onExportSL = jest.fn();
+        const onExportKoreki = jest.fn();
+        render(<BatchProcessor {...defaultProps}
+            batchFiles={[createBatchFile({ name: 'S-Offen', status: 'pending' })]}
+            onExportSL={onExportSL} onExportKoreki={onExportKoreki} />);
+
+        fireEvent.click(screen.getByText(/Korrektur speichern/i));
+        expect(onExportSL).toHaveBeenCalled();
+        expect(onExportKoreki).not.toHaveBeenCalled();
     });
 });

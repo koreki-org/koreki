@@ -1,4 +1,4 @@
-import { useConfirmStore, askConfirmation, confirmOverwrite } from '@/lib/confirm-dialog';
+import { useConfirmStore, askConfirmation, askChoice, confirmOverwrite } from '@/lib/confirm-dialog';
 
 /**
  * Die Rueckfrage-Vermittlung (Layer 1)
@@ -53,6 +53,37 @@ describe('Rueckfrage-Vermittlung', () => {
 
         await expect(erste).resolves.toBe(false);
         expect(useConfirmStore.getState().request?.title).toBe('Zweite');
+    });
+
+    /**
+     * Drei Antworten wie in Word beim Schliessen (21.11.2026). Die zweite Wahl
+     * ist eine Handlung („Nicht speichern“ verwirft) — sie darf weder mit
+     * Bestaetigen noch mit Abbrechen zusammenfallen.
+     */
+    describe('askChoice', () => {
+        const frage = { title: 'T', message: 'M', bestaetigen: 'Speichern …', zweiteWahl: 'Nicht speichern' };
+
+        it.each([
+            [true, 'bestaetigt'],
+            ['zweite', 'zweite'],
+            [false, 'abgebrochen'],
+        ] as const)('Antwort %p ergibt %p', async (antwort, erwartet) => {
+            const wahl = askChoice(frage);
+            useConfirmStore.getState().answer(antwort);
+            await expect(wahl).resolves.toBe(erwartet);
+        });
+
+        it('eine verdraengte Wahl gilt als abgebrochen, nie als Handlung', async () => {
+            const erste = askChoice(frage);
+            askConfirmation({ title: 'Zweite', message: 'Zweite' });
+            await expect(erste).resolves.toBe('abgebrochen');
+        });
+
+        it('askConfirmation bleibt ein Ja/Nein, auch wenn jemand die zweite Wahl schickt', async () => {
+            const antwort = askConfirmation({ title: 'T', message: 'M' });
+            useConfirmStore.getState().answer('zweite');
+            await expect(antwort).resolves.toBe(false);
+        });
     });
 });
 
