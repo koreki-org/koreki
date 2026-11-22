@@ -4,7 +4,10 @@ import { useDashboardStore } from '@/hooks/store/useDashboardStore';
 import { oeffneHandbuch } from '@/lib/handbuch';
 
 /**
- * Hinweis über der Musterlösung auf den Koreki-Check für Claude (21.11.2026).
+ * Hinweis über der Musterlösung auf den Koreki-Check (21.11.2026).
+ *
+ * Bewusst ohne Anbieternamen: Der Skill nutzt das offene SKILL.md-Format, das
+ * Claude, Gemini und ChatGPT lesen. Welche Dienste geprüft sind, sagt das Handbuch.
  *
  * Der Check hilft, eine Klassenarbeit VOR dem Schreiben so aufzubauen, dass Koreki
  * sie gut korrigieren kann. Er gehört deshalb an den Anfang, solange noch keine
@@ -22,14 +25,14 @@ export const KlassenarbeitCheckHinweis: React.FC = () => {
     return (
         <>
             <p className="-mb-5 px-1 text-xs text-muted-foreground">
-                Klassenarbeit noch in Arbeit? Mit Claude prüfst du vorab, ob Koreki sie gut korrigieren kann.{' '}
+                Klassenarbeit noch in Arbeit? Mit dem Koreki-Check prüft dein KI-Chat vorab, ob Koreki sie gut korrigieren kann.{' '}
                 <Button
                     variant="link"
                     size="sm"
                     className="h-auto p-0 text-xs align-baseline"
                     onClick={() => { void oeffneHandbuch('klassenarbeitPruefen'); }}
                 >
-                    Koreki-Check herunterladen
+                    Herunterladen
                 </Button>
             </p>
             <div className="hidden md:block -mb-5" aria-hidden="true" />
