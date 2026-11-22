@@ -15,6 +15,7 @@ export const HANDBUCH_URL = 'https://hilfe.koreki.org';
 export const HANDBUCH_STELLEN = {
     start: '/',
     musterloesung: '/korrigieren/ablauf#musterloesung',
+    klassenarbeitPruefen: '/korrigieren/klassenarbeit-pruefen',
     schuelerarbeiten: '/korrigieren/ablauf#schuelerarbeiten',
     korrigieren: '/korrigieren/ablauf#korrigieren',
     pruefen: '/korrigieren/vorschlaege-pruefen',

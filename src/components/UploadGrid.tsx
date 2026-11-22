@@ -6,6 +6,7 @@ import { ModelSolutionCard } from './upload/ModelSolutionCard';
 import { StudentWorkCard } from './upload/StudentWorkCard';
 import { useAnsicht } from '../hooks/useFokusArbeit';
 import { EinrichtungKopf } from './upload/EinrichtungKopf';
+import { KlassenarbeitCheckHinweis } from './upload/KlassenarbeitCheckHinweis';
 
 interface UploadGridProps {
     modelSolution: string;
@@ -59,6 +60,7 @@ const UploadGrid: React.FC<UploadGridProps> = ({
     return (
         <div className={`grid grid-cols-1 md:grid-cols-2 items-stretch gap-8 mb-8 ${ansicht !== 'einrichtung' ? 'hidden' : ''}`}>
             <EinrichtungKopf />
+            <KlassenarbeitCheckHinweis />
             {/* Musterlösung Card */}
             <ModelSolutionCard
                 modelSolution={modelSolution}

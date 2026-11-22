@@ -19,6 +19,8 @@ Bei Rechenaufgaben bewährt sich diese Aufteilung:
 > 1 P Formel, 1 P Einsetzen der gegebenen Werte, 1 P richtig gerechnet (auch mit falsch eingesetzten Werten)
 
 Nur so kann der Skill **Folgefehler** richtig arbeiten. Wer einen gegebenen Wert falsch abschreibt und damit richtig weiterrechnet, verliert dann genau den Punkt fürs Einsetzen. Steht stattdessen nur „1 P Rechenweg, 1 P Ergebnis“ da, gibt es keinen Punkt, an dem der Fehler zählt, und die Arbeit bekommt womöglich volle Punktzahl.
+
+Ob deine Musterlösung so aufgebaut ist, kannst du schon vorher mit Claude prüfen: [Klassenarbeit vorab prüfen](/korrigieren/klassenarbeit-pruefen).
 :::
 
 Gibt es etwas, das für alle Aufgaben gilt — ein Szenario, gemeinsame Annahmen —, trägst du es unter **Gemeinsamer Rahmen** ein. Gibt es so etwas nicht, bleibt das Feld leer.

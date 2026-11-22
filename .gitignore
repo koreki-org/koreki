@@ -45,6 +45,8 @@ verify_math.js
 # Assets
 *.xlsx
 *.zip
+# Ausnahme: Downloads des Handbuchs (z. B. der Koreki-Check als Skill-ZIP) werden ausgeliefert.
+!handbuch/public/downloads/*.zip
 public/download/
 *.webp
 # Ausnahme: Produktbilder der Marketing-Seiten werden ausgeliefert.

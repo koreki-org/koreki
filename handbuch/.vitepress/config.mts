@@ -41,6 +41,7 @@ export default defineConfig({
       {
         text: 'Korrigieren',
         items: [
+          { text: 'Klassenarbeit vorab prüfen', link: '/korrigieren/klassenarbeit-pruefen' },
           { text: 'Eine Korrektur Schritt für Schritt', link: '/korrigieren/ablauf' },
           { text: 'Vorschläge prüfen', link: '/korrigieren/vorschlaege-pruefen' },
           { text: 'Exportieren', link: '/korrigieren/exportieren' },
