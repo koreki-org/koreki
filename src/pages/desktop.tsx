@@ -87,7 +87,7 @@ export default function DesktopOnboarding() {
                         <div className="mt-6 rounded-xl bg-warning/10 p-4 flex gap-3">
                             <ShieldAlert size={18} className="text-warning shrink-0 mt-0.5" />
                             <p className="text-xs/relaxed text-foreground">
-                                Bitte beachte die Datenschutzrichtlinien deiner Schule und schütze dein Gerät vor unbefugtem Zugriff.{' '}
+                                Schütze dein Gerät vor unbefugtem Zugriff.{' '}
                                 <SchulDatenschutzLink />
                             </p>
                         </div>

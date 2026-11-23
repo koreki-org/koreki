@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { Cloud, Cpu, ArrowLeft, ArrowRight, CheckCircle2, AlertCircle, ExternalLink, Zap, Key, MousePointerClick, Monitor } from 'lucide-react';
+import { Cloud, Cpu, ArrowLeft, ArrowRight, CheckCircle2, ExternalLink, Zap, Key, MousePointerClick, Monitor } from 'lucide-react';
 import { isLocalInstance, getKorekiMode } from '@/lib/env-context';
 import { openExternal } from '@/lib/os-utils';
 import MarketingLayout from '@/layouts/MarketingLayout';
@@ -40,13 +40,13 @@ export default function DesktopSetup() {
     
     const mistralPhases = [
         {
-            title: "1. API Key bei Mistral erstellen",
-            desc: "Erstelle deinen API-Key im Mistral Studio unter 'API Keys'.",
+            title: "1. API-Key beim Anbieter erstellen",
+            desc: "Mittwald: im mStudio unter „AI Hosting“. Mistral: im Mistral Studio unter „API Keys“.",
             img: "/help/mistral-guide-1.png"
         },
         {
-            title: "2. API Key in Koreki eintragen",
-            desc: "Gib den Key in das Setup-Feld ein. Er wird nur lokal gespeichert.",
+            title: "2. Anbieter wählen, Key eintragen",
+            desc: "Mittwald: „OpenAI Kompatibel“, Adresse und Modell leer lassen. Mistral: „Mistral API“. Der Key wird nur lokal gespeichert.",
             img: "/help/mistral-guide-2.png"
         },
         {
@@ -115,10 +115,6 @@ export default function DesktopSetup() {
                                     <CheckCircle2 size={16} className="text-success shrink-0 mt-0.5" />
                                     <span>Vollständige offline-Verarbeitung</span>
                                 </li>
-                                <li className="flex items-start gap-3 text-warning text-xs font-bold leading-tight bg-warning/5 p-2 rounded-lg border border-warning/20">
-                                    <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                                    <span>Bitte beachte die Datenschutzrichtlinien deiner Schule</span>
-                                </li>
                             </ul>
                             <div className="pt-4 border-t border-border/50">
                                 <button 
@@ -137,8 +133,8 @@ export default function DesktopSetup() {
                             <div className="w-12 h-12 rounded-xl bg-primary/5 text-primary mb-4 flex items-center justify-center transition-transform border border-primary/20">
                                 <Cloud size={24} />
                             </div>
-                            <CardTitle className="text-2xl font-bold tracking-tight text-foreground">KI-Cloud (API)</CardTitle>
-                            <p className="text-xs text-primary font-bold mt-1">Mistral AI / OpenAI-kompatibel</p>
+                            <CardTitle className="text-2xl font-bold tracking-tight text-foreground">KI-Anbieter in der EU</CardTitle>
+                            <p className="text-xs text-primary font-bold mt-1">Mittwald (Deutschland) · Mistral (Frankreich)</p>
                         </CardHeader>
                         <CardContent className="p-6 pt-0 space-y-4">
                             <ul className="space-y-3">
@@ -150,23 +146,22 @@ export default function DesktopSetup() {
                                     <CheckCircle2 size={16} className="text-success shrink-0 mt-0.5" />
                                     <span>Verschlüsselte Übertragung an Server in der EU</span>
                                 </li>
-                                <li className="flex items-start gap-3 text-warning text-xs font-bold leading-tight bg-warning/5 p-2 rounded-lg border border-warning/20">
-                                    <AlertCircle size={16} className="shrink-0 mt-0.5" />
-                                    <span>Bitte beachte die Datenschutzrichtlinien deiner Schule. <SchulDatenschutzLink /></span>
+                                <li className="flex items-start gap-3 text-sm leading-tight">
+                                    <SchulDatenschutzLink />
                                 </li>
                             </ul>
                             <div className="pt-4 border-t border-border/50 flex flex-wrap gap-x-6 gap-y-2">
+                                <button 
+                                    onClick={() => openExternal('https://www.mittwald.de/mstudio/ai-hosting')}
+                                    className="inline-flex items-center gap-1.5 text-primary font-bold text-xs hover:underline"
+                                >
+                                    Mittwald AI Hosting <ExternalLink size={12} />
+                                </button>
                                 <button 
                                     onClick={() => openExternal('https://console.mistral.ai')}
                                     className="inline-flex items-center gap-1.5 text-primary font-bold text-xs hover:underline"
                                 >
                                     Mistral Studio <ExternalLink size={12} />
-                                </button>
-                                <button 
-                                    onClick={() => openExternal('https://www.mittwald.de/mstudio/ai-hosting')}
-                                    className="inline-flex items-center gap-1.5 text-primary font-bold text-xs hover:underline"
-                                >
-                                    Mittwald KI (DE Hosting) <ExternalLink size={12} />
                                 </button>
                             </div>
                         </CardContent>

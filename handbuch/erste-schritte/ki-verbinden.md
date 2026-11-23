@@ -16,8 +16,10 @@ Die KI läuft auf deinem Gerät. **Keine Schülerarbeit verlässt deinen Rechner
 
 Die Arbeiten werden verschlüsselt an einen Anbieter mit Servern in der EU geschickt, der die KI für dich betreibt. Das geht auf jedem Rechner und braucht nur einen **Zugangsschlüssel** (API-Key) vom Anbieter.
 
-- **Mittwald** — Hosting in Deutschland.
-- **Mistral** — französischer Anbieter.
+| Anbieter | Schlüssel erstellen | In Koreki wählen |
+| :--- | :--- | :--- |
+| **Mittwald** (Deutschland) | im [mStudio](https://www.mittwald.de/mstudio/ai-hosting) unter **AI Hosting** | **OpenAI Kompatibel**, Adresse und Modell leer lassen |
+| **Mistral** (Frankreich) | im [Mistral Studio](https://console.mistral.ai) unter **API Keys** | **Mistral API** |
 
 So geht's:
 
@@ -28,8 +30,8 @@ So geht's:
 Unter Windows speichert Koreki Desktop den Schlüssel verschlüsselt im Windows-Tresor, nicht als lesbare Datei.
 :::
 
-::: warning Bitte vorher klären
-Bevor du echte Arbeiten an einen Anbieter schickst, kläre mit deiner Schule, ob das erlaubt ist. Oft braucht es dafür einen Vertrag zur Auftragsverarbeitung mit dem Anbieter. Lies dazu auch [Namen auf dem Blatt](/datenschutz/namen).
+::: info Datenschutz
+Mit Schülerarbeiten gehören bei einem Anbieter ein Vertrag zur Auftragsverarbeitung, ein Eintrag im Verarbeitungsverzeichnis und die Information von Eltern und Schülern dazu. Die Schritte und Vorlagen stehen unter [Datenschutz für Schulen](https://koreki.org/security#schulen). Wie du Namen auf dem Blatt vermeidest, steht unter [Namen auf dem Blatt](/datenschutz/namen).
 :::
 
 ## Welcher Weg passt?

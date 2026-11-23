@@ -1,26 +1,33 @@
 ---
-title: "Datenschutz für Schulen: Koreki mit Mittwald"
-description: "Was eine Schule wissen und tun muss, bevor ihre Lehrkräfte Koreki Desktop oder Koreki Community mit der KI von Mittwald nutzen. Mit Vorlage fürs Verarbeitungsverzeichnis und Bausteinen für die Datenschutz-Folgenabschätzung."
+title: "Datenschutz für Schulen: Koreki Desktop und Community"
+description: "Datenflüsse und Schritte für den Einsatz von Koreki Desktop oder Koreki Community mit einem lokalen Modell oder einem KI-Anbieter. Mit Vorlage fürs Verarbeitungsverzeichnis und Bausteinen für die Datenschutz-Folgenabschätzung."
 author: "@security_officer"
 date: "2026-11-11"
-last_updated: "2026-11-11"
+last_updated: "2026-11-23"
 status: "Draft"
 domain: "user-guide"
 security_classification: "Public"
 ---
 
-# Datenschutz für Schulen: Koreki mit Mittwald
+# Datenschutz für Schulen: Koreki Desktop und Community
 
-Für Schulleitung und Datenschutzbeauftragte. Gilt für **Koreki Desktop** (auf dem Rechner der Lehrkraft) und **Koreki Community** (auf einem Server der Schule), jeweils mit einem KI-Zugang, den die Schule bei Mittwald bucht.
+Für Lehrkräfte, Schulleitung und Datenschutzbeauftragte. Gilt für **Koreki Desktop** (auf dem Rechner der Lehrkraft) und **Koreki Community** (auf einem Server der Schule).
 
 ## Das Wichtigste
 
-* **Ihre Schule bucht den KI-Zugang bei Mittwald** und schließt dort den Auftragsverarbeitungsvertrag (AVV) ab.
-* **Schülerarbeiten gehen nur an Mittwald.** Mittwald speichert die Inhalte nach eigener Angabe nicht und trainiert nicht damit.
+* **Die Arbeiten gehen nur an die KI, die in Koreki eingestellt ist.** Vor dem Senden nennt Koreki den Empfänger.
 * **Koreki selbst bekommt keine Schülerdaten.** Ein Vertrag mit Koreki ist deshalb nicht nötig.
-* **Die Note setzt immer die Lehrkraft.** Koreki macht Vorschläge; vor jedem Export bestätigt die Lehrkraft, dass sie geprüft hat.
+* **Die Note setzt immer die Lehrkraft.** Koreki macht Vorschläge; vor jedem Export wird bestätigt, dass sie geprüft sind.
 
-**Ganz ohne Cloud** geht es auch: Mit einem lokalen Modell über Ollama verlassen die Arbeiten den Rechner bzw. das Schulnetz nicht. Dann entfällt der Vertrag mit Mittwald.
+## Welche KI?
+
+| KI | Wo sie läuft | Vertrag zur Auftragsverarbeitung |
+|---|---|---|
+| **Lokales Modell über Ollama** | auf dem Rechner der Lehrkraft bzw. im Schulnetz | nicht nötig, die Arbeiten verlassen das Gerät bzw. das Netz nicht |
+| **Mittwald** (Mittwald CM Service GmbH & Co. KG, Espelkamp) | bei Mittwald in Deutschland | mit Mittwald |
+| **Mistral** (Mistral AI, Paris) | bei Mistral in der EU | mit Mistral |
+
+Was ein Anbieter speichert und protokolliert, steht in seinen eigenen Angaben zum Datenschutz (Links unter „Quellen“) und im Vertrag zur Auftragsverarbeitung.
 
 ## Wohin gehen die Daten?
 
@@ -28,23 +35,23 @@ Für Schulleitung und Datenschutzbeauftragte. Gilt für **Koreki Desktop** (auf 
 |---|---|---|
 | **Wo läuft Koreki?** | auf dem Rechner der Lehrkraft | auf einem Server der Schule |
 | **Anmeldung** | am Rechner (Benutzerkonto des Betriebssystems) | über Keycloak, ein Konto je Lehrkraft |
-| **Wo liegt der Mittwald-Schlüssel?** | im Tresor des Betriebssystems | in der Server-Konfiguration, hinterlegt von der Administration |
-| **Was geht zu Mittwald?** | Scans und Text der Arbeiten, Musterlösung | dasselbe, über den Server der Schule |
-| **Was geht nicht zu Mittwald?** | Dateinamen (werden zu „Schüler #1“, „Schüler #2“ …), Noten, Klassenlisten | dasselbe |
+| **Wo liegt der Schlüssel zum KI-Anbieter?** | im Tresor des Betriebssystems | in der Server-Konfiguration, hinterlegt von der Administration |
+| **Was geht an die KI?** | Scans und Text der Arbeiten, Musterlösung | dasselbe, über den Server der Schule |
+| **Was geht nicht an die KI?** | Dateinamen (werden zu „Schüler #1“, „Schüler #2“ …), Noten, Klassenlisten | dasselbe |
 | **Wo bleiben Arbeiten und Ergebnisse?** | im Arbeitsspeicher, bis die Sitzung endet; Exporte dort, wo die Lehrkraft sie speichert | dasselbe |
 | **Erfahrungsschatz** (nur wenn die Lehrkraft Fälle ausdrücklich übernimmt) | auf dem Rechner | auf dem Server der Schule, getrennt je Lehrkraft |
 
-**Mittwald protokolliert** IP-Adresse, Schlüssel, Zeitpunkt und Anzahl der verarbeiteten Wörter (Tokens), aber keine Inhalte. Die Modelle laufen auf Mittwalds eigener Infrastruktur.
-
 **Namen auf dem Blatt** gehen mit, wenn sie nicht geschwärzt sind. Koreki bietet dafür eine Schwärzung an. Einfacher ist es, Arbeiten mit Nummern statt Namen schreiben zu lassen.
 
-## Was die Schule tun muss
+## In fünf Schritten startklar
 
-1. **KI-Zugang bei Mittwald buchen**, Datenschutzvertrag abschließen.
-2. **Verarbeitungsverzeichnis ergänzen** (Vorlage unten).
-3. **Datenschutzbeauftragte einbeziehen** (Bausteine für die Folgenabschätzung unten).
-4. **Eltern und Schüler informieren.**
-5. **Lehrkräfte einweisen** (Betriebsanleitung, Namen schwärzen oder vermeiden).
+1. **KI wählen:** lokal über Ollama oder ein Zugang bei Mittwald oder Mistral.
+2. **Bei einem Anbieter:** Vertrag zur Auftragsverarbeitung abschließen.
+3. **Verarbeitungsverzeichnis ergänzen** (Vorlage unten).
+4. **Datenschutzbeauftragte einbeziehen** (Bausteine für die Folgenabschätzung unten).
+5. **Eltern und Schüler informieren.**
+
+Wie sich Namen auf dem Blatt schwärzen oder vermeiden lassen, steht im Handbuch unter hilfe.koreki.org.
 
 ## Vorlage: Eintrag ins Verarbeitungsverzeichnis
 
@@ -56,9 +63,9 @@ Für Schulleitung und Datenschutzbeauftragte. Gilt für **Koreki Desktop** (auf 
 | **Rechtsgrundlage** | Art. 6 Abs. 1 lit. e DSGVO i. V. m. `[Schulgesetz / Schuldatenschutzverordnung des Landes]` |
 | **Betroffene** | Schülerinnen und Schüler; Lehrkräfte als Nutzer |
 | **Daten** | Inhalt der Arbeit (Text, Bild, Handschrift), ggf. Name auf dem Blatt; Punktvorschläge, Feedback |
-| **Empfänger** | Mittwald CM Service GmbH & Co. KG, Espelkamp (Auftragsverarbeiter) |
-| **Drittland** | keines vorgesehen `[im AVV mit Mittwald bestätigen]` |
-| **Löschung** | Arbeitsspeicher: mit Sitzungsende. Exporte: nach Aufbewahrungsfrist für Leistungsnachweise `[Frist]`. Erfahrungsschatz: spätestens `[z. B. Schuljahresende]`. Mittwald-Protokolle: `[Frist bei Mittwald erfragen]` |
+| **Empfänger** | `[gewählter KI-Anbieter, z. B. Mittwald CM Service GmbH & Co. KG, Espelkamp]` (Auftragsverarbeiter); bei einem lokalen Modell keiner |
+| **Drittland** | keines vorgesehen `[im AVV mit dem Anbieter bestätigen]` |
+| **Löschung** | Arbeitsspeicher: mit Sitzungsende. Exporte: nach Aufbewahrungsfrist für Leistungsnachweise `[Frist]`. Erfahrungsschatz: spätestens `[z. B. Schuljahresende]`. Protokolle des Anbieters: `[Frist beim Anbieter erfragen]` |
 | **Schutzmaßnahmen** | siehe nächster Abschnitt |
 
 ## Bausteine für die Datenschutz-Folgenabschätzung
@@ -68,7 +75,7 @@ Für Schulleitung und Datenschutzbeauftragte. Gilt für **Koreki Desktop** (auf 
 | **Falsche Bewertung** geht unbemerkt in die Note ein | Lehrkraft prüft jeden Vorschlag; Begründung und Vertrauenswert je Aufgabe; Bestätigung vor dem Export |
 | **Handschrift falsch gelesen**, auch flüssig klingender Text, der nicht auf dem Blatt steht | Abgleich von erkanntem Text und Bild in der Ansicht „OCR Verifizierung“ |
 | **Ungleichbehandlung** wegen Sprachstil oder Herkunft | Stichproben des Herstellers; Lehrkraft prüft; Meldeweg bei Verdacht |
-| **Name gelangt an Mittwald** | Schwärzung; Nummern statt Namen; AVV mit Mittwald |
+| **Name gelangt an den KI-Anbieter** | Schwärzung; Nummern statt Namen; lokales Modell; AVV mit dem Anbieter |
 | **Unbefugter Zugriff** auf Rechner oder Server | eigene Anmeldung je Lehrkraft (am Rechner bzw. über Keycloak) |
 | **Beeinflussung** durch Anweisungen im Schülertext | abgesicherte Bewertungsanweisung, geprüft gegen sechs Angriffsarten |
 
@@ -85,5 +92,7 @@ Die ausführliche Beschreibung von Zweck, Grenzen und Genauigkeit steht in der *
 * Betriebsanleitung und TOM: [`src/legal/betriebsanleitung_v1.7.md`](../../src/legal/betriebsanleitung_v1.7.md), [`src/legal/tom_v1.1.md`](../../src/legal/tom_v1.1.md)
 * Schlüssel: Desktop [`src/lib/ai/vault-service.ts`](../../src/lib/ai/vault-service.ts); Community [`src/lib/ai/provider-connection.ts`](../../src/lib/ai/provider-connection.ts) (`MITTWALD_API_KEY`) und [`src/lib/ai/client-settings-gate.ts`](../../src/lib/ai/client-settings-gate.ts)
 * Speicherorte Community: [Community Edition Persistence](../technical/community-edition-persistence.md)
-* Mittwald: [Data protection (AI Hosting)](https://developer.mittwald.de/docs/v2/platform/aihosting/access-and-usage/data-protection/), [Dienstleisterliste](https://www.mittwald.de/unsere-dienstleister), Stand 11.11.2026
+* Mittwald: [Data protection (AI Hosting)](https://developer.mittwald.de/docs/v2/platform/aihosting/access-and-usage/data-protection/), [Dienstleisterliste](https://www.mittwald.de/unsere-dienstleister)
+* Mistral: [Rechtliches und Datenschutz](https://legal.mistral.ai/)
+* Anbieter in Koreki: Desktop-Netzwerksperre [`src/lib/api-client.ts`](../../src/lib/api-client.ts), Empfänger-Satz [`src/lib/datenziel-hinweis.ts`](../../src/lib/datenziel-hinweis.ts), Stand 23.11.2026
 * **Word-Fassung** (`public/downloads/koreki-datenschutz-schulen.docx`, Download-Knopf auf /security): wird aus dieser Datei erzeugt, nie von Hand bearbeitet. Nach jeder Änderung `npm run docs:datenschutz-word` und beide Dateien committen; `tests/unit/datenschutz-word-aktuell.test.ts` hält sie gleich. Dieser Abschnitt „Quellen“ kommt nicht in die Word-Datei.

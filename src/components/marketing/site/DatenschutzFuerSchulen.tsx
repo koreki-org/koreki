@@ -14,8 +14,11 @@ import { Abschnitt, AbschnittsKopf, Kachel, NACH_KOPF, RASTER } from './Baustein
  * fuer die Folgenabschaetzung steht in docs/user-guides/datenschutz-paket-schulen.md.
  * Wer hier etwas aendert, zieht sie mit — und umgekehrt.
  *
- * Jede Aussage steht im Code oder in Mittwalds oeffentlicher Doku zum AI Hosting
- * (marketing-communication §3). Keine regulatorische Selbsteinstufung.
+ * Jede Aussage steht im Code (marketing-communication §3). Anbieterneutral
+ * (23.11.2026): Was ein KI-Anbieter speichert oder protokolliert, steht in
+ * seinen eigenen Angaben, nicht hier. Sachlich die Schritte, ohne
+ * „das macht deine Schule“ — Lehrkräfte sollen selbst loslegen können.
+ * Keine regulatorische Selbsteinstufung.
  */
 
 export const DATENSCHUTZ_ANKER = 'schulen';
@@ -38,7 +41,7 @@ export const SchulDatenschutzLink: React.FC<{ className?: string }> = ({ classNa
             onClick={lokal ? e => { e.preventDefault(); void openExternal(ziel); } : undefined}
             className={cn("inline-flex items-center gap-1 font-semibold text-primary hover:underline", className)}
         >
-            Was deine Schule dafür braucht <ArrowRight size={14} />
+            Datenschutz für Schulen <ArrowRight size={14} />
         </a>
     );
 };
@@ -67,31 +70,31 @@ const VERSIONEN = [
 ];
 
 const FUER_BEIDE = [
-    'Die Arbeiten gehen nur an den KI-Zugang, den deine Schule bei Mittwald bucht. Den Auftragsverarbeitungsvertrag schließt die Schule direkt mit Mittwald.',
-    'Mittwald speichert die Inhalte nach eigener Angabe nicht und trainiert nicht damit. Protokolliert werden Adresse, Schlüssel, Zeitpunkt und Umfang der Anfrage.',
+    'Die Arbeiten gehen nur an die KI, die in Koreki eingestellt ist.',
+    'Vor dem Senden nennt Koreki den Empfänger der Daten.',
     'Koreki selbst bekommt keine Schülerdaten. Ein Vertrag mit Koreki ist nicht nötig.',
-    'Arbeiten und Vorschläge liegen nur im Arbeitsspeicher. Gespeichert wird nur, was die Lehrkraft exportiert oder ausdrücklich in den Erfahrungsschatz übernimmt.',
-    'Die Note setzt immer die Lehrkraft. Vor jedem Export bestätigt sie, dass sie die Vorschläge geprüft hat.',
+    'Arbeiten und Vorschläge liegen nur im Arbeitsspeicher. Gespeichert wird nur, was exportiert oder ausdrücklich in den Erfahrungsschatz übernommen wird.',
+    'Die Note setzt immer die Lehrkraft. Vor jedem Export wird bestätigt, dass die Vorschläge geprüft sind.',
 ];
 
 const SCHRITTE = [
-    'KI-Zugang bei Mittwald buchen, Datenschutzvertrag abschließen.',
+    'KI wählen: lokal über Ollama oder ein Zugang bei Mittwald (Deutschland) oder Mistral (Frankreich).',
+    'Bei einem Anbieter: Vertrag zur Auftragsverarbeitung abschließen.',
     'Verarbeitungsverzeichnis ergänzen.',
     'Datenschutzbeauftragte einbeziehen.',
     'Eltern und Schüler informieren.',
-    'Lehrkräfte einweisen.',
 ];
 
 export function DatenschutzFuerSchulen() {
     return (
         <Abschnitt id={DATENSCHUTZ_ANKER}>
             <AbschnittsKopf
-                kicker="Für Schulleitung und Datenschutz"
-                titel="Was deine Schule wissen muss."
-                text="Für Koreki Desktop und die Community Edition mit dem KI-Zugang von Mittwald, den deine Schule bucht."
+                kicker="Für Lehrkräfte, Schulleitung und Datenschutz"
+                titel="Datenschutz in der Schule."
+                text="Für Koreki Desktop und die Community Edition."
             />
             <p className="mt-4 text-sm/relaxed text-muted-foreground max-w-2xl">
-                Ganz ohne Cloud geht es auch: Mit einem lokalen Modell über Ollama verlassen die Arbeiten den Rechner bzw. das Schulnetz nicht. Dann entfällt der Vertrag mit Mittwald.
+                Mit einem lokalen Modell über Ollama verlassen die Arbeiten den Rechner bzw. das Schulnetz nicht.
             </p>
 
             <div className={cn(NACH_KOPF, RASTER, "md:grid-cols-2")}>
