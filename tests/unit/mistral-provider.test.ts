@@ -160,7 +160,11 @@ describe('Mistral Provider (Bridge) - Unit Tests', () => {
     });
 
     describe('executeMistralRequest - Payload Strictness & Schema Integrity', () => {
-        it('should NOT contain unsupported OpenAI fields like "reasoning_effort" in payload body', async () => {
+        // Bis zum 23.11.2026 hiess dieser Test, Mistral kenne `reasoning_effort` nicht.
+        // Gemessen am selben Tag: Medium 2604 kennt `high`/`none` und denkt ohne Angabe
+        // NICHT — der Schalter "Denken" war bei Mistral damit wirkungslos. Nur Large 2512
+        // lehnt das Feld ab; das prueft `ai/denkschritt-mistral.test.ts`.
+        it('schaltet das Denken bei Medium ueber reasoning_effort ein', async () => {
             mockFetchWithRetry.mockResolvedValueOnce({
                 ok: true,
                 json: async () => ({ choices: [{ message: { content: '{}' } }] })
@@ -171,7 +175,7 @@ describe('Mistral Provider (Bridge) - Unit Tests', () => {
             });
 
             const body = JSON.parse(mockFetchWithRetry.mock.calls[0][1].body);
-            expect(body).not.toHaveProperty('reasoning_effort');
+            expect(body.reasoning_effort).toBe('high');
             expect(body).toHaveProperty('model');
             expect(body).toHaveProperty('messages');
             expect(body).toHaveProperty('max_tokens');

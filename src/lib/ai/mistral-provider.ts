@@ -25,6 +25,8 @@ import { logger } from '@/lib/logger';
 import { AIProviderError } from './provider-error';
 import { buildPromptForAction, PromptPayload } from './prompt-dispatch';
 import { alsText } from './chat-types';
+import { denktBeiAktion } from './denkschritt';
+import { mistralDenktiefe } from './mistral-denkschalter';
 import type { ChatNachricht, ChatAnfrage, ChatAntwort, AntwortFormat, TokenVerbrauch, OcrAntwort } from './chat-types';
 import { pruefeWerkzeugAufruf } from './tool-validation';
 import { ueberDesktopProxy } from './desktop-proxy';
@@ -189,15 +191,20 @@ export async function executeMistralRequest(
         body.random_seed = SAMPLING_SEED;
     }
 
-    // Elevate max tokens if thinking is enabled to allow room for the reasoning chain
-    const isThinking = options.enableThinking ?? false;
+    // Denkschritt: dieselbe Leiter wie Ollama und der OpenAI-kompatible Weg
+    // (`denkschritt.ts`). Bis zum 23.11.2026 stand hier `options.enableThinking`
+    // allein — die Leiter kam bei Mistral nie an, und gesendet wurde nur eine
+    // hoehere Laengengrenze, kein Schalter. Siehe `mistral-denkschalter.ts`.
+    const isThinking = denktBeiAktion(action, options.enableThinking);
+    const denktiefe = mistralDenktiefe(model, isThinking);
+    if (denktiefe) {
+        body.reasoning_effort = denktiefe;
+    }
     if (isThinking) {
-        body.max_tokens = options.maxTokens ?? 8192; // Max output tokens supported by modern Mistral models
-        
-        // Pass max tokens for Mistral Large / Medium
-        if (model.toLowerCase().includes('medium') || model.toLowerCase().includes('large')) {
-            body.max_tokens = options.maxTokens ?? 32768; // Elevate max tokens to allow room for the full reasoning chain
-        }
+        // Wie beim OpenAI-kompatiblen Weg: Wer denkt, braucht Platz VOR der Antwort.
+        // Eine feste kleine Grenze (die Extraktion gab 1000 mit) frisst sonst schon
+        // der Denktext auf, und die Antwort bleibt leer.
+        body.max_tokens = Math.max(options.maxTokens ?? 0, 16384);
     }
 
     const isGraphAction = action === 'generate-graph' || action === 'refine-graph';
