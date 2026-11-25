@@ -30,12 +30,27 @@ const SeitenPanel: React.FC<SeitenPanelProps> = ({ zustand, erste, letzte, fokus
     const doppelt = eingabe.trim() !== '' && vergeben.filter(v => vergleich(v) === vergleich(eingabe)).length > 1;
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
             <div>
                 <p className="text-sm text-muted-foreground m-0">Seite {seite - erste + 1} von {letzte - erste + 1}</p>
                 <p className="text-lg font-semibold text-foreground m-0">
                     Arbeit {index + 1} von {stuecke.length}
                 </p>
+            </div>
+
+            {/* Eine Reihe, ganz oben: Bis zum 25.11.2026 standen hier zwei Reihen am Ende der
+                Spalte, und die zweite (Arbeit) rutschte bei normaler Fensterhoehe aus dem Bild. */}
+            <div className="grid grid-cols-4 gap-2">
+                {[
+                    { titel: 'Vorige Arbeit', icon: <ChevronsLeft className="w-5 h-5" />, tun: blaettern.vorigeArbeit, aus: seite === erste },
+                    { titel: 'Vorige Seite', icon: <ChevronLeft className="w-5 h-5" />, tun: blaettern.zurueck, aus: seite === erste },
+                    { titel: 'Nächste Seite', icon: <ChevronRight className="w-5 h-5" />, tun: blaettern.vor, aus: seite === letzte },
+                    { titel: 'Nächste Arbeit', icon: <ChevronsRight className="w-5 h-5" />, tun: blaettern.naechsteArbeit, aus: index === stuecke.length - 1 }
+                ].map(k => (
+                    <Button key={k.titel} variant="outline" size="sm" aria-label={k.titel} title={k.titel} onClick={k.tun} disabled={k.aus}>
+                        {k.icon}
+                    </Button>
+                ))}
             </div>
 
             {istAnfang ? (
@@ -75,26 +90,6 @@ const SeitenPanel: React.FC<SeitenPanelProps> = ({ zustand, erste, letzte, fokus
                     Gehört zu Arbeit {index + 1}{eingabe.trim() ? ` (${eingabe.trim()})` : ''}, Seite {seite - stueck.start + 1}.
                 </p>
             )}
-
-            <div className="grid grid-cols-2 gap-2 mt-auto">
-                <Button variant="outline" size="sm" onClick={blaettern.zurueck} disabled={seite === erste}>
-                    <ChevronLeft className="w-5 h-5" /> Seite
-                </Button>
-                <Button variant="outline" size="sm" onClick={blaettern.vor} disabled={seite === letzte}>
-                    Seite <ChevronRight className="w-5 h-5" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={blaettern.vorigeArbeit} disabled={seite === erste}>
-                    <ChevronsLeft className="w-5 h-5" /> Arbeit
-                </Button>
-                <Button variant="outline" size="sm" onClick={blaettern.naechsteArbeit} disabled={index === stuecke.length - 1}>
-                    Arbeit <ChevronsRight className="w-5 h-5" />
-                </Button>
-            </div>
-            <p className="hidden md:block text-xs text-muted-foreground m-0">
-                <strong>Enter</strong> auf der ersten Seite einer Arbeit: Vorschlag übernehmen
-                und weiter. Auf jeder anderen Seite: hier beginnt eine Arbeit, die folgenden
-                rücken mit. <strong>Entf</strong> nimmt einen Anfang weg. Pfeiltasten blättern.
-            </p>
         </div>
     );
 };

@@ -9,6 +9,7 @@ import type { Aufteilung } from '@/lib/stapel-aufteilen';
 import AufteilenWerkzeuge from './aufteilen/AufteilenWerkzeuge';
 import SeitenPanel from './aufteilen/SeitenPanel';
 import SeitenLeiste from './aufteilen/SeitenLeiste';
+import TastenHilfe from './aufteilen/TastenHilfe';
 
 interface AufzuteilendeArbeit {
     name: string;
@@ -85,8 +86,9 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ arbeit, onClose, onSplit 
                     <div>
                         <h2 id={TITEL_ID} className="text-xl font-bold text-foreground tracking-tight m-0">PDF aufteilen</h2>
                         <p className="text-sm text-muted-foreground m-0 mt-1">
-                            {arbeit.name} · {letzte - erste + 1} Seiten. Blättere durch und markiere die erste Seite jeder Arbeit.
+                            {arbeit.name} · {letzte - erste + 1} Seiten
                         </p>
+                        <TastenHilfe />
                     </div>
                     <Button variant="ghost" size="icon" aria-label="Schließen" onClick={onClose}>
                         <X className="w-5 h-5" />
