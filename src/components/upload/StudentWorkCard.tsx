@@ -89,7 +89,7 @@ export const StudentWorkCard: React.FC<StudentWorkCardProps> = ({
                     />
                 ) : (
                     <div className="flex-1 flex flex-col">
-                        <div className="bg-primary/5 border border-primary/10 rounded-xl p-6 flex flex-col items-center justify-center text-center">
+                        <div className="bg-muted rounded-xl p-6 flex flex-col items-center justify-center text-center">
                             <div className="w-12 h-12 bg-card rounded-full flex items-center justify-center text-primary shadow-sm mb-3">
                                 <Users size={24} />
                             </div>

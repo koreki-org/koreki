@@ -268,11 +268,13 @@ export const MathMarkdown: React.FC<MathMarkdownProps> = ({ content, className }
                     ),
                     // Codeblock (Quelltext aus ZIP-Abgaben, s. markdown-codebloecke.ts):
                     // Einrueckung erhalten, lange Zeilen scrollen statt umbrechen —
-                    // ein Umbruch saehe in Python aus wie eine neue Zeile. Das
-                    // innere `code` verliert seine Inline-Pille, sonst klebte sie
-                    // an jedem Block.
+                    // ein Umbruch saehe in Python aus wie eine neue Zeile. OHNE
+                    // eigene Flaeche: Ein getoenter Kasten im weissen Block war eine
+                    // Stufe zu viel (Grau in Weiss in Grau, 25.11.2026); Schrift und
+                    // Einrueckung tragen den Code allein. Das innere `code` verliert
+                    // seine Inline-Pille, sonst klebte sie an jedem Block.
                     pre: ({ node, ...props }) => (
-                        <pre className="font-mono text-xs/relaxed whitespace-pre overflow-x-auto bg-muted/60 rounded-lg p-3 mb-3 last:mb-0 [&>code]:bg-transparent [&>code]:p-0" {...props} />
+                        <pre className="font-mono text-xs/relaxed whitespace-pre overflow-x-auto mb-3 last:mb-0 [&>code]:bg-transparent [&>code]:p-0" {...props} />
                     ),
                     table: ({ node, ...props }) => (
                         <div className="overflow-x-auto mb-4 rounded-lg border border-border shadow-sm">

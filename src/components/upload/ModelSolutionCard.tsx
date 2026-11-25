@@ -210,7 +210,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             <EditableMathArea
                                 leftAction={<>
                                     <p className="text-xs font-medium text-muted-foreground">Gemeinsamer Rahmen</p>
-                                    <span className="text-xxs font-bold text-muted-foreground/70">— gilt für alle Aufgaben</span>
+                                    <span className="text-xs text-muted-foreground/70">— gilt für alle Aufgaben</span>
                                 </>}
                                 value={modelSolutionContext}
                                 onChange={(wert) => onModelSolutionContextChange?.(wert)}

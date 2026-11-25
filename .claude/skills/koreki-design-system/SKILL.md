@@ -70,6 +70,14 @@ Wächter: `tests/unit/surface-governance.test.ts`
 
 Werte stehen in `src/styles/globals.css` — nirgends sonst abschreiben.
 
+> **Bewusste Ausnahme: Einrichtung (Stand 25.11.2026).** In den Karten **Musterlösung** und **Schülerarbeiten** liegen die weißen Textblöcke (`EditableMathArea`) direkt in der weißen Karte, getrennt nur durch die Haarlinie — ein Verstoß gegen „zwei gleiche Töne stecken nie ineinander". In der Prüfansicht liegen dieselben Blöcke regelkonform auf Grau. Beide Wege, die Regel in der Einrichtung zu erfüllen, hat Andreas im Dev-Server gesehen und verworfen:
+> 1. **Grauer Behälter in der Karte** (`bg-muted` mit Innenabstand) — weiß/grau/weiß wirkte „wie ein Sandwich".
+> 2. **Kartenrumpf randlos grau**, Kopf weiß — „ein echter Rückschritt".
+>
+> Bis zur Überarbeitung bleibt es beim Verstoß. Nicht ohne neuen Entwurf „reparieren".
+>
+> **Offen: Die Leiter muss noch einmal angefasst werden.** Sie trägt bei einer Ansicht ohne Karte (Prüfansicht) und scheitert bei einer Karte mit vielen Blöcken (Einrichtung). Die Überarbeitung soll beide Fälle mit derselben Regel ruhig aussehen lassen — Vorschläge erst als Weggabelung mit Bildern vorlegen, nicht direkt umbauen.
+
 - **Jede `bg-*`-Klasse zeigt auf eine Farbe, die es gibt.** Tailwind ignoriert unbekannte Klassen lautlos. *(Wächter)*
 - **Höchstens drei Abgrenzungsmittel pro Element** (Rand, Tönung, Schatten, Ring). Ein Mittel pro Aussage. *(Wächter)*
 - **Keine hartcodierten Palettenfarben** (`bg-slate-*`, `text-blue-*` …) — immer Tokens. *(Wächter)*

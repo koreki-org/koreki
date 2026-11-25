@@ -38,7 +38,7 @@ const Zeile: React.FC<{ name: string; punkte?: string; hinweis?: string }> = ({
         <span className="text-foreground font-semibold">{name}</span>
         {punkte && <span className="text-primary font-semibold shrink-0">{punkte}</span>}
         {hinweis && (
-            <span className="text-muted-foreground/70 text-xxs ml-auto shrink-0">{hinweis}</span>
+            <span className="text-muted-foreground/70 text-xs ml-auto shrink-0">{hinweis}</span>
         )}
     </div>
 );
@@ -71,7 +71,7 @@ export const MusterloesungAufbauHinweis: React.FC = () => (
             </div>
         }
         footer={
-            <div className="space-y-1.5 text-xxs text-muted-foreground leading-relaxed">
+            <div className="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
                 <p className="m-0">Je Teilaufgabe: erwartete Lösung und Punkte.</p>
                 <p className="m-0">
                     Die Nummerierung übernimmt Koreki aus deiner Arbeit — <strong className="text-foreground font-semibold">1a</strong>,{' '}
