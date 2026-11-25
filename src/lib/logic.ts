@@ -224,15 +224,18 @@ export function neueArbeit(datei: File, nummer: number, originalName?: string, t
 /**
  * Generates new batch items from a split operation.
  */
-export function generateSplitBatchItems<T extends { name?: string; originalName?: string }>(
+export function generateSplitBatchItems<T extends { name?: string; originalName?: string; pageRange?: [number, number] }>(
     /** Darf null sein — der Rumpf faengt das ab und liefert eine leere Liste. */
     originalFile: T | null,
     splits: { firstName?: string, lastName?: string, name?: string, pageCount: number }[],
     baseIdx: number
 ) {
     if (!originalFile || !splits) return [];
-    
-    let currentStartPage = 1;
+
+    // Ist die Arbeit selbst schon ein Teil eines Sammel-PDFs, liegen ihre Seiten
+    // nicht ab 1. Bis zum 25.11.2026 begann das zweite Aufteilen trotzdem bei 1
+    // und gab den neuen Teilen die Seiten vom Anfang des Stapels.
+    let currentStartPage = originalFile.pageRange?.[0] ?? 1;
     return splits.map((s, idx) => {
         const defaultName = `Schüler #${baseIdx + idx + 1}`;
         

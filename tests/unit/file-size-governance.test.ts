@@ -141,7 +141,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // 436 -> 431: der optimistische Cache-Block stand dreimal wortgleich
     // darin (Expertise, Skill-Set, KI-Profil), knapp unter der
     // Nachweisgrenze des Duplikat-Waechters.
-    'components/dashboard/DashboardModals.tsx': 432,
+    'components/dashboard/DashboardModals.tsx': 431,
     // 420 -> 400: dieselbe Umstellung wie bei useAiProfiles.
     'hooks/usePromptProfiles.ts': 398, // s. useSkillProfiles — gleicher Wächter
     'components/batch/parts/SecondOpinionDrawer.tsx': 388,

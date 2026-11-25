@@ -327,8 +327,7 @@ export const DashboardModals: React.FC<DashboardModalsProps> = ({
 
             {splitIdx !== null && (
                 <PDFSplitModal
-                    fileName={batchFiles[splitIdx].name}
-                    totalPageCount={batchFiles[splitIdx].pageCount || 1}
+                    arbeit={batchFiles[splitIdx]}
                     onClose={() => setSplitIdx(null)}
                     onSplit={(students) => executeSplit(students)}
                 />

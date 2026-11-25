@@ -49,7 +49,19 @@ Vorher zeigt Koreki das Fenster **Abgaben prüfen**: je Person eine Zeile, aufge
 :::
 
 ::: tip Alle Arbeiten in einem PDF?
-Hast du die ganze Klasse in einem einzigen PDF gescannt, teilst du es mit der **Schere** an der Arbeit in einzelne Arbeiten auf: Du ordnest jeder Schülerin und jedem Schüler die passenden Seiten zu.
+Hast du die ganze Klasse in einem einzigen PDF gescannt, teilst du es mit der **Schere** an der Arbeit in einzelne Arbeiten auf. Den Stapel musst du dafür nicht sortieren, scanne ihn so, wie er liegt.
+
+Du blätterst den Stapel einmal durch, Seite für Seite in Lesegröße. Mit den Pfeiltasten geht es eine Seite weiter oder zurück.
+
+- **Wo beginnt eine Arbeit?** Drück auf der ersten Seite einer Arbeit **Enter** oder klicke **Hier beginnt eine Arbeit**. Hat jede Arbeit gleich viele Seiten, trägst du die Zahl bei **Seiten je Arbeit** ein und klickst **Übernehmen**.
+- **Eine Arbeit ist kürzer?** Geh auf die Seite, auf der die nächste Arbeit wirklich beginnt, und drück **Enter**. Alle folgenden Arbeiten rücken mit.
+- **Eine Arbeit ist länger?** Drück auf dem falschen Anfang **Entf** (**Anfang entfernen**). Die Seite gehört dann zur vorigen Arbeit. Danach auf dem richtigen Anfang **Enter**.
+- **Wem gehört sie?** Auf der ersten Seite jeder Arbeit steht rechts das Namensfeld. Trag den Namen ein, den du auf der Seite liest. **Enter** springt zur nächsten Arbeit, so tippst du die Klasse in einem Zug durch.
+- **Klassenliste laden** liest eine Excel- oder CSV-Liste (Spalte A Nachname, Spalte B Vorname). Dann reichen die ersten Buchstaben. Namen, die schon vergeben sind, bietet Koreki nicht mehr an.
+- Hast du noch nichts geschnitten, schneidet die Klassenliste vor: Seiten geteilt durch Namen. Geht das nicht glatt auf, rundet Koreki und sagt es dir. Dann prüfst du beim Durchblättern die Anfänge.
+- Die Leiste unten zeigt alle Seiten klein. Die Zahlen markieren, wo eine Arbeit beginnt. Ein Klick springt zur Seite.
+
+Eine Arbeit ohne Namen heißt danach „Schüler #…“.
 :::
 
 Koreki ersetzt die Dateinamen durch Nummern wie „Schüler #1", bevor etwas an die KI geht. Namen, die **auf dem Blatt** stehen, erfasst das nicht — mehr dazu unter [Namen auf dem Blatt](/datenschutz/namen).

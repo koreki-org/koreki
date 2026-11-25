@@ -64,7 +64,6 @@ const ANY_BASELINE: Record<string, number> = {
     'pages/api/stripe/checkout.ts': 3,
     'pages/api/user/grading-memories/append.ts': 2,
     'components/batch/parts/GraphTestingPanel.tsx': 3,
-    'components/PDFSplitModal.tsx': 3,
     'components/SkillsSettingsModal.tsx': 1,
     'hooks/file-processor/useBatchActions.ts': 2,
     'hooks/store/useBatchStore.ts': 3,
