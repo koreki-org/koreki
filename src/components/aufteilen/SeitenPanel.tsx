@@ -10,7 +10,7 @@ interface SeitenPanelProps {
     erste: number;
     letzte: number;
     fokusName: boolean;
-    /** Enter im Namensfeld: weiter zur naechsten Arbeit und dort gleich ins Feld. */
+    /** Enter im Namensfeld: Vorschlag uebernehmen, weiter zur naechsten Arbeit und dort gleich ins Feld. */
     weiterImTippen: () => void;
 }
 
@@ -67,6 +67,7 @@ const SeitenPanel: React.FC<SeitenPanelProps> = ({ zustand, erste, letzte, fokus
                     klassenliste={zustand.klassenliste}
                     setzeName={zustand.setzeName}
                     autoFocus={fokusName}
+                    vorschlag={zustand.vorschlag[stueck.start]}
                     onEnter={weiterImTippen}
                 />
             ) : (
@@ -89,10 +90,10 @@ const SeitenPanel: React.FC<SeitenPanelProps> = ({ zustand, erste, letzte, fokus
                     Arbeit <ChevronsRight className="w-5 h-5" />
                 </Button>
             </div>
-            <p className="text-xs text-muted-foreground m-0">
-                Pfeiltasten blättern. Enter setzt hier einen Anfang, die folgenden Arbeiten
-                rücken mit. Entf nimmt einen Anfang weg. Im Namensfeld springt Enter zur
-                nächsten Arbeit.
+            <p className="hidden md:block text-xs text-muted-foreground m-0">
+                <strong>Enter</strong> auf der ersten Seite einer Arbeit: Vorschlag übernehmen
+                und weiter. Auf jeder anderen Seite: hier beginnt eine Arbeit, die folgenden
+                rücken mit. <strong>Entf</strong> nimmt einen Anfang weg. Pfeiltasten blättern.
             </p>
         </div>
     );

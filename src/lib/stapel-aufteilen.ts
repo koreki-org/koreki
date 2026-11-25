@@ -189,6 +189,43 @@ export function freieNamen(liste: SchuelerName[], vergeben: string[], eigene: st
     return liste.filter(n => !belegt.has(vergleichsform(anzeigeName(n))));
 }
 
+/**
+ * Vorschlag je Arbeit aus der Reihenfolge der Klassenliste: der naechste freie
+ * Name nach dem der vorigen Arbeit. Hat die Lehrkraft einen Namen eingetragen,
+ * laeuft die Liste von dort weiter — fehlt mitten im Stapel eine Arbeit, stimmt
+ * der Vorschlag danach also wieder.
+ *
+ * Nur ein VORSCHLAG (25.11.2026): Er steht grau im Feld und gilt erst, wenn die
+ * Lehrkraft ihn mit Enter uebernimmt. Ein vorausgefuellter Name wuerde
+ * durchgewunken; laege der Stapel anders, bekaeme jede Note stillschweigend die
+ * falsche Person. `baueAufteilung` kennt deshalb nur Eingaben, nie Vorschlaege.
+ */
+export function vorschlaege(
+    stuecke: Stueck[],
+    eingaben: Record<number, string>,
+    liste: SchuelerName[]
+): Record<number, SchuelerName | undefined> {
+    const belegt = new Set(Object.values(eingaben).filter(e => e.trim()).map(vergleichsform));
+    const indexVon = (eingabe: string): number => {
+        const n = namensAusEingabe(eingabe, liste);
+        return n ? liste.findIndex(l => vergleichsform(anzeigeName(l)) === vergleichsform(anzeigeName(n))) : -1;
+    };
+    const ergebnis: Record<number, SchuelerName | undefined> = {};
+    let zeiger = -1;
+    for (const s of stuecke) {
+        const eingabe = eingaben[s.start] ?? '';
+        if (eingabe.trim()) {
+            const i = indexVon(eingabe);
+            if (i >= 0) zeiger = i;
+            continue;
+        }
+        let i = zeiger + 1;
+        while (i < liste.length && belegt.has(vergleichsform(anzeigeName(liste[i])))) i++;
+        if (i < liste.length) { ergebnis[s.start] = liste[i]; zeiger = i; }
+    }
+    return ergebnis;
+}
+
 /** Die Stuecke mit ihren Namen in das Format, das die Liste der Arbeiten erwartet. */
 export function baueAufteilung(
     stuecke: Stueck[],

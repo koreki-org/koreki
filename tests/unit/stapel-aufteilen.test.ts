@@ -1,7 +1,7 @@
 import {
     stueckeAus, anfaengeJeSeitenzahl, setzeAnfang, entferneAnfang, vorschlagJeArbeit, teileNamen, leseKlassenliste,
     namensAusEingabe, freieNamen, baueAufteilung, anzeigeName,
-    stueckIndex, naechsteArbeit, vorigeArbeit
+    stueckIndex, naechsteArbeit, vorigeArbeit, vorschlaege
 } from '../../src/lib/stapel-aufteilen';
 import { generateSplitBatchItems } from '../../src/lib/logic';
 
@@ -100,6 +100,29 @@ describe('stapel-aufteilen', () => {
             const vergeben = [anzeigeName(liste[0])];
             expect(freieNamen(liste, vergeben, '')).toEqual([liste[1]]);
             expect(freieNamen(liste, vergeben, vergeben[0])).toEqual(liste);
+        });
+    });
+
+    describe('Vorschlag aus der Listenreihenfolge', () => {
+        const liste = ['Aal', 'Beck', 'Cord', 'Dorn'].map(nachname => ({ nachname, vorname: '' }));
+        const stuecke = stueckeAus([1, 2, 3, 4], 1, 4);
+        const nachnamen = (v: ReturnType<typeof vorschlaege>) => stuecke.map(s => v[s.start]?.nachname ?? '-');
+
+        it('schlaegt ohne Eingaben die Liste der Reihe nach vor', () => {
+            expect(nachnamen(vorschlaege(stuecke, {}, liste))).toEqual(['Aal', 'Beck', 'Cord', 'Dorn']);
+        });
+
+        it('laeuft nach einer abweichenden Eingabe von dort weiter — eine fehlende Arbeit verschiebt nur einmal', () => {
+            // Arbeit 2 ist in Wahrheit Cord (Beck fehlt): danach geht es mit Dorn weiter.
+            expect(nachnamen(vorschlaege(stuecke, { 2: 'Cord' }, liste))).toEqual(['Aal', '-', 'Dorn', '-']);
+        });
+
+        it('schlaegt keinen Namen vor, der schon eingetragen ist', () => {
+            expect(nachnamen(vorschlaege(stuecke, { 4: 'Aal' }, liste))).toEqual(['Beck', 'Cord', 'Dorn', '-']);
+        });
+
+        it('zaehlt Vorschlaege nie als Namen — nur Eingaben kommen in die Aufteilung', () => {
+            expect(baueAufteilung(stuecke, {}, liste).every(a => a.lastName === undefined)).toBe(true);
         });
     });
 

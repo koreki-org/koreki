@@ -5,8 +5,11 @@ import { meldeFehler, meldeHinweis, meldeErfolg } from '@/lib/notify';
 import { logger } from '@/lib/logger';
 import {
     stueckeAus, anfaengeJeSeitenzahl, setzeAnfang, entferneAnfang, leseKlassenliste, baueAufteilung,
-    naechsteArbeit, vorigeArbeit, vorschlagJeArbeit, SchuelerName, Stueck, Aufteilung
+    naechsteArbeit, vorigeArbeit, vorschlagJeArbeit, vorschlaege, stueckIndex, anzeigeName,
+    SchuelerName, Stueck, Aufteilung
 } from '@/lib/stapel-aufteilen';
+
+const seitenText = (n: number): string => (n === 1 ? '1 Seite' : `${n} Seiten`);
 
 /**
  * Eine CSV traegt keinen Zeichensatz in sich. Als Rohdaten gelesen, wurde aus
@@ -62,6 +65,23 @@ export function useStapelAufteilen(erste: number, letzte: number) {
         setEingaben(alt => ({ ...alt, [start]: text }));
     }, []);
 
+    const vorschlag = useMemo(() => vorschlaege(stuecke, eingaben, klassenliste), [stuecke, eingaben, klassenliste]);
+
+    /**
+     * Enter. Auf der ersten Seite einer Arbeit: „passt, weiter“ — ein offener
+     * Vorschlag wird uebernommen, dann geht es zur naechsten Arbeit. Auf jeder
+     * anderen Seite: hier beginnt eine Arbeit. Bis zum 25.11.2026 tat Enter auf
+     * einer Anfangsseite nichts, solange der Cursor nicht im Namensfeld stand —
+     * man wusste nicht, wo man druecken musste.
+     */
+    const enter = useCallback(() => {
+        const stueck = stuecke[stueckIndex(stuecke, seite)];
+        if (stueck.start !== seite) { anfangHier(); return; }
+        const offen = vorschlag[stueck.start];
+        if (offen && !(eingaben[stueck.start] ?? '').trim()) setzeName(stueck.start, anzeigeName(offen));
+        setSeite(naechsteArbeit(stuecke, seite));
+    }, [stuecke, seite, anfangHier, vorschlag, eingaben, setzeName]);
+
     const ladeKlassenliste = useCallback(async () => {
         const [datei] = await selectFiles({ accept: '.xlsx,.xls,.csv' });
         if (!datei) return;
@@ -86,10 +106,10 @@ export function useStapelAufteilen(erste: number, letzte: number) {
             }
             jeArbeit(vorschlag.jeArbeit);
             if (vorschlag.glatt) {
-                meldeErfolg(`${namen.length} Namen geladen, je ${vorschlag.jeArbeit} Seiten vorgeschnitten.`);
+                meldeErfolg(`${namen.length} Namen geladen, je ${seitenText(vorschlag.jeArbeit)} vorgeschnitten.`);
             } else {
                 meldeHinweis(
-                    `${namen.length} Namen, ${gesamt} Seiten: Das geht nicht glatt auf. Je ${vorschlag.jeArbeit} Seiten ` +
+                    `${namen.length} Namen, ${gesamt} Seiten: Das geht nicht glatt auf. Je ${seitenText(vorschlag.jeArbeit)} ` +
                     'vorgeschnitten. Prüf beim Durchblättern die Anfänge.'
                 );
             }
@@ -103,7 +123,7 @@ export function useStapelAufteilen(erste: number, letzte: number) {
         [stuecke, eingaben, klassenliste]);
 
     return {
-        seite, blaettern, stuecke, anfangHier, keinAnfangHier, jeArbeit, seitenJe,
+        seite, blaettern, stuecke, anfangHier, keinAnfangHier, jeArbeit, seitenJe, vorschlag, enter,
         eingaben, setzeName, klassenliste, ladeKlassenliste, ergebnis
     };
 }

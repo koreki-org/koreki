@@ -15,8 +15,9 @@ import { KorekiTooltip } from '@/components/ui/KorekiTooltip';
  * Formatbeschreibung, die nicht mehr stimmt, ist schlechter als keine.
  *
  * Seit dem 25.11.2026 liefert die Liste nur noch die Namen zur Auswahl. Die
- * Reihenfolge und eine Seitenzahl in Spalte C spielen keine Rolle mehr —
- * geschnitten wird an den Seitenbildern.
+ * Seitenzahl in Spalte C spielt keine Rolle mehr — geschnitten wird an den
+ * Seitenbildern. Die Reihenfolge ist nicht noetig, aber am schnellsten: Aus ihr
+ * kommt der Namensvorschlag, den man mit Enter bestaetigt.
  */
 export const ExcelFormatHinweis: React.FC = () => (
     <KorekiTooltip
@@ -38,7 +39,9 @@ export const ExcelFormatHinweis: React.FC = () => (
                 wie „Anna Meier“.
             </p>
             <p className="mt-2 mb-0">
-                Die Reihenfolge ist egal. Die Namen stehen danach zur Auswahl.
+                Am schnellsten geht es, wenn der Stapel in der Reihenfolge der Liste liegt.
+                Dann schlägt Koreki jeden Namen vor, und du bestätigst mit Enter. Liegt er
+                anders, tippst du die ersten Buchstaben.
             </p>
         </>}
     />

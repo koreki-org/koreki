@@ -55,7 +55,7 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ arbeit, onClose, onSplit 
         const aktion: Record<string, () => void> = {
             ArrowRight: blaettern.vor,
             ArrowLeft: blaettern.zurueck,
-            Enter: zustand.anfangHier,
+            Enter: zustand.enter,
             Delete: zustand.keinAnfangHier
         };
         const tun = aktion[e.key];
@@ -97,21 +97,21 @@ const PDFSplitModal: React.FC<PDFSplitModalProps> = ({ arbeit, onClose, onSplit 
                     <AufteilenWerkzeuge key={zustand.seitenJe ?? 'frei'} zustand={zustand} seitenGesamt={letzte - erste + 1} />
                 </div>
 
-                <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4">
-                    <div key={seite} className="flex-1 min-w-0 min-h-0 overflow-y-auto rounded-lg border border-border bg-muted scrollbar-thin">
+                <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-4 overflow-y-auto md:overflow-visible scrollbar-thin">
+                    <div key={seite} className="h-[50vh] shrink-0 md:h-auto md:shrink md:flex-1 min-w-0 md:min-h-0 overflow-y-auto rounded-lg border border-border bg-muted scrollbar-thin">
                         {bild
                             ? <img src={bild} alt={`Seite ${seite - erste + 1}`} className="w-full" />
                             : <p className="p-6 text-sm text-muted-foreground m-0">
                                 {vorschau.fehler ? 'Die Seitenbilder ließen sich nicht laden. Aufteilen geht trotzdem.' : 'Seite wird geladen …'}
                             </p>}
                     </div>
-                    <div className="md:w-72 shrink-0 flex flex-col">
+                    <div className="md:w-72 shrink-0 md:min-h-0 md:overflow-y-auto scrollbar-thin flex flex-col">
                         <SeitenPanel
                             zustand={zustand}
                             erste={erste}
                             letzte={letzte}
                             fokusName={fokusName}
-                            weiterImTippen={() => { setFokusName(true); blaettern.naechsteArbeit(); }}
+                            weiterImTippen={() => { setFokusName(true); zustand.enter(); }}
                         />
                     </div>
                 </div>
