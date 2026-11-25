@@ -84,7 +84,6 @@ const perFileRatchets = [
         'src/components/batch/GradingMemoryEditorView.tsx': 1,
         // AppHeader.tsx (1) entfernt: Die Profil-Schalter der mobilen Kopfleiste sind mit ihr entfallen (18.11.2026).
         'src/components/marketing/ImageLightbox.tsx': 1,
-        'src/components/PDFSplitModal.tsx': 1,
         'src/components/settings/AiProfileSidebar.tsx': 1,
         'src/components/settings/PrivacySection.tsx': 1,
         'src/components/settings/SkillsSidebar.tsx': 1,
