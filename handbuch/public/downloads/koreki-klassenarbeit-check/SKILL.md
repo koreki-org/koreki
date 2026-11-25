@@ -99,6 +99,8 @@ Das sind Empfehlungen, die das Lesen erleichtern. Koreki kommt auch mit anderen 
 - **Antworten auf eigene Blätter**, getrennt vom Aufgabenblatt. Dann stehen auf dem Scan nur die Antworten, und gedruckter Aufgabentext kann nicht mit Schülertext verwechselt werden. Ausnahme: Aufgaben, bei denen etwas in eine Vorlage eingetragen wird (Diagramm, Tabelle, Lückentext). Dann diese Vorlage als eigenes Blatt beilegen.
 - Steht vor jeder Antwort die **Aufgabennummer**, und gibt es genug Platz?
 - Werden Antworten außerhalb der vorgesehenen Flächen vermieden (Ränder, Rückseiten ohne Hinweis)? Bei beidseitigem Beschreiben: Seiten nummerieren lassen.
+- **Gleich viele Blätter für alle.** Jede Schülerin und jeder Schüler bekommt dieselbe feste Anzahl Antwortblätter, mit dem Hinweis „Bitte alle Blätter abgeben, auch leere“. Dann hat jede Arbeit gleich viele Seiten, und Koreki teilt den gemeinsamen Scan der ganzen Klasse in einem Schritt auf. Fehlt ein Blatt, muss die Lehrkraft die Aufteilung von Hand korrigieren.
+- **In der Reihenfolge der Klassenliste einsammeln.** Liegt der Stapel wie die Liste, schlägt Koreki beim Aufteilen jeden Namen vor, und die Lehrkraft bestätigt ihn nur noch. Nötig ist das nicht: Jede Zuordnung lässt sich beim Aufteilen ändern, und eine abweichende Reihenfolge kostet nur etwas mehr Tipparbeit.
 - **Dunkler Stift**, kein Bleistift. Blasse Schrift scannt schlecht.
 - Steht der **Name nur einmal oben** auf dem ersten Blatt? Dann lässt er sich vor der Bilderkennung schwärzen.
 - Gilt eine klare Regel fürs Durchstreichen (einmal sauber durchstreichen, nicht übermalen)?
