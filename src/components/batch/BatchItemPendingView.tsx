@@ -7,6 +7,7 @@ import { EditableMathArea } from '../ui/EditableMathArea';
 import { BatchScanViewer } from './parts/BatchScanViewer';
 import { ZuordnungsHinweis } from './parts/ZuordnungsHinweis';
 import { OcrMarkenEntfernen } from './parts/OcrMarkenEntfernen';
+import { ReiterNadel } from './parts/ReiterNadel';
 import { entferneOcrMarken, zaehleOcrMarken } from '../../lib/ocr-marken-entfernen';
 import { BatchFile, Task } from '../../types';
 import { hasOcrWarnings } from '../../lib/task-utils';
@@ -75,17 +76,19 @@ export const BatchItemPendingView: React.FC<BatchItemPendingViewProps> = ({
                         />
                     </div>
 
-                    <AufgabenReiter
-                        namen={groupNames}
-                        aktiv={activeGroupName}
-                        onWaehle={onSetActiveGroupName}
-                        warnung={(name) => groupedTasks[name].some(task => {
-                            const sIdx = tasksLayout.findIndex(t => t.name === task.name);
-                            return hasOcrWarnings(studentSections[sIdx] || '')
-                                || !!item.tasks?.find(t => t.name === task.name)?.zuordnungsHinweis;
-                        })}
-                        className="mb-4 shrink-0"
-                    />
+                    <div className="flex items-center gap-2 mb-4 shrink-0">
+                        <AufgabenReiter
+                            namen={groupNames}
+                            aktiv={activeGroupName}
+                            onWaehle={onSetActiveGroupName}
+                            warnung={(name) => groupedTasks[name].some(task => {
+                                const sIdx = tasksLayout.findIndex(t => t.name === task.name);
+                                return hasOcrWarnings(studentSections[sIdx] || '')
+                                    || !!item.tasks?.find(t => t.name === task.name)?.zuordnungsHinweis;
+                            })}
+                        />
+                        <ReiterNadel anzahlReiter={groupNames.length} />
+                    </div>
 
                     <div className="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
                         {activeGroupName && groupedTasks[activeGroupName]?.map((task) => {

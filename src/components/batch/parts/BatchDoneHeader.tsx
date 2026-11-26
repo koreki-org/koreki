@@ -7,6 +7,7 @@ import { AufgabenReiter } from '../../ui/AufgabenReiter';
 import { BatchFile, Task } from '../../../types';
 import { cn } from '@/lib/utils';
 import { brauchtPruefung } from '@/lib/vertrauen';
+import { ReiterNadel } from './ReiterNadel';
 
 interface BatchDoneHeaderProps {
     item: BatchFile;
@@ -57,7 +58,10 @@ export const BatchDoneHeader: React.FC<BatchDoneHeaderProps> = ({
     return (
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3 w-full">
             {/* LEFT SIDE: Task Navigation */}
-            <AufgabenReiter namen={groupNames} aktiv={activeGroupName} onWaehle={onSetActiveGroupName} />
+            <div className="flex items-center gap-2 min-w-0 max-w-full">
+                <AufgabenReiter namen={groupNames} aktiv={activeGroupName} onWaehle={onSetActiveGroupName} />
+                <ReiterNadel anzahlReiter={groupNames.length} />
+            </div>
 
             <div className="flex items-center gap-2 shrink-0">
             {/* RIGHT SIDE: Specific Review Recommendation */}

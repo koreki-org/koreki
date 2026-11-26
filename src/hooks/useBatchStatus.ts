@@ -1,6 +1,7 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { BatchFile, Task, AppSettings } from '../types';
 import { groupTasksByMain } from '../lib/task-utils';
+import { reiterNachWechsel } from '../lib/aufgaben-reiter';
 import { useBatchState } from './file-processor/useBatchState';
 import { useBatchStore } from './store/useBatchStore';
 import { isLocalInstance } from '../lib/env-context';
@@ -89,11 +90,15 @@ export const useBatchStatus = (
     const groupedTasks = useMemo(() => groupTasksByMain(tasksLayout), [tasksLayout]);
     const groupNames = Object.keys(groupedTasks);
 
+    // Neue Arbeit -> erster Reiter, ausser die Stecknadel haelt ihn fest (s. `aufgaben-reiter.ts`).
+    const aufgabeBehalten = useBatchStore(s => s.aufgabeBehalten);
+    const vorigeArbeit = useRef(expandedIdx);
     useEffect(() => {
-        if (groupNames.length > 0 && (!activeGroupName || !groupedTasks[activeGroupName])) {
-            setActiveGroupName(groupNames[0]);
-        }
-    }, [groupNames, activeGroupName, groupedTasks]);
+        const arbeitGewechselt = vorigeArbeit.current !== expandedIdx;
+        vorigeArbeit.current = expandedIdx;
+        const naechster = reiterNachWechsel({ aktiv: activeGroupName, namen: groupNames, arbeitGewechselt, behalten: aufgabeBehalten });
+        if (naechster !== activeGroupName) setActiveGroupName(naechster);
+    }, [groupNames, activeGroupName, expandedIdx, aufgabeBehalten]);
 
     // --- STAGE 11: MOBILE AUTO-SWITCH ON OCR OR CORRECTION COMPLETE ---
     const [lastKnownStatus, setLastKnownStatus] = useState<Record<number, { ocr: boolean, done: boolean }>>({});

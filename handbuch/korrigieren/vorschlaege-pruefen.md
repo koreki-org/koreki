@@ -6,6 +6,8 @@ Koreki macht Vorschläge. **Die Bewertung triffst du.** Die Vorschläge klingen 
 
 Jede Arbeit öffnest du einzeln: in der Seitenleiste unter **Arbeiten** oder mit dem Pfeil am Ende ihrer Zeile unter **Alle Arbeiten**. Sie hat dann die ganze Fläche für sich. Ist sie noch nicht korrigiert, prüfst du dort den erkannten Text; ist sie fertig, die Vorschläge. Mit den Pfeilen oben links wechselst du zur vorigen oder nächsten Arbeit, **Alle Arbeiten** bringt dich zurück zur Liste.
 
+Jede Arbeit beginnt bei der ersten Aufgabe. Willst du lieber aufgabenweise prüfen, also eine Aufgabe bei allen Schülerinnen und Schülern nacheinander, klicke auf die Stecknadel neben den Aufgaben. Dann bleibt die gewählte Aufgabe beim Blättern stehen. Ein zweiter Klick schaltet das wieder aus.
+
 ## So gehst du vor
 
 1. **Zuerst den gelesenen Text prüfen.** Stimmt er mit dem Original überein? Fehlt eine Skizze, eine Randnotiz, eine Seite? Solche Teile bewertest du von Hand.

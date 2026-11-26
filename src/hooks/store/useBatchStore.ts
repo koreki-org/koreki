@@ -44,6 +44,9 @@ interface BatchStateStore {
     /** Die Arbeit, die gerade die Flaeche hat (`null`: keine). Im Store, weil auch die Seitenleiste sie setzt (17.11.2026). */
     aufgeklappteArbeit: number | null;
     setAufgeklappteArbeit: Setter<number | null>;
+    /** Stecknadel an den Aufgaben-Reitern: Reiter beim Blaettern behalten (aufgabenweise pruefen), s. `aufgaben-reiter.ts`. */
+    aufgabeBehalten: boolean;
+    setAufgabeBehalten: Setter<boolean>;
     /** Die Lehrkraft hat "Neue Korrektur" gewaehlt, obwohl schon Arbeiten da sind — s. `useAnsicht`. */
     einrichtungOffen: boolean;
     setEinrichtungOffen: Setter<boolean>;
@@ -122,6 +125,8 @@ export const useBatchStore = create<BatchStateStore>((set) => ({
 
     aufgeklappteArbeit: null,
     setAufgeklappteArbeit: createSetter(set, 'aufgeklappteArbeit'),
+    aufgabeBehalten: false,
+    setAufgabeBehalten: createSetter(set, 'aufgabeBehalten'),
     einrichtungOffen: false,
     setEinrichtungOffen: createSetter(set, 'einrichtungOffen'),
 
