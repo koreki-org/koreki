@@ -13,10 +13,14 @@ const BEZEICHNUNG: Record<LaufArt, string> = {
  * Zaehler, Balken und Zeit eines laufenden Stapellaufs.
  * ⏱️
  *
- * Ab zwei Blaettern steht rechts die Restzeit, hochgerechnet aus den fertigen
- * Blaettern. Bei einem einzelnen gibt es nichts hochzurechnen — dort steht wie
+ * Gezaehlt werden ARBEITEN, nicht Blaetter: Beide Laeufe starten mit der Zahl
+ * der ausgewaehlten Arbeiten, und eine Arbeit kann mehrere Blaetter haben. Bis
+ * 26.11.2026 stand hier „Blatt x von y“ — bei mehrseitigen Scans falsch.
+ *
+ * Ab zwei Arbeiten steht rechts die Restzeit, hochgerechnet aus den fertigen
+ * Arbeiten. Bei einer einzelnen gibt es nichts hochzurechnen — dort steht wie
  * in der Musterloesung, seit wann es laeuft (Entscheidung vom 23.10.2026: die
- * Anzeige verschwand vorher bei einem Blatt ganz, und das wirkte wie ein Fehler).
+ * Anzeige verschwand vorher bei einer Arbeit ganz, und das wirkte wie ein Fehler).
  */
 export const LaufFortschritt: React.FC = () => {
     const lauf = useBatchStore((state) => state.laufFortschritt);
@@ -33,11 +37,11 @@ export const LaufFortschritt: React.FC = () => {
         <div className="px-6 pt-5 pb-6" role="status" aria-live="polite">
             <div className="flex items-center justify-between gap-4 text-sm mb-2">
                 <span className="font-medium text-foreground">
-                    {BEZEICHNUNG[lauf.art]}: Blatt {aktuell} von {lauf.gesamt}
+                    {BEZEICHNUNG[lauf.art]}: Arbeit {aktuell} von {lauf.gesamt}
                 </span>
                 <span className="text-muted-foreground tabular-nums">{zeit}</span>
             </div>
-            <LaufBalken fortschritt={einzeln ? undefined : { fertig: lauf.fertig, gesamt: lauf.gesamt, einheit: 'Blättern' }} />
+            <LaufBalken fortschritt={einzeln ? undefined : { fertig: lauf.fertig, gesamt: lauf.gesamt, einheit: 'Arbeiten' }} />
         </div>
     );
 };

@@ -209,7 +209,7 @@ export function useCorrectionRun({
         const signal = controller.signal;
 
         // Dieselbe Auswahl, die `internalCorrectionPipeline` ohne `force` trifft —
-        // nur so stimmt der Zaehler „Blatt x von y“.
+        // nur so stimmt der Zaehler „Arbeit x von y“.
         const indices = freshFiles
             .map((_, i) => i)
             .filter(i => freshFiles[i].selected && freshFiles[i].status !== 'done');
