@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { isLocalInstance, zeigtCredits } from '@/lib/env-context';
 import { KorekiTooltip } from '../ui/KorekiTooltip';
 import { BatchHelpContent } from './BatchHelpContent';
+import { RechengraphHaken } from './parts/RechengraphHaken';
 import { AppSettings } from '../../types';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
 
@@ -181,6 +182,7 @@ export const BatchHeader: React.FC<BatchHeaderProps> = ({
                           * Gespeichert werden kann jederzeit — nur nicht, waehrend etwas
                           * laeuft, sonst steht ein halber Lauf in der Datei.
                           */}
+                        <RechengraphHaken disabled={loading} />
                         {(onExportKoreki || onExportSL) && (
                             <div className="relative group flex items-center w-full sm:w-auto">
                                 <Button

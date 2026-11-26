@@ -9,6 +9,7 @@ import { promisePool } from '@/lib/ai/promise-pool';
 import { toErrorMessage, isAbortError, isRateLimitError } from '@/lib/error-message';
 import { logger } from '@/lib/logger';
 import { splitTextByTasks } from '@/lib/task-utils';
+import { layoutFuerKorrektur } from '@/lib/rechengraph-schalter';
 import { baueSchuelertext } from '@/lib/schuelertext';
 import { useBatchStore } from '@/hooks/store/useBatchStore';
 import { ensureActiveGradingMemorySynced } from '@/lib/grading-memory-sync';
@@ -106,7 +107,8 @@ export function useCorrectionRun({
             const data = await performAIRequest('correction', {
                 modelSolution,
                 studentText: finalStudentText,
-                tasksLayout,
+                // Abgeschaltete Rechengraphen gehen gar nicht erst mit (s. `rechengraph-schalter.ts`).
+                tasksLayout: layoutFuerKorrektur(tasksLayout),
                 documentType: currentFile.documentType || 'typed',
                 pageCount: currentFile.pageCount || 1,
                 isCorrection: true,

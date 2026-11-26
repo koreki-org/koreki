@@ -182,18 +182,19 @@ export const ModelSolutionTaskCard: React.FC<ModelSolutionTaskCardProps> = ({
                                                         setShowEngineSelectionTaskIdx(originalIdx);
                                                     }
                                                 }}
-                                                title={isLocked 
+                                                title={(task.rechengraphAus ? 'Rechengraph aus — die Korrektur verwendet ihn nicht. ' : '') + (isLocked 
                                                     ? (isCalcTrace ? "Rechenkette ansehen (Schreibgeschützt)" : "Bewertungs-Graph ansehen (Schreibgeschützt)") 
                                                     : ((task.gradingGraph || task.targetGoal) 
                                                         ? (isCustomSkill ? `Vorlage "${templateName}" bearbeiten` : (isCalcTrace ? "Rechenkette bearbeiten" : "Bewertungs-Graph bearbeiten")) 
                                                         : (shouldSuggestGraph 
                                                             ? "Bewertungs-Struktur erstellen oder zuweisen (KI-Empfehlung)" 
-                                                            : "Bewertungs-Struktur erstellen oder zuweisen"))
+                                                            : "Bewertungs-Struktur erstellen oder zuweisen")))
                                                 }
                                                 className={cn(
                                                     "h-7 w-7 rounded-lg transition-all flex items-center justify-center shrink-0 border select-none cursor-pointer focus:outline-none relative",
                                                     (task.gradingGraph || task.targetGoal) 
-                                                        ? (isCustomSkill 
+                                                        // Abgeschaltet (im Graph-Fenster): grau wie alles, was nicht wirkt.
+                                                        ? (task.rechengraphAus ? "bg-card border-border text-muted-foreground hover:text-foreground" : isCustomSkill 
                                                             ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 hover:border-primary/30" 
                                                             : (isCalcTrace 
                                                                 ? "bg-primary/10 border-primary/20 text-primary hover:bg-primary/15 hover:border-primary/30" 
@@ -204,6 +205,8 @@ export const ModelSolutionTaskCard: React.FC<ModelSolutionTaskCardProps> = ({
                                                 )}
                                             >
                                                 <Sparkles size={12} className="shrink-0" />
+                                                {/* Rechengraph aus: Funke durchgestrichen (Andreas, 26.11.2026) — die Farbe allein ging in der Dimmung unter. */}
+                                                {task.rechengraphAus && (task.gradingGraph || task.targetGoal) && <span aria-hidden className="absolute h-px w-4 bg-current -rotate-45" />}
                                                 {shouldSuggestGraph && !task.gradingGraph && !task.targetGoal && !isGeneratingThisTask && batchState !== 'waiting' && (
                                                     <span className="absolute -top-1.5 -right-1.5 flex h-2.5 w-2.5">
                                                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>

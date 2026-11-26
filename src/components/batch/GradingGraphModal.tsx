@@ -29,6 +29,7 @@ import { isLocalInstance } from '@/lib/env-context';
 import { toErrorMessage } from '../../lib/error-message';
 import { meldeErfolg, meldeFehler, meldeHinweis } from '@/lib/notify';
 import { askConfirmation } from '@/lib/confirm-dialog';
+import { RechengraphSchalter } from './parts/RechengraphSchalter';
 
 interface GradingGraphModalProps {
     isOpen: boolean;
@@ -47,6 +48,7 @@ interface GradingGraphModalProps {
     onSaveCustomSkill?: (name: string, graph: GradingGraph) => void;
     onSave: (graph: GradingGraph) => void;
     isLocked?: boolean;
+    taskIdx?: number | null; // fuer „Rechengraph verwenden"
 }
 
 export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
@@ -65,7 +67,7 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
     onDeleteGraph,
     onSaveCustomSkill,
     onSave,
-    isLocked = false
+    isLocked = false, taskIdx
 }) => {
     const hasTemplates = useMemo(
         () => Object.values(customSkills || {}).some(sk => sk && sk.gradingGraph),
@@ -388,11 +390,8 @@ export const GradingGraphModal: React.FC<GradingGraphModalProps> = ({
                         </div>
                     </div>
 
-                    {/* Hint text / spacer */}
-                    <span className="text-xs text-muted-foreground font-medium hidden xl:flex items-center gap-1.5 ml-auto">
-                        <Sparkles size={11} className="text-primary" />
-                        PANG Engine berechnet Folgefehler vollautomatisch
-                    </span>
+                    {/* Rechts aussen stand bis 26.11.2026 „PANG Engine berechnet Folgefehler vollautomatisch" — Jargon und „vollautomatisch" (design-system §0/§1). */}
+                    <div className="ml-auto"><RechengraphSchalter taskIdx={taskIdx} disabled={isLocked} /></div>
                 </div>
 
                 {/* Main Content Area */}

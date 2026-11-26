@@ -5,10 +5,20 @@ import { CalcTraceTemplate, TargetGoal } from '../../lib/grading/calc-trace-type
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
+import { RechengraphSchalter } from './parts/RechengraphSchalter';
 
 interface RowData {
     value: string;
     unit: string;
+}
+
+/** Zielwerte und Einheiten (kommagetrennt) als Zeilen — leer, wenn kein Wert dasteht. */
+function zeilenAusZiel(ziel: TargetGoal): RowData[] {
+    const wert = ziel.targetValue;
+    const valStr = typeof wert === 'string' ? wert : Array.isArray(wert) ? wert.join(', ') : String(wert);
+    const vals = valStr.split(',').map(s => s.trim()).filter(s => s !== '');
+    const units = (ziel.unit || '').split(',').map(s => s.trim());
+    return vals.map((v, i) => ({ value: v, unit: units[i] || '' }));
 }
 
 interface CalcTraceModalProps {
@@ -23,6 +33,8 @@ interface CalcTraceModalProps {
     taskName?: string;
     onSave: (goal: TargetGoal) => void;
     isLocked?: boolean;
+    /** Index der Aufgabe im Layout — fuer „Rechengraph verwenden". */
+    taskIdx?: number | null;
 }
 
 export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
@@ -31,7 +43,8 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
     initialTrace,
     taskName = "MINT-Aufgabe",
     onSave,
-    isLocked = false
+    isLocked = false,
+    taskIdx
 }) => {
     const [mounted, setMounted] = useState(false);
     
@@ -46,24 +59,8 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
     });
 
     const [rows, setRows] = useState<RowData[]>(() => {
-        let valStr = '';
-        if (typeof goal.targetValue === 'string') {
-            valStr = goal.targetValue;
-        } else if (Array.isArray(goal.targetValue)) {
-            valStr = goal.targetValue.join(', ');
-        } else {
-            valStr = String(goal.targetValue);
-        }
-        
-        const vals = valStr.split(',').map(s => s.trim()).filter(s => s !== '');
-        const units = (goal.unit || '').split(',').map(s => s.trim());
-        
-        if (vals.length === 0) return [{ value: '', unit: '' }];
-        
-        return vals.map((v, i) => ({
-            value: v,
-            unit: units[i] || ''
-        }));
+        const zeilen = zeilenAusZiel(goal);
+        return zeilen.length > 0 ? zeilen : [{ value: '', unit: '' }];
     });
 
     useEffect(() => { 
@@ -77,25 +74,8 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                 ...initialTrace,
                 criteria: initialTrace.criteria || []
             });
-            
-            let valStr = '';
-            if (typeof initialTrace.targetValue === 'string') {
-                valStr = initialTrace.targetValue;
-            } else if (Array.isArray(initialTrace.targetValue)) {
-                valStr = initialTrace.targetValue.join(', ');
-            } else {
-                valStr = String(initialTrace.targetValue);
-            }
-            
-            const vals = valStr.split(',').map(s => s.trim()).filter(s => s !== '');
-            const units = (initialTrace.unit || '').split(',').map(s => s.trim());
-            
-            if (vals.length > 0) {
-                setRows(vals.map((v, i) => ({
-                    value: v,
-                    unit: units[i] || ''
-                })));
-            }
+            const zeilen = zeilenAusZiel(initialTrace);
+            if (zeilen.length > 0) setRows(zeilen);
         }
     }, [initialTrace]);
 
@@ -186,14 +166,17 @@ export const CalcTraceModal: React.FC<CalcTraceModalProps> = ({
                             <p className="text-xs text-muted-foreground font-medium">{taskName} – Hybrides Grading</p>
                         </div>
                     </div>
-                    <Button 
-                        variant="ghost"
-                        size="icon"
-                        onClick={onClose}
-                        className="text-muted-foreground hover:text-foreground rounded-full"
-                    >
-                        <X size={20} />
-                    </Button>
+                    <div className="flex items-center gap-3">
+                        <RechengraphSchalter taskIdx={taskIdx} disabled={isLocked} />
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={onClose}
+                            className="text-muted-foreground hover:text-foreground rounded-full"
+                        >
+                            <X size={20} />
+                        </Button>
+                    </div>
                 </div>
 
                 <div className="p-6 flex flex-col gap-6 overflow-y-auto">

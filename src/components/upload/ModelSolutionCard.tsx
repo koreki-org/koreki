@@ -319,7 +319,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                             isOpen={editingGraphTaskIdx !== null}
                             onClose={() => setEditingGraphTaskIdx(null)}
                             initialTrace={task?.targetGoal}
-                            isLocked={isLocked}
+                            isLocked={isLocked} taskIdx={editingGraphTaskIdx}
                             taskName={task?.name || `Aufgabe ${editingGraphTaskIdx + 1}`}
                             onSave={(goal) => {
                                 const updatedTasks = [...tasksLayout];
@@ -338,7 +338,7 @@ export const ModelSolutionCard: React.FC<ModelSolutionCardProps> = ({
                         isOpen={editingGraphTaskIdx !== null}
                         onClose={() => setEditingGraphTaskIdx(null)}
                         initialGraph={task?.gradingGraph}
-                        isLocked={isLocked}
+                        isLocked={isLocked} taskIdx={editingGraphTaskIdx}
                         taskName={task?.name || `Aufgabe ${editingGraphTaskIdx + 1}`}
                         taskContent={content && content.trim() ? content : (modelSolution || "")}
                         taskType={task?.taskType}

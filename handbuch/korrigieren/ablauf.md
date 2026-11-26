@@ -101,6 +101,17 @@ Unter **Alle Arbeiten** stehen deine Arbeiten. Klicke auf **Korrigieren**. Korek
 
 Solange Bilderkennung oder Korrektur laufen, lassen sich Arbeiten weder löschen noch mit der **Schere** aufteilen. Beides verschiebt die Liste, und ein Ergebnis könnte sonst bei der falschen Arbeit landen. Musst du vorher etwas ändern, brich den Lauf ab.
 
+### Rechengraphen ein- und ausschalten {#rechengraphen}
+
+Bei Rechenaufgaben kann Koreki an der Musterlösung einen Rechengraphen bilden — über die Leiste über den Aufgaben oder den Knopf mit dem Funken-Symbol an einer Aufgabe. Mit dem Rechengraphen rechnet Koreki die Lösung nach, statt sich nur auf die KI zu verlassen.
+
+Willst du eine Korrektur ohne Rechengraphen, musst du ihn nicht löschen:
+
+- **Rechengraphen verwenden** neben **Korrigieren** schaltet alle auf einmal ein oder aus. Sind nur einige an, steht dort zum Beispiel „(3 von 5)“.
+- Für eine einzelne Aufgabe öffnest du ihren Rechengraphen über das Funken-Symbol und nimmst dort den Haken bei **Rechengraph verwenden** heraus. Das Funken-Symbol an der Aufgabe ist danach grau.
+
+Ausgeschaltete Rechengraphen bleiben gespeichert, auch in der `.koreki`-Datei. Die Einstellung gilt für die nächste Korrektur. Schon korrigierte Arbeiten ändern sich erst, wenn du sie erneut korrigierst.
+
 ## 5. Prüfen und exportieren {#exportieren}
 
 Öffne jede Arbeit und sieh dir die Vorschläge an. Links steht, was Koreki aus der Arbeit gelesen hat, rechts der Vorschlag mit Punkten und Feedback. Punkte und Texte kannst du direkt ändern. Worauf du dabei achtest, steht unter [Vorschläge prüfen](/korrigieren/vorschlaege-pruefen).

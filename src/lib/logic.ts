@@ -73,6 +73,12 @@ export interface Task {
     /** Musterrechnung — Vorlage aus dem Skill-Editor oder ein TargetGoal. */
     calcTrace?: CalcTraceTemplate | TargetGoal;
     suggestGraph?: boolean;
+    /**
+     * Die Lehrkraft hat den Rechengraphen dieser Aufgabe abgeschaltet. Er bleibt
+     * gespeichert, die Korrektur ueberspringt ihn (`layoutFuerKorrektur`).
+     * Ohne Angabe gilt: an.
+     */
+    rechengraphAus?: boolean;
     predictedPluginDomain?: string | null;
     sandboxBypassed?: boolean;
     /**

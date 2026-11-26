@@ -82,7 +82,7 @@ const SIZE_BASELINE: Record<string, number> = {
     // 1459 -> 507: erst vier Reiter als eigene Panels, jetzt der Zustand in
     // vier Hooks unter hooks/grading-graph/. Hook-Aufrufe 25 -> 10, damit aus
     // HOOK_BASELINE verschwunden.
-    'components/batch/GradingGraphModal.tsx': 507,
+    'components/batch/GradingGraphModal.tsx': 506,
     // Die beiden groessten Reiter aus dem Modal, bewusst aufgenommen: sie sind
     // unveraendert umgezogen (reine Darstellung, kein Zustand untereinander).
     // Ein Zerlegen waere ein zweiter, eigener Schritt — den 1404-Zeiler zuerst
@@ -135,7 +135,7 @@ const SIZE_BASELINE: Record<string, number> = {
     'hooks/useAiProfiles.ts': 469,
     // +5: initialTrace nimmt ausdruecklich beide Rechenketten-Formen entgegen —
     // der Rumpf unterschied sie schon, der Typ verschwieg es.
-    'components/batch/CalcTraceModal.tsx': 430,
+    'components/batch/CalcTraceModal.tsx': 413,
     // +13: der NutzerCache-Typ und die durchgezogenen Signaturen haben ALLE
     // 7 `any` dieser Datei abgeloest.
     // 436 -> 431: der optimistische Cache-Block stand dreimal wortgleich
