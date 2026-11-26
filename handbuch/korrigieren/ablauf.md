@@ -79,6 +79,19 @@ Ein Scan oder Foto ist für die KI zunächst nur ein Bild. Bevor Koreki korrigie
 Bei schwer lesbarer Handschrift kann die KI ein Wort falsch lesen und dabei etwas Plausibles hinschreiben, das so nicht auf dem Blatt steht. Das fällt beim Überfliegen nicht auf. Skizzen, Pfeile und Randnotizen werden oft gar nicht erfasst — solche Teile bewertest du von Hand.
 :::
 
+### Unsichere Stellen (?) {#unsichere-stellen}
+
+Ist sich die Bilderkennung bei einem Wort nicht sicher, setzt sie **(?)** dahinter und hebt die Stelle farbig hervor. Die Aufgabe trägt dann den Hinweis **OCR prüfen!**. Sieh dir diese Wörter im Original an und verbessere sie, wo nötig. Die Markierung löschst du einfach mit.
+
+Oft ist ein markiertes Wort trotzdem richtig gelesen. Dann musst du nicht jede Markierung einzeln löschen:
+
+- Neben **OCR prüfen!** steht an jeder Aufgabe der Knopf **… (?) entfernen**. Er entfernt die Markierungen dieser einen Aufgabe sofort, ohne Rückfrage.
+- Über dem erkannten Text steht der Knopf **Alle … (?) entfernen**, mit der Zahl der Markierungen in der ganzen Arbeit. Er entfernt nach einer Rückfrage alle auf einmal.
+
+Die Wörter davor bleiben stehen, ebenso andere Kennzeichen wie [GESTRICHEN]. Rückgängig machen lässt sich das nicht.
+
+Entferne die Markierungen erst, wenn du die Stellen angesehen hast. Bleibt eine stehen, ist der Vorschlag zu dieser Aufgabe in der Regel als **„Bitte prüfen“** gekennzeichnet. Nach dem Entfernen gibt es diesen Hinweis nicht mehr.
+
 ## 4. Korrigieren lassen {#korrigieren}
 
 ![Alle Arbeiten mit zwei Arbeiten, bereit zur Korrektur](/bilder/app-stapel.png){.app-bild}
